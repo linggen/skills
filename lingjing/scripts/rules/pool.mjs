@@ -35,13 +35,36 @@ export const BRANCH = ['zi', 'chou', 'yin', 'mao', 'chen', 'si', 'wu', 'wei', 's
 /* When a member was last played (`pool_played`, stamped as a verb plays it — rules/locks.mjs gated). */
 export const playedAt = (state, id) => (state.pool_played?.[id] ? new Date(state.pool_played[id]) : null);
 
-/* A verb that plays a pool member: its id stamped on the save that verb wrote. Mutates `next`. */
+/* A verb that plays a pool member: its id stamped on the save that verb wrote — and, a win, on `pool_won` (kept apart:
+   the 体力卡 clears `pool_played`, never what he has won). Mutates `next`. */
 export function stampPlay(kinds, content, state, next, verb, args, now) {
   for (const k of kinds) {
     const id = k.pool?.plays?.(verb, args, content, state);
     if (id) next.pool_played = { ...(next.pool_played ?? {}), [id]: now.toISOString() };
+    const won = k.pool?.won?.(verb, args, content, state);
+    if (won) next.pool_won = { ...(next.pool_won ?? {}), [won]: now.toISOString() };
   }
 }
+
+/* ── A board that plays the same each time leaves the pool once won (Hanli 2026-11-02, on 周衡's 灯谜 won four times:
+   「这个人参的灯谜我是否玩过几次了?」) ──
+   The pool keeps only boards that differ each play. A board says so in its data, read here in this order:
+   · a content pool in its deal (`deal.pool` · `deal.riddles` · `deal.deck`, true or a list) — it varies, whatever else
+     it declares: the hook a riddle pool lands on (周衡's 灯谜 comes back the day its deal carries one);
+   · `varies: true | false` on the task — a module that deals by its seed or answers as a foe (五子 · 残局 · 配丹), or a
+     fixed level said plainly;
+   · a ladder (`climb` of two rungs or more, or `deal.levels` of two or more) — it varies.
+   Nothing of these: it is one fixed board (tests/pool-varies.test.mjs: every hosted board says which, one way or another). */
+const filled = v => (Array.isArray(v) ? v.length > 0 : Boolean(v));
+export function boardVaries(t) {
+  if (!t) return false;
+  if (['pool', 'riddles', 'deck'].some(k => filled(t.deal?.[k]))) return true;
+  if (typeof t.varies === 'boolean') return t.varies;
+  return (t.climb?.length ?? 0) > 1 || (t.deal?.levels?.length ?? 0) > 1;
+}
+/* Whether a board has ever been won: the pool's own stamp, else what a win left before it (the best ★ `stars`, kept by
+   the page's `win`; the task done in the story). */
+export const wonEver = (state, id) => Boolean(state.pool_won?.[id] || state.stars?.[id] != null || state.tasks?.[id]?.status === 'done');
 
 /* A number in (0, 1) from a key: the draw's coin for one member (FNV-1a, then a final mix — rotation.mjs's spread). */
 function coin(key) {
@@ -60,8 +83,11 @@ function coin(key) {
 export function drawPool(content, state, rows, kinds, now) {
   const sc = shichenOf(now), here = placeOf(content, state.place), plate = here?.plate?.id ?? null;
   const pools = new Map(kinds.filter(k => k.pool).map(k => [k.kind, k.pool]));
+  // A member its kind has retired (`retired`: a fixed board won) is out of the pool and out of the tray's rows — not left
+  // standing beside the draw as a non-member would be.
+  const retired = new Set(rows.filter(e => pools.get(e.kind)?.retired?.(e, content, state)).map(e => e.id));
   // A kind may hold members and others (银月's: 对对子 and 出题 are drawn, 问卦 is not): a member is an entry its `row` answers.
-  const members = rows.filter(e => pools.has(e.kind) && e.seg !== 'cool' && pools.get(e.kind).row(e));
+  const members = rows.filter(e => pools.has(e.kind) && !retired.has(e.id) && e.seg !== 'cool' && pools.get(e.kind).row(e));
   // Weighed as the 时辰 began (`sc.start`), so the draw holds all through it. A member played in it is weighed at the
   // most it could be — its key only rises, so it keeps its place and moves no other; one that has left the pool since
   // (its rounds used) still holds that place.
@@ -86,7 +112,7 @@ export function drawPool(content, state, rows, kinds, now) {
   const drawn = scored.sort((a, b) => b.key - a.key || String(a.e.id).localeCompare(String(b.e.id))).slice(0, DRAW);
   const inDraw = new Set(drawn.map(d => d.e.id));
   const open = new Set(members.filter(e => e.resume && !inDraw.has(e.id)).map(e => e.id));
-  return { shichen: sc, drawn: drawn.map(d => ({ ...d.e, ...(d.played ? { played: true } : {}) })), members: new Set(members.map(e => e.id)), open };
+  return { shichen: sc, drawn: drawn.map(d => ({ ...d.e, ...(d.played ? { played: true } : {}) })), members: new Set(members.map(e => e.id)), open, retired };
 }
 
 /* The 体力卡 (test only) clears the pool's cooldowns too: every game played comes back to the draw at once. */

@@ -21,7 +21,8 @@ import { kaoHere } from './kao.mjs';
 import { aside as asideItem } from './tell.mjs';
 import { allPlaces, encounterOf, lockOf, placeOf, poolWait, sceneOf } from './world.mjs';
 import { gamesToday } from './rotation.mjs';
-import { hostedHere } from './tasks.mjs';
+import { errandWants, hostedHere } from './tasks.mjs';
+import { boardVaries, wonEver } from './pool.mjs';
 import { duiziBrief } from './duizi.mjs';
 import { visitorsTray } from './visiting.mjs';
 import { yaoshouPlace, yaoshouTray } from './yaoshou.mjs';
@@ -152,6 +153,11 @@ export const PLAY_KINDS = [
     pool: {
       row: e => ({ cooldown_min: 360, when: BOARD_LEAN[e.game] ?? [], cost: 'game' }),
       plays: (verb, args, content) => (['task'].includes(verb) && ['done', 'lost'].includes(args.action) && taskOf(content, String(args.id ?? ''))?.hosted ? String(args.id) : null),
+      // Counted done is won (rules/pool.mjs `pool_won`).
+      won: (verb, args, content) => (verb === 'task' && args.action === 'done' && taskOf(content, String(args.id ?? ''))?.hosted ? String(args.id) : null),
+      // One fixed board, won once, is out of the pool for good (pool.mjs boardVaries, Hanli 11-02) — unless an errand
+      // still asks for its win there.
+      retired: (e, content, state) => !boardVaries(taskOf(content, e.id)) && wonEver(state, e.id) && !errandWants(content, state, e.id, e.places?.[0]),
     } },
   { kind: 'mijing', // 秘境探险 (rules/mijing.mjs): a 秘境令 in hand, away from the door — the door's run is its card there
     tray: (content, state, view) => (view?.mijing?.away ? [{ id: 'mijing', left: { unit: 'keys', n: view.mijing.keys }, places: [view.mijing.door.id], stage: 'mijing' }] : []) },

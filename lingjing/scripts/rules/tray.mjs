@@ -51,11 +51,11 @@ export function trayLook(content, state, view, ctx, asideOffers = []) {
     });
   // 小游戏池 (rules/pool.mjs): of the 时辰's three, in their seeded order, only the first not yet played stands — the next
   // comes once it is played (Hanli 11-02: 「如果第一个玩家没玩, 不用接着添加后面的」) — and a round still open beside it.
-  const { drawn, members, shichen, open } = drawPool(content, state, rows, PLAY_KINDS, now);
+  const { drawn, members, shichen, open, retired } = drawPool(content, state, rows, PLAY_KINDS, now);
   // A round under way (`resume`) stands wherever it falls in the order: begun from the stage, it is not lost behind the first.
   const next = drawn.find(d => !d.played);
   const shown = new Set([...(next ? [next.id] : []), ...drawn.filter(d => d.resume && !d.played).map(d => d.id), ...open]);
-  const kept = rows.filter(r => !members.has(r.id) || shown.has(r.id));
+  const kept = rows.filter(r => !retired.has(r.id) && (!members.has(r.id) || shown.has(r.id)));
   const sorted = kept.map((r, i) => [r, i]).sort((a, b) => RANK[a[0].seg] - RANK[b[0].seg] || a[1] - b[1]).map(([r]) => r);
   return { rows: sorted, hour: { i: shichen.i, ends_min: Math.max(1, Math.ceil((shichen.end - now) / 60_000)), drawn: drawn.length, played: drawn.filter(d => d.played).length } };
 }

@@ -1477,6 +1477,14 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
   and rests its cooldown. The world's events, 问卦 and the story's boards stand outside it. No title line over the row
   (Hanli 11-02); the 时辰 is a footer chip, 「未时 · 47 分换一批」; 体力 spent, one 闭关 card; all three played,
   「这个时辰的都玩过了」. The tray holds games only: what the 事 book lists (差事, 机缘, 货郎) is declared `in: 'shi'`.
+  **Only boards that differ each play** (Hanli 11-02, on 周衡's 灯谜 won four times: 「这个人参的灯谜我是否玩过几次了?」):
+  a board with one fixed content leaves the pool — and the tray — once won; one that varies stays. A board says which in
+  its data (rules/pool.mjs boardVaries): a content pool in its deal (`deal.pool` · `deal.riddles` · `deal.deck`) varies,
+  whatever else it says — the hook 周衡's 灯谜 comes back on once its deal carries a riddle pool; else `varies: true | false`
+  on the task (a seeded deal or a foe the data cannot show: 五子 · 残局 · 配丹 · 洛书); else a ladder (`climb` or
+  `deal.levels` of two or more) varies; else it is fixed. Won is `pool_won` (stamped when a board is counted done, kept
+  apart from the 体力卡's reset), or a win an older save kept (★ `stars`, the task done). An errand that still asks for
+  the board's win keeps it in. Every hosted board declares or infers it (tests/pool-varies.test.mjs).
 - **Yinyue on the stage:** one device, one Yinyue. The game stage is
   voice-only (`?pet=1&stage=1&body=0`, engine a250a04) — no 3D body in the
   game.
