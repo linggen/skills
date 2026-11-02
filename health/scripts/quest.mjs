@@ -8,10 +8,13 @@
 //   health-steps   5,000 steps today: the phone says so (fact `health-steps`,
 //                  HealthKit's own de-duplicated day total — the mirror holds
 //                  Watch and iPhone samples that overlap, so it never sums
-//                  them). Due while the mirror holds steps from the last 2 days.
+//                  them). Due while the mirror holds steps from the last 2 days
+//                  and a phone has said it once — a phone that cannot send the
+//                  fact never gets a chore it cannot finish.
 //   health-sleep   last night ≥ 7 h asleep: the phone says so (fact
 //                  `health-sleep`). Due while the mirror holds sleep from the
-//                  last 2 days — no Watch at night, no chore.
+//                  last 2 days (no Watch at night, no chore) and a phone has
+//                  said it once.
 //   health-report  this week's letter read: the `opened_at` the phone stamps
 //                  on letters/<week>.json. Due while a letter is under 8 days old.
 //   health-doctor  a new doctor's note read on the phone (fact `health-doctor`).
@@ -106,8 +109,9 @@ export function dueOf(facts, now, held = new Map()) {
   const read = time(held.get('health-doctor'));
   const note = review && Number(review.doc) > 0 ? time(review.written_at || review.at) : null;
   return {
-    'health-steps': within(facts.stepsAt, now, 2),
-    'health-sleep': within(facts.sleepAt, now, 2),
+    // A phone that never sent the fact cannot finish the row: hidden until it has.
+    'health-steps': within(facts.stepsAt, now, 2) && held.get('health-steps') != null,
+    'health-sleep': within(facts.sleepAt, now, 2) && held.get('health-sleep') != null,
     'health-report': (facts.letters || []).some((l) => l && within(l.written_at, now, 8)),
     'health-doctor': note !== null && (read === null || read < note),
   };

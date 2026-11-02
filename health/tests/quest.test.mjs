@@ -33,12 +33,14 @@ test('the menu: steps and sleep are the fixed dailies, the letter and the note p
 test('due: no data, no chore — each row is hidden until the mirror can say it can be done', () => {
   const none = dueOf({}, NOW);
   assert.deepEqual(none, { 'health-steps': false, 'health-sleep': false, 'health-report': false, 'health-doctor': false });
-  const due = dueOf({
+  const facts = {
     stepsAt: '2026-09-11T17:00:00Z', sleepAt: '2026-09-08T07:00:00Z', // sleep last seen 3 days ago: no Watch at night
     letters: [{ written_at: '2026-09-07T12:00:00Z' }],
     reviews: [{ date: '2026-09-11', written_at: '2026-09-11T06:00:00Z', doc: 1 }],
-  }, NOW);
-  assert.deepEqual(due, { 'health-steps': true, 'health-sleep': false, 'health-report': true, 'health-doctor': true });
+  };
+  const told = new Map([['health-steps', '2026-09-10T15:00:00Z'], ['health-sleep', '2026-09-08T07:00:00Z']]);
+  assert.deepEqual(dueOf(facts, NOW, told), { 'health-steps': true, 'health-sleep': false, 'health-report': true, 'health-doctor': true });
+  assert.equal(dueOf(facts, NOW)['health-steps'], false, 'no phone ever sent the fact: a chore it cannot finish stays hidden');
 });
 
 test('health-doctor is event-driven: due only for a note written after the last read', () => {
@@ -80,8 +82,11 @@ test('writeQuest reads the mirror, drops the retired workout, keeps what it does
   const doc = fileOf(quests), q = byId(doc);
   assert.deepEqual(doc.quests.map((x) => x.id), ['health-steps', 'health-sleep', 'health-report', 'health-doctor', 'elsewhere']);
   assert.ok(RETIRED.includes('health-workout'));
-  assert.equal(q['health-steps'].due, true);
+  assert.equal(q['health-steps'].due, false, 'steps in the mirror, but no phone ever said 5,000');
   assert.equal(q['health-sleep'].due, false, 'sleep data from June: no chore');
+  stamp('health-steps', '2026-09-10T15:00:00Z', quests);
+  writeQuest(samples, quests, NOW);
+  assert.equal(byId(fileOf(quests))['health-steps'].due, true, 'once the phone has said it, recent steps make it due');
   assert.equal(q['health-report'].done_at, '2026-09-08T07:00:00.000Z');
   assert.deepEqual(q.elsewhere, { id: 'elsewhere', x: 1 });
   assert.deepEqual(fs.readdirSync(quests), ['health.json']);

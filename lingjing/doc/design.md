@@ -1177,7 +1177,8 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
   reward stamina pool done_at` (`how` {zh,en}, ≤20 words, shown on the 事 row
   as 怎么做 beside the app's button). Daily: 问安 linggen-greet (engine, a
   message to 银月 that day) · 炼体 health-steps (5000 steps, the phone's fact) ·
-  养神 health-sleep (≥7 h, the phone's fact; due only with sleep data) · 核账
+  养神 health-sleep (≥7 h, the phone's fact; due only with recent sleep data,
+  and steps and sleep both only once a phone has sent the fact) · 核账
   cfo-review · 琴心 dj-listen (a song to its end) · 巡山 shifu-glance (Mac, the
   System page). Weekly pool: 分账 cfo-sort (due: something uncategorised) · 观宝库
   cfo-invest · 问诊 health-report (due: this week's letter) · 清扫洞府 shifu-scan ·
@@ -1185,10 +1186,11 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
   from the agent's suggested set). Monthly/event pool: 清点府库 cfo-import (due:
   imported before) · 藏珍 shifu-backup (due: a destination and photos not kept)
   · 求医问药 health-doctor (due: a note worth a doctor newer than the last read).
-  Six dailies, so only `gongke.json` `shares_per_day` (2) of a day's dailies pay
-  their share of the layer in 修为 — the day's chore 修为 stays where one fixed
-  and one daily pick had it; the rest pay 灵石, 体力 and meaning. `per_day`
-  unchanged. **一次**
+  Six dailies, so only `gongke.json` `shares_per_day` (1) of a day's dailies
+  pays its share of the layer in 修为 (10%); the rest pay 灵石, 体力 and
+  meaning. With the pick now always a weekly or monthly (20–30%, the old pick
+  10–30%), a day's chore 修为 is 0–10 points of a layer above the old. **Waits
+  on Hanli** (the set was approved, not this pay rule). `per_day` unchanged. **一次**
   (`period: "once"`, the setup milestones, once 开府) drip **one a day**
   (Hanli, 2026-10-15): one open, in world.json `kaifu.order`; handed in or
   skipped (跳过, `state.kaifu`), the next opens the next calendar day; a

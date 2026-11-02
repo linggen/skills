@@ -126,8 +126,8 @@ const choreTable = (content, q, state) => (isOnce(q) ? 'once' : !isFixed(q) ? 'l
   : state && content.rewards.tables.gongke_zero && zeroAt(content, state.tier, state.step) ? 'gongke_zero' : 'gongke');
 const FLAT = new Set(['once', 'gongke_zero']); // the table's own 灵石, not the chore's `reward`
 /* A day holds `shares_per_day` (gongke.json) dailies that pay their share of the layer; the rest pay their
-   灵石 and meaning only (2026-11-02: six dailies instead of one, the day's 修为 from chores kept where it was —
-   the fixed one and a daily pick). `now` counts the day's already paid; without it, no limit. */
+   灵石 and meaning only (2026-11-02: six dailies instead of one fixed; one share keeps the day's chore 修为 near
+   where it was — waits on Hanli's word). `now` counts the day's already paid; without it, no limit. */
 function dayShareLeft(content, q, state, now) {
   const n = content.gongke?.shares_per_day;
   if (!now || !state || q.period !== 'day' || !Number.isFinite(n)) return true;
