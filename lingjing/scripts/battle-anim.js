@@ -322,7 +322,7 @@ function float(root, el, text, kind) {
   n.style.left = x;
   n.style.top = `${box.top - host.top + box.height / 3}px`;
   root.appendChild(n);
-  setTimeout(() => n.remove(), 1000);
+  setTimeout(() => n.remove(), kind === 'armor' ? 1300 : 1000);
 }
 
 const pulse = (el, cls, ms = 400) => {
@@ -423,17 +423,18 @@ async function replay(root, entries, ctx) {
       }
       case 'hurt': {
         const el = spotOf(root, t);
-        // 护体 took some of it (a worn 法衣): the shield flashes with its own
-        // number, and only what reached 气血 leaps off the hero.
-        if (t.absorbed) {
-          const shield = el?.querySelector('.barmor') ?? el;
-          float(root, shield, `${ctx.words?.armor ?? ''} −${t.absorbed}`, 'armor');
-          pulse(shield, 'struck', BEATS.hit);
-          if (t.amount) await sleep(BEATS.gap);
+        // 护体 took some of it (a worn 法衣): its own number over the portrait
+        // and its chip flashing, then only what reached 气血 leaps off.
+        const [shield, blood] = hurtFloats(t, ctx.words);
+        if (shield) {
+          float(root, el, shield.text, shield.kind);
+          pulse(q(root, `${sideSel(t)} .barmor`), 'struck', BEATS.hit * 2);
+          if (blood) await sleep(BEATS.hit);
         }
-        if (t.amount || !t.absorbed) float(root, el, `−${t.amount}`, 'hurt');
+        if (blood) float(root, el, blood.text, blood.kind);
         if (t.amount) hp.take(t.who, -t.amount);
-        struckAt(root, el, t);
+        // A blow the robe took whole shakes the hero, but bleeds no ink.
+        if (blood) struckAt(root, el, t); else pulse(el, 'shaken', BEATS.hit);
         await sleep(BEATS.hit);
         break;
       }
@@ -536,4 +537,16 @@ async function replay(root, entries, ctx) {
 
 /* What is new in the log since we last drew. The log only grows, so its length
    is the whole bookmark. */
+/* What a 'hurt' entry floats, in order: 护体's share (`absorbed`), then
+   what reached 气血 (`amount`) — the hurt number only when some got through,
+   or when nothing was absorbed at all (a 0 still says the blow landed). */
+export function hurtFloats(t, words = {}) {
+  const out = [];
+  out.push(t.absorbed ? { kind: 'armor', text: `${words?.armor ?? ''} −${t.absorbed}`.trim() } : null);
+  out.push(t.amount || !t.absorbed ? { kind: 'hurt', text: `−${t.amount ?? 0}` } : null);
+  return out;
+}
+
+const sideSel = (t) => (t.who === 'foe' ? '.bside.foe' : '.bside.you');
+
 export const since = (log, mark) => (log ?? []).slice(mark);
