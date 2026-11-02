@@ -4,7 +4,7 @@ The one list of what is in flight, parked, not started, and waiting on Hanli.
 Every agent reads it before starting and edits its own row when it lands (hash or tag, date).
 Systems themselves live in `design.md` (【已建】 · 【在建】 · 【远景】); this file is only the work.
 
-Updated 2026-11-01.
+Updated 2026-11-02.
 
 ## In flight
 
@@ -213,6 +213,7 @@ None.
 
 ## Not started
 
+- English counterpart to 对对子 (a rhyme game), after launch (11-02).
 - AI games, next batch: 猜灯谜, 银月的心事, 斗嘴, 论道 · 飞花令, 说书接龙, 下棋陪聊.
 - After the first launch (Hanli 10-16, 「先把第一版上线, 后面再说」): ~~守鼎 tower defense (护山大阵 on the mountain path, towers from his deck, 五行 counters)~~ — superseded: since 10-28 the story's main content is 塔防 on the four 兽潮 kits (守炉 · 守墙关 · 撒豆成兵 · 守山门; `bbbb8afa`), so no separate 守鼎 unless he asks for 护山大阵 itself; a walkable top-down map (≈ a week+). New small games on proven mechanics (design.md § 新小游戏): 射鹿 as an 愤怒小鸟-style drag-and-arc shot (wind, lead), 顺风溜 as a forgiving 几何冲刺-style one-tap runner (古七). Not doing: a Battle City clone; a 说书人 narrating live fights (no LLM inside a fight's loop).
 - 卷二 opening re-plan.
@@ -221,10 +222,10 @@ None.
 
 ## Waiting on Hanli
 
-- 三试 · 蠪侄: the agent's pick (10-31, `fa621b11`) — a no-boards save wins 33%, a typical one 90% (was 15% / 86%); his confirmation pending.
-- ~~剧情 × 开放世界 (10-21): a missed dated world event~~ — answered 10-23: it waits for him, capped (1 hour, the agent's pick; his confirmation pending).
-- 对对子 (10-16): 对对子 in English (none now — an English counterpart or none?); 银月's own 下联 is a button (「银月也对一句」), not automatic after each grade — keep, or let her offer unasked (a turn each round); lundao's old 对对联 at 稷下 vs the future 稷下 rung of 对对子 — unify when 齐 is built. — **10-23 his rule: make an English version if English has couplets, else replace it with something else.**
-- Economy feel calls (10-16, `9c42af47`): the stage-quest gates sit at beat entries so he can walk away to earn them — 古四 the 柴房 night (not 第一路), 古五 the 秘境's door (not 息壤), 古六 the 大比's eve (wm-qianye), which makes 古六 ≈7–8 typical days. (The 秘境 rerun it kept open in 00-zhuji was retired 10-28; the roguelite run at the stone door replaced it.) Minutes, reading speed (450 字/min) and the three players are guesses — hand-play them. A rising ladder with 古七 holding two layers is why heavy 古五/古六 come in at ≈3–4.5 days. 古九 has no quest (九转 lands full). — **10-23: waits for his own play** (「等我玩一下再说」).
+- 三试 · 蠪侄: the agent's pick (10-31, `fa621b11`) — a no-boards save wins 33%, a typical one 90% (was 15% / 86%). — **settled 11-02 (Hanli: 「2-5 按你说的定下来」).**
+- ~~剧情 × 开放世界 (10-21): a missed dated world event~~ — answered 10-23: it waits for him, capped (1 hour, the agent's pick). — **settled 11-02 (Hanli: 「2-5 按你说的定下来」).**
+- 对对子 (10-16): 对对子 in English (none now — an English counterpart or none?); 银月's own 下联 is a button (「银月也对一句」), not automatic after each grade — keep, or let her offer unasked (a turn each round); lundao's old 对对联 at 稷下 vs the future 稷下 rung of 对对子 — unify when 齐 is built. — **10-23 his rule: make an English version if English has couplets, else replace it with something else.** Settled 11-02 (agent's pick, Hanli: 「2-5 按你说的定下来」): English has no couplet form, so English play keeps no 对对子 at launch; an English replacement (a rhyme game) goes to Not started. 银月's 下联 stays a button — no turn spent unasked.
+- Economy feel calls (10-16, `9c42af47`): the stage-quest gates sit at beat entries so he can walk away to earn them — 古四 the 柴房 night (not 第一路), 古五 the 秘境's door (not 息壤), 古六 the 大比's eve (wm-qianye), which makes 古六 ≈7–8 typical days. (The 秘境 rerun it kept open in 00-zhuji was retired 10-28; the roguelite run at the stone door replaced it.) Minutes, reading speed (450 字/min) and the three players are guesses — hand-play them. A rising ladder with 古七 holding two layers is why heavy 古五/古六 come in at ≈3–4.5 days. 古九 has no quest (九转 lands full). — **10-23: waits for his own play** (「等我玩一下再说」). — **settled 11-02 (Hanli: 「2-5 按你说的定下来」).** Gates stay at beat entries; his playthrough may still retune the days.
 - His playthrough of the latest build is the launch gate (the per-回 expansions went ahead on his 10-21 go).
 - ~~10-14 asks~~ — checked 10-23: village-map lines moot (石坳村's map cut 10-16, `2270be75`); skip done (跳过 10-16, `bad5e46a`/`06d108f9`); 闵丹师 mark done (07:179 `{注=min-danshi}`, people.json + codex.json); 拽 moot (拽爹 cut 10-22); 忍 now a painted 割绳子 beat (10-16/10-19). Left: 「古三 box merge」 — what it meant is not on record; ask him if it still matters.
 - ~~Weather density~~ — OK as is (Hanli 10-23).
