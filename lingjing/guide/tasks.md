@@ -28,13 +28,17 @@
   it unasked. Said done but not in Look: `check` anyway; `not-done` → the
   app has not seen it yet. They ride the `book` (`chore` lines); 交差 on one
   is Quest `turn`, paying as `check` does.
-- **一次** (once called 开府) — Linggen's one-time setup steps (`kaifu`: `done` — handed in —
-  of `of`). **One a day**: only `kaifu.next` is open; handed in or skipped
-  (跳过, the page's), the next opens tomorrow (`opens: "tomorrow"`). Each
-  pays once ever; a skipped one comes back later. **Never list them, never
-  remind** — when the player asks what to do, you may offer `kaifu.next`,
-  that one only, once. You never list the apps' chores either: the 事 book
-  holds every task, each with its tag (差事 · 一次 · 每日 · 每周).
+- **一次** (开府) — the first steps of Linggen and its apps (`kaifu`: `done` — handed in —
+  of `of`, only the steps the player's devices can do). Every step done in
+  real life is handed in at once (`ready`; Quest `turn` with `id: "kaifu"`
+  hands in all); only the hint of an undone one drips, one more a day
+  (`rows`, `next`; `opens: "tomorrow"`). Each row says its 怎么做 (`how`) and
+  pays 50 灵石 + 20 体力, once ever. **Never list them, never remind** — when
+  the player asks what to do, you may offer `kaifu.next` and its `how`, that
+  one only, once. `other`, once all is done on one device, is the page's
+  card for the other device — never yours to push. You never list the apps'
+  chores either: the 事 book holds every task, each with its tag (差事 · 一次 ·
+  每日 · 每周).
 - **差事** — the errands the world gives and the player takes, one kind:
   a person's, or a market's 榜文 (`daily-…` — an errand the board gives, up
   to three a day there). `offers` holds what may be taken here (each with the

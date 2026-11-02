@@ -176,3 +176,29 @@ test("银月's word at a page moment travels in the bundle: 灵石 short on the 
   assert.equal(her('mijing', look, { lang: 'zh', result: { ok: true, room: '1a' } }), null);
   fs.rmSync(tmp, { recursive: true, force: true });
 });
+
+test('开府 on the phone: the host hands in the quests, the list is the phone\'s own six, a paired Mac adds its four', async (t) => {
+  const build = await builder();
+  if (!build) return t.skip('esbuild is not installed (npm ci in lingjing/tools/phone)');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'phone-kaifu-'));
+  const out = await build({ out: path.join(tmp, 'bundle') });
+  const ctx = vm.createContext({});
+  vm.runInContext(fs.readFileSync(out.rules, 'utf8'), ctx);
+  const L = ctx.Lingjing;
+  L.load(fs.readFileSync(out.world, 'utf8'));
+  L.env('LINGJING_NOW', NOW);
+  const S = { save: 'kf' };
+  assert.equal(JSON.parse(L.call('seed', { from: 'fresh', at: '00-waimen' }, S)).ok, true);
+  const row = (id, device, done = null) => ({ id, period: 'once', due: true, reward: 50, stamina: 20, device, open: '/', title: { zh: id, en: id }, done_at: done });
+  const phone = ['linggen-chat:both', 'linggen-ask-news:both', 'cfo-open:both', 'dj-play:both', 'health-open:phone', 'linggen-notify:phone', 'linggen-pair:pair'].map(x => row(...x.split(':')));
+  assert.deepEqual(JSON.parse(L.quests({ phone: { app: 'linggen', quests: phone } })), ['phone.json']);
+  const list = () => { const r = JSON.parse(L.call('quest', { action: 'kaifu' }, S)); assert.ok(r.kaifu, JSON.stringify(r)); return r.kaifu; };
+  const ids = list().map(k => k.id);
+  assert.deepEqual(ids, ['linggen-chat', 'linggen-ask-news', 'cfo-open', 'dj-play', 'health-open', 'linggen-notify']);
+  const mac = ['linggen-voice:mac', 'shifu-scan-first:mac', 'linggen-image:mac', 'linggen-pair:pair'].map(x => row(...x.split(':')));
+  mac[3].done_at = '2026-10-20T08:00:00Z';
+  L.quests({ linggen: { app: 'linggen', quests: mac } });
+  assert.equal(list().length, 10, 'paired: 结缘 and the Mac\'s rows');
+  L.quests({ linggen: null });
+  assert.equal(list().length, 6);
+});

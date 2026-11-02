@@ -10,7 +10,7 @@ import { drop } from './arms.mjs';
 import { cardCatalog, fightPill, fightSetup, grantFrom, readOf, winCard } from './cards.mjs';
 import { POUCH_MAX } from '../battle.js';
 import { clone, gainsOf, pay, refuse, replaying, spendStamina } from './core.mjs';
-import { choreCounts, choreGrant, isOnce, kaifuAfter, questDone } from './chores.mjs';
+import { choreCounts, choreGrant, isOnce, questDone } from './chores.mjs';
 import { payMeaning } from './gongke.mjs';
 import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
 import { duelBrief, tasksBrief } from './look.mjs';
@@ -285,8 +285,6 @@ function questCheck(state, content, ctx, id) {
   if (!questDone(q, ctx.now)) return refuse('not-done', null, { app: q.app });
   const s = clone(state);
   s.chores[id] = { period, paid_at: ctx.now.toISOString() };
-  // 开府 drips: the open one handed in, the next opens tomorrow (chores.mjs).
-  if (isOnce(q)) s.kaifu = kaifuAfter(state, content, quests, ctx.now, id);
   const grant = choreGrant(content, q, state, ctx.now);
   const paid = pay(content, s, ctx, grant);
   // 开府 may open before the 灵石 are his (chapter `locks`, Hanli 2026-10-22: 开府 on meeting 银月):

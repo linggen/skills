@@ -23,20 +23,23 @@
  ],
  "authored": true,
  "kaifu": {
-  "_about": "The order the one-time setup milestones (Linggen's and its apps') open in, one a day (rules/chores.mjs): a spirit first, the account, her voice and memory, then the phone ones once a phone is bound, the browser and missions, a first stock in CFO, and ChatGPT — another way to a spirit — last. An id not listed comes after, in the app's own order.",
+  "_about": "开府 — the first steps of Linggen and its apps (Hanli, 2026-11-02; rules/chores.mjs). Only the rows the player's devices can do are listed; done ones are handed in at once; one more undone hint shows a day, in this order: talk to her first, then the news, her voice, the books, a song, Health, notifications, a sweep, a picture, and the pairing — listed only once both devices are there. An id not listed comes after, in the app's own order. `other`: the one uncounted card a one-device player sees once all is done — the device they lack.",
   "order": [
-   "linggen-model",
-   "linggen-account",
+   "linggen-chat",
+   "linggen-ask-news",
    "linggen-voice",
-   "linggen-memory",
-   "linggen-pair",
-   "linggen-phone-chat",
-   "linggen-remote",
-   "linggen-mission",
-   "linggen-browser",
-   "cfo-first-stock",
-   "linggen-chatgpt"
-  ]
+   "cfo-open",
+   "dj-play",
+   "health-open",
+   "linggen-notify",
+   "shifu-scan-first",
+   "linggen-image",
+   "linggen-pair"
+  ],
+  "other": {
+   "phone": {"title": {"zh": "手机上也能随身修炼 · App Store", "en": "Cultivate on the go on your phone · App Store"}, "url": "https://apps.apple.com/us/app/linggen/id6798304906"},
+   "mac": {"title": {"zh": "Mac 上还有灵境的大画面 · linggen.dev", "en": "The full picture of Lingjing is on the Mac · linggen.dev"}, "url": "https://linggen.dev"}
+  }
  },
  "atlas": {
   "_about": "The world map: art/map/jiuzhou.svg, cleaned of every word by tools/clean_map.py. Each place's `map` and each province here are [x, y] as fractions of it; tools/pin.py starts a new place from its longitude and latitude.",

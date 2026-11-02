@@ -33,6 +33,7 @@ import { chooseLang, inPlay, langNow, stateText } from './rules/language.mjs';
 import { pageNames, pageThrows } from './rules/core.mjs';
 import { clock, dataDir, freshState, withRun, shiftDays, shiftFile, homeDir, parseArgs, readQuests, SAVE_NAME, savedFile, savedFor, scratchName, skillDir, userTurn, userWords, withLock, writeAtomic } from './rules/files.mjs';
 import { look, stageAt } from './rules/look.mjs';
+import { kaifuFit } from './rules/chores.mjs';
 import { standFit } from './rules/match.mjs';
 import { oddsOn, strongFit } from './rules/strengthen.mjs';
 import { closeStaleFight, fightHold } from './rules/tasks.mjs';
@@ -229,7 +230,8 @@ function runLocked(verb, args, stateFile, reader) {
   // …and a wall's tag of an earlier day gone with its day (rules/rotation.mjs lapseWall).
   // …and what waited at the 洞府 (待取, retired 11-02) into the pouch, or to the door's 「储物袋满了」 (rules/pouch.mjs fitHeld).
   const fitted = raw && raw.world === worldId ? fitHeld(content, settleHeld(content, settleStages(content, fitPresence(content, lapseWall(closeStaleFight(migrate(raw, content), now), now), now), now))) : raw;
-  const saved = fitted && raw?.world === worldId ? strongFit(content, standFit(content, fitted, now), now) : fitted;
+  // …and the day's 开府 hint revealed (rules/chores.mjs kaifuFit: one more undone row a day), written like the stand.
+  const saved = fitted && raw?.world === worldId ? kaifuFit(content, strongFit(content, standFit(content, fitted, now), now), readQuests(), now) : fitted;
   // Only the stand moved (a read): written, never logged — Undo takes back moves, not a beast chosen.
   const standOnly = Boolean(raw) && fitted === raw && saved !== raw;
   const state = verb === 'init' || !saved ? freshState(content, langNow(), now, saved) : saved;

@@ -18,7 +18,7 @@ const WORDS = {
 /// The pay of one hand-in, as a line: what came in, and the 修为 零层 does not take.
 export function turnedPays(paid, w, lang) {
   const t = WORDS[lang] ?? WORDS.zh, p = paid ?? {};
-  return [p.progress ? `${w.xw} +${p.progress}` : '', p.wealth ? `${w.ls} +${p.wealth}` : '', p.hold?.zero && p.hold.held ? t.zero : ''].filter(Boolean);
+  return [p.progress ? `${w.xw} +${p.progress}` : '', p.wealth ? `${w.ls} +${p.wealth}` : '', p.stamina ? `${w.qi} +${p.stamina}` : '', p.hold?.zero && p.hold.held ? t.zero : ''].filter(Boolean);
 }
 
 /// The 所得 card has stood long enough: every row on it older than HANDED_STAY_MS.

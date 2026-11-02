@@ -81,11 +81,13 @@ test('a flood of menu entries: the book holds the workout and the one pick — t
   assert.deepEqual(lines.map(b => b.chore.kind).sort(), ['fixed', 'pick']);
   assert.equal(lines.find(b => b.chore.kind === 'fixed').id, 'health-workout');
   assert.ok(lines.every(b => ['mac', 'phone', 'both'].includes(b.chore.device)), 'each line says where it is done');
-  // Look for Ling: today's two and the ONE open milestone (kaifu-drip.test.mjs) — never the menu
+  // Look for Ling: today's two; 开府 as every done row to hand in and the ONE hint of the day (kaifu-drip.test.mjs) — never the menu
   assert.equal(l.quests.filter(q => q.period !== 'once').length, 2);
   const { pays, ...next } = l.kaifu.next;
-  assert.deepEqual({ ...l.kaifu, next }, { done: 0, of: 13, ready: 1, next: { id: 'linggen-pair', title: '做linggen-m0', device: 'phone', done: true, open: '/settings?tab=models' } });
-  assert.ok(pays.wealth > 0, 'the open step says what it pays');
+  assert.deepEqual([l.kaifu.done, l.kaifu.of, l.kaifu.ready], [0, 13, 4]);
+  assert.deepEqual(next, { id: 'linggen-m4', title: '做linggen-m4', device: 'mac', done: false, open: '/settings?tab=models' });
+  assert.deepEqual(l.kaifu.rows.map(r => [r.id, r.step]), [['linggen-pair', 'ready'], ['linggen-m1', 'ready'], ['linggen-m2', 'ready'], ['linggen-m3', 'ready'], ['linggen-m4', 'open']]);
+  assert.ok(pays.wealth > 0 && pays.stamina === 20, 'the open step says what it pays: 灵石 and 体力');
   // Yinyue's Progress carries the same, compactly
   const p = progress(s, content, ctx(quests)).result;
   assert.equal(p.chores.kaifu, '0/13');
@@ -144,7 +146,7 @@ test('a month\'s 功课: keyed YYYY-MM from the 1st at local midnight; paid once
 
 test('开府: done_at null is not done; a done one pays once ever — capped, on any device, in any week', () => {
   const s = start();
-  const m = milestone(1, { reward: 500, stamina: 20 });
+  const m = milestone(1, { reward: 500, stamina: 20, device: 'mac' });
   refused(quest(s, content, ctx([m]), { action: 'turn', id: m.id }), 'not-done');
   assert.equal(look(s, content, ctx([m])).kaifu.done, 0);
   const done = [{ ...m, done_at: '2026-09-20T09:00:00Z' }];
@@ -161,7 +163,7 @@ test('开府: done_at null is not done; a done one pays once ever — capped, on
   assert.equal(chores(look(s, content, ctx(done)).book).length, 0);
   const list = quest(synced, content, ctx(done), { action: 'kaifu' });
   assert.equal(list.state, null, 'a read');
-  assert.deepEqual(list.result.kaifu.map(k => [k.id, k.done, k.paid, k.device, k.open]), [[m.id, true, true, 'phone', '/settings?tab=models']]);
+  assert.deepEqual(list.result.kaifu.map(k => [k.id, k.done, k.paid, k.device, k.open]), [[m.id, true, true, 'mac', '/settings?tab=models']]);
 });
 
 test('menus are read from the quests folder; a missing or half-written file is skipped', () => {

@@ -154,7 +154,7 @@ test('two gates: before 银月 no 开府; from 00-yinyue 开府 but no chores; f
   assert.equal('gongke' in before, false);
   const met = look(at('00-yinyue'), content, ctxOf(quests));
   assert.ok(!met.locked.includes('kaifu') && met.locked.includes('chores'));
-  assert.equal(met.kaifu.next.id, 'm-1', '开府 opens on meeting her');
+  assert.deepEqual(met.kaifu.rows.map(r => [r.id, r.step]), [['m-1', 'ready']], '开府 opens on meeting her');
   assert.deepEqual(met.quests.map(q => q.id), ['m-1'], 'no 人间功课 yet — only the 开府 step');
   assert.equal('gongke' in met, false, 'no board before 入门');
   // The 事 chip holds 一次 alone between the gates; none before.

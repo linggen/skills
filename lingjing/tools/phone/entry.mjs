@@ -12,6 +12,7 @@
 //                                            JSON text { mode, facts, pool } (null when she is absent or the moment
 //                                            has nothing to say); `short` builds its facts from the Look's shelf
 //                                            and `mijing` from the rules' answer (opts.result: hersay.js mijingWhat)
+//   Lingjing.quests({app: doc})             the apps' menus (/quests/<app>.json) the host hands in; null drops one
 //   Lingjing.drainTrack()                    the play log's lines since the last drain (rules/analytics.mjs), as JSON
 //                                            text — the app keeps them in its own folder, never in the dumped save
 //
@@ -42,6 +43,7 @@ const SAVE = /^[a-z0-9][a-z0-9_-]{0,31}$/i;
 
 process.env.LINGJING_DATA = DATA;
 process.env.LINGJING_QUESTS = QUESTS;
+process.env.LINGJING_HOST = 'phone'; // the device filter's host (rules/chores.mjs playerDevices): the phone, the Mac known once paired
 process.env.LINGJING_TRACK_SINK = '1'; // the play log waits for the app (drainTrack), never in /data
 // 体力 on, as the command line has it since 2026-11-02 (rules.mjs; Hanli: 「你把体力也打开加回来吧」).
 
@@ -96,6 +98,19 @@ const api = {
   win: (id, stars, opts) => call('win', { id, ...(stars != null ? { stars } : {}) }, opts),
   playTo: (at, opts) => call('seed', { at }, { save: 'play', ...opts }),
   drainTrack: () => JSON.stringify(drainSink()),
+  // The apps' menus the rules read (/quests/<app>.json), set by the host: the phone's own record of its 开府
+  // steps, and the Mac's linggen.json when paired — `{ app: doc }`, each replacing that app's file; null drops it.
+  quests: (files) => {
+    const map = typeof files === 'string' ? JSON.parse(files) : files ?? {};
+    fs.mkdirSync(QUESTS);
+    for (const [app, doc] of Object.entries(map)) {
+      if (!/^[a-z0-9-]{1,48}$/.test(app)) continue;
+      const file = `${QUESTS}/${app}.json`;
+      if (doc == null) { if (fs.existsSync(file)) fs.unlinkSync(file); continue; }
+      fs.writeFileSync(file, typeof doc === 'string' ? doc : JSON.stringify(doc));
+    }
+    return JSON.stringify(fs.readdirSync(QUESTS));
+  },
   her,
   stats,
 };

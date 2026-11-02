@@ -133,7 +133,7 @@
   },
   "_overflow_stretch": "Hanli, 2026-10-15 (approved): a step up — the story's rise, a throw, or grinding the 回's cap allows — carries the 修为 over the last mark in whole, and the new step asks this share of it more (state.mjs stepUp, `state.stretch`): 100 over 一层's mark enters 二层 at 100/450, not 0/400. Grinders stay only somewhat ahead; nothing is held or lost.",
   "overflow_stretch": 0.5,
-  "_pay": "What each kind of thing pays at most (修为 `progress`, 灵石 `wealth`); a grant is capped by its table (rules/core.mjs pay). Was rewards.json `tables`. Hanli, 2026-10-15 (「让游戏修为和故事match」): 修为 comes from cultivation; chores pay 灵石. `labor` pays an errand of 杂役 (修为 0, design.md § Pacing), `gongke` the day's 功课 (the fixed real-life chore, 修为 20), `life` the day's pick (灵石 only), `once` 开府 (灵石 only). A natural day of 卷一 play is now ~138 修为 (功课 20, two pool fights 60, half a rumor ~38, a road-meet 20) and the 练气 thresholds ask a 回 of it per held layer (tools/xiuwei-model.mjs). The 2026-09-24 note below is history. 2026-10-16 (灵石 buys pills, and cards and gear after): a fight won at a haunt pays 15 灵石 (was 10); 功课 stays 修为 — a typical day ~49 in, ~36 to pills, a few hundred left at 卷一's end (tools/balance.mjs --wealth). 2026-10-22 (人间功课 as cultivation, worlds/jiuding/gongke.json): `chore_kind` caps what a chore's meaning adds on top of its own pay, `chore_week` the 宗门月俸. 2026-10-27: `gongke` and `life` pay a share of the layer (play_pay.chore: a day's 10%, a week's 20%) — their `progress` here is no cap any more; `haunt` pays its minutes of play (play_pay.fight), the rest as authored, read against 练气一层 (play_pay.authored).",
+  "_pay": "What each kind of thing pays at most (修为 `progress`, 灵石 `wealth`); a grant is capped by its table (rules/core.mjs pay). Was rewards.json `tables`. Hanli, 2026-10-15 (「让游戏修为和故事match」): 修为 comes from cultivation; chores pay 灵石. `labor` pays an errand of 杂役 (修为 0, design.md § Pacing), `gongke` the day's 功课 (the fixed real-life chore, 修为 20), `life` the day's pick (灵石 only), `once` 开府 (灵石 only). A natural day of 卷一 play is now ~138 修为 (功课 20, two pool fights 60, half a rumor ~38, a road-meet 20) and the 练气 thresholds ask a 回 of it per held layer (tools/xiuwei-model.mjs). The 2026-09-24 note below is history. 2026-10-16 (灵石 buys pills, and cards and gear after): a fight won at a haunt pays 15 灵石 (was 10); 功课 stays 修为 — a typical day ~49 in, ~36 to pills, a few hundred left at 卷一's end (tools/balance.mjs --wealth). 2026-10-22 (人间功课 as cultivation, worlds/jiuding/gongke.json): `chore_kind` caps what a chore's meaning adds on top of its own pay, `chore_week` the 宗门月俸. 2026-10-27: `gongke` and `life` pay a share of the layer (play_pay.chore: a day's 10%, a week's 20%) — their `progress` here is no cap any more; `haunt` pays its minutes of play (play_pay.fight), the rest as authored, read against 练气一层 (play_pay.authored). 2026-11-02 (the new 开府): `once` pays the row's own `reward` — 50 灵石 — capped here at 50, and its `stamina` 20; the card says both.",
   "pay": {
     "play": {"progress": 100000, "wealth": 100000},
     "scene": {"progress": 60, "wealth": 20},
@@ -141,7 +141,7 @@
     "puzzle": {"progress": 20, "wealth": 0},
     "branch": {"progress": 20, "wealth": 5},
     "tale": {"progress": 15, "wealth": 3},
-    "once": {"progress": 0, "wealth": 20},
+    "once": {"progress": 0, "wealth": 50},
     "chore_kind": {"progress": 6, "wealth": 10},
     "chore_week": {"progress": 0, "wealth": 30},
     "tale_end": {"progress": 30, "wealth": 10},

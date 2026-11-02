@@ -165,13 +165,26 @@ function readQuests() {
   const dir = questsDir();
   if (!fs.existsSync(dir)) return [];
   const quests = [];
-  for (const file of fs.readdirSync(dir).filter(f => f.endsWith('.json'))) {
+  for (const file of fs.readdirSync(dir).filter(f => f.endsWith('.json')).sort()) {
     try {
       const doc = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
       for (const q of doc.quests ?? []) quests.push({ ...q, app: doc.app });
     } catch { /* an app's half-written file is skipped, never fatal */ }
   }
-  return quests;
+  return oneRowEach(quests);
+}
+
+/* One row per id: the same step seen on two devices (the Mac's linggen.json
+   and the phone's own file) counts once — the first file's words, the latest
+   `done_at` of any. */
+export function oneRowEach(quests) {
+  const by = new Map();
+  for (const q of quests) {
+    const had = by.get(q.id);
+    if (!had) { by.set(q.id, q); continue; }
+    if (q.done_at && (!had.done_at || new Date(q.done_at) > new Date(had.done_at))) by.set(q.id, { ...had, done_at: q.done_at });
+  }
+  return [...by.values()];
 }
 
 /* `--key=value` (what SKILL.md's templates send: an omitted arg arrives as an
