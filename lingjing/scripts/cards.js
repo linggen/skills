@@ -2070,7 +2070,7 @@ export function trayHtml(ctx) {
       ? queued ? `<button class="act queued" disabled>${esc(ctx.words.trayQueued)}</button>`
         : `<button class="act" data-play="${esc(t.id)}"${shut ? ` disabled title="${esc(ctx.words.emptyNoPlay)}"` : ''}>${t.light && t.open ? ctx.words.playOn : t.game && t.game !== 'lianliankan' ? ctx.words.playGame : ctx.words.play}</button>` : '';
     const tell = `<button class="act ask" ${askAttr(say(ctx.words.sayTask, { title: t.title }))}>${esc(ctx.words.about)}</button>`;
-    return `<div class="card task story ${state}"><div class="tasktitle">${esc(t.title)}</div>
+    return `<div class="card task plot ${state}"><div class="tasktitle">${esc(t.title)}</div>
       <div class="taskfoot"><span class="chip">${esc(state === 'won' ? ctx.words.keptWin : shut ? ctx.words.emptyShut : ctx.words[state])}</span>${act}${tell}</div></div>`;
   });
   // The apps' 功课 ride the book on the goal card now (design.md § 差事 ⑥). The rules ordered the rest (open · go · notice · cool).

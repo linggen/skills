@@ -121,7 +121,7 @@ test('order: the story\'s boards, then 开局, then 去X ›, then notices, then
   const go = { kind: 'errands', id: 'errands', left: { unit: 'errands', n: 2 }, seg: 'go', act: 'go', where: { id: 'zhishi', name: '执事堂' }, go: { id: 'zhishi', name: '执事堂' } };
   const open = { kind: 'seclusion', id: 'seclusion', left: { unit: 'today' }, seg: 'open', act: 'open', opens: 'seclude' };
   const html = draw({ tasks: [{ id: 'b1', kind: 'board', title: '一局', status: 'offered' }], tray: [open, go, cool] });
-  const ix = ['class="card task story', 'data-tray="seclusion"', 'data-tray="errands"', 'data-wait="pool:x"'].map((k) => html.indexOf(k));
+  const ix = ['class="card task plot', 'data-tray="seclusion"', 'data-tray="errands"', 'data-wait="pool:x"'].map((k) => html.indexOf(k));
   assert.ok(ix.every((n) => n >= 0) && ix.every((n, i) => !i || n > ix[i - 1]), JSON.stringify(ix));
   assert.match(html, /执事堂差事/);
   assert.match(html, /2 件 · 执事堂/);

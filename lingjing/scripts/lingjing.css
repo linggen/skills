@@ -194,7 +194,7 @@ body.fighting .placecap { display: none; }
    the cooldowns last and muted. */
 #tray { display: flex; flex-wrap: nowrap; gap: 8px; margin-top: 7px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; padding-bottom: 2px; }
 #tray .card { margin: 0; padding: 8px 10px; flex: 0 0 auto; width: 220px; }
-#tray .card.task.story { border-color: var(--th-main); }
+#tray .card.task.plot { border-color: var(--th-main); }
 #tray .card.task.timed { border-color: var(--jade); }
 #tray .card.task.timed .act { border-color: var(--jade); background: var(--jade-soft); color: var(--jade); }
 #tray .card.task.timed.notice { border-style: dashed; }
