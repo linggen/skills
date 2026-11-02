@@ -456,8 +456,19 @@ test('the 开炉 page: the 饭桶\'s places, 灵石 and 开炉, and the 储物�
   assert.match(html, /class="ftk-bag"><div class="ptabs" role="tablist">[\s\S]*class="pgrid"/, 'the bag component');
   assert.doesNotMatch(html, /‹|›/, 'no paging');
   assert.equal((html.match(/class="ptile/g) ?? []).length, bag.length, 'every thing of the bag shown');
-  for (const i of brief.inputs) assert.match(html, new RegExp(`draggable="true" class="ptile[^"]*" data-ft-add="${i.id}"`));
-  assert.match(html, /class="ptile[^"]* off" aria-disabled="true"[\s\S]*?<span class="poff">穿着<\/span>/);
+  for (const i of brief.inputs) assert.match(html, new RegExp(`draggable="true" class="ptile[^"]*" data-ft-pick="${i.id}"`));
+  assert.match(html, /draggable="false" class="ptile[^"]* off" data-ft-pick="grey-robe"[\s\S]*?<span class="poff">穿着<\/span>/, 'held back: dimmed, a tap still says why');
+  assert.match(html, /class="ftk-info empty small dim">点一样东西/, 'nothing picked: the info asks for a tap');
+  assert.doesNotMatch(html, /data-ft-put/);
+  // A tap picks (Hanli 11-02: 「点物品是最好能显示物品信息, 防止玩家丢错东西进饭桶了」): its kind · effect · about, and 放进饭桶.
+  const one = brief.inputs[0], it = bag.find((i) => i.id === one.id);
+  const picked = kailuPaneHtml('zh', { brief, bag, pot: [], lingshi: 0, sel: one.id, words: WORDS.zh });
+  assert.match(picked, new RegExp(`class="ptile sel[^"]*" data-ft-pick="${one.id}"`));
+  assert.match(picked, new RegExp(`class="ftk-info" role="status">[\\s\\S]*<b class="pdname">${it.name}</b>[\\s\\S]*data-ft-put="${one.id}">放进饭桶`));
+  if (it.about) assert.ok(picked.includes(it.about), 'its about');
+  const worn = kailuPaneHtml('zh', { brief, bag, pot: [], sel: 'grey-robe', words: WORDS.zh });
+  assert.match(worn, /class="ftk-info"[\s\S]*<span class="poff">穿着<\/span>/, 'held back: the reason, no button');
+  assert.doesNotMatch(worn, /data-ft-put/);
   assert.match(html, /data-ft-fire disabled/, 'an empty pot does not fire');
   assert.equal((html.match(/class="ftk-place"/g) ?? []).length, 3);
   // Three in: the places hold them (a tap takes one out), the rest say 最多三样, 开炉 is live; a stack shows what is left.
@@ -478,7 +489,7 @@ test('the 开炉 page: the 饭桶\'s places, 灵石 and 开炉, and the 储物�
   assert.doesNotMatch(cool, /ftk busy/);
   assert.match(cool, /class="ftk-bag"/);
   assert.match(cool, /class="small dim ftk-wait">饭桶还撑着/);
-  assert.doesNotMatch(cool, /data-ft-add=/, 'resting: no tap');
+  assert.doesNotMatch(cool, /draggable="true"|data-ft-put/, 'resting: no drag, nothing goes in');
   assert.match(cool, /data-ft-fire disabled/);
   // English words.
   const en = kailuPaneHtml('en', { brief: VERBS.fantong({ ...s, lang: 'en' }, content, ctx(), { action: 'look' }).result.fantong, bag, pot, words: WORDS.en });
@@ -493,6 +504,8 @@ test('the canvas takes the page\'s pot when outside: no tray, no places, no 开�
   assert.match(play, /fire\(\) \{ this\.chew\(\); \}/);
   assert.match(play, /this\.cfg\.data\.onPhase\?\.\(this\.phase\)/);
   const page = readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(page, /\['\[data-ft-add\]', \(el\) => ftAdd\(el\.dataset\.ftAdd\)\]/);
+  assert.match(page, /\['\[data-ft-pick\]', \(el\) => show\(\{ ftSel: el\.dataset\.ftPick \}\)\]/, 'a tap picks');
+  assert.match(page, /\['\[data-ft-put\]', \(el\) => ftAdd\(el\.dataset\.ftPut\)\]/, '放进饭桶 puts it in');
+  assert.match(page, /closest\?\.\('\[data-ft-pick\]\[draggable="true"\]'\)/, 'a drag drops straight in');
   assert.match(page, /document\.addEventListener\('drop'/, 'a drag on the Mac');
 });

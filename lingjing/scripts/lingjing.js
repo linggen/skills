@@ -368,6 +368,7 @@ const view = {
   offerSwap: null, //    储物袋满了: the offer whose 丢一样换它 grid is open (pouch.js fullOfferHtml)
   fantong: null, //      the rules' 饭桶 brief (rules/fantong.mjs), read when its board opens
   ftPot: [], //         the 饭桶's three places, the page's own until 开炉 (fantong-kailu.js)
+  ftSel: null, //        the bag's tile picked on the 开炉 page, its info shown with 放进饭桶
   ftLingshi: 0, //      …and its 灵石
   ftPhase: 'fill', //   the pot's beat (play.js): fill · chew · wait · reveal · done · full
   pangluLast: null, //   the 旁炉's last batch here (rules/panglu.mjs fire): its outcome and words, shown in its pane
@@ -3277,7 +3278,7 @@ function drawPouch() {
   el.hidden = !open;
   if (!open) { drawnPouch = null; ftKailu.stop(); return; }
   const fantongPane = view.pouchPane === 'fantong' ? kailuPaneHtml(lang(), { brief: view.fantong, bag: view.gear?.bag ?? [], pot: view.ftPot, lingshi: view.ftLingshi,
-    phase: view.ftPhase, tab: view.pouchTab, words: words(), artBase: artBase() }) : null;
+    phase: view.ftPhase, tab: view.pouchTab, sel: view.ftSel, look, words: words(), artBase: artBase() }) : null;
   const html = pouchHtml({ ...ctx(), gear: view.gear, gearNote: view.gearNote, artBase: artBase(), catalog: cardCatalog(), fantongPane, pangluLast: view.pangluLast },
     { tab: view.pouchTab, sel: view.pouchSel, toss: view.pouchToss, pane: view.pouchPane, offerSwap: view.offerSwap });
   if (html !== drawnPouch) { el.innerHTML = html; drawnPouch = html; }
@@ -3296,10 +3297,11 @@ function ftSet(pot, lingshi) {
   show({ ftPot: pot, ftLingshi: lingshi });
   ftKailu.setPot(pot, lingshi);
 }
-/* On the Mac a tile may also be dragged onto the 饭桶 (its side of the page): the same ftAdd as a tap. */
+/* A tap picks a tile and shows what it is (its 放进饭桶 is ftAdd); on the Mac a tile may also be dragged onto the 饭桶
+   (its side of the page), straight in. */
 document.addEventListener('dragstart', (e) => {
-  const el = e.target?.closest?.('[data-ft-add]');
-  if (el && e.dataTransfer) { e.dataTransfer.setData('text/plain', el.dataset.ftAdd); e.dataTransfer.effectAllowed = 'copy'; }
+  const el = e.target?.closest?.('[data-ft-pick][draggable="true"]');
+  if (el && e.dataTransfer) { e.dataTransfer.setData('text/plain', el.dataset.ftPick); e.dataTransfer.effectAllowed = 'copy'; }
 });
 document.addEventListener('dragover', (e) => { if (e.target?.closest?.('[data-ft-drop]')) e.preventDefault(); });
 document.addEventListener('drop', (e) => {
@@ -3750,7 +3752,8 @@ const CLICKS = [
   ['[data-toss]', (el) => show({ pouchToss: el.dataset.toss })],
   ['[data-toss-no]', () => show({ pouchToss: null })],
   ['[data-toss-yes]', (el) => run(`bag:toss:${el.dataset.tossYes}`, () => bagTap('toss', el.dataset.tossYes))],
-  ['[data-ft-add]', (el) => ftAdd(el.dataset.ftAdd)],
+  ['[data-ft-pick]', (el) => show({ ftSel: el.dataset.ftPick })],
+  ['[data-ft-put]', (el) => ftAdd(el.dataset.ftPut)],
   ['[data-ft-slot]', (el) => { if (view.ftPhase === 'fill') ftSet(view.ftPot.filter((_, k) => k !== Number(el.dataset.ftSlot)), view.ftLingshi); }],
   ['[data-ft-ls]', (el) => ftStones(Number(el.dataset.ftLs))],
   ['[data-ft-fire]', () => { if (view.ftPot.length && view.ftPhase === 'fill') ftKailu.fire(); }],

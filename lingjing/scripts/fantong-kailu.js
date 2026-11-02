@@ -8,12 +8,14 @@
 // The bag and the 饭桶 on one page (Hanli 11-02: the tray paged 8 at a time hid what could not go in — 「东西不见了」):
 // the right (or below, on a phone held upright) is the SAME bag as the 储物袋's (pouch.js bagGridHtml) — its tabs, its
 // tiles, one scrolling grid; what may not go in stays, dimmed, with the rules' reason (fantong brief `held_back`). The
-// left is the 饭桶: the canvas (play.js `outside`), its three places, the 灵石 and 开炉 in HTML. A tap on a tile puts it
-// in the first empty place (a drag on the Mac too), a tap on a place takes it out. While it chews and reveals the bag
+// left is the 饭桶: the canvas (play.js `outside`), its three places, the 灵石 and 开炉 in HTML. A tap on a tile picks it
+// and says what it is — kind · effect · about, the 储物袋's own lines — with 「放进饭桶」 (Hanli 11-02: 「点物品是最好能显示
+// 物品信息, 防止玩家丢错东西进饭桶了」); that puts it in the first empty place. A drag on the Mac drops it straight in; a tap
+// on a place takes it out. While it chews and reveals the bag
 // folds away and the 饭桶 has the page (`ftk busy`), then the bag comes back.
 import { forget, frameHtml, shellFor, toolHtml } from './games/shell.js';
 import { esc } from './esc.js';
-import { bagGridHtml, tileHtml } from './pouch.js';
+import { bagGridHtml, itemFactsHtml, tileHtml } from './pouch.js';
 
 export const KAILU_SHELL = 'fantong-kailu';
 // The ✕ goes where the head's 储物袋 segment goes (pouch.js), and says so in that segment's word.
@@ -30,8 +32,8 @@ const HOW = {
 };
 
 const WORDS = {
-  zh: { fire: '开 炉', stones: '灵石', have: '有 {n}', max: '最多三样', place: '空', none: '不能喂', inPot: '在饭桶里' },
-  en: { fire: 'Fire it', stones: 'Stones', have: 'have {n}', max: 'three at most', place: 'empty', none: "won't go in", inPot: 'in the pot' },
+  zh: { fire: '开 炉', stones: '灵石', have: '有 {n}', max: '最多三样', place: '空', none: '不能喂', inPot: '在饭桶里', put: '放进饭桶', pick: '点一样东西，看清了再放进饭桶。', spare: '可喂 {n}' },
+  en: { fire: 'Fire it', stones: 'Stones', have: 'have {n}', max: 'three at most', place: 'empty', none: "won't go in", inPot: 'in the pot', put: 'Into the bucket', pick: 'Tap a thing to see it, then put it in.', spare: '{n} to spare' },
 };
 const say = (t, v) => String(t).replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ''));
 
@@ -43,11 +45,11 @@ export function potLeft(brief, pot) {
 }
 
 /** The pane: the 饭桶 (the shell round the host the live game is laid into, its places, 灵石 and 开炉) and the bag.
-    `o`: { brief, bag (the gear read's), pot, lingshi, phase, tab, words (cards.js), artBase }. Back to the pouch is the
+    `o`: { brief, bag (the gear read's), pot, lingshi, phase, tab, sel (the tile picked), look, words (cards.js), artBase }. Back to the pouch is the
     bar's ✕, as every board's way out is (Hanli 10-27: 「全局统一改」). */
 export function kailuPaneHtml(lang = 'zh', o = {}) {
   const L = lang === 'en' ? 'en' : 'zh', w = WORDS[L], b = o.brief, pot = o.pot ?? [], max = b?.max_in ?? 3;
-  const ctx = { lang: L, words: o.words ?? {}, artBase: o.artBase ?? '' };
+  const ctx = { lang: L, words: o.words ?? {}, artBase: o.artBase ?? '', look: o.look ?? null };
   const frame = frameHtml({ id: KAILU_SHELL, title: NAME[L], how: HOW[L], body: '<div class="gshell-slot" data-ft-kailu></div>', timed: false, lang: L, close: toolHtml('close', BACK[L], 'data-pouch-pane=""') });
   const byId = new Map((o.bag ?? []).map((i) => [i.id, i]));
   // The bag folds away only while the pot chews and reveals; through a cooldown (`full`) it stands, the taps resting.
@@ -63,16 +65,27 @@ export function kailuPaneHtml(lang = 'zh', o = {}) {
   const fire = `<button class="act primary ftk-fire" data-ft-fire${filling && pot.length ? '' : ' disabled'}>${esc(w.fire)}</button>`;
   const wait = b?.ready === false && b.wait ? `<p class="small dim ftk-wait">${esc(b.wait)}</p>` : '';
   const left = potLeft(b, pot), full = pot.length >= max;
-  const tile = (i) => {
+  const offOf = (i) => {
     const back = b?.held_back?.[i.id];
-    const off = back ? back.say || w.none : left[i.id] == null ? w.none : !(left[i.id] > 0) ? (pot.includes(i.id) ? w.inPot : w.none) : full ? w.max : !filling ? '' : null;
-    const shown = left[i.id] != null ? { ...i, n: left[i.id] } : i;
-    return tileHtml(shown, ctx, { attr: 'data-ft-add', off, g: null }).replace('<button class="ptile', `<button draggable="${off ? 'false' : 'true'}" class="ptile`);
+    return back ? back.say || w.none : left[i.id] == null ? w.none : !(left[i.id] > 0) ? (pot.includes(i.id) ? w.inPot : w.none) : full ? w.max : !filling ? '' : null;
+  };
+  const tile = (i) => {
+    const off = offOf(i), shown = left[i.id] != null ? { ...i, n: left[i.id] } : i;
+    return tileHtml(shown, ctx, { attr: 'data-ft-pick', off, look: true, sel: o.sel, g: null }).replace('<button class="ptile', `<button draggable="${off != null ? 'false' : 'true'}" class="ptile`);
   };
   const { tabs, grid } = bagGridHtml(o.bag ?? [], ctx, { tab: o.tab, tile });
+  // The one picked: what it is, and 放进饭桶 — or, where it may not go in, the rules' reason on the button's place.
+  const sel = o.sel ? byId.get(o.sel) : null;
+  const info = !sel ? `<p class="ftk-info empty small dim">${esc(w.pick)}</p>` : (() => {
+    const off = offOf(sel), spare = left[sel.id] > 0 ? ` <span class="dim">${esc(say(w.spare, { n: left[sel.id] }))}</span>` : '';
+    const act = off == null ? `<button class="act" data-ft-put="${esc(sel.id)}">${esc(w.put)}</button>`
+      : off ? `<span class="poff">${esc(off)}</span>` : '';
+    const art = sel.art ? `<img src="${esc(ctx.artBase + sel.art)}" alt="">` : '<i class="noart" aria-hidden="true"></i>';
+    return `<div class="ftk-info" role="status">${art}<div class="pdbody"><b class="pdname">${esc(sel.name)}</b>${spare}${itemFactsHtml(sel, ctx)}<div class="acts">${act}</div></div></div>`;
+  })();
   return `<section class="psec ftong kailu ftk${busy ? ' busy' : ''}">`
     + `<div class="ftk-pot" data-ft-drop>${frame}<div class="ftk-ctl"><div class="ftk-places">${places}</div>${stones}${wait}</div></div>`
-    + `<div class="ftk-bag">${tabs}${grid}</div><div class="ftk-go">${fire}</div></section>`;
+    + `<div class="ftk-bag">${tabs}${grid}</div><div class="ftk-go">${info}${fire}</div></section>`;
 }
 
 export function fantongKailu({ feed, onFed = () => {}, onPhase = () => {}, onStart = () => {}, doc = globalThis.document }) {

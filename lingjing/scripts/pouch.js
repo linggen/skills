@@ -70,8 +70,9 @@ const artOf = (i, ctx) => (i.art ? `<img src="${esc((ctx.artBase ?? '') + i.art)
 /// `o.off` a short reason it cannot be had here (the rules' words) — dimmed, said on a chip, no tap.
 export function tileHtml(i, ctx, o = {}) {
   // `off` '' : resting (a cooldown) — no tap, no chip.
-  const on = i.worn || carriedKind(i, o.g), attr = o.attr ?? 'data-pouch-item', off = o.off ?? null, dead = off != null;
-  return `<button class="ptile${o.sel === i.id ? ' sel' : ''}${on ? ' worn' : ''}${i.free ? ' free' : ''}${i.glow ? ' glow' : ''}${dead ? ' off' : ''}"${dead ? ' aria-disabled="true"' : ` ${attr}="${esc(i.id)}"`} aria-pressed="${o.sel === i.id}">
+  // `o.look`: a tap still opens its detail when it cannot be had here (the 饭桶's, to say why) — dimmed, not disabled.
+  const on = i.worn || carriedKind(i, o.g), attr = o.attr ?? 'data-pouch-item', off = o.off ?? null, dead = off != null, tap = !dead || o.look;
+  return `<button class="ptile${o.sel === i.id ? ' sel' : ''}${on ? ' worn' : ''}${i.free ? ' free' : ''}${i.glow ? ' glow' : ''}${dead ? ' off' : ''}"${tap ? ` ${attr}="${esc(i.id)}"` : ' aria-disabled="true"'} aria-pressed="${o.sel === i.id}">
     ${artOf(i, ctx)}<span class="pname">${esc(i.name)}</span>${zhuanHtml(i.zhuan, ctx.lang)}${i.n > 1 ? `<b class="pn">×${esc(i.n)}</b>` : ''}${on && !off ? `<span class="pmark">${esc(ctx.words.worn)}</span>` : ''}${off ? `<span class="poff">${esc(off)}</span>` : ''}</button>`;
 }
 
@@ -124,12 +125,18 @@ function readsHtml(r, w) {
     <div class="small dim">${esc(r.passage.title)}</div>${quotes}<div class="small gloss">${esc(r.passage.gloss)}</div></div>`;
 }
 
+/// What a thing is and does: its kind · effect, its about, who it wins over — the detail's lines, the 饭桶's info too.
+export function itemFactsHtml(i, ctx) {
+  const kind = ctx.look?.words?.[i.kind] ?? i.kind ?? '';
+  return `<div class="small dim">${esc(kind)}${kind ? ' · ' : ''}${esc(itemDoes(i.effect, ctx))}</div>
+    ${i.about ? `<div class="small about">${esc(i.about)}</div>` : ''}${tamesLine(i, ctx)}`;
+}
+
 /* The one tapped: what it is, what it does, who it wins over, and its taps.
    The rules decide each one; a button is drawn only where it can land. */
 function detailHtml(i, g, ctx, pw, ui) {
   if (!i) return `<div class="pdetail empty small dim">${esc(pw.pick)}</div>`;
   const w = ctx.words, e = i.effect ?? {};
-  const kind = ctx.look?.words?.[i.kind] ?? i.kind ?? '';
   const acts = [];
   if (e.progress != null) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.take)}</button>`);
   else if (e.learn) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.study)}</button>`);
@@ -145,8 +152,7 @@ function detailHtml(i, g, ctx, pw, ui) {
   // A 仙丹 has no 纹: it glows (`glow`, story DESIGN § 六·五).
   return `<div class="pdetail${i.glow ? ' glow' : ''}">${artOf(i, ctx)}<div class="pdbody"><b class="pdname">${esc(i.name)}</b>${i.n > 1 ? ` <span class="dim">×${esc(i.n)}</span>` : ''}
     ${i.zhuan ? `<div class="pzhuan">${zhuanHtml(i.zhuan, ctx.lang)}</div>` : ''}
-    <div class="small dim">${esc(kind)}${kind ? ' · ' : ''}${esc(itemDoes(e, ctx))}</div>
-    ${i.about ? `<div class="small about">${esc(i.about)}</div>` : ''}${tamesLine(i, ctx)}${readsHtml(i.reads, w)}
+    ${itemFactsHtml(i, ctx)}${readsHtml(i.reads, w)}
     ${i.free ? `<div class="small dim">${esc(pw.free)}</div>` : ''}${carriedKind(i, g) ? `<div class="small dim">${esc(pw.pouchDup)}</div>` : ''}
     ${acts.length ? `<div class="acts">${acts.join('')}</div>` : ''}${ask}</div></div>`;
 }
