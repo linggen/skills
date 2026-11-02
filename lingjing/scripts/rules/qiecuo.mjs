@@ -218,7 +218,7 @@ export function qiecuoDone(state, content, ctx, id) {
   if (s.stars) delete s.stars[id];
   const g = boutGrant(content, state, ctx.now, stars);
   const locked = lockedOf(content, s).includes('wealth');
-  const paid = g ? pay(content, s, ctx, { table: g.table, progress: g.progress, wealth: locked ? 0 : g.wealth }) : {};
+  const paid = g ? pay(content, s, ctx, { table: g.table, play: 'qiecuo', progress: g.progress, wealth: locked ? 0 : g.wealth }) : {}; // `play`: 问签's 宜 (fortune.mjs)
   overOn(s, bout, ctx, id, 'won', true);
   const key = keyDrop(content, s, ctx, 'qiecuo'); // a bout won may drop a 秘境令 (rules/mijing.mjs: balance.json's chance, its day cap)
   return { state: s, result: { ok: true, done: id, ...(key ? { key } : {}), bout: bout.n, foe: bout.foe.id, style: bout.style?.id ?? null, stars, paid, ...(g && g.share < 1 ? { share: g.share } : {}), gives: null, line: pick(t.done_line, s.lang) } };

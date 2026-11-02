@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { playTo } from '../scripts/rules/progress.mjs';
-import { look, move, quest, task } from '../scripts/rules.mjs';
+import { VERBS, look, move, quest, task } from '../scripts/rules.mjs';
 import { homeOf, playsFor } from '../scripts/rules/home.mjs';
 import { playGrant } from '../scripts/rules/playpay.mjs';
 import { stageCards, stageSlots, withNext } from '../scripts/stage.mjs';
@@ -122,6 +122,8 @@ test('nothing left here today: the board at its floor share, the errands done, �
   let t = s;
   for (const o of l.offers ?? []) t = quest(t, content, ctx(), { action: 'take', id: o.id }).state ?? t;
   t = { ...t, quests: Object.fromEntries(Object.entries(t.quests).map(([id, q]) => [id, { ...q, done_at: NOW.toISOString() }])) };
+  // …and today's 签 drawn (问签, 2026-11-02: the 签筒 otherwise fills an empty stage, her asleep or not).
+  t = VERBS.divine(t, content, ctx(), {}).state ?? t;
   const after = look(t, content, ctx());
   assert.deepEqual(mainOf(after), ['next'], JSON.stringify(stageCards(after)));
 });

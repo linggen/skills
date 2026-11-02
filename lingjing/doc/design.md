@@ -1149,9 +1149,9 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
 
 ## A day, 今日传闻, real-life chores 【已建】
 
-- **The day resets three things** (redesign-v2, 2026-09-24): **问卦** (one
-  reading, 三钱法 seeded by day and save; 卦力, 望气 at 吉, and 命格 if the
-  player wishes — fight luck only), **the day's 人间功课**, and **今日传闻**.
+- **The day resets three things** (redesign-v2, 2026-09-24): **问签** (one
+  签 a real day — § 问签 below; it replaced 问卦's fight luck on 2026-11-02),
+  **the day's 人间功课**, and **今日传闻**.
   Beside them, as 体力 allows: the spine, errands, fights, the road.
 - **今日传闻** (2026-09-24, replaced 奇遇): Ling writes a 3–5 step side story
   from a seed (`Tale seed`: province, games with their story uses, places,
@@ -1202,13 +1202,53 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
   Mac mirror has raw samples only (sleep last 2026-06), so Health offers no
   `rest` chore yet; the row waits in the table.
 
+## 问签 v1 — the day's opener 【已建】 (Hanli, 2026-11-02: 「可以, 按你说的做」 — the rewards, then the v1 scope)
+
+Replaces 问卦 (三钱 · 卦力 · 望气 at 吉 — removed). rules/fortune.mjs · rules/almanac.mjs · worlds/jiuding/qian.json ·
+qian-card.js · qian-page.js · guide/qian.md (银月) · guide/divine.md (Ling) · tests/qian.test.mjs.
+
+- **Once a real day, fixed, never in a pool.** One 签 seeded by the day and the save (undo cannot fish). The card fills
+  the empty stage from the first look of the day; the top bar's chip 「求签」 opens it over any stage; after the draw the
+  chip reads 「今日 上签 · 修为 ×1.2 · 宜斗法」. The 签筒 stands with 银月 asleep or away too.
+- **Rewards.** A day 修为 speed by the grade — 上签 ×1.2, 中签 ×1.0, 下签 ×1.0, never below 1 — in `amountsOf` beside
+  the roots' speed, so `paysOf` and every card's shown pay already hold it. One **宜 kind** named by the 签
+  (`kinds[(n − 1) mod 4]`): 斗法 (卡牌 · 降妖: mechanic 斗法, table haunt) · 守御 (塔防 · 兽潮: mechanic 塔防/结印, 兽潮's
+  `play: tide`) · 文 (灯谜 · 棋局 · 解谜: mechanic 对话/棋牌/解谜/你画我猜) · 武 (格斗 · 切磋: mechanic 格斗/投掷, 切磋's
+  `play: qiecuo`); that kind's 修为 ×1.3 today. **The 宜 hook** for the 时辰 pool: `yiWeightOf(content, state, now, game)`
+  (rules.mjs exports it) → `qian.json yi.weight` (2) for a game of the kind, else 1.
+- **黄历, the rules' facts.** 干支 (年 at 立春, 月 by the 节 — the 节 day the new month's — 日 from the JDN), 建除 (建 the
+  day of the month's branch, 《協紀辨方書》卷四; one officer stands two days at each 节, 疊兩值日), 冲 and 三煞, and each
+  officer's 宜 · 忌 read from the gods 卷四 sets on it, quoted in qian.json `almanac.officers[].from`. These are the 建除
+  宜忌 alone; a printed almanac's longer list adds other 神煞. Tested against published almanacs (qian.json `_about`).
+- **生辰**, asked once on the card (skippable): 生肖 by **立春**, 日主, 星座 — kept in the save; the date never.
+  A 命格 set from a birthday before 星座 were read may take it once more for the 星座.
+- **The ritual.** Tap the 签筒 (Mac); on a phone, a shake (DeviceMotion, asked for on iOS inside the first tap) or a tap.
+  One 签 drops; its 签诗 inks in line by line. Optional ask: 事业 · 感情 · 出行 · 学业 · 其他, or a line of his own (≤20).
+- **The set.** 观音灵签, all 100, 签诗 and grade quoted from 吉祥宝聚寺 (BW Monastery, Singapore) per 签; cross-checked
+  against buyiju (same set; readings differ in 50, grades in 10 — the temple's kept); no 典故 titles (unconfirmed).
+- **解签 by 银月.** The page hands her the facts (签, grade, 签诗, 黄历, his signs, his question, the game effects) and her
+  rules (guide/qian.md § 银月 · 解签: playful, 宜/忌 only, money · health · law only 宜谨慎, a bad 签 lands on something
+  doable, ≤ about 80 字). Not here (not met, or 今线): the card shows the 签诗 and the 宜忌, no reading.
+- **签谱** (100 cells, a count each), **连签** (签筒: 竹 → 青玉 at 3 → 朱漆 at 7 → 鎏金 at 30), **应验** (from 17:00, 银月
+  may ask once; his answer — Ling's Divine or her Qian tool, `action: verify` — pays the small `game` table 3 修为 · 5 灵石
+  and is kept in the save, the last 30; not answering costs nothing).
+- **English:** the same mechanics; the Chinese verse with the game's own plain gloss (no faithful free translation found).
+- **Agent's picks (Hanli delegated 11-02):** 生肖 by 立春, not 春节 · the set's own three grades (上 ×1.2, 中 and 下 ×1.0 —
+  the temple grades no finer) · 宜 by the 签's number · 宜 ×1.3 on 修为 only, 灵石 untouched · the day's speed on the 古
+  line only (a 今 board pays its own line, as the roots' speed does) · 对对子 not yet in 宜文 (its pay carries no tag
+  and duizi.mjs is another agent's; a one-word `play: 'duizi'` on its `mark.pay` joins it) · an old save that cast 问卦
+  today may still draw today's 签 · 应验 kept in the save, not in memory (only 银月 writes memory; the save is hers to
+  read) · the birthday's date never kept, only its signs · 签谱 shows an undrawn 签 by its number only.
+- **Phone:** the bundle carries all of it (deterministic, no fs); the Flutter app draws no 签 card yet, so the phone
+  pays the day's speed and 宜 but shows nothing of the 签 until it does. Tarot is v2.
+
 ## 体力 and 闭关 【已建】
 
 - **The day is paced by the routine's caps and cooldowns** (§ Pacing); 体力 is kept as a pool (`rewards.json → stamina`): 100, full in five
   hours; empty rests until **20** (`rest_at`); shown as points, never a clock.
   Prices: a road 3 (+1 a road, ≤6), a story step 3, a fight 8, a 抉择 3, 驯 3,
   a mini-game 3 (at the count), 论道 3 (at open), make a scene 5, a world 10,
-  amend 5; the market, errands, talk and 问卦 are free; the prologue's own steps
+  amend 5; the market, errands, talk and 问签 are free; the prologue's own steps
   cost nothing. A real-life chore refills its own amount (default 20).
   Empty: `no-stamina` with the hour; 银月 sends the player to rest.
 - **体力 is OFF while we test** (Hanli, 2026-10-01: 「我是说先不要用体力限制我们测试的时长. 体力限制游戏时长的设定, 可以以后加.」): played through the command (`rules.mjs`, the page's and Ling's door), nothing spends 体力, nothing is refused for it, and the pool reads full — `staminaLimited` in state.mjs, thrown by `LINGJING_STAMINA_LIMIT=0`, which the command sets unless it is already set. Every cost and rule below is kept and still tested; `LINGJING_STAMINA_LIMIT=1` (or removing the default in rules.mjs) brings the pool back as it was. 体力 as a play-time limit is designed later.
@@ -1305,7 +1345,7 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
   beat. Meanwhile one declared rule (`ASIDE_KINDS`) says what may be played, each only when its own system has it
   open: a skipped board (all of the line's, at once), 人间功课, 饭桶 · 开炉, a pool's
   fight where one stands (the pool's own rule keeps it off while he stands in a scene), 兽潮, 闭关, 银月's games,
-  今日传闻, 问卦. The story's own board, the scene's choices, Move
+  今日传闻, 问签. The story's own board, the scene's choices, Move
   and anything of a later scene wait (refused `aside`). Never inside a key beat's lock. Before 入门 only a skipped
   board can be open, so the control shows only after one was left.
 - **手边的棋局 — the tray** (Hanli, 2026-11-02: 「可以, 按你说的做」, and the merge 「1,2 可以合并? 用边框颜色区分一下?」;

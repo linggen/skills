@@ -6,7 +6,6 @@ import { boundOf, duelSeed, wornOf } from './arms.mjs';
 import { herAwake, herLifts } from './companion.mjs';
 import { clone, refuse } from './core.mjs';
 import { gearBrief } from './errands.mjs';
-import { boutFortune } from './fortune.mjs';
 import { allPlaces, creatureOf, tierIndex } from './world.mjs';
 import { mainRoot } from './roots.mjs';
 import { chapterLabel, huiLabel, huiNow, sceneHui } from './hui.mjs';
@@ -172,11 +171,9 @@ export const readOf = (state, game) => (game?.sight && heldMark(state, game.sigh
 export function fightSetup(content, state, creature, now, game = null, deal = null, read = 0) {
   const open = openFight(state, game);
   if (open?.setup) return open.setup;
-  // 问卦 (fortune.mjs): the day's reading — its element's 功法 ±n, and at 吉
-  // and 大吉 the beast's next move read (望气), as the scroll's 上卷 reads it.
-  const fortune = now ? boutFortune(content, state, now) : null;
-  const boost = fortune?.card ? { element: fortune.root, n: fortune.card } : null;
-  const insight = Math.max(state.insight ?? 0, fortune?.sight ?? 0, read);
+  // 望气: the scroll's 上卷, or a mark the story lent. (问卦's 卦力 and its 望气 at 吉 went with 问签 v1, 2026-11-02:
+  // the day's 签 pays 修为, never a fight's luck — fortune.mjs.)
+  const insight = Math.max(state.insight ?? 0, read);
   const main = state.fate?.element?.id ?? state.fate?.element ?? mainRoot(state) ?? 'wood';
   // 小队 (party.json, cards.md § 5): who stands beside him in this fight. 银月 is a member, never
   // a card in hand: asleep in the 木牌 through 卷一, she stands in the row from the 卷 she wakes in.
@@ -211,7 +208,6 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
       ...(gear.armor ? { armor: gear.armor } : {}),
       ...(gear.ward ? { ward: gear.ward } : {}),
       // 问卦: the lower trigram's element, its 功法 lifted or lowered today.
-      ...(boost ? { boost } : {}),
     },
     // An elite is its harder deck and nothing else (redesign-v2 § 四).
     foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...beastToParty(content, creature, party, game), ...(creature.signature ? { signature: creature.signature } : {}), ...(creature.feint ? { feint: creature.feint } : {}), ...(creature.trial ? { trial: creature.trial } : {}) },

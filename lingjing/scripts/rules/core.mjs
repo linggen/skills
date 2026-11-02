@@ -12,6 +12,7 @@ import { hashOf } from './travel.mjs';
 import { herBeat, storyNode, withHerBeat } from './story.mjs';
 import { hasFound, stow, fullLine } from './pouch.mjs';
 import { bornRoots, rootName, stoneRoots } from './roots.mjs';
+import { qianPayOf } from './fortune.mjs';
 import { oweExit } from './tell.mjs';
 import { seenMet } from './examine.mjs';
 import { companionOf } from './companion.mjs';
@@ -66,7 +67,8 @@ function amountsOf(content, state, now, grant) {
   const authored = fight ?? Math.min(grant.progress ?? 0, table.progress) * authoredScale(content, state, grant.table) * (grant.table === 'pill' ? pillBelow(content, state, grant.tier) : 1);
   // `share`: a replay's falling share (tasks.mjs duel, playpay.mjs fightReplay) — 修为 and 灵石 alike.
   const share = grant.share ?? 1;
-  const want = Math.round(authored * speedOf(content, state) * share);
+  // 问签 (fortune.mjs qianPayOf): the day's 签 speed, and its 宜 kind's ×pay — 1 before the draw, never below.
+  const want = Math.round(authored * speedOf(content, state) * share * qianPayOf(content, state, now, grant));
   const base = Math.max(0, want);
   const wealth = Math.max(0, Math.round(Math.min(grant.wealth ?? 0, table.wealth) * share));
   return { base, progress: Math.round(base * payOf(content, state) * layerPayOf(content, state, grant.table)), wealth };

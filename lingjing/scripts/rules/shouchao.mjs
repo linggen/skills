@@ -251,7 +251,7 @@ export function shouchaoDone(state, content, ctx, id) {
   const stars = Math.max(1, Math.min(3, Number(s.stars?.[id] ?? 1) || 1));
   if (s.stars) delete s.stars[id]; // the night's, not a best ever
   const row = c.pay?.[stars] ?? {}, share = tideShare(content, state, ctx.now);
-  const paid = pay(content, s, ctx, { table: c.table ?? 'haunt', progress: row.progress ?? 0, wealth: 0, ...(share < 1 ? { share } : {}) });
+  const paid = pay(content, s, ctx, { table: c.table ?? 'haunt', play: 'tide', progress: row.progress ?? 0, wealth: 0, ...(share < 1 ? { share } : {}) }); // `play`: 问签's 宜 reads it (fortune.mjs)
   // 灵石 by the small-game ranks (balance.json `boards`): every night, by the day's share.
   if (!lockedOf(content, s).includes('wealth')) {
     const amount = Math.round((content.balance?.boards?.[row.rank] ?? 0) * share);

@@ -167,6 +167,8 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     cards: at('cards.json'),
     arts: at('arts.json'),
     hexagrams: at('hexagrams.json'),
+    // 问签 (rules/fortune.mjs, 2026-11-02): the 签 set, its grades' day speed, the 宜 kinds, the 黄历's tables.
+    qian: fs.existsSync(path.join(dir, 'qian.json')) ? readJson(path.join(dir, 'qian.json')) : null,
     riddles: { zh: at('riddles/zh.json'), en: at('riddles/en.json') },
     tasks: loadTasks(path.join(dir, 'tasks')),
     tale: at('tale.json'),
@@ -606,6 +608,7 @@ export function lint(content) {
   lintRiddles(content.riddles, bad);
   lintBook(content, bad);
   lintFate(content, bad);
+  lintQian(content, bad);
   for (const task of content.tasks.tasks) lintTask(task, content, ids, bad);
   for (const id of doubled(content.tasks.tasks.map(t => t.id))) bad(`task ${id}`, 'is defined twice (tasks/*.json ids are one namespace)');
   lintTaleShape(content, ids, bad);
@@ -1273,6 +1276,29 @@ function lintBook(content, bad) {
     for (const g of grades) if (!byGrade[g]) bad(`ask ${ask}`, `no effect for ${g}`);
   }
   for (const t of ['qian', 'dui', 'li', 'zhen', 'xun', 'kan', 'gen', 'kun']) if (!ELEMENTS.includes(book.trigram_roots?.[t])) bad('trigram_roots', `${t} needs a root`);
+}
+
+/* 问签 (rules/fortune.mjs): each 签 numbered once, graded by a grade with a day speed of at least 1, its 签诗 quoted
+   with its source; four-line poems; the 宜 kinds each matching something; twelve officers, twelve 星座. */
+function lintQian(content, bad) {
+  const q = content.qian;
+  if (!q) return;
+  const grades = q.grades ?? {}, ns = new Set();
+  for (const [id, g] of Object.entries(grades)) if (!(g.speed >= 1) || !g.name?.zh || !g.name?.en) bad(`qian grade ${id}`, 'needs a speed ≥ 1 and its name in zh and en');
+  for (const e of q.qian ?? []) {
+    const at = `qian ${e.n}`;
+    if (!Number.isInteger(e.n) || e.n < 1 || e.n > (q.of ?? 100) || ns.has(e.n)) bad(at, 'needs its own number in 1…of');
+    ns.add(e.n);
+    if (!grades[e.grade]) bad(at, `grade ${e.grade} is not one of ${Object.keys(grades).join(', ')}`);
+    if (!Array.isArray(e.poem) || e.poem.length !== 4 || e.poem.some(l => typeof l !== 'string' || !l)) bad(at, 'needs its 签诗 as four lines');
+    if (!e.url && !q.source?.url) bad(at, 'needs its source');
+    if (!e.gloss) bad(at, 'needs its English gloss');
+  }
+  if (!(q.qian ?? []).length) bad('qian', 'needs at least one 签');
+  if (!(q.yi?.pay >= 1) || !(q.yi?.kinds ?? []).length) bad('qian yi', 'needs a pay ≥ 1 and its kinds');
+  for (const k of q.yi?.kinds ?? []) if (!k.id || !k.name?.zh || !k.name?.en || ![...(k.plays ?? []), ...(k.mechanics ?? []), ...(k.tables ?? [])].length) bad(`qian yi ${k.id}`, 'needs a name and something it matches');
+  if ((q.almanac?.officers ?? []).length !== 12) bad('qian almanac', 'needs the twelve 建除 officers');
+  if ((q.signs ?? []).length !== 12) bad('qian signs', 'needs the twelve 星座');
 }
 
 /* 命格: twelve signs, ten stems each with an element, a 立春 day for each year. */

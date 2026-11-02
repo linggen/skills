@@ -77,7 +77,8 @@ export { greet } from './rules/daily.mjs';
 export { advance, BOOK_MAX } from './rules/errands.mjs';
 export { meet } from './rules/road.mjs';
 export { parseArgs } from './rules/files.mjs';
-export { castThrows, divinationBrief, divine, fate, fateBrief, fateOf } from './rules/fortune.mjs';
+export { castThrows, divinationBrief, divine, fate, fateBrief, fateOf, isOfKind, qianBook, qianLook, qianOf, qianPayOf, qianSpeedOf, signOf, yiToday, yiWeightOf } from './rules/fortune.mjs';
+export { almanacOf, pillarsOfDay } from './rules/almanac.mjs';
 export { look } from './rules/look.mjs';
 export { SHOP_KINDS, shopKind, shopsNear } from './rules/shops.mjs';
 export { closeStaleFight, duel, fightHold, lundao, task, win } from './rules/tasks.mjs';
@@ -370,7 +371,7 @@ function runLocked(verb, args, stateFile, reader) {
   const staged = reader === 'ling' && TELLS.has(verb) && out.result?.ok !== false ? stagedOf(content, asking) : null;
   const result = staged ? { ...paged, staged } : paged;
   // 对对子's her half (rules/duizi.mjs, `--for=yinyue`) is handed over as it is, like 二十问.
-  if (PLAIN.has(verb) || (verb === 'duizi' && reader === 'yinyue')) return result;
+  if (PLAIN.has(verb) || (['duizi', 'divine'].includes(verb) && reader === 'yinyue')) return result;
   const answer = withAsk(result, content, asking, { now, quests: readQuests(), said: args.said, verb });
   // Written down, so the next bare Look does not ask it again. Cleared by
   // walking somewhere, because `asked_at` is the place it was asked at.

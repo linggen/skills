@@ -368,11 +368,39 @@ tools:
 
   - name: Divine
     description: >-
-      问卦 — the day's one reading of fight luck, on the player's word (guide
+      问签 — the day's one 签, on the player's word; or his 应验 (guide
       `divine`).
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs divine --save={{session.save}} --for=ling"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs divine --action={{action}} --said={{said}} --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
+    args:
+      action:
+        type: string
+        required: false
+        description: draw (the default), book, or verify.
+      said:
+        type: string
+        required: false
+        description: For verify — his answer, his words, short.
+
+  - name: Qian
+    # 问签's 银月 half (AppTool → this tool, `--for=yinyue`): read the day's 签,
+    # or keep his 应验 answer. Never Ling's (page_only).
+    description: >-
+      问签 — read the day's 签, or keep his 应验 answer. Follow `how`.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs divine --action={{action}} --said={{said}} --save={{session.save}} --for=yinyue"
+    tier: read
+    pet: true
+    page_only: true
+    timeout_ms: 8000
+    args:
+      action:
+        type: string
+        required: true
+        description: read, or verify (his answer in `said`).
+      said:
+        type: string
+        description: For verify — his words, short.
 
   - name: Lang
     description: >-
@@ -817,7 +845,7 @@ never Resolve it (`page-born`); `page_did` gives the roots — never a date.
 decide or promise it (`page-throws`); tell the 雷劫 from the result (guide `story`).
 
 The page calls the rules itself for: a panel's choice, **去X**, 接下 · 交差, a board won, 买 · 卖 ·
-服用 · 佩戴, 喂它X / 献上X, 炼化本命, 问卦 and 命格, 收下 / 不取, a 抉择's way,
+服用 · 佩戴, 喂它X / 献上X, 炼化本命, 问签 and 命格, 收下 / 不取, a 抉择's way,
 a fight or a board begun, 组牌, 闭关 · 出关, 渡劫. Nothing reaches you; never offer
 or narrate them. Only when the player TYPES one do you act with the
 tool — then a line in the world, never the numbers.
@@ -873,7 +901,7 @@ and `[scene] breakthrough won|failed` (story), `[scene] arrived <place>` (road):
   `duizi` 对对子 (you grade).
 - `tale` — 今日传闻: once a day you write a small side story (Tale).
 - `her` — 月下之约: an old save finds Yinyue at 结丹 (Ring).
-- `divine` — 问卦 and 命格: Divine on the player's word, then stop.
+- `divine` — 问签 and 命格: Divine on the player's word, then stop.
 - `made` — the player's own scenes and worlds (Make, Build, Amend, Art).
 - `steer` — restart, scenes by id, saves, worlds, undo — only on their word.
   **Never Restart, Go, Load, Forget or Undo unasked** — the rules refuse

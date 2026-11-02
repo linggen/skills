@@ -1687,7 +1687,7 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
   assert.equal(wake(r.state, content, octx()), null, 'chapter 2 has not opened');
 });
 
-test('问卦 is the day\'s fight luck alone: its grade turns the lower trigram\'s 功法, reads the beast at 吉 — and never touches pay or a step', () => {
+test('an old 问卦 cast (retired by 问签 v1) touches neither pay, a step, nor a fight; the battle engine\'s boost still works', () => {
   const castOn = (st, ask, grade, hexagram = 1) => ({ ...st, divination: { day: '2026-10-02', ask, throws: [[3, 2, 2], [3, 2, 2], [3, 2, 2], [3, 2, 2], [3, 2, 2], [3, 2, 2]], hexagram, changed: null, grade } });
   const atShrine = () => answer(resolve, boardsDone(answer(resolve, answer(resolve, toJi(), { exit: 'town' }).state, { exit: 'shrine' }).state, 'jingtai-jiayi'), { exit: 'dawn' }).state;
   const paidBy = st => must(resolve, boardsDone(st, 'altar-dagu'), { exit: 'send' }, octx()).result.paid;
@@ -1709,16 +1709,10 @@ test('问卦 is the day\'s fight luck alone: its grade turns the lower trigram\'
   // (乾 → 金: 大吉 +2 · 吉 +1 · 凶 −1 · 大凶 −2), printed on the card as it lands
   const fuzhu = content.creatures.creatures.find(c => c.id === 'fuzhu');
   const day = new Date('2026-10-02T12:00:00');
+  // 问签 v1 (2026-11-02): an old cast lends a fight nothing any more — no 卦力, no 望气 at 吉 (rules/fortune.mjs).
   const youOf = (ask, grade) => fightSetup(content, castOn(toFuzhu(), ask, grade), fuzhu, day).you;
-  assert.deepEqual(youOf(undefined, 'great').boost, { element: 'metal', n: 2 });
-  assert.deepEqual(youOf(undefined, 'dire').boost, { element: 'metal', n: -2 });
-  assert.equal(youOf(undefined, 'even').boost, undefined);
-  assert.deepEqual(youOf('cultivation', 'good').boost, { element: 'metal', n: 1 }, 'an older cast reads as the day\'s fight luck too');
-  // 望气 at 吉 and 大吉: the beast's next move read for the day, as the scroll's 上卷
-  assert.equal(youOf(undefined, 'great').insight, 1);
-  assert.equal(youOf(undefined, 'good').insight, 1);
-  assert.equal(youOf(undefined, 'ill').insight, undefined);
-  assert.equal(fightSetup(content, { ...castOn(toFuzhu(), undefined, 'great'), insight: 2 }, fuzhu, day).you.insight, 2, 'the 下卷 still reads more');
+  for (const g of ['great', 'good', 'even', 'ill', 'dire']) { assert.equal(youOf(undefined, g).boost, undefined, g); assert.equal(youOf(undefined, g).insight, undefined, g); }
+  assert.equal(fightSetup(content, { ...castOn(toFuzhu(), undefined, 'great'), insight: 2 }, fuzhu, day).you.insight, 2, 'the scroll still reads');
   const byId = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
   const side = n => ({ boost: { element: 'metal', n } });
   assert.equal(effectOf(side(2), byId.jinzhua).damage, byId.jinzhua.effect.damage + 2);
@@ -1797,35 +1791,20 @@ test('look carries today\'s cast (none yet) and the offered tasks', () => {
   assert.deepEqual(ids.filter(id => order.includes(id)), order, 'in the order they were played');
 });
 
-test('问卦: once a day by three coins — nothing asked first, the same throws all day, and what the grade does to the day\'s fights', () => {
+test('问签: once a day — nothing asked first, the same 签 all day, and never offered in the chat beside its card', () => {
   let s = joined();
   s.name = '清玄';
   const c = ctx();
-  // no question: the coins fall at once (an `ask` from an older caller is ignored)
   const cast = must(divine, s, {}, c);
   const d = cast.result.divination;
-  assert.equal(d.ask, undefined);
-  assert.equal(cast.state.divination.ask, undefined);
-  assert.equal(d.throws.length, 6); assert.ok(d.throws.every(t => t.length === 3 && t.every(x => x === 2 || x === 3)));
-  assert.deepEqual(d.hexagram.lines, d.values.map(v => v % 2));
-  assert.deepEqual(d.moving, d.values.flatMap((v, i) => (v === 6 || v === 9 ? [i] : [])));
-  assert.equal(Boolean(d.changed), d.moving.length > 0);
-  const h = content.hexagrams.hexagrams.find(x => x.id === d.hexagram.id);
-  assert.equal(d.grade.id, h.grade);
-  // its effect is the day's fights only: the element's 功法 ±card, and 望气 at 吉/大吉
-  const e = content.hexagrams.effects.bout[d.grade.id];
-  assert.deepEqual(Object.keys(d.effect).filter(k => k !== 'root').sort(), Object.keys(e).sort());
-  assert.deepEqual(Object.keys(content.hexagrams.effects), ['bout'], 'no 修为 or 灵石 factor any more');
-  // the same day and name fall the same way — no fishing
-  assert.deepEqual(must(divine, s, { ask: 'wealth' }, c).result.divination.throws, d.throws);
-  // once a day
-  assert.equal(refused(divine, cast.state, {}, 'cast-today').divination.hexagram.id, d.hexagram.id);
-  assert.equal(look(cast.state, content, c).divination.hexagram.id, d.hexagram.id);
+  assert.equal(d.poem.length, 4); assert.ok(d.speed >= 1); assert.ok(d.yi);
+  assert.equal(refused(divine, cast.state, {}, 'cast-today').divination.n, d.n);
+  assert.equal(look(cast.state, content, c).divination.n, d.n);
   assert.equal(look(cast.state, content, ctx({ now: new Date(NOW.getTime() + 864e5) })).divination, null);
-  // The coins are their own card: 起一卦 is tapped there, never asked here too.
+  assert.deepEqual(content.hexagrams.effects, {}, '卦力 retired');
   const open = { ...cast.state, scene: null, chapter: '03-qing', place: 'linzi' };
   assert.ok(!look(open, content, c).director.choice.options.some(o => o.divine));
-  assert.ok(!look({ ...open, divination: null }, content, c).director.choice.options.some(o => o.divine));
+  assert.ok(!look({ ...open, qian: null }, content, c).director.choice.options.some(o => o.divine));
 });
 
 test('命格 from a birthday: 生肖 turns at 立春 by the day, 日主 is the day\'s stem — as lunar-python reads them', () => {
@@ -1843,10 +1822,10 @@ test('命格 from a birthday: 生肖 turns at 立春 by the day, 日主 is the d
   assert.equal(fateOf(content, 'yesterday'), null);
 });
 
-test('命格 is set once, keeps no birthday, and leans a bout and the day\'s cast', () => {
+test('命格 is set once, keeps no birthday (its 星座 too), and leans a bout', () => {
   const s = { ...start(), name: '清玄' };
   const set = must(fate, s, { birth: '1990-01-20' });
-  assert.deepEqual(Object.keys(set.state.fate).sort(), ['at', 'element', 'source', 'stem', 'zodiac']);
+  assert.deepEqual(Object.keys(set.state.fate).sort(), ['at', 'element', 'sign', 'source', 'stem', 'zodiac']);
   assert.ok(!JSON.stringify(set.state).includes('1990'), 'the birthday is not kept');
   assert.deepEqual(set.result.fate.element, { id: 'wood', name: '木' });
   assert.equal(refused(fate, set.state, { birth: '2000-01-01' }, 'fate-set').fate.zodiac.id, 'snake');
@@ -1864,15 +1843,8 @@ test('命格 is set once, keeps no birthday, and leans a bout and the day\'s cas
   const signed = fight([], caster, { ...kit, fate: { root: 'wood' } });
   assert.equal(signed.log[0].damage, Math.round(bare / 2));
   assert.equal(fight(['assist:guard'], caster, { ...kit, fate: { root: 'wood' } }).log[2].damage, Math.round(bare / 2), 'the 护体 halves the second, the sign is spent');
-  // the cast: a lower trigram of one's own element leans the grade
-  const day = ctx();
-  const plainCast = must(divine, s, {}, day).result.divination;
-  const lower = content.hexagrams.trigram_roots[{ 111: 'qian', 110: 'dui', 101: 'li', 100: 'zhen', '011': 'xun', '010': 'kan', '001': 'gen', '000': 'kun' }[plainCast.hexagram.lines.slice(0, 3).join('')]];
-  const stem = content.traits.fate.stems.find(x => x.element === lower);
-  const leaned = must(divine, { ...s, fate: { zodiac: 'rat', stem: stem.id, element: lower, source: 'random' } }, {}, day).result.divination;
-  const up = { great: 'great', good: 'great', even: 'even', ill: 'even', dire: 'ill' };
-  assert.equal(leaned.grade.id, up[plainCast.grade.id]);
-  assert.equal(leaned.fated, true); assert.equal(plainCast.fated, undefined);
+  // 问签 v1: the 命格 no longer leans the day's draw — the 签 is the day's and the save's alone.
+  assert.equal(must(divine, s, {}, ctx()).result.divination.n, must(divine, { ...s, fate: { zodiac: 'rat', stem: 'jia', element: 'wood', source: 'random' } }, {}, ctx()).result.divination.n);
 });
 
 test('placeholder arguments the agent left unfilled are dropped', () => {

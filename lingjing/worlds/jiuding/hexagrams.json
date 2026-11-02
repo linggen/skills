@@ -1,12 +1,8 @@
 {
   "version": 2,
   "_about": "The Book of Changes, as the game casts it. All 64 in King Wen's order; lines bottom to top, 1 = yang. The judgment (卦辞), the image (大象) and the line texts (`yaoci`, 爻辞, Chinese only) are the 周易's own, from Wikisource's 周易 (public domain), in simplified characters; the English is the game's plain rendering. `grade` is read from each judgment's own words and the tradition's ranking. 问卦 (redesign-v2): once a day, always the day's fight luck — the grade's `effects.bout`: the lower trigram's element, its 功法 ±`card` in every fight that day, and at 吉/大吉 `sight`, the beast's next move read as the 望气术 上卷 reads it.",
-  "asks": {
-    "bout": {
-      "zh": "问卦",
-      "en": "The day's reading"
-    }
-  },
+  "_retired": "问卦's fight luck (卦力 · 望气 at 吉) was retired by 问签 v1 (Hanli 2026-11-02: 「可以, 按你说的做」; rules/fortune.mjs, qian.json). The 64 stay as the 周易 for an old save's cast and for Show {card: hexagram, id}.",
+  "asks": {},
   "grades": {
     "great": {
       "zh": "大吉",
@@ -29,25 +25,7 @@
       "en": "Dire"
     }
   },
-  "effects": {
-    "bout": {
-      "great": {
-        "card": 2,
-        "sight": 1
-      },
-      "good": {
-        "card": 1,
-        "sight": 1
-      },
-      "even": {},
-      "ill": {
-        "card": -1
-      },
-      "dire": {
-        "card": -2
-      }
-    }
-  },
+  "effects": {},
   "trigram_roots": {
     "qian": "metal",
     "dui": "metal",

@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { askMinusStage, companionShown, lineHere, stageCards, stageOwns, stageSlots } from '../scripts/stage.mjs';
 
 const kinds = cards => cards.map(c => (c.id ? `${c.card}:${c.id}` : c.card));
-const AWAKE = { companion: { joined: true } }; // 银月 awake: the coins are hers to throw
+const AWAKE = { companion: { joined: true }, qian: { drawn: false } }; // 银月 awake; the day's 签筒 (问签, Look's `qian`) waiting
 const world = (over = {}) => ({ place: { id: 'ye', name: '邺城' }, scene: null, tasks: [], ...AWAKE, ...over });
 
 test('the stage is one ordered list, and Ling\'s own cards stand whatever else is true', () => {
@@ -227,10 +227,11 @@ test('the page draws the slots: header, main (#focus) holding the one thing, foo
   assert.doesNotMatch(strip.slice(0, strip.indexOf('\n}')), /ChipHtml/, 'the chips are the footer\'s');
 });
 
-test('the day\'s coins wait for 银月 awake — asleep in the token, or not yet met, no 「请银月三钱六掷」 (his, 2026-09-29)', () => {
+test('问签 (2026-11-02): the 签筒 fills an empty stage with 银月 awake, asleep in the token or not yet met; shut (no `qian`), nothing', () => {
   assert.deepEqual(kinds(stageCards(world())), ['hexagram', 'next']);
-  assert.deepEqual(kinds(stageCards(world({ companion: { joined: true, asleep: true } }))), ['next']);
-  assert.deepEqual(kinds(stageCards(world({ companion: null }))), ['next']);
+  assert.deepEqual(kinds(stageCards(world({ companion: { joined: true, asleep: true } }))), ['hexagram', 'next']);
+  assert.deepEqual(kinds(stageCards(world({ companion: null }))), ['hexagram', 'next']);
+  assert.deepEqual(kinds(stageCards(world({ qian: undefined }))), ['next']);
 });
 
 test('the footer (Hanli, 2026-10-05): the weather chip names where he stands, 恩仇簿 is off it; the backdrop is the weather\'s painting or the scene\'s own (2026-10-14)', async () => {
@@ -306,7 +307,7 @@ test('三试 · 蠪侄: main is the fight under the scene card, no 「还有」,
 
 test('a beaten beast\'s own card carries 收服: beside its fight card it is no duplicate, and stays', () => {
   const e = { game: { id: 'haunt:fuzhu' }, creature: { id: 'fuzhu' }, beaten: true, tamed: false, likes: { id: 'x', name: 'X', held: 1 } };
-  const l = world({ place: { id: 'sibei', encounter: e }, companion: null });
+  const l = world({ place: { id: 'sibei', encounter: e }, companion: null, qian: undefined });
   assert.deepEqual(kinds(stageCards(l)), ['duel:haunt:fuzhu', 'creature:fuzhu']);
   // not beaten: the creature card Ling shows only tells — the fight card already pictures it
   const fresh = world({ place: { id: 'sibei', encounter: { ...e, beaten: false } }, companion: null });

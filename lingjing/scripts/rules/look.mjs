@@ -18,7 +18,7 @@ import { staminaBrief } from './daily.mjs';
 import { danduBrief } from './dandu.mjs';
 import { pangluBrief } from './panglu.mjs';
 import { bookOf, breakthroughOf, directorBrief, errandFor, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
-import { divinationBrief, fateBrief, prng } from './fortune.mjs';
+import { divinationBrief, fateBrief, prng, qianLook } from './fortune.mjs';
 import { withoutLocked } from './locks.mjs';
 import { chanceBrief } from './road.mjs';
 import { seclusionBrief } from './seclusion.mjs';
@@ -718,6 +718,8 @@ export function look(state, content, ctx) {
     // 前情提要 while owed, and the last story node while fresh (story.mjs).
     ...recapLook(content, state), ...nodeLook(state, ctx.now),
     divination: divinationBrief(content, state, ctx.now),
+    // 问签 (fortune.mjs): the day's 黄历, the asks, 连签 and the 签谱's size — before the draw too.
+    ...(qianLook(content, state, ctx.now) ? { qian: qianLook(content, state, ctx.now) } : {}),
     fate: fateBrief(content, state),
     stamina: staminaBrief(content, state, ctx.now),
     ...(danduBrief(content, state) ? { dandu: danduBrief(content, state) } : {}),

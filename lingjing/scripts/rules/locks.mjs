@@ -56,7 +56,7 @@ function played(out, content, state, verb, args = {}, ctx = {}) {
 const HIDES = {
   cultivation: ['tier', 'progress', 'next', 'practice_hint'],
   wealth: ['wealth', 'haggle', 'shops'],
-  divine: ['divination'],
+  divine: ['divination', 'qian'],
   errands: ['offers', 'work', 'handed', 'tale', 'known', 'story_due', 'story_why', 'lundao'],
   road: ['chance'],
   seclusion: ['seclusion'],

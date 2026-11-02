@@ -16,7 +16,7 @@ export const NPC_TITLE = 'NPC对话';
 /** Every tool Lingjing gives Ling or 银月 (SKILL.md `tools`, `allowed-tools`): withheld — a character's words touch
     nothing (tests/npc-talk.test.mjs holds the list to SKILL.md). */
 export const NPC_WITHHELD = ['AskUser', 'GenerateImage', 'Look', 'Progress', 'Story', 'Resolve', 'Judge', 'Practice', 'Tale', 'Move', 'Trade',
-  'Lundao', 'Duizi', 'Twenty', 'Couplet', 'Tame', 'Refine', 'Ring', 'Divine', 'Lang', 'Make', 'Enter', 'Leave', 'Build', 'Restart', 'Go', 'Undo',
+  'Lundao', 'Duizi', 'Twenty', 'Couplet', 'Qian', 'Tame', 'Refine', 'Ring', 'Divine', 'Lang', 'Make', 'Enter', 'Leave', 'Build', 'Restart', 'Go', 'Undo',
   'Unstick', 'Saves', 'Save', 'Load', 'Forget', 'Worlds', 'Travel', 'Amend', 'Art', 'Meet', 'Quest', 'Show', 'Remember', 'Guide', 'Verb', 'AppTool'];
 
 /** Side sessions a closed page left behind (older than `ageSec`): their ids, each removed. */

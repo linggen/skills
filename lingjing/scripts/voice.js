@@ -60,6 +60,8 @@ export const MOMENTS = {
   greet: { who: 'yinyue', priority: 'asked' },
   reading: { who: 'yinyue', priority: 'asked' },
   fate: { who: 'yinyue', priority: 'asked' },
+  // 问签's 应验 (fortune.mjs): her one evening question of the day, as she likes to put it.
+  yingyan: { who: 'yinyue', priority: 'high', cooldown: 0 },
   // After Ling's 前情提要, one feeling of hers — part of the opening he came back to.
   recap: { who: 'yinyue', priority: 'asked' },
   // 节日 (design.md § 真实世界): the real day's festival, once a day.

@@ -216,11 +216,11 @@ const GO = /^(去|go to\s+)/i;
 // The day's reading asked for in words — typed, 起一卦 / 算一卦 / 问卦. Look
 // alone let the scene's question win: 起一卦 tapped twice, 何去何从 asked twice
 // (2026-09-17).
-const CAST_WORDS = /起一?卦|算一?卦|问卦|\bcast the coins\b|\bdivine\b/i;
+const CAST_WORDS = /起一?卦|算一?卦|问卦|[求抽问摇]一?(支)?签|\bcast the coins\b|\bdivine\b|\bdraw a (fortune )?stick\b/i;
 export function tapThen(ask, said) {
   const words = String(said ?? '').trim();
   if (CAST_WORDS.test(words) && !ask?.options?.some(o => o.label === words)) {
-    return 'The player asks for the day\'s reading (问卦) — call Divine now; this Look changed nothing. The card shows the cast and Yinyue reads it: end on a line of your own, and ask nothing.';
+    return 'The player asks for the day\'s 签 (问签) — call Divine now; this Look changed nothing. The card shows the 签 and Yinyue reads it: end on a line of your own, and ask nothing.';
   }
   const options = words ? ask?.options ?? [] : [];
   const option = options.find(o => o.label === words) ?? options.find(o => o.move && o.label === words.replace(GO, ''));

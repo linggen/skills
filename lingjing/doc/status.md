@@ -12,6 +12,7 @@ None.
 
 ## Done lately
 
+- 11-02 — **问签 v1** replaces 问卦 (Hanli: 「可以, 按你说的做」, the rewards and the v1 scope; design.md § 问签 v1): the 观音灵签's 100 (吉祥宝聚寺's text), the 黄历 by rule (協紀辨方書 卷四), 修为 ×1.2 on 上签, 宜 kind ×1.3, 生辰 once (生肖 by 立春 · 星座), 签谱 · 连签 · 应验, 银月's reading (guide/qian.md). Agent's picks, each Hanli delegated 11-02, listed in design.md § 问签 v1. **For the 时辰 pool:** `yiWeightOf(content, state, now, game)` is the 宜 weight hook. **Open:** 对对子 joins 宜文 with one `play: 'duizi'` on duizi.mjs `mark.pay` once the English 对对子 lands; the phone app has no 签 card yet.
 - 11-02 — **储物袋 · 饭桶 · 人间功课, one pass on the 物品 panel** (Hanli: 「储物袋的换上的UI需要优化, 看不出来在身上」 · 「服用聚气丹时, UI没刷新, 数量没减少」 · 「待取感觉应该删掉」 · 饭桶 and bag on one page 「可以, 按你说的做」 · 「人间功课也在物品UI里显示, 应该在任务里吧. 任务里已经有了」; design.md § 储物袋, § 饭桶, § 人间功课; tests/pouch, fantong, gongke):
   - The panel never redrew after a bag verb (since 600754dd, openGear on an open panel only switched panes): a 换上 that landed left 24/24 and the tile up, his second tap was refused 「囊中没有」 (the red box); a pill's count stood still. Fixed in baa5d1e4 (rereadGear after every write); the worn row has a 储物袋 cell 「下品储物袋 · 30 格」, 换上 reads 「换上 · 多 6 格」.
   - 待取 deleted: a full pouch puts the new thing at the door (`full_offer`), Look's 「储物袋满了」 card — 丢一样换它 / 收下 / 不要了, a queue on one card; an old `held` moves into the bag on load, else to the card — agent's pick (Hanli delegated 11-02).
