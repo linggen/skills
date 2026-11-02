@@ -1,72 +1,84 @@
-// Every board pays by its minutes (rules/playpay.mjs; Hanli 2026-10-27: 「12分钟的一个小游戏占2个小时的10%, 所以要奖励10%的修为」
-// · 「先改第一层的进度相关的, 让我能玩过去」): a 古四 save at 146/470 at 沉鼎观 plays the place games (practice), each
-// paying its kind's minutes at 练气一层's rate, ★ scaling it, the same board again the same day 50% then 10% — and
-// reaches the gate in about an hour of play, as the layer's two hours (reading inside) have it.
+// Every play pays a fixed 修为 (rules/playpay.mjs; Hanli 2026-11-02: 「不要按照百分比给.... 给太多了」 · 「我是说参考百分比的数值.
+// 不能直接给百分比」, and the formula 「这套公式基本可以」): R(content level) × its 体力 × difficulty × ★ × the gap × the replay.
+// A board costs 3 体力: at 练气一层 R is 2, so 6 a board, whatever its kind; ★ and the same board again the same day scale it.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
-import { newState } from '../scripts/state.mjs';
+import { newState, staminaCost } from '../scripts/state.mjs';
 import { playTo } from '../scripts/rules/progress.mjs';
 import { look, move, task, win } from '../scripts/rules.mjs';
-import { playGrant } from '../scripts/rules/playpay.mjs';
+import { gapOf, levelOf, playGrant, rateAt, sittingsAt, xiuweiOf } from '../scripts/rules/playpay.mjs';
 import { gamesToday } from '../scripts/rules/rotation.mjs';
 import { placeOf } from '../scripts/rules/world.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-10-27T09:00:00-03:00');
 const ctx = { now: NOW };
-const PP = content.balance.play_pay;
-// A minute of a board at 练气一层: 60% of 470 over 35% of its hours (play_pay.games, hours; 2 h until 古四 · 柴房's refit, 2026-10-27).
-const PER_MIN = (PP.games.share * 470) / (PP.games.time * PP.hours.qi[1] * 60);
+const PP = content.balance.play_pay, X = PP.xiuwei;
+const BOARD = staminaCost(content, 'game');
+const R = (L, realm = 0) => X.rate.base * X.rate.growth ** (L - 1) * X.rate.realm ** realm;
 
-test('the kinds at 练气一层: minutes × the layer\'s share a minute, ★ and the replay scaling it; 三层 the same minutes of a bigger layer', () => {
-  const s = { tier: 'qi', step: 1, plays: null };
-  const grant = (kind, stars) => playGrant({ ...content, games: { games: [{ id: 'x', task: 'x', mechanic: kind }] } }, s, 'x', { game: 'x' }, NOW, stars);
-  assert.equal(grant('棋牌').progress, Math.round(PER_MIN * 6));
-  assert.equal(grant('打地鼠').progress, Math.round(PER_MIN * 1));
-  assert.equal(grant('解谜', 1).progress, Math.round(PER_MIN * 4 * 0.6), '★1 is 0.6');
-  const again = { ...s, plays: { day: '2026-10-27', ids: { x: 1 } } };
-  assert.equal(playGrant({ ...content, games: { games: [{ id: 'x', task: 'x', mechanic: '解谜' }] } }, again, 'x', { game: 'x' }, NOW).progress, Math.round(PER_MIN * 4 * 0.5), 'the same board again today: 50%');
-  assert.equal(playGrant(content, { tier: 'qi', step: 0 }, 'pintu', { game: 'pintu' }, NOW)?.progress ?? 0, 0, '零层 pays no 修为');
-  // Hanli's 7–40 at 一层's 2 h (10-27); since 古四 · 柴房's refit (doc/gates-2026-10-27.md, 一层 ~1.5 h) the same minutes of a shorter layer.
-  assert.deepEqual(['打地鼠', '割绳子', '格斗', '解谜', '你画我猜', '棋牌'].map((k) => grant(k).progress), [1, 2, 3, 4, 5, 6].map((m) => Math.round(PER_MIN * m)), 'the kinds\' minutes at 一层');
-  assert.deepEqual([1, 2, 3, 4, 5, 6].map((m) => Math.round(((PP.games.share * 470) / (PP.games.time * 2 * 60)) * m)), [7, 13, 20, 27, 34, 40], 'Hanli\'s 7–40 at a 2 h 一层');
-  const three = (kind) => playGrant({ ...content, games: { games: [{ id: 'x', task: 'x', mechanic: kind }] } }, { tier: 'qi', step: 3, plays: null }, 'x', { game: 'x' }, NOW).progress;
-  // 三层: its 层 (balance.json layers) over its hours (play_pay.hours, the master table's curve fitted to 古六's band).
-  const pp = content.balance.play_pay, perMin3 = (pp.games.share * content.balance.layers.qi[3]) / (pp.games.time * 60 * pp.hours.qi[3]);
-  assert.deepEqual(['打地鼠', '棋牌'].map(three), [1, 6].map(m => Math.round(perMin3 * m)), '三层: the same minutes of its own layer');
+test('the formula\'s knobs: R and S by level, a 练气 层 one level, a realm\'s step three, the gap both ways', () => {
+  assert.equal(X.rate.base, 2, 'xw_per_stamina: 2 修为 a 体力 at level 1');
+  assert.deepEqual([BOARD, staminaCost(content, 'duel'), staminaCost(content, 'shouchao')], [3, 4, 5]);
+  assert.deepEqual(levelOf(content, 'qi', 0), { level: 0, realm: 0 });
+  assert.deepEqual(levelOf(content, 'qi', 4), { level: 4, realm: 0 });
+  assert.deepEqual(levelOf(content, 'foundation', 0), { level: 12, realm: 1 }, '筑基小成: three levels past 练气九层');
+  assert.deepEqual(levelOf(content, 'core', 2), { level: 27, realm: 2 });
+  assert.equal(rateAt(content, 1), 2);
+  assert.ok(Math.abs(rateAt(content, 12, 1) - R(12, 1)) < 1e-9);
+  assert.ok(Math.abs(sittingsAt(content, 1) - X.sittings.base) < 1e-9);
+  assert.equal(gapOf(content, 5, 5), 1);
+  assert.ok(Math.abs(gapOf(content, 5, 3) - (1 - 2 * X.gap.below)) < 1e-9, 'two levels below him: −30%');
+  assert.equal(gapOf(content, 20, 1), X.gap.floor, 'never under the floor');
+  assert.ok(Math.abs(gapOf(content, 1, 2) - (1 + X.gap.above)) < 1e-9);
+  assert.equal(gapOf(content, 1, 9), 1 + X.gap.cap, 'capped above');
+  const s = { tier: 'qi', step: 1 };
+  assert.equal(xiuweiOf(content, s, 4, { difficulty: 'boss' }), R(1) * 4 * X.difficulty.boss);
+  assert.equal(xiuweiOf(content, s, 3, { first: true }), R(1) * 3 * (1 + X.difficulty.first_clear));
 });
 
-test('古四 at 146/470: the place games at 沉鼎观 reach the gate in three short sittings — the place games alone, errands and fights on top', () => {
+test('a board at 练气一层: its 体力 × R, whatever its kind; ★ and the replay scaling it; 三层 at its own R; 零层 none', () => {
+  const s = { tier: 'qi', step: 1, plays: null };
+  const world = kind => ({ ...content, games: { games: [{ id: 'x', task: 'x', mechanic: kind }] } });
+  const grant = (kind, stars, st = s) => playGrant(world(kind), st, 'x', { game: 'x' }, NOW, stars);
+  for (const k of ['打地鼠', '割绳子', '格斗', '解谜', '你画我猜', '棋牌']) assert.equal(grant(k).progress, Math.round(R(1) * BOARD), k);
+  assert.equal(grant('解谜', 1).progress, Math.round(R(1) * BOARD * PP.stars['1']), '★1');
+  const again = { ...s, plays: { day: '2026-10-27', ids: { x: 1 } } };
+  assert.equal(grant('解谜', null, again).progress, Math.round(R(1) * BOARD * PP.replay[1]), 'the same board again today');
+  assert.equal(playGrant(content, { tier: 'qi', step: 0 }, 'pintu', { game: 'pintu' }, NOW)?.progress ?? 0, 0, '零层 pays no 修为');
+  assert.equal(grant('棋牌', null, { tier: 'qi', step: 3, plays: null }).progress, Math.round(R(3) * BOARD), '三层: R(3)');
+  assert.equal(playGrant(world('棋牌'), s, 'x', { game: 'x' }, NOW, null, { first: true }).progress, Math.round(R(1) * BOARD * 1.5), 'a story board\'s first clear +50%');
+  // A fixed number, not a share: the same at 练气一层 whatever the layer asks (a model's `need`).
+  assert.equal(grant('棋牌', null, { ...s, need: 5000 }).progress, grant('棋牌').progress);
+});
+
+test('古四 at 146/470: the place games at 沉鼎观 each pay their formula number — the layer is sittings of play, not one', () => {
   let s = playTo(content, newState(content, 'zh', NOW), 'wm-chaifang', { now: NOW, policy: 'skip' }).state;
   s = { ...s, tier: 'qi', step: 1, progress: 146, stamina: 100 };
-  let plays = 0, minutes = 0, days = 0;
-  // a day: each board standing at the 观's places that day (their pools turn with the day, rules/rotation.mjs), once
+  let plays = 0;
+  const seen = new Map();
   const PLACES = ['chaifang', 'zhishi', 'cangjing', 'waimen', 'fantang', 'jiangtang'];
-  for (let pass = 0; pass < 6 && s.progress < 470 && s.step === 1; pass += 1) {
-    // two plays of each a day (100% · 50%), then the next day: the replay's share is the only limit
-    const day = { now: new Date(NOW.getTime() + pass * 86400000) };
-    days = pass + 1;
-    for (const place of PLACES) {
-      const m = move(s, content, day, { place });
-      if (!m.result.ok) continue;
-      s = m.state;
-      const ids = gamesToday(content, placeOf(content, place), day.now).filter((id) => content.tasks.tasks.find((t) => t.id === id)?.kind === 'board');
-      for (const id of ids) {
-        const w = win(s, content, day, { id, stars: 3 });
-        if (!w.result.ok) continue;
-        const d = task({ ...w.state, stamina: 100 }, content, day, { action: 'done', id });
-        if (!d.result.ok) continue;
-        s = d.state; plays += 1; minutes += PP.minutes[content.games.games.find((g) => g.task === id || g.id === id)?.mechanic] ?? 3;
-        if (s.progress >= 470 || s.step > 1) break;
-      }
+  for (const place of PLACES) {
+    const m = move(s, content, ctx, { place });
+    if (!m.result.ok) continue;
+    s = m.state;
+    const ids = gamesToday(content, placeOf(content, place), NOW).filter((id) => content.tasks.tasks.find((t) => t.id === id)?.kind === 'board');
+    for (const id of ids) {
+      const w = win(s, content, ctx, { id, stars: 3 });
+      if (!w.result.ok) continue;
+      const d = task({ ...w.state, stamina: 100 }, content, ctx, { action: 'done', id });
+      if (!d.result.ok) continue;
+      const got = d.state.progress - w.state.progress;
+      const n = seen.get(id) ?? 0; seen.set(id, n + 1);
+      const want = Math.round(R(1) * BOARD * PP.replay[Math.min(n, PP.replay.length - 1)]);
+      if (!d.result.handed?.length) assert.ok(Math.abs(got - want) <= 1, `${id} (play ${n + 1}): +${got}, the formula ${want}`);
+      s = d.state; plays += 1;
     }
   }
-  assert.ok(s.progress >= 470 || s.step > 1, `reached ${s.progress} after ${plays} plays`);
-  assert.ok(days <= 3, `${days} days`);
-  assert.ok(plays <= 18, `${plays} plays`);
-  assert.ok(minutes <= 90, `${minutes} minutes of board play`);
-  console.log(`# 146 → ${s.progress}: ${plays} plays, ${minutes} min of board play, ${days} day(s)`);
+  assert.ok(plays >= 3, `${plays} plays`);
+  // The layer asks sittings now (Hanli's formula): what is left of 一层 is more than a sitting's 100 体力 of boards.
+  assert.ok((470 - 146) / (R(1) * BOARD / BOARD) > 100, 'more than one sitting');
   const l = look(s, content, ctx);
   assert.ok(l.tasks.some((t) => t.practice), 'the place games stay open as practice, in the tray');
 });

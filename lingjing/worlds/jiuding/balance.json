@@ -7,9 +7,17 @@
       "_about": "冷却事件 (rules/events.mjs; 2026-10-28, the coordinator for Hanli): what one completion of an event pays, in plays of its table. `yaoshou.batch_plays`: a whole batch of 妖兽出没 pays as one fight (one 兽潮 night pays one fight's worth too, on the same haunt table), so each fight in it pays `events.yaoshou.fight_scale` = batch_plays ÷ batch (tools/master.mjs derive; node tools/numbers.mjs --apply).",
       "yaoshou": {"batch_plays": 1}
     },
+    "xiuwei": {
+      "_about": "修为 is a fixed number (Hanli 2026-11-02: 「不要按照百分比给.... 给太多了」 · 「我是说参考百分比的数值. 不能直接给百分比」 — supersedes 10-27's 「按照百分比奖励」; the formula, approved in principle: 「这套公式基本可以, 先记下来, 以后在调整吧」). Levels: each 练气 层 one; a realm's step of three 层-worth three. `sittings`: S(L) = base × growth^(L−1), × `realm` a realm up — the sittings of `stamina` 体力 (≈ minutes) a level asks; the reference the ladder's need is read against (need(L) = R(L) × stamina × S(L), tools/numbers.mjs). `rate`: R(L) = base × growth^(L−1), × `realm` a realm up — the 修为 one 体力 of play is worth at content level L (R base 2 is xw_per_stamina: a board's 3 体力 → 6, a fight's 4 → 8, 兽潮's 5 → 10). A reward = R(content level) × 体力 cost × `difficulty` (normal · elite · boss/副本; `first_clear` +50%) × ★ (play_pay.stars) × `gap` (−`below` a level he stands above it, to `floor`; +`above` a level he stands below it, to +`cap`) × the replay (play_pay.replay) × 灵根 · 签 · 宜 (rules/playpay.mjs xiuweiOf, core.mjs amountsOf). `units`: what has no 体力 of its own, in 体力-units at the same R — 人间功课 a day 5 (≈10 修为 at 练气一层), a week 10, a month 15; a day's east-wall tags 5 together; a night's 闭关 23.5 (47 at 练气一层, as before: a 一转 聚气丹's 「抵小半日打坐」 holds, both riding R). The content level is where he stands unless the thing declares its own (`level`). % of the layer is the reference only (tools/numbers.mjs). Open: above 筑基 a step is slow by S — retuned with 卷二.",
+      "rate": {"base": 2, "growth": 1.05, "realm": 1.2},
+      "sittings": {"base": 2, "growth": 1.1, "realm": 1.3, "stamina": 100},
+      "difficulty": {"normal": 1, "elite": 1.5, "boss": 2, "first_clear": 0.5},
+      "gap": {"below": 0.15, "floor": 0.2, "above": 0.1, "cap": 0.3},
+      "units": {"chore": {"day": 5, "week": 10, "month": 15}, "wall_day": 5, "seclusion_night": 23.5}
+    },
     "lines": {
       "gu": {
-        "_about": "古's ladder (ladder.json tiers: 练气 九层 from 零层, three steps a realm above). `need`: 练气一层 470, ×1.1 a layer, ×1.3 into the next realm, so 筑基小成 is above 练气九层 and every step above the one below. `hours`: the games' rate — a layer's play hours. `chore`: 人间功课 is 古-line income (Hanli 10-27: 「算古线吧」), a day's 10% and a week's 20% of the layer (Hanli 「按照百分比奖励」). `wall.day`: a day's posted 杂役 tags together (执事堂's east wall, quests/wall.json), as a share of the layer — about a day's 功课; each tag is it over the wall's `posts` (Hanli 10-27: three a day at the full errand rate were half a layer of short fetch-and-deliver chores). `seclusion.night`: a night's 闭关 (rest_hours) as a share of the layer (ruling a: it was 40 × layer_pay, ~23% at 四层) — the idle fallback, and the yardstick 「抵N日打坐」 is checked against. `pills`: a 修为 pill's share by 转 (一转 3% — three tenths of a night, 三转 8%, 六转 16%, 九转 three nights at 30%: Hanli 10-28 「三转聚气丹+78, 9转+156」 — each 转 should count; the cards' 「抵小半日」 · 「抵三日」 hold at every layer); `below`: past its 阶, a quarter a realm.",
+        "_about": "古's ladder (ladder.json tiers: 练气 九层 from 零层, three steps a realm above). `need`: 练气一层 470, ×1.1 a layer, ×1.3 into the next realm, so 筑基小成 is above 练气九层 and every step above the one below. `hours`: a layer's play hours — the reference only since 2026-11-02 (the % and minutes tools/numbers.mjs prints; no pay reads it). 人间功课 · the east wall · 闭关 are fixed 体力-units since 2026-11-02 (master.xiuwei.units), not shares. `pills`: a 修为 pill's share by 转 (一转 3% — three tenths of a night, 三转 8%, 六转 16%, 九转 three nights at 30%: Hanli 10-28 「三转聚气丹+78, 9转+156」 — each 转 should count; the cards' 「抵小半日」 · 「抵三日」 hold at every layer); `below`: past its 阶, a quarter a realm.",
         "tiers": ["qi", "foundation", "core", "nascent", "deity", "void", "body", "maha", "tribulation"],
         "need": {"first": 470, "layer": 1.1, "realm": 1.3, "round": 10},
         "hours": {
@@ -40,9 +48,6 @@
         },
         "games": {"share": 0.6, "time": 0.35},
         "errand": {"share": 0.15, "time": 0.1},
-        "wall": {"day": 0.1},
-        "chore": {"day": 0.1, "week": 0.2, "month": 0.3},
-        "seclusion": {"night": 0.1},
         "pills": {"1": 0.03, "3": 0.08, "6": 0.16, "9": 0.3, "xian": 0.4, "below": 0.25}
       },
       "jin": {
@@ -339,8 +344,7 @@
     "qiecuo": {
       "every_h": 3,
       "full": 2,
-      "share": 0.05,
-      "_about": "比武切磋 (rules/qiecuo.mjs; Hanli 2026-10-28: 「冷却3小时」): a bout comes again `every_h` after the last was over — won, lost or put down; a bout won pays `share` of the layer he stands on × ★, the day's first `full` in full, then play_pay.replay's share; 灵石 as a 格斗 board (play_pay.wealth)."
+      "_about": "比武切磋 (rules/qiecuo.mjs; Hanli 2026-10-28: 「冷却3小时」): a bout comes again `every_h` after the last was over — won, lost or put down; a bout won pays its 体力 × the formula (master.xiuwei, 2026-11-02) × ★, the day's first `full` in full, then play_pay.replay's share; 灵石 as a 格斗 board (play_pay.wealth)."
     },
     "yaoshou": {
       "_about": "妖兽出没 (rules/yaoshou.mjs): one fight a batch since 2026-11-02 (Hanli: 「降妖等也是, 都一局就可以了」; was 3). Agent's pick (Hanli delegated 11-02): `batch` 1, so `fight_scale` derives to 1 (master `batch_plays` 1 ÷ 1) — the one fight pays what the batch of three paid together; `every_h` 1.5 and `full` 2 kept, so a day's 降妖 pay is as before (a shorter wait would raise it). Fewer fights a day: the 秘境令's `mijing.key.drops.yaoshou` (0.2 a win) now comes a third as often.",
@@ -366,7 +370,14 @@
     "below": 0.25
   },
   "_dandu": "丹毒 and 补转 (story DESIGN § 六·五: 下品吃多了积毒，体力上限一时降低，闭关可排；上品无毒；九转反能化毒). A 修为 pill eaten (服用 from the pouch, the 闭关 pill, a breakthrough's pill) leaves the turns its furnace left out owing: `owed` by 转 (一转 8 — the nine a 九转 has, less the one it got; 中品 四至六转 看体质, none in 卷一; 上品 none). Each turn owed takes `per_turn` off the 体力 pool's top, `cap` at most (state.mjs staminaMax). 闭关 is 补转 — the body makes up `cure_per_hour` turns an hour of any focus (rules/seclusion.mjs). A pill of `clears` 转 or more clears every turn owed. Fight pills (the 丹囊's 回春丹 · 回气丹) owe nothing for now (Hanli's call: 灵石 buys them, and 丹毒 there would tax the 灵石 once 体力 is on). With these numbers a 聚气丹 a day is made up by one hour's sitting; four at once stand at the cap until a night's 闭关.",
-  "dandu": {"owed": {"1": 8, "2": 7, "3": 6}, "clears": 9, "clears_tiers": ["xian"], "per_turn": 1, "cap": 30, "cure_per_hour": 4},
+  "dandu": {
+    "owed": {"1": 8, "2": 7, "3": 6},
+    "clears": 9,
+    "clears_tiers": ["xian"],
+    "per_turn": 1,
+    "cap": 30,
+    "cure_per_hour": 4
+  },
   "_model": "The players tools/balance.mjs plays, day by day (design.md § Pacing: ~30 minutes a day, one 回 a week; 古一–古三 fast). `minutes`: what each thing takes (a scene's passages read at `chars_per_min`). `players`: minutes a day (the first day longer), sittings, and what each does daily — `gongke` the share of days the 功课 is handed in, `walls` the share of a day's 执事堂 east-wall tags taken in the routine (2026-10-27, doc/gates-2026-10-27.md: the typical player one of the three; every player takes the rest while a gate holds him), `fights` pool fights, `fantong` feeds, `tale` 今日传闻s, `gate_fights` more pool fights while a stage quest waits, `seclude` hours of 闭关 a night (focus 修为: rewards.json seclusion's rate, the seclusion table's cap). `fight_win_rate`: a fight won (the 斗法 band, played again when lost). `fantong_progress`: a feed's 修为 on average (a pill now and then). `errands_at`: the 回 each errand that pays 修为 or a pill is done in (null: on no 卷一 map; tests/balance.test.mjs makes a new one name its 回). `fit`: the player and the days --fit aims the stage quests at (the heavy player: the one they hold back); `bands`: what the test holds, for the 回s from `later` on. Guesses to be hand-played on the live page (Hanli). `waking_h`: the waking day the sittings spread over, for 体力 — the model plays it ON (rewards.json stamina), as players will have it (on in play since 2026-11-02, at testing numbers), and with these players it never binds.",
   "model": {
     "_practice": "2026-10-27 (pay as a share of the layer): while a stage quest holds the way, the minutes left after the pool's fights go to practice boards — `minutes` a board, `factor` for its ★ (≈0.8) and the replay's falling share over a sitting (≈0.75).",
@@ -465,7 +476,7 @@
   "_play_pay": "Every 修为 pay is a share of the layer he stands on (Hanli 2026-10-27: 「12分钟的一个小游戏占2个小时的10%, 所以要奖励10%的修为」, then 「一层才要470修为, 我们可否按照百分比奖励, 这样等级高了后, 奖励也合理」; doc/games.md § Pay as a share of the layer; rules/playpay.mjs). A layer is a play-time budget (`hours`, derived since 2026-10-27: the master table's curve — 练气一层 2 h, +0.5 h a layer; 筑基 4 h, +2 h a realm — with the layers a 回 holds fitted to its band and 古五's 渡口 to the gate rule, master.mjs fitHours). The small games and fights carry `games.share` (60%) of its 修为 over `games.time` (35%) of its minutes: a board of m minutes pays m ÷ (0.35 × the layer's minutes) × 60% of the layer's need — 练气一层 a 1-minute board 1.4% (7), a 6-minute 棋牌 8.6% (40) at 2 h; a fight won (`haunt`) its `fight.minutes`. ★ 0.6 · 0.8 · 1.0; the same board again the same day 100 · 50 · 10%. Errands: 15% of the layer over 10% of its time, by `errand.minutes` (练气一层 6.3%, 29). 人间功课 (`chore`): a day's 10%, a week's 20%, a month's 30% of the layer (练气一层 47 · 94 · 141; Hanli 2026-10-27: 「cfo倒入账单应该是每月任务」 — rarer, so more), no ★, no replay. What the book authors — a scene's way on, a pill, a rumor, a 机缘, the tables in `authored.tables` — is read as a share of the 练气一层 it was written against (`authored.base` 470: a scene's 60 is 12.8%). 灵石 stays by the kind and the tables. No daily cap; 修为 stops at the gate and turns to 灵石 (`convert` lists `play` and `haunt`). Supersedes the per-layer `rate` tables and `layer_pay` for fights (2026-10-27).",
   "play_pay": {
     "hours": {
-      "qi": [0, 1.448, 0.6, 0.6, 0.6, 1.084, 1.219, 0.784, 0.862, 0.941],
+      "qi": [0, 0.6, 0.6, 0.6, 0.6, 1.084, 1.219, 0.6, 0.6, 0.6],
       "foundation": 4,
       "core": 6,
       "nascent": 8,
@@ -475,7 +486,7 @@
       "maha": 16,
       "tribulation": 18,
       "default": 20,
-      "xinsheng": [0.828, 1.036, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3],
+      "xinsheng": [0.3, 0.3, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3],
       "lishen": 4,
       "chengqi": 6,
       "liye": 8,
@@ -532,7 +543,7 @@
     "replay": [1, 0.5, 0.1],
     "fight": {"minutes": 4},
     "errand": {"share": 0.15, "time": 0.1, "minutes": 5, "wealth": 15},
-    "chore": {"day": 0.1, "week": 0.2, "month": 0.3},
+    "chore": {"day": 5, "week": 10, "month": 15},
     "_skip": "跳过 · 酬减半 (Hanli 2026-10-27, 晒经's 华容道: 「让用户能跳过去, 就好了」): a board an errand needs, left once stuck, counts for the errand — met and paid in full — and pays this share of the board's own play pay at full ★ (rules/tasks.mjs errandSkip). The page's button says the cut from this number.",
     "skip": 0.5,
     "authored": {
@@ -553,9 +564,15 @@
         "pill"
       ]
     },
-    "seclusion": {"night": 0.1},
-    "wall": {"day": 0.1},
-    "lines": {"jin": {"games": {"share": 1, "time": 0.5}}}
+    "seclusion": {"night": 23.5},
+    "wall": {"day": 5},
+    "lines": {"jin": {"games": {"share": 1, "time": 0.5}}},
+    "xiuwei": {
+      "rate": {"base": 2, "growth": 1.05, "realm": 1.2},
+      "sittings": {"base": 2, "growth": 1.1, "realm": 1.3, "stamina": 100},
+      "difficulty": {"normal": 1, "elite": 1.5, "boss": 2, "first_clear": 0.5},
+      "gap": {"below": 0.15, "floor": 0.2, "above": 0.1, "cap": 0.3}
+    }
   },
   "_lock_fight": "A story fight inside a key beat's lock (chapter.json `beats`, world.mjs lockOf) may be left once he is stuck (Hanli 2026-10-21: 「OK, a」): no shelf is reachable there, so a weak hand with an empty 丹囊 had no way past a 试. After `losses` fights of it lost or run dry, 「算了，往下走」 stands under its card (rules/skips.mjs fightStuck): the way on a win would take, paying nothing — no fight pay, no card, no drop, no exit grant — as a board left or a riddle passed. Since 2026-10-27 every story fight, inside a lock or not (Hanli: 「确保都能跳过去, 不会卡住游戏进程」), and a guard lost to as often lets him by (world.mjs guardOf); tests/no-win-walk.test.mjs walks 卷一 to its end with nothing won.",
   "lock_fight": {"losses": 3},

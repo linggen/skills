@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadContent } from '../scripts/content.mjs';
-import { migrate, newState, STATE_VERSION } from '../scripts/state.mjs';
+import { migrate, newState, STATE_VERSION, staminaCost } from '../scripts/state.mjs';
 import { look, resolve } from '../scripts/rules.mjs';
 import { boardLine, lineGrant, lineWorld } from '../scripts/rules/lines.mjs';
 import { barOf, stands } from '../scripts/stage.mjs';
@@ -69,11 +69,11 @@ test('a 今 board pays the 今 by its minutes on the 今 ladder — never the �
   assert.equal(s.wealth, s0.wealth, 'no 灵石');
   const jin = s.lines.jin, W = lineWorld(content, 'jin');
   assert.ok(jin.step > 0 || jin.progress > 0, `the 今 rose: ${JSON.stringify(jin)}`);
-  // The share model: a 3-minute chat at 新生一层 is its minutes over the layer's board minutes.
+  // A fixed number (2026-11-02): a board's 体力 × R at 新生一层 (level 1 of the 今's own ladder), as on the 古.
   const t = content.tasks.tasks.find(x => x.id === 'jin-chat-dark');
   const g = lineGrant(content, { lang: 'zh', plays: null, lines: { jin: { tier: 'xinsheng', step: 0, progress: 0 } } }, 'jin', t.id, t, NOW, null);
-  const pp = W.balance.play_pay, perMin = (pp.games.share * W.ladder.tiers[0].thresholds[0]) / (pp.games.time * pp.hours.xinsheng[0] * 60);
-  assert.equal(g.progress, Math.round(perMin * g.minutes));
+  const X = W.balance.play_pay.xiuwei;
+  assert.equal(g.progress, Math.round(X.rate.base * staminaCost(content, 'game')));
   assert.equal(g.wealth, 0);
   assert.equal(boardLine(content, 'jin-chat-dark'), 'jin');
   assert.equal(boardLine(content, content.tasks.tasks.find(x => x.id === 'notice-shuitong')?.id ?? 'notice-shuitong'), null, 'a 古 board is the 古\'s');

@@ -14,10 +14,10 @@
 // bout's when another is open; a style never last bout's — so a bout waiting is the same bout however long it waits
 // (never two: one bout a cooldown), and leaving it cannot reroll it. A bout is over when won (paid), lost or put down
 // (收手, skipped): each starts the cooldown, `every_h` from that moment.
-import { dayKey, lockedOf, pick, seedOf } from '../state.mjs';
+import { dayKey, lockedOf, pick, seedOf, staminaCost } from '../state.mjs';
 import { clone, pay, refuse, spendStamina } from './core.mjs';
 import { sideLine } from './hui.mjs';
-import { needOf } from './playpay.mjs';
+import { xiuweiOf } from './playpay.mjs';
 import { hashOf } from './travel.mjs';
 import { keyDrop } from './mijing.mjs';
 import { eventDone, eventOf, eventShare, eventWait } from './events.mjs';
@@ -181,12 +181,14 @@ export function qiecuoRow(content, state, now) {
 /* ── Pay ── */
 /* The day's share (rules/events.mjs: `events.qiecuo.full` bouts in full, then `play_pay.replay`'s falling share). */
 export const boutShare = (content, state, now) => eventShare(content, state, EVENT, now);
-/* A bout won's grant: `events.qiecuo.share` of the layer he stands on × ★ × the day's share; 灵石 as a 格斗 board's. */
+/* A bout won's grant: the bout's 体力 × the formula (playpay.mjs xiuweiOf, 2026-11-02 — was `events.qiecuo.share` of the
+   layer) × ★ × the day's share; 灵石 as a 格斗 board's. */
 export function boutGrant(content, state, now, stars = 3) {
   const pp = content.balance?.play_pay ?? {}, ev = eventOf(content, EVENT);
   if (!ev) return null;
   const star = pp.stars?.[String(stars)] ?? 1, f = star * boutShare(content, state, now);
-  const progress = Math.round((ev.share ?? 0) * needOf(content, state) * f);
+  const units = staminaCost(content, boutTask(content)?.qiecuo?.cost ?? 'game');
+  const progress = Math.round(xiuweiOf(content, state, units) * f);
   const wealth = Math.round((pp.wealth?.['格斗'] ?? pp.wealth?.default ?? 0) * f);
   return { table: 'play', progress, wealth, share: boutShare(content, state, now) };
 }

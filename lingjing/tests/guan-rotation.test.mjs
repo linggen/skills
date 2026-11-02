@@ -6,6 +6,7 @@ import test from 'node:test';
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
+import { chorePlay, xiuweiOf } from '../scripts/rules/playpay.mjs';
 import { look, move, quest, task, win } from '../scripts/rules.mjs';
 import { placeOf } from '../scripts/rules/world.mjs';
 import { gamesToday, lapseWall, poolToday, wallPosts, wallToday } from '../scripts/rules/rotation.mjs';
@@ -77,12 +78,12 @@ test('the east wall posts three a day from its pool, all at once — never a tag
     assert.equal(o.who, '执事堂 · 东墙杂役', 'its own giver, apart from the authored errands of the same wall');
     assert.ok(o.pays.progress > 0 && o.pays.wealth > 0, `${o.id} pays the wall share and 灵石: ${JSON.stringify(o.pays)}`);
   }
-  // A day's three together pay about a day's 功课 (balance.json master wall.day, Hanli 10-27: the full errand rate was
-  // half a layer a day): 练气一层 470 → 16 a tag, 47 the day's 功课.
-  const day3 = offers.reduce((n, o) => n + o.pays.progress, 0), chore = Math.round(content.balance.play_pay.chore.day * 470);
+  // A day's three together pay about a day's 功课 (master xiuwei.units: the wall's day 5 体力-units, a 功课's day 5; Hanli
+  // 10-27: the full errand rate was half a layer a day) — fixed numbers at R since 2026-11-02.
+  const s0 = at('zhishi'), day3 = offers.reduce((n, o) => n + o.pays.progress, 0), chore = chorePlay(content, s0, 'day');
   assert.equal(offers.length, 3);
   assert.ok(Math.abs(day3 - chore) <= 3, `a day's tags ${day3} against a day's 功课 ${chore}`);
-  assert.ok(offers.every((o) => o.pays.progress === Math.round((content.balance.play_pay.wall.day / WALL.posts) * 470)), 'each tag a third of the day');
+  assert.ok(offers.every((o) => o.pays.progress === Math.round(xiuweiOf(content, s0, content.balance.play_pay.wall.day / WALL.posts))), 'each tag a third of the day');
   assert.equal((look(at('cangjing'), content, ctx(day(0))).offers ?? []).filter((o) => o.id.startsWith('wall-')).length, 0, 'only at the wall');
 });
 

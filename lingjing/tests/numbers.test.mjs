@@ -48,9 +48,10 @@ test('the 层 climb across realms: every step asks more than the one before it, 
   for (let k = 1; k < all.length; k++) assert.ok(all[k] > all[k - 1], `step ${k}: ${all[k]} over ${all[k - 1]}`);
 });
 
-test('a pill is its 转\'s share of the layer at every layer, and its card\'s 「抵N日打坐」 holds against N nights of 闭关 there', async () => {
+// 2026-11-02 (Hanli 「不要按照百分比给」): a pill is a fixed number at R, not a share of the layer — its % is the reference only;
+// what must hold is its card's 「抵N日打坐」 against N nights of 闭关, on every layer (both ride R).
+test('a pill\'s card\'s 「抵N日打坐」 holds against N nights of 闭关 there, on every 练气 layer', async () => {
   const c = loadContent(), r = await measure(c);
-  for (const p of r.pills.filter(x => x.want_pct != null)) assert.ok(Math.abs(p.pct / p.want_pct - 1) < 0.05, `${p.name}: ${p.pct} of the layer, its 转 asks ${p.want_pct}`);
   const said = r.claims.checked.filter(x => x.lang === 'zh' && x.ratio != null);
   assert.ok(said.length >= 3, 'the pills\' 「抵…日」 are weighed');
   for (const x of said) {

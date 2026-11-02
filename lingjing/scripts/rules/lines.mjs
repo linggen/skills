@@ -61,9 +61,9 @@ export function boardLine(content, id) {
 }
 
 /* A board's play pay on its line: its minutes at the layer that line stands on (playpay.mjs playGrant), never 灵石. */
-export function lineGrant(content, state, line, id, task, now, stars = null) {
+export function lineGrant(content, state, line, id, task, now, stars = null, opts = {}) {
   const W = lineWorld(content, line);
-  const g = W ? playGrant(W, lineState(content, state, line), id, task, now, stars) : null;
+  const g = W ? playGrant(W, lineState(content, state, line), id, task, now, stars, opts) : null;
   return g?.progress ? { ...g, wealth: 0, line } : null;
 }
 

@@ -39,11 +39,12 @@ test('its pay: its own share (by_tier.xian), above a 九转; never below him, �
   assert.equal(pillPay(content.balance, XIAN), Math.round(P.by_tier.xian * base * 10) / 10);
   assert.equal(XIAN.effect.progress, pillPay(content.balance, XIAN));
   for (const tier of ['qi', 'foundation', 'core']) assert.equal(pillBelow(content, { tier }, 'xian'), 1, tier);
-  const need = (tier, step) => content.ladder.tiers.find(t => t.id === tier).thresholds[step];
   const e = XIAN.effect;
-  for (const [tier, step] of [['qi', 3], ['foundation', 0]]) {
+  // A fixed number at R (2026-11-02): the whole of it at every realm, never below him.
+  const X = content.balance.play_pay.xiuwei;
+  for (const [tier, step, L, realm] of [['qi', 3, 3, 0], ['foundation', 0, 12, 1]]) {
     const got = paysOf(content, save({ tier, step }), T0, { table: e.table, progress: e.progress, tier: e.tier }).progress;
-    assert.equal(got, Math.round(P.by_tier.xian * need(tier, step)), `${tier} ${step}: the whole share`);
+    assert.equal(got, Math.round(e.progress * X.rate.growth ** (L - 1) * X.rate.realm ** realm), `${tier} ${step}: the whole of it`);
   }
 });
 

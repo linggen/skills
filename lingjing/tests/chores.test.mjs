@@ -111,7 +111,7 @@ test('only the pick and the fixed pay; another pool chore done anyway is shown n
   assert.equal(quest(paid.state, content, ctx(allDone), { action: 'turn', id: 'health-workout' }).result.ok, true);
 });
 
-test('a month\'s 功课: keyed YYYY-MM from the 1st at local midnight; paid once a month at 30% of the layer; last month\'s done does not count', () => {
+test('a month\'s 功课: keyed YYYY-MM from the 1st at local midnight; paid once a month (its 体力-units × R); last month\'s done does not count', () => {
   const oct = new Date(2026, 9, 27, 10), first = new Date(2026, 9, 1, 0, 0, 0), lastOfSep = new Date(2026, 8, 30, 23, 59);
   assert.equal(monthKey(oct), '2026-10');
   assert.equal(periodKey('month', oct), '2026-10');
@@ -127,13 +127,13 @@ test('a month\'s 功课: keyed YYYY-MM from the 1st at local midnight; paid once
   assert.ok(stale, 'still this month\'s to do');
   assert.equal(stale.chore.done_at, null);
   refused(quest(s, content, ctx(sept, oct), { action: 'turn', id: imp.id }), 'not-done');
-  // done this morning: the book's line, a month's, paid 30% of the layer
+  // done this morning: the book's line, a month's, paid its 体力-units × R
   const done = [{ ...imp, done_at: new Date(2026, 9, 27, 9).toISOString() }];
   const line = chores(look(s, content, ctx(done, oct)).book).find(x => x.id === imp.id);
   assert.equal(line.chore.period, 'month');
   const out = quest(s, content, ctx(done, oct), { action: 'turn', id: imp.id });
   assert.equal(out.result.ok, true);
-  assert.equal(content.balance.play_pay.chore.month, 0.3);
+  assert.equal(content.balance.play_pay.chore.month, content.balance.master.xiuwei.units.chore.month, 'a month\'s 体力-units (2026-11-02)');
   assert.ok(chorePlay(content, s, 'month') > chorePlay(content, s, 'week'), 'rarer, so more than a week\'s');
   assert.equal(out.result.paid.progress, chorePlay(content, s, 'month'));
   assert.equal(out.state.chores[imp.id].period, '2026-10');

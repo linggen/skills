@@ -359,6 +359,31 @@ the knobs: tasks/world.json `shouchao`, its cooldown balance.json `events.shouch
   回 in the row's boss's place). A row added later is played first. Rows now: 兽潮 1–3 (野猪 · 狰, 古四), 4 (犰狳,
   古五), the 山门 (鬿雀 · 合窳, 古八).
 
+### Pay — fixed numbers by the formula 【已建 2026-11-02】
+
+Hanli 2026-11-02, on 1022 修为 in 68 minutes (1.5 layers at 练气四层): 「不要按照百分比给.... 给太多了」, then 「我是说参考百分比的
+数值. 不能直接给百分比」; the formula, 「这套公式基本可以, 先记下来, 以后在调整吧」. **This supersedes 10-27's 「按照百分比奖励」:
+nothing pays a share of the layer at runtime; % of the layer and minutes of play stay only as the reference tools/numbers.mjs
+prints.** (rules/playpay.mjs; balance.json `master.xiuwei` → `play_pay.xiuwei`, derived by `node tools/numbers.mjs --apply`.)
+
+- **Levels.** Each 练气 层 is one level (零层 0, pays none); a realm's step of three 层 counts three (筑基小成 L12, 中成 15,
+  大成 18, 结丹小成 21 …). A realm up: ×`sittings.realm` 1.3 to S and ×`rate.realm` 1.2 to R.
+- **Sittings per level** S(L) = 2 × 1.1^(L−1); a sitting is 100 体力 ≈ 100 minutes. **修为 per 体力** R(L) = 2 × 1.05^(L−1).
+  **Need** need(L) = R(L) × 100 × S(L) — the reference the ladder is read against (练气一层 400 by the formula, 470 on the
+  ladder; 九层 1267 against 1010). The ladder's thresholds are not moved by this.
+- **Reward** = R(content level) × 体力 cost × difficulty (normal 1 · elite 1.5 · boss/副本 2; a first clear +50%) × ★ (0.6 ·
+  0.8 · 1.0) × level gap (−15% a level he stands above it, floor 20%; +10% a level below, cap +30%) × replay (the same thing
+  the same day 100 · 50 · 10%) × 灵根 · 签 ×1.2 · 宜 ×1.3 (core.mjs amountsOf), × the realm's `pay` (ladder.json, 元婴 ×2 up).
+  At 练气一层: a board (3 体力) 6, a fight (4) 8, a 兽潮 night (5) 10; a story board's first clear 9.
+- **Content level** is his own unless the thing declares `level` (a task, a grant): place `tier` (0–2) is too coarse to be a
+  level and beasts carry none, so routine play stands at his level (gap 1); none is assigned by hand yet.
+- **No 体力 of its own**, priced in 体力-units at the same R (`master.xiuwei.units`): 人间功课 a day 5 (≈10), a week 10, a
+  month 15; a day's east-wall tags 5 together; a night's 闭关 23.5 (47 at 练气一层); an errand's work its 5 minutes. A pill is
+  its 转's share of 470 as units at R(1) (一转 ≈ 14 at 一层), riding R so 「抵N日打坐」 holds; what the book authors (a scene's,
+  a quest's, a rumor's) is the number written. 切磋 a bout's 体力 × R × ★; 圆满 → 灵石 flat (`convert.rate`).
+- Open (status.md): above 筑基 the formula's S grows fast (a 结丹 step ≈ 62 sittings) while the ladder's need and the
+  realms' `pay` do not follow it; retuned with 卷二.
+
 ### 数值系统 — one validator, then a master table 【phase 1 · phase 2 已建】 (Hanli, 2026-10-27)
 
 Hanli: 「所有物品, 任务的数值请写一个工具进行校验 … 全局校验游戏数值, 平衡战斗力, 游戏难易, 时长的. 以后我们调整难度,

@@ -50,11 +50,15 @@ test('every pill says its 阶 and its 转; a family\'s 修为 is its 转\'s shar
   assert.deepEqual(lint(content).filter(x => /pill|阶|转/.test(x)), []);
 });
 
-test('a 修为 pill eaten pays its share of the layer he stands on — the same share on every layer, a quarter a realm past its 阶', () => {
+test('a 修为 pill eaten pays its fixed number at R (2026-11-02: 「不要按照百分比给」) — never a share of the layer; a quarter a realm past its 阶', () => {
   const at = (tier, step) => ({ ...newState(content, 'zh', new Date('2026-10-27T12:00:00')), chapter: '00-waimen', ended: ['00-prologue'], done_scenes: ['wm-zhoutian'], tier, step, progress: 0, traits: ['wood', 'water', 'fire', 'earth', 'metal'] });
-  const e = item('qi-pill').effect, need = (tier, step) => content.ladder.tiers.find(t => t.id === tier).thresholds[step];
-  for (const step of [1, 4, 9]) assert.equal(paysOf(content, at('qi', step), new Date(), { table: e.table, progress: e.progress, tier: e.tier }).progress, Math.round(0.03 * need('qi', step)), `练气${step}层`);
-  assert.equal(paysOf(content, at('foundation', 0), new Date(), { table: e.table, progress: e.progress, tier: e.tier }).progress, Math.round(0.03 * 0.25 * need('foundation', 0)), '筑基: a 练气 pill, a quarter');
+  const e = item('qi-pill').effect;
+  // Its 转's share of the 练气一层 the book is written against (balance.json pills.share × play_pay.authored.base): 一转 ≈ 14.
+  assert.equal(e.progress, Math.round(content.balance.pills.share[0] * content.balance.play_pay.authored.base * 10) / 10);
+  // …as 体力-units at R(1): it rides R (5% a level) as play does, so 「抵小半日打坐」 holds at every layer.
+  const X = content.balance.play_pay.xiuwei, R = (L, realm = 0) => X.rate.growth ** (L - 1) * X.rate.realm ** realm;
+  for (const step of [1, 4, 9]) assert.equal(paysOf(content, at('qi', step), new Date(), { table: e.table, progress: e.progress, tier: e.tier }).progress, Math.round(e.progress * R(step)), `练气${step}层`);
+  assert.equal(paysOf(content, at('foundation', 0), new Date(), { table: e.table, progress: e.progress, tier: e.tier }).progress, Math.round(e.progress * R(12, 1) * 0.25), '筑基: a 练气 pill, a quarter');
 });
 
 test('the lint refuses a pill with no 阶 or 转, or of an unknown family', () => {

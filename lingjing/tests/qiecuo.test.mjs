@@ -5,7 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
-import { newState } from '../scripts/state.mjs';
+import { newState, staminaCost } from '../scripts/state.mjs';
 import { look, playTo, task, win } from '../scripts/rules.mjs';
 import { boutOf, boutShare, climbOf, levelOf, qiecuoHere, qiecuoRow } from '../scripts/rules/qiecuo.mjs';
 import * as F from '../scripts/games/fighter.js';
@@ -138,7 +138,7 @@ test('the climb: with his realm her blows weigh more, her reads come quicker, he
   assert.ok(b.bal > a.bal, 'firmer');
 });
 
-test('pay: a share of the layer × ★, the day\'s first two in full, then the replay\'s falling share', () => {
+test('pay: its 体力 × R × ★, the day\'s first two in full, then the replay\'s falling share', () => {
   const pp = content.balance.play_pay;
   // At the bottom of his layer: since 2026-10-31 he leaves the 大比 at 四层圆满 (古五's 石室), where a bout's 修为 turns to 灵石.
   let s = { ...save(AFTER), progress: 0 }, now = at(8);
@@ -146,14 +146,16 @@ test('pay: a share of the layer × ★, the day\'s first two in full, then the r
   for (let i = 0; i < 5; i += 1) {
     const before = s.progress, need = s.tier === 'qi' ? content.ladder.tiers[0].thresholds[s.step] : null;
     const d = won(s, now);
-    got.push({ paid: d.result.paid.progress, share: boutShare(content, s, now), need });
+    got.push({ paid: d.result.paid.progress, share: boutShare(content, s, now), need, step: s.step });
     s = d.state;
     assert.ok(s.progress >= before);
     now = new Date(now.getTime() + 3.05 * 3600_000);
   }
   assert.deepEqual(got.map((g) => g.share), [1, 1, pp.replay[1], pp.replay[2], pp.replay[2]]);
   assert.ok(got[0].paid > 0);
-  assert.ok(Math.abs(got[0].paid - content.balance.events.qiecuo.share * got[0].need) <= 2, `${got[0].paid} ≈ ${content.balance.events.qiecuo.share} of ${got[0].need}`);
+  // A fixed number (2026-11-02): the bout's 体力 × R at his layer (play_pay.xiuwei), not a share of it.
+  const X = pp.xiuwei, R = X.rate.base * X.rate.growth ** (got[0].step - 1), units = staminaCost(content, 'game');
+  assert.ok(Math.abs(got[0].paid - R * units) <= 1, `${got[0].paid} ≈ ${units} 体力 × R ${R}`);
   assert.ok(got[2].paid < got[1].paid && got[3].paid < got[2].paid, 'falling');
   // the next day, in full again
   const next = boutShare(content, s, at(9, 0, 30));

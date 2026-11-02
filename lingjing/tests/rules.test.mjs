@@ -932,9 +932,9 @@ test('a later realm pays more for the same task; the day counts base', () => {
   s.tier = 'deity'; s.step = 0; s.progress = 0; // 化神, pay ×3
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
-  // The grant's 20 read at 化神's layer (play_pay.authored), × 3 for the realm; the board's minutes (rules/playpay.mjs) on top
+  // The grant's 20 as written (2026-11-02: no layer scales an authored number), × 3 for the realm; the board's play on top
   const base = atLayer(s, 20, 'task'), grant = base * 3, play = out.result.paid.progress - grant;
-  assert.ok(base > 20, 'a later layer, a bigger share');
+  assert.equal(base, 20, 'the number the book wrote');
   assert.ok(play >= 0, String(out.result.paid.progress));
   assert.equal(out.state.progress, grant + play);
   assert.ok(out.state.day.progress >= base && out.state.day.progress <= base + play, 'the day counts base');

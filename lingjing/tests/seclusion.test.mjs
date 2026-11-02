@@ -40,10 +40,10 @@ const inAndOut = (s, hours, args) => {
 
 test('the numbers: a day away is capped, a short sit grows nothing, and sitting pays less than playing', () => {
   assert.deepEqual([R.cap_hours, R.min_hours, R.rest_hours, R.star_hours, R.star_top, R.treasure_hours], [12, 1, 8, 6, 3, 8]);
-  // 数值系统 phase 2: a night (rest_hours) is play_pay.seclusion.night of the layer; a whole pilled night (cap_hours × the
-  // strongest pill) is still under an hour of the small games on every 练气 layer (games.share over games.time × its hours).
-  const pp = content.balance.play_pay, nightShare = pp.seclusion.night * (R.cap_hours / R.rest_hours) * Math.max(...Object.values(R.pills));
-  for (const [step, h] of pp.hours.qi.entries()) if (h) assert.ok(nightShare < pp.games.share / (pp.games.time * h), `练气${step}层: a pilled night ${nightShare} under an hour of play`);
+  // 2026-11-02: a night (rest_hours) is play_pay.seclusion.night 体力-units at R, as play is; a whole pilled night (cap_hours ×
+  // the strongest pill) is still under an hour of play (60 体力, 1 体力 ≈ 1 分钟) — on every layer, since both ride R.
+  const pp = content.balance.play_pay, night = pp.seclusion.night * (R.cap_hours / R.rest_hours) * Math.max(...Object.values(R.pills));
+  assert.ok(night < 60, `a pilled night ${night} 体力-units under an hour of play`);
   assert.ok(R.cap_hours * secludeHour(content, player()) <= content.rewards.tables.seclusion.progress, 'the table caps nothing a night pays');
 });
 

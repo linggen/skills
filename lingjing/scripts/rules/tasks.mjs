@@ -33,9 +33,9 @@ import { yaoshouFought, yaoshouShare } from './yaoshou.mjs';
    it is replayed; on a 今 scene, the 今 — by the same minutes on that line's ladder, and never 灵石. Null: the 古's own. */
 const lineOfBoard = (content, s, id) => boardLine(content, id) ?? sideLine(content, sceneOf(content, s));
 /* A board's play pay: the grant on its line, and paid there (`linePay`), else the 古's (playGrant, core.mjs pay). */
-const boardGrant = (content, s, id, t, now, stars) => {
+const boardGrant = (content, s, id, t, now, stars, opts = {}) => {
   const line = lineOfBoard(content, s, id);
-  return line ? lineGrant(content, s, line, id, t, now, stars) : playGrant(content, s, id, t, now, stars);
+  return line ? lineGrant(content, s, line, id, t, now, stars, opts) : playGrant(content, s, id, t, now, stars, opts);
 };
 const payBoard = (content, s, ctx, grant) => (grant?.line ? linePay(content, s, grant.line, grant) : pay(content, s, ctx, grant));
 
@@ -225,7 +225,8 @@ function taskDone(state, content, ctx, id) {
   // …and by its minutes (rules/playpay.mjs, 2026-10-27): the story's board is a small game too, paid once.
   // Its 灵石 stays the first clear's grade (`boards`, boardPay above); the minutes pay its 修为.
   // A 今 board pays the 今 line's 修为 (rules/lines.mjs): `paid.line` names it, and its 修为 and levels are that line's.
-  const playFull = replayed ? null : boardGrant(content, s, id, t, ctx.now, s.play_stars?.[id] ?? null);
+  // Its first clear pays +50% (play_pay.xiuwei.difficulty.first_clear, 2026-11-02): never paid before (`boards_paid`).
+  const playFull = replayed ? null : boardGrant(content, s, id, t, ctx.now, s.play_stars?.[id] ?? null, { first: !(state.boards_paid ?? []).includes(id) });
   const play = playFull?.progress ? { ...playFull, wealth: 0 } : null;
   if (play) {
     const more = payBoard(content, s, ctx, play) ?? {};

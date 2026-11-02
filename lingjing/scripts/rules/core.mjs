@@ -60,9 +60,9 @@ export function meets(state, needs, now = new Date(), sceneId = state.scene) {
    `state.day` still counts what the day paid. */
 function amountsOf(content, state, now, grant) {
   const table = content.rewards.tables[grant.table];
-  // 修为 as a share of the layer (rules/playpay.mjs, 2026-10-27): a fight by its minutes; what the book authors read
-  // against the 练气一层 it was written for. Capped by its table as authored.
-  const fight = grant.table === 'haunt' && grant.progress ? fightPlay(content, state) : null;
+  // 修为 a fixed number (rules/playpay.mjs, 2026-11-02): a fight (兽潮's night too) by its 体力 × the formula; what the book
+  // authors as written. Capped by its table as authored.
+  const fight = grant.table === 'haunt' && grant.progress ? fightPlay(content, state, grant) : null;
   // A pill (`pill`, its 阶 in `tier`): its 转's share of the layer at its own realm, less past it (playpay.mjs pillBelow).
   const authored = fight ?? Math.min(grant.progress ?? 0, table.progress) * authoredScale(content, state, grant.table) * (grant.table === 'pill' ? pillBelow(content, state, grant.tier) : 1);
   // `share`: a replay's falling share (tasks.mjs duel, playpay.mjs fightReplay) — 修为 and 灵石 alike.

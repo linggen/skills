@@ -122,9 +122,13 @@ export function derive(raw0, { ladder, items }) {
   }
   pp.games = { share: gu.games.share, time: gu.games.time };
   pp.errand = { ...pp.errand, share: gu.errand.share, time: gu.errand.time };
-  if (gu.wall) pp.wall = { day: gu.wall.day };
-  pp.chore = { ...gu.chore };
-  pp.seclusion = { night: gu.seclusion.night };
+  // 修为 a fixed number (Hanli 2026-11-02: 「不要按照百分比给」, and the formula 「这套公式基本可以」): R · S · difficulty · gap,
+  // and what has no 体力 of its own priced in 体力-units (rules/playpay.mjs xiuweiOf).
+  const X = M.xiuwei;
+  pp.xiuwei = { rate: { ...X.rate }, sittings: { ...X.sittings }, difficulty: { ...X.difficulty }, gap: { ...X.gap } };
+  pp.wall = { day: X.units.wall_day };
+  pp.chore = { ...X.units.chore };
+  pp.seclusion = { night: X.units.seclusion_night };
   // `authored.base` stays the book's yardstick (the 练气一层 its grants were written against, 470): never `need.first`, which is
   // display only — moving it must not move what a story grant is worth.
   for (const t of ['pill']) if (!pp.authored.tables.includes(t)) pp.authored.tables.push(t);

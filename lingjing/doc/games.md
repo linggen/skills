@@ -155,7 +155,12 @@ the threshold carry the hours (235 修为 an hour) and the pay stay one number p
 for a higher layer, the same coin for the same minutes, which a player can learn. (The calendar this makes is above:
 练气 108 typical days at +1 h a layer, 72 at +0.5 h.)
 
-## Pay as a share of the layer — in the rules 10-27
+## Pay as a share of the layer — in the rules 10-27 · superseded 11-02
+
+**Superseded 2026-11-02** (Hanli: 「不要按照百分比给.... 给太多了」 · 「我是说参考百分比的数值. 不能直接给百分比」): every play pays
+a fixed 修为 by the formula — R(content level) × its 体力 × difficulty × ★ × gap × replay (design.md § Pay — fixed numbers by
+the formula). The shares below are the reference only now (tools/numbers.mjs); no pay reads them.
+
 
 Hanli 10-27: 「小游戏的有点高, 相比每日linggen任务, health等app的任务, 可以多给一些修为」, then, seeing 功课 +201 at 一层:
 「修为奖励过于多了吧? 一层才要470修为, 我们可否按照百分比奖励, 这样等级高了后, 奖励也合理」. **Every 修为 pay is a share of the
