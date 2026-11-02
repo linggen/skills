@@ -224,7 +224,7 @@ None.
 ## Parked (tags, not merged)
 
 - `wip/2026-10-15-aigames` — AI games follow-ups (二十问 while 银月 sleeps, 事 row, token tap, scratch chat binding); 5 tests red.
-- `wip/2026-10-15-soul` (linggen, 1 commit `157a6464`, merges clean onto main, 95 behind) — Yinyue as the story's proud 妖王 银月 everywhere (本王 / "this queen"). Checked 10-23: main's agents/yinyue.md is still the "friend, part pet" persona, so his 10-15 rule (memory: 银月's soul = the story's 妖王 everywhere) lives only here — NOT obsolete, not deleted; waits for his read to merge.
+- `wip/2026-10-15-soul` — LANDED 11-02 on linggen main as `060f70a2` (Hanli 11-02: 「yinyue在游戏里是妖王身份, 应该同步到所有场合吧? 保持一致?」): Yinyue's soul is the story's proud fox 妖王 银月 on every surface (本王 / "this queen"); the phone re-synced, Lingjing's `## Yinyue` line and CFO's notice tone follow. Intro = her first words in 00-yinyue, 「本王乃青丘之主……银月」 — agent's pick (Hanli delegated 11-02).
 - `wip/2026-10-15-footer` — 10-15 morning 去往/footer stash; likely superseded by later footer commits; check before dropping.
 - `wip/2026-10-15-language-draft` — an older `rules/language.mjs`; main has the newer one.
 

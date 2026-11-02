@@ -835,8 +835,8 @@ and `[scene] breakthrough won|failed` (story), `[scene] arrived <place>` (road):
 
 - **Found in the prologue**, asleep in 吴婆婆's token (murmurs); out for
   a 画猜 round (guide `tell`).
-- Found, she is glad, dry and devoted — warm, brief, at the player's side, in
-  the game's language; the same Yinyue as in the rest of Linggen.
+- Found, she is the book's proud fox 妖王 (本王), haughty and dry — brief, at
+  the player's side, in the game's language; the same Yinyue everywhere.
 - **Her past is `companion.recalled`, and nothing more.** From the fourth
   cauldron, a chapter ended may carry `unease.ling`: the price showing on
   her. Open your reply with that one sentence of what she does, in your own
