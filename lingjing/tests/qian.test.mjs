@@ -215,11 +215,11 @@ test('the card stands with 银月 away: the 签筒, then the 签诗 and the 宜�
 /* Live, Hanli 2026-11-02 「点按钮也没反应」: no `divine` ever reached the rules. A shake that threw between its start and its
    end (the paint) left `qianShaking` set, and every later tap returned at its first line under a 签筒 still reading 摇签. */
 function fakePage({ paintThrows = 0, answer = () => ({ ok: true }) } = {}) {
-  const view = { qianShaking: false, qianAsk: 'travel', qianAskText: '', qianOpen: false };
+  const view = { qianShaking: false, qianOpen: false };
   const writes = [];
   let paints = 0;
   const page = createQianPage({
-    view, lang: () => 'zh', herHere: () => false, askHer() {}, tellHer() {},
+    view, lang: () => 'zh', herHere: () => false, herLine: async () => null, tellHer() {},
     keep: (p) => Object.assign(view, p),
     show: (p) => { Object.assign(view, p); if (paints++ < paintThrows) throw new Error('render threw'); },
     write: async (name, args) => { writes.push({ name, args }); return answer(name, args); },
@@ -232,7 +232,7 @@ test('摇签 always reaches the rules and always ends: a paint that throws never
   const { page, view, writes } = fakePage({ paintThrows: 1 });
   await page.shake().catch(() => {});
   assert.deepEqual(writes.map((w) => w.name), ['divine'], 'the draw is asked though the paint threw');
-  assert.equal(writes[0].args.ask, 'travel');
+  assert.deepEqual(writes[0].args, {}, '问签 v2: nothing is asked first');
   assert.equal(view.qianShaking, false, 'the shake ends');
   assert.equal(view.qianOpen, true, 'the 签 shows in the top bar');
   await page.shake();
@@ -244,7 +244,6 @@ test('摇签 that does not go through says so on the card, and the next tap draw
   await page.shake();
   assert.equal(view.qianShaking, false);
   assert.equal(view.qianNote, '这一下没成，稍后再点。');
-  assert.equal(view.qianAsk, 'travel', 'what he asked is kept for the next tap');
   // A shake never answered (stuck) is let go after a while: the next tap draws.
   Object.assign(view, { qianShaking: true, qianShakeAt: Date.now() - 60000 });
   await page.shake();
