@@ -69,7 +69,7 @@ export function arcadeRow(registry, id, task = null) {
 /**
  * Look with the 试玩 board among its tasks: a light board standing open (stage.mjs stands it on any
  * stage), the game's deal from its row, and `her` — the round holds 银月 out of the 木牌
- * (rules/hergame.mjs `arcade:<game>`). A Look that already holds it is left as it is.
+ * (rules/hergame.mjs `arcade:<game>`) — and its card first on Look's `stage`. A Look that already holds it is left as it is.
  */
 export function withArcade(look, game, { row = null, title = null } = {}) {
   if (!look || !game) return look;
@@ -77,5 +77,7 @@ export function withArcade(look, game, { row = null, title = null } = {}) {
   if ((look.tasks ?? []).some((t) => t.id === id)) return look;
   const deal = { ...(row?.data ?? {}), who: 'yinyue', fixed: true };
   const task = { id, kind: 'board', game, status: 'offered', light: true, open: true, her: true, hosted: true, title: title ?? game, deal };
-  return { ...look, tasks: [...(look.tasks ?? []), task] };
+  // …and on the stage Look drew (its `stage`, the rules' reading — made without the 试玩, so the page stood only what the
+  // save had: 泗水岸's 降妖, the 试玩 left in the tray, 11-02): first of the games here, so it takes the slot.
+  return { ...look, tasks: [...(look.tasks ?? []), task], ...(Array.isArray(look.stage) ? { stage: [{ card: 'board', id }, ...look.stage] } : {}) };
 }

@@ -277,6 +277,12 @@ test('the 游戏厅\'s 试玩 of a game the model plays (Hanli 10-19) is the rea
   assert.equal(withArcade(look, null), look);
   const { stageCards } = await import('../scripts/stage.mjs');
   assert.ok(stageCards({ tasks: look.tasks }).some((c) => c.card === 'board' && c.id === 'arcade:drawguess'), 'on the stage');
+  // On a busy test save (the fixture at 泗水岸, its 降妖 up and 下一步 beside it): Look's own stage carries the 试玩, and it
+  // takes the main slot (live 11-02: the 游戏厅's 周衡 · 一个灯谜 stood only in the tray, 「继续」).
+  const { stageSlots } = await import('../scripts/stage.mjs');
+  const busy = withArcade({ tasks: [], stage: [{ card: 'goal' }, { card: 'duel', id: 'haunt:gui' }, { card: 'next' }] }, 'jinchat', { row: arcadeRow(reg, 'jinchat', 'zhishi-shen') });
+  assert.deepEqual(stageSlots(busy, busy.stage).main, [{ card: 'board', id: 'arcade:jinchat' }]);
+  assert.equal(busy.tasks[0].deal.pool, 'dengmi', 'the row\'s own deal: 周衡\'s pool');
   // The arcade links an AI game there (an old ?game= link too), and never plays it beside a panel of its own.
   const arcade = read('arcade.js');
   assert.match(arcade, /mod\?\.meta\?\.ai \? arcadePlayUrl\(g\.id, mod\.meta\.rows \? g\.task : null\)/);
