@@ -322,8 +322,18 @@ function float(root, el, text, kind) {
   n.style.left = x;
   n.style.top = `${box.top - host.top + box.height / 3}px`;
   root.appendChild(n);
-  setTimeout(() => n.remove(), kind === 'armor' ? 1300 : 1000);
+  const life = kind === 'armor' ? 1300 : 1000;
+  floatsUntil = Math.max(floatsUntil, Date.now() + life);
+  setTimeout(() => n.remove(), life);
 }
+
+/* When the last number floated finishes its leap. The room is drawn anew as
+   soon as a replay returns (games/kapai.js draw), which takes every float
+   with it: a beast's last blow lived 300ms of its 1000 (live, 2026-11-02),
+   and 护体's number with it. So a replay waits out its floats — capped. */
+let floatsUntil = 0;
+const FLOAT_HOLD_MAX = 900;
+const floatsDone = () => sleep(Math.min(FLOAT_HOLD_MAX, Math.max(0, floatsUntil - Date.now())));
 
 const pulse = (el, cls, ms = 400) => {
   if (!el) return;
@@ -385,7 +395,7 @@ export async function playLog(root, entries, ctx = {}) {
   if (ctx.skip || !root) { for (const t of entries ?? []) ctx.onEntry?.(t); return; }
   raiseGhosts(root, ctx.ghosts);
   const held = holdPools(root, ctx.ghosts?.hp);
-  try { await replay(root, entries, { ...ctx, held }); } finally { held.release(); }
+  try { await replay(root, entries, { ...ctx, held }); await floatsDone(); } finally { held.release(); }
   // Only once everything going has gone to ink does the rank close up.
   await reflow(root);
 }
