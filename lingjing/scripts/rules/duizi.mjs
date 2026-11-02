@@ -22,6 +22,7 @@ import { herAwake, herAway } from './companion.mjs';
 import { ofJuan } from './world.mjs';
 import { checkCouplet, checkUpper, hanOf } from '../couplet.js';
 import { checkPrompt, checkRhyme } from '../rhyme.js';
+import { rhymesTable } from '../content.mjs';
 
 const baseOf = content => content.aigames?.duizi ?? null;
 /* The game in a language: the Chinese as authored; another, its overlay (`duizi.english`, `lang`)
@@ -43,8 +44,8 @@ function cfgOf(content, lang = 'zh') {
 const langOf = r => r?.lang ?? 'zh';
 const mine = (r, lang) => Boolean(r) && langOf(r) === lang;
 const isEn = r => langOf(r) === 'en';
-/* The syllable table, read on first use (content.mjs `rhymes`). */
-const rhymesOf = content => (typeof content.rhymes === 'function' ? content.rhymes() : content.rhymes) ?? null;
+/* The syllable table, read on first use (content.mjs rhymesTable); a content handed one whole keeps it. */
+const rhymesOf = content => content.rhymes ?? rhymesTable(content);
 const text = v => String(v ?? '').trim();
 const SEEN_KEEP = 60;
 

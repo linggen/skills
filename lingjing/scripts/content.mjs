@@ -139,8 +139,15 @@ const VALUE_FIELDS = new Set(['name']);
 const SETTABLE = { traits: new Set(['v1']) };
 
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
-/* A file read once, on first call (null when absent). */
-const lazyJson = (file) => { let v; return () => (v === undefined ? (v = fs.existsSync(file) ? readJson(file) : null) : v); };
+/* English 对对子's syllable table (rhymes.json, ~340 KB), read on first ask and kept by its file: content
+   names the file only (a plain string — content is cloned and spread), and only the English game asks. */
+const RHYMES = new Map();
+export function rhymesTable(content) {
+  const file = content?.rhymes_file;
+  if (!file) return null;
+  if (!RHYMES.has(file)) RHYMES.set(file, fs.existsSync(file) ? readJson(file) : null);
+  return RHYMES.get(file);
+}
 
 /* The files the 图鉴 resolves over (scripts/codex.js codexOf): the codex and what it links. */
 export const codexFiles = content => ({ codex: content.codex, people: content.people, creatures: content.creatures, items: content.items, arts: content.arts });
@@ -180,9 +187,9 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     aigames: fs.existsSync(path.join(dir, 'aigames.json')) ? readJson(path.join(dir, 'aigames.json')) : null,
     // 对对子's 平仄 (新韵, tools/tone-table.py): P · Z · B as strings of characters (scripts/couplet.js).
     tones: fs.existsSync(path.join(dir, 'tones.json')) ? readJson(path.join(dir, 'tones.json')) : null,
-    // English 对对子's syllables and rhymes (tools/rhyme-table.py, from the CMU dictionary; scripts/rhyme.js): a
-    // function, read on first call — only the English game asks, and every tap of every other game skips the parse.
-    rhymes: lazyJson(path.join(dir, 'rhymes.json')),
+    // English 对对子's syllables and rhymes (tools/rhyme-table.py, from the CMU dictionary; scripts/rhyme.js): its
+    // file, read by rhymesTable on first use — every tap of every other game skips the parse.
+    rhymes_file: path.join(dir, 'rhymes.json'),
     // The companion's past, given back chapter by chapter (companion.mjs § 她的来处).
     lore: fs.existsSync(path.join(dir, 'companion.json')) ? readJson(path.join(dir, 'companion.json')) : null,
     // 斗法小队 (party.json, cards.md § 5): who stands beside the lead in a fight, by the 回.

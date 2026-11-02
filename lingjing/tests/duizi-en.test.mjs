@@ -4,7 +4,7 @@
 // (the same marks, pay, ladder and day as the Chinese); Ling grades the rubric.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loadContent } from '../scripts/content.mjs';
+import { loadContent, rhymesTable } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { forLing, look, playTo, VERBS } from '../scripts/rules.mjs';
 import { checkPrompt, checkRhyme, guessSyllables, rhymeOf, soundsOf, syllablesOf, wordsOf } from '../scripts/rhyme.js';
@@ -14,7 +14,7 @@ import { duiziFormOf, duiziTableOf } from '../scripts/aigames-cards.js';
 
 process.env.LINGJING_STAMINA_LIMIT = '0';
 const content = loadContent();
-const cfg = content.aigames.duizi, en = cfg.english, table = content.rhymes();
+const cfg = content.aigames.duizi, en = cfg.english, table = rhymesTable(content);
 const NOW = new Date('2026-10-15T09:00:00+08:00');
 const ctx = (extra = {}) => ({ now: NOW, quests: [], ...extra });
 const nextDay = (n = 1) => ctx({ now: new Date(NOW.getTime() + n * 86400000) });
