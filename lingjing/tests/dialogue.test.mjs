@@ -100,9 +100,9 @@ test('the last beat brings the choices up — on the stage, its last line faint 
   const beats = [{ text: 'a' }, { name: '马三', text: 'b' }, { text: 'c' }];
   let r = one(beats, 's1');
   assert.equal(choicesUp(r), false);
-  // The quiet controls: 回看 · 自动 全文 跳过 (Hanli, 2026-10-16, over 慢 中 快 and a 跳过 of its own) · the count — never 继续.
-  assert.match(storyHtml(r), /<span class="seg" role="group" aria-label="读法"><button data-dlg-speed="mid" class="on" aria-pressed="true">自动<\/button><button data-dlg-speed="fast" aria-pressed="false">全文<\/button><button data-dlg-speed="skip" aria-pressed="false">跳过<\/button><\/span>/);
-  assert.match(storyHtml(r, { lang: 'en' }), />Auto<\/button>.*>Whole<\/button>.*>Skip<\/button>/);
+  // The quiet controls: 回看 · 自动 手动 跳过 (Hanli, 2026-10-16; 全文 renamed 手动 11-02, over 慢 中 快 and a 跳过 of its own) · the count — never 继续.
+  assert.match(storyHtml(r), /<span class="seg" role="group" aria-label="读法"><button data-dlg-speed="mid" class="on" aria-pressed="true">自动<\/button><button data-dlg-speed="fast" aria-pressed="false">手动<\/button><button data-dlg-speed="skip" aria-pressed="false">跳过<\/button><\/span>/);
+  assert.match(storyHtml(r, { lang: 'en' }), />Auto<\/button>.*>Manual<\/button>.*>Skip<\/button>/);
   assert.doesNotMatch(storyHtml(r), /继续|显示全文|data-dlg-all|>慢<|>中<|>快</);
   assert.match(storyHtml(r), /data-dlg-log>回看</);
   assert.match(storyHtml(r, { speed: 'skip' }), /data-dlg-speed="skip" class="on" aria-pressed="true">跳过</);
