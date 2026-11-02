@@ -1214,8 +1214,8 @@ qian-card.js · qian-page.js · guide/qian.md (银月) · guide/divine.md (Ling)
   the roots' speed, so `paysOf` and every card's shown pay already hold it. One **宜 kind** named by the 签
   (`kinds[(n − 1) mod 4]`): 斗法 (卡牌 · 降妖: mechanic 斗法, table haunt) · 守御 (塔防 · 兽潮: mechanic 塔防/结印, 兽潮's
   `play: tide`) · 文 (灯谜 · 棋局 · 解谜: mechanic 对话/棋牌/解谜/你画我猜) · 武 (格斗 · 切磋: mechanic 格斗/投掷, 切磋's
-  `play: qiecuo`); that kind's 修为 ×1.3 today. **The 宜 hook** for the 时辰 pool: `yiWeightOf(content, state, now, game)`
-  (rules.mjs exports it) → `qian.json yi.weight` (2) for a game of the kind, else 1.
+  `play: qiecuo`); that kind's 修为 ×1.3 today. **The 宜 hook** for the 时辰 pool: `yiWeightOfEntry(content, state, now, row)` on a pool row (a board by its
+  mechanic, 对对子 · 银月出题 as 文), over `yiWeightOf(content, state, now, game)` → `qian.json yi.weight` (2), else 1.
 - **黄历, the rules' facts.** 干支 (年 at 立春, 月 by the 节 — the 节 day the new month's — 日 from the JDN), 建除 (建 the
   day of the month's branch, 《協紀辨方書》卷四; one officer stands two days at each 节, 疊兩值日), 冲 and 三煞, and each
   officer's 宜 · 忌 read from the gods 卷四 sets on it, quoted in qian.json `almanac.officers[].from`. These are the 建除
@@ -1234,13 +1234,14 @@ qian-card.js · qian-page.js · guide/qian.md (银月) · guide/divine.md (Ling)
   and is kept in the save, the last 30; not answering costs nothing).
 - **English:** the same mechanics; the Chinese verse with the game's own plain gloss (no faithful free translation found).
 - **Agent's picks (Hanli delegated 11-02):** 生肖 by 立春, not 春节 · the set's own three grades (上 ×1.2, 中 and 下 ×1.0 —
-  the temple grades no finer) · 宜 by the 签's number · 宜 ×1.3 on 修为 only, 灵石 untouched · the day's speed on the 古
-  line only (a 今 board pays its own line, as the roots' speed does) · 对对子 not yet in 宜文 (its pay carries no tag
-  and duizi.mjs is another agent's; a one-word `play: 'duizi'` on its `mark.pay` joins it) · an old save that cast 问卦
+  the temple grades no finer) · 宜 by the 签's number · 宜 ×1.3 on 修为 only, 灵石 untouched (but at 圆满 the 修为 past the mark turns to 灵石, so speed and 宜 scale that 灵石 too) · the day's speed on the 古
+  line only (a 今 board pays its own line, as the roots' speed does) · 对对子 not yet in 宜文 (its pay carries no tag;
+  duizi.mjs was left to the 对对子 agent — one `play: 'duizi'` on its `mark.pay` joins it) · an old save that cast 问卦
   today may still draw today's 签 · 应验 kept in the save, not in memory (only 银月 writes memory; the save is hers to
   read) · the birthday's date never kept, only its signs · 签谱 shows an undrawn 签 by its number only.
 - **Phone:** the bundle carries all of it (deterministic, no fs); the Flutter app draws no 签 card yet, so the phone
-  pays the day's speed and 宜 but shows nothing of the 签 until it does. Tarot is v2.
+  pays the day's speed and 宜 but shows nothing of the 签 until it does; and there is no phone path for
+  her reading (hersay.js has no 签 moment, so `Lingjing.her` gives none). Tarot is v2.
 
 ## 体力 and 闭关 【已建】
 

@@ -77,7 +77,7 @@ export { greet } from './rules/daily.mjs';
 export { advance, BOOK_MAX } from './rules/errands.mjs';
 export { meet } from './rules/road.mjs';
 export { parseArgs } from './rules/files.mjs';
-export { castThrows, divinationBrief, divine, fate, fateBrief, fateOf, isOfKind, qianBook, qianLook, qianOf, qianPayOf, qianSpeedOf, signOf, yiToday, yiWeightOf } from './rules/fortune.mjs';
+export { castThrows, divinationBrief, divine, fate, fateBrief, fateOf, isOfKind, qianBook, qianLook, qianOf, qianPayOf, qianSpeedOf, signOf, yiToday, yiWeightOf, yiWeightOfEntry } from './rules/fortune.mjs';
 export { almanacOf, pillarsOfDay } from './rules/almanac.mjs';
 export { look } from './rules/look.mjs';
 export { SHOP_KINDS, shopKind, shopsNear } from './rules/shops.mjs';

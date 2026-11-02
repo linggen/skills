@@ -1123,7 +1123,12 @@ const FLOAT_MS = 2200;
 function omenChip() {
   const chip = qianChipHtml(look, lang());
   if (!chip) return '';
-  const pop = view.qianOpen ? `<div class="bookpop qianpop" role="dialog">${qianCardHtml(ctx())}</div>` : '';
+  // The header is drawn before render() marks a cast fresh (castSeen, below): a 签 new since the last draw inks in
+  // here for a few seconds — the same HTML each redraw meanwhile, so the strip is not redrawn and the ink runs once.
+  const cast = look?.divination?.poem ? `${look.today?.date ?? ''}|${look.divination.n}` : null;
+  if (cast && view.castSeen !== undefined && cast !== view.castSeen) view.qianInkUntil = Date.now() + 6000;
+  const inking = Date.now() < (view.qianInkUntil ?? 0);
+  const pop = view.qianOpen ? `<div class="bookpop qianpop" role="dialog">${qianCardHtml({ ...ctx(), castFresh: inking })}</div>` : '';
   return `<span class="qianwrap">${chip}${pop}</span>`;
 }
 

@@ -88,6 +88,21 @@ export function yiWeightOf(content, state, now, game) {
   return isOfKind(yi, game) ? book(content)?.yi?.weight ?? 1 : 1;
 }
 
+/* A tray or pool row (rules/aside.mjs PLAY_KINDS, rules/pool.mjs drawPool) as the 宜 reads a game: a board by its
+   mechanic (games.json, by its task or game), 对对子 and 银月出题 as 文, 切磋 and 兽潮 by their tags, a pool's fight as the
+   haunt's; 饭桶 and 闭关 are no kind. */
+const mechanicOf = (content, e) => (content.games?.games ?? []).find(g => (e.task && g.task === e.task) || (e.game && g.id === e.game && !g.replaced))?.mechanic ?? null;
+export function gameOfEntry(content, e) {
+  if (!e) return null;
+  if (e.kind === 'board') return mechanicOf(content, e) ? { kind: mechanicOf(content, e) } : null;
+  if (e.kind === 'her') return e.id === 'duizi' ? { play: 'duizi' } : e.id === 'kao' ? { kind: '对话' } : null;
+  if (e.kind === 'tide') return { play: e.id === 'qiecuo' ? 'qiecuo' : 'tide' };
+  if (e.kind === 'pool' || e.kind === 'yaoshou') return { table: 'haunt' };
+  return null;
+}
+/* THE 宜 HOOK on a pool row: drawPool may multiply a member's weight by this (1 off the day's kind). */
+export const yiWeightOfEntry = (content, state, now, entry) => yiWeightOf(content, state, now, gameOfEntry(content, entry));
+
 /* 连签: the days in a row he has drawn, as it stands today (0 once a day was missed). */
 function streakNow(state, now) {
   const s = state.qian_book?.streak;

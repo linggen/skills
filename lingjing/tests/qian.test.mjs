@@ -8,7 +8,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { VERBS, look, playTo } from '../scripts/rules.mjs';
 import { almanacOf, ganzhi, monthIndexOf, pillarsOfDay } from '../scripts/rules/almanac.mjs';
-import { divine, fate, fateOf, qianOf, qianPayOf, qianSpeedOf, signOf, yiToday, yiWeightOf, isOfKind } from '../scripts/rules/fortune.mjs';
+import { gameOfEntry, yiWeightOfEntry, divine, fate, fateOf, qianOf, qianPayOf, qianSpeedOf, signOf, yiToday, yiWeightOf, isOfKind } from '../scripts/rules/fortune.mjs';
 import { paysOf } from '../scripts/rules/core.mjs';
 import { qianCardHtml, qianChipHtml } from '../scripts/qian-card.js';
 import { qianFacts } from '../scripts/qian-page.js';
@@ -216,4 +216,19 @@ test('the verb is the page\'s and Ling\'s; before the gate it is shut', () => {
   assert.equal(typeof VERBS.divine, 'function');
   const r = VERBS.divine(base, content, ctx(), {});
   assert.equal(r.result.ok, true);
+});
+
+test('the 宜 hook reads the real tray and pool rows: a board by its mechanic, 对对子 as 文, 切磋 as 武, 兽潮 as 守御', () => {
+  let now = NOW, s = null;
+  for (let d = 0; d < 80 && !s; d++) { now = at(2026, 4, 1 + d); const r = draw(base, now); if (r.state && yiToday(content, r.state, now).id === 'wen') s = r.state; }
+  assert.ok(s, 'a 宜文 day');
+  const board = (content.games.games ?? []).find(g => g.task && g.mechanic === '解谜');
+  assert.equal(gameOfEntry(content, { kind: 'board', task: board.task }).kind, '解谜');
+  assert.equal(yiWeightOfEntry(content, s, now, { kind: 'board', task: board.task }), Q.yi.weight);
+  assert.equal(yiWeightOfEntry(content, s, now, { kind: 'her', id: 'duizi' }), Q.yi.weight);
+  assert.equal(yiWeightOfEntry(content, s, now, { kind: 'fantong', id: 'fantong' }), 1);
+  assert.deepEqual(gameOfEntry(content, { kind: 'tide', id: 'qiecuo' }), { play: 'qiecuo' });
+  assert.deepEqual(gameOfEntry(content, { kind: 'tide', id: 'shouchao-1' }), { play: 'tide' });
+  // every row of a real Look's tray reads without throwing
+  for (const row of look(s, content, ctx(now)).tray ?? []) assert.ok([1, Q.yi.weight].includes(yiWeightOfEntry(content, s, now, row)), JSON.stringify(row));
 });
