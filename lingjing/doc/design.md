@@ -1485,6 +1485,9 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
   `deal.levels` of two or more) varies; else it is fixed. Won is `pool_won` (stamped when a board is counted done, kept
   apart from the 体力卡's reset), or a win an older save kept (★ `stars`, the task done). An errand that still asks for
   the board's win keeps it in. Every hosted board declares or infers it (tests/pool-varies.test.mjs).
+  A deal with a content pool carries what the board deals the next by: `seed` (the save's) and `n`, his wins of it
+  before this play (`pool_wins`, counted as `task done` counts it; an older save won by its ★ alone counts one) — so a
+  replay never asks again what he has won (rules/pool.mjs poolDeal, Look's dealOf).
 - **Yinyue on the stage:** one device, one Yinyue. The game stage is
   voice-only (`?pet=1&stage=1&body=0`, engine a250a04) — no 3D body in the
   game.

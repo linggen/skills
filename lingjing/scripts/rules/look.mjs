@@ -4,6 +4,7 @@ import { linesLook, linesOf } from './lines.mjs';
 import { playGrant } from './playpay.mjs';
 import { CAST, gameOf } from '../content.mjs';
 import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
+import { poolDeal } from './pool.mjs';
 import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, phaseName, realmName, threshold, seedOf, cultivating, layerNo } from '../state.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
@@ -594,7 +595,8 @@ function dealOf(content, task, state, now) {
   // …and a game whose table holds story or realm levels (守炉) deals only those: the 游戏厅's ladder is never a board's.
   const off = l => l.story || l.realm;
   const levels = row?.levels?.some(off) ? row.levels.filter(off) : row?.levels;
-  const own = dealtOf(content, state, task, now);
+  // A content pool (`deal.pool`, 周衡's 灯谜): the seed and his wins so far, for the board to deal the next (rules/pool.mjs poolDeal).
+  const own = { ...dealtOf(content, state, task, now), ...poolDeal(state, task) };
   if (!task.deal && !task.climb && !levels) return {};
   const art = typeof row?.art === 'string' ? games.find(g => g.id === row.art)?.art : row?.art;
   // A thing a 割藤 deal hangs on the vines, named in both languages (拾遗's 灵芝): the reader's.

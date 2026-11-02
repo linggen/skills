@@ -68,3 +68,45 @@ test('a board counted done is stamped won, apart from the 体力卡\'s cooldowns
   assert.equal(lost.pool_won?.[RIDDLE], undefined);
   assert.ok(lost.pool_played?.[RIDDLE], 'played, though');
 });
+
+/* ── The win counter a content pool deals by (the mini-games dev's ask, 11-02): Look's deal carries the save's seed and
+   `n`, his wins of the board before this play; an older save won by its ★ alone counts one. ── */
+const pooledContent = () => { const c = structuredClone(content); task(c, RIDDLE).deal = { ...task(c, RIDDLE).deal, pool: 'dengmi' }; return c; };
+const dealIn = (c, s, now = new Date(2026, 9, 21, 19, 10)) => {
+  const l = look(structuredClone(s), c, { now, quests: [] });
+  return (l.tasks ?? []).find(t => t.id === RIDDLE)?.deal ?? null;
+};
+
+test('a deal with a content pool carries the seed and his wins before this play', () => {
+  const c = pooledContent(), s = at('zhishi');
+  const fresh = dealIn(c, s);
+  assert.ok(fresh, 'the 灯谜 stands at 执事堂 with its deal');
+  assert.equal(fresh.n, 0, 'a fresh save: none');
+  assert.equal(fresh.seed, s.seed ?? fresh.seed);
+  assert.equal(typeof fresh.seed, 'string');
+  assert.equal(fresh.pool, 'dengmi');
+  // One win (the board counted done, as the gated verb stamps it): n 1, and a loss never counts.
+  const won = structuredClone(s);
+  stampPlay(PLAY_KINDS, c, s, won, 'task', { action: 'done', id: RIDDLE }, new Date(2026, 9, 21, 9));
+  assert.equal(won.pool_wins[RIDDLE], 1);
+  assert.equal(dealIn(c, won).n, 1);
+  const lost = structuredClone(won);
+  stampPlay(PLAY_KINDS, c, won, lost, 'task', { action: 'lost', id: RIDDLE }, new Date(2026, 9, 21, 10));
+  assert.equal(lost.pool_wins[RIDDLE], 1);
+  const twice = structuredClone(won);
+  stampPlay(PLAY_KINDS, c, won, twice, 'task', { action: 'done', id: RIDDLE }, new Date(2026, 9, 21, 11));
+  assert.equal(dealIn(c, twice).n, 2);
+});
+
+test('an older save won by its ★ alone counts one — and its next win two, never its first again', () => {
+  const c = pooledContent(), s = at('zhishi', { stars: { [RIDDLE]: 3 } });
+  assert.ok(dealIn(c, s).n >= 1);
+  const next = structuredClone(s);
+  stampPlay(PLAY_KINDS, c, s, next, 'task', { action: 'done', id: RIDDLE }, new Date(2026, 9, 21, 9));
+  assert.equal(next.pool_wins[RIDDLE], 2);
+});
+
+test('a deal without a pool is as it was: no seed, no n', () => {
+  const d = dealIn(content, at('zhishi'));
+  assert.deepEqual(d, task(content, RIDDLE).deal);
+});

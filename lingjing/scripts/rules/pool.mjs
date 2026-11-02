@@ -42,7 +42,12 @@ export function stampPlay(kinds, content, state, next, verb, args, now) {
     const id = k.pool?.plays?.(verb, args, content, state);
     if (id) next.pool_played = { ...(next.pool_played ?? {}), [id]: now.toISOString() };
     const won = k.pool?.won?.(verb, args, content, state);
-    if (won) next.pool_won = { ...(next.pool_won ?? {}), [won]: now.toISOString() };
+    if (won) {
+      next.pool_won = { ...(next.pool_won ?? {}), [won]: now.toISOString() };
+      // …and counted (`pool_wins`): a content pool deals its next by it (poolDeal). Counted on from an older save's
+      // backfill, so the first win stamped here is never taken for his first.
+      next.pool_wins = { ...(next.pool_wins ?? {}), [won]: winsOf(state, won) + 1 };
+    }
   }
 }
 
@@ -65,6 +70,12 @@ export function boardVaries(t) {
 /* Whether a board has ever been won: the pool's own stamp, else what a win left before it (the best ★ `stars`, kept by
    the page's `win`; the task done in the story). */
 export const wonEver = (state, id) => Boolean(state.pool_won?.[id] || state.stars?.[id] != null || state.tasks?.[id]?.status === 'done');
+/* A board's wins so far: the count, else (a save from before it) one when it was ever won, else none. */
+export const winsOf = (state, id) => state.pool_wins?.[id] ?? (wonEver(state, id) ? 1 : 0);
+/* What a deal with a content pool carries (Look's dealOf, the mini-games dev's ask 11-02): the save's seed and `n`, his
+   wins before this play — the board deals the pool's `n`th, so a replay never asks again what he has already won. A deal
+   without a pool: nothing. */
+export const poolDeal = (state, t) => (filled(t?.deal?.pool) ? { seed: seedOf(state), n: winsOf(state, t.id) } : {});
 
 /* A number in (0, 1) from a key: the draw's coin for one member (FNV-1a, then a final mix — rotation.mjs's spread). */
 function coin(key) {
