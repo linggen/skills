@@ -38,6 +38,8 @@ export function stageSave(content, stage) {
   // Every passage the run walked through told, as `seed --at` hands a save over. The scene stays (put down, the rules
   // would read the chapter as not begun); he stands at the game's place, its scene's card a walk away.
   const out = { ...toldUpTo(content, s), place: stage.place };
+  // The 游戏厅's own: a game its pool would deal only at some 时辰 (对对子) stands on it at any hour (duizi.mjs `trial`).
+  out.arcade = stage.save;
   if (stage.her) { const { asleep, ...c } = s.companion ?? {}; out.companion = { ...c, awake: true }; }
   if (stage.wealth) out.wealth = Math.max(s.wealth ?? 0, stage.wealth);
   return out;

@@ -192,6 +192,16 @@ export const winnable = e => Boolean(e && e.beaten && !e.tamed && e.likes);
 /* Where the offer to replay a board stands: its own card only where no scene card carries it among its choices. */
 export const replayOnCard = look => Boolean(look?.replay && !look.scene?.panel);
 
+/* 对对子 (rules/duizi.mjs), one 联 a sitting (Hanli 2026-11-02): the 时辰 pool has it drawn and unplayed here
+   (Look's `tray`; a 游戏厅 save's `trial`, any hour) — the offer; or this sitting's round under way or graded and not yet put away (收下), or his
+   上联 waiting on the teacher. Graded and put away, the card ends until the pool draws 对对子 again. */
+export const duiziDrawn = look => Boolean(look?.duizi?.trial) || (look?.tray ?? []).some(e => e.id === 'duizi' && e.act === 'open');
+export function duiziUp(look) {
+  const d = look?.duizi, r = d?.round;
+  if (!d) return false;
+  return duiziDrawn(look) || Boolean(r && !r.skipped && !r.closed) || Boolean(d.rev && !d.rev.down);
+}
+
 export function stageCards(look, { focus = [], fight = false } = {}) {
   if (!look) return [];
   // A fight takes the whole column: she is in it as a card, and the cards need
@@ -280,8 +290,8 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
     // 论道: the scholar is here (offered), or a game is under way today.
     const word = (look.tasks ?? []).find(t => t.kind === 'word' && t.status !== 'done');
     if ((word || (look.lundao && look.lundao.outcome === 'open')) && !has('lundao')) cards.push({ card: 'lundao' });
-    // AI mini-games: 对对子 where the teacher is. (砍价 is the shelf's own button, 2026-10-28.)
-    if (look.duizi && !has('duizi')) cards.push({ card: 'duizi' });
+    // AI mini-games: 对对子 where the teacher is, one 联 a sitting (duiziUp). (砍价 is the shelf's own button, 2026-10-28.)
+    if (duiziUp(look) && !has('duizi')) cards.push({ card: 'duizi' });
     // 秘境探险: the run's map inside, the door's 重 at the door, what a run paid after it (rules/mijing.mjs).
     if (look.mijing && (look.mijing.inside || look.mijing.door || look.mijing.last || (look.mijing.away && !look.scene?.panel)) && !has('mijing')) cards.push({ card: 'mijing' });
     // Every board open here: the story's, an errand's, and the games this place hosts.

@@ -1140,6 +1140,7 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
 
 **对对子, built 2026-10-16** (rules/duizi.mjs, scripts/couplet.js, aigames.json `duizi`, tones.json, guide `duizi`):
 - **Main:** 先生出上联 (《声律启蒙》, 《笠翁对韵》, a few Tang lines — each oriented so the 上联 ends 仄), he writes the 下联 on the card. A ladder 一字对 → 二字对 → 三字对 → 五言对; 3 good answers open the next rung. 3 paid rounds a day (a game's 体力 each).
+- **One 联 a sitting** (Hanli 2026-11-02, 「可以, 按你说的做」): the three a day stay (`rounds`), but a graded round ends the card — 收下 (Duizi `close`, the page's; kept on the save, so a reload or the phone never brings it back), no 再来. The next 联 comes when the 时辰 pool draws 对对子 again: its pool row rests one 时辰 (rules/aside.mjs `HER_POOL`, `cooldown_min: 0` — out of the row for the rest of the 时辰 it was played in, back in the very next 时辰's draw); the offer (rungs, 请先生出上联) stands on the stage only while the pool has it drawn here (stage.mjs `duiziUp`). The tray reads 「今日 n 联」 and leaves the row once the three are used. The reverse likewise: one a 时辰 (Look's `duizi.rev_now`). Ladder, pay, 银月's buttons and English unchanged.
 - **The rules check the form**, live as he types and again on submit: 字数; the 下联 ends 平 (新韵, tones 1–2 平; tones.json from pypinyin's dictionary by tools/tone-table.py — a polyphone or an unknown character is never failed); 不重位; 不抄字 (a rung's `allow`, particles free).
 - **Ling grades only the rubric** (tool Duizi, 0–2 each): 词性对仗 · 意思工整 · 意境/巧, the classic 下联 to judge by (never said before the grade; the card shows it after). The marks combine both: 工整 (≥5, form holds) · 对上了 (≥3, form holds) pay and count; 差一点 · 没对上 do not. A broken form never pays.
 - **Reverse:** he sets a 上联 (1–5), the teacher answers through Duizi `answer` (the rules check its form); 2 a day, no pay.
@@ -1191,48 +1192,13 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
   meaning. With the pick now always a weekly or monthly (20–30%, the old pick
   10–30%), a day's chore 修为 is 0–10 points of a layer above the old. **Waits
   on Hanli** (the set was approved, not this pay rule). `per_day` unchanged. **一次**
-  (`period: "once"`, 开府 — the first steps, redesigned 2026-11-02; § 开府).
-  The 事 book is one list, every row tagged (差事 · 一次 ·
+  (`period: "once"`, the setup milestones, once 开府) drip **one a day**
+  (Hanli, 2026-10-15): one open, in world.json `kaifu.order`; handed in or
+  skipped (跳过, `state.kaifu`), the next opens the next calendar day; a
+  skipped one comes back at the end and, done, may be handed in any day;
+  paid once ever. The 事 book is one list, every row tagged (差事 · 一次 ·
   每日 · 每周 · 令), grouped 可交 → 已接 → 可接, 已交 folded.
   Apps: CFO, DJ, Shifu, Health (writers named in each app).
-- **开府 — the first steps 【已建】** (Hanli, 2026-11-02: 「任务设计可以, 按你说的做」). Linggen's
-  `linggen.json`, kept by the engine (`linggen/src/server/milestones.rs`), one row per step, each with
-  `title`, `how` (怎么做, ≤ 20 words), `device`, `open` (the exact page; an app's from its SKILL.md
-  `app.entry`) and, for 问道 / 问天, `ask` (the line its button says to 银月 in one tap; empty — open
-  a box to her):
-
-  | id | title | how | Mac | phone | seen by |
-  |---|---|---|---|---|---|
-  | linggen-chat | 问道 · 跟银月说句话 | 在聊天里打一句话给她 | ✓ | ✓ | a person's message to Yinyue (the engine's event stream; the phone's `yinyue-chat` fact) |
-  | linggen-ask-news | 问天 · 问她今天有什么大新闻 | 点「问问她」 | ✓ | ✓ | her turn ran WebSearch (event stream; the phone's `yinyue-search` fact when her web_search ran) |
-  | linggen-voice | 唤银月 · 听见她的声音 | 点她话旁边的喇叭 | ✓ | — | her voice on and a surface holding her (the phone has no voice yet) |
-  | cfo-open | 算账 · 打开 CFO 看看账本 | 点「去 CFO」 | ✓ | ✓ | CFO's entry page served; the phone's `cfo-open` fact |
-  | dj-play | 听琴 · 在 DJ 里放一首歌 | 点「去 DJ」，再点一首 | ✓ | ✓ | an audio file served by DJ; the phone's `dj-play` fact (a counted play) |
-  | health-open | 望气 · 打开 Health 看一眼今天 | 点「去 Health」 | — | ✓ | the phone's `health-open` fact |
-  | linggen-notify | 开灵讯 · 允许银月发通知 | 点「允许」 | — | ✓ | the phone's `linggen-notify` fact (iOS permission granted) |
-  | shifu-scan-first | 洒扫 · 让 Shifu 扫描一次 | 点「去 Shifu」，再点「扫描」 | ✓ | — | Shifu's own `shifu-scan` row ever done |
-  | linggen-image | 灵眼 · 拖一张图给银月看 | 拖一张图进聊天框，@银月 发给她 | ✓ | — | a person's message to Yinyue carrying a picture |
-  | linggen-pair | 结缘 · 手机和 Mac 结契 | 扫一下二维码 | both | both | a paired device; device `pair`: listed only with both |
-
-  - **Devices.** The list holds only the rows the player's devices can do (rules/chores.mjs
-    `playerDevices` · `fitsDevices`, the one device filter): the host the rules run on
-    (`LINGJING_HOST`, `phone` in the phone bundle), and the other once a `pair` row — or a row only
-    it can do — was ever done. Mac-only 7, phone-only 6, both 10; 「开府 n/N」 counts that N. A step
-    seen on both devices is one row (files.mjs `oneRowEach`: the latest `done_at`).
-  - **Hand in at once.** Every done row is 可交 now — each its own 交差, and 「全部交差 · n」 (Quest
-    `turn`, `id: "kaifu"`) for all. Only the **hint** of an undone row drips: one more a day, in
-    world.json `kaifu.order` (`state.kaifu.shown` and `shown_on`, written like the stand —
-    chores.mjs `kaifuFit`). All revealed and done, more waiting: 「下一件明日开」. 跳过 is gone.
-  - **Pay.** 50 灵石 + 20 体力 each, as the row says (`once` table, capped at 50); the card says both
-    (Look's `pays` carries `stamina`), and so does the hand-in line.
-  - **Progress.** 「开府 3/7」 is the group's own line in the 事 panel, never beside one row (Hanli:
-    「这个让linggen记住你的任务没写明怎么完成」).
-  - **The other device.** All handed in on a one-device player's: one uncounted card — on the Mac
-    「手机上也能随身修炼 · App Store」 (the apps.apple.com link), on the phone 「Mac 上还有灵境的大画面 ·
-    linggen.dev」 (world.json `kaifu.other`). Paired, 结缘 and the other device's rows appear.
-  - **Retired** (the engine drops them from `linggen.json`): linggen-model, -account (sign-in comes
-    before the game), -memory, -remote, -mission, -browser, -chatgpt, -phone-chat (→ linggen-chat);
-    CFO's cfo-first-stock (→ cfo-open). A save keeps what it was paid for them.
 - **人间功课 as cultivation 【已建】** (Hanli, 2026-10-22: 「游戏里还要有和其他app如cfo,
   shifu, health等互动」 → 「可以」): each menu entry names its `kind`, a plain
   word of the app's (body · heal · rest · ledger · sweep · ward · song · greet); the

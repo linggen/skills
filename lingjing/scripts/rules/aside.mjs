@@ -55,8 +55,12 @@ const duiziTray = (content, state, now) => (content.aigames?.duizi?.teachers ?? 
   const b = duiziBrief(content, { ...state, place: t.at }, now);
   return b?.rounds_left > 0 ? [{ id: 'duizi', who: b.teacher, left: { unit: 'couplets', n: b.rounds_left }, places: [t.at], opens: 'duizi', stage: 'duizi' }] : [];
 }).slice(0, 1);
-/* 小游戏池's rows for 银月's games (rules/pool.mjs): an AI game rests a day; its 时辰's lean. */
-const HER_POOL = { duizi: { cooldown_min: 24 * 60, when: ['wu', 'wei'], cost: 'game' }, kao: { cooldown_min: 24 * 60, when: ['you', 'xu'], cost: 'game' } };
+/* 小游戏池's rows for 银月's games (rules/pool.mjs), each with its 时辰's lean. 本王考考你 rests a day (one a day).
+   对对子 rests one 时辰 (Hanli 2026-11-02: three 联 a day, one a sitting): played, it is out of the row for the rest
+   of the 时辰 it was played in (pool.mjs `played`) and back in the very next 时辰's draw — so its cooldown is 0
+   minutes past that 时辰. 120 would miss the next draw (a play at 11:30 is 90 min old when 未 starts at 13:00).
+   Its three a day stay the rules' (duizi.mjs `rounds`): the entry leaves the row once they are used. */
+const HER_POOL = { duizi: { cooldown_min: 0, when: ['wu', 'wei'], cost: 'game' }, kao: { cooldown_min: 24 * 60, when: ['you', 'xu'], cost: 'game' } };
 /* A practice board's lean by the kind of game it is (agent's pick, Hanli delegated 11-02): a riddle at dusk, a night watch at night. */
 const BOARD_LEAN = { jinchat: ['you', 'xu'], shoulu: ['hai', 'zi'], shouqiang: ['hai', 'zi'], sadoushou: ['hai', 'zi'] };
 /* The practice boards of every place on the painted map he stands on (the 观), each once, where he stands first. */
@@ -130,7 +134,7 @@ export const PLAY_KINDS = [
         .map(t => ({ id: 'kao', task: t.id, title: t.title, left: { unit: 'rounds', n: t.left }, opens: 'play', arg: t.id, stage: `board:${t.id}`, ...(t.open ? { resume: true } : {}) })),
       ...(view && !view.divination && !lockedIn(view, 'divine') ? [{ id: 'divine', left: { unit: 'today' }, opens: 'divine', stage: 'hexagram' }] : []),
     ],
-    // In the pool: 对对子 and 银月出题 (AI games: a day's rest). 问卦 is not: once a day, fixed, as it was.
+    // In the pool: 对对子 (a 时辰's rest) and 银月出题 (a day's rest). 问卦 is not: once a day, fixed, as it was.
     pool: {
       row: e => HER_POOL[e.id] ?? null,
       plays: (verb, args) => (verb === 'duizi' && ['open', 'submit'].includes(args.action) ? 'duizi' : verb === 'kao' && args.action === 'open' ? 'kao' : null),

@@ -12,6 +12,8 @@ import { newState } from '../scripts/state.mjs';
 import { forLing, look, playTo, VERBS } from '../scripts/rules.mjs';
 import { checkCouplet, checkUpper, hanOf, toneOf } from '../scripts/couplet.js';
 import { markFor } from '../scripts/rules/duizi.mjs';
+import { drawPool, shichenOf } from '../scripts/rules/pool.mjs';
+import { PLAY_KINDS } from '../scripts/rules/aside.mjs';
 import { stageCards } from '../scripts/stage.mjs';
 import { cardHtml, WORDS } from '../scripts/cards.js';
 import { topics, guideText } from '../scripts/rules/guide.mjs';
@@ -275,6 +277,121 @@ test('reverse: his 上联, the teacher\'s 下联 checked by the rules; no pay, a
   for (let i = 1; i < cfg.reverse; i++) x = must(must(x, { action: 'reverse', up: '明月' }).s, { action: 'answer', down: '清风' }, asLing()).s;
   assert.equal(run(x, { action: 'reverse', up: '夜雨' }).r.refused, 'reverse-done');
   assert.equal(must(x, { action: 'reverse', up: '夜雨' }, nextDay()).r.reversed, true, 'tomorrow, again');
+});
+
+/* ════════ one 联 a sitting (Hanli 2026-11-02: 「可以, 按你说的做」) ════════
+   Three 联 a day still, but one a sitting: graded, the card ends (收下, no 再来); the next comes when the 时辰 pool
+   draws 对对子 again — its cooldown one 时辰 (aside.mjs HER_POOL). Times from shichenOf, so any TZ reads the same. */
+
+const HOUR2 = 2 * 3600_000;
+const at = (t, extra = {}) => ctx({ now: t, ...extra });
+/* 40 minutes into each 时辰 of the first whole day after NOW, 丑 to 亥, in whatever TZ the test runs — 子 left out:
+   from 23:00 it is the pool's next day (pool.mjs shichenOf) but the calendar's today (duizi.mjs dayOf, dayKey). */
+const ZI = (() => { let t = shichenOf(NOW).end; while (shichenOf(t).i !== 0) t = shichenOf(t).end; return t; })();
+const SITTINGS = Array.from({ length: 11 }, (_, i) => new Date(ZI.getTime() + (i + 1) * HOUR2 + 40 * 60_000));
+const drawnHere = (s, t) => (look(s, content, at(t)).tray ?? []).some(e => e.id === 'duizi' && e.act === 'open');
+const html = (s, t, lang = 'zh') => cardHtml({ card: 'duizi' }, { look: look(s, content, at(t)), words: WORDS[lang], lang });
+/* One sitting at `t`: open (the gated verb stamps the pool), the classic 下联, Ling's grade. */
+const sitting = (s, t) => {
+  let x = must(s, { action: 'open' }, at(t)).s;
+  x = must(x, { action: 'submit', down: x.duizi.round.ref }, at(new Date(+t + 60_000))).s;
+  return must(x, { action: 'grade', pos: 2, sense: 2, art: 1 }, asLing({ now: new Date(+t + 120_000) })).s;
+};
+
+test('one 联 a sitting: graded, the card ends with 收下 — no 再来, in Chinese and English', () => {
+  for (const lang of ['zh', 'en']) {
+    const s0 = { ...base, lang }, t = SITTINGS.find(x => drawnHere(s0, x));
+    assert.ok(t, `${lang}: some 时辰 draws 对对子`);
+    // Drawn: the offer stands on the stage, its rungs and 请先生出上联.
+    assert.ok(stageCards(look(s0, content, at(t))).some(c => c.card === 'duizi'));
+    assert.match(html(s0, t, lang), /data-duizi-open/);
+    const g = sitting(s0, t), t1 = new Date(+t + 5 * 60_000);
+    assert.ok(new Date(g.pool_played?.duizi) >= shichenOf(t).start, 'the open stamped the 时辰 pool');
+    const graded = html(g, t1, lang);
+    assert.match(graded, /data-duizi-close/);
+    assert.match(graded, lang === 'zh' ? />收下</ : />Take it</);
+    assert.doesNotMatch(graded, /data-duizi-open|data-duizi-rung/, `${lang}: no 再来, no rungs`);
+    assert.doesNotMatch(graded, /再来|Another/);
+    assert.ok(stageCards(look(g, content, at(t1))).some(c => c.card === 'duizi'), 'graded, it stands until 收下');
+    // 收下: the card is gone, the tray row too, for the rest of the 时辰 — and a reload keeps it so (the save's `closed`).
+    const c = must(g, { action: 'close' }, at(t1));
+    assert.equal(c.r.closed, true);
+    assert.equal(c.s.duizi.round.closed, true);
+    for (const later of [t1, new Date(shichenOf(t).end - 60_000)]) {
+      const L = look(c.s, content, at(later));
+      assert.ok(!stageCards(L).some(x => x.card === 'duizi'), `${lang}: off the stage at ${later.toISOString()}`);
+      assert.ok(!(L.tray ?? []).some(e => e.id === 'duizi'), 'out of the row');
+      assert.doesNotMatch(html(c.s, later, lang), /data-duizi-open/, 'no begin, even drawn by hand');
+    }
+    assert.equal(run(c.s, { action: 'close' }, at(t1)).r.again, true, 'once');
+    assert.equal(run(base, { action: 'close' }).r.refused, 'not-graded');
+    // The ladder is the ladder: a good answer counted on its rung, pay as before.
+    assert.equal(c.s.duizi.good[g.duizi.round.rung], 1);
+    assert.ok(c.s.wealth > s0.wealth);
+  }
+});
+
+test('one 联 a sitting: the pool brings 对对子 back the very next 时辰, the day\'s three still the cap', () => {
+  const her = PLAY_KINDS.find(k => k.kind === 'her');
+  assert.equal(her.pool.row({ id: 'duizi' }).cooldown_min, 0, '对对子 rests out its own 时辰 only');
+  assert.equal(her.pool.row({ id: 'kao' }).cooldown_min, 24 * 60, '本王考考你 rests a day still');
+  // The boundary, in the draw alone (one member, so drawn whenever it is in the pool): played 40 minutes into a 时辰
+  // (and in its last minute), out of the row to its end, back at the next 时辰's first minute; 出题 not.
+  const sc = shichenOf(SITTINGS[0]), next = new Date(+sc.end + 60_000);
+  for (const id of ['duizi', 'kao']) {
+    for (const playedAt of [new Date(+sc.start + 40 * 60_000), new Date(+sc.end - 60_000)]) {
+      const s = { ...base, pool_played: { [id]: playedAt.toISOString() } }, row = [{ kind: 'her', id, seg: 'open' }];
+      const now = drawPool(content, s, row, PLAY_KINDS, new Date(+sc.end - 30_000)).drawn.find(e => e.id === id);
+      assert.equal(now?.played, true, `${id}: played, out of the row for the rest of its 时辰`);
+      const then = drawPool(content, s, row, PLAY_KINDS, next).drawn.find(e => e.id === id);
+      if (id === 'duizi') assert.ok(then && !then.played, `对对子 back in the next 时辰 (played ${playedAt.toISOString()})`);
+      else assert.equal(then, undefined, '出题 rests its day');
+    }
+  }
+  // Through Look: three sittings in three drawn 时辰 of one day, then none — the row and the stage both.
+  let s = base, n = 0;
+  const today = SITTINGS;
+  assert.equal(new Set(today.map(t => shichenOf(t).day)).size, 1, 'one day of 时辰');
+  for (const t of today) {
+    if (n === cfg.rounds || !drawnHere(s, t)) continue;
+    s = must(sitting(s, t), { action: 'close' }, at(new Date(+t + 300_000))).s;
+    n += 1;
+  }
+  assert.equal(n, cfg.rounds, `three drawn 时辰 in a day (${today.filter(t => drawnHere(base, t)).length} drawn on a fresh save)`);
+  assert.equal(s.duizi.played, cfg.rounds);
+  for (const t of today.filter(x => x > new Date(s.pool_played.duizi))) {
+    const L = look(s, content, at(t));
+    assert.ok(!(L.tray ?? []).some(e => e.id === 'duizi'), `the day's three used: never in the row (${t.toISOString()})`);
+    assert.ok(!stageCards(L).some(c => c.card === 'duizi'));
+  }
+  const last = today.at(-1);
+  assert.equal(run(s, { action: 'open' }, at(last)).r.refused, 'rounds-done', 'the rules keep the cap');
+});
+
+test('the tray reads 今日 n 联 from Look, one less after a sitting', () => {
+  const t = SITTINGS.find(x => drawnHere(base, x));
+  const e = look(base, content, at(t)).tray.find(x => x.id === 'duizi');
+  assert.deepEqual(e.left, { unit: 'couplets', n: cfg.rounds });
+  assert.equal(WORDS.zh.trayLeft.couplets, '今日 {n} 联');
+  const s = must(sitting(base, t), { action: 'close' }, at(t)).s;
+  const back = SITTINGS.find(x => x > t && shichenOf(x).day === shichenOf(t).day && drawnHere(s, x));
+  if (back) assert.equal(look(s, content, at(back)).tray.find(x => x.id === 'duizi').left.n, cfg.rounds - 1);
+});
+
+test('the reverse, one a sitting: his 上联 answered, no second form until the next 时辰', () => {
+  const t = SITTINGS[0], t2 = new Date(+shichenOf(t).end + 40 * 60_000);
+  const r1 = must(base, { action: 'reverse', up: '春雨' }, at(t)).s;
+  const a1 = must(r1, { action: 'answer', down: '秋风' }, asLing({ now: t })).s;
+  assert.equal(look(a1, content, at(t)).duizi.rev_now, true);
+  const now = html(a1, t);
+  assert.match(now, /<span>秋<\/span><span>风<\/span>/, 'his line and the answer shown');
+  assert.doesNotMatch(now, /id="duizi-up"/, 'no second 上联 this sitting');
+  const later = look(a1, content, at(t2)).duizi;
+  assert.equal(later.rev_now, undefined);
+  assert.equal(later.reverse_left, cfg.reverse - 1);
+  const next = html(a1, t2);
+  assert.match(next, /id="duizi-up"/, 'the next 时辰: one more');
+  assert.doesNotMatch(next, /<span>秋<\/span>/, 'the earlier sitting\'s is not this card\'s');
 });
 
 /* ════════ 银月 ════════ */

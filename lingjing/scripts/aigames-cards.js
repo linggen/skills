@@ -6,6 +6,7 @@
 import { esc } from './esc.js';
 import { CHECK_IDS, checkCouplet } from './couplet.js';
 import { RHYME_CHECK_IDS, checkRhyme } from './rhyme.js';
+import { duiziDrawn } from './stage.mjs';
 
 export const AI_WORDS = { zh: {}, en: {} };
 
@@ -17,10 +18,12 @@ const note = (ctx) => (ctx.aiNote ? `<div class="donote">${esc(ctx.aiNote)}</div
    hung (in English, a rhyming-couplet ladder: the line above, the answer
    below, rhyme.js's checks); the form's checks (couplet.js) drawn as he types — the page updates
    them in place (lingjing.js) — and the teacher's grades once Ling has
-   graded. 银月's two buttons only while she is awake (Look's `duizi.her`). */
+   graded. 银月's two buttons only while she is awake (Look's `duizi.her`).
+   One 联 a sitting (Hanli 2026-11-02): graded, the card ends with 收下 — no 再来; the offer (rungs,
+   请先生出上联) stands only while the 时辰 pool has 对对子 drawn (Look's `tray`); the reverse, one a 时辰. */
 export const DUIZI_WORDS = {
   zh: {
-    title: '对对子 · {who}', offer: '{who}出上联，你对下联。字数、平仄、重字，当场就看得出；词性、意思、意境，先生看了再说。', begin: '请先生出上联', again: '再来一联（今日还剩 {n} 联）',
+    title: '对对子 · {who}', offer: '{who}出上联，你对下联。字数、平仄、重字，当场就看得出；词性、意思、意境，先生看了再说。', begin: '请先生出上联', close: '收下',
     done: '今天的对子对够了 · 明日再来', rung: '{name} · 好对 {good}/{need}', rungShut: '{name}（未到）', up: '上联', down: '下联', write: '写下联……',
     send: '对上', skip: '放下这一联', waiting: '{who}捻着胡子，细看你这一联', resend: '再请先生看看',
     checks: { len: '字数', tail: '平仄', same: '不重位', copy: '不抄字' }, verdict: { ok: '✓', bad: '✗', unsure: '?', wait: '…' },
@@ -32,7 +35,7 @@ export const DUIZI_WORDS = {
   },
   en: {
     row: true, input: 'en',
-    title: 'Couplets · {who}', offer: '{who} gives a line; you answer it. Syllables, rhyme and copying show as you type; contrast, fit and wit are his to judge.', begin: 'Ask for a line', again: 'Another ({n} left today)',
+    title: 'Couplets · {who}', offer: '{who} gives a line; you answer it. Syllables, rhyme and copying show as you type; contrast, fit and wit are his to judge.', begin: 'Ask for a line', close: 'Take it',
     done: 'Enough couplets for today · come back tomorrow', rung: '{name} · good {good}/{need}', rungShut: '{name} (not yet)', up: 'Line', down: 'Answer', write: 'Write your answer…',
     send: 'Answer', skip: 'Let this one go', waiting: '{who} strokes his beard over your line', resend: 'Ask him to look again',
     checks: { one: 'one word', len: 'syllables', rhyme: 'rhyme', copy: 'not copied' }, verdict: { ok: '✓', bad: '✗', unsure: '?', wait: '…' },
@@ -113,15 +116,16 @@ function pendingHtml(d, r, w, ctx) {
 
 /* The reverse: his 上联 for the teacher, the answer once Ling gives it. */
 function reverseHtml(d, w, ctx) {
-  const v = d.rev;
+  // An earlier sitting's, answered, is not this card's; one waiting on the teacher still shows.
+  const v = d.rev && (!d.rev.down || d.rev_now) ? d.rev : null;
   const shown = v ? `${pairHtml(v.up, v.down ?? '', w)}${v.down ? `<div class="dzchecks">${duiziChecksHtml(v.form, w)}</div>` : waitHtml(say(w.revWait, { who: d.teacher }))}` : '';
-  const form = (!v || v.down) && d.reverse_left ? `<div class="fateform"><input type="text" id="duizi-up" ${fieldOf(w, d.max)} autocomplete="off" placeholder="${esc(say(w.revWrite, { max: d.max }))}" value="${esc(ctx.duiziUp ?? '')}">
+  const form = !d.rev_now && d.reverse_left ? `<div class="fateform"><input type="text" id="duizi-up" ${fieldOf(w, d.max)} autocomplete="off" placeholder="${esc(say(w.revWrite, { max: d.max }))}" value="${esc(ctx.duiziUp ?? '')}">
     <button class="act quiet" data-duizi-reverse>${esc(w.revSend)}</button></div><div class="small dim">${esc(say(w.revLeft, { n: d.reverse_left }))}</div>` : '';
   if (!shown && !form) return '';
   return `<details class="dzrev"${v || ctx.duiziRevOpen ? ' open' : ''}><summary class="small">${esc(w.revTitle)}</summary>${shown}${form}</details>`;
 }
 
-const STATE_OF = (r) => (!r || r.skipped ? 'none' : r.mark ? 'graded' : r.pending ? 'pending' : 'open');
+const STATE_OF = (r) => (!r || r.skipped || r.closed ? 'none' : r.mark ? 'graded' : r.pending ? 'pending' : 'open');
 const BODY = { open: openHtml, pending: pendingHtml, graded: gradedHtml, none: () => '' };
 
 /// 对对子 — offered at the teacher's place; under way, the pair and its checks; graded, the teacher's marks.
@@ -132,10 +136,9 @@ export function duizi(card, ctx) {
   const d = { ...d0, pick: ctx.duiziRung && d0.rungs.some((r) => r.id === ctx.duiziRung && r.open) ? ctx.duiziRung : d0.rung };
   const r = d.round, st = STATE_OF(r);
   const head = `<div class="cardtitle">${esc(say(w.title, { who: d.teacher }))}</div>`;
-  const ready = st === 'none' || st === 'graded';
-  const next = !ready ? '' : d.rounds_left
-    ? `${rungsHtml(d, w)}<div class="acts"><button class="act" data-duizi-open>${esc(st === 'graded' ? say(w.again, { n: d.rounds_left }) : w.begin)}</button></div>`
-    : `<div class="boarddone">${esc(w.done)}</div>`;
+  const next = st === 'graded' ? `<div class="acts"><button class="act" data-duizi-close>${esc(w.close)}</button></div>`
+    : st !== 'none' ? '' : !d.rounds_left ? `<div class="boarddone">${esc(w.done)}</div>`
+      : duiziDrawn(ctx.look) ? `${rungsHtml(d, w)}<div class="acts"><button class="act" data-duizi-open>${esc(w.begin)}</button></div>` : '';
   const intro = st === 'none' ? `<div class="small dim">${esc(say(w.offer, { who: d.teacher }))}</div>` : '';
   return `<div class="card duizi">${head}${intro}${BODY[st](d, r, w, ctx)}${next}${reverseHtml(d, w, ctx)}${note(ctx)}</div>`;
 }

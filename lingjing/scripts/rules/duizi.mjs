@@ -15,6 +15,9 @@
 // (cfgOf); its form is scripts/rhyme.js (syllables, rhyme, not copied) on
 // rhymes.json. A round or a reverse in English carries `lang: 'en'`; one with
 // none is Chinese, as every save before it.
+// One 联 a sitting (Hanli 2026-11-02, 「可以, 按你说的做」): `rounds` stay a day's count, but a graded round ends
+// the card — 收下 (`close`) puts it away, and the next 联 comes when the 时辰 pool draws 对对子 again
+// (rules/aside.mjs `her` pool row, cards aigames-cards.js). The reverse likewise: one a 时辰 (`rev_now`).
 import { dayKey, pick, seedOf } from '../state.mjs';
 import { clone, pay, refuse, spendStamina } from './core.mjs';
 import { hashOf } from './travel.mjs';
@@ -23,6 +26,7 @@ import { ofJuan } from './world.mjs';
 import { checkCouplet, checkUpper, hanOf } from '../couplet.js';
 import { checkPrompt, checkRhyme, hasRhyme, wordsOf } from '../rhyme.js';
 import { rhymesTable } from '../content.mjs';
+import { shichenOf } from './pool.mjs';
 
 const baseOf = content => content.aigames?.duizi ?? null;
 /* The game in a language: the Chinese as authored; another, its overlay (`duizi.english`, `lang`)
@@ -74,6 +78,8 @@ const rungsOpen = (t, d) => t.rungs.filter((id, i) => i === 0 || d.open.includes
 const herHere = (content, state) => herAwake(state) && !herAway(content, state);
 const roundGraded = r => Boolean(r?.mark);
 const roundPending = r => Boolean(r?.down) && !r.mark;
+/* His 上联 set in this 时辰: this sitting's reverse is used (one a sitting, as a round is). */
+const revNow = (v, now) => Boolean(v?.at) && new Date(v.at) >= shichenOf(now).start;
 
 /* ════════ What the page and Ling see — never the classic 下联 before the grade ════════ */
 
@@ -87,6 +93,7 @@ function roundBrief(content, state, r) {
     ...(r.down ? { down: r.down, form: r.form } : {}),
     ...(roundPending(r) ? { pending: true, sent_at: r.sent_at } : {}),
     ...(r.skipped ? { skipped: true } : {}),
+    ...(r.closed ? { closed: true } : {}),
     ...(roundGraded(r) ? { grades: r.grades, sum: r.sum, mark: markBrief(content, r.mark, lang), ref: r.ref, src: r.src, ...(r.paid ? { paid: r.paid } : {}) } : {}),
     ...(r.unlocked ? { unlocked: r.unlocked } : {}),
     ...(r.hint ? { hint_used: true } : {}),
@@ -108,7 +115,10 @@ export function duiziBrief(content, state, now) {
     rubric: cfg.rubric.map(x => ({ id: x.id, name: pick(x.name, lang) })),
     ...(mine(d.round, lang) ? { round: roundBrief(content, state, d.round) } : {}),
     ...(mine(d.rev, lang) ? { rev: d.rev } : {}),
+    ...(mine(d.rev, lang) && revNow(d.rev, now) ? { rev_now: true } : {}),
     ...(her ? { her: true } : {}),
+    // A 游戏厅 save (tools/arcade-saves.mjs `arcade`): the offer stands at any hour, the 时辰 pool aside.
+    ...(state.arcade ? { trial: true } : {}),
   };
 }
 
@@ -210,6 +220,16 @@ function submit(state, content, ctx, args, s, d) {
   Object.assign(r, { down, form, sent_at: ctx.now.toISOString() });
   s.duizi = d;
   return done(ctx, content, s, { submitted: true, form });
+}
+
+/* 收下: a graded round put away — the card ends; the next 联 is the 时辰 pool's to bring. */
+function close(state, content, ctx, args, s, d) {
+  const r = d.round;
+  if (!roundGraded(r)) return refuse('not-graded', null, viewFor(ctx, content, state, {}));
+  if (r.closed) return { state: null, result: viewFor(ctx, content, state, { again: true }) };
+  r.closed = true;
+  s.duizi = d;
+  return done(ctx, content, s, { closed: true });
 }
 
 function skip(state, content, ctx, args, s, d) {
@@ -321,6 +341,7 @@ const ACTIONS = {
   open: { by: ['page'], run: open },
   submit: { by: ['page', 'ling'], run: submit },
   skip: { by: ['page'], run: skip },
+  close: { by: ['page'], run: close },
   reverse: { by: ['page'], run: reverse },
   grade: { by: ['ling'], run: grade },
   answer: { by: ['ling'], run: answer },
