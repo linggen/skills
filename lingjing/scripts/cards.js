@@ -836,7 +836,7 @@ function seclusion(card, ctx) {
   const grows = e.grows ? grownLines(e, w) : `<div class="small dim">${esc(say(w.secludeTooShort, { min: e.min }))}</div>${qi ? `<div>${qi}</div>` : ''}`;
   return `<div class="card seclusion">${gateArt(e.art, ctx)}<div class="cardtitle">${esc(say(w.secludingTitle, { what }))}${secludeLevel(e.focus, t, w)}</div>
     ${secludeBar(e.focus, t, w, ctx)}
-    <div class="small">${esc(say(w.secludeHours, { h: e.hours, cap: e.cap }))} · ${esc(e.full_at ? say(w.secludeRestAt, { n: Math.max(1, Math.ceil((new Date(e.full_at) - Date.now()) / 60_000)) }) : w.secludeRestFull)}</div>${pill}
+    <div class="small">${esc(say(w.secludeHours, { h: e.hours, cap: e.cap }))} · ${esc(e.full_at ? say(w.secludeRestAt, { n: ctx.look?.stamina?.fill_min || Math.max(1, Math.ceil((new Date(e.full_at) - Date.now()) / 60_000)) }) : w.secludeRestFull)}</div>${pill}
     <div class="secludenow"><div class="small dim">${esc(w.secludeIfNow)}</div>${grows}</div>
     <div class="acts"><button class="act" data-emerge>${esc(e.grows ? w.emergeBtn : w.emergeEarly)}</button></div></div>`;
 }
@@ -2037,8 +2037,9 @@ export function trayHourChipHtml(ctx) {
 /// minutes left; else 闭关 (one tap, behind every gate — rules/locks.mjs) and 喂饭桶. No clock refills it (Hanli 2026-11-02).
 function trayRestHtml(ctx) {
   const w = ctx.words, st = ctx.look?.stamina, inside = Boolean(ctx.look?.seclusion);
+  // Minutes as the rules count them (Look's `fill_min`, on the save's own clock — a shifted test save too), else from `full_at`.
   const left = st?.full_at ? Math.max(1, Math.ceil((new Date(st.full_at) - Date.now()) / 60_000)) : null;
-  const n = inside ? left : st?.fill_min || left;
+  const n = st?.fill_min || left;
   const title = say(inside ? w.trayRest : w.trayRestOut, { n: n ?? '…' });
   const up = inside ? '' : `<button class="act" data-seclude-open>${esc(w.trayRestUp)}</button>`;
   return `<div class="card task timed rest" data-tray="rest"><div class="tasktitle">${esc(title)}</div>

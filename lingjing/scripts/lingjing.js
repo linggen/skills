@@ -749,10 +749,12 @@ function qi() {
   const q = look?.stamina;
   // 体力 off (state.mjs staminaLimited — LINGJING_STAMINA_LIMIT=0 for a run): no pool on the strip at all.
   if (!q || !q.max || q.off) return null;
-  const { p, st } = qiState(q.now, q.max, Boolean(q.empty));
+  // In 闭关 the word follows the count as it rises (resting or not: the sitting is the rest).
+  const { p, st } = qiState(q.now, q.max, Boolean(q.empty) && !look.seclusion);
   // When the player can go on again: the pool full (rest = max). Only while a 闭关 runs is that an hour on the
   // clock — no clock refills it (Hanli 2026-11-02); spent outside one, the pool shows its count and opens 闭关.
-  const back = look.seclusion ? q.rest_at ?? q.returns_at : null;
+  // The minutes as the rules count them (`fill_min`, the save's own clock), from now on the page's.
+  const back = look.seclusion && q.fill_min ? new Date(Date.now() + q.fill_min * 60_000).toISOString() : null;
   return { st, p, now: q.now, max: q.max, refillAt: back ? Math.floor(new Date(back).getTime() / 1000) : null };
 }
 
