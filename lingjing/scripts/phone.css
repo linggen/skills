@@ -56,7 +56,7 @@
     border-radius: 14px 14px 0 0; border-bottom: 0; box-shadow: 0 -10px 32px rgba(20, 14, 6, .22); }
   .slotfoot .shelfpop { flex-wrap: wrap; }
   /* 手边的棋局 under the footer: shorter on a phone, and away while a game, the map or a fight has the stage. */
-  .tray { max-height: 112px; }
+  .tray { max-height: 132px; }
   .shell.autofold .tray { display: none; }
   /* The boards fit the screen's height as well as its width: the header, footer, bar and the card's own
      title and controls are ~320–400px of a phone, the board gets the rest — no scrolling inside a game. */

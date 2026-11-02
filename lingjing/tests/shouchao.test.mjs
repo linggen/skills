@@ -248,8 +248,13 @@ test('waiting out the cooldown: the row stands past midnight with the time left,
   // Look's `waits` carries it in the one shape every cooldown has; the tray (cards.js) draws it — no 开局.
   const w = look(next, content, ctx(day(21, 0, 10))).waits?.find((x) => x.id === T.id);
   assert.deepEqual(w, { id: T.id, title: row.title, shut: row.shut, wait_min: row.wait_min });
+  // …and Look's `tray` (rules/tray.mjs) the same wait, muted at the row's end: the night just held, the minutes left.
+  const cool = look(next, content, ctx(day(21, 0, 10))).tray?.find((x) => x.id === T.id);
+  assert.equal(cool.seg, 'cool');
+  assert.equal(cool.wait_min, w.wait_min);
+  assert.deepEqual(cool.left, { unit: 'night', n: 1 });
   for (const [lang, chip] of [['zh', `约 ${Math.ceil(w.wait_min / 15)} 刻后`], ['en', `back in about ${w.wait_min} min`]]) {
-    const html = trayHtml({ look: { tasks: [row], waits: [{ ...w, shut: T.shouchao.shut[lang] }] }, lang, words: WORDS[lang], qi: { st: 'full' } });
+    const html = trayHtml({ look: { tasks: [row], tray: [{ ...cool, shut: T.shouchao.shut[lang] }] }, lang, words: WORDS[lang], qi: { st: 'full' } });
     assert.ok(html.includes(`data-wait="${T.id}"`), lang);
     assert.ok(html.includes(T.shouchao.shut[lang]) || lang === 'en', `${lang}: the world's line`);
     assert.ok(html.includes(chip), `${lang}: ${html}`);
@@ -258,5 +263,5 @@ test('waiting out the cooldown: the row stands past midnight with the time left,
   // Past it: no wait.
   assert.equal(look(next, content, ctx(new Date(day(20, 23, 30).getTime() + H * 3600_000))).waits?.find((x) => x.id === T.id), undefined);
   // The done task row itself never stands in the tray: the wait is the row.
-  assert.equal(trayHtml({ look: { tasks: [row] }, lang: 'zh', words: WORDS.zh, qi: { st: 'full' } }), '');
+  assert.equal(trayHtml({ look: { tasks: [row] }, lang: 'zh', words: WORDS.zh, qi: { st: 'full' } }), `<div class="small dim trayempty">${WORDS.zh.trayEmpty}</div>`);
 });

@@ -66,6 +66,16 @@ export function qiecuoWait(content, state, now) {
   if (!t || !qiecuoWaiting(content, state, t.id, now)) return null;
   return { id: t.id, title: pick(t.qiecuo.title, state.lang), shut: pick(t.qiecuo.shut, state.lang) ?? null, wait_min: Math.ceil(boutWait(content, state, now) / 60_000) };
 }
+/* 手边的棋局's entry (rules/tray.mjs): the bout wherever he may spar (沉鼎观's `places`) — up, or the minutes left. */
+export function qiecuoTray(content, state, now) {
+  const t = boutTask(content);
+  if (!t) return [];
+  const at = t.qiecuo.places ?? null;
+  if (!boutUp(content, at && !at.includes(state.place) ? { ...state, place: at[0] } : state, t)) return [];
+  const wait = boutWait(content, state, now);
+  const row = { id: t.id, task: t.id, title: pick(t.qiecuo.title, state.lang), places: at, opens: 'play', arg: t.id, stage: `board:${t.id}` };
+  return [wait > 0 ? { ...row, wait_min: Math.ceil(wait / 60_000), shut: pick(t.qiecuo.shut, state.lang) ?? null } : row];
+}
 /* Inside the cooldown where he may spar: refused in the world's words, with the minutes left — else null. */
 export function qiecuoShut(content, state, id, now) {
   const t = boutTask(content);

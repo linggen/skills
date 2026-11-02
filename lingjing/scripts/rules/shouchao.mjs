@@ -100,6 +100,18 @@ export function shouchaoWait(content, state, now) {
   const r = shouchaoRow(content, state, now);
   return { id: t.id, title: r.title, shut: r.shut ?? null, wait_min: r.wait_min };
 }
+/* 手边的棋局's entry (rules/tray.mjs): the tide wherever he may join it (沉鼎观's `places`) — up, the night he would hold
+   (第N潮); inside the cooldown, the night just held and the minutes left. Joined only in the 观: elsewhere the tray walks him there. */
+export function shouchaoTray(content, state, now) {
+  const t = tideTask(content);
+  if (!t) return [];
+  const at = t.shouchao.places ?? null;
+  if (!tideUp(content, at && !at.includes(state.place) ? { ...state, place: at[0] } : state, t)) return [];
+  const wait = tideWait(content, state, now), held = heldN(state.shouchao ?? {});
+  const row = { id: t.id, task: t.id, title: pick(t.shouchao.title, state.lang), places: at, opens: 'play', arg: t.id, stage: `board:${t.id}` };
+  if (wait > 0) return held > 0 ? [{ ...row, left: { unit: 'night', n: held }, wait_min: Math.ceil(wait / 60_000), shut: pick(t.shouchao.shut, state.lang) ?? null }] : [];
+  return [{ ...row, left: { unit: 'night', n: held + 1 } }];
+}
 /* The tide's task (tasks.mjs taskOpen asks it alone, never the generic period). */
 export const isTide = (content, id) => tideTask(content)?.id === id;
 /* Inside the cooldown where he may join: refused in the world's words, with the minutes left — else null. */

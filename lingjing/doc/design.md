@@ -261,7 +261,7 @@ overflow pays more.
   换一只, the match and the errands' hints wait with it); Look `yaoshou` (left/of, or the wait), a `waits` row, one 主页 row
   while a batch is up elsewhere. Pay: the fight's own (the beast's replay share kept) × the batch's day share. The model
   (tools/balance.mjs `--events`) plays the batches on 卷一's maps.
-- **Every cooldown waits the same way** (2026-10-26): Look's `waits` lists each one he is waiting out —
+- **Every cooldown waits the same way** (2026-10-26; since 11-02 the tray draws them from Look's `tray`, § The stage): Look's `waits` lists each one he is waiting out —
   兽潮's, a pool at rest where he stands — as `{ id, title, shut, wait_min }`, the line in the
   world's words (the task's `shut`, creatures.json `hunt.rest_say` or a pool's own); the tray
   draws one row shape (cards.js waitRowHtml): name, line, 「约 N 时辰后」/「约 N 刻后」 ("back in about N h / min"),
@@ -1290,6 +1290,15 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
   今日传闻, 问卦. The story's own board, the scene's choices, Move
   and anything of a later scene wait (refused `aside`). Never inside a key beat's lock. Before 入门 only a skipped
   board can be open, so the control shows only after one was left.
+- **手边的棋局 — the tray** (Hanli, 2026-11-02: 「可以, 按你说的做」, and the merge 「1,2 可以合并? 用边框颜色区分一下?」;
+  rules/tray.mjs, cards.js trayHtml): one row under the stage, scrolling sideways (the phone too). First what opens
+  here — the 回's story boards (gold border; the old exclusions kept: done, played today, on the stage, `boardWaits`,
+  the aside's own board), then the timed and daily games that open here or anywhere (jade, 开局) — then those a walk
+  away (jade, 去X ›, only where Move would take him), a notice (货郎 明日上山), and last, muted, the cooldowns back
+  within hours (「约 N 时辰后」; a game done for today is not in it). Each game declares its entry in the one registry
+  with 先放一放 (rules/aside.mjs `PLAY_KINDS` `tray`: what is left, where, its opener, the stage card it would repeat);
+  Look carries `tray`; the page draws whatever comes. Empty, 「手边无局，随处走走。」. Agent's picks (Hanli delegated
+  11-02) in status.md.
 - **Yinyue on the stage:** one device, one Yinyue. The game stage is
   voice-only (`?pet=1&stage=1&body=0`, engine a250a04) — no 3D body in the
   game.

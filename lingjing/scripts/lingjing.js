@@ -1783,7 +1783,7 @@ function draw() {
   // What already stands on the stage is not listed again in the tray (Hanli, 2026-10-05: the 九宫格 twice).
   // A scene's own game is not at hand before its passage reaches it (his, 2026-10-14: 接雨 in the tray at load).
   const gamesAhead = storyAhead() ? (look.scene?.show ?? []).filter((c) => c.card === 'board').map((c) => c.id) : [];
-  $('tray').innerHTML = !solo && stands(headLook(), 'tray') ? trayHtml({ ...ctx(), onStage: [...(slots?.main ?? []).map((c) => c.id).filter(Boolean), ...gamesAhead], trayQueued: view.opened && trayAhead() ? view.opened.id : null }) : '';
+  $('tray').innerHTML = !solo && stands(headLook(), 'tray') ? trayHtml({ ...ctx(), onStage: [...(slots?.main ?? []).map((c) => c.id).filter(Boolean), ...gamesAhead], stageKeys: (slots?.main ?? []).flatMap((c) => [c.card, `${c.card}:${c.id ?? ''}`]), trayQueued: view.opened && trayAhead() ? view.opened.id : null }) : '';
   $('tray').parentElement.hidden = !$('tray').innerHTML;
   // Redrawn while Ling takes up a tap, the button stays pressed — never
   // offered to be tapped again.

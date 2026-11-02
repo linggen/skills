@@ -15,11 +15,14 @@ import { clone, refuse } from './core.mjs';
 import { taskOf } from './errands.mjs';
 import { fantongBrief } from './fantong.mjs';
 import { sideLine } from './hui.mjs';
-import { isTide, shouchaoHere } from './shouchao.mjs';
-import { isBout, qiecuoHere } from './qiecuo.mjs';
+import { isTide, shouchaoHere, shouchaoTray } from './shouchao.mjs';
+import { isBout, qiecuoHere, qiecuoTray } from './qiecuo.mjs';
 import { kaoHere } from './kao.mjs';
 import { aside as asideItem } from './tell.mjs';
-import { encounterOf, lockOf, placeOf, sceneOf } from './world.mjs';
+import { encounterOf, lockOf, placeOf, poolWait, sceneOf } from './world.mjs';
+import { duiziBrief } from './duizi.mjs';
+import { visitorsTray } from './visiting.mjs';
+import { yaoshouPlace, yaoshouTray } from './yaoshou.mjs';
 
 /* What he is told when a verb would move the story while the book is set aside. */
 const HELD = {
@@ -33,43 +36,93 @@ const lineAt = (content, state) => { const sc = sceneOf(content, state); return 
 export const skippedHere = (content, state) => (state.skipped ?? [])
   .filter(e => (e.line ?? null) === lineAt(content, state) && taskOf(content, e.task)).map(e => e.task);
 
-/* ── The one rule: what may be played while the book is set aside ──
-   Each kind: whether its own system has it open now (`open`, from Look's reading as the page gets it —
-   a shut system is already out of it), and which verb calls are its (`takes`). A replayed board is
-   the board's own task once offered again. */
+/* ── The one registry: every game played beside the story, what each may do while the book is set aside, and
+   what each puts in 手边的棋局 ──
+   Each kind declares, as its own system reads it:
+   · `open` / `takes` (先放一放): whether it is open now (from Look's reading as the page gets it — a shut system is
+     already out of it) and which verb calls are its. A replayed board is the board's own task once offered again.
+     A kind without `open` is never played while the book is set aside.
+   · `tray` (rules/tray.mjs, Hanli 2026-11-02): its entries in the tray, each `{ id, title?, left?: {unit, n?, of?},
+     places?: [place ids, the first where he stands] | null (anywhere), opens?: the page's opener, arg?, stage?: the
+     stage card that already shows it (`card` or `card:id`), task?: the task it stands for, wait_min?: a cooldown, shut?,
+     notice?: nothing to open }`. A new timed game joins the tray by declaring this — the page draws whatever comes. */
 const tasksOf = view => view?.tasks ?? [];
-export const ASIDE_KINDS = [
+const lockedIn = (view, system) => (view?.locked ?? []).includes(system);
+/* 对对子's teachers whose scene is behind him: each one's brief as it reads standing at his place (rules/duizi.mjs). */
+const duiziTray = (content, state, now) => (content.aigames?.duizi?.teachers ?? []).flatMap((t) => {
+  const b = duiziBrief(content, { ...state, place: t.at }, now);
+  return b?.rounds_left > 0 ? [{ id: 'duizi', title: b.teacher, left: { unit: 'couplets', n: b.rounds_left }, places: [t.at], opens: 'duizi', stage: 'duizi' }] : [];
+}).slice(0, 1);
+export const PLAY_KINDS = [
   { kind: 'replay', // a board skipped earlier, offered again at once (not only the day's one)
     open: (content, state) => skippedHere(content, state).map(id => ({ id, title: pick(taskOf(content, id).title, state.lang) })),
     takes: (verb, args, content, state) => (verb === 'task' && args.action === 'replay' && skippedHere(content, state).includes(String(args.id ?? '')))
       || (['win', 'task'].includes(verb) && ['done', undefined].includes(args.action) && Boolean(state.tasks?.[String(args.id ?? '')]?.replay)) },
-  { kind: 'gongke', // 人间功课 (rules/gongke.mjs)
+  { kind: 'gongke', // 人间功课 (rules/gongke.mjs) — on the goal card, not in the tray
     open: (content, state, view) => (view?.gongke ? [{ id: 'gongke' }] : []),
     takes: (verb, args) => verb === 'task' && args.action === 'check' },
   { kind: 'fantong', // 饭桶 · 开炉, out of its cooldown (rules/fantong.mjs)
     open: (content, state, view, now) => (fantongBrief(content, state, now)?.ready ? [{ id: 'fantong' }] : []),
-    takes: verb => verb === 'fantong' },
+    takes: verb => verb === 'fantong',
+    // Anywhere; its own cooldown is a wait; the day's allowance spent, it is done for today and not in the tray.
+    tray: (content, state, view, now) => {
+      const b = fantongBrief(content, state, now), lim = b?.limit ?? {};
+      if (!b || (lim.per_day && lim.today >= lim.per_day)) return [];
+      const row = { id: 'fantong', title: b.name ?? null, opens: 'gear' };
+      if (!b.ready) return b.next_at ? [{ ...row, wait_min: Math.ceil((new Date(b.next_at) - now) / 60_000) }] : [];
+      return [{ ...row, left: lim.per_day ? { unit: 'rounds', n: lim.per_day - lim.today } : { unit: 'today' } }];
+    } },
   { kind: 'pool', // a pool's fight at the place he stands, rested (world.mjs encounterOf; 体力 is the fight's own)
     open: (content, state, view, now) => { const e = encounterOf(content, state, now); return e?.pool ? [{ id: e.game.id, title: e.creature.name }] : []; },
-    takes: (verb, args) => (verb === 'duel' && String(args.id ?? '').startsWith('haunt:')) || verb === 'tame' || verb === 'reroll' || verb === 'yaoshou' },
+    takes: (verb, args) => (verb === 'duel' && String(args.id ?? '').startsWith('haunt:')) || verb === 'tame' || verb === 'reroll' || verb === 'yaoshou',
+    // A pool other than 妖兽出没's: its beast where he stands, or its rest (world.mjs poolWait).
+    tray: (content, state, view, now) => {
+      if (yaoshouPlace(content, placeOf(content, state.place))) return [];
+      const e = encounterOf(content, state, now), w = poolWait(content, state, now);
+      if (e?.pool) return [{ id: e.game.id, title: e.creature.name, places: [state.place], opens: 'duel', arg: e.game.id, stage: `duel:${e.game.id}` }];
+      return w ? [{ ...w, places: [state.place] }] : [];
+    } },
+  { kind: 'yaoshou', // 妖兽出没 (rules/yaoshou.mjs): a batch at 后山 · 上山路 — the fight itself is the pool's (above)
+    tray: (content, state, view, now) => { const e = encounterOf(content, state, now); return yaoshouTray(content, state, now, e?.pool ? e.game.id : null); } },
   { kind: 'tide', // 兽潮, out of its cooldown (rules/shouchao.mjs)
     // …and 切磋's bout (rules/qiecuo.mjs), the same kind: a cooldown's board at hand
     open: (content, state, view, now) => tasksOf(view).filter(t => t.tide && (shouchaoHere(content, state, t.id, now) || qiecuoHere(content, state, t.id, now))).map(t => ({ id: t.id, title: t.title })),
-    takes: (verb, args, content) => ['win', 'task'].includes(verb) && (isTide(content, String(args.id ?? '')) || isBout(content, String(args.id ?? ''))) },
+    takes: (verb, args, content) => ['win', 'task'].includes(verb) && (isTide(content, String(args.id ?? '')) || isBout(content, String(args.id ?? ''))),
+    tray: (content, state, view, now) => [...shouchaoTray(content, state, now), ...qiecuoTray(content, state, now)] },
   { kind: 'seclusion', // 闭关, where the story has opened it (rules/seclusion.mjs)
-    open: (content, state, view) => (view && !(view.locked ?? []).includes('seclusion') && !state.seclusion ? [{ id: 'seclusion' }] : []),
-    takes: verb => verb === 'seclude' },
+    open: (content, state, view) => (view && !lockedIn(view, 'seclusion') && !state.seclusion ? [{ id: 'seclusion' }] : []),
+    takes: verb => verb === 'seclude',
+    tray: (content, state, view) => (view && !lockedIn(view, 'seclusion') && !state.seclusion ? [{ id: 'seclusion', left: { unit: 'today' }, opens: 'seclude', stage: 'seclude' }] : []) },
   { kind: 'her', // 银月's games open to him, 今日传闻 and 问卦 (rules/aigames.mjs, kao.mjs, duizi.mjs, tale.mjs, fortune.mjs)
     open: (content, state, view) => [
       ...['duizi'].filter(k => view?.[k]).map(id => ({ id })),
       ...tasksOf(view).filter(t => t.light && t.open && t.left > 0).map(t => ({ id: 'kao', title: t.title })),
       ...(view?.tale && !view.tale.dropped ? [{ id: 'tale', title: view.tale.title ?? null }] : []),
-      ...(view && !view.divination && !(view.locked ?? []).includes('divine') ? [{ id: 'divine' }] : []),
+      ...(view && !view.divination && !lockedIn(view, 'divine') ? [{ id: 'divine' }] : []),
     ],
     // 本王考考你's word is counted as its task's (tasks.mjs taskDone → kao.mjs kaoDone).
     takes: (verb, args, content, state, now) => ['duizi', 'kao', 'tale', 'lundao', 'divine', 'fate'].includes(verb)
-      || (['win', 'task'].includes(verb) && kaoHere(content, state, String(args.id ?? ''), now)) },
+      || (['win', 'task'].includes(verb) && kaoHere(content, state, String(args.id ?? ''), now)),
+    // In the tray: 对对子 (today's couplets, at the teacher's place), 本王考考你 (today's rounds, anywhere), 问卦 (once a day).
+    // 今日传闻 is the story's own thread, on its card.
+    tray: (content, state, view, now) => [
+      ...(view ? duiziTray(content, state, now) : []),
+      ...tasksOf(view).filter(t => t.light && t.her && t.status === 'offered' && t.left > 0)
+        .map(t => ({ id: 'kao', task: t.id, title: t.title, left: { unit: 'rounds', n: t.left }, opens: 'play', arg: t.id, stage: `board:${t.id}` })),
+      ...(view && !view.divination && !lockedIn(view, 'divine') ? [{ id: 'divine', left: { unit: 'today' }, opens: 'divine', stage: 'hexagram' }] : []),
+    ] },
+  { kind: 'errands', // 执事堂's work (errands.mjs workOf): where errands wait to be taken, how many
+    tray: (content, state, view) => (view?.work?.kind === 'errand' && view.work.titles?.length
+      ? [{ id: 'errands', left: { unit: 'errands', n: view.work.titles.length }, places: [view.work.place.id], opens: 'book', stage: 'offer' }] : []) },
+  { kind: 'mijing', // 秘境探险 (rules/mijing.mjs): a 秘境令 in hand, away from the door — the door's run is its card there
+    tray: (content, state, view) => (view?.mijing?.away ? [{ id: 'mijing', left: { unit: 'keys', n: view.mijing.keys }, places: [view.mijing.door.id], stage: 'mijing' }] : []) },
+  { kind: 'chance', // the day's 机缘 (road.mjs chanceBrief): where, the minutes left — met on arrival
+    tray: (content, state, view) => { const c = view?.chance; return c?.minutes_left > 0 && !c.here ? [{ id: 'chance', left: { unit: 'ends', n: c.minutes_left }, places: [c.place.id] }] : []; } },
+  { kind: 'visitor', // a visiting shop (rules/visiting.mjs): standing today, or up tomorrow (a notice)
+    tray: (content, state, view, now) => (view ? visitorsTray(content, state, now) : []) },
 ];
+/* 先放一放's facet of the registry: the kinds that may be played while the book is set aside. */
+export const ASIDE_KINDS = PLAY_KINDS.filter(k => k.open);
 
 /* Verbs that never move the story: reads, the page's own marks, the save's keeping, the shelf, the
    pouch, an errand held — and these two. */

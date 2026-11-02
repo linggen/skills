@@ -61,7 +61,15 @@ function visitorsBrief(content, state, now = new Date()) {
     return { place: placeName(content, state, p), ...(n ? { in: n } : { today: true }), say: visitorSay(content, state, p, now) };
   });
 }
+/* 手边的棋局's entry (rules/tray.mjs): a visiting shop standing today (its shelf opened where it stands), or up tomorrow —
+   a notice, nothing to open. Further off it is not at hand. */
+function visitorsTray(content, state, now = new Date()) {
+  return allPlaces(content).filter(p => visitorOf(p) && inSeason(content, state, p, now) && daysTo(visitorOf(p), now) <= 1).map(p => {
+    const n = daysTo(visitorOf(p), now), row = { id: `visitor:${p.id}`, title: pick(visitorOf(p).name, state.lang) ?? null, places: [p.id] };
+    return n ? { ...row, left: { unit: 'tomorrow' }, notice: true } : { ...row, left: { unit: 'today' }, opens: 'shop', stage: 'item' };
+  });
+}
 /* In season but away today: its line says when it comes (a Trade there is refused with it). */
 const visitorAway = (content, state, place, now) => (visitorOf(place) && inSeason(content, state, place, now) && !visitorHere(content, state, place, now) ? visitorSay(content, state, place, now) : null);
 
-export { buyBack, dayNo, visitorAway, visitorGoods, visitorHere, visitorOf, visitorsBrief };
+export { buyBack, dayNo, visitorAway, visitorGoods, visitorHere, visitorOf, visitorsBrief, visitorsTray };

@@ -190,8 +190,18 @@ body.fighting .placecap { display: none; }
 /* ── today's practice ── */
 .tray { flex: none; border-top: 1px solid var(--line); padding: 10px 18px 12px; max-height: 172px; overflow-y: auto; background: var(--surface); }
 .traytitle { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
-#tray { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; margin-top: 7px; }
-#tray .card { margin: 0; padding: 8px 10px; }
+/* 手边的棋局: one row, scrolling sideways (Hanli 2026-11-02) — story boards ink/gold, the games beside the story jade,
+   the cooldowns last and muted. */
+#tray { display: flex; flex-wrap: nowrap; gap: 8px; margin-top: 7px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; padding-bottom: 2px; }
+#tray .card { margin: 0; padding: 8px 10px; flex: 0 0 auto; width: 220px; }
+#tray .card.task.story { border-color: var(--th-main); }
+#tray .card.task.timed { border-color: var(--jade); }
+#tray .card.task.timed .act { border-color: var(--jade); background: var(--jade-soft); color: var(--jade); }
+#tray .card.task.timed.notice { border-style: dashed; }
+#tray .card.task.cool { opacity: .62; border-style: dashed; background: var(--surface); }
+#tray .card.task.cool .small { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+#tray .card.aside { width: 280px; }
+#tray .trayempty { padding: 4px 0; }
 .dimline { color: var(--faint); font-size: 12.5px; margin-top: 6px; }
 
 /* ── cards ── */
@@ -901,7 +911,7 @@ button.gcard { cursor: pointer; font: inherit; }
   .slotfoot { padding: 4px 12px; }
   .footchips { overflow-x: auto; scrollbar-width: none; }
   .tray { padding: 8px 12px 10px; }
-  #tray { grid-template-columns: minmax(0, 1fr); }
+  #tray .card { width: 190px; }
   body.fighting .slots { inset: 0; }
 }
 /* 接下: the row is sealed 已接下, holds, then fades out of the card. */

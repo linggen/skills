@@ -10,7 +10,8 @@ import { WORDS, trayHtml } from '../scripts/cards.js';
 
 const content = loadContent();
 const NOW = new Date('2026-10-05T10:00:00+08:00');
-const tray = (waits, lang = 'zh') => trayHtml({ look: { tasks: [], waits }, lang, words: WORDS[lang], qi: { st: 'full' } });
+// The tray draws the cooldowns from Look's `tray` (rules/tray.mjs, seg 'cool'), the same rows `waits` carries.
+const tray = (waits, lang = 'zh') => trayHtml({ look: { tasks: [], tray: waits.map((w) => ({ kind: 'pool', ...w, seg: 'cool' })) }, lang, words: WORDS[lang], qi: { st: 'full' } });
 
 test('a pool at rest: on Look as a wait where he stands, in the world\'s words, gone once it has rested', () => {
   const jiScenes = Object.keys(content.chapters['01-ji'].scenes);

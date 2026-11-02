@@ -39,6 +39,7 @@ import { building } from './worlds.mjs';
 import { chapterLabel, huiOf, sideLine } from './hui.mjs';
 import { leaveOf, replayBrief, storyBoard } from './skips.mjs';
 import { asideLook } from './aside.mjs';
+import { trayLook } from './tray.mjs';
 import { capLook } from './cap.mjs';
 import { entryGate, stageBack, stageBrief, stageGate, stageNow, stagesPaid } from './gates.mjs';
 import { practiceHint } from './scrolls.mjs';
@@ -740,9 +741,11 @@ export function look(state, content, ctx) {
   const kept = withoutSealed(content, state, withoutLocked(content, state, brief));
   // 先放一放 (rules/aside.mjs): what may be played while the book is set aside, from this same reading.
   const aside = asideLook(content, state, kept, ctx.now);
+  // 手边的棋局 (rules/tray.mjs): every game beside the story open now, and the cooldowns back within hours — from this same reading.
+  const tray = trayLook(content, state, kept, ctx, aside?.aside?.offers ?? []);
   // 主页 (rules/home.mjs): the gate's bar, the one thing to do next, what waits — from this same reading.
   const home = homeOf(content, state, { ...kept, ...aside }, ctx.now);
-  return { ...onStage(content, state, ctx, {}, kept), ...kept, ...aside, ...(home ? { home } : {}) };
+  return { ...onStage(content, state, ctx, {}, kept), ...kept, ...aside, ...(tray.length ? { tray } : {}), ...(home ? { home } : {}) };
 }
 
 /* 传闻 as Look carries it: the tale, the people met in finished ones, and a nudge. */

@@ -53,6 +53,10 @@ export const WORDS = {
     tamesFor: '收服{names}所需',
     replayPlay: '再试一回', replayLater: '改日', boardLeave: '收手', boardLeft: '没走完，往下走了。',
     keptWin: '已胜 · 体力回来即记上', emptyNoPlay: '体力耗尽：这局赢了也记不上。', emptyShut: '体力耗尽', waitShi: '约 {n} 时辰后', waitKe: '约 {n} 刻后',
+    // 手边的棋局 (rules/tray.mjs): a game's name where the rules give none, what is left by its unit, the walk there.
+    trayName: { duizi: '对对子', seclusion: '闭关', divine: '银月卜卦', errands: '执事堂差事', mijing: '秘境', chance: '机缘', fantong: '饭桶', yaoshou: '妖兽出没' },
+    trayLeft: { night: '第{n}潮', batch: '这一批 {n}/{of}', couplets: '今日 {n} 联', rounds: '今日 {n} 回', errands: '{n} 件', keys: '秘境令 ×{n}', ends: '还剩 {t}', today: '今日可用', tomorrow: '明日上山' },
+    trayGo: '去{name} ›', trayOpen: '开局', trayKe: '{n} 刻', trayShi: '{n} 时辰',
     secludeOpen: '闭关', secludeTitle: '闭关', secludeHint: '选一样专心修：一门法术、修为，或本命法宝。',
     secludeRule: '按真实时间，至多{cap}小时；不足{min}小时不长；满{rest}小时体力回满。',
     secludeSpells: '法术 · 每 {h} 小时一星，至多三星', secludeProgress: '修为 · 每小时 +{n}', secludeTreasure: '本命法宝 · 每 {h} 小时长一重',
@@ -111,6 +115,9 @@ export const WORDS = {
     tamesFor: 'Wins over {names}',
     replayPlay: 'Try again', replayLater: 'Another day', boardLeave: 'Put down', boardLeft: 'Left unfinished — on you go.',
     keptWin: 'Won — counted once stamina is back', emptyNoPlay: 'Stamina spent: a win here would not count yet.', emptyShut: 'Stamina spent', waitShi: 'back in about {n} h', waitKe: 'back in about {n} min',
+    trayName: { duizi: 'Couplets', seclusion: 'Seclusion', divine: 'Cast the coins', errands: "Stewards' errands", mijing: 'The hidden realm', chance: 'A chance', fantong: 'Rice Bucket', yaoshou: 'Beasts about' },
+    trayLeft: { night: 'tide {n}', batch: 'this batch {n}/{of}', couplets: '{n} today', rounds: '{n} rounds today', errands: '{n} waiting', keys: 'keys ×{n}', ends: '{t} left', today: 'open today', tomorrow: 'up tomorrow' },
+    trayGo: 'Go to {name} ›', trayOpen: 'Play', trayKe: '{n} min', trayShi: '{n} h',
     secludeOpen: 'Seclusion', secludeTitle: 'Seclusion', secludeHint: 'Pick one thing to work on: a spell, cultivation, or your treasure.',
     secludeRule: 'Real hours count, up to {cap}; under {min}, nothing grows. {rest} hours or more refills stamina.',
     secludeSpells: 'Spells · a star every {h} h, up to three', secludeProgress: 'Cultivation · +{n} an hour', secludeTreasure: 'Treasure · a layer every {h} h',
@@ -1983,7 +1990,7 @@ const waitLeft = (w) => (w.ready_at ? Math.max(0, (w.ready_at - Date.now()) / 60
 /// A cooldown waited out (Look's `waits`: 兽潮, a pool at rest — one shape, one row): its name, the
 /// world's line, about how long. Nothing to start.
 function waitRowHtml(w, ctx) {
-  return `<div class="card task waiting" data-wait="${esc(w.id)}"><div class="tasktitle">${esc(w.title)}</div>${w.shut ? `<div class="small dim">${esc(w.shut)}</div>` : ''}
+  return `<div class="card task waiting cool" data-wait="${esc(w.id)}"><div class="tasktitle">${esc(w.title)}</div>${w.shut ? `<div class="small dim">${esc(w.shut)}</div>` : ''}
       <div class="taskfoot"><span class="chip">${esc(waitWords(waitLeft(w), ctx))}</span></div></div>`;
 }
 
@@ -2006,16 +2013,54 @@ export function asideHtml(ctx) {
     <div class="acts">${offers}</div><div class="acts"><button class="act primary" data-aside-resume>${esc(w.asideResume)}</button></div></div>`;
 }
 
+/* 手边的棋局's own openers (Look's `tray`, rules/tray.mjs: each entry names its `opens`): the page's verb for each, one table. */
+const TRAY_OPEN = {
+  play: (e) => `data-play="${esc(e.arg)}"`, duel: (e) => `data-duel-start="${esc(e.arg)}"`, gear: () => 'data-gear', seclude: () => 'data-seclude-open',
+  duizi: () => 'data-duizi-open', divine: () => 'data-divine', book: () => 'data-book', shop: () => 'data-shop-open',
+};
+/// About how long a thing still stands, in the page's tongue (刻 · 时辰; min · h).
+const spanWords = (min, w, zh) => (zh ? (min >= 120 ? say(w.trayShi, { n: Math.floor(min / 120) }) : say(w.trayKe, { n: Math.max(1, Math.floor(min / 15)) }))
+  : (min >= 60 ? say(w.trayShi, { n: Math.floor(min / 60) }) : say(w.trayKe, { n: Math.max(1, Math.floor(min)) })));
+/// A tray entry's small line: what is left (by its unit), and where — 「这一批 2/3 · 上山路」.
+function trayMeta(e, ctx) {
+  const w = ctx.words, l = e.left;
+  const left = l ? say(w.trayLeft[l.unit] ?? '', { n: l.n ?? '', of: l.of ?? '', t: l.unit === 'ends' ? spanWords(l.n, w, ctx.lang !== 'en') : '' }) : '';
+  return [left, e.where?.name].filter(Boolean).join(' · ');
+}
+/// A game beside the story, open now (jade): its name, what is left and where, 开局 or 去X › (or nothing, a notice).
+function trayGameHtml(e, ctx) {
+  const w = ctx.words, title = e.title ?? w.trayName[e.id] ?? w.trayName[e.kind] ?? e.id;
+  const open = e.act === 'open' && TRAY_OPEN[e.opens];
+  const btn = open ? `<button class="act" ${open(e)}>${esc(w.trayOpen)}</button>`
+    : e.act === 'go' ? `<button class="act go" data-go="${esc(e.go.id)}">${esc(say(w.trayGo, { name: e.go.name }))}</button>` : '';
+  const meta = trayMeta(e, ctx);
+  return `<div class="card task timed${e.seg === 'notice' ? ' notice' : ''}" data-tray="${esc(e.id)}"><div class="tasktitle">${esc(title)}</div>${meta ? `<div class="small dim">${esc(meta)}</div>` : ''}${btn ? `<div class="taskfoot">${btn}</div>` : ''}</div>`;
+}
+/// A cooldown back within hours (muted, last): one row shape, as Look's `waits` was drawn.
+const trayCoolHtml = (e, ctx) => {
+  const name = e.title ?? ctx.words.trayName[e.id] ?? ctx.words.trayName[e.kind] ?? e.id, l = e.left;
+  return waitRowHtml({ ...e, title: [name, l ? say(ctx.words.trayLeft[l.unit] ?? '', { n: l.n ?? '', of: l.of ?? '' }) : ''].filter(Boolean).join(' · ') }, ctx);
+};
+
+/// 手边的棋局 — one row (Hanli 2026-11-02, the merge 「1,2 可以合并? 用边框颜色区分一下?」): what he can open here first —
+/// the 回's story boards (ink/gold), then the timed and daily games that open here (jade) — then those a walk away, a
+/// notice, and last the cooldowns back within hours, muted. Empty, one line.
 export function trayHtml(ctx) {
+  const look = ctx.look ?? {};
   // A board finished is not at hand: it leaves the tray (2026-10-01: 射鹿, 洗髓 stood there 已完成).
   // …nor a board the stage already shows (ctx.onStage: the ids of the cards in main) — one place for one thing.
   const shown = new Set(ctx.onStage ?? []);
+  // The stage's cards by kind and by kind:id (ctx.stageKeys): a tray entry that names the card showing it is not repeated.
+  const staged = new Set(ctx.stageKeys ?? []);
+  const games = (look.tray ?? []).filter((e) => !(e.stage && staged.has(e.stage)) && !(e.task && shown.has(e.task)));
+  // A task a tray entry stands for (兽潮, 切磋, 本王考考你) is drawn as that entry, never as a story board too.
+  const theirs = new Set((look.tray ?? []).map((e) => e.task).filter(Boolean));
   // …nor a scene's later board while one before it is still to play (stage.mjs boardWaits).
   // …nor, the book set aside, the scene's own board: it waits for its passage (rules/aside.mjs).
-  const own = (id) => Boolean(ctx.look.aside?.on) && (ctx.look.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id) && !(ctx.look.tasks ?? []).some((t) => t.id === id && t.replay);
+  const own = (id) => Boolean(look.aside?.on) && (look.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id) && !(look.tasks ?? []).some((t) => t.id === id && t.replay);
   // …nor a practice board already played today: it comes round again tomorrow (Look's `played_today`; Hanli 10-28 on
   // 「周衡 · 一个灯谜 · 今日已玩」: 「玩过一次怎么还有?」 — 10-27's 「今日已玩」 row, kept for a replay, read as a chore not done).
-  const tasks = (ctx.look.tasks || []).filter((t) => !t.played_today && t.status !== 'done' && !shown.has(t.id) && !(t.game && shown.has(t.game)) && !boardWaits(ctx.look, t.id) && !own(t.id)).map((t) => {
+  const tasks = (look.tasks || []).filter((t) => !theirs.has(t.id) && !t.played_today && t.status !== 'done' && !shown.has(t.id) && !(t.game && shown.has(t.game)) && !boardWaits(look, t.id) && !own(t.id)).map((t) => {
     const state = t.status === 'done' ? 'done' : t.won ? 'won' : 'offered';
     const shut = state === 'offered' && boardShut(t, ctx);
     // 开局 tapped while the passage still plays: the board waits for it (lingjing.js trayAhead) — and says so on
@@ -2025,10 +2070,11 @@ export function trayHtml(ctx) {
       ? queued ? `<button class="act queued" disabled>${esc(ctx.words.trayQueued)}</button>`
         : `<button class="act" data-play="${esc(t.id)}"${shut ? ` disabled title="${esc(ctx.words.emptyNoPlay)}"` : ''}>${t.light && t.open ? ctx.words.playOn : t.game && t.game !== 'lianliankan' ? ctx.words.playGame : ctx.words.play}</button>` : '';
     const tell = `<button class="act ask" ${askAttr(say(ctx.words.sayTask, { title: t.title }))}>${esc(ctx.words.about)}</button>`;
-    return `<div class="card task ${state}"><div class="tasktitle">${esc(t.title)}</div>
+    return `<div class="card task story ${state}"><div class="tasktitle">${esc(t.title)}</div>
       <div class="taskfoot"><span class="chip">${esc(state === 'won' ? ctx.words.keptWin : shut ? ctx.words.emptyShut : ctx.words[state])}</span>${act}${tell}</div></div>`;
   });
-  // The apps' 功课 ride the book on the goal card now (design.md § 差事 ⑥).
-  // Every cooldown waited out stands after them, one row shape (Look's `waits`).
-  return asideHtml(ctx) + [...tasks, ...(ctx.look.waits ?? []).filter((w) => w.wait_min > 0).map((w) => waitRowHtml(w, ctx))].join('');
+  // The apps' 功课 ride the book on the goal card now (design.md § 差事 ⑥). The rules ordered the rest (open · go · notice · cool).
+  const row = [...tasks, ...games.map((e) => (e.seg === 'cool' ? trayCoolHtml(e, ctx) : trayGameHtml(e, ctx)))];
+  const aside = asideHtml(ctx);
+  return aside + (row.length ? row.join('') : aside ? '' : `<div class="small dim trayempty">${esc(ctx.words.trayEmpty)}</div>`);
 }

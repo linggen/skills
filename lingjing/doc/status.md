@@ -12,6 +12,15 @@ None.
 
 ## Done lately
 
+- 11-02 — **手边的棋局: everything playable now, and the cooldowns back within hours** (Hanli: 「可以, 按你说的做」 — after a reload he could not find the cooldown games; then 「1,2 可以合并? 用边框颜色区分一下?」; design.md § The stage › 手边的棋局; tests/tray.test.mjs). One registry, rules/aside.mjs `PLAY_KINDS`: each kind declares its 先放一放 facet (`open`/`takes`; `ASIDE_KINDS` is that facet, unchanged) and its `tray` entry — 饭桶 · a pool's beast or rest · 妖兽出没 · 兽潮 + 切磋 · 闭关 · 对对子 / 本王考考你 / 问卦 · 执事堂's errands · 秘境令 · 机缘 · 货郎; rules/tray.mjs places them and Look carries `tray` (`waits` kept as it was for the 主页 and the phone). The row: story boards (gold border), the games that open here (jade, 开局), those a walk away (jade, 去X › — shown only where `move` itself, through every gate, would walk him), notices, then the cooldowns (muted, dashed); empty, 「手边无局，随处走走。」. One place for one thing: an entry naming a stage card (`card` / `card:id`, lingjing.js passes the main slots' keys) is not drawn; while the book is set aside, what 先放一放 offers is not repeated and nothing walks. Calls, each the agent's pick (Hanli delegated 11-02):
+  - The merge (Hanli's call 11-02): story and timed games in one run, told apart by border — story gold (`--th-main`, it was the plain line), timed jade (`--jade`, both schemes).
+  - Cooling: a wait back within 12 h (`COOL_MAX_MIN`); 兽潮 1 h · 妖兽出没 1.5 h · 切磋 3 h · 饭桶 · a pool's rest all fit; a game done for today (饭桶's `per_day` spent, 问卦 cast, 对对子 / 本王考考你 rounds used) is not in the tray at all — agent's pick (Hanli delegated 11-02).
+  - The cooldown row shows the night just held (「兽潮 · 第1潮」) and 「约 N 刻后」 — agent's pick (Hanli delegated 11-02).
+  - 秘境: no field holds a door window, so the card is 「秘境令 ×n · 石门」; the day's 机缘 (often near) is its own card with 「还剩 N 刻」 — agent's pick (Hanli delegated 11-02).
+  - 货郎: today a card (开局 opens the shelf there, else 去演武场 ›); tomorrow a notice 「明日上山」 with no button; further off, not shown — agent's pick (Hanli delegated 11-02).
+  - Left out: 今日传闻 (the story's thread, on its card), 人间功课 (on the goal card), skipped boards (先放一放 and the 主页 have them); 大比 has no day count (its 切磋 is in) — agent's pick (Hanli delegated 11-02).
+  - 对对子's entry reads duizi.mjs `duiziBrief` as if standing at the teacher's place (zh only today; recheck when English 对对子 lands) — agent's pick (Hanli delegated 11-02).
+  - Desktop and phone: one row scrolling sideways (cards 220 px, 190 px narrow; phone tray 132 px) — agent's pick (Hanli delegated 11-02).
 - 11-01 — **格斗 v7: KOF '97 brought in** (Hanli on the Mac: 「好多了. 都改一下吧, 尽量接近拳皇97」; doc/games.md § 格斗 v7; tests/fighter-kof). Each call below is the agent's pick (Hanli delegated 11-01):
   - Run on a double tap toward her, held; it stops when let go (the old fixed dash is gone) — agent's pick (Hanli delegated 11-01).
   - Lows on any button with ↓ held; 重腿 with ↓ is the 扫堂腿 that knocks down; jump-ins are high; both guards have a height — agent's pick (Hanli delegated 11-01).
