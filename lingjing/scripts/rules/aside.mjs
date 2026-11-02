@@ -53,7 +53,7 @@ const lockedIn = (view, system) => (view?.locked ?? []).includes(system);
 /* 对对子's teachers whose scene is behind him: each one's brief as it reads standing at his place (rules/duizi.mjs). */
 const duiziTray = (content, state, now) => (content.aigames?.duizi?.teachers ?? []).flatMap((t) => {
   const b = duiziBrief(content, { ...state, place: t.at }, now);
-  return b?.rounds_left > 0 ? [{ id: 'duizi', left: { unit: 'couplets', n: b.rounds_left }, places: [t.at], opens: 'duizi', stage: 'duizi' }] : [];
+  return b?.rounds_left > 0 ? [{ id: 'duizi', who: b.teacher, left: { unit: 'couplets', n: b.rounds_left }, places: [t.at], opens: 'duizi', stage: 'duizi' }] : [];
 }).slice(0, 1);
 /* 小游戏池's rows for 银月's games (rules/pool.mjs): an AI game rests a day; its 时辰's lean. */
 const HER_POOL = { duizi: { cooldown_min: 24 * 60, when: ['wu', 'wei'], cost: 'game' }, kao: { cooldown_min: 24 * 60, when: ['you', 'xu'], cost: 'game' } };
