@@ -11,7 +11,7 @@ import { createSession, listSkillSessions, pickResumable, fetchCloud, syncCloud,
 import * as sharedApi from '/shared/api.js';
 import { verb, content, SCRATCH, worldPath } from './rules.js';
 import { charsOf, createTracker, trackSender } from './track.js';
-import { arcadeGameOf, arcadeRow, arcadeRowOf, isArcadeBoard, withArcade } from './arcade-board.js';
+import { arcadeGameOf, arcadeRow, arcadeRowOf, arcadeTitle, isArcadeBoard, withArcade } from './arcade-board.js';
 /// A test save with no chat at all (`&chat=off`): the crawlers' opt-out (tools/playtest.mjs,
 /// page-crawl.mjs, play-human.mjs) — no Ling, no 银月, a word from the stage only shown. Without it a
 /// test save plays like the real game, its chat bound to that save (SKILL.md session-params).
@@ -5242,8 +5242,8 @@ async function arcadeBoot() {
     fetch('../worlds/jiuding/games.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
     import(`./games/${ARCADE_GAME}.js`).catch(() => null),
   ]);
-  const name = mod?.meta?.name;
-  arcadeDeal = { row: arcadeRow(reg, ARCADE_GAME, ARCADE_ROW), title: name ? `${name.zh}${name.en ? ` · ${name.en}` : ''}` : ARCADE_GAME };
+  const row = arcadeRow(reg, ARCADE_GAME, ARCADE_ROW);
+  arcadeDeal = { row, title: arcadeTitle(row, mod?.meta, ARCADE_GAME, lang()) };
 }
 
 async function boot() {

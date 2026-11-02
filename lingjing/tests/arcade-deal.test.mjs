@@ -31,3 +31,14 @@ test("arcadeDeal: a row's data kept; a kit row (no task) its data alone; story/r
   assert.deepEqual(arcadeDeal({ id: 'x', task: 't', data: { level: 'b' }, levels: [{ id: 'a' }, { id: 'b', story: true }] }), { level: 'b', levels: [{ id: 'b', story: true }] });
   assert.deepEqual(arcadeDeal({ id: 'x', task: 't' }, { deal: { lv: 3 } }), { lv: 3 }, "the phone: no data, its task's deal");
 });
+
+// The tray names a 试玩 by its 游戏厅 row (11-02: 周衡's 灯谜, a story row of 聊天 · 今线, read 「聊天 · 今线」).
+test('a 试玩 is titled by its row\'s own name, then the module\'s, then its id', async () => {
+  const { arcadeRow: rowOf, arcadeTitle } = await import('../scripts/arcade-board.js');
+  const reg = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/games.json', import.meta.url), 'utf8'));
+  const meta = { name: { zh: '聊天', en: 'Chat' } };
+  assert.equal(arcadeTitle(rowOf(reg, 'jinchat', 'zhishi-shen'), meta, 'jinchat'), '周衡 · 一个灯谜');
+  assert.equal(arcadeTitle(rowOf(reg, 'jinchat', 'zhishi-shen'), meta, 'jinchat', 'en'), 'Zhou Heng · A riddle');
+  assert.equal(arcadeTitle(null, meta, 'jinchat'), '聊天 · Chat');
+  assert.equal(arcadeTitle(null, null, 'jinchat'), 'jinchat');
+});

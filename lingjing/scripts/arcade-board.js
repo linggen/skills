@@ -66,6 +66,15 @@ export function arcadeRow(registry, id, task = null) {
   return asked ?? rows.find((g) => !g.task) ?? rows[0] ?? null;
 }
 
+/** The 试玩's title in the tray: the 游戏厅 row's own name (「周衡 · 一个灯谜」, a story row of 聊天 · 今线), in the page's
+    language; a row without one falls to the game module's name, then its id (11-02: every 今线 row read 「聊天 · 今线」). */
+export function arcadeTitle(row, meta, id, lang = 'zh') {
+  const own = row?.name?.[lang] ?? row?.name?.zh;
+  if (own) return own;
+  const name = meta?.name;
+  return name?.zh ? `${name.zh}${name.en ? ` · ${name.en}` : ''}` : id;
+}
+
 /**
  * Look with the 试玩 board among its tasks: a light board standing open (stage.mjs stands it on any
  * stage), the game's deal from its row, and `her` — the round holds 银月 out of the 木牌
