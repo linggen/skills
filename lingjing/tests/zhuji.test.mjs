@@ -10,7 +10,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
-import { newState, threshold } from '../scripts/state.mjs';
+import { newState, threshold, staminaCost } from '../scripts/state.mjs';
 import { look, oddsOf, resolve, rollOf } from '../scripts/rules.mjs';
 import { pay } from '../scripts/rules/core.mjs';
 import { bookNo } from './book-num.mjs';
@@ -38,6 +38,12 @@ const buttons = s => look(s, content, ctx).scene.buttons.map(b => b.id);
 // 古八's boards (2026-10-28): the 看炉 and the three years'.
 const H08 = ['dabi-kaoshu', 'danfang-kanlu', ...CH.scenes['09-shenshi'].offers.tasks, ...CH.scenes['09-dingfeng'].offers.tasks, ...CH.scenes['09-yanceng'].offers.tasks];
 const full = s => ({ ...s, stamina: content.rewards.stamina.max, stamina_at: NOW.toISOString() });
+
+/* A scene step's 体力: its own reading minutes (state.mjs staminaCost, 1 体力 ≈ 1 分钟). */
+const stepAt = (sceneId, exitId) => {
+  const sc = Object.values(content.chapters).map(ch => ch.scenes[sceneId]).find(Boolean);
+  return staminaCost(content, 'step', 1, sc, sc.exits.find(e => e.id === exitId));
+};
 
 test('古九 is its own chapter at 沉鼎观: between 外门 and 冀, the Foundation\'s gate, every scene reached', () => {
   assert.deepEqual([CH.province, CH.gate, CH.first_scene, CH.coming], ['徐', 1, 'j07-ankle', undefined], '今 · 三 first, then 09-snow (2026-10-05)');
@@ -127,8 +133,8 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
   // 入秋 moves the story on (`next`): a story step's 3, like every scene's step.
   assert.equal(resolve(s, content, ctx, { exit: 'ruqiu' }).result.refused, 'stage', '入秋 waits on 九层圆满, earned');
   assert.equal(resolve(earnedFor(content, s, 'ruqiu'), content, ctx, { exit: 'ruqiu' }).result.refused, 'no-stamina', 'a spent pool still waits on the step');
-  const autumn = go(full(s), 'ruqiu').state;
-  assert.equal(content.rewards.stamina.max - autumn.stamina, content.rewards.stamina.cost.step, '入秋: one story step');
+  const step = stepAt(s.scene, 'ruqiu'), autumn = go(full(s), 'ruqiu').state;
+  assert.equal(content.rewards.stamina.max - autumn.stamina, step, '入秋: one story step, its reading minutes');
   assert.equal(autumn.step, 9, '九层');
   assert.equal(autumn.progress, threshold(content, autumn), '圆满: the lake full');
   assert.equal(autumn.scene, '09-qulao');

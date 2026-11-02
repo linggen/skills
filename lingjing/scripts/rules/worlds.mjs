@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { allWorlds, DEFAULT_WORLD, hasWorld, knownWorld, lintAmendCreature, lintAmendPlace, lintMade, lintMadeWorld, listWorlds, loadWorld, MADE, madeWorldDir, ownPlaces, pairsOf, WORLD } from '../content.mjs';
 import { layoutRoads, placeWords } from '../roadmap.js';
-import { dayKey, migrate, pick } from '../state.mjs';
+import { dayKey, migrate, pick, staminaCost } from '../state.mjs';
 import { callDue, companionOf, companionRiddle } from './companion.mjs';
 import { advanceChapter, clone, judgeAnswer, pay, refuse, RIDDLE_TRIES, spendStamina } from './core.mjs';
 import { advance, itemOf } from './errands.mjs';
@@ -92,7 +92,7 @@ const strip = node => {
 export function make(state, content, ctx, args) {
   if (args.scene == null) {
     const t = content.templates.made;
-    return { state: null, result: { ok: true, template: strip(t), rules: t._rules, cost: content.rewards.stamina.cost.make, limits: MADE } };
+    return { state: null, result: { ok: true, template: strip(t), rules: t._rules, cost: staminaCost(content, 'make'), limits: MADE } };
   }
   let scene;
   try { scene = typeof args.scene === 'string' ? JSON.parse(args.scene) : args.scene; } catch { return refuse('not-json', null); }
@@ -235,7 +235,7 @@ export function load(state, content, ctx, args) {
 export function build(state, content, ctx, args) {
   if (args.world == null) {
     const t = content.templates.world;
-    return { state: null, result: { ok: true, template: strip(t), rules: t._rules, cost: content.rewards.stamina.cost.build, limits: WORLD } };
+    return { state: null, result: { ok: true, template: strip(t), rules: t._rules, cost: staminaCost(content, 'build'), limits: WORLD } };
   }
   let outline;
   try { outline = jsonOf(args.world); } catch { return refuse('not-json', null); }

@@ -41,7 +41,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { boardPlay, chorePlay, convertRate, fightPlay, playGrant, secludeHour, wallGrant } from '../scripts/rules/playpay.mjs';
 const NOW = new Date('2026-10-27T12:00:00Z');
 import { gatesOf, roomWorks } from '../scripts/rules/gates.mjs';
-import { dayKey, lockedOf } from '../scripts/state.mjs';
+import { dayKey, lockedOf, staminaCost } from '../scripts/state.mjs';
 import { huiOf } from '../scripts/rules/hui.mjs';
 
 const sideHui = (content, id) => { const h = huiOf(content, id); return Boolean(h?.line && h.line !== 'gu'); };
@@ -117,7 +117,7 @@ export function bookWalk(content, model = content.balance.model) {
         chapter: ch.id, id: sc.id, hui: sc.hui ?? null,
         // a board played as a fight (`model.fight_games`: 格斗) takes a fight's minutes and its retries, not a board's
         minutes: text / model.chars_per_min + m.scene + boards.reduce((n, t) => n + ((model.fight_games ?? []).includes(t.game) ? m.fight / model.fight_win_rate : m.board), 0) + fight * m.fight / model.fight_win_rate,
-        boards: boards.reduce((n, t) => n + tableCap(content, t.grant), 0), nboards: boards.length,
+        boards: boards.reduce((n, t) => n + tableCap(content, t.grant), 0), nboards: boards.length, step_cost: staminaCost(content, 'step', 1, sc, e),
         // A 今 board pays the 今 line (rules/lines.mjs): never the 古 ledger this walk keeps, nor 灵石 — `line` and its boards
         // (`line_tasks`) are for the 今 column (tools/numbers.mjs). Until 2026-10-28 the model paid them to the 古.
         ...(side ? { line: side, line_tasks: boards } : {}), tasks: side ? [] : boards,
@@ -244,6 +244,8 @@ export function play(content, player, { model = content.balance.model, ladder = 
   let roomPlays = { day: -1, ids: {} };
   const rows = new Map(), row = id => { if (!rows.has(id)) rows.set(id, { hui: id, start: null, end: null }); return rows.get(id); };
   const T = model.minutes, Q = content.rewards.stamina;
+  // Each act's 体力 as the rules charge it (state.mjs staminaCost: 1 体力 ≈ 1 分钟).
+  const C = { game: staminaCost(content, 'game'), duel: staminaCost(content, 'duel') };
   let qi = Q.max;
   const spend = c => (qi >= c ? ((qi -= c), true) : false);
   /* The day's ledger: 修为 (`xw`) and 灵石 (`ls`) by where they came from. One row a day, in `ledger`. */
@@ -272,7 +274,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
     const tagMin = content.balance.play_pay?.errand?.minutes ?? 5;
     let used = 0;
     for (const wall of wallsOpen()) for (let t = 0; t < Math.min(wall.posts ?? 3, (wall.pool ?? []).length); t++) {
-      if (left - used < tagMin * share || !spend(Q.cost.game * share)) return used;
+      if (left - used < tagMin * share || !spend(C.game * share)) return used;
       const g = wallGrant(content, { ...s, need: need() }, { wall: wall.id });
       used += tagMin * share;
       gain((g?.progress ?? 0) * share, false, 'play', 'wall');
@@ -290,7 +292,8 @@ export function play(content, player, { model = content.balance.model, ladder = 
       let left = sit, fought = 0;
       // 体力 ON, as players will have it (rewards.json stamina; on in play again since 2026-11-02):
       // full after the night, refilled between sittings spread over the waking day.
-      qi = k === 0 ? Q.max : Math.min(Q.max, qi + Q.max * (model.waking_h / n) / Q.refill_hours);
+      // …and between sittings the hours away count as 闭关 for 体力 (state.mjs awayFit; no clock refill since 2026-11-02).
+      qi = k === 0 ? Q.max : Math.min(Q.max, qi + Q.max * (model.waking_h / n) / (Q.refill?.seclusion_hours ?? Q.refill?.clock_hours ?? 1));
       const at = () => day + (k * sit + (sit - left)) / total;
       const played = () => before + k * sit + (sit - left);
       // The hour of the model's clock now (from the first day's first sitting): the event's cooldown runs on it.
@@ -306,7 +309,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
         // 闭关 overnight (rules/seclusion.mjs, focus 修为): `seclude` hours a night, the rules' rate and cap.
         // 闭关 overnight (rules/seclusion.mjs, focus 修为): `seclude` hours a night at an hour's share of the layer (play_pay.seclusion).
         if (k === 0 && day > 0 && player.seclude && !sealedNow) gain(Math.floor(Math.min(player.seclude, content.rewards.seclusion.cap_hours) * (secludeHour(content, { ...s, need: need() }) ?? 0)), false, 'seclusion', 'seclusion');
-        for (let f = 0; f < Math.min(share(player.fights, k, n), poolCap) && evLeft(hour()) > 0 && left >= T.fight && spend(Q.cost.duel); f++) { left -= T.fight; fought += 1; poolFight(); const g = [...gates.values()].find(x => x.wait == null); if (g) g.did.fights += 1; }
+        for (let f = 0; f < Math.min(share(player.fights, k, n), poolCap) && evLeft(hour()) > 0 && left >= T.fight && spend(C.duel); f++) { left -= T.fight; fought += 1; poolFight(); const g = [...gates.values()].find(x => x.wait == null); if (g) g.did.fights += 1; }
         if (holdsFantong()) for (let f = 0; f < share(player.fantong, k, n) && left >= T.fantong; f++) { left -= T.fantong; gain(model.fantong_progress, false, null, 'fantong'); }
         if (k === 0 && !sealedNow && !walled() && player.tale && left >= T.tale) { left -= T.tale; gain(content.rewards.tale.cap.progress * player.tale, false, null, 'tale'); }
         if (k === 0 && player.walls && wallsOpen().length) { left -= playWalls(left, Math.min(1, player.walls)); wallsOn = day; wallsTaken = Math.min(1, player.walls); }
@@ -333,7 +336,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
           if (!w.entered) {
             if (left < w.minutes * (1 - (w.read ?? 0))) { w.read = (w.read ?? 0) + left / w.minutes; left = 0; break; }
             // A story step and its boards cost 体力 (a step toward the story's place is free, not counted here).
-            if (!w.paid && !spend((content.chapters[w.chapter]?.free ? 0 : Q.cost.step) + w.nboards * Q.cost.game)) { left = 0; break; }
+            if (!w.paid && !spend((content.chapters[w.chapter]?.free ? 0 : w.step_cost) + w.nboards * C.game)) { left = 0; break; }
             w.paid = true;
             left -= w.minutes * (1 - (w.read ?? 0));
             // The sealed rooms, entered here: what holds the way, the boards, the fights.
@@ -374,7 +377,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
         // at a time, and the story goes on the moment the layer is full.
         if (!gated) break;
         const waiting = [...gates.values()].find(g => g.wait == null);
-        if (extra < player.gate_fights && fought + extra < poolCap && evLeft(hour()) > 0 && left >= T.fight && spend(Q.cost.duel)) { left -= T.fight; extra += 1; poolFight(); if (waiting) waiting.did.fights += 1; continue; }
+        if (extra < player.gate_fights && fought + extra < poolCap && evLeft(hour()) > 0 && left >= T.fight && spend(C.duel)) { left -= T.fight; extra += 1; poolFight(); if (waiting) waiting.did.fights += 1; continue; }
         // …then the day's wall tags he has not taken yet.
         if (wallsLeft() > 0.01 && wallsOpen().length) { const share = wallsLeft(); wallsOn = day; wallsTaken = 1; const used = playWalls(left, share); if (used) { left -= used; if (waiting) waiting.did.walls += share; continue; } }
         // …then the practice boards (play_pay, 2026-10-27): a board's minutes at the layer's share, `model.practice.factor`
@@ -390,7 +393,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
           const best = roomBoards(sealed).map(t => ({ t, g: playGrant(content, { ...s, need: need(), plays }, t.id, t, NOW, model.story_stars ?? 2) }))
             .filter(x => x.g && replay[Math.min(roomPlays.ids[x.t.id] ?? 0, replay.length - 1)] > floor)
             .sort((a, b) => (b.g.progress ?? 0) - (a.g.progress ?? 0))[0];
-          if (!best || left < best.g.minutes || !spend(Q.cost.game)) break;
+          if (!best || left < best.g.minutes || !spend(C.game)) break;
           left -= best.g.minutes;
           roomPlays.ids[best.t.id] = (roomPlays.ids[best.t.id] ?? 0) + 1;
           if (waiting) waiting.did.boards += 1;
@@ -398,7 +401,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
           earn(best.g.wealth ?? 0, 'boards');
           continue;
         }
-        if (!P || left < P.minutes || !spend(Q.cost.game)) break;
+        if (!P || left < P.minutes || !spend(C.game)) break;
         left -= P.minutes;
         if (waiting) waiting.did.boards += 1;
         gain(Math.round((boardPlay(content, { ...s, need: need() }, P.minutes) ?? 0) * P.factor), false, 'play', 'boards');

@@ -46,22 +46,22 @@ export const RETIRED = ['health-workout'];
 
 export const MENU = [
   {
-    id: 'health-steps', kind: 'body', period: 'day', reward: 20, stamina: 30, device: 'phone', open: OPEN,
+    id: 'health-steps', kind: 'body', period: 'day', reward: 20, device: 'phone', open: OPEN,
     title: { zh: '炼体 · 走满 5000 步', en: 'Temper the body · walk 5,000 steps' },
     how: { zh: '带着手机或手表走路，今天满 5000 步即成', en: 'Walk with your phone or Watch; 5,000 steps today' },
   },
   {
-    id: 'health-sleep', kind: 'rest', period: 'day', reward: 20, stamina: 20, device: 'phone', open: OPEN,
+    id: 'health-sleep', kind: 'rest', period: 'day', reward: 20, device: 'phone', open: OPEN,
     title: { zh: '养神 · 昨晚睡够 7 小时', en: 'Rest the spirit · sleep 7 hours last night' },
     how: { zh: '戴着手表睡觉，昨夜睡满 7 小时即成', en: 'Sleep with your Watch on; 7 hours asleep counts' },
   },
   {
-    id: 'health-report', kind: 'heal', period: 'week', reward: 20, stamina: 10, device: 'phone', pool: true, open: OPEN,
+    id: 'health-report', kind: 'heal', period: 'week', reward: 20, device: 'phone', pool: true, open: OPEN,
     title: { zh: '问诊 · 看本周健康报告', en: "See the physician · read this week's health letter" },
     how: { zh: '在手机的健康里打开本周来信', en: "Open this week's letter in Health on your phone" },
   },
   {
-    id: 'health-doctor', kind: 'heal', period: 'week', reward: 20, stamina: 10, device: 'phone', pool: true, open: OPEN,
+    id: 'health-doctor', kind: 'heal', period: 'week', reward: 20, device: 'phone', pool: true, open: OPEN,
     title: { zh: '求医问药 · 看新医嘱', en: "Consult the healer · read the new doctor's note" },
     how: { zh: '在手机的健康里打开「给医生看的」', en: "Open 'For your doctor' in Health on your phone" },
   },

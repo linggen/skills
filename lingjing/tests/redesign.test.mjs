@@ -10,7 +10,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { loadContent } from '../scripts/content.mjs';
 import { everyJuan } from './prologue.mjs';
-import { migrate, newState, STATE_VERSION } from '../scripts/state.mjs';
+import { migrate, newState, STATE_VERSION, staminaCost } from '../scripts/state.mjs';
 import { deckFor, look, VERBS } from '../scripts/rules.mjs';
 
 // The engine on the old spine, every 卷 open (prologue.mjs everyJuan); tests/juan.test.mjs walls 卷一.
@@ -152,8 +152,8 @@ test('the day resets three things: 今日传闻, the day\'s 人间功课 pick, �
 });
 
 test('the economy after the cuts: a fight still pays best per 体力, and a normal day lands near the day before', () => {
-  const { tables: t, stamina: { cost }, tale } = content.rewards;
-  const fight = t.haunt.progress / cost.duel, step = t.tale.progress / (cost.game + cost.move.base);
+  const { tables: t, tale } = content.rewards, cost = { duel: staminaCost(content, 'duel'), game: staminaCost(content, 'game'), move: staminaCost(content, 'move') };
+  const fight = t.haunt.progress / cost.duel, step = t.tale.progress / (cost.game + cost.move);
   assert.ok(fight > step, `a fight ${fight.toFixed(2)} a point, a rumor's step ${step.toFixed(2)}`);
   assert.ok(0.85 * fight > step, 'even at the gate\'s win rate');
   // _economy's normal 练气 day: ~2.5 fights won, story and errands ~20, a 4-step rumor.

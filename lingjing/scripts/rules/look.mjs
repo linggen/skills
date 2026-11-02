@@ -722,6 +722,8 @@ export function look(state, content, ctx) {
     ...(qianLook(content, state, ctx.now) ? { qian: qianLook(content, state, ctx.now) } : {}),
     fate: fateBrief(content, state),
     stamina: staminaBrief(content, state, ctx.now),
+    // Time away counted as 闭关 for 体力 (state.mjs awayFit): told once — the page's Look takes it off the save (rules.mjs).
+    ...(state.away ? { away: state.away } : {}),
     ...(danduBrief(content, state) ? { dandu: danduBrief(content, state) } : {}),
     // 储物袋满了 (rules/pouch.mjs): what came while the pouch was full, waiting at the door for his choice — swap, take, let go.
     ...(doorOffers(content, state).length ? { full_offer: doorOffers(content, state) } : {}),

@@ -110,32 +110,35 @@
       }
     ]
   },
-  "_stamina": "stamina is the pace — design.md § 灵气. Refills by the clock, full in refill_hours; actions cost it; a quest paid refills it (the app's own `qi`, else refill.quest). `shouchao`: a night of 兽潮 (2026-10-20) costs a fight's, taken as the night is counted.",
+  "_stamina": "体力是控制单次游戏时长的: 1 体力 ≈ 1 分钟 (Hanli 2026-11-02: 「或者简单点, 给用户100体力, 1体力玩大约1分钟?」 · 「体力不要自动回, 只有闭关才回. 或者体力卡」 · 「完成任务不奖励体力」; design.md § 体力). `max` 100, and a spent pool rests until whole (`rest`). No clock refill (`refill.clock_hours` null): it comes back in 闭关 only — the real one (rules/seclusion.mjs) or time away, `refill.away_min` or more with no player verb counted as 闭关 for 体力 alone (state.mjs awayFit) — the whole pool in `refill.seclusion_hours`, linear on real minutes; and by the 体力卡. `refill.quest` false: no chore, 开府 row or app quest pays 体力, whatever its row says. `cost`: each act its minutes × `per_minute` (state.mjs staminaCost) — a word names balance.json model.minutes (`practice`: the practice board's; `reading`: the scene's own text at model.chars_per_min, plus `scene`), a number is the act's minutes where the model has none, `move` a trip by its roads.",
   "stamina": {
-    "max": 150,
-    "refill_hours": 1,
-    "rest": 150,
+    "max": 100,
+    "rest": 100,
+    "per_minute": 1,
+    "refill": {
+      "clock_hours": null,
+      "seclusion_hours": 1,
+      "away_min": 10,
+      "quest": false
+    },
     "cost": {
       "move": {
-        "base": 3,
+        "base": 1,
         "per_road": 1,
-        "max": 6
+        "max": 4
       },
-      "step": 3,
-      "duel": 8,
-      "shouchao": 8,
-      "panglu": 2,
-      "game": 3,
-      "trial": 3,
-      "tame": 3,
+      "step": "reading",
+      "duel": "fight",
+      "shouchao": "tide",
+      "panglu": "fantong",
+      "game": "practice",
+      "trial": "scene",
+      "tame": "scene",
       "shop": 0,
-      "reroll": 2,
+      "reroll": "scene",
       "make": 5,
       "build": 10,
       "amend": 5
-    },
-    "refill": {
-      "quest": 30
     }
   },
   "_her_card": "银月's card grows both ways (Hanli, 2026-09-24: 两个都做). `realm`: with the player's realm, as the player's 气血/灵力 grow — the lift at the highest realm listed at or below theirs (the fight's own realm table, battle.js REALMS, ends at 元婴, so hers does too). `gifts`: the story gives her an ability at the 3rd, 6th and 9th cauldron found, each costing one of her reflections (companion.json secret); `lift` is what it adds to her card in a fight. No relationship score (redesign-v2 § 四). Numbers weighed by the gate (tools/battle-sim.mjs § 银月).",
@@ -151,7 +154,7 @@
       { "found": 9, "id": "moonfall", "lift": { "damage": 4 }, "name": { "zh": "月落", "en": "Moonfall" }, "does": { "zh": "入阵直击妖身 4 点", "en": "On arrival: strikes the beast itself for 4" } }
     ]
   },
-  "_seclusion": "闭关修炼 (his, 2026-09-24: one pick per seclusion; rules/seclusion.mjs). Real hours from the save's own stamp, at most `cap_hours`; under `min_hours` nothing but the clock's refill. One focus: a 功法 gains a ★ per `star_hours` (to `star_top`; the hours left over wait for the next seclusion on that card), 修为 an hour's share of the layer he sits on (balance.json play_pay.seclusion: a `rest_hours` night is 10% of the layer since 2026-10-27, 数值系统 phase 2 — 闭关 is the idle fallback, play is the game), or the 本命法宝 one 重 per `treasure_hours` (left over kept). Any focus: `rest_hours` or more fills 体力. A pill in `pills` taken going in multiplies the hours counted (not the cap on real hours).",
+  "_seclusion": "闭关修炼 (his, 2026-09-24: one pick per seclusion; rules/seclusion.mjs). Real hours from the save's own stamp, at most `cap_hours`; under `min_hours` nothing grows but 体力. One focus: a 功法 gains a ★ per `star_hours` (to `star_top`; the hours left over wait for the next seclusion on that card), 修为 an hour's share of the layer he sits on (balance.json play_pay.seclusion: a `rest_hours` night is 10% of the layer since 2026-10-27, 数值系统 phase 2 — 闭关 is the idle fallback, play is the game), or the 本命法宝 one 重 per `treasure_hours` (left over kept). Any focus: 体力 comes back all through it, the whole pool in stamina.refill.seclusion_hours (until 2026-11-02 a `rest_hours` sitting filled it; `rest_hours` is now only the night 修为 is reckoned by). A pill in `pills` taken going in multiplies the hours counted (not the cap on real hours).",
   "seclusion": {
     "cap_hours": 12,
     "min_hours": 1,

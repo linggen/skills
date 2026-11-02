@@ -6,7 +6,7 @@
 // shut system's verb is refused with `not-yet` and the chapter's own line, and
 // Look carries nothing of it — no field, no card, no chip — so neither Ling
 // nor the page can offer what the story has not reached.
-import { lockedOf, lockSay, pick } from '../state.mjs';
+import { lockedOf, lockSay, pick, poolSpent } from '../state.mjs';
 import { isOnce } from './chores.mjs';
 import { sealedVerb } from './sealed.mjs';
 import { asideVerb, PLAY_KINDS } from './aside.mjs';
@@ -37,6 +37,8 @@ export function lockedVerb(content, state, verb, args = {}, ctx = {}) {
   if (!shut.length) return null;
   const system = VERB_SYSTEM[verb]?.(args, ctx) ?? null;
   if (!system || !shut.includes(system)) return null;
+  // 闭关 on a spent pool is never shut (Hanli 2026-11-02: 体力 comes back only in 闭关): no gate strands him at 0.
+  if (system === 'seclusion' && (poolSpent(content, state) || state.seclusion?.spent)) return null;
   const say = pick(lockSay(content, state, system), state.lang) ?? null;
   return { state: null, result: { ok: false, refused: 'not-yet', system, say } };
 }
@@ -67,7 +69,8 @@ export function withoutLocked(content, state, brief) {
   const shut = lockedOf(content, state);
   if (!shut.length) return brief;
   const out = { ...brief, locked: [...shut] };
-  for (const system of shut) for (const key of HIDES[system] ?? []) delete out[key];
+  // …but a 闭关 taken on a spent pool stands, with its 出关 (lockedVerb).
+  for (const system of shut) for (const key of HIDES[system] ?? []) if (!(key === 'seclusion' && state.seclusion?.spent)) delete out[key];
   // What the road met is the road's.
   if (shut.includes('road') && out.place?.meet) { const { meet, ...place } = out.place; out.place = place; }
   // A shelf is the 灵石's: before them, a shop (石坳村's 货郎) shows nothing to buy.

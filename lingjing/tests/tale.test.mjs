@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { lint, loadContent } from '../scripts/content.mjs';
 import { everyJuan } from './prologue.mjs';
-import { dayKey, migrate, newState } from '../scripts/state.mjs';
+import { dayKey, migrate, newState, staminaCost } from '../scripts/state.mjs';
 import { advance, look, move, progress, quest, tale } from '../scripts/rules.mjs';
 import { CARD_KINDS, stageCards, stageHolds } from '../scripts/stage.mjs';
 import { notePage } from '../scripts/rules/did.mjs';
@@ -117,7 +117,7 @@ test('play: each step a board of its own at its place, handed in there, the next
   const won = must(s, { action: 'win', board: step.board.id });
   s = won.state;
   assert.deepEqual([s.tasks, s.wins], [before.tasks, before.wins], 'the practice and the hosted games are untouched');
-  assert.equal(s.stamina, before.stamina - content.rewards.stamina.cost.game, 'a hosted game\'s 体力');
+  assert.equal(s.stamina, before.stamina - staminaCost(content, 'game'), 'a hosted game\'s 体力');
   assert.ok(won.result.handed[0].paid.progress > 0);
   assert.match(won.result.handed[0].title, /^传闻 · 河伯之毒 · 1\/4$/);
   assert.equal(won.result.handed[0].next.title, '传闻 · 河伯之毒 · 2/4');

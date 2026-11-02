@@ -27,22 +27,22 @@ const OPEN = '/apps/cfo/scripts/index.html';
 
 export const MENU = [
   {
-    id: 'cfo-review', kind: 'ledger', period: 'day', reward: 20, stamina: 10, device: 'both', open: `${OPEN}?tab=report`,
+    id: 'cfo-review', kind: 'ledger', period: 'day', reward: 20, device: 'both', open: `${OPEN}?tab=report`,
     title: { zh: '核账 · 看一眼今天的花销', en: "Check the accounts · glance at today's spending" },
     how: { zh: '打开 CFO 的报告页，看上十几秒', en: 'Open the Report in CFO and read it a few seconds' },
   },
   {
-    id: 'cfo-sort', kind: 'ledger', period: 'week', reward: 25, stamina: 15, device: 'both', pool: true, open: `${OPEN}?tab=txn`,
+    id: 'cfo-sort', kind: 'ledger', period: 'week', reward: 25, device: 'both', pool: true, open: `${OPEN}?tab=txn`,
     title: { zh: '分账 · 给新交易归类', en: 'Sort the ledger · categorise new transactions' },
     how: { zh: '在 CFO 交易页给一笔「其他」选个类别', en: "Give one 'Other' transaction a category in CFO" },
   },
   {
-    id: 'cfo-invest', kind: 'ledger', period: 'week', reward: 25, stamina: 15, device: 'both', pool: true, open: `${OPEN}?tab=invest`,
+    id: 'cfo-invest', kind: 'ledger', period: 'week', reward: 25, device: 'both', pool: true, open: `${OPEN}?tab=invest`,
     title: { zh: '观宝库 · 看一遍投资', en: 'Survey the vault · look over your investments' },
     how: { zh: '打开 CFO 的投资页，看上十几秒', en: 'Open Investments in CFO and look a few seconds' },
   },
   {
-    id: 'cfo-import', kind: 'ledger', period: 'month', reward: 30, stamina: 20, device: 'both', pool: true, open: `${OPEN}?tab=report`,
+    id: 'cfo-import', kind: 'ledger', period: 'month', reward: 30, device: 'both', pool: true, open: `${OPEN}?tab=report`,
     title: { zh: '清点府库 · 导入一份账单', en: 'Balance the treasury · import a statement' },
     how: { zh: '把这个月的银行账单拖进 CFO', en: "Drop this month's bank statement into CFO" },
   },

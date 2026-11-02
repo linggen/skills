@@ -13,7 +13,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { WORDS, cardHtml } from '../scripts/cards.js';
 import { lint, loadContent } from '../scripts/content.mjs';
-import { newState } from '../scripts/state.mjs';
+import { newState, staminaCost } from '../scripts/state.mjs';
 import { forLing, look, oddsOf, pageThrows, resolve, rollOf } from '../scripts/rules.mjs';
 import { notePage } from '../scripts/rules/did.mjs';
 
@@ -53,6 +53,12 @@ function tryThat(state, to, lands) {
 }
 const oddsAt = s => look(s, content, ctx).scene.exits.find(e => e.id === 'take').breakthrough;
 const part = (o, id) => o.parts.find(p => p.id === id);
+
+/* A scene step's 体力: its own reading minutes (state.mjs staminaCost, 1 体力 ≈ 1 分钟). */
+const stepAt = (sceneId, exitId) => {
+  const sc = Object.values(content.chapters).map(ch => ch.scenes[sceneId]).find(Boolean);
+  return staminaCost(content, 'step', 1, sc, sc.exits.find(e => e.id === exitId));
+};
 
 test('the chance is the realm\'s base and what feeds it, held between floor and cap — every number the content\'s', () => {
   const o = oddsAt(atJi()).odds;
@@ -151,7 +157,7 @@ test('the throw fails: hurt, a share of the peak step\'s 修为, the cauldron sh
   assert.equal(r.result.ok, true, 'a throw thrown is a move, written and logged');
   assert.equal(b.success, false);
   assert.equal(r.result.took, null);
-  const step = content.rewards.stamina.cost.step;
+  const step = stepAt('09-cliff', 'take');
   assert.deepEqual(b.lost, { stamina: WOUND, progress: Math.round(PEAK * rule.fail.progress) });
   assert.equal(r.state.stamina, MAX - step - b.lost.stamina);
   assert.equal(r.state.progress, PEAK - b.lost.progress);

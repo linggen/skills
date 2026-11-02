@@ -24,7 +24,7 @@ test('every entry carries the protocol fields, and each pool chore is modest', (
     assert.ok(['day', 'week', 'month', 'once'].includes(m.period), m.id);
     assert.ok(['mac', 'phone', 'both'].includes(m.device), m.id);
     assert.notEqual(m.period, 'once', `${m.id}: 开府 is not CFO's`);
-    assert.ok(m.reward >= 20 && m.reward <= 30 && m.stamina >= 10 && m.stamina <= 20, m.id);
+    assert.ok(m.reward >= 20 && m.reward <= 30 && m.stamina === undefined, m.id); // no quest pays 体力 (Lingjing, Hanli 2026-11-02)
     assert.ok(m.title.zh && m.title.en && m.open.startsWith('/apps/cfo/scripts/index.html?tab='), m.id);
     assert.ok(m.how.zh && m.how.en && m.how.en.split(/\s+/).length <= 20, m.id);
   }

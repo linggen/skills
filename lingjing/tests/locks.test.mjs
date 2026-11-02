@@ -100,20 +100,21 @@ test('a prologue save: Look carries no realm, 修为, 灵石, coins, chores, 开
   assert.deepEqual(p.book, []);
 });
 
-test('the page draws none of it: no 事 chip, no 闭关 on an empty pool, no coins filling an empty stage', () => {
+test('the page draws none of it: no 事 chip (闭关 only on an empty pool), no coins filling an empty stage', () => {
   const l = look(masan(), content, ctx());
   const c = { look: l, lang: 'zh', words: WORDS.zh, qi: { st: 'empty' } };
   assert.equal(bookChipHtml(c, false, false), '');
   const empty = cardHtml({ card: 'empty' }, c);
   assert.match(empty, /体力|灵气/);
-  assert.doesNotMatch(empty, /data-seclude-open/);
+  // 闭关 on a spent pool stands behind every gate (Hanli 11-02: 体力 comes back only in 闭关) — one tap away.
+  assert.match(empty, /data-seclude-open/);
   // A bare stage (no panel) before the gate still gets no coins.
   assert.ok(!stageCards({ ...l, scene: null, locked: SHUT }).some(x => x.card === 'hexagram'));
   // The strip: a mortal, no 修为 bar, no 灵石 — read from the page's own source.
   const src = fs.readFileSync(path.join(ROOT, 'scripts/lingjing.js'), 'utf8');
   assert.match(src, /isShut\(look, 'cultivation'\) \? `<span class="realm">\$\{esc\(w\.mortal\)\}<\/span>`/);
   assert.match(src, /isShut\(look, 'wealth'\) \? ''/);
-  assert.match(src, /look\.seclusion \|\| isShut\(look, 'seclusion'\)/);
+  assert.match(src, /look\.seclusion \|\| \(isShut\(look, 'seclusion'\) && !look\.stamina\?\.empty\)/);
   assert.equal(WORDS.zh.mortal, '凡人');
 });
 

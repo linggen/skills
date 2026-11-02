@@ -9,7 +9,7 @@
 // little (its 气血, at most ×1.3). The choice is kept on the save (`duels[hunt:<place>].stand`), so a Look reads it
 // for free: it is made again only when the hand changes, a fight is fought there, a day turns, or he asks for
 // another (「换一只」, `reroll`: free once a visit, then a little 体力).
-import { dayKey, pick } from '../state.mjs';
+import { dayKey, pick, staminaCost } from '../state.mjs';
 import { fightOdds, oddsKey } from '../fightodds.js';
 import { cardCatalog, fightSetup } from './cards.mjs';
 import { clone, refuse, spendStamina } from './core.mjs';
@@ -110,5 +110,5 @@ export function reroll(state, content, ctx) {
 export function rerollBrief(content, state, place, now) {
   if (!place || !poolOf(content, place) || place.has?.creature) return null;
   const free = !recOf(state, place, now)?.rerolled;
-  return { free, ...(free ? {} : { cost: content.rewards?.stamina?.cost?.reroll ?? 0 }) };
+  return { free, ...(free ? {} : { cost: staminaCost(content, 'reroll') }) };
 }

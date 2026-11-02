@@ -6,7 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
-import { newState } from '../scripts/state.mjs';
+import { newState, staminaCost } from '../scripts/state.mjs';
 import { look, playTo, task, win } from '../scripts/rules.mjs';
 import { beastOpen, shouchaoHosted, shouchaoWaiting, tideRows, tonight, wallKit } from '../scripts/rules/shouchao.mjs';
 import { levelDealt } from '../scripts/games/shouqiang.js';
@@ -48,7 +48,7 @@ test('the row: a board of 守墙关, on a cooldown from balance.json, opened by 
   assert.ok(!('hours' in T.shouchao) && !('grace_min' in T.shouchao), 'no clock window');
   assert.equal(T.shouchao.after, 'wm-zhoutian');
   assert.equal(content.chapters['00-waimen'].scenes['wm-zhoutian'].hui, 'h05', '小周天 is 古四\'s');
-  assert.ok(content.rewards.stamina.cost[T.shouchao.cost] > 0, 'it costs 灵气');
+  assert.ok(staminaCost(content, T.shouchao.cost) > 0, 'it costs 灵气');
   const rows = tideRows(kit);
   assert.ok(rows.length >= 5);
   for (const r of rows) for (const g of r.waves.flat()) assert.ok(content.creatures.creatures.find((c) => c.id === g[0])?.hui, `${r.id}: ${g[0]} has a 回`);
@@ -102,7 +102,7 @@ test('gated on 古四\'s 小周天: never before it, offered from the first nigh
 });
 
 test('it costs 灵气 and pays by stars: 修为, 灵石 by the small-game ranks, an herb from two stars', () => {
-  const s = at('wm-yaoyuan'), cost = content.rewards.stamina.cost[T.shouchao.cost];
+  const s = at('wm-yaoyuan'), cost = staminaCost(content, T.shouchao.cost);
   const paid = {};
   for (const stars of [1, 2, 3]) {
     const r = night(s, day(20, 17, 30), stars);

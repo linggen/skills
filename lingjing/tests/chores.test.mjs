@@ -87,7 +87,7 @@ test('a flood of menu entries: the book holds the workout and the one pick — t
   assert.deepEqual([l.kaifu.done, l.kaifu.of, l.kaifu.ready], [0, 13, 4]);
   assert.deepEqual(next, { id: 'linggen-m4', title: '做linggen-m4', device: 'mac', done: false, open: '/settings?tab=models' });
   assert.deepEqual(l.kaifu.rows.map(r => [r.id, r.step]), [['linggen-pair', 'ready'], ['linggen-m1', 'ready'], ['linggen-m2', 'ready'], ['linggen-m3', 'ready'], ['linggen-m4', 'open']]);
-  assert.ok(pays.wealth > 0 && pays.stamina === 20, 'the open step says what it pays: 灵石 and 体力');
+  assert.ok(pays.wealth > 0 && !pays.stamina, 'the open step says what it pays: 灵石, and no 体力 (rewards.json stamina.refill.quest false, Hanli 11-02)');
   // Yinyue's Progress carries the same, compactly
   const p = progress(s, content, ctx(quests)).result;
   assert.equal(p.chores.kaifu, '0/13');

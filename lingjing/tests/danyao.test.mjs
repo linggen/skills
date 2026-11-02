@@ -5,7 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent, lint, pillPay } from '../scripts/content.mjs';
-import { newState, settleStamina, staminaMax } from '../scripts/state.mjs';
+import { awayFit, newState, settleStamina, staminaMax } from '../scripts/state.mjs';
 import { look, trade, VERBS } from '../scripts/rules.mjs';
 import { rollFeed, chances } from '../scripts/rules/fantong.mjs';
 import { cureDandu, eatPill } from '../scripts/rules/dandu.mjs';
@@ -117,7 +117,8 @@ test('the 闭关 pill is eaten too: it owes its turns as the sitting starts, and
 });
 
 test('a spent pool rests to its lowered top, never past it — 丹毒 never keeps him resting for good', () => {
-  const s = { ...player({ stamina: 0, resting: true, dandu: 40 }) };
+  // Six hours away (time away counts as 闭关 for 体力 — no clock refills it since 2026-11-02).
+  const s = awayFit(content, { ...player({ stamina: 0, resting: true, dandu: 40 }), last_seen: T0.toISOString() }, at(6));
   const l = look(s, content, ctx(at(6)));
   assert.ok(l.stamina.max < content.rewards.stamina.rest, 'the top is under the rest mark');
   assert.ok(!l.stamina.resting, 'six hours on, the lowered pool is whole and he plays');

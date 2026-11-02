@@ -76,19 +76,19 @@ my %kept = map { $_ => 1 } $sha->($lines->("$state/media/archive.jsonl"));
 my $new_photos = grep { !$kept{$_} } $sha->($lines->("$state/media/manifest.jsonl"));
 my %due = ("shifu-clear" => $clearable ? 1 : 0, "shifu-backup" => ($has_dest && $new_photos) ? 1 : 0);
 my @menu = (
-  { id => "shifu-glance", kind => "sweep", period => "day", reward => 15, stamina => 10, device => "mac",
+  { id => "shifu-glance", kind => "sweep", period => "day", reward => 15, device => "mac",
     open => "${open}system", title => { zh => "巡山 · 看一眼 Mac 的状况", en => "Walk the mountain · glance at your Mac" },
     how => { zh => "打开 Shifu 的系统页看一眼", en => "Open the System page in Shifu and look" } },
-  { id => "shifu-scan", kind => "sweep", period => "week", reward => 30, stamina => 20, device => "mac", pool => JSON::PP::true,
+  { id => "shifu-scan", kind => "sweep", period => "week", reward => 30, device => "mac", pool => JSON::PP::true,
     open => "${open}system", title => { zh => "清扫洞府 · 扫描一次磁盘", en => "Tidy your cave abode · scan your disk" },
     how => { zh => "在 Shifu 系统页点「扫描」，等它扫完", en => "Tap Scan on the System page; let it finish" } },
-  { id => "shifu-security", kind => "ward", period => "week", reward => 25, stamina => 15, device => "mac", pool => JSON::PP::true,
+  { id => "shifu-security", kind => "ward", period => "week", reward => 25, device => "mac", pool => JSON::PP::true,
     open => "${open}system", title => { zh => "护阵 · 做一次安全检查", en => "Ward the gate · run a security check" },
     how => { zh => "在 Shifu 系统页跑一次安全检查", en => "Run the security check on the System page" } },
-  { id => "shifu-clear", kind => "sweep", period => "week", reward => 25, stamina => 15, device => "both", pool => JSON::PP::true,
+  { id => "shifu-clear", kind => "sweep", period => "week", reward => 25, device => "both", pool => JSON::PP::true,
     open => "${open}files", title => { zh => "扫尘 · 清理一项东西", en => "Sweep the dust · clear one thing" },
     how => { zh => "在 Shifu 文件页清掉一项可清理的", en => "Clear one row on the Files page" } },
-  { id => "shifu-backup", kind => "ward", period => "month", reward => 30, stamina => 20, device => "both", pool => JSON::PP::true,
+  { id => "shifu-backup", kind => "ward", period => "month", reward => 30, device => "both", pool => JSON::PP::true,
     open => "${open}media", title => { zh => "藏珍 · 备份一次照片视频", en => "Keep the treasures · back up photos & videos" },
     how => { zh => "在 Shifu 照片页点「备份」", en => "Tap Back up on the Photos page" } },
 );

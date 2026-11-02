@@ -5,7 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent, lint } from '../scripts/content.mjs';
-import { newState } from '../scripts/state.mjs';
+import { newState, staminaCost } from '../scripts/state.mjs';
 import { look, VERBS } from '../scripts/rules.mjs';
 import { bandOf, OUTCOMES, pangluOpen, rollBatch } from '../scripts/rules/panglu.mjs';
 import { notePage } from '../scripts/rules/did.mjs';
@@ -39,7 +39,7 @@ test('the table: herbs the world has, no shelf sells; bands climb, 二转 only f
     assert.equal(b.odds.er > 0, b.from >= T.lesson, `band from ${b.from}: 二转 only after the lesson`);
   }
   assert.ok(content.places['徐'].places.find(p => p.id === 'yaoyuan').has.furnace);
-  assert.ok(content.rewards.stamina.cost.panglu > 0);
+  assert.ok(staminaCost(content, 'panglu') > 0);
 });
 
 test('closed before 09-laba, and anywhere but the furnace; the 物品 panel and Look show it only there', () => {
@@ -95,7 +95,7 @@ test('each outcome: 炸 costs the herb and 体力 only; 糊 gives 药引; 一转
     seen[o] = (seen[o] ?? 0) + 1;
     if (o === 'er') assert.ok(fired >= T.lesson, `二转 at ${fired}`);
     if (o === 'zha') {
-      assert.equal(r.state.stamina, 100 - content.rewards.stamina.cost.panglu, '炸: 体力');
+      assert.equal(r.state.stamina, 100 - staminaCost(content, 'panglu'), '炸: 体力');
       assert.equal(r.result.out, undefined, '炸: nothing');
       assert.deepEqual(Object.keys(r.state.bag).sort(), Object.keys(s.bag).sort(), '炸: nothing else in or out');
       assert.equal(r.state.progress, s.progress);

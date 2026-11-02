@@ -678,6 +678,8 @@ async function readOnce() {
     if (look?.engine && !engineAt) engineAt = look.engine;
     watchRun();
     if (look.divination) keep({ casting: false });
+    // Time away counted as 闭关 for 体力 (state.mjs awayFit): the rules hand it once, and it leaves the save with this Look.
+    if (look.away?.gained) keep({ doNote: fill(words().awayRest, { n: look.away.minutes, x: look.away.gained }) });
     await loadContent(look.world, contentStale);
     contentStale = false;
   } catch (e) {
@@ -748,10 +750,9 @@ function qi() {
   // 体力 off (state.mjs staminaLimited — LINGJING_STAMINA_LIMIT=0 for a run): no pool on the strip at all.
   if (!q || !q.max || q.off) return null;
   const { p, st } = qiState(q.now, q.max, Boolean(q.empty));
-  // When the player can go on again: the pool full (rest = max — his,
-  // 2026-09-24: 体力为空时, 保障用户离线一定时间, 回复到100才允许再上线; 5 小时).
-  // The rules' `rest_at` when they give it, else `returns_at`, which is the same.
-  const back = q.rest_at ?? q.returns_at;
+  // When the player can go on again: the pool full (rest = max). Only while a 闭关 runs is that an hour on the
+  // clock — no clock refills it (Hanli 2026-11-02); spent outside one, the pool shows its count and opens 闭关.
+  const back = look.seclusion ? q.rest_at ?? q.returns_at : null;
   return { st, p, now: q.now, max: q.max, refillAt: back ? Math.floor(new Date(back).getTime() / 1000) : null };
 }
 
@@ -767,15 +768,19 @@ function qiHtml() {
   const q = qi();
   if (!q) return '';
   const w = words();
-  const d = draining && !draining.landed ? { now: draining.from, ...qiState(draining.from, q.max) } : q;
-  // Spent, the pool shows no trickle — only the hour it is whole again.
-  const resting = !draining && d.st === 'empty' && d.refillAt;
-  const cnt = resting ? `<span class="cnt">${esc(fill(w.qiBackAt, { t: clockOf(new Date(d.refillAt * 1000), lang()) }))}</span>`
-    : `<span class="cnt"><span data-qi>${esc(d.now)}</span>/${esc(q.max)}</span>`;
+  // The drain's count by the clock, not by a frame: a frame that never came (a throttled iframe, a paint that threw)
+  // held the old count until a reload (Hanli 11-02: the chip stale) — once its time is up, the count is the rules'.
+  const live = draining && !draining.landed && !drainAt(draining, performance.now()).done;
+  const d = live ? { now: draining.from, ...qiState(draining.from, q.max) } : q;
+  // The count always (Hanli 2026-11-02: no clock refill — it rises only in 闭关, and the chip shows it rising there,
+  // re-read each minute); in 闭关 the hour it is whole beside it.
+  const back = !draining && look.seclusion && d.refillAt ? ` · ${esc(fill(w.qiBackAt, { t: clockOf(new Date(d.refillAt * 1000), lang()) }))}` : '';
+  const cnt = `<span class="cnt"><span data-qi>${esc(d.now)}</span>/${esc(q.max)}${back}</span>`;
   // A tap on the pool opens 闭关 (his, 2026-09-24: any time the player chooses).
-  const open = look.seclusion || isShut(look, 'seclusion') ? '' : ` data-seclude-open role="button" tabindex="0"`;
+  // …and spent, behind any gate too: 闭关 is the way back (rules/locks.mjs).
+  const open = look.seclusion || (isShut(look, 'seclusion') && !look.stamina?.empty) ? '' : ` data-seclude-open role="button" tabindex="0"`;
   return `<span class="qi" data-st="${esc(d.st)}" title="${esc(w.qi)} · ${esc(w.secludeOpen)}"${open}><span class="lbl">${esc(w.qi)}</span>
-    <i class="ring" style="--p:${resting ? 0 : Number(d.p) || 0}"></i><span class="st">${esc(qiWord(d.st, w))}</span>${cnt}</span>`;
+    <i class="ring" style="--p:${Number(d.p) || 0}"></i><span class="st">${esc(qiWord(d.st, w))}</span>${cnt}</span>`;
 }
 
 /// Filled to the 回's cap (Look's `capped`, rules/cap.mjs): the bar stands full and a small
@@ -842,7 +847,12 @@ function watchDrain() {
   if (!before || before.world !== now.world || !Number.isFinite(now.now) || now.now === before.now) return;
   const t = performance.now();
   draining = drainOf({ from: before.now, to: now.now, shown: draining ? drainAt(draining, t).value : before.now, at: t, holds: [riseAfter, travelEnd], still: stillMotion() });
-  if (draining) { console.info('[lingjing] drain', draining.spent); if (!riseFrame) riseFrame = requestAnimationFrame(paintRise); }
+  if (draining) {
+    console.info('[lingjing] drain', draining.spent);
+    if (!riseFrame) riseFrame = requestAnimationFrame(paintRise);
+    // …and drawn once more when it is due to have landed, frames or no frames.
+    setTimeout(() => { drawnStrip = null; render(); }, Math.max(0, draining.start - t) + 1500);
+  }
 }
 function riseStats() {
   // The strip's bar (stage.mjs barOf): the 古's, or on a 今 scene the 今's — its own tier ids, so a walk across lines is never a gain.
@@ -858,8 +868,9 @@ function riseStats() {
     // The last point spent: 银月 sends him back to the real world to rest —
     // real life is hers, not Ling's (his rule, 2026-09-23).
     if (before.stamina > 0 && now.stamina === 0 && !before.resting) {
-      const at = clock(look.stamina?.rest_at ?? look.stamina?.returns_at);
-      askHer('spent', `玩家的体力刚刚耗尽了（${at} 可以再出发）。游戏先放一放：请玩家回到现实里歇一歇，起身走走、喝口水。说一两句。`, `The player's stamina just ran out (ready to go again at ${at}). The game waits: send them back to the real world to rest — stand up, walk, drink some water. A line or two.`, 'relaxed');
+      // No clock refills it (Hanli 2026-11-02): 闭关, or about an hour away, fills it again.
+      const n = look.stamina?.fill_min;
+      askHer('spent', `玩家的体力刚刚耗尽了（闭关或下线歇约 ${n} 分钟便回满）。游戏先放一放：请玩家去闭关，或回到现实里歇一歇，起身走走、喝口水。说一两句。`, `The player's stamina just ran out (seclusion, or about ${n} minutes away, fills it again). The game waits: send them into seclusion, or back to the real world to rest — stand up, walk, drink some water. A line or two.`, 'relaxed');
     }
     // Each line its own: walking into the 今 (or back) is no rise. A rise on the 今 is real life — no seal, no rays, no 银月:
     // one plain fact on the page (新生一层 → 新生二层).
@@ -3326,6 +3337,12 @@ setInterval(() => {
   if (!waits.length || document.visibilityState !== 'visible') return;
   if (waits.some((w) => w.ready_at && Date.now() >= w.ready_at)) { refresh(); return; }
   render();
+}, 60_000);
+
+/* 体力 comes back while a 闭关 runs (state.mjs settleStamina): the chip and the card read the rules again each minute. */
+setInterval(() => {
+  if (!look?.seclusion || document.visibilityState !== 'visible' || look.stamina?.now >= look.stamina?.max) return;
+  refresh();
 }, 60_000);
 
 /* The bowl fills back while the board is open; the moment it may eat, the brief is read again. */

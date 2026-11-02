@@ -27,7 +27,7 @@ test('the menu: a song a day (the daily), one she picks a week (the pool) — ea
   for (const m of MENU) {
     assert.ok(['day', 'week'].includes(m.period), m.id);
     assert.equal(m.device, 'both', m.id);
-    assert.ok(m.reward >= 20 && m.reward <= 30 && m.stamina >= 10 && m.stamina <= 20, m.id);
+    assert.ok(m.reward >= 20 && m.reward <= 30 && m.stamina === undefined, m.id); // no quest pays 体力 (Lingjing, Hanli 2026-11-02)
     assert.ok(m.title.zh && m.title.en && m.open.startsWith('/apps/dj/scripts/'), m.id);
     assert.ok(m.how.zh && m.how.en && m.how.en.split(/\s+/).length <= 20, m.id);
   }

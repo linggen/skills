@@ -1,6 +1,7 @@
 // A pool's beast matched to him (rules/match.mjs; Hanli 2026-10-27: 「后山的难度可以按照玩家等级, 进度来安排吗, 等玩家强大后,
 // 可以自动增加难度匹配吗? 最好是可以换一匹战斗对象」): of the beasts up at the pool, the one nearest the first-meeting
 // band against his hand stands; a stronger hand meets stronger beasts; 「换一只」 is free once a visit, then 体力.
+import { staminaCost } from '../scripts/state.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { begin, act, foeTurn } from '../scripts/battle.js';
@@ -74,11 +75,11 @@ test('「换一只」: another of the fitting set, free once a visit, then 体�
   assert.equal(first.result.free, true);
   assert.notEqual(first.result.stands, standAt(s).cid);
   assert.equal(encounterOf(content, first.state, NOW).creature.id, first.result.stands);
-  assert.deepEqual(encounterOf(content, first.state, NOW).reroll, { free: false, cost: content.rewards.stamina.cost.reroll });
+  assert.deepEqual(encounterOf(content, first.state, NOW).reroll, { free: false, cost: staminaCost(content, 'reroll') });
   const second = reroll(first.state, content, ctx);
   assert.equal(second.result.ok, true);
   assert.equal(second.result.free, false);
-  assert.equal(second.state.stamina, first.state.stamina - content.rewards.stamina.cost.reroll);
+  assert.equal(second.state.stamina, first.state.stamina - staminaCost(content, 'reroll'));
   assert.equal(reroll({ ...s, fight: { game: 'haunt:lang' } }, content, ctx).result.refused, 'in-a-fight');
   assert.equal(reroll({ ...s, place: 'zhishi' }, content, ctx).result.refused, 'no-pool');
 });

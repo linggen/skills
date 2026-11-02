@@ -8,7 +8,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
-import { newState } from '../scripts/state.mjs';
+import { newState, staminaCost } from '../scripts/state.mjs';
 import { VERBS } from '../scripts/rules.mjs';
 import { spendStamina } from '../scripts/rules/core.mjs';
 import { GRADES, chances, familyOf, fantongAll, gradeWeights, kindOf, realmOf, rollFeed, tierOfItem, waitWords, worthOf } from '../scripts/rules/fantong.mjs';
@@ -386,7 +386,7 @@ test('银月 touches it now and then — 踏马的符 and 「还不如我给你�
 test('饱嗝令: the next hosted game that would cost 灵气 costs none, and one token is spent', () => {
   const it = items.get('baoge-ling');
   assert.equal(it.effect.waive, 'game');
-  const cost = content.rewards.stamina.cost.game;
+  const cost = staminaCost(content, 'game');
   assert.ok(cost > 0);
   // The one door every hosted game pays through (rules/core.mjs spendStamina 'game': the boards, 论道, 对子, 考, the AI games).
   const s = { ...saveWith({ bag: { danlu: 1, 'baoge-ling': 1 } }), stamina: 50, stamina_at: NOW.toISOString() };

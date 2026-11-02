@@ -18,7 +18,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chorePlay } from './playpay.mjs';
-import { dayKey, lockedOf, periodKey, periodStart, pick, seedOf, zeroAt } from '../state.mjs';
+import { dayKey, lockedOf, periodKey, periodStart, pick, questStamina, seedOf, zeroAt } from '../state.mjs';
 
 const isOnce = q => q.period === 'once';
 const isPool = q => q.pool === true && !isOnce(q);
@@ -144,7 +144,8 @@ export function choreGrant(content, q, state = null, now = null) {
     progress: played,
     // 开府 pays the row's own 灵石 (50, as its quest says — Hanli 2026-11-02), capped by the `once` table.
     wealth: table === 'once' ? Math.min(q.reward ?? cap.wealth ?? 0, cap.wealth ?? 0) : FLAT.has(table) ? cap.wealth ?? 0 : q.reward ?? 0,
-    stamina: q.stamina ?? content.rewards.stamina.refill.quest,
+    // No quest pays 体力 (rewards.json stamina.refill.quest false — Hanli 2026-11-02: 「完成任务不奖励体力」), whatever its row says.
+    stamina: questStamina(content, q),
   };
 }
 
@@ -225,7 +226,7 @@ export function kaifuList(state, quests, now, lang, content) {
   return kaifuSteps(state, content, quests, now).map(({ q, step }) => ({
     id: q.id, app: q.app, title: pick(q.title, lang), device: deviceOf(q), open: choreOpen(q),
     ...(q.how ? { how: pick(q.how, lang) } : {}), ...(q.ask ? { ask: pick(q.ask, lang) ?? '' } : {}),
-    done: questDone(q, now), paid: paidNow(state, q, now), step, reward: q.reward ?? null, stamina: q.stamina ?? null,
+    done: questDone(q, now), paid: paidNow(state, q, now), step, reward: q.reward ?? null, stamina: questStamina(content, q) || null,
   }));
 }
 

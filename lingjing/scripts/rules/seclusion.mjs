@@ -9,7 +9,7 @@
 // holds still (`in-seclusion`, like a fight): the only way on is 出关, and the
 // stage puts its card first. Playing stays better than sitting — the numbers
 // are in rewards.json § seclusion.
-import { addStamina, pick, staminaMax } from '../state.mjs';
+import { lockedOf, pick, poolSpent, seclusionMsPerPoint, settleStamina, staminaMax, staminaRest } from '../state.mjs';
 import { costOf } from '../battle.js';
 import { boundOf, growTreasure, TREASURE_TOP, treasureBrief } from './arms.mjs';
 import { cardCatalog, ownedCards, rootsOf, usable } from './cards.mjs';
@@ -60,7 +60,9 @@ function choices(content, state) {
     per_hour: Math.round(secludeHour(content, state) ?? 0),
     treasure: treasureOpen(content, state) ? treasureBrief(content, state) : null,
     pills: pillsOf(content, state),
-    rule: RULE(content),
+    // The whole pool's hours in 闭关 (rewards.json stamina.refill), for the chooser's rule line — as `rest_hours` too, the
+    // field the phone's line reads (「满{rest}小时体力回满」 stays true: linear, whole at that hour).
+    rule: { ...RULE(content), fill_hours: content.rewards.stamina.refill?.seclusion_hours ?? null, rest_hours: content.rewards.stamina.refill?.seclusion_hours ?? RULE(content).rest_hours },
   };
 }
 
@@ -110,18 +112,24 @@ const GROW = {
    settle, so what the card says is what lands. */
 function emergeOn(content, s, ctx) {
   const sec = s.seclusion, r = RULE(content), h = hoursOf(content, sec, ctx.now);
+  // 体力 came back all through the sitting, at the 闭关 rate on real minutes, whatever the focus and under
+  // `min_hours` too (state.mjs settleStamina; Hanli 2026-11-02: 「体力不要自动回, 只有闭关才回」) — settled to now.
+  const before = s.stamina;
+  settleStamina(content, s, ctx.now);
   delete s.seclusion;
   // Kept for the breakthrough's chance: a 闭关 just done steadies it (breakthrough.mjs).
   s.last_seclusion = { at: ctx.now.toISOString(), hours: round1(h.real) };
   const grown = h.grows ? GROW[sec.focus](content, s, sec, h.counted, ctx) : {};
   // 补转: the body makes up the turns a pill's furnace left out, whatever the focus (rules/dandu.mjs).
+  const topBefore = staminaMax(content, s), whole = s.stamina >= topBefore;
   const made = cureDandu(content, s, h.real);
-  // Rested: a long enough sitting is a full pool, whatever the focus.
-  const rested = h.real >= r.rest_hours;
-  if (rested) { addStamina(content, s, staminaMax(content, s), ctx.now); delete s.resting; }
+  // …and a pool whole at the lowered top rises with it as the turns are made up: the sitting rested him whole.
+  if (whole && staminaMax(content, s) > topBefore) s.stamina = staminaMax(content, s);
+  const gained = Math.max(0, (s.stamina ?? 0) - (before ?? 0)), rested = gained > 0 && s.stamina >= staminaMax(content, s);
+  if (s.resting && s.stamina >= staminaRest(content, s)) delete s.resting;
   return { focus: sec.focus, since: sec.since, hours: round1(h.real), counted: round1(h.counted), cap: r.cap_hours, min: r.min_hours,
     grows: h.grows, ...(sec.pill ? { pill: { id: sec.pill, name: pick(itemOf(content, sec.pill)?.name, s.lang), mult: sec.mult } } : {}),
-    ...(rested ? { rested: true } : {}), ...(made ? { buzhuan: { made, left: s.dandu ?? 0 } } : {}), ...grown };
+    stamina: { gained, now: s.stamina, max: staminaMax(content, s) }, ...(rested ? { rested: true } : {}), ...(made ? { buzhuan: { made, left: s.dandu ?? 0 } } : {}), ...grown };
 }
 
 /* What is being worked on, from the first minute: its name and level, and
@@ -153,7 +161,10 @@ export function seclusionBrief(content, state, now) {
   if (!state.seclusion || !RULE(content)) return null;
   const told = emergeOn(content, clone(state), { now });
   // `art`: the closed 洞府 gate the stage paints behind the running card (his, 2026-09-24).
-  return { ...told, running: true, rest_hours: RULE(content).rest_hours, target: targetOf(content, state, now), ...(RULE(content).art ? { art: RULE(content).art } : {}) };
+  // `full_at`: when the pool is whole at the 闭关 rate (null when it is); `fill_hours` the whole pool's hours, for the card.
+  const ms = seclusionMsPerPoint(content), max = staminaMax(content, state);
+  const left = Math.max(0, max - told.stamina.now), at = ms && left ? new Date(now.getTime() + left * ms).toISOString() : null;
+  return { ...told, running: true, fill_hours: content.rewards.stamina.refill?.seclusion_hours ?? null, full_at: at, target: targetOf(content, state, now), ...(RULE(content).art ? { art: RULE(content).art } : {}) };
 }
 
 /* 闭关 — `info` (what may be chosen; what is running), `enter` with `focus`
@@ -202,7 +213,9 @@ function enterSeclusion(state, content, ctx, args) {
   if (pillId && !(state.bag?.[pillId] > 0)) return refuse('not-in-bag', null);
   const s = clone(state);
   if (pillId) { s.bag[pillId] -= 1; if (!s.bag[pillId]) delete s.bag[pillId]; eatPill(content, s, pillId); }
-  s.seclusion = { focus, since: ctx.now.toISOString(), ...(focus === 'card' ? { card: String(args.id) } : {}), ...(pillId ? { pill: pillId, mult } : {}) };
+  // `spent`: taken on a spent pool behind a story gate that keeps 闭关 shut — it stands there all the same (rules/locks.mjs).
+  const spent = lockedOf(content, state).includes('seclusion') && poolSpent(content, state);
+  s.seclusion = { focus, since: ctx.now.toISOString(), ...(focus === 'card' ? { card: String(args.id) } : {}), ...(pillId ? { pill: pillId, mult } : {}), ...(spent ? { spent: true } : {}) };
   return { state: s, result: { ok: true, entered: seclusionBrief(content, s, ctx.now) } };
 }
 

@@ -61,19 +61,19 @@ export const WORDS = {
     trayGo: '去{name} ›', trayOpen: '开局', trayKe: '{n} 刻', trayShi: '{n} 时辰',
     // 小游戏池 (rules/pool.mjs): the 时辰 in the head, when the next three come; all played; 体力 spent.
     shichen: ['子时', '丑时', '寅时', '卯时', '辰时', '巳时', '午时', '未时', '申时', '酉时', '戌时', '亥时'], trayHour: '{hour} · {n} 分换一批', trayHourTip: '{next}换一批',
-    trayAllPlayed: '这个时辰的都玩过了 · {next}再来', trayRest: '闭关中 · 约 {n} 分钟体力回满', trayRestUp: '起炉', trayRestFeed: '喂饭桶',
+    trayAllPlayed: '这个时辰的都玩过了 · {next}再来', trayRest: '闭关中 · 约 {n} 分钟体力回满', trayRestOut: '体力耗尽 · 闭关约 {n} 分钟回满', trayRestUp: '闭关', trayRestFeed: '喂饭桶',
     secludeOpen: '闭关', secludeTitle: '闭关', secludeHint: '选一样专心修：一门法术、修为，或本命法宝。',
-    secludeRule: '按真实时间，至多{cap}小时；不足{min}小时不长；满{rest}小时体力回满。',
+    secludeRule: '按真实时间，至多{cap}小时；不足{min}小时不长；体力一路回，约{rest}小时回满。',
     secludeSpells: '法术 · 每 {h} 小时一星，至多三星', secludeProgress: '修为 · 每小时 +{n}', secludeTreasure: '本命法宝 · 每 {h} 小时长一重',
     secludePill: '服一粒{name}：时辰 ×{m}', secludeStarRule: '圆圈里是灵力。一星：灵力 −1；已是 1 的，改为威力 +1。', secludeNext: '{name} ★{from}→★{to} 还要 {h} 小时 · {what}', secludeNextCost: '灵力 {was}→{cost}', secludeNextPower: '威力 +1', secludeGo: '入关', secludeLater: '作罢', secludePick: '先选一样。',
     secludeFoci: { card: '法术', progress: '修为', treasure: '本命法宝' },
-    secludingTitle: '闭关中 · {what}', secludeGate: '洞府石门紧闭', secludeRestAt: '满 {h} 小时体力回满', secludeIfNow: '此刻出关：', emergeEarly: '出关', secludeTop: '已臻圆满', secludeBarStar: '下一星：{what}', secludeBarTreasure: '下一重', secludeBarXw: '每小时修为 +{n}', secludeAt: '约 {t} 成', hourUnit: '小时', secludeHours: '已闭关 {h} 小时（至多 {cap}）', secludeTooShort: '不足 {min} 小时：出关不长修行。',
+    secludingTitle: '闭关中 · {what}', secludeGate: '洞府石门紧闭', secludeRestAt: '约 {n} 分钟体力回满', secludeRestFull: '体力已满', secludeIfNow: '此刻出关：', emergeEarly: '出关', secludeTop: '已臻圆满', secludeBarStar: '下一星：{what}', secludeBarTreasure: '下一重', secludeBarXw: '每小时修为 +{n}', secludeAt: '约 {t} 成', hourUnit: '小时', secludeHours: '已闭关 {h} 小时（至多 {cap}）', secludeTooShort: '不足 {min} 小时：出关不长修行。',
     secludeStar: '{name} ★{from} → ★{to} · 灵力 {was}→{cost}', secludeStarLeft: '{name} 离下一星还差 {h} 小时',
     secludeGrowXw: '修为 +{n}', secludeGrowTreasure: '{name} {from}重 → {to}重', secludeTreasureLeft: '{name} 离下一重还差 {h} 小时',
     secludeHeld: '修为已到本境顶上，余下的留待突破。', secludeRested: '体力回满', secludeBuzhuan: '补转：丹毒补上{n}转', secludeBuzhuanLeft: '补转：丹毒补上{n}转，还欠{left}转', secludePillTaken: '服了{name}，时辰 ×{m}',
     emergeBtn: '出关 · 领取', emergedTitle: '出关', emergedHours: '闭关 {h} 小时', emergedNone: '这一回没长什么，歇够了。', emergedClose: '收起',
     qi: '体力', qiFull: '充盈', qiHalf: '半满', qiLow: '将尽', qiEmpty: '已空', qiBackAt: '{t} 回满',
-    emptyLine: '体力耗尽了。回到现实里歇一歇——起身走走，喝口水。{t} 回满，再出发。', emptySoon: '体力耗尽了。回到现实里歇一歇——起身走走，喝口水。随时辰恢复。',
+    emptyLine: '体力耗尽了。闭关，或回到现实里歇一歇——起身走走，喝口水。约 {n} 分钟回满。', emptySoon: '体力耗尽了。闭关，或回到现实里歇一歇——起身走走，喝口水，体力便回来。', awayRest: '你下线这段时间自行闭关 {n} 分钟，体力 +{x}',
     boardsStay: '坊市与交差照常。',
     signTitle: '入境先报名', signBody: '灵境记着你的修行，换台机器也接得上。', signBtn: '登录 linggen.dev',
     signWait: '等浏览器登录……', signFail: '还没登上。再试一次。',
@@ -124,19 +124,19 @@ export const WORDS = {
     trayLeft: { night: 'tide {n}', batch: 'this batch {n}/{of}', couplets: '{n} today', rounds: '{n} rounds today', errands: '{n} waiting', keys: 'keys ×{n}', ends: '{t} left', today: 'open today', tomorrow: 'up tomorrow' },
     trayGo: 'Go to {name} ›', trayOpen: 'Play', trayKe: '{n} min', trayShi: '{n} h',
     shichen: ['Rat hour', 'Ox hour', 'Tiger hour', 'Hare hour', 'Dragon hour', 'Snake hour', 'Horse hour', 'Goat hour', 'Monkey hour', 'Rooster hour', 'Dog hour', 'Boar hour'], trayHour: '{hour} · new three in {n} min', trayHourTip: 'New three at {next}',
-    trayAllPlayed: "All of this hour's played · back at {next}", trayRest: 'In seclusion · stamina full in about {n} min', trayRestUp: 'Seclude', trayRestFeed: 'Feed the Rice Bucket',
+    trayAllPlayed: "All of this hour's played · back at {next}", trayRest: 'In seclusion · stamina full in about {n} min', trayRestOut: 'Stamina spent · seclusion fills it in about {n} min', trayRestUp: 'Seclude', trayRestFeed: 'Feed the Rice Bucket',
     secludeOpen: 'Seclusion', secludeTitle: 'Seclusion', secludeHint: 'Pick one thing to work on: a spell, cultivation, or your treasure.',
-    secludeRule: 'Real hours count, up to {cap}; under {min}, nothing grows. {rest} hours or more refills stamina.',
+    secludeRule: 'Real hours count, up to {cap}; under {min}, nothing grows. Stamina comes back all along, full in about {rest} h.',
     secludeSpells: 'Spells · a star every {h} h, up to three', secludeProgress: 'Cultivation · +{n} an hour', secludeTreasure: 'Treasure · a layer every {h} h',
     secludePill: 'Take a {name}: hours ×{m}', secludeStarRule: 'The circle is Force. A star: Force −1; at 1 already, power +1.', secludeNext: '{name} ★{from}→★{to} in {h} h · {what}', secludeNextCost: 'Force {was}→{cost}', secludeNextPower: 'power +1', secludeGo: 'Go in', secludeLater: 'Not now', secludePick: 'Pick one first.',
     secludeFoci: { card: 'a spell', progress: 'cultivation', treasure: 'the treasure' },
-    secludingTitle: 'In seclusion · {what}', secludeGate: 'The cave gate, shut', secludeRestAt: '{h} h refills stamina', secludeIfNow: 'Out now:', emergeEarly: 'Come out', secludeTop: 'At the top', secludeBarStar: 'Next star: {what}', secludeBarTreasure: 'Next layer', secludeBarXw: 'Cultivation +{n} an hour', secludeAt: 'ready ~{t}', hourUnit: 'h', secludeHours: '{h} h in (up to {cap})', secludeTooShort: 'Under {min} h: coming out grows nothing.',
+    secludingTitle: 'In seclusion · {what}', secludeGate: 'The cave gate, shut', secludeRestAt: 'stamina full in about {n} min', secludeRestFull: 'Stamina full', secludeIfNow: 'Out now:', emergeEarly: 'Come out', secludeTop: 'At the top', secludeBarStar: 'Next star: {what}', secludeBarTreasure: 'Next layer', secludeBarXw: 'Cultivation +{n} an hour', secludeAt: 'ready ~{t}', hourUnit: 'h', secludeHours: '{h} h in (up to {cap})', secludeTooShort: 'Under {min} h: coming out grows nothing.',
     secludeStar: '{name} ★{from} → ★{to} · Force {was}→{cost}', secludeStarLeft: '{name}: {h} h to the next star',
     secludeGrowXw: 'Cultivation +{n}', secludeGrowTreasure: '{name} layer {from} → {to}', secludeTreasureLeft: '{name}: {h} h to the next layer',
     secludeHeld: 'Your realm is at its peak; the rest waits for the breakthrough.', secludeRested: 'Stamina full', secludeBuzhuan: 'Turns made up: {n} of the pill poison', secludeBuzhuanLeft: 'Turns made up: {n} of the pill poison, {left} still owed', secludePillTaken: 'Took a {name}: hours ×{m}',
     emergeBtn: 'Come out · Collect', emergedTitle: 'Out of seclusion', emergedHours: '{h} h in seclusion', emergedNone: 'Nothing grew this time; you are rested.', emergedClose: 'Put away',
     qi: 'Stamina', qiFull: 'full', qiHalf: 'half', qiLow: 'low', qiEmpty: 'empty', qiBackAt: 'full at {t}',
-    emptyLine: 'Your stamina is spent. Step back into the real world for a while — stand up, walk, drink some water. Ready to go again at {t}.', emptySoon: 'Your stamina is spent. Step back into the real world for a while — stand up, walk, drink some water. It comes back with the hours.',
+    emptyLine: 'Your stamina is spent. Go into seclusion, or step back into the real world for a while — stand up, walk, drink some water. Full again in about {n} min.', emptySoon: 'Your stamina is spent. Go into seclusion, or step back into the real world for a while — stand up, walk, drink some water; it comes back.', awayRest: 'While you were away you sat in seclusion for {n} min: stamina +{x}',
     boardsStay: 'The market and handing in still work.',
     signTitle: 'Sign in to enter', signBody: 'Lingjing keeps your game with your account — pick it up on any machine.', signBtn: 'Sign in to linggen.dev',
     signWait: 'Waiting for the browser…', signFail: 'Not signed in yet. Try again.',
@@ -510,7 +510,7 @@ function board(card, ctx) {
   const body = g?.skipped || task?.skipped ? `<div class="dim small">${esc(ctx.words.boardLeft)}</div>`
     : today ? `<div class="boarddone">${esc(doneWord)}</div>`
     : kept ? `<div class="small kept">${esc(ctx.words.keptWin)}</div>`
-    : shut ? `<div class="small dim">${esc(ctx.words.emptyNoPlay)}</div>${isShut(ctx.look, 'seclusion') ? '' : `<div class="acts"><button class="act" data-seclude-open>${esc(ctx.words.secludeOpen)}</button></div>`}`
+    : shut ? `<div class="small dim">${esc(ctx.words.emptyNoPlay)}</div>${isShut(ctx.look, 'seclusion') && !spent(ctx.look) ? '' : `<div class="acts"><button class="act" data-seclude-open>${esc(ctx.words.secludeOpen)}</button></div>`}`
     : made ? `<div class="dim small">${esc(ctx.words.boardDone)}</div>`
     : g?.mod ? null
       : g ? '' : `<div class="dim small">…</div>`;
@@ -769,11 +769,13 @@ export const clockOf = (date, lang) => date.toLocaleTimeString(lang === 'zh' ? '
 function empty(card, ctx) {
   const q = ctx.qi, w = ctx.words;
   if (q?.st !== 'empty') return '';
-  const line = q.refillAt ? w.emptyLine.replace('{t}', clockOf(new Date(q.refillAt * 1000), ctx.lang)) : w.emptySoon;
+  // Nothing refills by the clock (Hanli 2026-11-02): 闭关, or time away, brings it back — `fill_min` of it from now.
+  const n = ctx.look?.stamina?.fill_min;
+  const line = n ? say(w.emptyLine, { n }) : w.emptySoon;
   // 闭关 is offered here: the pool spent is when sitting down makes sense (his, 2026-09-24).
   return `<div class="card empty"><div class="cardtitle">${esc(w.qi)} · ${esc(w.qiEmpty)}</div>
     <div>${esc(line)}</div><div class="small dim">${esc(w.boardsStay)}</div>
-    ${shut(ctx.look, 'seclusion') ? '' : `<div class="acts"><button class="act" data-seclude-open>${esc(w.secludeOpen)}</button></div>`}</div>`;
+    ${ctx.look?.seclusion ? '' : `<div class="acts"><button class="act" data-seclude-open>${esc(w.secludeOpen)}</button></div>`}</div>`;
 }
 
 /* ── 闭关 (rules/seclusion.mjs) ──
@@ -797,7 +799,7 @@ function seclude(card, ctx) {
     <div class="acts"><button class="act${on('progress')}" data-seclude-focus="progress">${esc(say(w.secludeProgress, { n: ch.per_hour ?? 0 }))}</button>
     ${ch.treasure ? `<button class="act${on('treasure')}" data-seclude-focus="treasure">${esc(say(w.secludeTreasure, { h: r.treasure_hours }))} · ${esc(ch.treasure.name)} ${esc(ch.treasure.step)}</button>` : ''}</div>
     ${pills ? `<div class="acts">${pills}</div>` : ''}
-    <div class="small dim">${esc(say(w.secludeRule, { cap: r.cap_hours, min: r.min_hours, rest: r.rest_hours }))}</div>
+    <div class="small dim">${esc(say(w.secludeRule, { cap: r.cap_hours, min: r.min_hours, rest: r.fill_hours ?? r.rest_hours }))}</div>
     ${ctx.secludeNote ? `<div class="donote">${esc(ctx.secludeNote)}</div>` : ''}
     <div class="acts"><button class="act" data-seclude-go>${esc(w.secludeGo)}</button><button class="act quiet" data-seclude-close>${esc(w.secludeLater)}</button></div></div>`;
 }
@@ -817,7 +819,9 @@ const round1 = (n) => Math.round(n * 10) / 10;
 export function grownLines(e, w, count = (n) => esc(n)) {
   // 补转 (rules/dandu.mjs): the turns of 丹毒 the sitting made up, whatever the focus.
   const bu = e.buzhuan ? esc(say(e.buzhuan.left ? w.secludeBuzhuanLeft : w.secludeBuzhuan, { n: e.buzhuan.made, left: e.buzhuan.left })) : '';
-  const lines = [e.grows ? GROWN_LINE[e.focus]?.(e, w, count) : '', bu, e.rested ? esc(w.secludeRested) : ''].filter(Boolean);
+  // 体力 came back all through it (state.mjs settleStamina): full, or what it brought.
+  const qi = e.rested ? esc(w.secludeRested) : e.stamina?.gained ? `${esc(w.qi)} +${count(e.stamina.gained)}` : '';
+  const lines = [e.grows ? GROWN_LINE[e.focus]?.(e, w, count) : '', bu, qi].filter(Boolean);
   return lines.map((l) => `<div>${l}</div>`).join('');
 }
 
@@ -827,10 +831,12 @@ function seclusion(card, ctx) {
   const t = e.target ?? {}, what = t.name ?? w.secludeFoci[e.focus];
   const pill = e.pill ? `<div class="small dim">${esc(say(w.secludePillTaken, { name: e.pill.name, m: e.pill.mult }))}</div>` : '';
   // What 出关 would bring now — or, under the hour, that it brings nothing yet.
-  const grows = e.grows ? grownLines(e, w) : `<div class="small dim">${esc(say(w.secludeTooShort, { min: e.min }))}</div>`;
+  // …体力 comes back under the hour too (state.mjs settleStamina): said beside it.
+  const qi = e.rested ? esc(w.secludeRested) : e.stamina?.gained ? `${esc(w.qi)} +${esc(e.stamina.gained)}` : '';
+  const grows = e.grows ? grownLines(e, w) : `<div class="small dim">${esc(say(w.secludeTooShort, { min: e.min }))}</div>${qi ? `<div>${qi}</div>` : ''}`;
   return `<div class="card seclusion">${gateArt(e.art, ctx)}<div class="cardtitle">${esc(say(w.secludingTitle, { what }))}${secludeLevel(e.focus, t, w)}</div>
     ${secludeBar(e.focus, t, w, ctx)}
-    <div class="small">${esc(say(w.secludeHours, { h: e.hours, cap: e.cap }))} · ${esc(say(w.secludeRestAt, { h: e.rest_hours }))}</div>${pill}
+    <div class="small">${esc(say(w.secludeHours, { h: e.hours, cap: e.cap }))} · ${esc(e.full_at ? say(w.secludeRestAt, { n: Math.max(1, Math.ceil((new Date(e.full_at) - Date.now()) / 60_000)) }) : w.secludeRestFull)}</div>${pill}
     <div class="secludenow"><div class="small dim">${esc(w.secludeIfNow)}</div>${grows}</div>
     <div class="acts"><button class="act" data-emerge>${esc(e.grows ? w.emergeBtn : w.emergeEarly)}</button></div></div>`;
 }
@@ -2034,11 +2040,16 @@ export function trayHourChipHtml(ctx) {
   if (!h) return '';
   return `<span class="bookchip hourchip" title="${esc(say(w.trayHourTip, { next: w.shichen[(h.i + 1) % 12] }))}">${esc(say(w.trayHour, { hour: w.shichen[h.i], n: h.ends_min }))}</span>`;
 }
-/// 体力 spent (Look's `stamina`, its own rules): the row is one card — when the pool is full again, 起炉 (闭关 fills it) and 喂饭桶.
+/// 体力 spent (Look's `stamina`, its own rules): the row is one card — what brings it back and how long: in 闭关, the
+/// minutes left; else 闭关 (one tap, behind every gate — rules/locks.mjs) and 喂饭桶. No clock refills it (Hanli 2026-11-02).
 function trayRestHtml(ctx) {
-  const w = ctx.words, st = ctx.look?.stamina, n = st?.full_at ? Math.max(1, Math.ceil((new Date(st.full_at) - Date.now()) / 60_000)) : null;
-  return `<div class="card task timed rest" data-tray="rest"><div class="tasktitle">${esc(n ? say(w.trayRest, { n }) : say(w.trayRest, { n: '…' }))}</div>
-    <div class="taskfoot"><button class="act" data-seclude-open>${esc(w.trayRestUp)}</button><button class="act" data-gear>${esc(w.trayRestFeed)}</button></div></div>`;
+  const w = ctx.words, st = ctx.look?.stamina, inside = Boolean(ctx.look?.seclusion);
+  const left = st?.full_at ? Math.max(1, Math.ceil((new Date(st.full_at) - Date.now()) / 60_000)) : null;
+  const n = inside ? left : st?.fill_min || left;
+  const title = say(inside ? w.trayRest : w.trayRestOut, { n: n ?? '…' });
+  const up = inside ? '' : `<button class="act" data-seclude-open>${esc(w.trayRestUp)}</button>`;
+  return `<div class="card task timed rest" data-tray="rest"><div class="tasktitle">${esc(title)}</div>
+    <div class="taskfoot">${up}<button class="act" data-gear>${esc(w.trayRestFeed)}</button></div></div>`;
 }
 const spent = (look) => Boolean(look?.stamina?.empty && !look.stamina.off);
 

@@ -17,7 +17,7 @@
 // Targets: a scene id (wm-mijing); a 回 (h07, j04, an absorbed h03; 古五, 今二,
 // 第五回 — its first scene as played); a sealed instance's name or beat (秘境 —
 // its entry scene).
-import { pick, realmName, threshold } from '../state.mjs';
+import { awayFit, pick, realmName, threshold } from '../state.mjs';
 import { act, begin, foeTurn, offers, tokenOf } from '../battle.js';
 import { lookahead } from '../fightline.js';
 import { bookEntries, idsOf } from '../book-order.js';
@@ -134,7 +134,17 @@ function makeRunner(content, opts) {
   const catalog = Object.fromEntries(content.cards.cards.map((c) => [c.id, c]));
   const r = { now: opts.now, days: 0, log: [] };
   const ctx = () => ({ now: r.now, quests: [] });
-  r.call = (verb, s, args) => VERBS[verb](s, content, ctx(), args);
+  // 体力 spent: the player is away until the next day — time away counts as 闭关 for 体力 (state.mjs awayFit; no clock
+  // refills it since 2026-11-02) — and tries again on the pool that brought back.
+  r.call = (verb, s, args) => {
+    const out = VERBS[verb](s, content, ctx(), args);
+    if (out.result?.refused !== 'no-stamina') return out;
+    const was = r.now;
+    r.nextDay();
+    const rested = awayFit(content, { ...s, last_seen: was.toISOString() }, r.now);
+    const again = VERBS[verb](rested, content, ctx(), args);
+    return again.state || !again.result?.ok ? again : { ...again, state: rested };
+  };
   r.must = (verb, s, args) => {
     const out = r.call(verb, s, args);
     if (!out.result?.ok) throw new Stuck(s, `${verb} ${JSON.stringify(args)} refused ${out.result?.refused}${out.result?.say ? ` — ${out.result.say}` : ''}`);

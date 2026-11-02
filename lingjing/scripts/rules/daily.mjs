@@ -1,6 +1,6 @@
 // rules/daily.mjs — 问候 and 体力: her greeting on the day's first opening, the pool as the stage draws it.
 // Part of the rules engine; rules.mjs is its one door.
-import { dayKey, lockedOf, pick, staminaLimited, staminaMax, staminaRest, staminaReturnsAt, realmName } from '../state.mjs';
+import { dayKey, lockedOf, pick, staminaCost, staminaCosts, staminaLimited, staminaMax, staminaRest, staminaReturnsAt, realmName } from '../state.mjs';
 import { herAwake } from './companion.mjs';
 import { clone, refuse } from './core.mjs';
 import { chanceBrief } from './road.mjs';
@@ -56,13 +56,20 @@ function staminaBrief(content, state, now) {
   // point buys one thing once a pool (his, 2026-09-23).
   const resting = Boolean(state.resting) && state.stamina < rest;
   const empty = state.stamina <= 0 || resting;
-  const at = n => staminaReturnsAt(content, state, n).toISOString();
+  // No clock refill (Hanli 2026-11-02): each hour is when a 闭关 — or time away — begun now brings it back
+  // (in 闭关, at its rate from now), null where nothing would (state.mjs staminaReturnsAt).
+  const at = n => staminaReturnsAt(content, state, n, now)?.toISOString() ?? null;
   // `off`: 体力 does not limit play (state.mjs staminaLimited) — the page shows no pool.
   // `max`: the pool's top, less what 丹毒 takes (state.mjs staminaMax); `top` the pool's own, when they differ.
-  return { now: state.stamina, max, ...(max < q.max ? { top: q.max } : {}), step: q.cost.step, empty, ...(resting ? { resting: true } : {}), ...(staminaLimited(content) ? {} : { off: true }),
+  // `refill`: 'seclusion' when only 闭关 (and time away) refills it; `fill_min` the minutes of it to full from here.
+  // `step`: a scene step's least cost (the scene's own reading minutes); `costs` every kind's (1 体力 ≈ 1 分钟).
+  const full = at(max), clock = Number(q.refill?.clock_hours) > 0;
+  return { now: state.stamina, max, ...(max < q.max ? { top: q.max } : {}), step: staminaCost(content, 'step'), costs: staminaCosts(content), empty, ...(resting ? { resting: true } : {}), ...(staminaLimited(content) ? {} : { off: true }),
+    ...(clock ? {} : { refill: 'seclusion' }),
     returns_at: empty ? at(resting ? rest : 1) : null,
     rest_at: empty ? at(Math.max(1, rest)) : null,
-    full_at: state.stamina < max ? at(max) : null };
+    full_at: state.stamina < max ? full : null,
+    fill_min: state.stamina < max && full ? Math.max(1, Math.ceil((new Date(full) - now) / 60_000)) : 0 };
 }
 
 export { staminaBrief };

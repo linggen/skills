@@ -41,7 +41,7 @@ test('a Mac-only player sees 7, a phone-only player 6 (no voice on the phone yet
   assert.equal(k(s, NOW, paired).of, 10);
 });
 
-test('every done row is ready at once; one tap hands them all in, 50 灵石 + 20 体力 each', () => {
+test('every done row is ready at once; one tap hands them all in, 50 灵石 each and no 体力', () => {
   const s = { ...start(), stamina: 10 };
   const done = withDone(['linggen-chat', 'cfo-open', 'linggen-image']);
   const brief = k(s, NOW, done);
@@ -50,16 +50,17 @@ test('every done row is ready at once; one tap hands them all in, 50 灵石 + 20
   // the card says what the hand-in lands — both
   const l = look(s, content, ctx(NOW, done));
   const life = l.quests.find(q => q.id === 'cfo-open');
-  assert.deepEqual([life.pays.wealth, life.pays.stamina], [50, 20]);
+  // …and no 体力, whatever the row says (rewards.json stamina.refill.quest false — Hanli 11-02: 「完成任务不奖励体力」)
+  assert.deepEqual([life.pays.wealth, life.pays.stamina ?? 0], [50, 0]);
   const one = quest(s, content, ctx(NOW, done), { action: 'turn', id: 'cfo-open' });
   assert.equal(one.result.paid.wealth, 50, 'what the card said');
-  assert.equal(one.result.stamina, 20);
+  assert.equal(one.result.stamina, 0);
   const all = quest(s, content, ctx(NOW, done), { action: 'turn', id: 'kaifu' });
   assert.equal(all.result.ok, true);
   assert.deepEqual(all.result.quests.map(q => q.id), ['linggen-chat', 'cfo-open', 'linggen-image']);
   assert.equal(all.result.paid.wealth, 150);
   assert.equal(all.state.wealth - s.wealth, 150);
-  assert.equal(all.result.stamina, 60);
+  assert.equal(all.result.stamina, 0, 'no 体力 from a quest');
   assert.equal(k(all.state, NOW, done).done, 3);
   assert.equal(quest(all.state, content, ctx(NOW, done), { action: 'turn', id: 'kaifu' }).result.refused, 'not-done');
 });
@@ -126,7 +127,8 @@ test('the 事 book: 「开府 n/N」 on its own line, each row its 怎么做, wh
   const html = page(look(s, content, ctx(NOW, done)));
   assert.match(html, /<div class="tgroup kaifu"><div class="thead small dim">开府 0\/7 <button class="act do" data-do="turn" data-id="kaifu">全部交差 · 2<\/button><\/div>/);
   assert.equal((html.match(/tmeta">\d+\/\d+/g) ?? []).length, 0, 'never a count beside one row');
-  assert.match(html, /linggen-chat.*怎么做linggen-chat.*灵石 \+50 · 体力 \+20.*data-ask-her/s);
+  assert.match(html, /linggen-chat.*怎么做linggen-chat.*灵石 \+50.*data-ask-her/s);
+  assert.doesNotMatch(html, /体力 \+\d/, 'no 体力 on a 开府 row');
   assert.match(html, /linggen-ask-news.*data-ask="@银月 今天有什么大新闻？"/s);
   assert.match(html, /cfo-open.*href="\/"/s);
   assert.match(html, /dj-play.*data-do="turn" data-id="dj-play"/s);

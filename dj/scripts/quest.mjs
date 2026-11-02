@@ -35,12 +35,12 @@ const OPEN = '/apps/dj/scripts/index.html';
 
 export const MENU = [
   {
-    id: 'dj-listen', kind: 'song', period: 'day', reward: 20, stamina: 10, device: 'both', open: OPEN,
+    id: 'dj-listen', kind: 'song', period: 'day', reward: 20, device: 'both', open: OPEN,
     title: { zh: '琴心 · 听一首歌', en: 'The heart of the zither · hear one song' },
     how: { zh: '在 DJ 里放一首歌，听到最后', en: 'Play one song in DJ through to its end' },
   },
   {
-    id: 'dj-pick', kind: 'song', period: 'week', reward: 25, stamina: 15, device: 'both', pool: true, open: OPEN,
+    id: 'dj-pick', kind: 'song', period: 'week', reward: 25, device: 'both', pool: true, open: OPEN,
     title: { zh: '点歌 · 让银月推荐一首歌', en: 'Ask for a song · let Yinyue pick one' },
     how: { zh: '问银月听什么，放她推荐的那首', en: 'Ask Yinyue what to hear; play the song she picks' },
   },

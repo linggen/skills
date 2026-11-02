@@ -112,7 +112,8 @@ export function lockReset(content, state) {
   if (shut.includes('cultivation') && (state.tier !== first || state.step || state.progress)) Object.assign(fix, { tier: first, step: 0, progress: 0 });
   if (shut.includes('wealth') && state.wealth) fix.wealth = 0;
   if ((fix.progress === 0 || fix.wealth === 0) && state.day) fix.day = { ...state.day, ...(fix.progress === 0 ? { progress: 0 } : {}), ...(fix.wealth === 0 ? { wealth: 0 } : {}) };
-  if (shut.includes('seclusion') && state.seclusion) fix.seclusion = undefined;
+  // …save a 闭关 taken on a spent pool (`spent`): the one way back to 体力 is open behind every gate.
+  if (shut.includes('seclusion') && state.seclusion && !state.seclusion.spent) fix.seclusion = undefined;
   return fix;
 }
 
@@ -267,7 +268,45 @@ export function rollDay(state, now) {
 const limitEnv = () => (typeof process === 'undefined' ? undefined : process.env?.LINGJING_STAMINA_LIMIT);
 export const staminaLimited = content => content.rewards?.stamina?.limit !== false && limitEnv() !== '0';
 
-const secsPerPoint = q => (q.refill_hours * 3600) / q.max;
+/* 体力是控制单次游戏时长的: 1 体力 ≈ 1 分钟 (Hanli 2026-11-02). It comes back in 闭关 only — the real one
+   (rules/seclusion.mjs) or time away (`refill.away_min` with no player verb counts as 闭关 for 体力 alone,
+   rules.mjs awayFit) — and by the 体力卡; never by the clock while he plays, unless a world declares
+   `refill.clock_hours`. One rate for both: the pool's top in `refill.seclusion_hours`, linear on real minutes. */
+const refillOf = q => q.refill ?? {};
+const HOUR_MS = 3600_000;
+/* Milliseconds a point takes: in 闭关 (or away) at the 闭关 rate, else by the clock — null when nothing refills. */
+function msPerPoint(q, secluded) {
+  const r = refillOf(q), h = secluded ? r.seclusion_hours ?? r.clock_hours : r.clock_hours;
+  return Number(h) > 0 ? (h * HOUR_MS) / q.max : null;
+}
+/* The 闭关 rate, whether or not he is in it now: what the page says a sitting (or time away) would take. */
+export const seclusionMsPerPoint = content => msPerPoint(content.rewards.stamina, true);
+/* Whether a quest's row may pay 体力 (`refill.quest`: false since Hanli 2026-11-02: 「完成任务不奖励体力」). */
+export const questStamina = (content, q) => (refillOf(content.rewards.stamina).quest === false ? 0 : Math.max(0, Number(q?.stamina) || 0));
+
+/* What one act costs (rewards.json stamina.cost): its minutes × `per_minute`. A string names a minute of the
+   balance model (balance.json model.minutes; `practice` is the practice board's); `reading` is a scene's own reading
+   minutes (`scene` given) at model.chars_per_min, plus the model's `scene`; a number is the act's minutes; `move`
+   a trip by its roads ({base, per_road, max}). Whole points, at least 1 for anything that costs. */
+const textLen = x => (typeof x === 'string' ? x.length : Array.isArray(x) ? x.reduce((n, y) => n + textLen(y), 0) : x?.zh?.length ?? 0);
+export function minutesOf(content, name, scene = null, exit = null) {
+  const model = content.balance?.model ?? {}, m = model.minutes ?? {};
+  if (name === 'reading') {
+    const text = scene ? textLen(scene.story) + textLen(scene.story_after) + textLen(exit?.story) : 0;
+    return text / (model.chars_per_min || 450) + (m.scene ?? 1);
+  }
+  if (name === 'practice') return model.practice?.minutes ?? m.board ?? 0;
+  return m[name] ?? 0;
+}
+export function staminaCost(content, kind, n = 1, scene = null, exit = null) {
+  const q = content.rewards.stamina, c = q.cost?.[kind] ?? 0, per = q.per_minute ?? 1;
+  const minutes = typeof c === 'string' ? minutesOf(content, c, scene, exit)
+    : typeof c === 'object' && c ? Math.min(c.max, c.base + Math.max(0, n - 1) * c.per_road) : c * n;
+  return minutes > 0 ? Math.max(1, Math.round(minutes * per)) : 0;
+}
+/* Every kind's cost as Look hands it (a scene's step at its own minutes is told on the scene). */
+export const staminaCosts = content => Object.fromEntries(Object.keys(content.rewards.stamina.cost ?? {}).filter(k => !k.startsWith('_')).map(k => [k, staminaCost(content, k)]));
+
 
 /* The pool's top: `max`, less what 丹毒 takes (balance.json `dandu`: each turn a pill's furnace left out,
    owed until 闭关 makes it up — rules/dandu.mjs), never more than its `cap`. The refill keeps its rate. */
@@ -278,9 +317,13 @@ export function staminaMax(content, state) {
 }
 /* Where a spent pool wakes (`rest`): never above the pool's top, so 丹毒 never keeps him resting for good. */
 export const staminaRest = (content, state) => Math.min(content.rewards.stamina.rest ?? 0, staminaMax(content, state));
+/* The pool spent: 0, or resting after 0 until back to `rest` — when 闭关 is open behind every gate (rules/locks.mjs). */
+export const poolSpent = (content, state) => staminaLimited(content) && Number.isFinite(state?.stamina)
+  && (state.stamina <= 0 || (Boolean(state.resting) && state.stamina < staminaRest(content, state)));
 
-/* Refill by the clock since it was last settled — whole points only, the
-   remainder keeps waiting in `qi_at`. A save from before 灵气 wakes full. */
+/* Refill since it was last settled — whole points only, the remainder waits in `stamina_at`. In 闭关 at its
+   rate from when it began (never before: `stamina_at` may be older); out of it, by the clock only where a world
+   declares one — else nothing, and the stamp moves to now. A save from before 灵气 wakes full. */
 export function settleStamina(content, state, now) {
   const q = content.rewards.stamina, max = staminaMax(content, state);
   if (!staminaLimited(content)) { state.stamina = max; state.stamina_at = now.toISOString(); delete state.resting; return; }
@@ -290,19 +333,46 @@ export function settleStamina(content, state, now) {
   if (!Number.isFinite(state.stamina)) state.stamina = max;
   if (Number.isNaN(Date.parse(state.stamina_at))) state.stamina_at = now.toISOString();
   if (state.stamina >= max) { state.stamina = max; state.stamina_at = now.toISOString(); return; }
-  const gained = Math.floor(Math.max(0, now - new Date(state.stamina_at)) / 1000 / secsPerPoint(q));
-  if (gained <= 0) return;
+  const sec = state.seclusion?.since ? new Date(state.seclusion.since) : null;
+  const ms = msPerPoint(q, Boolean(sec));
+  if (!ms) { state.stamina_at = now.toISOString(); return; }
+  const from = Math.max(new Date(state.stamina_at).getTime(), sec && !Number.isNaN(sec.getTime()) ? sec.getTime() : 0);
+  const gained = Math.floor(Math.max(0, now.getTime() - from) / ms);
+  if (gained <= 0) { if (from > new Date(state.stamina_at).getTime()) state.stamina_at = new Date(from).toISOString(); return; }
   state.stamina = Math.min(max, state.stamina + gained);
-  state.stamina_at = state.stamina >= max
-    ? now.toISOString()
-    : new Date(new Date(state.stamina_at).getTime() + gained * secsPerPoint(q) * 1000).toISOString();
+  state.stamina_at = state.stamina >= max ? now.toISOString() : new Date(from + gained * ms).toISOString();
 }
 
-/* When the pool will hold `cost` again, at the refill rate. */
-export function staminaReturnsAt(content, state, cost) {
-  const q = content.rewards.stamina;
-  const missing = Math.max(0, cost - state.stamina);
-  return new Date(new Date(state.stamina_at).getTime() + missing * secsPerPoint(q) * 1000);
+/* When the pool will hold `cost` again: in 闭关 at its rate from the settled stamp; out of it at the clock's where a
+   world has one, else at the 闭关 rate from `now` — what a 闭关 (or time away) begun now would bring. Null when
+   nothing would. */
+export function staminaReturnsAt(content, state, cost, now = new Date()) {
+  const q = content.rewards.stamina, missing = Math.max(0, cost - state.stamina);
+  const clock = msPerPoint(q, false), secluded = Boolean(state.seclusion);
+  const ms = secluded || !clock ? msPerPoint(q, true) : clock;
+  if (!ms) return null;
+  const base = secluded || clock ? new Date(state.stamina_at).getTime() : now.getTime();
+  return new Date(base + missing * ms);
+}
+
+/* Time away (Hanli 2026-11-02: 「如果体力用完, 用户没有点闭关就下线, 我们可以自动给用户闭关吗?」): a gap of
+   `refill.away_min` or more since the last player verb (`last_seen`, else the save's `updated`) counts as 闭关
+   for 体力 alone — at the 闭关 rate, capped at the top; 修为 and the rest stay a real 闭关's. Never while a real
+   one runs (it pays its own); every player verb stamps `last_seen`, so one stretch is never counted twice. On a
+   copy, with `away` kept for the page to tell once (its `at`); the same object when nothing is owed. */
+export function awayFit(content, state, now) {
+  const q = content.rewards.stamina, r = refillOf(q), ms = msPerPoint(q, true);
+  if (!state || state.seclusion || !staminaLimited(content) || !ms || !(r.away_min > 0) || msPerPoint(q, false)) return state;
+  const seen = Date.parse(state.last_seen ?? state.updated ?? '');
+  if (!Number.isFinite(seen) || now.getTime() - seen < r.away_min * 60_000) return state;
+  const max = staminaMax(content, state);
+  if (!(state.stamina < max)) return state;
+  const gained = Math.min(max - state.stamina, Math.floor((now.getTime() - seen) / ms));
+  if (gained <= 0) return state;
+  const s = { ...state, stamina: state.stamina + gained, stamina_at: now.toISOString() };
+  if (s.resting && s.stamina >= staminaRest(content, s)) delete s.resting;
+  s.away = { at: now.toISOString(), minutes: Math.round((now.getTime() - seen) / 60_000), gained, now: s.stamina, max };
+  return s;
 }
 
 /* A refill from real life — never over the top. */

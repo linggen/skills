@@ -31,7 +31,7 @@ test('the menu: every entry in the protocol shape — the glance a daily, the re
     assert.ok(['mac', 'phone', 'both'].includes(q.device), q.id);
     assert.equal(q.pool, q.id === 'shifu-glance' ? undefined : true, q.id);
     assert.equal(typeof q.due, 'boolean', q.id);
-    assert.ok(q.reward >= 15 && q.reward <= 30 && q.stamina >= 10 && q.stamina <= 20, q.id);
+    assert.ok(q.reward >= 15 && q.reward <= 30 && q.stamina === undefined, q.id); // no quest pays 体力 (Lingjing, Hanli 2026-11-02)
     assert.ok(q.title.zh && q.title.en && q.open.startsWith('/apps/apple-shifu/scripts/index.html?tab='), q.id);
     assert.ok(q.how.zh && q.how.en && q.how.en.split(/\s+/).length <= 20, q.id);
   }

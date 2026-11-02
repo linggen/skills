@@ -67,17 +67,30 @@ test('a spell: a ★ each 6 h counted, the hours over kept for the next seclusio
   for (const id of ['fuzhu', 'hantan', 'jinzhua']) assert.equal(seclude(player(), T0, { action: 'enter', focus: 'card', id }).result.refused, 'not-a-spell', id);
 });
 
-test('under an hour nothing grows; 8 h or more fills 体力 whatever the focus', () => {
-  const short = inAndOut(player(), 0.5, { focus: 'card', id: 'wulei' });
+test('under an hour nothing grows but 体力: it comes back all through the sitting, the whole pool in refill.seclusion_hours, whatever the focus', () => {
+  const Q = content.rewards.stamina, H = Q.refill.seclusion_hours, perHour = Q.max / H;
+  const short = inAndOut(player(), 0.5 * H, { focus: 'card', id: 'wulei' });
   assert.equal(short.result.emerged.grows, false);
   assert.equal(short.state.card_stars, undefined);
-  assert.equal(short.result.emerged.rested, undefined);
-  const mid = inAndOut(player(), 3, { focus: 'progress' });
-  assert.equal(mid.result.emerged.rested, undefined, '3 h rests only by the clock');
-  const long = inAndOut(player({ resting: true }), 8, { focus: 'progress' });
-  assert.equal(long.result.emerged.rested, true);
-  assert.equal(long.state.stamina, content.rewards.stamina.max);
-  assert.equal(long.state.resting, undefined);
+  assert.equal(short.state.stamina, 5 + Math.floor(0.5 * H * perHour), 'half the hours, half the pool — linear on real minutes');
+  assert.equal(short.result.emerged.stamina.gained, short.state.stamina - 5);
+  assert.equal(short.result.emerged.rested, undefined, 'not full yet');
+  // The whole pool in about an hour of 闭关, ending full — a spent, resting pool wakes.
+  const full = inAndOut(player({ stamina: 0, resting: true }), H, { focus: 'progress' });
+  assert.equal(full.state.stamina, Q.max);
+  assert.equal(full.result.emerged.rested, true);
+  assert.equal(full.state.resting, undefined);
+  // A pill multiplies the hours 修为 counts, never 体力's (real minutes).
+  const pilled = inAndOut(player(), 0.5 * H, { focus: 'progress', pill: 'qi-pill' });
+  assert.equal(pilled.state.stamina, short.state.stamina);
+  // While it runs Look's pool rises (settled at the 闭关 rate): the chip reads it live.
+  const inn = seclude(player({ stamina: 0, resting: true }), T0, { action: 'enter', focus: 'progress' }).state;
+  const mid = look(inn, content, ctx(at(0.25 * H)));
+  assert.equal(mid.stamina.now, Math.floor(0.25 * H * perHour));
+  assert.ok(mid.seclusion.full_at && Math.abs(new Date(mid.seclusion.full_at) - at(H)) < 60_000, 'the card says when it is whole');
+  // A stamp older than the sitting never counts from before it began.
+  const old = seclude(player({ stamina: 0, stamina_at: at(-5).toISOString() }), T0, { action: 'enter', focus: 'progress' }).state;
+  assert.equal(seclude(old, at(0.1 * H), { action: 'leave' }).state.stamina, Math.floor(0.1 * H * perHour));
 });
 
 test('修为: per hour counted, through the tables like any grant; at the realm\'s peak it counts on past the mark', () => {

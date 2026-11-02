@@ -347,7 +347,7 @@ the knobs: tasks/world.json `shouchao`, its cooldown balance.json `events.shouch
   `left_min`; Look keeps the row through the whole cooldown, past midnight, with `wait_min` and `shut`, and carries it in
   `waits` — § Pacing's one waiting row), from 古四's 小周天 (wm-zhoutian, his first 灵力); only at
   沉鼎观, never inside a beat's lock, the 秘境, a rerun or a fight.
-- **Cost and pay**: 8 灵气 (a fight's), taken as the night is counted — a lost night costs nothing, an empty pool
+- **Cost and pay**: its minutes in 体力 (5, `tide`; § 体力), taken as the night is counted — a lost night costs nothing, an empty pool
   shuts the board. By stars: 1★ 修为 10 + 灵石 5 · 2★ 20 + 10 + an herb · 3★ 30 + 15 + an herb (修为 on the
   `haunt` table, layer-scaled, past the 回's mark as 灵石; 灵石 the small-game ranks). A night missed is never
   punished: the seniors hold, only its pay is gone.
@@ -513,7 +513,7 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
   checks road and tier: `no-road` (with `near`, `toward`), `too-hard` (with
   `fitting` — 银月's 「还不是时候」), `unknown-place`, `road-closed`, `corridor`,
   each with `here`. Move walks the whole road (`via`), stopping only where a
-  scene stands, and reads a name half said. A trip costs 体力 (3, +1 a road, ≤6),
+  scene stands, and reads a name half said. A trip costs 体力 (1 a road, ≤4; § 体力),
   except toward the story (§ 体力: 主线赶路不扣体力).
 - **The spine as waypoints.** A scene runs only where it stands (`atScene`;
   `not-at-scene`); Look's `waypoint` and the director's `thread` name the next.
@@ -678,7 +678,7 @@ nothing of its own deals AT MOST ONE thing met on the road, veiled until Ling
 sets the moment (Meet `reveal`; the page lifts it after her turn or 20 s):
 **拾遗** (a find, 收下 on its card, no model turn), **路人问** (a riddle from the
 road's pool), **拦路** (a nearby haunt's beast, same fight), **抉择** (Ling
-writes 2–3 ways; the rules rolled each; 3 体力; a `wound` stake costs 体力),
+writes 2–3 ways; the rules rolled each; 1 体力; a `wound` stake costs 体力),
 and the daily **机缘** (within two roads for three real hours). Drawn by day,
 place and save — a reload rerolls nothing; once per place per day; only where
 the player stops. An arrival's order: what it finished (errands `met`, 交差
@@ -908,7 +908,7 @@ is the pure core; the page draws it on the stage beside the chat.
   ③ ⑥ ⑨ cauldrons (月华 · 月障 · 月落).
 - **★ from 闭关** (§ 体力): each star −1 灵力 while cost > 1, then +1 to its number.
 - **The door contract** (every fight and mini-game): entered from the world;
-  pays 体力 at the door (a fight 8); **locks a loadout** (realm, roots, the ten,
+  pays 体力 at the door (a fight's 4); **locks a loadout** (realm, roots, the ten,
   gear, the day's reading, 银月) that nothing outside changes; the world holds
   still (`in-a-fight`, FIGHT_HOLDS; Ling pushes nothing); the rules replay the
   plays and settle; the page reports `[scene] won|lost|withdrew <id>`; leaving
@@ -1161,7 +1161,7 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
   each step a board instance at its place, then a finale; pay from the `tale`
   tables, capped; one a day, an unfinished one stays.
 - **Mini-games, 炼丹 and 论道** are played on the stage, levelled by realm — as
-  传闻's steps, a scene's boards, or where an errand asks (3 体力); never a
+  传闻's steps, a scene's boards, or where an errand asks (a practice board's 3 体力); never a
   daily chore. 论道: 飞花令 · 成语接龙 · 对对联.
 - **Real-life chores** (`~/.linggen/quests/<app>.json`, each app's **menu**):
   the game names no app; done is the app's own record (`done_at`), never
@@ -1224,8 +1224,8 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
     `turn`, `id: "kaifu"`) for all. Only the **hint** of an undone row drips: one more a day, in
     world.json `kaifu.order` (`state.kaifu.shown` and `shown_on`, written like the stand —
     chores.mjs `kaifuFit`). All revealed and done, more waiting: 「下一件明日开」. 跳过 is gone.
-  - **Pay.** 50 灵石 + 20 体力 each, as the row says (`once` table, capped at 50); the card says both
-    (Look's `pays` carries `stamina`), and so does the hand-in line.
+  - **Pay.** 50 灵石 each, as the row says (`once` table, capped at 50) — and no 体力 since 2026-11-02 (§ 体力: no quest pays it); the card says the 灵石
+    (Look's `pays` carries no `stamina`), and so does the hand-in line.
   - **Progress.** 「开府 3/7」 is the group's own line in the 事 panel, never beside one row (Hanli:
     「这个让linggen记住你的任务没写明怎么完成」).
   - **The other device.** All handed in on a one-device player's: one uncounted card — on the Mac
@@ -1305,23 +1305,25 @@ qian-card.js · qian-page.js · guide/qian.md (银月) · guide/divine.md (Ling)
 
 ## 体力 and 闭关 【已建】
 
-- **The day is paced by the routine's caps and cooldowns** (§ Pacing); 体力 is kept as a pool (`rewards.json → stamina`): 150, full in one
-  hour (testing numbers since 2026-11-02; launch values to review, doc/status.md § Before launch); empty rests until full (`rest`); shown as points, never a clock.
-  Prices: a road 3 (+1 a road, ≤6), a story step 3, a fight 8, a 抉择 3, 驯 3,
-  a mini-game 3 (at the count), 论道 3 (at open), make a scene 5, a world 10,
-  amend 5; the market, errands, talk and 问签 are free; the prologue's own steps
-  cost nothing. A real-life chore refills its own amount (default 30, `refill.quest`).
-  Empty: `no-stamina` with the hour; 银月 sends the player to rest.
+- **体力是控制单次游戏时长的: 1 体力 ≈ 1 分钟** (Hanli 2026-11-02, a standing rule: 「体力是控制单次游戏时长的」 · 「或者简单点, 给用户100体力, 1体力玩大约1分钟?」). The pool (`rewards.json → stamina`) is **100**; a spent pool rests until whole (`rest` 100); shown as points. A full pool is about 100 minutes of the acts that spend it — reading the book's text and walking the story's road spend nothing, so a real sitting runs longer.
+- **Each act costs its minutes** (`stamina.cost`, × `per_minute` 1; state.mjs `staminaCost`), read from the balance model's minutes where it has them (balance.json `model.minutes`), never typed twice: a fight (`duel`) 4 · a practice board / hosted game / 论道 / 对对子 (`game` → `practice`) 3 · a night of 兽潮 (`tide`, agent's pick) 5 · a 旁炉 throw (`fantong`) 1 · a 抉择 / 驯 / 换一只 (`scene`) 1 · a story step (`reading`) the scene's own text at `chars_per_min` (450 字/分) plus the scene's minute, rounded (卷一: 1–13, median 4) · a road 1 (+1 a road, ≤4); make a scene 5, a world 10, amend 5 (their own minutes). Free: the shop, hand-ins, the bag, talk, 问签, the story's road (主线赶路) and the prologue's own steps. On the cards: only 换一只 shows its cost (体力 N) so far; Look carries every kind's (`stamina.costs`) for the board and fight cards' 「约 N 分钟 · 体力 N」 — not drawn yet (open).
+- **No clock refill** (Hanli 2026-11-02: 「体力不要自动回, 只有闭关才回. 或者体力卡」): `refill.clock_hours` null — a spent pool stays spent. It comes back three ways only:
+  1. **闭关** — while one runs the pool rises at the whole pool in `refill.seclusion_hours` (1 h), **linear on real minutes** (agent's pick, Hanli delegated 11-02: linear, so the chip reads true all through and a sitting ended early keeps what it brought; a pill multiplies 修为's hours, never 体力's; under `min_hours` nothing else grows, 体力 does). Look settles it live (state.mjs `settleStamina`, from the later of `stamina_at` and the sitting's start); 出关 settles it to the minute. The old rule (`seclusion.rest_hours` 8 h filled it) is gone; `rest_hours` is now only the night 修为 is reckoned by.
+  2. **Time away counts as 闭关, for 体力 only** (Hanli 11-02: 「如果体力用完, 用户没有点闭关就下线, 我们可以自动给用户闭关吗?」; agent's pick, recorded: auto-闭关 pays 体力 only, a real 闭关 still pays its 修为 too, so entering one stays worth it): a gap of `refill.away_min` (10) minutes or more since the last player call (`last_seen`, stamped by every call of the page's and Ling's — Look included, never 银月's), at the 闭关 rate, capped at the top (state.mjs `awayFit`, run in rules.mjs before the verb, written, never logged). Spent or only partly used, the Mac or the phone (the same bundle). The save keeps `away` until the page's next Look, which tells it once — 「你下线这段时间自行闭关 N 分钟，体力 +X」 — and takes it off.
+  3. **The 体力卡** (below): full at once.
+- **No quest pays 体力** (Hanli 11-02: 「完成任务不奖励体力」): `refill.quest` false — a chore, a 开府 row or an app's quest pays none, whatever its row says (chores.mjs `questStamina`); the 事 cards show none. The apps' rows dropped their `stamina` (dj, cfo, health, apple-shifu; the engine's milestones.rs).
+- **Empty**: `no-stamina`, 「体力耗尽了。闭关，或回到现实里歇一歇，约 HH:MM 回满」 (the hour a 闭关 begun now would fill it); 银月 sends the player to 闭关 or to rest. The tray is one card, 「体力耗尽 · 闭关约 N 分钟回满」, with 闭关 and 喂饭桶; inside one, 「闭关中 · 约 N 分钟体力回满」. **闭关 on a spent pool stands behind every gate** (rules/locks.mjs: the prologue keeps 闭关 shut, but not from a spent pool — the sitting is marked `spent` and its card stands); it has no cooldown of its own (the 小游戏池's 4 h is only the 时辰 draw's).
+- **The numbers at 100**: 带伤 is under half the pool (breakthrough `body.share`), the breakthrough's wound 30% (30), a 抉择's wound 10–35% — all shares of the pool; 丹毒's cap stays 30 (now 30% of the pool, as at the old launch value of 100).
 - **体力卡 — test only, deleted before launch** (Hanli 2026-11-02: 「或者商店里加一个体力卡也行, 测试阶段物品, 正式上线后删除了」 · 「让体力卡重置冷却?」): `tili-ka`, `test: true`, 10 灵石 at the 沉鼎 area's shops. Used from the bag: the pool full at once (`effect.stamina: "full"`) and every cooldown cleared (`effect.reset: "cooldowns"`). The reset is one hook, rules/events.mjs `resetCooldowns`: each cooldown's owner registers how its clock is cleared (`onCooldownReset(name, clear)` — the events, a pool's rest, the 饭桶, the cauldron); the day's counts (an event's `n`, the 饭桶's `per_day`, 对对子's three, 问卦's one) are day limits and stay.
-- **体力 is ON again since 2026-11-02** (Hanli: 「你把体力也打开加回来吧」; `LINGJING_STAMINA_LIMIT=0` still turns it off for a run). Testing numbers (Hanli 11-02: 「体力给多点, 一次上线玩1个小时, 下线(闭关)1小时, 体力恢复满」): max 150, full again in 1 hour, a spent pool rests until full (`rest` 150). Was: **体力 is OFF while we test** (Hanli, 2026-10-01: 「我是说先不要用体力限制我们测试的时长. 体力限制游戏时长的设定, 可以以后加.」): played through the command (`rules.mjs`, the page's and Ling's door), nothing spends 体力, nothing is refused for it, and the pool reads full — `staminaLimited` in state.mjs, thrown by `LINGJING_STAMINA_LIMIT=0`, which the command sets unless it is already set. Every cost and rule below is kept and still tested; `LINGJING_STAMINA_LIMIT=1` (or removing the default in rules.mjs) brings the pool back as it was. 体力 as a play-time limit is designed later.
+- **体力 is ON since 2026-11-02** (Hanli: 「你把体力也打开加回来吧」; `LINGJING_STAMINA_LIMIT=0` still turns it off for a run). That morning's testing numbers (150, full by the clock in 1 h, `refill.quest` 30) were replaced the same day by the rules above. Was: **体力 is OFF while we test** (Hanli, 2026-10-01: 「我是说先不要用体力限制我们测试的时长」): nothing spends 体力, nothing is refused for it, the pool reads full — `staminaLimited` in state.mjs.
 - **主线赶路不扣体力** (Hanli, 2026-10-01: 「可以，主线赶路不扣体力」): a trip toward
   the place the goal line names (Look's `waypoint`) is free — the place itself or
   one on a shortest road to it (rules/errands.mjs `onStoryRoad`); 古七–古八's
   seasons carry no toil price (伏天, where 古七 turns into 古八, pays a story step, as 入秋 does). Why: 卷一's play-through hit two 5–6 h lockouts
   on the story path. 体力 is for side errands, roaming and cultivation.
 - **闭关** (2026-09-24, rules/seclusion.mjs, page-only `seclude`): real hours
-  (≤12) on ONE focus — 法术 (one ★ per 6 h, to ★3), 修为 (5 an hour, a 聚气丹
-  ×1.5), 本命法宝 (from 结丹; one 重 per 8 h); 8 h fills 体力; the world holds still
+  (≤12) on ONE focus — 法术 (one ★ per 6 h, to ★3), 修为 (an hour's share of the layer, a 聚气丹
+  ×1.5), 本命法宝 (from 结丹; one 重 per 8 h); 体力 comes back all through it, whole in an hour (above); the world holds still
   (`in-seclusion`); 出关 · 领取 on opening.
 
 ## 银月 in the game 【已建】

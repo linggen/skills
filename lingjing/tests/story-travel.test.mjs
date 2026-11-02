@@ -5,14 +5,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
-import { newState } from '../scripts/state.mjs';
+import { newState, staminaCost } from '../scripts/state.mjs';
 import { look, move } from '../scripts/rules.mjs';
 
 const content = loadContent();
 const NOW = new Date('2026-09-30T12:00:00');
 const ctx = { now: NOW, quests: [] };
-const cost = content.rewards.stamina.cost.move;
-const trip = n => Math.min(cost.max, cost.base + (n - 1) * cost.per_road);
+const trip = n => staminaCost(content, 'move', n);
 
 /* 古十 with 01-end waiting at 漳源 (sibei › zhangnan › hebo › zhangyuan) — a scene walked to:
    01-cauldron is inside the 河伯 key beat since 2026-10-21, carried, never a waypoint. */

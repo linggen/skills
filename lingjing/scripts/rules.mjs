@@ -25,7 +25,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { allWorlds, DEFAULT_WORLD, knownWorld, loadWorld } from './content.mjs';
-import { migrate } from './state.mjs';
+import { awayFit, migrate } from './state.mjs';
 import { askOf, tapThen, THEN_RECAP, THEN_STAGED, withAsk } from './rules/ask.mjs';
 import { guard, onLook, unconfirmed } from './rules/confirm.mjs';
 import { markSeen, notePage, READS_PAGE, unseen } from './rules/did.mjs';
@@ -231,7 +231,10 @@ function runLocked(verb, args, stateFile, reader) {
   // …and what waited at the 洞府 (待取, retired 11-02) into the pouch, or to the door's 「储物袋满了」 (rules/pouch.mjs fitHeld).
   const fitted = raw && raw.world === worldId ? fitHeld(content, settleHeld(content, settleStages(content, fitPresence(content, lapseWall(closeStaleFight(migrate(raw, content), now), now), now), now))) : raw;
   // …and the day's 开府 hint revealed (rules/chores.mjs kaifuFit: one more undone row a day), written like the stand.
-  const saved = fitted && raw?.world === worldId ? kaifuFit(content, strongFit(content, standFit(content, fitted, now), now), readQuests(), now) : fitted;
+  // …and time away counted as 闭关 for 体力 (state.mjs awayFit) — the player's own calls only (the page's, Ling's).
+  const player = !reader || reader === 'ling';
+  const stood = fitted && raw?.world === worldId ? kaifuFit(content, strongFit(content, standFit(content, fitted, now), now), readQuests(), now) : fitted;
+  const saved = stood && player && raw?.world === worldId && verb !== 'init' ? awayFit(content, stood, now) : stood;
   // Only the stand moved (a read): written, never logged — Undo takes back moves, not a beast chosen.
   const standOnly = Boolean(raw) && fitted === raw && saved !== raw;
   const state = verb === 'init' || !saved ? freshState(content, langNow(), now, saved) : saved;
@@ -319,9 +322,17 @@ function runLocked(verb, args, stateFile, reader) {
     // The province stood in, kept for the map (rules/inkmap.mjs: mist → wash).
     markBeen(content, next);
     next.updated = now.toISOString();
+    // The last player verb (state.mjs awayFit reads the gap from it).
+    if (player) next.last_seen = now.toISOString();
     writeAtomic(stateFile, stateText(next));
     if (!(standOnly && !out.state)) fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args: logged(args), before: unconfirmed(raw ?? state) }) + '\n');
     trackPay(verb, args, out.result, raw ?? state, next, content, now);
+  }
+  // …a read or a refusal is the player here too: stamped, never logged.
+  // The save as the verb left it on disk (Forget's asking used up, a refusal's own keep), with the stamp alone added.
+  if (!next && player && raw && state) {
+    state.last_seen = now.toISOString();
+    try { const cur = JSON.parse(fs.readFileSync(stateFile, 'utf8')); writeAtomic(stateFile, stateText({ ...cur, last_seen: state.last_seen })); } catch { /* no save on disk: nothing to stamp */ }
   }
   if (out.result?.travel) return travelTo(out.result.travel, next ?? state, { stateFile, logFile, now, verb });
   const asking = next ?? state;
@@ -364,6 +375,8 @@ function runLocked(verb, args, stateFile, reader) {
     asking.recap = { told: now.toISOString(), scenes: (asking.done_scenes ?? []).length, ...(session ? { session } : {}) };
     writeAtomic(stateFile, stateText(asking));
   } else if (owed && !next) writeAtomic(stateFile, stateText(asking));
+  // Time away told once: the page's Look carries it, and it leaves the save (a reload, the phone never tell it again).
+  if (!reader && verb === 'look' && asking.away) { delete asking.away; writeAtomic(stateFile, stateText(asking)); }
   const withDid = told ? { ...recapped, page_did: told } : recapped;
   // A passage still playing on the stage: her Look says so, and words only (rules/reading.mjs).
   const paged = reader === 'ling' && verb === 'look' && readingNow(asking, now) ? { ...withDid, reading: 'playing', then: THEN_READING + (withDid.then ?? '') } : withDid;

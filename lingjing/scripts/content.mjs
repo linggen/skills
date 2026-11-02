@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ART_EFFECTS, ELEMENTS, INTENTS, LEAN_IDS } from './duel.js';
-import { LOCKABLE, gatesOf, normalizeAnswer, stepOfLayer } from './state.mjs';
+import { LOCKABLE, gatesOf, normalizeAnswer, staminaCost, stepOfLayer } from './state.mjs';
 import { EFFECTS } from './battle.js';
 import { FRAMES, PARTICLES } from './atmos.js';
 import { lintCodex } from './codex.js';
@@ -1810,7 +1810,7 @@ function lintItems(content, bad) {
     // `kailu`: the next 开炉 a grade up, the thing spent with it (净炉符, rules/fantong.mjs liftOf).
     if (e.kailu != null && e.kailu !== 'lift') bad(where, 'kailu is lift');
     // `waive`: one cost of that kind not paid, the thing spent instead (饱嗝令, rules/core.mjs spendStamina) — a kind with a cost.
-    if (e.waive != null && !(content.rewards?.stamina?.cost?.[e.waive] > 0)) bad(where, `waives ${e.waive}, which costs nothing`);
+    if (e.waive != null && !(content.rewards?.stamina?.cost?.[e.waive] != null && staminaCost(content, e.waive) > 0)) bad(where, `waives ${e.waive}, which costs nothing`);
     // A pill for the 丹囊 (battle.js § pills): one whole number, 气血 (`heal`) or 灵力 (`mana`), on a pill.
     if (e.fight != null && (item.kind !== 'pill' || Object.keys(e.fight).length !== 1 || !['heal', 'mana'].some(k => Number.isInteger(e.fight[k]) && e.fight[k] > 0))) bad(where, 'a fight effect is a pill\'s heal or mana, a whole number above zero');
     // A thing bought for the card it carries (2026-10-16, cards.md: 每张牌都在剧情里收集或者购买): the card names this item as its shop.

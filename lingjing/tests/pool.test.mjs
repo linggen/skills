@@ -125,10 +125,15 @@ test('the page: the 时辰 chip in the footer; 体力 spent, one 闭关 card; al
   const full = new Date(Date.now() + 30 * 60_000).toISOString();
   const rest = trayHtml({ words: w, lang: 'zh', look: { tasks: [{ id: 'b1', kind: 'board', title: '一局', status: 'offered' }], stamina: { empty: true, full_at: full }, tray: [{ kind: 'fake', id: 'x', seg: 'open', act: 'open', opens: 'gear' }] } });
   assert.equal(rest.match(/class="card/g).length, 1, 'one card');
-  assert.match(rest, /闭关中 · 约 30 分钟体力回满/);
-  assert.match(rest, /data-seclude-open[^>]*>起炉/);
+  // Spent outside 闭关 (no clock refills it, Hanli 11-02): what brings it back, one tap.
+  assert.match(rest, /体力耗尽 · 闭关约 30 分钟回满/);
+  assert.match(rest, /data-seclude-open[^>]*>闭关/);
   assert.match(rest, /data-gear[^>]*>喂饭桶/);
-  assert.doesNotMatch(trayHtml({ words: w, lang: 'zh', look: { tasks: [], stamina: { empty: true, off: true } } }), /闭关中/, '体力 off: no rest card');
+  // …inside one: the minutes left, and no second 闭关.
+  const inside = trayHtml({ words: w, lang: 'zh', look: { tasks: [], seclusion: { focus: 'progress' }, stamina: { empty: true, full_at: full } } });
+  assert.match(inside, /闭关中 · 约 30 分钟体力回满/);
+  assert.doesNotMatch(inside, /data-seclude-open/);
+  assert.doesNotMatch(trayHtml({ words: w, lang: 'zh', look: { tasks: [], stamina: { empty: true, off: true } } }), /体力耗尽|闭关中/, '体力 off: no rest card');
   const all = trayHtml({ words: w, lang: 'zh', look: { tasks: [], tray_hour: { i: 7, ends_min: 47, drawn: 3, played: 3 }, tray: [{ kind: 'pool', id: 'pool:x', title: 'x', wait_min: 30, seg: 'cool' }] } });
   assert.match(all, /这个时辰的都玩过了 · 申时再来/);
   assert.ok(all.indexOf('allplayed') < all.indexOf('data-wait'), 'before the cooldowns');
