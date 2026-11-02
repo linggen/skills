@@ -80,7 +80,8 @@ test('weights: the 时辰\'s lean, where he stands and not played lately count; 
   const t = content.aigames.duizi.teachers[0];
   for (let h = 1; h < 24; h += 2) assert.ok(!(lookAt(s, AT(h, 10)).tray ?? []).some(e => e.id === 'duizi'));
   const opened = { ...s, done_scenes: [...s.done_scenes, t.after] };
-  assert.ok(Array.from({ length: 12 }, (_, i) => lookAt(opened, AT(1 + 2 * i, 10)).tray ?? []).some(r => r.some(e => e.id === 'duizi')), 'drawn in some 时辰 once open');
+  // The row deals one at a time: first of its 时辰's three in some 时辰 of the week.
+  assert.ok(Array.from({ length: 84 }, (_, i) => lookAt(opened, new Date(2026, 9, 20 + Math.floor(i / 12), 1 + 2 * (i % 12), 10)).tray ?? []).some(r => r.some(e => e.id === 'duizi')), 'in the row in some 时辰 once open');
 });
 
 test('played: out of the row for the rest of its 时辰, the others unmoved; back in the pool only after its cooldown', () => {
@@ -172,4 +173,26 @@ test('a round under way stays in the row, 继续, through a reload and past its 
   const skipped = VERBS.duizi(set.state, content, ctx(AT(14, 40)), { action: 'skip' });
   assert.equal(skipped.result.ok, true, JSON.stringify(skipped.result).slice(0, 200));
   assert.equal(duiziOf(skipped.state, AT(14, 50)), undefined, 'skipped: out of the row');
+});
+
+test('the row deals the 时辰\'s three one at a time: the first not played, the next once it is (Hanli 11-02)', () => {
+  const isMember = e => Boolean(PLAY_KINDS.find(k => k.kind === e.kind)?.pool?.row(e));
+  const poolOf = (st, now) => (lookAt(st, now).tray ?? []).filter(isMember).map(e => e.id);
+  let s = at('waimen');
+  const seen = [];
+  for (let n = 0; n < DRAW; n++) {
+    const shown = poolOf(s, AT(9, 10 + 10 * n));
+    assert.equal(shown.length, 1, `one at a time (${n}): ${shown}`);
+    assert.ok(!seen.includes(shown[0]), 'the next, never one played');
+    seen.push(shown[0]);
+    s = { ...s, pool_played: { ...(s.pool_played ?? {}), [shown[0]]: AT(9, 15 + 10 * n).toISOString() } };
+  }
+  assert.deepEqual(poolOf(s, AT(10, 50)), [], 'all three played: none');
+  assert.equal(lookAt(s, AT(10, 50)).tray_hour.played, DRAW);
+  // The world's events stand beside, as before.
+  assert.ok((lookAt(s, AT(10, 50)).tray ?? []).some(e => e.id === 'shouchao'));
+  // The first left unplayed: the 时辰 ends, the next 时辰's draw begins with its own first — nothing piles up.
+  const idle = at('waimen');
+  assert.equal(poolOf(idle, AT(9, 10)).length, 1);
+  assert.equal(poolOf(idle, AT(11, 10)).length, 1, 'the next 时辰: one, not two');
 });

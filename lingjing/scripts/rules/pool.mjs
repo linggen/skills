@@ -5,7 +5,9 @@
 // is played (its tray entry's places, or anywhere), its gate (the entry exists only once the story opened it), its
 // cooldown after a play, the 时辰 it leans to (a weight, never a lock) and its 体力 cost. Each 时辰 — two hours of the
 // local clock, 子 from 23:00 — draws THREE of the pool, seeded by the save, the day and the 时辰: the phone and the Mac
-// draw the same three and a reload never changes them. A drawn game leaves the row once played or when the 时辰 ends;
+// draw the same three and a reload never changes them. The row shows them one at a time, in the draw's order: the
+// first not yet played, then the next once it is (Hanli 11-02); a 时辰 ending on one unplayed moves on to the next draw.
+// A drawn game leaves the row once played or when the 时辰 ends;
 // one played comes back to the pool only after its cooldown. The world's events (兽潮 · 妖兽出没 · 秘境 · 货郎, balance.json
 // `events`) and the story's own boards keep their own clocks and are never drawn.
 import { dayKey, seedOf } from '../state.mjs';

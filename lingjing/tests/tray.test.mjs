@@ -76,8 +76,8 @@ test('each entry: what it is, what is left, where, and its button — 开局 her
 test('对对子 once its scene is behind him: today\'s couplets at the 讲堂, walked to from elsewhere', () => {
   const t = content.aigames.duizi.teachers[0];
   const s = at('waimen', { done_scenes: [...BASE.done_scenes, t.after] });
-  // In the 小游戏池: drawn by some 时辰 of the day (tests/pool.test.mjs).
-  const hours = Array.from({ length: 12 }, (_, i) => new Date(2026, 9, 20, 1 + 2 * i, 10));
+  // In the 小游戏池: first of its 时辰's three in some 时辰 of the week (the row deals one at a time, tests/pool.test.mjs).
+  const hours = Array.from({ length: 84 }, (_, i) => new Date(2026, 9, 20 + Math.floor(i / 12), 1 + 2 * (i % 12), 10));
   const drawnAt = (st) => hours.map((h) => trayOf(st, h).find((x) => x.id === 'duizi')).find(Boolean);
   const e = drawnAt(s);
   assert.equal(e.left.unit, 'couplets');
