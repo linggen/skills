@@ -326,3 +326,10 @@ test('the English card: across, English words, the input in English; its checks 
   assert.match(zhtml, /lang="zh"/);
   assert.match(zhtml, /字数/);
 });
+
+test('手边的棋局 in English: the couplets entry is the English ladder\'s, its rounds the same', () => {
+  const e = (look({ ...base, place: 'waimen' }, content, ctx()).tray ?? []).find(x => x.id === 'duizi');
+  assert.ok(e, 'listed a walk away');
+  assert.equal(e.title, 'Master Chu');
+  assert.equal(e.left.n, cfg.rounds);
+});
