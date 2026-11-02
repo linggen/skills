@@ -1393,7 +1393,18 @@
      "min": 150
     },
     "rune": "tone.cast",
-    "bind": "tone.chime"
+    "bind": "tone.chime",
+    "throw": "hit.punch.heavy",
+    "tech": {
+     "sound": "hit.wood.medium",
+     "min": 120
+    },
+    "counter": {
+     "sound": "hit.punch.heavy",
+     "min": 120
+    },
+    "crush": "hit.stone",
+    "max": "tone.boom"
    }
   },
   "dash": {

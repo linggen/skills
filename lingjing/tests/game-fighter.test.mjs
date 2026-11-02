@@ -152,7 +152,7 @@ test('its sounds: every name a bout makes is declared', () => {
   const heard = new Set();
   const hear = (s, n) => { for (const e of F.sounds(s, n)) heard.add(e); return n; };
   const spy = { ...F, tick: (s, ms) => hear(s, F.tick(s, ms)), act: (s, d) => { const r = F.act(s, d); hear(s, r.state); return r; } };
-  playOnce(spy, bot, { seed: 'snd', deal, limit: 120000 });
+  for (const seed of ['snd', 'snd-2', 'snd-3']) playOnce(spy, bot, { seed, deal, limit: 120000 }); // v7: a bout may end by the 绝 before her palm
   for (const e of heard) assert.ok(F.meta.sounds.includes(e), e);
   for (const e of ['hit', 'block', 'glow', 'hook', 'slip']) assert.ok(heard.has(e), `${e} sounded`);
 });
@@ -233,12 +233,15 @@ test('two buttons at once: K+L rolls (迎), O+; blows her back; 气 in three sto
   assert.equal(s.me.qi, 300, 'three stocks at most');
 });
 
-test('KOF\'s feet: a double tap dashes in; a tap of W hops lower than a held jump; the roll goes through her blade untouched', () => {
-  let s = dummy('dash', 300);
+test('KOF\'s feet: a double tap runs in while held (v7: it stops when let go); a tap of W hops lower than a held jump; the roll goes through her blade untouched', () => {
+  let s = dummy('dash', 400);
   const x0 = s.me.x;
-  s = hand(s, [[{ g: 'walk', dir: 1 }, 30], [{ g: 'walk', dir: 0 }, 30], [{ g: 'walk', dir: 1 }, 10], [{ g: 'walk', dir: 0 }, 300]]);
+  s = hand(s, [[{ g: 'walk', dir: 1 }, 30], [{ g: 'walk', dir: 0 }, 30], [{ g: 'walk', dir: 1 }, 260]]);
   assert.equal(s.snd.dash, 1);
-  assert.ok(s.me.x - x0 > 100, `dashed ${s.me.x - x0}`);
+  assert.ok(s.me.x - x0 > 100, `ran ${s.me.x - x0}`);
+  const x1 = s.me.x;
+  s = hand(s, [[{ g: 'walk', dir: 0 }, 300]]);
+  assert.ok(s.me.x - x1 < 20, `let go, it stops (${s.me.x - x1})`);
   const peak = (release) => { let t = dummy('hop', 400), top = 0; t = press(t, { g: 'jump' }); t = run(t, 40); if (release) t = press(t, { g: 'jumpRelease' }); for (let i = 0; i < 80; i += 1) { t = run(t, 10); top = Math.max(top, t.me.y); } return top; };
   assert.ok(peak(true) < peak(false) * 0.6, 'a hop is low');
   s = dummy('safe', 150); s.foe.think = 0;

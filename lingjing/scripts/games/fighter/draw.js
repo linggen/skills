@@ -404,11 +404,14 @@ function meClip(s) {
   if (s.end?.kind === 'outlast') return ['idle', 0]; // he stood through it; her point rests at his heart
   if (s.end) return won(s.end) ? ['win', s.end.at] : ['lose', s.end.at];
   // the hero's stance before the first exchange (Hanli 11-01: 「主角光环还是要有」): his 抱拳 as the bout opens
-  if (t < 700 && !a && !me.air && Math.abs(me.vx) < 20 && me.stun <= t) return ['win', 0];
+  if (t < Math.max(700, s.intro ?? 0) && !a && !me.air && Math.abs(me.vx) < 20 && me.stun <= t) return ['win', 0];
   if (me.down > t) return ['knock', null];
   if (me.stun > t && !me.guard) return ['hit', null];
   if (a) {
     if (a.k === 'roll') return ['roll', a.at];
+    if (a.k === 'throw') return ['blow', a.at, a.m]; // his throw: the 双推掌's hands on her
+    if (a.k === 'max') return ['super', a.at, { startup: 0, active: 200, recover: 60 }]; // 爆气: the 绝's gathering
+    if (['clight', 'clkick', 'chpunch', 'cheavy'].includes(a.k)) return [a.k, a.at, a.m];
     if (a.k === 'ying' || a.k === 'dash') return ['dash', a.at];
     if (a.k === 'backstep') return ['back', a.at];
     if (['special', 'palmfire', 'palmfireH', 'feijian', 'fuwen'].includes(a.k)) return ['cast', a.at, a.m];
@@ -416,45 +419,68 @@ function meClip(s) {
     if (['blow', 'super', 'air', 'rise'].includes(a.k)) return [a.k, a.at, a.m];
   }
   if (me.air) return ['jump', me.jumpAt ?? t];
+  if (me.running) return ['dash', null];
   if (me.crouch) return [me.guard ? 'cblock' : 'crouch', null];
   if (me.guard) return ['block', null];
   if (Math.abs(me.vx) > 20) return [Math.sign(me.vx) === me.face ? 'walk' : 'back', 0];
   return ['idle', 0];
 }
-/* Hers. */
+/* Hers. KOF's new states (v7) by name — `jump` · `air` · `sweep` · `aa` · `throw` · `roll` · `knock` · `run` ·
+   `lowblock` · `land` — each shown on the sheet's own clip if it has one (小满's, for 心魔), else on the one that reads
+   as it (FOE_AS: the robed foes' sheets have no jump or fall painted). */
 function foeClip(s) {
   const foe = s.foe, t = s.t, a = foe.act;
   if (s.end?.kind === 'out') return [foe.x < s.R.stage.left - 4 || foe.x > s.R.stage.right + 4 ? 'lose' : 'slip', s.end.at];
   if (s.end) return [won(s.end) ? 'lose' : 'win', s.end.at]; // she yields (切磋) or stands over him
   if (s.palm) return [{ glow: 'glow', hold: 'hold', strike: 'strike', after: 'strike' }[s.palm.phase] ?? 'idle', null];
   if (s.edge) return ['edge', null];
+  if (foe.down > t) return ['knock', null];
+  if (s.grab) return ['throw', s.grab.at, { startup: 0, active: 1e9, recover: 0 }];
+  if (foe.air) return a?.swung ? ['air', a.swung, { startup: 0, active: 1e9, recover: 0 }] : ['jump', a?.at ?? null];
   if (foe.stun > t) return ['hit', null];
   if (a) {
-    if (a.k === 'block') return ['block', a.at];
-    if (['ice', 'poke', 'thrust', 'jianqi', 'feijian'].includes(a.k)) return [a.k, a.at, a.m];
+    if (a.k === 'block') return [a.low ? 'lowblock' : 'block', a.at];
+    if (a.k === 'roll') return ['roll', a.at];
+    if (a.k === 'land') return ['land', a.at];
+    if (['ice', 'poke', 'thrust', 'jianqi', 'feijian', 'sweep', 'aa', 'throw'].includes(a.k)) return [a.k, a.at, a.m];
   }
+  if (foe.run > t) return ['run', 0];
   if (Math.abs(foe.vx) > 20) return [Math.sign(foe.vx) === foe.face ? 'walk' : 'back', 0];
   return ['idle', 0];
 }
+/* A robed foe's sheet (no jump, fall, crouch painted): the clip that reads as each new state. */
+const FOE_LAID = {
+  sweep: { frames: ['jianqi2', 'jianqi1', 'thrust4'], hit: 1, fps: 8 },
+  aa: { frames: ['poke1', 'jianqi2', 'poke3'], hit: 1, fps: 8 },
+};
+const FOE_AS = { jump: 'poke', air: 'thrust', sweep: 'jianqi', aa: 'poke', throw: 'strike', roll: 'back', knock: 'slip', run: 'walk', lowblock: 'block', land: 'idle' };
 
 /* The frame a fighter shows: its clip, how far in, its frame; `track` remembers when a clip with no clock of its own
    began (a hit, a crouch, a fall). A fall's frames go by what is left of it: thrown, down, getting up. */
 function pick(sheet, who, s, track, calm) {
   const [said, at, m] = who === 'me' ? meClip(s) : foeClip(s);
   // a foe on another fighter's sheet (心魔 on 小满's) names its clips by its own moves: `foe.look.clips` maps them
-  const name = (who === 'foe' && s.level?.foe?.look?.clips?.[said]) || said;
   const clips = sheet.meta.clips;
-  const clip = clips[name] ?? (said === 'feijian' ? clips.ice : null) ?? clips.idle;
+  let name = (who === 'foe' && s.level?.foe?.look?.clips?.[said]) || said;
+  // a robed sheet: a clip laid from its own frames (FOE_LAID — the sword raised then cut low for the sweep, raised
+  // high for the rising cut), else the clip that reads as it
+  const laid = !clips[name] && who === 'foe' && FOE_LAID[said]?.frames.every((f) => sheet.meta.frames[f]) ? FOE_LAID[said] : null;
+  if (laid) name = `laid:${said}`;
+  else if (!clips[name] && who === 'foe' && FOE_AS[said]) name = FOE_AS[said];
+  const clip = laid ?? clips[name] ?? (said === 'feijian' ? clips.ice : null) ?? clips.idle;
   if (track.name !== name) { track.name = name; track.at = s.t; }
   const e = s.t - (at ?? track.at);
-  if (name === 'knock') {
+  const body = who === 'me' ? s.me : s.foe;
+  // a fall's frames by what is left of it, a jump's by its rise and fall — on a sheet that has them painted
+  if (name === 'knock' && clip.frames.length >= 3) {
     const [thrown, down, up] = clip.frames;
-    return { clip, name, frame: s.me.down - s.t < 260 ? up : e < 220 && !calm ? thrown : down, e };
+    return { clip, name, frame: body.down - s.t < 260 ? up : e < 220 && !calm ? thrown : down, e };
   }
-  if (name === 'jump') {
+  if (name === 'jump' && clip.frames.length >= 3) {
     const [spring, rise, fall] = clip.frames;
-    return { clip, name, frame: calm ? rise : e < 70 ? spring : s.me.vy > -250 ? rise : fall, e };
+    return { clip, name, frame: calm ? rise : e < 70 ? spring : body.vy > -250 ? rise : fall, e };
   }
+  if (name === 'run' || (said === 'run' && name === 'walk')) return { clip, name, frame: frameOf({ ...clip, fps: (clip.fps ?? 8) * 1.8 }, e, null, calm), e };
   return { clip, name, frame: frameOf(clip, e, m, calm), e };
 }
 
@@ -471,8 +497,9 @@ function sprite(ctx, sheet, got, x, y, face, k, extra) {
     ctx.save();
     ctx.translate(x + (extra.jolt ?? 0), y);
     if (extra.spin) { ctx.translate(0, -60); ctx.rotate(rad(extra.spin) * face); ctx.translate(0, 60); }
+    if (extra.lie) { ctx.translate(-face * 10, 0); ctx.rotate(-rad(extra.lie) * face); } // a robed foe down: laid on her back
     ctx.scale(face * u, u);
-    ctx.globalAlpha = alpha;
+    ctx.globalAlpha = alpha * (extra.ghost ?? 1);
     ctx.shadowColor = 'rgba(255,247,228,.9)'; ctx.shadowBlur = 7 * k;
     ctx.drawImage(sheet.img, f.rect[0], f.rect[1], f.rect[2], f.rect[3], -f.anchor[0], -f.anchor[1], f.rect[2], f.rect[3]);
     ctx.restore();
@@ -602,7 +629,21 @@ function numberPop(ctx, f, x, y, age) {
   ctx.fillStyle = f.who === 'me' ? '#a3261c' : '#2f6a8a'; ctx.fillText(`-${f.n}`, 0, 0);
   ctx.restore();
 }
-function effects(ctx, s, art = {}, calm = false) {
+/* A word off a moment (KOF's 「COUNTER」, 「GUARD CRUSH」): 反击 · 破防 · 拆, stamped and rising. */
+const CALL = { counter: { zh: '反击', en: 'Counter', c: '#a3261c' }, crush: { zh: '破防', en: 'Guard Crush', c: '#b3261e' }, tech: { zh: '拆', en: 'Break', c: '#2f6a8a' } };
+function callout(ctx, f, x, y, age, lang) {
+  const w = CALL[f.kind], k = Math.min(1, age / 90), a = age < 480 ? 1 : 1 - (age - 480) / 220;
+  ctx.save();
+  ctx.globalAlpha = Math.max(0, a);
+  ctx.translate(x, y - age / 12);
+  ctx.rotate(-0.05);
+  ctx.scale(1.5 - 0.5 * k, 1.5 - 0.5 * k);
+  ctx.font = `800 ${lang === 'en' ? 26 : 34}px ${SERIF}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.lineWidth = 6; ctx.strokeStyle = 'rgba(246,238,220,.95)'; ctx.strokeText(w[lang] ?? w.zh, 0, 0);
+  ctx.fillStyle = w.c; ctx.fillText(w[lang] ?? w.zh, 0, 0);
+  ctx.restore();
+}
+function effects(ctx, s, art = {}, calm = false, lang = 'zh') {
   for (const f of s.fx) {
     const age = s.t - f.at, x = f.x, y = FLOOR - f.y * FY;
     if (f.kind === 'ink' || f.kind === 'cut') splat(ctx, x, y, age, f.id, f.big || f.kind === 'cut');
@@ -640,6 +681,12 @@ function effects(ctx, s, art = {}, calm = false) {
       for (let i = 0; i < 3; i += 1) { ctx.beginPath(); ctx.ellipse(x, FLOOR - 40 - i * 46 - age / 12, 46 - i * 4, 10, 0, 0, Math.PI * 2); ctx.stroke(); }
     }
     if (f.kind === 'num' && age < 900) numberPop(ctx, f, x, FLOOR - f.y * FY, age);
+    if (['counter', 'crush', 'tech'].includes(f.kind) && age < 700) callout(ctx, f, x, y, age, lang);
+    if (f.kind === 'max' && age < 420) { // 爆气 (and a guard cancel, small): a ring of gold bursting off him
+      const r = (f.small ? 40 : 70) + age / (f.small ? 5 : 2.6);
+      ctx.strokeStyle = `rgba(255,170,60,${0.9 * (1 - age / 420)})`; ctx.lineWidth = f.small ? 4 : 8;
+      ctx.beginPath(); ctx.ellipse(x, y, r * 0.7, r, 0, 0, Math.PI * 2); ctx.stroke();
+    }
     if (f.kind === 'dust' && age < 420) {
       ctx.fillStyle = `rgba(150,138,112,${0.55 * (1 - age / 420)})`;
       const n = f.small ? 2 : 4;
@@ -728,6 +775,20 @@ function hud(ctx, s, art, lang, view) {
   bar(ctx, W - 86 - BW, BW, s.foe.bal / s.R.foe.bal, view.ghostFoe, foe.look?.bar ?? '#3e8068', true);
   qiBar(ctx, 86, BW * 0.62, s.me.qi ?? 0, s.t, false);
   qiBar(ctx, W - 86 - BW * 0.62, BW * 0.62, s.foe.qi ?? 0, s.t, true);
+  // the guards' meters (KOF's guard crush), a thin line under each bar while it fills: red near breaking
+  const full = s.R.me.guard?.full ?? 100;
+  for (const [who, x, right] of [[s.me, 86, false], [s.foe, W - 86 - BW, true]]) {
+    const f = Math.min(1, (who.gp ?? 0) / full);
+    if (f <= 0.02) continue;
+    ctx.fillStyle = 'rgba(20,18,15,.6)'; ctx.fillRect(x, 36, BW, 3);
+    ctx.fillStyle = f > 0.7 ? '#c2381e' : '#d8c8a0'; ctx.fillRect(right ? x + BW - f * BW : x, 36, f * BW, 3);
+  }
+  // 爆气: its time left, burning down under his 气
+  if (s.me.max > s.t) {
+    const left = (s.me.max - s.t) / (s.R.me.max?.ms ?? 10000), y = 69;
+    ctx.fillStyle = 'rgba(20,18,15,.7)'; ctx.fillRect(84, y, BW * 0.62 + 4, 5);
+    ctx.fillStyle = `rgba(255,${130 + Math.round(Math.sin(s.t / 60) * 40)},50,1)`; ctx.fillRect(86, y + 1, BW * 0.62 * left, 3);
+  }
   ctx.textBaseline = 'middle';
   ctx.font = `600 15px ${SERIF}`;
   const name = (n, b) => `${say(n, lang)} · ${say(b, lang)}`;
@@ -737,9 +798,10 @@ function hud(ctx, s, art, lang, view) {
   ctx.fillStyle = '#f1e6cf'; ctx.textAlign = 'left'; ctx.fillText(tl, 93, 24);
   ctx.textAlign = 'right'; ctx.fillText(tr, W - 93, 24);
   ctx.font = `700 11px ${SERIF}`; ctx.fillStyle = '#e7c06a';
-  const stocks = (q) => Math.floor((q ?? 0) / 100), full = say(lv.words?.full, lang) || '绝';
-  if (stocks(s.me.qi)) { ctx.textAlign = 'left'; ctx.fillText(`${full} ×${stocks(s.me.qi)}`, 86 + BW * 0.62 + 8, 64); }
-  if (stocks(s.foe.qi)) { ctx.textAlign = 'right'; ctx.fillText(`${full} ×${stocks(s.foe.qi)}`, W - 86 - BW * 0.62 - 8, 64); }
+  const stocks = (q) => Math.floor((q ?? 0) / 100), fullW = say(lv.words?.full, lang) || '绝';
+  if (s.me.max > s.t) { ctx.textAlign = 'left'; ctx.fillStyle = '#ff9a3c'; ctx.fillText(lang === 'en' ? 'MAX' : '爆气', 86 + BW * 0.62 + 8, 64); ctx.fillStyle = '#e7c06a'; }
+  else if (stocks(s.me.qi)) { ctx.textAlign = 'left'; ctx.fillText(`${fullW} ×${stocks(s.me.qi)}`, 86 + BW * 0.62 + 8, 64); }
+  if (stocks(s.foe.qi)) { ctx.textAlign = 'right'; ctx.fillText(`${fullW} ×${stocks(s.foe.qi)}`, W - 86 - BW * 0.62 - 8, 64); }
   for (const [img, cx] of [[art.me, 44], [art.foe, W - 44]]) {
     ctx.save();
     ctx.beginPath(); ctx.arc(cx, 40, 32, 0, Math.PI * 2); ctx.closePath();
@@ -836,6 +898,22 @@ function seal(ctx, word, age) {
   ctx.restore();
 }
 
+/* The bout's call (KOF's 「ROUND 1 · READY · GO」): 「比武」 while the hands wait, then 「开始！」 as they go. */
+function intro(ctx, s, lang, lv) {
+  const left = s.intro - s.t, go = left <= 0;
+  const word = go ? say(lv.words?.go, lang) || (lang === 'en' ? 'Fight!' : '开始！') : say(lv.words?.ready, lang) || (lang === 'en' ? 'Ready' : '比武');
+  const age = go ? -left : s.t, k = Math.min(1, age / 160), a = go ? Math.max(0, 1 - -left / 500) : 1;
+  ctx.save();
+  ctx.globalAlpha = a;
+  ctx.fillStyle = 'rgba(20,16,12,.55)'; ctx.fillRect(0, 214, W, 92);
+  ctx.translate(W / 2, 262);
+  ctx.scale(1.6 - 0.6 * k, 1.6 - 0.6 * k);
+  ctx.font = `800 ${go ? 72 : 58}px ${SERIF}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.lineWidth = 8; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.strokeText(word, 0, 0);
+  ctx.fillStyle = go ? '#f2d38a' : '#f3e9d2'; ctx.fillText(word, 0, 0);
+  ctx.restore();
+}
+
 /* The 绝's cut-in: a band of ink across the field, the face, the move's name in a big brush. */
 function cutIn(ctx, c, img, lang, age) {
   const k = Math.min(1, age / 160), out = age > 700 ? Math.min(1, (age - 700) / 200) : 0, mine = c.who === 'me';
@@ -917,13 +995,18 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false } = 
     const glow = palm ? (palm.phase === 'glow' ? Math.min(1, (s.t - palm.at) / 500) : palm.phase === 'hold' ? 0.55 : palm.phase === 'strike' ? 0.4 : 0.12) : 0;
     const foeY = FLOOR - (s.foe.y ?? 0) - (s.foe.lift && s.t - s.foe.lift < 360 ? Math.sin(((s.t - s.foe.lift) / 360) * Math.PI) * 40 : 0), meY = FLOOR - s.me.y;
     const breath = (t) => Math.sin(t / 420) * 1.4;
-    const foeExtra = { t: s.t, qi, glow, sway: sway.foe, breath: breath(s.t + 300), scabbard: !palm && !s.hooked && !s.end, noShadow: s.foe.y < 0, inv };
+    const foeExtra = { t: s.t, qi, glow, sway: sway.foe, breath: breath(s.t + 300), scabbard: !palm && !s.hooked && !s.end, noShadow: s.foe.y < 0, floorAt: Math.max(0, s.foe.y ?? 0), inv }; // up in her jump: her shadow stays on the boards
     const still = calm();
     // a hit-stop: the one struck shivers in place while the bout's clock holds
     const jolt = (who) => (s.freeze > 0 && who.stun > s.t ? (Math.floor(now / 30) % 2 ? 2.5 : -2.5) : 0);
     let tip = null;
     if (sheets.foe) {
-      const at = sprite(ctx, sheets.foe, pick(sheets.foe, 'foe', s, track.foe, still), s.foe.x, foeY, s.foe.face, k, { ...foeExtra, calm: still, jolt: jolt(s.foe) });
+      const gotF = pick(sheets.foe, 'foe', s, track.foe, still);
+      // on a robed sheet (no fall, no roll painted): down, laid on the boards; rolling, a blur along them
+      const lie = s.foe.down > s.t && gotF.name !== 'knock' ? Math.min(14, ((s.t - (s.foe.down - 900)) / 160) * 14) : 0;
+      const ghost = s.foe.act?.k === 'roll' && gotF.name !== 'roll' ? 0.5 : 1;
+      if (ghost < 1 && !still) sprite(ctx, sheets.foe, gotF, s.foe.x - s.foe.vx * 0.06, foeY, s.foe.face, k, { ...foeExtra, calm: still, ghost: 0.25, noShadow: true });
+      const at = sprite(ctx, sheets.foe, gotF, s.foe.x, foeY, s.foe.face, k, { ...foeExtra, calm: still, jolt: jolt(s.foe), lie: Math.max(0, lie), ghost, noShadow: foeExtra.noShadow });
       tip = at.tip;
       // her qi's colour (`foe.look.qi`: [r, g, b] — 秦雁's green by default; 卢方's metal white, 祁长松's earth yellow)
       const [qr, qg, qb] = lv.foe?.look?.qi ?? [150, 240, 200];
@@ -944,18 +1027,26 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false } = 
     const casting = ['special', 'palmfire', 'palmfireH', 'super', 'feijian', 'fuwen'].includes(s.me.act?.k) ? 1 : 0;
     const rollK = s.me.act?.k === 'roll' ? Math.min(1, (s.t - s.me.act.at) / s.R.me.roll.ms) : null;
     const meExtra = { t: s.t, fire: casting, sway: sway.me, breath: s.me.act || s.me.air ? 0 : breath(s.t), floorAt: s.me.y, inv, spin: rollK == null ? 0 : rollK * 360 * (s.me.act.dir === s.me.face ? 1 : -1) };
-    // 灵气 about him while a stock of 气 is full: a faint pale shimmer behind the figure, breathing (still under reduced motion)
-    if (sheets.me && (s.me.qi ?? 0) >= QI) {
-      const a = still ? 0.2 : 0.16 + 0.08 * Math.sin(now / 380), cy = meY - 120;
-      const g = ctx.createRadialGradient(s.me.x, cy, 20, s.me.x, cy, 150);
-      g.addColorStop(0, `rgba(255,246,214,${a})`); g.addColorStop(0.6, `rgba(236,222,170,${a * 0.5})`); g.addColorStop(1, 'rgba(236,222,170,0)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(s.me.x, cy, 110, 160, 0, 0, Math.PI * 2); ctx.fill();
+    // 灵气 about him while a stock of 气 is full (主角光环): a warm gold glow behind the figure, breathing — on the pale
+    // paper a pale glow never showed (11-01's live check), so it is gold and rimmed. 爆气 (MAX): a brighter, quicker
+    // flame of it. Still under reduced motion.
+    const maxOn = s.me.max > s.t;
+    if (sheets.me && ((s.me.qi ?? 0) >= QI || maxOn)) {
+      const a = (maxOn ? 0.42 : 0.26) + (still ? 0 : (maxOn ? 0.12 : 0.08) * Math.sin(now / (maxOn ? 120 : 380))), cy = meY - 120;
+      const g = ctx.createRadialGradient(s.me.x, cy, 20, s.me.x, cy, 165);
+      const [r0, g0, b0] = maxOn ? [255, 150, 60] : [246, 196, 92];
+      g.addColorStop(0, `rgba(${r0},${g0},${b0},${a})`); g.addColorStop(0.55, `rgba(${r0},${g0},${b0},${a * 0.45})`); g.addColorStop(1, `rgba(${r0},${g0},${b0},0)`);
+      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(s.me.x, cy, 112, 165, 0, 0, Math.PI * 2); ctx.fill();
+      if (maxOn) { // 爆气 alone carries a rim, flickering: the stock's glow stays soft
+        ctx.strokeStyle = `rgba(${r0},${Math.max(0, g0 - 40)},${b0 - 40},${a * 0.6})`; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.ellipse(s.me.x, cy, 70 + (still ? 0 : Math.sin(now / 90) * 5), 140, 0, 0, Math.PI * 2); ctx.stroke();
+      }
     }
     if (sheets.me) {
       const at = sprite(ctx, sheets.me, pick(sheets.me, 'me', s, track.me, still), s.me.x, meY, s.me.face, k, { ...meExtra, calm: still, jolt: jolt(s.me) });
       if (casting) handLight(ctx, at.handF, 28, 'rgba(255,226,130,.95)', 'rgba(220,70,30,0)');
     } else figure(ctx, s.me.x, meY, s.me.face, mp, meLook, meExtra);
-    effects(ctx, s, art, still);
+    effects(ctx, s, art, still, lang);
     if (globalThis.LINGJING_HITBOX) hitboxes(ctx, s, meY, foeY);
     ctx.setTransform(k, 0, 0, k, 0, 0);
     if (s.level?.stage?.look?.crowd !== false) crowd(ctx, s.t, view.lift); // the cliff has no crowd below it
@@ -972,6 +1063,9 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false } = 
       g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(10,8,6,.45)');
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
     }
+    // KO: a white flash as it falls (the slow-down is the mount's)
+    if (s.end && s.t - s.end.at < 220 && !still) { ctx.fillStyle = `rgba(255,252,240,${0.75 * (1 - (s.t - s.end.at) / 220)})`; ctx.fillRect(0, 0, W, H); }
+    if (s.intro && s.t < s.intro + 500) intro(ctx, s, lang, lv);
     lineBand(ctx, text);
     if (s.end) seal(ctx, say(won(s.end) ? lv.seal?.won : lv.seal?.lost, lang) || (won(s.end) ? '胜' : '负'), s.t - s.end.at - 300);
     // the 绝: its cut-in plays on the page's clock (the bout's is held through it)

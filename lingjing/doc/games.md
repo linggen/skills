@@ -415,6 +415,31 @@ Hanli 10-26: 「你发明的不太行, 用现有的应该都可以」 → 「街
   dark), 九层师兄 (`laba-jiuceng`, 09-laba: 金刃 low along the boards with a long recover — the breath — `stage.win: yield`, a north wind),
   老井 (`laojing-hetan`, 01-laojing: the finger with its tell `foe_poke`, the mirror's beam, `armor`, outlast 20 moves by moonlight).
   Their card duels are gone from the scenes and the 游戏厅's 斗法 table; 邹青松's 储物袋 and 火蛇 are his exit's grant. tests/story-gedou.
+- **v7 (11-01) — KOF '97 brought in** (Hanli on the Mac: 「好多了. 都改一下吧, 尽量接近拳皇97」; his calls delegated):
+  **feet** — double-tap toward her **runs** while held (stops on release; a blow out of it slides and takes the 上步), back-step,
+  hop, A+B roll. **High/low** — any button with ↓ held is a crouching blow (`clight` · `clkick` low · `chpunch` an anti-air ·
+  `cheavy` the **扫堂腿**, low, knocks her down); a jump-in blow is high. Her guard has a height (she reads a low by `ai.lowRead`),
+  his too: her **sweep** only stood off crouching (↙), her **jump-in** only standing. **Throws** — ←/→ + 重拳/重腿 within 96
+  units (past it, the 上步 heavy): no guard stops it, never on a reeling, fallen or airborne foe; a sharp foe breaks it (`ai.tech`).
+  Hers holds him 180 ms in which 重拳/重腿 breaks it (拆), or a press just before her hands land. **Guard meter** (`gp`, a thin line
+  over each bar): blows stood off fill it, it refills after 0.7 s; full, **破防** — she strikes the opening (no 不踩人 for a broken
+  guard). Her meter fills mainly from heavies and specials (a masher never breaks it). **Guard cancel**: in a guard's stagger, A+B
+  or C+D with a stock. **Counter** (反击): a blow into a wind-up (hers: its last 160 ms), ×1.2 and longer stun, both ways. Specials stood off chip her 0.3 of
+  their 稳 (normals 0.15). **Power**: **爆气** (MAX: ◀ + 技 on the phone, A + J on the keys; a stock) — 10 s of ×1.25 blows, a gold
+  flame about him; the 绝 in it costs nothing more, lands ×1.5 and ends it. **绝境**: his 血 under a quarter, one 绝 with no stock.
+  **Feel**: her **knockdown and wake-up** (down 0.7–1 s, untouchable while down and 160 ms rising, a wake-up poke by `ai.wake`); the
+  bout's call 「比武 … 开始！」 (`withIntro`, 1.3 s, the mount's; hands and her mind wait); KO: a white flash + the old slow-down.
+  **Her mind** (each a level's knob, by her book): jumps in from past his reach (`ai.jump`), runs in and strikes, sweeps or throws
+  on arrival (`ai.run`), sweeps (`ai.sweep`), throws a guard and runs in on a turtle (`ai.throw`), meets his jump (`ai.aa`, her
+  rising cut, only in the air), rolls through his fire or out of a corner (`ai.roll`). 秦雁 is the default (fast, pressing);
+  何七 cautious, 卢方 low blades, 马小宝 keeps range and rolls, 祁长松 / 九层师兄 / 老井 read and anti-air, 邹青松 runs, 心魔 does it all.
+  **Art**: no new painting — the robed sheets show her jump as a leaping thrust, her sweep laid from her own frames (sword up, then
+  cut low), her rising cut (sword high), her throw on the palm strike, her fall on the slip (tipped), her roll a ghosted step back;
+  心魔 maps them onto 小满's own clips (`look.clips`). 小满's 灵气 shimmer is now a soft gold glow (pale on pale never showed); 爆气 adds a flickering rim.
+  **Keys/phone**: J is 技 on the keys (the phone's button); the pause list names run, low, sweep, throw, break, guard cancel, 爆气,
+  绝境. Hints rewritten short (≤ 20 words: guard, run, low, throw, 爆气; the pause lists all).
+  **Bot** (v7): low-guards her sweep, stands to her jump-in, breaks her throws, runs in from far, throws a guard, sweeps her long
+  recovery, a low 腿 now and then, 爆气 at two stocks, guard-cancels a pressed guard. tests/fighter-kof.
 
 ## 全文后的小游戏 — the second batch, 古五 → 古九 (plan 2026-10-26; Hanli 「都开吧」)
 

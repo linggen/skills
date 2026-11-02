@@ -34,8 +34,8 @@ export const meta = {
   id: 'fighter',
   name: { zh: '格斗', en: 'Fight' },
   how: {
-    zh: { desk: 'WASD 走跳蹲，背向她按住是挡；K 轻拳 · L 轻腿 · O 重拳 · ; 重腿；I 飞剑 · U 符文。', touch: '左边走跳蹲（背向她按住是挡）；右边拳 腿 重拳 重腿，技，剑 飞剑 · 符 符文。' },
-    en: { desk: 'WASD walk, jump, crouch; hold away from her to guard. K light punch · L light kick · O heavy punch · ; heavy kick; I flying sword · U talisman.', touch: 'Left: walk, jump, crouch (hold away to guard). Right: punch, kick, heavy punch, heavy kick, skill; 剑 flying sword · 符 talisman.' },
+    zh: { desk: 'WASD 走跳蹲，背向她按住是挡；K 轻拳 · L 轻腿 · O 重拳 · ; 重腿 · J 技；I 飞剑 · U 符文。', touch: '左边走跳蹲（背向她按住是挡）；右边拳 腿 重拳 重腿，技，剑 飞剑 · 符 符文。' },
+    en: { desk: 'WASD walk, jump, crouch; hold away from her to guard. K light punch · L light kick · O heavy punch · ; heavy kick · J skill; I flying sword · U talisman.', touch: 'Left: walk, jump, crouch (hold away to guard). Right: punch, kick, heavy punch, heavy kick, skill; 剑 flying sword · 符 talisman.' },
   },
   pause: true, // its own loop reads the shell's pause
   beat: 'mount', // the story mounts it (its hands are its own)
@@ -148,12 +148,12 @@ function sheet(doc) {
 const BUTTONS = {
   jump: { face: '▲', key: 'W' }, left: { face: '◀', key: 'A' }, crouch: { face: '▼', key: 'S' }, right: { face: '▶', key: 'D' },
   light: { face: '拳', key: 'K' }, lkick: { face: '腿', key: 'L' }, hpunch: { face: '重拳', key: 'O' }, heavy: { face: '重腿', key: ';' },
-  skill: { face: '技', key: 'SD+K' }, feijian: { face: '剑', key: 'I' }, fuwen: { face: '符', key: 'U' },
+  skill: { face: '技', key: 'J' }, feijian: { face: '剑', key: 'I' }, fuwen: { face: '符', key: 'U' },
 };
 /* Keys by where they sit (event.code): any layout plays alike; `;` is Semicolon wherever it is printed. KOF '97's four:
    K A 轻拳 · L B 轻腿 · O C 重拳 · ; D 重腿. */
 const CODES = {
-  KeyA: 'left', KeyD: 'right', KeyW: 'jump', KeyS: 'crouch', KeyK: 'light', KeyL: 'lkick', KeyO: 'hpunch', Semicolon: 'heavy', KeyI: 'feijian', KeyU: 'fuwen',
+  KeyA: 'left', KeyD: 'right', KeyW: 'jump', KeyS: 'crouch', KeyK: 'light', KeyL: 'lkick', KeyO: 'hpunch', Semicolon: 'heavy', KeyI: 'feijian', KeyU: 'fuwen', KeyJ: 'skill',
   ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'jump', ArrowDown: 'crouch', Space: 'jump',
 };
 const HELD = new Set(['left', 'right', 'crouch']);
@@ -378,7 +378,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
       if (s0.end && s0.t - s0.end.at < SLOW.ms) dt *= SLOW.rate; // the KO, slowed
       g.state = core.tick(s0, dt);
       if (g.state !== s0) sounded(shell, self, s0, g.state);
-      const full = g.state.me.qi >= core.QI;
+      const full = core.superReady(g.state); // a stock, 爆气, or 绝境
       if (skillBtn.classList.contains('is-ready') !== full) { skillBtn.classList.toggle('is-ready', full); skillFace.textContent = skillNames[full ? 1 : 0]; }
       skillBtn.classList.toggle('is-cool', !full && g.state.me.cdPf > 0);
       for (const [k, cd] of [['feijian', 'cdFj'], ['fuwen', 'cdFw']]) spellBtn[k]?.classList.toggle('is-cool', (g.state.me[cd] ?? 0) > 0);
@@ -401,6 +401,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
     if (done) return;
     started = true;
     last = 0;
+    g.state = core.withIntro(g.state); // the bout's call: 「比武」…「开始！」
     doc.activeElement?.blur?.(); // a focused shell button never takes the bout's Space
     shell?.sound?.('start');
   });
