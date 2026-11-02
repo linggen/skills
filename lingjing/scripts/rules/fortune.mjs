@@ -211,6 +211,9 @@ export function qianLook(content, state, now) {
   };
 }
 
+/* The 问签 panel for a reader (`--for`): without 替人求签's kept friends — the page's alone. */
+export const qianForReader = (q, reader) => (q && reader ? (({ friends, ...rest }) => rest)(q) : q);
+
 /* 签谱: every 签 the set holds, with how often he drew it — the ones never drawn by number alone. */
 export function qianBook(content, state) {
   const lang = state.lang, counts = state.qian_book?.counts ?? {};
@@ -336,6 +339,10 @@ function herView(content, state, now) {
    page: the evening's question was put), verify (应验: his answer — the page, Ling, or 银月's own tool). */
 const ACTIONS = { draw, asked, verify, friend, forget_friend: forgetFriend };
 export function divine(state, content, ctx, args = {}) {
+  const out = divineFor(state, content, ctx, args);
+  return ctx.reader && out?.result?.qian ? { ...out, result: { ...out.result, qian: qianForReader(out.result.qian, ctx.reader) } } : out;
+}
+function divineFor(state, content, ctx, args) {
   if (!book(content)) return refuse('no-qian', null);
   const action = String(args.action ?? '') || 'draw';
   if (action === 'book') return { state: null, result: { ok: true, book: qianBook(content, state), qian: qianLook(content, state, ctx.now) } };

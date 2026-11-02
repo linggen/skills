@@ -3,7 +3,7 @@
 // 银月's one line as facts (qian-facts.js; her rules: guide/qian.md § 银月 · 解签 — the facts are the rules', the words
 // hers), kept on the card for the day (this browser's, never the save), 替人求签, the share image (qian-share.js) made
 // before any tap, the evening's 应验 question once, and the 签谱. lingjing.js makes one with its own helpers.
-import { friendFacts, qianFacts } from './qian-facts.js';
+import { friendFacts, herLineClean, qianFacts } from './qian-facts.js';
 import { copyPng, savePng, shareBlob, shareCan, shareLines, sharePng } from './qian-share.js';
 
 
@@ -17,7 +17,7 @@ export { qianFacts };
 /* 银月's line on a card, this browser's, by save · day · whose — her words are never written into the save. */
 const lineKey = (who, d) => `lingjing:qian-her:${who}:${d?.day ?? ''}:${d?.n ?? ''}`;
 
-export function createQianPage({ write, refresh, show, keep, view, herLine, herHere, lang, refusal, failed, tellHer, saveKey = () => '' }) {
+export function createQianPage({ write, refresh, show, keep, view, herLine, herHere, lang, refusal, failed, tellHer, saveKey = () => '', playerName = () => null }) {
   let motionOn = false, jolts = [];
   const store = {
     get: (k) => { try { return localStorage.getItem(`${saveKey()}|${k}`); } catch { return null; } },
@@ -97,7 +97,7 @@ export function createQianPage({ write, refresh, show, keep, view, herLine, herH
     if (!fresh || !herHere()) return;
     const zh = lang() !== 'en', mood = { great: 'happy', even: 'relaxed', ill: 'sad' }[d.grade.tone] ?? 'neutral';
     show({ qianHerWaiting: true });
-    const line = await herLine('reading', qianFacts(d, zh), mood);
+    const line = herLineClean(await herLine('reading', qianFacts(d, zh), mood), playerName());
     if (line) { store.set(lineKey('mine', d), line); show({ qianHer: line, qianHerWaiting: false }); prepare('mine'); } else show({ qianHerWaiting: false });
   }
 
@@ -116,7 +116,7 @@ export function createQianPage({ write, refresh, show, keep, view, herLine, herH
     prepare('friend');
     if (had || !herHere()) return;
     show({ qianFriendWaiting: true });
-    const line = await herLine('reading', friendFacts(f, lang() !== 'en'), 'relaxed');
+    const line = herLineClean(await herLine('reading', friendFacts(f, lang() !== 'en'), 'relaxed'), playerName());
     if (view.qianFriend?.name !== f.name) return;
     if (line) { store.set(lineKey(`friend:${f.name}`, f), line); show({ qianFriendHer: line, qianFriendWaiting: false }); prepare('friend'); } else show({ qianFriendWaiting: false });
   }
@@ -135,8 +135,13 @@ export function createQianPage({ write, refresh, show, keep, view, herLine, herH
     try {
       if (kind === 'share') sharePng(p.blob, p.d, who === 'friend').then(() => done('shared'), fail);
       else if (kind === 'copy') copyPng(p.blob).then(() => done('copied'), fail);
+      // A sandboxed frame without allow-downloads (the launcher's, Linggen.app's) saves nothing: say so, show the picture.
+      else if (!downloadsAllowed()) done('saveBlocked');
       else { savePng(p.blob, p.d, who === 'friend'); done('saved'); }
     } catch (e) { fail(e); }
+  }
+  function downloadsAllowed() {
+    try { const sb = window.frameElement?.sandbox; return !sb || !sb.length || sb.contains('allow-downloads'); } catch { return true; }
   }
   let shown = null;
   function shownUrl(blob) { if (shown) URL.revokeObjectURL(shown); shown = URL.createObjectURL(blob); return shown; }

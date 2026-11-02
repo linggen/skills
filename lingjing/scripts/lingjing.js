@@ -4588,7 +4588,7 @@ async function mountChat() {
 /* ── 银月 on the stage: the cast, the rise, her body ── */
 
 /// 问签 (qian-page.js): the shake, the draw through the rules, 银月's reading as facts, the evening's 应验 question.
-const qianPage = createQianPage({ write, refresh: () => refresh(), show, keep, view, herLine: herReadingLine, tellHer: tellYinyue, herHere, lang, refusal, failed, saveKey: () => herKey() });
+const qianPage = createQianPage({ write, refresh: () => refresh(), show, keep, view, herLine: herReadingLine, tellHer: tellYinyue, herHere, lang, refusal, failed, saveKey: () => herKey(), playerName: () => look?.name ?? null });
 
 /// Something won in Ling's turn — 修为, or 灵石 not from a sale: 银月 hears the
 /// rise as facts and says what she will, in her own words (his rule: Yinyue

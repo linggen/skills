@@ -59,7 +59,8 @@ function wrap(ctx2d, text, max) {
   let line = '';
   for (const ch of [...text]) {
     const next = line + ch;
-    if (ctx2d.measureText(next).width <= max || !line) { line = next; continue; }
+    // A closing mark never starts a line (禁则): it stays on the line before, a little over.
+    if (ctx2d.measureText(next).width <= max || !line || /[，。；：、！？）」』,.;:!?)]/.test(ch)) { line = next; continue; }
     const sp = line.lastIndexOf(' ');
     if (/[a-z]/i.test(ch) && sp > 0) { out.push(line.slice(0, sp)); line = line.slice(sp + 1) + ch; } else { out.push(line); line = ch; }
   }

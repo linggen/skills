@@ -18,7 +18,7 @@ import { staminaBrief } from './daily.mjs';
 import { danduBrief } from './dandu.mjs';
 import { pangluBrief } from './panglu.mjs';
 import { bookOf, breakthroughOf, directorBrief, errandFor, handedHere, itemOf, offersOf, taskOf, waypointOf, workOf } from './errands.mjs';
-import { divinationBrief, fateBrief, prng, qianLook } from './fortune.mjs';
+import { divinationBrief, fateBrief, prng, qianForReader, qianLook } from './fortune.mjs';
 import { withoutLocked } from './locks.mjs';
 import { chanceBrief } from './road.mjs';
 import { seclusionBrief } from './seclusion.mjs';
@@ -719,7 +719,8 @@ export function look(state, content, ctx) {
     ...recapLook(content, state), ...nodeLook(state, ctx.now),
     divination: divinationBrief(content, state, ctx.now),
     // 问签 (fortune.mjs): the day's 黄历, the asks, 连签 and the 签谱's size — before the draw too.
-    ...(qianLook(content, state, ctx.now) ? { qian: qianLook(content, state, ctx.now) } : {}),
+    // 替人求签's kept friends are the page's alone (问签 v2): Ling and 银月 read the 签筒 without them.
+    ...(qianLook(content, state, ctx.now) ? { qian: qianForReader(qianLook(content, state, ctx.now), ctx.reader) } : {}),
     fate: fateBrief(content, state),
     stamina: staminaBrief(content, state, ctx.now),
     // Time away counted as 闭关 for 体力 (state.mjs awayFit): told once — the page's Look takes it off the save (rules.mjs).

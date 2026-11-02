@@ -50,3 +50,12 @@ export function qianAsk(d, zh, { friend = false } = {}) {
 export const qianFacts = (d, zh) => cut([qianAsk(d, zh), qianFact(d, zh), signsFact(d, zh, false), almanacFact(d.almanac, zh), aspectsFact(d, zh)].join(zh ? '' : ' '));
 /* A friend's (替人求签): the friend's signs; the 称呼 never — the card says it itself. */
 export const friendFacts = (f, zh) => cut([qianAsk(f, zh, { friend: true }), qianFact(f, zh), signsFact(f, zh, true), almanacFact(f.almanac, zh), aspectsFact(f, zh)].join(zh ? '' : ' '));
+
+/* Her line as the card and the picture keep it: his 名字 never stands in it (the moment's text names him to her —
+   rules of the chat — and the picture may go to others), put as 「你」/"you". */
+export function herLineClean(line, name) {
+  const t = String(line ?? '').trim();
+  if (!t) return null;
+  const n = String(name ?? '').trim();
+  return n.length >= 1 && t.includes(n) ? t.split(n).join(/[\u4e00-\u9fff]/.test(t) ? '你' : 'you') : t;
+}

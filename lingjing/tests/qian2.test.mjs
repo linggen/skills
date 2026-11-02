@@ -246,3 +246,18 @@ test('placement (Hanli 11-02 「…放最下面吧…」): no top-bar chip; a mo
   assert.ok(tray.some((r) => r.id === 'divine'), 'unshaken: the tray card');
   assert.ok(!(look(call(base).state, content, ctx()).tray ?? []).some((r) => r.id === 'divine'), 'shaken: gone');
 });
+
+test('her line never carries his 名字 onto the card or the picture; kept friends never reach Ling or 银月', async () => {
+  const { herLineClean } = await import('../scripts/qian-facts.js');
+  assert.equal(herLineClean('Alex，属猪的今日不冲，早点睡。', 'Alex'), '你，属猪的今日不冲，早点睡。');
+  assert.equal(herLineClean('Alex, a Pig: no clash, sleep early.', 'Alex'), 'you, a Pig: no clash, sleep early.');
+  assert.equal(herLineClean('  ', 'Alex'), null);
+  const { look } = await import('../scripts/rules.mjs');
+  const s = call(base, { action: 'friend', name: '老牛', birth: '1985-03-01' }).state;
+  assert.equal(look(s, content, ctx()).qian.friends.length, 1, 'the page sees them');
+  for (const reader of ['ling', 'yinyue']) {
+    assert.equal(look(s, content, ctx(NOW, { reader })).qian.friends, undefined, `${reader}'s Look: none`);
+    const r = call(s, {}, NOW, { reader });
+    assert.equal(r.result.qian?.friends, undefined, `${reader}'s Divine: none`);
+  }
+});

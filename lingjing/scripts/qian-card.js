@@ -10,7 +10,7 @@ import { friendCardHtml, friendFormHtml, readingBody, readingWords, shareHtml, y
 
 export const QIAN_WORDS = {
   zh: {
-    title: '问签 · 今日', drawn: '今日之签', notYet: '还没摇 · 点签筒摇一摇', notYetPhone: '还没摇 · 摇一摇手机，或点签筒', chip: '今日签 · 未摇', shake: '摇 签', shaking: '签筒摇着……', hint: '一日一签。心里想着一件事，摇一摇。', hintPhone: '一日一签。心里想着一件事，摇一摇手机，或点一下。',
+    title: '问签 · 今日', drawn: '今日之签', notYet: '还没摇 · 点签筒摇一摇', notYetPhone: '还没摇 · 摇一摇手机，或点签筒', chip: '今日签 · 未摇', shake: '摇 签', tap: '点签筒摇签', shaking: '签筒摇着……', hint: '一日一签。心里想着一件事，摇一摇。', hintPhone: '一日一签。心里想着一件事，摇一摇手机，或点一下。',
     no: '第{n}签', of: '共{of}签',
     speed: '今日修为 ×{x}', yi: '宜{name}（{games}）修为 ×{x}', even: '今日修为照常',
     almanac: '{y}年 {m}月 {d}日 · {officer}日 · 冲{chong} · 煞{sha}', yiLabel: '宜', jiLabel: '忌',
@@ -22,7 +22,7 @@ export const QIAN_WORDS = {
     reading: '银月在看这支签……', yingyan: '已应验：{said}',
   },
   en: {
-    title: "Today's fortune stick", drawn: "Today's stick", notYet: 'Not drawn yet · tap the tube to shake', notYetPhone: 'Not drawn yet · shake the phone, or tap the tube', chip: "Today's stick · not drawn", shake: 'Shake', shaking: 'Shaking…', hint: 'One stick a day. Hold one thing in mind and shake.', hintPhone: 'One stick a day. Hold one thing in mind — shake the phone, or tap.',
+    title: "Today's fortune stick", drawn: "Today's stick", notYet: 'Not drawn yet · tap the tube to shake', notYetPhone: 'Not drawn yet · shake the phone, or tap the tube', chip: "Today's stick · not drawn", shake: 'Shake', tap: 'Tap to shake', shaking: 'Shaking…', hint: 'One stick a day. Hold one thing in mind and shake.', hintPhone: 'One stick a day. Hold one thing in mind — shake the phone, or tap.',
     no: 'Stick {n}', of: 'of {of}',
     speed: 'Cultivation today ×{x}', yi: 'Good for {name} ({games}): cultivation ×{x}', even: 'Cultivation as usual today',
     almanac: '{y} year · {m} month · {d} day · {officer} · clashes {chong} · 煞 {sha}', yiLabel: 'Good for', jiLabel: 'Avoid',
@@ -52,7 +52,7 @@ function tubeHtml(q, w, ctx) {
   const shaking = ctx.qianShaking ? ' shaking' : '';
   const sticks = Array.from({ length: 9 }, (_, i) => `<i style="--i:${i}"></i>`).join('');
   return `<button class="qiantong tube-${esc(q.tube)}${shaking}" data-qian-shake aria-label="${esc(w.shake)}"${ctx.qianShaking ? ' disabled' : ''}>
-    <span class="sticks">${sticks}</span><span class="tube"></span><span class="lbl">${esc(ctx.qianShaking ? w.shaking : w.shake)}</span></button>`;
+    <span class="sticks">${sticks}</span><span class="tube"></span><span class="lbl">${esc(ctx.qianShaking ? w.shaking : w.tap)}</span></button>`;
 }
 function streakHtml(q, w) {
   const next = q.next ? ` · ${say(w.streakNext, { n: q.next - q.streak, name: w.tube[{ 3: 'jade', 7: 'cinnabar', 30: 'gold' }[q.next]] ?? '' })}` : '';
