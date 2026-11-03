@@ -129,11 +129,13 @@ html[data-board=fighter] #stage .gf-field { width: min(100%, calc((100vh - 200px
 .g-fighter .gf-dial b { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%;
   background: #2a241c; opacity: .35; transform: translate(var(--x, 0px), var(--y, 0px)); pointer-events: none; }
 .g-fighter .gf-dial.is-held b { opacity: .7; }
-/* Turned on its side on a phone: the field as tall as the page (the app's bar above it holds ✕ and Ⅱ), the hands over
-   its lower corners, see-through, clear of the notch and the home bar. The Mac and the upright phone as they were. */
+/* Turned on its side on a phone: the field as tall as the page (the app's bar above it holds ✕ and Ⅱ) and as wide as
+   the screen, up to WIDE_MAX (2.4 : 1; Hanli 11-03: 「两边目前黑的比较多」) — the world drawn wider at its sides, the
+   boards as they are (draw.js fieldOf) — the hands over its lower corners, see-through, clear of the notch and the home
+   bar. The Mac and the upright phone as they were (16:9). */
 @media (orientation: landscape) {
-  html[data-board=fighter][data-input=touch] #stage .g-fighter.is-touch { position: relative; display: block; width: min(100%, calc(100dvh * 16 / 9)); height: auto; margin: auto; padding: 0; }
-  html[data-board=fighter][data-input=touch] #stage .g-fighter.is-touch .gf-field { width: 100%; margin: 0; border-radius: 0; }
+  html[data-board=fighter][data-input=touch] #stage .g-fighter.is-touch { --gf-h: min(calc(100dvh - var(--safe-b, 0px)), calc(100vw * 9 / 16)); position: relative; display: block; width: min(100%, calc(var(--gf-h) * 2.4)); height: auto; margin: auto; padding: 0; }
+  html[data-board=fighter][data-input=touch] #stage .g-fighter.is-touch .gf-field { width: 100%; height: var(--gf-h); aspect-ratio: auto; margin: 0; border-radius: 0; }
   html[data-board=fighter][data-input=touch] #stage .g-fighter.is-touch .gf-pad { position: absolute; left: 0; right: 0; bottom: 0; pointer-events: none;
     padding: 0 max(10px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); }
   html[data-board=fighter][data-input=touch] #stage .g-fighter.is-touch .gf-pad > * { pointer-events: auto; opacity: .62; }
@@ -142,11 +144,11 @@ html[data-board=fighter] #stage .gf-field { width: min(100%, calc((100vh - 200px
 `;
 function sheet(doc) {
   const old = doc.getElementById('g-fighter-css');
-  if (old?.dataset.v === '5') return;
+  if (old?.dataset.v === '6') return;
   old?.remove();
   const st = doc.createElement('style');
   st.id = 'g-fighter-css';
-  st.dataset.v = '5';
+  st.dataset.v = '6';
   st.textContent = CSS;
   doc.head.append(st);
 }
@@ -259,7 +261,8 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   /* Size the canvas to its box, at the screen's pixels (2× at most: the phone keeps 60 frames). */
   const fit = () => {
     const r = canvas.getBoundingClientRect(), dpr = Math.min(2, win.devicePixelRatio || 1);
-    const w = Math.max(320, Math.round(r.width * dpr)), h = Math.round((w * FIELD.h) / FIELD.w);
+    // its box's own shape (a phone on its side gives a wider one: draw.js fieldOf draws more of the world, never stretched)
+    const w = Math.max(320, Math.round(r.width * dpr)), h = r.height > 0 ? Math.max(180, Math.round(r.height * dpr)) : Math.round((w * FIELD.h) / FIELD.w);
     if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
   };
   const ro = win.ResizeObserver ? new win.ResizeObserver(fit) : null;

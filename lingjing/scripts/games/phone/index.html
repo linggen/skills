@@ -49,9 +49,10 @@
     html[data-board=qimai] #stage, html[data-board=dash] #stage { justify-content: center; }
     html[data-board=qimai] #stage > *, html[data-board=dash] #stage > * { margin-top: 0; }
   }
-  /* 格斗 on its side: its touch face is as tall as the page (fighter.js: 100dvh × 16/9), which ran its floor under the home
-     indicator's band; the band is kept out of it. */
-  html[data-board=fighter][data-input=touch] body #stage .g-fighter.is-touch { width: min(100%, calc((100dvh - var(--safe-b)) * 16 / 9)); }
+  /* 格斗 on its side: its touch face is as tall as the page less the home indicator's band, and as wide as the screen up
+     to 2.4 : 1 (fighter.js; draw.js fieldOf draws the world wider, never stretched — Hanli 11-03: 「两边目前黑的比较多」).
+     The notch side is the app's (lingjing_board.dart: the webview inside the safe area's left and right). */
+  html[data-board=fighter][data-input=touch] body #stage .g-fighter.is-touch { --gf-h: min(calc(100dvh - var(--safe-b)), calc(100vw * 9 / 16)); width: min(100%, calc(var(--gf-h) * 2.4)); }
   /* 斗法 (kapai): the room fills the page as in the 游戏厅 (arcade.css .is-fill): its own phone rules answer the
      `scene` container (battle.css @container scene), which the Mac's story page gives it. */
   html[data-board=kapai] #stage { padding: 0 0 var(--safe-b); overflow: hidden; }

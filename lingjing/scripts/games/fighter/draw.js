@@ -16,6 +16,17 @@ const FY = 1.3, FY_ICE = 1.85;
 /* The bout ended his way (core.js endWon: `end.won`, an old `out` always his). */
 const won = (e) => Boolean(e && (e.won ?? e.kind === 'out'));
 export const FIELD = { w: W, h: H, floor: FLOOR };
+/* A wider screen (a phone on its side, ~2.16:1; Hanli 11-03: 「手机上的游戏画面能再宽点, 两边目前黑的比较多」): the canvas
+   takes the box's own shape, never stretched — its height is the field's H, and what is wider than W is more of the world
+   at each side (EDGE logical px each): the paper, the hills, the ground and the crowd reach it; the boards, where the
+   two can walk, stay STAGE's (the edge, the slick and the corner keep their distances), and the bars and words stay
+   centred over them. `fieldOf(w, h)` → { k, edge } for a canvas w × h px. */
+export const WIDE_MAX = 2.4; // the widest a field is drawn (w : h); past it, bands
+export function fieldOf(w, h) {
+  const k = Math.min(h / H, w / W), vw = Math.min(w / k, H * WIDE_MAX);
+  return { k, edge: Math.max(0, (vw - W) / 2), left: Math.max(0, (w / k - vw) / 2) };
+}
+let EDGE = 0; // this frame's (painter)
 const SERIF = '"Songti SC","STSong","Noto Serif SC",serif';
 
 /* The skeleton (units): thigh, shin, torso, neck, head radius, upper arm, forearm. */
@@ -134,7 +145,7 @@ function layer(w, h, paint) {
   paint(c.getContext('2d'));
   return c;
 }
-function ridge(ctx, y0, amp, f1, f2, ph, color, w = W + 120) {
+function ridge(ctx, y0, amp, f1, f2, ph, color, w = W + 2 * EDGE + 120) {
   ctx.fillStyle = color;
   ctx.beginPath(); ctx.moveTo(0, H);
   for (let x = 0; x <= w; x += 12) ctx.lineTo(x, y0 - amp * Math.sin(x / f1 + ph) - amp * 0.5 * Math.sin(x / f2 + ph * 2));
@@ -143,16 +154,17 @@ function ridge(ctx, y0, amp, f1, f2, ph, color, w = W + 120) {
 function paintSky(ctx, look = {}) {
   const g = ctx.createLinearGradient(0, 0, 0, H);
   g.addColorStop(0, look.sky ?? '#f3ecd9'); g.addColorStop(0.62, look.paper ?? '#e9dcc0'); g.addColorStop(1, '#d9c9a6');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W + 2 * EDGE, H);
   // a pale sun behind the haze
-  const s = ctx.createRadialGradient(720, 120, 4, 720, 120, 80);
+  const s = ctx.createRadialGradient(EDGE + 720, 120, 4, EDGE + 720, 120, 80);
   s.addColorStop(0, 'rgba(255,248,230,.9)'); s.addColorStop(1, 'rgba(255,248,230,0)');
-  ctx.fillStyle = s; ctx.fillRect(600, 20, 240, 220);
+  ctx.fillStyle = s; ctx.fillRect(EDGE + 600, 20, 240, 220);
 }
 function paintFar(ctx) { ridge(ctx, 250, 46, 140, 57, 0.4, 'rgba(70,72,66,.13)'); ridge(ctx, 286, 30, 100, 41, 2.1, 'rgba(60,60,54,.16)'); }
 function paintNear(ctx) {
   ridge(ctx, 330, 22, 80, 31, 1.2, 'rgba(48,46,40,.20)');
-  // the temple's roofline (沉鼎观) and a pine
+  // the temple's roofline (沉鼎观) and a pine, where they stand over the boards
+  ctx.translate(EDGE, 0);
   ctx.fillStyle = 'rgba(32,30,26,.26)';
   ctx.beginPath(); ctx.moveTo(560, 300); ctx.quadraticCurveTo(660, 270, 760, 300); ctx.lineTo(740, 288); ctx.lineTo(580, 288); ctx.fill();
   ctx.fillRect(600, 300, 120, 54);
@@ -161,13 +173,15 @@ function paintNear(ctx) {
   ctx.beginPath(); ctx.moveTo(130, 360); ctx.quadraticCurveTo(140, 300, 120, 240); ctx.stroke();
   ctx.fillStyle = 'rgba(30,40,30,.22)';
   for (const [x, y, r] of [[100, 250, 34], [150, 268, 28], [118, 222, 26], [160, 236, 22]]) { ctx.beginPath(); ctx.ellipse(x, y, r, r * 0.45, -0.2, 0, Math.PI * 2); ctx.fill(); }
+  ctx.translate(-EDGE, 0);
 }
 function paintStage(ctx, st) {
   const L = st.left, R = st.right, look = st.look ?? {};
   // frozen ground off the boards
   const g = ctx.createLinearGradient(0, FLOOR + 40, 0, H);
   g.addColorStop(0, 'rgba(92,84,68,.34)'); g.addColorStop(1, 'rgba(60,54,44,.5)');
-  ctx.fillStyle = g; ctx.fillRect(0, FLOOR + 40, W, H - FLOOR - 40);
+  ctx.fillStyle = g; ctx.fillRect(0, FLOOR + 40, W + 2 * EDGE, H - FLOOR - 40);
+  ctx.translate(EDGE, 0); // the boards stand where the rules have them
   // the boards: a slab of 青石, its top lit, its front in shade, joints and a worn edge
   ctx.fillStyle = look.top ?? '#9aa19a';
   ctx.beginPath(); ctx.moveTo(L - 8, FLOOR); ctx.lineTo(R + 8, FLOOR); ctx.lineTo(R + 2, FLOOR + 12); ctx.lineTo(L - 2, FLOOR + 12); ctx.fill();
@@ -188,6 +202,7 @@ function paintStage(ctx, st) {
     ctx.fillStyle = 'rgba(30,10,6,.75)';
     for (let i = 0; i < 11; i += 1) { ctx.beginPath(); ctx.arc(a + 10 + ((i * 37) % (b - a - 16)), FLOOR + 3 + (i % 3) * 2, 1.6, 0, Math.PI * 2); ctx.fill(); }
   }
+  ctx.translate(-EDGE, 0);
 }
 
 /* The banners on their poles behind the boards: 大比 · 沉鼎, swaying. */
@@ -209,7 +224,7 @@ function banners(ctx, t, look = {}) {
 
 /* The crowd below the boards' front: heads and shoulders, bobbing; a big blow lifts them. */
 function crowd(ctx, t, lift) {
-  for (let i = 0, x = 4; x < W; i += 1, x += 22) {
+  for (let i = 0, x = 4 - EDGE; x < W + EDGE; i += 1, x += 22) {
     const row = i % 2, y = FLOOR + 82 + row * 10 + ((x * 7) % 9) - Math.max(0, Math.sin(t / 260 + i * 1.7)) * (1 + lift * 7);
     ctx.fillStyle = row ? 'rgba(20,18,16,.62)' : 'rgba(34,30,26,.5)';
     ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2); ctx.fill();
@@ -917,7 +932,7 @@ function intro(ctx, s, lang, lv) {
   const age = go ? -left : s.t, k = Math.min(1, age / 160), a = go ? Math.max(0, 1 - -left / 500) : 1;
   ctx.save();
   ctx.globalAlpha = a;
-  ctx.fillStyle = 'rgba(20,16,12,.55)'; ctx.fillRect(0, 214, W, 92);
+  ctx.fillStyle = 'rgba(20,16,12,.55)'; ctx.fillRect(-EDGE, 214, W + 2 * EDGE, 92);
   ctx.translate(W / 2, 262);
   ctx.scale(1.6 - 0.6 * k, 1.6 - 0.6 * k);
   ctx.font = `800 ${go ? 72 : 58}px ${SERIF}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -931,15 +946,16 @@ function cutIn(ctx, c, img, lang, age) {
   const k = Math.min(1, age / 160), out = age > 700 ? Math.min(1, (age - 700) / 200) : 0, mine = c.who === 'me';
   ctx.save();
   ctx.globalAlpha = 1 - out;
-  ctx.fillStyle = 'rgba(12,10,8,.55)'; ctx.fillRect(0, 0, W, H);
-  ctx.translate(mine ? -W * (1 - k) : W * (1 - k), 0);
+  ctx.fillStyle = 'rgba(12,10,8,.55)'; ctx.fillRect(-EDGE, 0, W + 2 * EDGE, H);
+  ctx.translate(mine ? -(W + 2 * EDGE) * (1 - k) : (W + 2 * EDGE) * (1 - k), 0);
+  const a0 = -EDGE, a1 = W + EDGE; // the band from edge to edge of the field
   ctx.fillStyle = mine ? '#1d1712' : '#14202a';
-  ctx.beginPath(); ctx.moveTo(0, 180); ctx.lineTo(W, 140); ctx.lineTo(W, 330); ctx.lineTo(0, 370); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(a0, 180); ctx.lineTo(a1, 140); ctx.lineTo(a1, 330); ctx.lineTo(a0, 370); ctx.closePath(); ctx.fill();
   ctx.strokeStyle = mine ? '#c2481f' : '#5fbf98'; ctx.lineWidth = 4;
-  ctx.beginPath(); ctx.moveTo(0, 176); ctx.lineTo(W, 136); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, 374); ctx.lineTo(W, 334); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(a0, 176); ctx.lineTo(a1, 136); ctx.stroke(); ctx.beginPath(); ctx.moveTo(a0, 374); ctx.lineTo(a1, 334); ctx.stroke();
   if (img?.complete && img.naturalWidth) {
     ctx.save();
-    ctx.beginPath(); ctx.moveTo(0, 180); ctx.lineTo(W, 140); ctx.lineTo(W, 330); ctx.lineTo(0, 370); ctx.closePath(); ctx.clip();
+    ctx.beginPath(); ctx.moveTo(a0, 180); ctx.lineTo(a1, 140); ctx.lineTo(a1, 330); ctx.lineTo(a0, 370); ctx.closePath(); ctx.clip();
     // the face and shoulders: the painting's top part, large
     const sh = img.naturalHeight * 0.42, h = 250, w = (img.naturalWidth / sh) * h;
     ctx.globalAlpha = 0.92;
@@ -962,15 +978,17 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false, kin
   const view = { ghostMe: 1, ghostFoe: 1, chain: null, now: 0, lift: 0, trail: [], cut: null, cutAt: 0 };
   let shake = 0, lastBig = 0, lastHit = 0, last = 0;
   return function draw(s, lang = 'zh', text = '') {
-    const w = canvas.width, h = canvas.height, k = w / W, now = globalThis.performance?.now?.() ?? Date.now();
+    const w = canvas.width, h = canvas.height, fit = fieldOf(w, h), k = fit.k, now = globalThis.performance?.now?.() ?? Date.now();
+    EDGE = fit.edge;
+    const X0 = (fit.left + EDGE) * k; // where the field's x = 0 (the rules') lands on the canvas, in px
     const dtf = last ? Math.min(3, (now - last) / 16.7) : 1;
     last = now; view.now = now;
     if (layersFor !== `${w}x${h}`) {
       const make = (lw, paint) => layer(Math.round(lw * k), h, (c) => { c.setTransform(k, 0, 0, k, 0, 0); paint(c); });
       layers = {
-        sky: make(W, (c) => paintSky(c, s.level?.stage?.look)),
-        far: make(W + 120, paintFar), near: make(W + 120, paintNear),
-        stage: make(W, (c) => paintStage(c, s.R.stage)),
+        sky: make(W + 2 * EDGE, (c) => paintSky(c, s.level?.stage?.look)),
+        far: make(W + 2 * EDGE + 120, paintFar), near: make(W + 2 * EDGE + 120, paintNear),
+        stage: make(W + 2 * EDGE, (c) => paintStage(c, s.R.stage)),
       };
       layersFor = `${w}x${h}`;
     }
@@ -984,15 +1002,17 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false, kin
     shake *= Math.pow(0.85, dtf);
     view.lift *= Math.pow(0.95, dtf);
     const ox = shake > 0.3 ? Math.sin(now / 17) * shake : 0, oy = shake > 0.3 ? Math.cos(now / 23) * shake * 0.5 : 0;
+    const L0 = fit.left * k; // past WIDE_MAX: the field centred, bands beside it
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.drawImage(layers.sky, 0, 0);
-    ctx.drawImage(layers.far, Math.round((-60 - mid * 0.04) * k), 0);
-    ctx.drawImage(layers.near, Math.round((-60 - mid * 0.09) * k), 0);
-    ctx.setTransform(k, 0, 0, k, ox * k, oy * k);
+    if (L0 > 0) { ctx.fillStyle = '#0b0f0a'; ctx.fillRect(0, 0, w, h); }
+    ctx.drawImage(layers.sky, L0, 0);
+    ctx.drawImage(layers.far, L0 + Math.round((-60 - mid * 0.04) * k), 0);
+    ctx.drawImage(layers.near, L0 + Math.round((-60 - mid * 0.09) * k), 0);
+    ctx.setTransform(k, 0, 0, k, X0 + ox * k, oy * k);
     banners(ctx, s.t, s.level?.stage?.look);
-    ctx.setTransform(1, 0, 0, 1, ox * k, oy * k);
+    ctx.setTransform(1, 0, 0, 1, L0 + ox * k, oy * k);
     ctx.drawImage(layers.stage, 0, 0);
-    ctx.setTransform(k, 0, 0, k, ox * k, oy * k);
+    ctx.setTransform(k, 0, 0, k, X0 + ox * k, oy * k);
     const inv = ctx.getTransform().invertSelf();
     const lv = s.level ?? {};
     const meLook = { hair: 'bun', ...(lv.me?.look ?? {}) }, foeLook = { hair: 'tail', weapon: 'sword', ...(lv.foe?.look ?? {}) };
@@ -1060,7 +1080,7 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false, kin
     } else figure(ctx, s.me.x, meY, s.me.face, mp, meLook, meExtra);
     effects(ctx, s, art, still, lang);
     if (globalThis.LINGJING_HITBOX) hitboxes(ctx, s, meY, foeY);
-    ctx.setTransform(k, 0, 0, k, 0, 0);
+    ctx.setTransform(k, 0, 0, k, X0, 0); // the bars and the words over the boards; what fills the field reaches EDGE
     if (s.level?.stage?.look?.crowd !== false) crowd(ctx, s.t, view.lift); // the cliff has no crowd below it
     // the bars' ghosts fall behind the bars
     view.ghostMe = Math.max(s.me.hp / s.R.me.hp, view.ghostMe - 0.006 * dtf);
@@ -1073,10 +1093,10 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false, kin
     if (s.end) {
       const g = ctx.createRadialGradient(W / 2, H / 2, 160, W / 2, H / 2, 560);
       g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(10,8,6,.45)');
-      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = g; ctx.fillRect(-EDGE, 0, W + 2 * EDGE, H);
     }
     // KO: a white flash as it falls (the slow-down is the mount's)
-    if (s.end && s.t - s.end.at < 220 && !still) { ctx.fillStyle = `rgba(255,252,240,${0.75 * (1 - (s.t - s.end.at) / 220)})`; ctx.fillRect(0, 0, W, H); }
+    if (s.end && s.t - s.end.at < 220 && !still) { ctx.fillStyle = `rgba(255,252,240,${0.75 * (1 - (s.t - s.end.at) / 220)})`; ctx.fillRect(-EDGE, 0, W + 2 * EDGE, H); }
     if (s.intro && s.t < s.intro + 500) intro(ctx, s, lang, lv);
     lineBand(ctx, text);
     if (s.end) seal(ctx, say(won(s.end) ? lv.seal?.won : lv.seal?.lost, lang) || (lang === 'en' ? (won(s.end) ? 'Won' : 'Out') : (won(s.end) ? '胜' : '负')), s.t - s.end.at - 300);

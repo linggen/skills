@@ -470,7 +470,7 @@ test('the round pad (touch): 8 ways by the thumb\'s angle, a diagonal two at onc
   assert.deepEqual(at(0, 200), ['right'], 'past the rim still counts');
   const src = fs.readFileSync(new URL('../scripts/games/fighter.js', import.meta.url), 'utf8');
   assert.match(src, /kind === 'touch' \? dial :/, 'the pad on touch only; the desk keeps its four buttons');
-  assert.match(src, /dataset\.v = '5'/);
+  assert.match(src, /dataset\.v = '6'/);
 });
 
 /* 2026-11-03 (Hanli: 「好像卡住了, 秦燕不会滑倒失败呢」 · 「kl翻滚这个也没告诉玩家啊」 · 「手机上组合键不太好操作」): the edge always
@@ -571,4 +571,31 @@ test('a touch-only hand wins: it fights as a thumb does, and answers her point a
   const src = fs.readFileSync(new URL('../scripts/games/fighter.js', import.meta.url), 'utf8');
   assert.match(src, /class="gf-cue" data-k="cue" hidden/, 'the cue\'s button, on touch, hidden until its window');
   assert.match(src, /g: c === 'ying' \? 'ying' : 'hook'/);
+});
+
+/* 2026-11-03 (Hanli: 「手机上的游戏画面能再宽点, 两边目前黑的比较多」): on a phone on its side the field takes the screen's
+   width (up to WIDE_MAX), drawing more of the world at each side, never stretched; the boards stay STAGE's. */
+import { fieldOf, FIELD as FIELD_ART, WIDE_MAX } from '../scripts/games/fighter/draw.js';
+
+test('a wide phone draws the world wider, never stretched: the field\'s height fills, the boards keep their place', () => {
+  const H = FIELD_ART.h, W = FIELD_ART.w;
+  const iphone = fieldOf(852 * 2, (393 - 21) * 2); // 2.16:1 less the home band, at 2×
+  assert.equal(iphone.k, (372 * 2) / H, 'scaled by the height: no stretch');
+  assert.ok(iphone.edge > 100, `more world at each side: ${iphone.edge}`);
+  assert.equal(iphone.left, 0, 'no bands');
+  assert.ok(Math.abs((W + 2 * iphone.edge) * iphone.k - 852 * 2) < 1, 'edge to edge');
+  assert.deepEqual(fieldOf(1600, 900), { k: 900 / H, edge: 0, left: 0 }, '16:9 as before');
+  const tall = fieldOf(960, 900);
+  assert.equal(tall.edge, 0, 'narrower than 16:9: as before, the width rules');
+  const ultra = fieldOf(3000, 540);
+  assert.equal(ultra.edge, (H * WIDE_MAX - W) / 2, 'past WIDE_MAX the world stops widening');
+  assert.ok(ultra.left > 0, '…and bands stand beside it');
+  // the play area (the edge, the slick, the corner) is the rules' and untouched
+  assert.deepEqual(STAGE, { w: 960, left: 140, right: 930, oil: { from: 140, to: 250 } });
+  const host = fs.readFileSync(new URL('../scripts/games/phone/index.html', import.meta.url), 'utf8');
+  assert.doesNotMatch(host, /g-fighter\.is-touch \{ width: min\(100%, calc\(\(100dvh - var\(--safe-b\)\) \* 16 \/ 9\)\); \}/, 'no 16:9 cap on the phone');
+  assert.match(host, /--gf-h: min\(calc\(100dvh - var\(--safe-b\)\), calc\(100vw \* 9 \/ 16\)\); width: min\(100%, calc\(var\(--gf-h\) \* 2\.4\)\);/);
+  const src = fs.readFileSync(new URL('../scripts/games/fighter.js', import.meta.url), 'utf8');
+  assert.match(src, /h = r\.height > 0 \? Math\.max\(180, Math\.round\(r\.height \* dpr\)\)/, 'the canvas takes its box\'s shape');
+  assert.equal(WIDE_MAX, 2.4);
 });
