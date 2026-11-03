@@ -28,6 +28,23 @@ cloud:
   save: [data/state.json, data/worlds]
   # Made-world pictures stay on the device (never pushed, pulled or removed by a pull).
   skip: [art]
+  # Both sides moved: the one further on wins by total progress (Hanli 11-03:
+  # 「按总进度比」), the first difference deciding — scenes done, the realm (the
+  # ladder's order), the layer and 修为 (only within one realm and one save
+  # version), then the later story move, then the later write. A tie goes to
+  # the other side; the loser is kept as a copy. One rule for Mac↔cloud,
+  # phone↔cloud and phone↔Mac (skill-spec § Cloud `further`). `rise`: a move
+  # up these is a milestone (the first one while the save is local-only is a
+  # fact for 银月). JSON, so the phone's asset script reads it as is.
+  further:
+    {"file": "data/state.json", "by": [
+      {"count": "done_scenes"},
+      {"rank": "tier", "order": {"file": "worlds/jiuding/ladder.json", "list": "tiers", "key": "id"}, "rise": true},
+      {"number": "step", "within": ["tier", "version"], "rise": true},
+      {"number": "progress", "within": ["tier", "version"]},
+      {"time": "story_at"},
+      {"time": "updated"}
+    ]}
 # The rules always know what the player must choose next, and the scene is
 # the question: every tool answer carries `ask`, and the engine asks it when
 # Ling ends a turn on words alone (2026-09-17 — Terra dropped it three times

@@ -1716,6 +1716,22 @@ rules.mjs, refused when signed out).
   play (the gate); the page syncs on entering and after a win; a write names
   the version it read, a stale one re-reads; conflict copies are kept. Only
   the game's state crosses — from other apps only a chore's done and when.
+- **The cloud is for subscribers (11-03; agent's pick, Hanli delegated 11-03).**
+  Hanli: 「订阅用户才存云端, 非注册付费用户, 只可以本地同步」, 「应该鼓励用户订阅」.
+  A sign-in still opens the game; the account's cloud copy is kept only while
+  subscribed (a trial counts), and a lapsed copy is kept, never deleted, until
+  a resubscribe. Free accounts sync phone ↔ Mac only. The phone reaches the
+  cloud itself (HTTPS) as well as the Mac (WebRTC), cloud first.
+- **One winner rule, declared:** SKILL.md `cloud.further` — scenes done, realm,
+  layer and 修为 (within one realm and save version), the later story move,
+  the later write; a tie to the other side; the loser kept as a copy. The
+  engine (Mac ↔ cloud) and the phone (↔ cloud, ↔ Mac) read the same
+  declaration (`tools/further.mjs` ships it to the phone).
+- **Encouraging, tactfully:** the engine and the phone hand facts only —
+  `cloud: on|off|lapsed`, `kept_at`, `synced_at`, `rose_local_at` (the first
+  realm/layer rise while local-only), and on the phone "away from the Mac with
+  progress it lacks". 银月 words them, never mid-play, one a day at most; a
+  settings line says where the save lives.
 - **Rules at home cost nothing** while a cheat cheats only their own game.
 - **【远景】 Server authority**, the moment players compare (a ranking, the
   table, trade): `rules.mjs` in a Worker on linggen.dev, content bundled into

@@ -134,3 +134,27 @@ test("place: 银月 is a guest with her own text, absent until the save says she
     assert.equal(isSet(valueAt(fitPresence(content, s), her.absent_until.path)), here, JSON.stringify(s));
   }
 });
+
+/* `cloud.further` (skill-spec § Cloud `further`): which of two saves is further on — one rule for the
+   engine's Mac↔cloud sync and the phone's (tools/further.mjs ships it, order resolved). A shape the engine
+   cannot read leaves it on its old rule (the account's copy wins), silently: lint it here. */
+test('cloud.further is declared in the shape the engine reads, its order resolving to the realms', async () => {
+  const { readFurtherText, problems, resolved } = await import('../tools/further.mjs');
+  const text = readFurtherText(fs.readFileSync(SKILL_MD, 'utf8'));
+  assert.ok(text, 'cloud.further is declared');
+  const rule = JSON.parse(text);
+  assert.deepEqual(problems(rule), []);
+  const r = resolved();
+  assert.deepEqual(r.by.map((e) => Object.keys(e).find((k) => ['count', 'rank', 'number', 'time'].includes(k))),
+    ['count', 'rank', 'number', 'number', 'time', 'time']);
+  assert.equal(r.by[1].order[0], 'qi', 'the ladder, lowest realm first');
+  assert.deepEqual(r.by.filter((e) => e.rise).map((e) => e.rank ?? e.number), ['tier', 'step']);
+});
+
+test('a broken further is caught', async () => {
+  const { problems } = await import('../tools/further.mjs');
+  assert.match(problems({ file: '../x', by: [] }).join(';'), /inside the skill.*non-empty/);
+  assert.match(problems({ file: 'a.json', by: [{ count: 'a', number: 'b' }] })[0], /exactly one/);
+  assert.match(problems({ file: 'a.json', by: [{ rank: 'tier', order: { file: 'nope.json', list: 'x' } }] })[0], /order/);
+  assert.match(problems({ file: 'a.json', by: [{ time: 'u', later: true }] })[0], /unknown `later`/);
+});
