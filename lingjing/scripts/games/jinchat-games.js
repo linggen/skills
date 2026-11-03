@@ -130,7 +130,7 @@ export function tableOf(twenty) {
     const ans = Object.fromEntries(qs.map((q) => [q.id, (row.y ?? []).includes(q.id) ? 'y' : (row.m ?? []).includes(q.id) ? '?' : 'n']));
     return { id: a.id, name: a.name, alias: a.alias, ans };
   });
-  return { questions: qs, animals, max: Number(rev.max) || 18, guess: rev.guess ?? { zh: '是不是{x}？', en: 'Is it a {x}?' } };
+  return { questions: qs, animals, max: Number(rev.max) || 18, guess: rev.guess ?? { zh: '是不是{x}？', en: 'Is it a {x}?' }, ends: twenty?.ends ?? null };
 }
 
 export const freshGuess = () => ({ asked: [], wrong: [], n: 0, over: false });
@@ -356,6 +356,14 @@ const W = {
     freeQ: '{n}. 问：{q}——他答：{a}', freeG: '{n}. 猜：{x}——他说：{a}',
     freeA: { yes: '是', no: '不是', unknown: '不知道', right: '对', wrong: '不对' },
     freeBad: '（上一句不是只能答是或不是的问题，页面没收。重来一句。）',
+    freeBadGuess: '（上一句是猜，页面没收：{why}。这一句问。）',
+    freeTooSoon: '才问了几问，圈子还宽', freeNoGuess: '猜的次数用完了，留到最后一问再猜',
+    freeHow: '怎么猜：先问能把剩下的动物劈成两半的大问题——是哺乳动物吗？住在水里吗？比狗大吗？家里养的吗？吃肉吗？——一步步收窄，再问细的；每一问都接着已经知道的往下问，答案已经定了的别再问；圈子窄到两三种了才猜。',
+    freeKnown: '到现在知道的：{facts}。',
+    freeYes: '是——{q}', freeNo: '不是——{q}', freeUnk: '他不知道——{q}', freeMissed: '猜错过——{x}（别再猜）', freeSep: '；',
+    freeGuesses: '还能猜 {g} 回。',
+    freeLost: '二十问完了（页面判的）：你们 {n} 问没猜中。他说出了谜底：「{x}」。你输了——先懊恼一句，像「竟然是{x}……！」，再用你自己的口吻说一句是哪儿没想到（他答过的：{facts}）。不赖账，别改这个结果。',
+    freeWon: '二十问完了（页面判的）：你猜中了，是「{x}」，用了 {n} 问。得意一句，小小显摆一下，一两句就够。',
     couplet: '这一局是对对子：{names}出上联，页面上已经写着——「{up}」{kind}。他对下联，对没对上，页面判。',
     cOpen: '你先开口，照你平常说话的样子叫他对下联（上联别重复，下联一个字也别说，别替他对）。',
     cMiss: '他对：「{guess}」。页面判了：没对上（{why}）。下联别说破，也别替他对。回他一句——损他也行，激他也行。{hint}',
@@ -392,6 +400,14 @@ const W = {
     freeQ: '{n}. Q: {q} — he said: {a}', freeG: '{n}. Guess: {x} — he said: {a}',
     freeA: { yes: 'yes', no: 'no', unknown: 'don\'t know', right: 'right', wrong: 'wrong' },
     freeBad: '(The last line was not a yes-or-no question; the page did not take it. Another.)',
+    freeBadGuess: '(The last line was a guess, and the page did not take it: {why}. Ask this time.)',
+    freeTooSoon: 'only a few questions in, the field is still wide', freeNoGuess: 'your guesses are spent; keep one for the last question',
+    freeHow: 'How to play it: first ask the big questions that split what is left in half — a mammal? lives in water? bigger than a dog? kept at home? eats meat? — narrowing step by step, then the finer ones; build each question on what is known, never ask what is settled; guess only when two or three are left. ',
+    freeKnown: 'Known so far: {facts}. ',
+    freeYes: 'yes — {q}', freeNo: 'no — {q}', freeUnk: 'he does not know — {q}', freeMissed: 'guessed wrong — {x} (not again)', freeSep: '; ',
+    freeGuesses: '{g} guesses left. ',
+    freeLost: 'The twenty questions are over (the page judged it): you missed it in {n} questions. He has told you the answer: "{x}". You lost — first a line of chagrin, like "A {x}, of all things…!", then in your own voice what you failed to think of (his answers: {facts}). No excuses; never change that result.',
+    freeWon: 'The twenty questions are over (the page judged it): you guessed it — "{x}", in {n} questions. A small boast, a line or two at most.',
     couplet: 'This round is couplets: {names} give the first line, and the page shows it — "{up}"{kind}. He answers with the second; the page judges.',
     cOpen: 'Speak first, in your own voice, daring him to match it (don\'t repeat the line; never say a word of the answer).',
     cMiss: 'He answers: "{guess}". The page judged it: no match ({why}). Never give the answer away. Answer him in a line. {hint}',
@@ -469,14 +485,47 @@ export const resultLine = (chat, summary, lang = 'zh') => `[HIDDEN] [jinchat] ${
    nothing is theirs to judge: the page counts (`max`), holds each line to yes-or-no (`yesNoOf`), and his taps decide —
    是 · 不是 · 不知道, and 对 · 不对 to a guess. Offline, the table (nextMove) plays instead. */
 
-/** The hidden line for their next question: the facts on the first, the log of what was asked every time. */
-export function freeLine(chat, st, { max, cast = [], lang = 'zh', bad = false } = {}) {
+/* Hanli 11-03: 「AI有点弱」. The guesser is handed a strategy (`freeHow`, every turn), the page's own summary of what his
+   answers settled (`known`), and a cap on guesses: at most GUESSES, none before question GUESS_FROM — the last question
+   may always be a guess (agent's picks, Hanli delegated 11-03; a chat's `game.guesses` · `game.guess_from` overrides). */
+export const GUESSES = 3;
+export const GUESS_FROM = 5;
+const guessesOf = (st) => st.log.filter((x) => x.guess).length;
+/** Why a guess now is not taken (`'soon'` · `'spent'`), or null: the last question may always guess. */
+export function guessHeld(st, { max, guesses = GUESSES, from = GUESS_FROM } = {}) {
+  if (max - st.log.length <= 1) return null;
+  if (st.log.length + 1 < from) return 'soon';
+  if (guessesOf(st) >= guesses) return 'spent';
+  return null;
+}
+/** What his answers have settled, as one compact line — built by the page from the log, never the model's say. */
+export function knownOf(st, lang = 'zh') {
+  const w = W[lang] ?? W.zh;
+  const qs = (a) => st.log.filter((x) => !x.guess && x.a === a).map((x) => x.q);
+  const join = (l) => l.join(lang === 'en' ? ' / ' : '、');
+  const facts = [
+    qs('yes').length ? fill(w.freeYes, { q: join(qs('yes')) }) : '',
+    qs('no').length ? fill(w.freeNo, { q: join(qs('no')) }) : '',
+    qs('unknown').length ? fill(w.freeUnk, { q: join(qs('unknown')) }) : '',
+    st.log.some((x) => x.guess && x.a === 'wrong') ? fill(w.freeMissed, { x: join(st.log.filter((x) => x.guess && x.a === 'wrong').map((x) => x.guess)) }) : '',
+  ].filter(Boolean);
+  return facts.join(w.freeSep);
+}
+
+/** The hidden line for their next question: the facts on the first; every time, the strategy, what is known, every
+    question asked and its answer, the count and the guesses left. `bad`: true (not yes-or-no) or a held guess's why. */
+export function freeLine(chat, st, { max, cast = [], lang = 'zh', bad = false, guesses = GUESSES } = {}) {
   const w = W[lang] ?? W.zh;
   const rows = st.log.map((x, i) => fill(x.guess ? w.freeG : w.freeQ, { n: i + 1, q: x.q, x: x.guess, a: w.freeA[x.a] ?? x.a })).join('\n');
   // Live 10-28 (讨饼债, 袋鼠): she asked fifteen and never guessed — past half she is nudged, near the end pushed.
   const left = max - st.log.length;
   const push = left <= 4 ? w.freePush : st.log.length >= max / 2 ? w.freeMid : '';
-  const body = `${bad ? w.freeBad : ''}${fill(w.freeTurn, { log: rows ? fill(w.freeLog, { rows }) : '', n: st.log.length + 1, left, push, who: cast.length > 1 ? w.freeWho : '' })}`;
+  const known = knownOf(st, lang);
+  const why = bad === 'soon' ? w.freeTooSoon : bad === 'spent' ? w.freeNoGuess : '';
+  const badLine = why ? fill(w.freeBadGuess, { why }) : bad ? w.freeBad : '';
+  const g = Math.max(0, guesses - guessesOf(st));
+  const how = `${w.freeHow}${known ? fill(w.freeKnown, { facts: known }) : ''}${fill(w.freeGuesses, { g })}`;
+  const body = `${badLine}${how}${fill(w.freeTurn, { log: rows ? fill(w.freeLog, { rows }) : '', n: st.log.length + 1, left, push, who: cast.length > 1 ? w.freeWho : '' })}`;
   return st.log.length || bad ? `[HIDDEN] [jinchat] ${pick(chat.title, lang)}·${fill(w.free, { max })}${body}` : `${headOf(chat, cast, lang)}${fill(w.free, { max })}${body}`;
 }
 
@@ -521,6 +570,26 @@ export function freeSummary(st, { said = '' } = {}, lang = 'zh') {
   const n = st.log.length;
   if (lang === 'en') return st.won ? `guessed it in ${n} questions: ${st.won}` : `didn't guess it in ${n} questions${said ? `; it was: ${said}` : ''}`;
   return st.won ? `${n} 问猜中了${st.won}` : `${n} 问没猜中${said ? `，他心里是：${said}` : ''}`;
+}
+
+/** The hidden line as the open 二十问 ends (Hanli 11-03: 「知道正确答案后没反应. 怎么也要有个懊恼情绪, "竟然是..."」): stumped and
+    told the animal (`said`) — chagrin, 「竟然是……！」, and one beat of why, from his answers; guessed — a small boast. */
+export function freeEndLine(chat, st, { said = '', lang = 'zh' } = {}) {
+  const w = W[lang] ?? W.zh;
+  const n = st.log.length, facts = knownOf(st, lang) || (lang === 'en' ? 'none' : '无');
+  const body = st.won ? fill(w.freeWon, { x: st.won, n }) : fill(w.freeLost, { x: said, n, facts });
+  return `[HIDDEN] [jinchat] ${pick(chat.title, lang)}·${body}`;
+}
+/** His typed answer as the animal: the filler gone (「是袋鼠吧」 → 袋鼠, "it was a kangaroo" → kangaroo). */
+export const saidAnimal = (raw, lang = 'zh') => {
+  const t = String(raw ?? '').trim();
+  const n = lang === 'en' ? normAnswer(t.replace(/^(it was|it's|it is)\s+/i, ''), 'en') : normAnswer(t.replace(/^(它是|我想的是|我心里是|是)/, ''), 'zh');
+  return n || t;
+};
+/** The data's own line when no model answers the end (aigames.json `twenty.ends`), the speaker's name before it. */
+export function freeEndFallback(table, st, { said = '', lang = 'zh' } = {}) {
+  const t = pick(table?.ends?.[st.won ? 'won' : 'lost'], lang);
+  return t ? fill(t, { x: st.won || said }) : '';
 }
 
 /** A 测试存档's stub (`&her=stub`): a marked line, never a verdict. */

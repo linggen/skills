@@ -26,8 +26,8 @@
 
 import {
   answerFree, answerGuess, chainChoices, chainHint, chainLine, chainOf, chainOutcome, checkDown, checkLink, checkRiddle,
-  coupletLine, coupletOf, freeLine, freeOutcome, freeSummary, freshChain, freshFree, freshGuess, judgeGuess, needOf, nearOf, nextMove,
-  playLink, replyOf, resultLine, riddleLine, riddleOf, riddleOutcome, shapeOf, wayOn, yesNoOf,
+  coupletLine, coupletOf, freeEndFallback, freeEndLine, freeLine, GUESS_FROM, GUESSES, guessHeld, saidAnimal, freeOutcome, freeSummary, freshChain, freshFree, freshGuess, judgeGuess, needOf, nearOf, nextMove,
+  playLink, replyOf, riddleLine, riddleOf, riddleOutcome, shapeOf, wayOn, yesNoOf,
 } from './jinchat-games.js';
 
 const pick = (v, lang) => (v == null ? '' : typeof v === 'string' ? v : v[lang] ?? v.zh ?? '');
@@ -50,6 +50,8 @@ const btn = (cls, label, data = '') => `<button type="button" class="g-jc-gbtn $
    (2026-11-03, Hanli on the phone: 「猜谜都会卡在这里」 — every word board with a `me` line stood on its dashed chip, the
    board never ended and the story could not go on). A tap (click, or the pointer let go on it) only sends it sooner. */
 export const AFTER_ME_MS = 2600;
+/** How long the open 二十问's last word of theirs is waited for before the data's own line stands in. */
+export const END_MS = 25000;
 export async function playAfter(ctx, lines) {
   for (const l of lines ?? []) {
     const text = pick(l.text, ctx.lang);
@@ -170,6 +172,8 @@ export async function guessGame(ctx) {
   const { chat, lang, w, cast } = ctx;
   const table = await ctx.table();
   const max = Number(chat.game.max) || 15;
+  // At most `guesses` guesses, none before question `from`; the last question may always guess (jinchat-games.js guessHeld).
+  const guesses = Number(chat.game.guesses) || GUESSES, from = Number(chat.game.guess_from) || GUESS_FROM;
   ctx.add({ who: 'card', html: `<div class="g-jc-riddle is-lantern">${lanternOf(ctx)(w.wen)}<div class="g-jc-strip"><i>${esc(pick(chat.game.label, lang) || w.twenty)}</i><p class="g-jc-q is-small">${esc(fill(w.think, { max }))}</p></div></div>` });
   let st = freshFree();
   let tst = freshGuess(); // the table's own state, for a turn the model could not give
@@ -178,12 +182,16 @@ export async function guessGame(ctx) {
   const speaker = () => cast[turn % cast.length]?.id ?? cast[0]?.id;
   // One turn of theirs: the model's line, held to yes-or-no (asked again once); else the table's next move, plainly.
   const nextTurn = async () => {
-    for (const bad of [false, true]) {
-      const r = await ctx.ask(freeLine(chat, st, { max, cast, lang, bad })).catch(() => null);
+    let bad = false;
+    for (let k = 0; k < 2; k += 1) {
+      const r = await ctx.ask(freeLine(chat, st, { max, cast, lang, bad, guesses })).catch(() => null);
       const t = yesNoOf(r?.text, cast, lang);
-      ctx.log({ kind: 'free-turn', chat: ctx.id, n: st.log.length + 1, ok: Boolean(t), err: r?.err ?? r?.refused ?? null });
-      if (t) return t.kind === 'guess' && !t.text ? { ...t, text: fill(pick(table.guess, lang) || '{x}？', { x: t.x }) } : t;
+      // A guess too soon, or past the cap, is not taken: asked again for a question (its why in the line).
+      const held = t?.kind === 'guess' ? guessHeld(st, { max, guesses, from }) : null;
+      ctx.log({ kind: 'free-turn', chat: ctx.id, n: st.log.length + 1, ok: Boolean(t) && !held, held, err: r?.err ?? r?.refused ?? null });
+      if (t && !held) return t.kind === 'guess' && !t.text ? { ...t, text: fill(pick(table.guess, lang) || '{x}？', { x: t.x }) } : t;
       if (!r?.text) break; // no model at all: the table, at once
+      bad = held ?? true;
     }
     const mv = nextMove(table, { ...tst, n: st.log.length });
     if (mv.kind === 'giveup') return null;
@@ -202,9 +210,17 @@ export async function guessGame(ctx) {
       ctx.log({ kind: 'twenty', chat: ctx.id, n: st.log.length, won: st.won, said, summary, free: true });
       ctx.sound(st.won ? 'right' : o.grade === 'skipped' ? 'skip' : 'wrong');
       ctx.foot(summary);
-      // Smug when she has it, sulking when stumped — her own last word on the page's result.
+      // Their own last word on the page's result (Hanli 11-03: 「知道正确答案后没反应」): guessed, a small boast; stumped and
+      // told, chagrin — 「竟然是……！」 and why they missed it. The model words it; none answers, the data's line. Then the book's.
+      const x = st.won ? '' : saidAnimal(said, lang);
+      if (!chat.game.quiet && (st.won || x)) {
+        // Never held on a host that does not answer (the phone's `ask` seam): past END_MS, the data's line, and on.
+        const n = await Promise.race([ctx.react(freeEndLine(chat, st, { said: x, lang }), { wait: true }).catch(() => 0),
+          new Promise((r) => setTimeout(() => r(0), ctx.endMs ?? END_MS))]);
+        const line = n ? '' : freeEndFallback(table, st, { said: x, lang });
+        if (line) await ctx.typeOut([{ who: speaker(), text: line }]);
+      }
       if (chat.game.after?.length) { await ctx.settle(); await playAfter(ctx, chat.game.after); }
-      else if (o.grade !== 'skipped') await ctx.react(resultLine(chat, summary, lang), { wait: true });
       resolve(o);
     };
     // No 跳过 of its own (Hanli 11-03): the shell's ✕ and 留 are the one way out, from the start.

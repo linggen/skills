@@ -238,8 +238,9 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     const r = await say1(text, (text.match(/·(\S{0,6})/) ?? [])[1] ?? 'line');
     const p = r?.text ? parseChat(r.text, g.cast) : { lines: [] };
     log({ kind: 'react', chat: data.chat, ms: Math.round(performance.now() - t), lines: p.lines.length, err: r?.err ?? r?.refused ?? null });
-    if (!p.lines.length || g.hush || g.over) return;
+    if (!p.lines.length || g.hush || g.over) return 0;
     await typeOut(p.lines.slice(0, 2));
+    return Math.min(2, p.lines.length); // how many of their lines were laid: none, and a game may lay the data's own
   };
   const settle = async () => { await Promise.race([g.inflight ?? Promise.resolve(), wait(12000)]); g.hush = true; };
   // The open word game kept on the save for Ling's Look (rules/wordboard.mjs) — its face, the hints shown, the answer
