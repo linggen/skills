@@ -125,3 +125,45 @@ test('a story level (none yet): off the 游戏厅\'s ladder, taps only, and the 
     assert.ok(r.won, `${l.id}: ${JSON.stringify(r.runs)}`);
   }
 });
+
+/* 2026-11-03 (Hanli: 「这个弹琴游戏好像有bug, 后面弹就对不上了, 无法成功」): a key was drawn up from its note, 124 px tall, so it lay
+   on the bridge ~540 ms while only ~200 of them counted — struck as it lay there (Piano Tiles' way), a run broke at ~20%.
+   Now what lies on the bridge is what may be struck: hands aimed at the key as drawn win, wherever on it they aim. */
+import { tileSpan, LINE_Y } from '../scripts/games/fuqin.js';
+
+const ALL = REG.games.filter((g) => g.id === 'fuqin').flatMap((g) => g.levels);
+const gapIn = (chart, n) => { const a = chart.find((m) => m.lane === n.lane && m.t > n.t); return a ? a.t - n.t : 1e9; };
+
+test('a perfect hand gets every note 良 on every level, the ladder\'s and the story\'s, to the end of the tune', () => {
+  for (const lv of ALL) {
+    const s = play(lv, hand(lv, 0));
+    assert.equal(s.phase, 'won', lv.id);
+    assert.equal(s.counts.good, s.judged, `${lv.id}: ${JSON.stringify(s.counts)}`);
+  }
+});
+
+test('a tap key lies on the bridge only while it may be struck: from the near edge of 良 to the far edge of 可', () => {
+  for (const lv of ALL) {
+    const w = windowsOf(lv), v = LINE_Y / (lv.fall || 2000), chart = chartOf(lv);
+    for (const n of chart.filter((x) => !x.hold)) {
+      const sp = tileSpan(w, n, gapIn(chart, n), v);
+      assert.ok(sp.below <= w.good + 1e-9 && sp.above <= w.ok + 1e-9, `${lv.id} #${n.i}: ${JSON.stringify(sp)}`);
+      assert.ok((sp.below + sp.above) * v >= 45, `${lv.id} #${n.i}: still a key to see`);
+    }
+  }
+});
+
+test('hands aimed at the key as drawn win: at its first touch of the bridge, at its middle, or anywhere on it (±60 ms)', () => {
+  for (const lv of ALL.filter((l) => !l.holds)) {
+    const w = windowsOf(lv), v = LINE_Y / (lv.fall || 2000), chart = chartOf(lv), r = rand(11);
+    const aims = { first: (sp) => -sp.below, middle: (sp) => (sp.above - sp.below) / 2, anywhere: (sp) => -sp.below + r() * (sp.below + sp.above) };
+    for (const [name, aim] of Object.entries(aims)) {
+      const inputs = chart.flatMap((n) => {
+        const at = n.t + aim(tileSpan(w, n, gapIn(chart, n), v)) + (r() * 2 - 1) * 60;
+        return [{ g: 'press', lane: n.lane, at }, { g: 'release', lane: n.lane, at: at + 60 }];
+      });
+      const s = play(lv, inputs);
+      assert.equal(s.phase, 'won', `${lv.id}, aimed at the key's ${name}: ${JSON.stringify(s.counts)}`);
+    }
+  }
+});

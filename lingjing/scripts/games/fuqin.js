@@ -327,6 +327,17 @@ export const W = 360, H = 640, LINE_Y = 548, SIDE = 22;
 export const laneW = (W - 2 * SIDE) / LANES;
 export const laneX = (k) => SIDE + k * laneW;
 const TILE_H = 124;
+/** Where a key is drawn, in ms about its note (`n.t`): what lies on the bridge is what may be struck (2026-11-03, Hanli:
+    「后面弹就对不上了, 无法成功」 — a 124-px key drawn up from its note stood on the bridge for ~540 ms, of which the
+    first ~200 counted: a hand striking it as it lay on the bridge, as Piano Tiles is played, met 不可 and 错音). A key
+    reaches the bridge at the near edge of its 良 window and leaves it at the far edge of its 可 (a tap key shorter where
+    the next in its lane comes sooner); a long key's body goes on up to its end. `v` px a ms; answers { below, above } ms
+    (below: how long before its note it touches the bridge; above: how long after the note it still lies on it). */
+export function tileSpan(w, n, gap, v) {
+  if (n.hold) return { below: w.good, above: n.end - n.t };
+  const h = Math.min((w.good + w.ok) * v, Math.max(46, gap * v - 6)) / v, k = h / (w.good + w.ok);
+  return { below: w.good * k, above: w.ok * k };
+}
 const ART = ['stage', 'key', 'key-long', 'bridge', 'bloom'];
 const artUrl = (name) => new URL(`../../worlds/jiuding/art/games/fuqin/${name}.webp`, import.meta.url).href; // tools/paint-games.py
 const tr = (v, lang) => (v && typeof v === 'object' ? v[lang] ?? v.zh ?? '' : v ?? '');
@@ -423,23 +434,24 @@ export async function mount(container, opts = {}) {
     for (const n of s.notes) {
       const r = s.res[n.i];
       const bottom = yOf(n.t), top = yOf(n.end) - (n.hold ? 0 : 0);
-      if (bottom < -40 || (n.hold ? top : bottom - TILE_H) > H + 20) continue;
+      if (bottom < -40 - TILE_H || (n.hold ? top : bottom - TILE_H) > H + 20) continue;
       const doneHead = r.head && r.head !== 'miss';
       if (!n.hold && doneHead) continue; // a struck key is gone (its bloom stays)
       const x = laneX(n.lane) + 4, w = laneW - 8;
       const held = s.held[n.lane] === n.i;
       const missed = r.head === 'miss' || r.broke;
       cx.globalAlpha = missed ? 0.35 : 1;
+      const span = tileSpan(s.w, n, nextGap(n), v);
       if (n.hold) {
         if (r.tail && !missed) { cx.globalAlpha = 1; continue; }
-        const b = held ? LINE_Y : bottom, tp = Math.min(top, b - TILE_H * 0.6);
+        const b = held ? LINE_Y : bottom + span.below * v, tp = Math.min(top, b - TILE_H * 0.6);
         if (ready(art['key-long'])) cx.drawImage(art['key-long'], x, tp, w, b - tp);
         else { cx.fillStyle = '#1b1510'; cx.fillRect(x, tp, w, b - tp); }
         if (held) { cx.fillStyle = 'rgba(242,214,150,.22)'; cx.fillRect(x, tp, w, b - tp); }
       } else {
-        const gap = nextGap(n), h = Math.min(TILE_H, Math.max(46, gap * v - 6));
-        if (ready(art.key)) cx.drawImage(art.key, x, bottom - h, w, h);
-        else { cx.fillStyle = '#1b1510'; cx.fillRect(x, bottom - h, w, h); }
+        const b = bottom + span.below * v, h = (span.below + span.above) * v;
+        if (ready(art.key)) cx.drawImage(art.key, x, b - h, w, h);
+        else { cx.fillStyle = '#1b1510'; cx.fillRect(x, b - h, w, h); }
       }
       cx.globalAlpha = 1;
     }
