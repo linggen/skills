@@ -37,6 +37,21 @@
   /* 炼丹 (lianliankan): lingjing.css's 250 px of tiles, its hint over it (two children: the hint stood alone mid-page). */
   html[data-board=lianliankan] #stage > .board { margin-top: 10px; max-width: min(100%, max(250px, calc(100dvh - 230px))); width: 100%; }
   html[data-board=lianliankan] .board .tile { font-size: min(34px, 8vw); }
+  /* 气走经脉 and 冲刺 play on their side (lingjing_board.dart _wide; Hanli 11-02: 「格斗, 气走经脉, 冲刺都是横屏」): a phone on
+     its side is ~350 pt tall, so the field takes the height on the left and the board's other rows (the head, the line,
+     the buttons) stand in a column beside it — stacked, the field ran under the foot. 冲刺's 攀 (a tall board) stays as it is. */
+  @media (orientation: landscape) {
+    html[data-board=qimai] .g-qimai, html[data-board=dash] .g-dash:not(:has(> .is-climb)) {
+      display: grid; grid-template-columns: auto minmax(160px, 1fr); column-gap: 14px; align-content: start; align-items: start; max-width: none; }
+    html[data-board=qimai] .g-qimai > *, html[data-board=dash] .g-dash:not(:has(> .is-climb)) > * { grid-column: 2; }
+    html[data-board=qimai] .g-qimai > .g-qm-board { grid-column: 1; grid-row: 1 / span 9; width: min(calc(100vw - 210px), calc((100dvh - 50px) * 1.636)); }
+    html[data-board=dash] .g-dash > .g-dash-board:not(.is-climb) { grid-column: 1; grid-row: 1 / span 9; width: min(calc(100vw - 210px), calc((100dvh - 50px) * 1.8)); }
+    html[data-board=qimai] #stage, html[data-board=dash] #stage { justify-content: center; }
+    html[data-board=qimai] #stage > *, html[data-board=dash] #stage > * { margin-top: 0; }
+  }
+  /* 格斗 on its side: its touch face is as tall as the page (fighter.js: 100dvh × 16/9), which ran its floor under the home
+     indicator's band; the band is kept out of it. */
+  html[data-board=fighter][data-input=touch] body #stage .g-fighter.is-touch { width: min(100%, calc((100dvh - var(--safe-b)) * 16 / 9)); }
   /* 斗法 (kapai): the room fills the page as in the 游戏厅 (arcade.css .is-fill): its own phone rules answer the
      `scene` container (battle.css @container scene), which the Mac's story page gives it. */
   html[data-board=kapai] #stage { padding: 0 0 var(--safe-b); overflow: hidden; }
