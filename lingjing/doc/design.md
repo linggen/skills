@@ -216,7 +216,7 @@ field. The fields:
 | (Look's `scene.meet`) | Derived, not written: the 图鉴 entries whose `first.scene` this is, while none was met before. |
 | `offers`, `buttons` | Tasks set here; the exits shown as taps (the rest are found by typing). |
 | exit `needs` / `take` / `grant` | What must be held or done; what it uses up; what it pays (never over its table's cap). |
-| exit `key` | A riddle or a pool: the day's is one unseen, `choices` offered; a miss brings the `hint` and greys that answer; it never shuts (2026-10-15) — from the second miss (`stuck`) the page offers 「算了，往下走」 (Resolve `pass`: the way on, no reward). |
+| exit `key` | A riddle or a pool: the day's is one unseen, `choices` offered; a miss brings the `hint` and greys that answer; it never shuts (2026-10-15); its 留 · ✕ stand from the first moment (11-03; Resolve `pass`: the way on, no reward). |
 | exit `value` · `born` | A name the player gives on the page's card (none ships since the hero was fixed; a `gender` on it is refused); 生辰 → 灵根 (rules/roots.mjs, private, skippable). |
 | exit `game`, `stamina`, `mark`, `ledger`, `set` | A board or fight the page witnesses; toil that costs 体力; a remembered choice; 恩仇簿 entries; state set. |
 | exit `joins` · `sleeps` · `wakes` · `memory` | 银月 found, asleep in the token, woken; a colour memory granted (only from a 鼎). The book's sleep is hers to keep: she is out of the 木牌 otherwise only for a round of a board that declares `needs: "her"` (a task row, a 传闻 game, 奇遇 entry; offered from the 木牌 — the page's `hergame` hold, rules/hergame.mjs; Hanli, 2026-10-19). |
@@ -1083,7 +1083,7 @@ read-and-tap): six more boards in the prologue, each the book's own action where
 | `feather` | `feather-breath` | 00-halfyear | the breath out as a slow, steady stroke (`[data-g-drag]`): stop and it bursts, rush and it flies; three breaths | still · shaky (mark) |
 
 **Batch two** (Hanli, 2026-10-14: 「都可以，按你的单子做」) — each short (under half a minute), forgiving,
-and left by 「算了，往下走」 only when stuck (§ Skip below). The rhythm counts a split passage's rest (`story_after`) after its board.
+and put away by its ✕ (or kept by 留) at any moment (§ Skip below). The rhythm counts a split passage's rest (`story_after`) after its board.
 
 | game | task id | scene | the play | grade → |
 |---|---|---|---|---|
@@ -1133,6 +1133,7 @@ pages, never linked in the game and blank without `?dev=1`: the 游戏厅 `scrip
 **Skip, timing, art** (Hanli, 2026-10-15; the way out rewritten 11-03: 「跳过, 我们统一改成右上角的关闭按钮了. 不需要卡住」 · 「还是加一个按钮好一些, 可能用户想丢掉, 可能想以后玩」):
 - **Two ways out, top right, from the first moment**, on every board on every surface (the stage, the 游戏厅, the phone):
   **留** (留着以后玩) then **✕** (不玩了). No stuck wait, no question asked, mid-fight or mid-clock alike. No module draws its own skip.
+  A story fight's card, a scene's riddle and a 传闻 step board carry the same pair; on a fight or a riddle both pass it.
 - **✕ puts it away**: a story board goes on as after a win and never comes back; a board he chose is put down (收手);
   an errand's board takes the errand's cut (「跳过 · 酬减半」); a 游戏厅 board is dealt again.
 - **留 keeps it**: the story goes on exactly as on ✕, and the board waits in 「收着的棋局」 (the 事 book, the tray's

@@ -15,7 +15,7 @@ import { doorOffers } from './pouch.mjs';
 const hintsOf = (state, game, lang) => { const h = (game.hints ?? []).filter(x => heldMark(state, x.mark)).map(x => pick(x.say, lang)); return h.length ? { hints: h } : {}; };
 import { callDue, companionOf, hasCompanion, herAwake, herAway, herCard, herGameNow, questBrief, recalledOf } from './companion.mjs';
 import { fightStuck } from './skips.mjs';
-import { clone, paysOf, RIDDLE_TRIES, riddleOf, riddleOpen, triedToday } from './core.mjs';
+import { clone, paysOf, riddleOf, riddleOpen, triedToday } from './core.mjs';
 import { staminaBrief } from './daily.mjs';
 import { danduBrief } from './dandu.mjs';
 import { pangluBrief } from './panglu.mjs';
@@ -40,7 +40,7 @@ import { allPlaces, atScene, doorOf, lockOf, creatureOf, encounterOf, foeOf, ofJ
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { chapterLabel, huiOf, sideLine } from './hui.mjs';
-import { keptBrief, leaveOf, replayBrief, storyBoard } from './skips.mjs';
+import { keptBrief, leaveOf, storyBoard } from './skips.mjs';
 import { asideLook } from './aside.mjs';
 import { trayLook } from './tray.mjs';
 import { capLook, capStory, underCap } from './cap.mjs';
@@ -409,8 +409,8 @@ function exitBrief(content, state, exit, button, ctxNow = new Date(), scene = sc
   if (exit.key) {
     const key = riddleOf(state, scene, exit, ctxNow);
     const riddle = content.riddles[state.lang].riddles[key], tried = triedToday(state, scene, exit, key, ctxNow);
-    // A scene's riddle never shuts (core.mjs resolve): from the RIDDLE_TRIES-th miss it may be left (`stuck`).
-    const stuck = tried.length >= RIDDLE_TRIES;
+    // A scene's riddle never shuts (core.mjs resolve), and may be left from the first moment (`stuck`, Hanli 11-03: 「不需要卡住」).
+    const stuck = true;
     Object.assign(brief, { riddle: riddle.q, ...(tried.length ? { hint: riddle.hint } : {}), choices: riddle.choices, tried, ...(stuck ? { stuck } : {}), ...(riddleOpen(state, scene, exit, key, ctxNow) ? { waiting: true } : {}) });
   }
   const game = gameOf(exit);
@@ -420,7 +420,7 @@ function exitBrief(content, state, exit, button, ctxNow = new Date(), scene = sc
       const today = state.duels?.[game.creature];
       brief.withdrawn = !game.retry && today?.day === dayKey(ctxNow) && today.outcome === 'lost';
       brief.duel = duelBrief(content, state, game, ctxNow);
-      // Inside a key beat's lock, lost often enough: it may be left (rules/skips.mjs fightStuck).
+      // A story fight may be left from the first moment (rules/skips.mjs fightStuck).
       if (fightStuck(content, state, game)) brief.stuck = true;
     }
   }
@@ -735,8 +735,6 @@ export function look(state, content, ctx) {
     ...(offersOf(content, state, lang, ctx.now).length ? { offers: offersOf(content, state, lang, ctx.now) } : {}),
     // 今日传闻 (tale.mjs): the step open now and its people; `story_due` when nothing story-like happened for a while.
     ...taleLook(content, state, ctx),
-    // A board left on an earlier day, offered again now the stage is idle (rules/skips.mjs): the page's optional beat.
-    ...(replayBrief(content, state, ctx.now) ? { replay: replayBrief(content, state, ctx.now) } : {}),
     // 收着的棋局 (rules/skips.mjs keepBoard): the boards he kept for later — title, where, when; never offered by themselves.
     ...((state.kept ?? []).length ? { kept: keptBrief(content, state, (id) => pick(placeOf(content, id)?.name, lang) ?? null) } : {}),
     // 秘境探险 (rules/mijing.mjs): inside a run its map and room; at the door the 重 and the 秘境令; after, what it paid.

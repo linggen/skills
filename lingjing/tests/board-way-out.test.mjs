@@ -1,6 +1,6 @@
 // Every board that is not a story scene's own shows its way out at every moment (Hanli 10-27: 「这个也没有跳过去的办法」):
 // the rules mark it leavable (Look's task `leave`, rules/skips.mjs leaveOf) and its card draws 收手 — the shell bar's ✕ — while it plays; a
-// 传闻's step board draws 「算了，往下走」 from the first moment. Since 11-03 every board's bar has 留 · ✕ from the first moment.
+// 传闻's step board too: since 11-03 every board's bar has 留 · ✕ from the first moment.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -35,8 +35,15 @@ test('its card draws 收手 as the shell bar\'s ✕ while it plays (any board ki
   }
 });
 
-test('a 传闻 step board shows 「算了，往下走」 from the first moment', () => {
-  assert.match(read('../scripts/cards.js'), /skipBoard\(g, st\.board\.id, ctx, \{ always: true \}\)/);
+test('a 传闻 step board wears the shell with 留 · ✕ from the first moment (Hanli 11-03), no word skip under it', async () => {
+  const { cardHtml: card } = await import('../scripts/cards.js');
+  const fake = { meta: { id: 'x', name: { zh: '某局', en: 'A game' }, how: { zh: '', en: '' } }, html: () => '<i>play</i>', act: () => ({}), newGame: () => ({}) };
+  const cards = read('../scripts/cards.js');
+  const body = cards.slice(cards.indexOf('function taleBody('), cards.indexOf('function taleBody(') + 1400);
+  assert.match(body, /outHtml\(ctx\.lang, `data-board-keep="\$\{esc\(id\)\}"`, `data-board-close="\$\{esc\(id\)\}"`\)/);
+  assert.match(body, /frameHtml\(\{ id, title:/);
+  assert.doesNotMatch(cards, /function skipBoard\(|data-game-skip/, 'the word skip is gone');
+  assert.ok(fake && card);
 });
 
 // One bar for every board (Hanli 10-27: 「问询改成右上的icon button也, 全局统一改」): ? · 🔊 · Ⅱ · ✕, the way out last.

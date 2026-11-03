@@ -191,11 +191,6 @@ body.storying .slots { visibility: hidden; }
 @keyframes wayIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .story .wayacts .looks { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
 .story .wayacts .lookhead, .story .wayacts .lookfound li, .story .wayacts .sceneinvite { color: var(--on-dim); }
-/* A board left on an earlier day, offered again (cards.js replayHtml): a quiet beat under the way on, its buttons small. */
-.story .wayacts .replaybeat { margin-top: 14px; text-align: center; }
-.story .wayacts .replaybeat .acts { justify-content: center; }
-.story .wayacts .replaybeat .act { background: rgba(251, 248, 242, .9); color: #1D1B17; border: 1px solid rgba(227, 192, 126, .7); }
-.story .wayacts .replaybeat .act.quiet { background: transparent; color: var(--on-dim); }
 .story .wayacts .lookfound li b { color: var(--on-stage); margin-right: .6em; }
 .story .wayacts .lookfound { list-style: none; margin: 0; padding: 0; width: min(44em, 100%); font-family: var(--serif); line-height: 1.7; }
 /* A tap on the passage's last line where only its ways go on: they flash (lingjing.js nudgeWays). */

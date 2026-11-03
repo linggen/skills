@@ -7,8 +7,6 @@ import { worldPath } from './rules.js';
 import { WORDS as BATTLE_WORDS, boutWords, cardFaceHtml, challengeHtml, wayLabel } from './battle-card.js';
 import { GRADE_WORDS } from './fightodds.js';
 import { wayLine } from './wayline.js';
-import { SKIP } from './games/ink.js';
-import { stampShown, stuckNow } from './stuck.js';
 import { layoutRoads } from './roadmap.js';
 import { frameOf, inside, mapName, placeLabels, within } from './atlas.js';
 import { shopMarkHtml, shopsById, shopTagHtml } from './shopmark.js';
@@ -53,7 +51,7 @@ export const WORDS = {
     elite: '精英',
     // 闭关 (rules/seclusion.mjs) — the chooser, the running card, 出关.
     tamesFor: '收服{names}所需',
-    replayPlay: '再试一回', replayLater: '改日', boardLeave: '收手', boardLeft: '没走完，往下走了。', keptGroup: '收着的棋局 · {n}', boardKeep: '留着以后玩', boardClose: '不玩了', keptChip: '收着 {n}', keptPlay: '玩', keptDrop: '丢', keptAt: '{where} · {when}', toldSaid: { couplet: '原句：{a}', riddle: '谜底：{a}', chain: '接得上的：{a}' }, toldBy: '——{src}', toldOn: '往下走',
+    boardLeave: '收手', boardLeft: '没走完，往下走了。', unkept: '这一局留不住，收起来了。', keptGroup: '收着的棋局 · {n}', boardKeep: '留着以后玩', boardClose: '不玩了', keptChip: '收着 {n}', keptPlay: '玩', keptDrop: '丢', keptAt: '{where} · {when}', toldSaid: { couplet: '原句：{a}', riddle: '谜底：{a}', chain: '接得上的：{a}' }, toldBy: '——{src}', toldOn: '往下走',
     keptWin: '已胜 · 体力回来即记上', emptyNoPlay: '体力耗尽：这局赢了也记不上。', emptyShut: '体力耗尽', waitShi: '约 {n} 时辰后', waitKe: '约 {n} 刻后',
     // 手边的棋局 (rules/tray.mjs): a game's name where the rules give none, what is left by its unit, the walk there.
     trayName: { duizi: '对对子', seclusion: '闭关', divine: '问签', errands: '执事堂差事', mijing: '秘境', chance: '机缘', fantong: '饭桶', yaoshou: '妖兽出没' },
@@ -121,7 +119,7 @@ export const WORDS = {
     loading: 'Unfolding…', offline: 'Lingjing has not woken yet.', connecting: 'Reaching Lingjing…',
     elite: 'Elite',
     tamesFor: 'Wins over {names}',
-    replayPlay: 'Try again', replayLater: 'Another day', boardLeave: 'Put down', boardLeft: 'Left unfinished — on you go.', keptGroup: 'Kept for later · {n}', boardKeep: 'Keep for later', boardClose: 'Put it away', keptChip: 'Kept {n}', keptPlay: 'Play', keptDrop: 'Drop', keptAt: '{where} · {when}', toldSaid: { couplet: 'The original: {a}', riddle: 'The answer: {a}', chain: 'One that follows: {a}' }, toldBy: ' — {src}', toldOn: 'Go on',
+    boardLeave: 'Put down', boardLeft: 'Left unfinished — on you go.', unkept: 'This one cannot be kept; it is put away.', keptGroup: 'Kept for later · {n}', boardKeep: 'Keep for later', boardClose: 'Put it away', keptChip: 'Kept {n}', keptPlay: 'Play', keptDrop: 'Drop', keptAt: '{where} · {when}', toldSaid: { couplet: 'The original: {a}', riddle: 'The answer: {a}', chain: 'One that follows: {a}' }, toldBy: ' — {src}', toldOn: 'Go on',
     keptWin: 'Won — counted once stamina is back', emptyNoPlay: 'Stamina spent: a win here would not count yet.', emptyShut: 'Stamina spent', waitShi: 'back in about {n} h', waitKe: 'back in about {n} min',
     trayName: { duizi: 'Couplets', seclusion: 'Seclusion', divine: 'Draw a stick', errands: "Stewards' errands", mijing: 'The hidden realm', chance: 'A chance', fantong: 'Rice Bucket', yaoshou: 'Beasts about' },
     trayLeft: { night: 'tide {n}', batch: 'this batch {n}/{of}', couplets: '{n} today', rounds: '{n} rounds today', errands: '{n} waiting', keys: 'keys ×{n}', ends: '{t} left', today: 'open today', tomorrow: 'up tomorrow' },
@@ -529,8 +527,7 @@ function board(card, ctx) {
   const ask = task?.game || !herbs ? say(ctx.words.sayTask, { title }) : ctx.words.sayBoard;
   // A scene's own game (the opening's beats, 射鹿 …) is played, not asked about: no 问询 in its corner.
   const own = task?.game && (ctx.look.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id);
-  // 收手: a board he opened by choice is put down at any moment (Look's task `leave`, rules/skips.mjs leaveOf); the
-  // story's own (and a board offered again, Look's replay) keep 「算了，往下走」 once stuck (skipBoard's slot).
+  // 收手 under a board not in play yet (loading): a board he opened by choice (Look's task `leave`, rules/skips.mjs leaveOf).
   const leaveBtn = task?.leave && !made && !g?.state?.won && !g?.sent ? { label: ctx.words.boardLeave, leave: id } : null;
   // The two ways out, on every board in play from its first moment (Hanli 11-03: 「跳过, 我们统一改成右上角的关闭按钮了. 不需要
   // 卡住, 直接就给这个关闭按钮」 · 「还是加一个按钮好一些, 可能用户想丢掉, 可能想以后玩」): 留 keeps it for later (收着的棋局,
@@ -568,6 +565,10 @@ function toldCard(id, title, told, w) {
   return `<div class="card gamecard scenegame told"><div class="cardtitle">${esc(title)}</div><div class="say">${esc(said)}</div>`
     + `<div class="acts"><button class="act" data-told-on="${esc(id)}">${esc(w.toldOn)}</button></div></div>`;
 }
+
+/// 留 · ✕ for a way on that is no board (a story fight's card, a scene's riddle): both `pass` it — the way on, no reward.
+const passOut = (exitId, lang, cls, off = '') => `<div class="gshell-tools passout ${cls}">${outHtml(lang,
+  `data-panel-exit="${esc(exitId)}" data-panel-pass="1" data-panel-keep="1"${off}`, `data-panel-exit="${esc(exitId)}" data-panel-pass="1"${off}`)}</div>`;
 
 /// What an item does, in one line — a pill's dose, arms' numbers, a 符.
 /// What a thing she wears does for her card, in one line.
@@ -717,10 +718,10 @@ function duel(card, ctx) {
   // 先降后收 (his, 2026-09-24): the duel card is 出手 only. Once beaten, the
   // creature's own card offers 收服 (creature, below).
   const html = challengeHtml(exit.duel, { ...ctx, words: boutWords(BATTLE_WORDS[ctx.lang] ?? BATTLE_WORDS.zh, exit.duel?.creature, ctx.lang), title: duelTitle(exit.duel?.creature, ctx.words, ctx.lang), artBase: ctx.artBase ?? '', say: ctx.duelFor?.(card.id)?.text ?? null, badge: exit === e ? huntBadge(e, ctx.lang) + oddsChip(ctx.oddsFor?.(exit.duel), ctx.lang) : '', feed: exit === e && e.pool && e.reroll ? `${ctx.feed ?? ''}${rerollHtml(e.reroll, ctx.lang)}` : ctx.feed });
-  // Inside a key beat's lock, lost often enough (Look's `stuck`, rules/skips.mjs fightStuck): 「算了，往下走」
-  // under the card — the way on, no reward, as a riddle passed (core.mjs resolve `pass`).
-  // Laid as a board's own skip is (skipButton, the .gskip row), so the two read alike.
-  const leave = exit !== e && exit.stuck ? `<div class="acts gskip duelpass"><button class="act quiet" data-panel-exit="${esc(exit.id)}" data-panel-pass="1">${esc(SKIP[ctx.lang] ?? SKIP.zh)}</button></div>` : '';
+  // A story fight, from the first moment (Look's `stuck`, rules/skips.mjs fightStuck; Hanli 11-03: 「不需要卡住」): 留 · ✕ at
+  // the card's top right, as on every board — the way on, no reward (core.mjs resolve `pass`). A fight is no board to keep:
+  // its 留 goes on as ✕ does and says so (lingjing.js passTap).
+  const leave = exit !== e && exit.stuck ? passOut(exit.id, ctx.lang, 'duelpass') : '';
   return exit === e ? withWayBack(html, ctx) : html + leave;
 }
 
@@ -973,44 +974,19 @@ function taleBody(st, ctx) {
   if (TALE_BODY[st.game]) return TALE_BODY[st.game](st, ctx);
   if (st.won) return `<div class="small dim">${esc(ctx.words.taleKept)}</div>`;
   const g = st.board ? ctx.boardFor?.(st.board.id) : null;
-  return g?.mod ? `<div class="small dim">${esc(forInput(g.mod.meta.how?.[ctx.lang] ?? g.mod.meta.how?.zh ?? ''))}</div>${mountOnly(g.mod) ? mountHostHtml(st.board.id, esc) : `<div class="game" data-game="${esc(st.board.id)}">${g.mod.html(g.state, ctx.lang)}</div>`}${skipBoard(g, st.board.id, ctx, { always: true })}`
-    : g ? boardHtml(g, ctx.words) : `<div class="dim small">…</div>`;
+  // In the one shell, 留 · ✕ at its top right from the first moment (Hanli 11-03), as every board: both put the step down
+  // (lingjing.js closeBoard / keepGame → the tale's skip).
+  const id = st.board?.id, out = g && !g.state?.won && !g.sent ? outHtml(ctx.lang, `data-board-keep="${esc(id)}"`, `data-board-close="${esc(id)}"`) : '';
+  return g?.mod ? frameHtml({ id, title: st.board.title ?? g.mod.meta.name?.[ctx.lang] ?? g.mod.meta.name?.zh ?? '', lang: ctx.lang, timed: timedOf(g.mod), tall: tallOf(g.mod), out,
+    how: forInput(g.mod.meta.how?.[ctx.lang] ?? g.mod.meta.how?.zh ?? ''), body: mountOnly(g.mod) ? mountHostHtml(id, esc) : `<div class="game" data-game="${esc(id)}">${g.mod.html(g.state, ctx.lang)}</div>` })
+    : g ? frameHtml({ id, title: st.board?.title ?? '', lang: ctx.lang, out, body: boardHtml(g, ctx.words) }) : `<div class="dim small">…</div>`;
 }
 
-/// A story's board can be left (Hanli, 2026-10-15: 「用户也会有卡住的情况, 可以跳过去吗?」) —
-/// but only once he is stuck (「跳过这个按钮不要一开始就显示, 玩家卡住了才显示」, stuck.js): the
-/// slot under the board stands empty until then, and the page fills it when the gate opens.
-/// Leaving pays nothing (rules/skips.mjs). Outside the [data-game] host, so a live game's
-/// repaint never takes it away. Modules draw no skip of their own.
-export function skipBoard(g, id, ctx, { always = false, icon = false, cut = null } = {}) {
-  if (!g?.mod || g.state?.won || g.skipped) return '';
-  const now = Date.now();
-  stampShown(g, now);
-  // A board he took up by choice (a 传闻's step) shows its way out from the first moment (Hanli 10-27: 「确保都能跳过去」);
-  // the story's own keep the stuck gate (「玩家卡住了才显示」, 10-15). In a shell's bar (`icon`) the slot is the ✕ —
-  // or, for an errand's board (`cut`), the words 「跳过 · 酬减半」 beside it, by the same gate.
-  const btn = always || stuckNow(g, now) ? skipButton(id, ctx.lang, icon, cut) : '';
-  const cutAttr = cut != null ? ` data-skip-cut="${esc(String(cut))}"` : '';
-  return icon ? `<span data-skip-slot="${esc(id)}" data-skip-icon${cutAttr}>${btn}</span>` : `<div class="acts gskip" data-skip-slot="${esc(id)}"${cutAttr}>${btn}</div>`;
-}
 /* 「跳过 · 酬减半」: the pay's cut said plainly, from the world's number (balance.json `play_pay.skip`). */
 export const skipCutWord = (cut, lang) => {
   const half = Math.abs(cut - 0.5) < 1e-9;
   return lang === 'en' ? (half ? 'Skip · half pay' : `Skip · ${Math.round(cut * 100)}% pay`) : half ? '跳过 · 酬减半' : `跳过 · 酬${Math.round(cut * 10)}成`;
 };
-/* 「算了，往下走」: a quiet word under a board, or the shell bar's ✕ with it as its title (`icon`); with a `cut`, the words of it. */
-export const skipButton = (id, lang, icon = false, cut = null) => (cut != null
-  ? `<button type="button" class="${icon ? 'gshell-btn gshell-skip' : 'act quiet'}" data-game-skip="${esc(id)}">${esc(skipCutWord(Number(cut), lang))}</button>`
-  : icon ? toolHtml('close', SKIP[lang] ?? SKIP.zh, `data-game-skip="${esc(id)}"`)
-  : `<button class="act quiet" data-game-skip="${esc(id)}">${esc(SKIP[lang] ?? SKIP.zh)}</button>`);
-
-/// A board left on an earlier day, offered again by itself once the stage is idle (Look's
-/// `replay`, rules/skips.mjs — Hanli: 「最好后面能自动触发重玩」): the world's line, and 再试一回 /
-/// 改日. Never a panel entry; played, it stands as the board it was, and its win pays in full.
-function replay(card, ctx) {
-  return ctx.look.replay ? `<div class="card replaycard">${replayHtml(ctx.look.replay, ctx.words)}</div>` : '';
-}
-const replayHtml = (r, w) => `<div class="replaybeat"><div class="small ling">${esc(r.line)}</div><div class="acts"><button class="act" data-replay-play="${esc(r.task)}">${esc(w.replayPlay)}</button><button class="act quiet" data-replay-later="${esc(r.task)}">${esc(w.replayLater)}</button></div></div>`;
 
 /// 所得 — the errands met here, each with what it paid and the next step.
 export const HANDED_MS = 2600;
@@ -1283,7 +1259,7 @@ const keptWhen = (at, lang) => { const d = at ? new Date(at) : null; return d &&
 export function keptGroupHtml(ctx) {
   const list = ctx.look?.kept ?? [], w = ctx.words;
   if (!list.length) return '';
-  const rows = list.map((k) => `<div class="trow kept" data-kept-row="${esc(k.id)}"><span class="ttitle">${esc(k.title)}</span>`
+  const rows = list.map((k) => `<div class="trow kept" data-kept-row="${esc(k.id)}"><span class="ttitle"${k.line ? ` title="${esc(k.line)}"` : ''}>${esc(k.title)}</span>`
     + ` <span class="small dim">${esc([k.where, keptWhen(k.at, ctx.lang)].filter(Boolean).join(' · '))}</span>`
     + ` <button class="act quiet" data-kept-play="${esc(k.id)}">${esc(w.keptPlay)}</button><button class="act quiet" data-kept-drop="${esc(k.id)}">${esc(w.keptDrop)}</button></div>`);
   return `<div class="tgroup kept" id="kept-group"><div class="thead small dim">${esc(say(w.keptGroup, { n: list.length }))}</div>${rows.join('')}</div>`;
@@ -1806,13 +1782,9 @@ export function panelActsHtml(ctx, { inBox = false } = {}) {
   const note = saidHtml(ctx) + (ctx.panelNote ? `<div class="donote">${esc(ctx.panelNote)}</div>` : '');
   if (!taps && !looks && !note) return '';
   const row = taps ? `<div class="acts paneltaps${quiet ? ' quiet' : ''}">${taps}</div>` : '';
-  // A board left on an earlier day, offered again (Look's replay): one of the scene's choices, after the way on,
-  // wherever they stand — the box at its last beat or the scene card (stage.mjs replayOnCard: then no card of its own).
-  // Not while a game of the scene's is still to play (the choices wait under it).
-  const again = ctx.look.replay && !playing ? replayHtml(ctx.look.replay, w) : '';
   // In the box the choices come first — the way on is never the part a short stage scrolls away — but a
   // refusal stands right over them, where the tap was (2026-10-16: under them it fell below the fold).
-  return inBox ? `${note}${row}${again}${looks}${invite}` : `${looks}${note}${row}${invite}`;
+  return inBox ? `${note}${row}${looks}${invite}` : `${looks}${note}${row}${invite}`;
 }
 
 /// What a choice that stays in the scene said (`stay` exits, 01-arrive 下水看看, 06-town 先逛坊市): its
@@ -1837,8 +1809,8 @@ export function gateCardHtml(g, look, w, ctx = { lang: 'zh', words: w, look }) {
 
 /* What earns 修为 now, from the 主页's own ranking (rules/home.mjs `home`): its one next act where that earns it (a
    功课, a board, a fight, an errand, a walk to work, 闭关), then what waits that does (功课, 兽潮, 妖兽出没, a cooldown and
-   when it opens), and 闭关 always at the end where it is open. '' where nothing does. A board set aside is not here: its
-   再试一回 is already one of the scene's choices (replayOnCard — drawn once). */
+   when it opens), and 闭关 always at the end where it is open. '' where nothing does. A board kept for later is not here: it waits
+   on 收着的棋局. */
 const EARNS_NEXT = new Set(['gongke', 'board', 'fight', 'errand', 'go', 'seclude']); // never `take`: an errand offered is the scene's own button
 const EARNS_TODO = new Set(['gongke', 'tide', 'yaoshou', 'wait']);
 function cultivateActs(look, ctx) {
@@ -1875,7 +1847,8 @@ function riddleTapHtml(t, ex, busy, w, lang = 'zh') {
   const tried = ex.tried ?? [];
   const choices = (ex.choices ?? []).map((c) => `<button class="act paneltap${tried.includes(c) ? ' spent' : ''}" data-panel-exit="${esc(t.id)}" data-panel-answer="${esc(c)}"${tried.includes(c) || off ? ' disabled' : ''}>${esc(c)}</button>`).join('');
   const hint = ex.hint ? `<div class="small dim riddlehint">${esc(ex.hint)}</div>` : '';
-  const leave = ex.stuck ? `<button class="quietnext riddlepass" data-panel-exit="${esc(t.id)}" data-panel-pass="1"${off}>${esc(SKIP[lang] ?? SKIP.zh)}</button>` : '';
+  // Its way past, from the first moment (Hanli 11-03): 留 · ✕, as on every board.
+  const leave = ex.stuck ? passOut(t.id, lang, 'riddlepass', off) : '';
   return `<div class="riddletap">${head}<div class="acts">${choices}</div>${hint}${leave}</div>`;
 }
 
@@ -2021,7 +1994,7 @@ function closed(card, ctx) {
     + `<div class="acts"><button class="act closeshut" data-close-chapter="${esc(c.id)}">${esc(ctx.words.closeAway ?? '合上')}</button></div></div>`;
 }
 
-const RENDER = { mijing, replay, closed, meet, codex, panel, value, born, people, breakthrough, handed, tale, lundao, duizi, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road, seclude, seclusion, next };
+const RENDER = { mijing, closed, meet, codex, panel, value, born, people, breakthrough, handed, tale, lundao, duizi, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road, seclude, seclusion, next };
 
 /// Only the kinds the scene knows; anything else Ling sends is dropped.
 export function cardHtml(card, ctx) {

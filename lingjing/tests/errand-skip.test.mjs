@@ -10,7 +10,7 @@ import { newState } from '../scripts/state.mjs';
 import { playTo } from '../scripts/rules/progress.mjs';
 import { look, move, task, win } from '../scripts/rules.mjs';
 import { playGrant } from '../scripts/rules/playpay.mjs';
-import { WORDS, cardHtml, skipButton, skipCutWord } from '../scripts/cards.js';
+import { WORDS, cardHtml, skipCutWord } from '../scripts/cards.js';
 
 const content = loadContent();
 const NOW = new Date('2026-10-27T09:00:00-03:00');
@@ -84,7 +84,7 @@ test('the bar: 留 and ✕ from the first moment — the ✕ says its cut, 「�
   const fresh = bar(cardHtml({ card: 'board', id: 'huarong' }, page({ mod, state })));
   assert.match(fresh, /<button[^>]*class="gshell-btn gshell-keep"[^>]*data-board-keep="huarong">留<\/button><button[^>]*class="gshell-btn gshell-close" title="跳过 · 酬减半"[^>]*data-board-close="huarong">✕<\/button><\/div>/);
   assert.equal((fresh.match(/✕/g) ?? []).length, 1, 'one ✕');
-  assert.equal(skipButton('x', 'en', true, '0.5').includes('Skip · half pay'), true);
+  assert.equal(skipCutWord(0.5, 'en'), 'Skip · half pay');
   assert.equal(skipCutWord(0.3, 'zh'), '跳过 · 酬3成');
 });
 

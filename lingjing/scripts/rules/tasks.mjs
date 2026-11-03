@@ -17,7 +17,7 @@ import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { gamesToday } from './rotation.mjs';
 import { stow, fullLine } from './pouch.mjs';
-import { dropKept, keepBoard, laterBoard, leaveBoard, leaveOf, playKept, replayBoard, sceneBoards, skipBoard, storyBoard } from './skips.mjs';
+import { dropKept, keepBoard, leaveBoard, leaveOf, playKept, sceneBoards, skipBoard, storyBoard } from './skips.mjs';
 import { sideLine } from './hui.mjs';
 import { boardLine, lineGrant, linePay } from './lines.mjs';
 import { writeLedger } from './ledger.mjs';
@@ -51,8 +51,6 @@ export function task(state, content, ctx, args) {
   // A story board left (「算了，往下走」, paid nothing), and offered again later (rules/skips.mjs).
   // …and an errand's board, once stuck: 跳过 · 酬减半 (errandSkip below) — the errand met, the board's pay cut.
   if (args.action === 'skip') return errandSkip(state, content, ctx, String(args.id ?? '')) ?? skipBoard(state, content, ctx, String(args.id ?? ''));
-  if (args.action === 'replay') return replayBoard(state, content, ctx, String(args.id ?? ''));
-  if (args.action === 'later') return laterBoard(state, content, ctx, String(args.id ?? ''));
   // 留: kept for later (收着的棋局, rules/skips.mjs keepBoard) — taken up again, or dropped (丢).
   if (args.action === 'keep') return keepOrPut(state, content, ctx, String(args.id ?? ''));
   if (args.action === 'kept-play') return playKept(state, content, ctx, String(args.id ?? ''), taskOpen(content, state, String(args.id ?? ''), ctx.now) || hostedHere(content, state, String(args.id ?? ''), ctx.now));
@@ -63,7 +61,7 @@ export function task(state, content, ctx, args) {
   if (args.action === 'leave') return leaveBoard(state, content, ctx, String(args.id ?? ''));
   // 切磋's bout lost (the page, as the board ends unwon): over, unpaid, its cooldown started.
   if (args.action === 'lost') return isBout(content, String(args.id ?? '')) ? qiecuoOver(state, content, ctx, String(args.id), 'lost') : refuse('not-a-bout', null);
-  return refuse('unknown-action', null, { actions: ['list', 'done', 'check', 'skip', 'replay', 'later', 'keep', 'kept-play', 'kept-drop', 'leave', 'lost'] });
+  return refuse('unknown-action', null, { actions: ['list', 'done', 'check', 'skip', 'keep', 'kept-play', 'kept-drop', 'leave', 'lost'] });
 }
 
 /* An errand held and not yet met that asks for a win on this board. It

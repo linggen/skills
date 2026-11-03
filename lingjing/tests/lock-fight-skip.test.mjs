@@ -1,6 +1,5 @@
-// 「算了，往下走」 for a story fight inside a key beat's lock (Hanli 2026-10-21: 「OK, a」). Inside a lock no
-// shelf is reachable, so a weak hand with an empty 丹囊 had no way past a 试 — boards are left once
-// stuck, riddles passed; now a fight lost balance.json `lock_fight.losses` times (3) may be left too:
+// A story fight may be left from the first moment (Hanli 11-03: 「统一改成右上角的关闭按钮了. 不需要卡住」; first inside a key
+// beat's lock, 2026-10-21: 「OK, a」 — no shelf is reachable there): its card's 留 · ✕ pass it,
 // the way on a win would take, paying nothing, kept as left (`fights_left`), never as won. Never outside
 // a lock. 河伯's 冰夷双龙 (01-rise) stands inside one (老井 and the 大比's bouts are 格斗 boards since 2026-10-31: a board is left
 // by the page's own 「算了，往下走」).
@@ -10,7 +9,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { playTo } from '../scripts/rules/progress.mjs';
 import { duel, look, resolve } from '../scripts/rules.mjs';
-import { fightStuck, lockLosses } from '../scripts/rules/skips.mjs';
+import { fightStuck } from '../scripts/rules/skips.mjs';
 
 process.env.LINGJING_STAMINA_LIMIT = '0';
 const content = loadContent();
@@ -31,22 +30,21 @@ function lose(s, now) {
   return out.state;
 }
 
-test('the count is balance.json\'s, and 01-rise stands inside a lock', () => {
-  assert.equal(lockLosses(content), 3);
+test('01-rise stands inside a lock, its fight a duel', () => {
   assert.ok(content.chapters['01-ji'].beats.find(b => b.id === 'hebo').scenes.includes('01-rise'));
   assert.equal(GAME.kind, 'duel');
 });
 
-test('two fights lost: no way out — the card has none, and a pass is refused', () => {
-  let s = base();
-  for (let d = 0; d < 2; d += 1) s = lose(s, new Date(at.now.getTime() + d * 864e5));
-  assert.equal(s.fight_losses[GAME.id], 2);
-  assert.ok(!exitOf(s).stuck);
+test('from the first moment, no fight lost: the card\'s 留 · ✕ stand, and the pass pays nothing while the story goes on (Hanli 11-03)', () => {
+  const s = base();
+  assert.equal(exitOf(s).stuck, true, 'Look: it may be left now');
   const r = resolve(s, content, ctx(at.now), { exit: 'stand', pass: 1 });
-  assert.equal(r.result.refused, 'not-stuck');
+  assert.equal(r.result.ok, true, JSON.stringify(r.result));
+  assert.equal(r.state.scene, '01-tower');
+  assert.ok(!r.state.wins?.[GAME.id], 'never kept as won');
 });
 
-test('three fights lost: 「算了，往下走」 is offered, and leaving it pays nothing while the story goes on', () => {
+test('three fights lost: still the pass, paying nothing, the story going on', () => {
   let s = base();
   for (let d = 0; d < 3; d += 1) s = lose(s, new Date(at.now.getTime() + d * 864e5));
   assert.equal(s.fight_losses[GAME.id], 3);
@@ -65,13 +63,12 @@ test('three fights lost: 「算了，往下走」 is offered, and leaving it pay
   assert.ok(r.state.fights_left?.[GAME.id], 'kept as left');
 });
 
-test('outside a lock the same three losses may be left too (Hanli 2026-10-27: 「确保都能跳过去, 不会卡住游戏进程」)', () => {
-  let s = base();
+test('outside a lock too, from the first moment (Hanli 2026-10-27: 「确保都能跳过去」; 11-03: 「不需要卡住」); won, never', () => {
+  const s = base();
   const open = structuredClone(content);
   for (const b of open.chapters['01-ji'].beats) b.scenes = b.scenes.filter(id => id !== '01-rise');
-  assert.equal(fightStuck(open, s, GAME), false, 'not before the losses');
-  for (let d = 0; d < 3; d += 1) s = lose(s, new Date(at.now.getTime() + d * 864e5));
   assert.equal(fightStuck(open, s, GAME), true);
+  assert.equal(fightStuck(open, { ...s, wins: { ...s.wins, [GAME.id]: 'x' } }, GAME), false, 'a fight won is no fight to leave');
   assert.equal(resolve(s, open, ctx(at.now), { exit: 'stand', pass: 1 }).result.ok, true);
 });
 

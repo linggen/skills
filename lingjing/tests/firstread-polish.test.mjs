@@ -10,7 +10,7 @@ const W = { lookHead: '看', lookAt: '看看{label}' };
 
 test('a choice tapped goes inert in that frame, and stays inert until the page has read what it did', () => {
   const src = read('lingjing.js');
-  assert.match(src, /\['\[data-panel-exit\]', \(el\) => \{ if \(el\.matches\(':disabled'\)\) return; inertNow\(el\); run\(/, 'inert before the verb chain gets to it');
+  assert.match(src, /\['\[data-panel-exit\]', \(el\) => \{ if \(el\.matches\(':disabled'\)\) return; inertNow\(el\);[^\n]*?run\(/, 'inert before the verb chain gets to it');
   assert.match(src, /function inertNow\(el\) \{\s*el\.classList\.add\('busy'\);[\s\S]*?b\.disabled = true;/);
   const tap = src.slice(src.indexOf('async function panelTap'), src.indexOf('function inertNow'));
   assert.match(tap, /try \{ await refresh\(\); \} finally \{ show\(\{ panelBusy: null \}\); \}/, 'busy until the re-read, not only the write');

@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { loadContent } from '../scripts/content.mjs';
 import { look, task, win } from '../scripts/rules.mjs';
-import { replayDue, sceneBoards } from '../scripts/rules/skips.mjs';
+import { sceneBoards } from '../scripts/rules/skips.mjs';
 import { sceneOf } from '../scripts/rules/world.mjs';
 import { winIsSkip } from '../scripts/rules/tasks.mjs';
 import { ownSkip } from '../scripts/stuck.js';
@@ -60,7 +60,8 @@ test('a skip sent as a win (讨饼债\'s 二十问, an older phone) pays nothing
   assert.deepEqual(purse(done.state ?? left), purse(s), 'nothing paid, sent as a win or after it');
   // Put away for good (Hanli 11-03): never offered again by itself — 留 is what keeps a board.
   const idle = { ...left, tell_owed: [], told_scenes: [...(left.told_scenes ?? []), left.scene] };
-  assert.equal(replayDue(content, idle, new Date(now.getTime() + DAY)), null, 'never back by itself');
+  assert.equal(look(idle, content, ctxAt(new Date(now.getTime() + DAY))).replay, undefined, 'never back by itself');
+  assert.ok(!(look(idle, content, ctxAt(new Date(now.getTime() + DAY))).kept ?? []).some((k) => k.id === id), 'nor kept: ✕ is not 留');
   // The control: played for real, the same board pays its grade and mark.
   const played = run(win, s, now, { id, grade: 'stumped', stars: 3 }).state;
   assert.equal(played.grades?.[id], 'stumped');

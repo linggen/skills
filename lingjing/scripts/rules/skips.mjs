@@ -1,37 +1,29 @@
-// rules/skips.mjs — a story board left, and offered again later (Hanli, 2026-10-15).
-// Part of the rules engine; rules.mjs is its one door (through Task: skip · replay · later).
+// rules/skips.mjs — a board put away (✕) or kept for later (留) (Hanli, 2026-10-15; the way out 2026-11-03).
+// Part of the rules engine; rules.mjs is its one door (through Task: skip · keep · kept-play · kept-drop · leave).
 //
 // His ruling, all of it:
-//   1. 「跳过这个按钮不要一开始就显示, 玩家卡住了才显示」 — the page's gate (scripts/stuck.js);
+//   1. 「跳过, 我们统一改成右上角的关闭按钮了. 不需要卡住, 直接就给这个关闭按钮」 (11-03) — 留 and ✕ on every board from
+//      the first moment, no stuck wait (the page's bar, cards.js outHtml);
 //   2. 「跳过没有奖励」 — a skip pays NOTHING: no grant, no grade, no mark. The story moves on
 //      exactly as after a win (the task stands done, `skipped`, so every `needs.task` is met
 //      and the scene's passage after the game is owed as after a win);
-//   3. 「重玩也不应该放到面板里... 最好后面能自动触发重玩」 — no panel entry: a skipped board
-//      comes back by itself on a later day, once the stage is idle, as an optional beat in the
-//      world's words (Look's `replay`). Played and won, it pays the original grant, grade and
-//      mark; declined, it comes back another day. At most one is offered a day;
+//   3. 「还是加一个按钮好一些, 可能用户想丢掉, 可能想以后玩」 (11-03) — ✕ puts it away for good; 留 keeps it on
+//      收着的棋局 (below), never offered by itself; taken up and won, it pays its grant once;
 //   4. 「对游戏进展要确保没有影响」 — skipping never hurts progress: a way on that waits on the
 //      board's grade (`needs.grade`) opens for a skipped board whatever the grade (core.mjs
 //      meets — his to choose), and what the story needs from a board is its `gives` (a thing,
 //      handed over even on a skip), never its `grant` (the reward, withheld).
-import { dayKey, periodKey, pick } from '../state.mjs';
+import { periodKey, pick } from '../state.mjs';
 import { clone, pay, refuse } from './core.mjs';
 import { taskOf } from './errands.mjs';
-import { sideLine } from './hui.mjs';
 import { stow, fullLine } from './pouch.mjs';
-import { owesTell } from './tell.mjs';
-import { skippedHere } from './aside.mjs';
 import { sceneOf } from './world.mjs';
 
-/* A story fight may be left once stuck. First inside a key beat's lock only (Hanli 2026-10-21: 「OK, a」: no shelf
-   is reachable there); every story fight since 2026-10-27 (Hanli: 「确保都能跳过去, 不会卡住游戏进程」). From
-   balance.json `lock_fight.losses` fights of it not won (lost or run dry — tasks.mjs keeps `fight_losses`),
-   「算了，往下走」 walks the way on a win would take, paying nothing (core.mjs resolve `pass`). */
-export const lockLosses = content => content.balance?.lock_fight?.losses ?? null;
+/* A story fight may be left from the first moment (Hanli 11-03: 「统一改成右上角的关闭按钮了. 不需要卡住, 直接就给这个关闭
+   按钮」; every story fight since 2026-10-27: 「确保都能跳过去, 不会卡住游戏进程」): its card's 留 · ✕ walk the way on a win
+   would take, paying nothing (core.mjs resolve `pass`) — no losses waited for. Named `stuck` on Look still (the phone reads it). */
 export function fightStuck(content, state, game) {
-  if (game?.kind !== 'duel' || state.wins?.[game.id]) return false;
-  const n = lockLosses(content);
-  return n != null && (state.fight_losses?.[game.id] ?? 0) >= n;
+  return game?.kind === 'duel' && !state.wins?.[game.id];
 }
 
 /* A scene's boards, in the order they are played (its `show`). */
@@ -39,9 +31,6 @@ export const sceneBoards = scene => (scene?.show ?? []).filter(c => c.card === '
 /* A board over for the story — won and counted, or skipped. */
 export const boardOver = (state, id) => state.tasks?.[id]?.status === 'done';
 export const skippedBoard = (state, id) => Boolean(state.tasks?.[id]?.skipped);
-
-/* The line a scene is told on: a 今 interlude's own, else the book's (null). */
-const lineAt = (content, scene) => (scene ? sideLine(content, scene) ?? null : null);
 
 /* 「算了，往下走」: the scene's board (or a board offered again) left. */
 export function skipBoard(state, content, ctx, id) {
@@ -59,39 +48,9 @@ export function skipBoard(state, content, ctx, id) {
   // The rest of the scene's passage, owed after its first board — as after a win (tasks.mjs taskDone).
   if (!again && scene?.story_after && order[0] === id) s.tell_owed = [...(s.tell_owed ?? []), `after/${scene.id}`];
   // Put away for good (Hanli 11-03: 「可能用户想丢掉, 可能想以后玩」): it never comes back by itself — 留 keeps it (keepBoard).
-  s.skipped = (s.skipped ?? []).filter(e => e.task !== id);
   // A thing the story needs from the board (`gives`) is handed over all the same; the reward is not.
   const full = t.gives?.bag ? fullLine(s, [stow(content, s, t.gives.bag, 1, 'task')]) : null;
   return { state: s, result: { ok: true, skipped: id, paid: null, gives: t.gives ?? null, ...(full ? { pouch_full: full } : {}) } };
-}
-
-/* The skipped board due to be offered again now, or null: one left on an earlier day, not put
-   off today, on the line the story stands on, while the stage is idle — no fight, no 闭关, no
-   passage owed, no board of the scene's still open, no fight of the scene's still to fight, and
-   none offered again already today. The oldest first. */
-export function replayDue(content, state, now) {
-  const list = state.skipped ?? [];
-  if (!list.length || state.fight || state.seclusion) return null;
-  const today = dayKey(now);
-  if (state.replay_day === today) return null;
-  if (Object.values(state.tasks ?? {}).some(t => t.replay && t.status === 'offered')) return null;
-  if (owesTell(content, state)) return null;
-  const scene = sceneOf(content, state);
-  if (sceneBoards(scene).some(b => !boardOver(state, b))) return null;
-  if ((scene?.exits ?? []).some(e => e.game?.kind === 'duel' && !state.wins?.[e.game.id])) return null;
-  const line = lineAt(content, scene);
-  return list.find(e => e.day < today && e.later !== today && (e.line ?? null) === line && taskOf(content, e.task)) ?? null;
-}
-
-/* What Look carries of it: the board, and the world's line that offers it — the task's own
-   (`replay`), else one made from its title. */
-export function replayBrief(content, state, now) {
-  const due = replayDue(content, state, now);
-  if (!due) return null;
-  const t = taskOf(content, due.task), lang = state.lang;
-  const title = pick(t.title, lang);
-  const line = pick(t.replay, lang) ?? (lang === 'en' ? `"${title}" — left unfinished that time. Try it again?` : `「${title}」——那一回，没走完。再试一回？`);
-  return { task: due.task, title, line, ...(t.game ? { game: t.game } : {}) };
 }
 
 /* 收手 — a board he opened by choice is left at any moment, costing nothing and paying nothing (Hanli, 2026-10-26, at
@@ -107,9 +66,8 @@ const replayHeld = (state, id) => Boolean(state.tasks?.[id]?.replay && state.tas
 export const leaveOf = (content, state, id) => Boolean(taskOf(content, id)) && (replayHeld(state, id) || !storyBoard(content, state, id));
 
 /* `task --action=leave`: nothing is written for a board offered as it was (兽潮's night is not counted, no cooldown
-   starts, no 灵气 is spent: those come with the win, tasks.mjs). A board offered again goes back to the skipped list
-   as it stood before 再试一回 — over for the story, unpaid, and offered again on a later day (replayDue) — with
-   nothing handed over again (its `gives` went with the first skip). */
+   starts, no 灵气 is spent: those come with the win, tasks.mjs). A kept story board taken up again (playKept) and put
+   down is over for the story, unpaid, for good — nothing handed over again (its `gives` went with the first). */
 export function leaveBoard(state, content, ctx, id) {
   if (!taskOf(content, id)) return refuse('unknown-task', null);
   if (!leaveOf(content, state, id)) return refuse('story-board', null);
@@ -120,29 +78,6 @@ export function leaveBoard(state, content, ctx, id) {
   // A kept board taken up again and put down: put away for good (留 keeps it again, keepBoard).
   s.tasks[id] = { status: 'done', skipped: true, period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
   return { state: s, result: { ok: true, left: id, again: true } };
-}
-
-/* 再试一回: the board offered again stands open, as on the day it was first offered — its win
-   is counted and paid as any (tasks.mjs taskDone), grade and mark with it. */
-export function replayBoard(state, content, ctx, id) {
-  // The book set aside (rules/aside.mjs): every skipped board of this line is offered at once, not only the day's.
-  const due = state.aside ? (state.skipped ?? []).find(e => e.task === id && skippedHere(content, state).includes(id)) : replayDue(content, state, ctx.now);
-  if (!due || due.task !== id) return refuse('not-due', null);
-  const s = clone(state);
-  s.tasks[id] = { status: 'offered', replay: true, from: { scene: due.scene ?? null, line: due.line ?? null } };
-  s.skipped = (s.skipped ?? []).filter(e => e.task !== id);
-  s.replay_day = dayKey(ctx.now);
-  return { state: s, result: { ok: true, replay: id } };
-}
-
-/* 改日: put off — it comes back another day. */
-export function laterBoard(state, content, ctx, id) {
-  const due = replayDue(content, state, ctx.now);
-  if (!due || due.task !== id) return refuse('not-due', null);
-  const s = clone(state), today = dayKey(ctx.now);
-  s.skipped = (s.skipped ?? []).map(e => (e.task === id ? { ...e, later: today } : e));
-  s.replay_day = today;
-  return { state: s, result: { ok: true, later: id } };
 }
 
 /* ── 收着的棋局 (Hanli 11-03: 「还是加一个按钮好一些, 可能用户想丢掉, 可能想以后玩」) ──
@@ -188,5 +123,7 @@ export function playKept(state, content, ctx, id, openHere) {
 export function keptBrief(content, state, placeName) {
   return keptOf(state).filter(e => taskOf(content, e.task)).map(e => ({
     id: e.task, title: pick(taskOf(content, e.task).title, state.lang), where: placeName(e.place) ?? null, at: e.at, story: Boolean(e.story),
+    // The task's own line for taking it up again (`replay`, the world's words: 「马家寿宴的锣鼓……再听一回？」).
+    ...(taskOf(content, e.task).replay ? { line: pick(taskOf(content, e.task).replay, state.lang) } : {}),
   }));
 }

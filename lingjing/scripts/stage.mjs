@@ -95,9 +95,9 @@ export function duanSegments(at, pct) {
 /* On a side line the stage holds the scene alone: its picture, its people,
    the cards that name a value, the game it offers (`scene.games`) and the
    ending card — never the 古's goal, coins, errands, road or beasts. */
-const SIDE_CARDS = new Set(['meet', 'panel', 'people', 'value', 'born', 'closed', 'replay']);
+const SIDE_CARDS = new Set(['meet', 'panel', 'people', 'value', 'born', 'closed']);
 const replayBoard = (look, id) => (look.tasks ?? []).some(t => t.id === id && t.replay && t.status !== 'done');
-// …and a board left on the line and chosen again (再试一回 — the rules offer only the line's own, rules/skips.mjs).
+// …and a board kept for later and taken up again (收着的棋局, rules/skips.mjs playKept).
 const onSide = look => c => SIDE_CARDS.has(c.card) || (c.card === 'board' && ((look.scene?.games ?? []).includes(c.id) || replayBoard(look, c.id)));
 
 /* EVERY card kind says whether it HOLDS the stage: whether it is asking the
@@ -162,8 +162,6 @@ export const CARD_KINDS = {
   duizi: { holds: false }, //     对对子 at the teacher's (rules/duizi.mjs): offered, or a round under way
   handed: { holds: false }, //     所得 — told, never waiting on him; the roads stay
   board: { holds: false }, //      a standing practice, offered for days — not this arrival's business
-  // A board left on an earlier day, offered again (rules/skips.mjs): optional — 再试一回 or 改日, never asking.
-  replay: { holds: false },
   // 秘境探险 (rules/mijing.mjs, Look's `mijing`): inside a run the map is the business at hand (it holds); at the door, the way in — optional.
   mijing: { holds: look => Boolean(look?.mijing?.inside) },
   goal: { holds: false }, building: { holds: false }, empty: { holds: false },
@@ -202,8 +200,6 @@ export const winnable = e => Boolean(e && e.beaten && !e.tamed && e.likes);
    holds it, so a reload puts the same cards back); `fight` is a 斗法 the page
    is playing out. The page draws `building`, `empty` and `quest` itself; every
    other kind is cards.js's. */
-/* Where the offer to replay a board stands: its own card only where no scene card carries it among its choices. */
-export const replayOnCard = look => Boolean(look?.replay && !look.scene?.panel);
 
 /* 对对子 (rules/duizi.mjs), one 联 a sitting (Hanli 2026-11-02): the 时辰 pool has it drawn and unplayed here
    (Look's `tray`; a 游戏厅 save's `trial`, any hour) — the offer; or this sitting's round under way or graded and not yet put away (收下), or his
@@ -348,12 +344,7 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   const panel = look.scene?.panel ? [{ card: 'panel' }] : [];
   // The chapter's ending card, while the next chapter waits: first on the stage until he puts it away (合上, the page's).
   const closed = look.chapter?.close ? [{ card: 'closed' }] : [];
-  // A board left on an earlier day, offered again — the rules say when (Look's `replay`: the stage
-  // idle, its line, one a day). ONE place draws it (replayOnCard): with a scene card it is one of the
-  // scene's choices, after its ways on (cards.js panelActsHtml — in the box or on the card); with none, its
-  // own card. Both drew it once (live 2026-10-26: 再试一回 twice over the 兽潮 board).
-  const again = replayOnCard(look) && !line ? [{ card: 'replay', id: look.replay.task }] : [];
-  const all = [...meet, ...panel, ...people, ...head, ...cards, ...again, ...closed].filter(c => !(c.card === 'board' && boardWaits(look, c.id)));
+  const all = [...meet, ...panel, ...people, ...head, ...cards, ...closed].filter(c => !(c.card === 'board' && boardWaits(look, c.id)));
   const staged = sideLineOf(look) ? all.filter(onSide(look)) : all;
   return withNext(look, staged.filter(c => !duplicate(look, c, staged)));
 }
@@ -444,7 +435,7 @@ export const sideStep = look => (sideLineOf(look) ? (look.scene.panel?.taps ?? [
    药园's fight the stage held 狰's 已收服 card and nothing said 柴房 was next). A shelf, the map's
    roads and a beast still to win over are things to do. */
 const TELLING = new Set(['codex', 'creature', 'traits', 'gate', 'tribulation', 'treasure']);
-const TELLS_ONLY = (look, c) => c.card === 'replay' /* optional: 下一步 still stands */ || TELLING.has(c.card) && !(c.card === 'creature' && winnable(look?.place?.encounter) && look.place.encounter.creature.id === c.id);
+const TELLS_ONLY = (look, c) => TELLING.has(c.card) && !(c.card === 'creature' && winnable(look?.place?.encounter) && look.place.encounter.creature.id === c.id);
 export const showable = c => Boolean(c) && !PAGE_OWNS.has(c.card);
 
 /* 此地 · 此刻 · 行 — the stage in FIXED SECTIONS (Hanli, 2026-09-29: the same
@@ -473,7 +464,7 @@ export const MAIN = [
   { kinds: ['unfold'] }, //                                              then a chapter's map unfolding, the first time it can be walked
   { kinds: ['closed'] }, //                                              a chapter's ending card, until he puts it away
   { kinds: ['fight', 'seclusion', 'seclude'] }, //                      the fight, 闭关
-  { kinds: ['meet', 'panel', 'value', 'born', 'breakthrough', 'replay'], together: true }, // the scene waiting on a choice, its new faces first; a board left, offered again, under it
+  { kinds: ['meet', 'panel', 'value', 'born', 'breakthrough'], together: true }, // the scene waiting on a choice, its new faces first
   { kinds: ['board', 'duel', 'lundao', 'duizi', 'mijing'] }, //  a game to play here
   { kinds: ['handed', 'quest', 'tale', 'road', 'offer'] }, //            the line, one at a time
   { kinds: ['building', 'empty'] }, //                                   the page's own notices

@@ -504,10 +504,9 @@ export function resolve(state, content, ctx, args) {
     const riddle = content.riddles[lang].riddles[key];
     const tried = triedToday(s, scene, exit, key, ctx.now);
     // Never stuck (live, 2026-10-15: two misses at 01-deep shut the only way on for a real day, and
-    // 「谜题已过」 read as solved): the misses bring the hint, and once he is stuck — RIDDLE_TRIES misses —
-    // 「算了，往下走」 (`pass`) walks the way on with no reward, as a board left (rules/skips.mjs).
+    // 「谜题已过」 read as solved): the misses bring the hint, and from the first moment (Hanli 11-03: 「不需要卡住」)
+    // its ✕ (`pass`) walks the way on with no reward, as a board put away (rules/skips.mjs).
     if (args.pass) {
-      if (tried.length < RIDDLE_TRIES) return refuse('not-stuck', null, { exit: exit.id, tried: tried.length, needs: RIDDLE_TRIES });
       keepRiddle(s, scene, exit, key, ctx.now, tried);
       passedRiddle = true;
     }
@@ -519,11 +518,10 @@ export function resolve(state, content, ctx, args) {
       return { state: s, result: { ok: false, refused: 'needs-answer', say: null, exit: exit.id, choices: riddle.choices } };
     }
     else if (!judgeAnswer(content, key, args.answer)) {
-      // A miss is kept and brings the hint; it stays on the table. From the RIDDLE_TRIES-th miss he may
-      // leave it (`stuck`: the page's 「算了，往下走」).
+      // A miss is kept and brings the hint; it stays on the table, and may be left at any moment (`stuck`: its ✕).
       const missed = [...new Set([...tried, String(args.answer).trim()])];
       keepRiddle(s, scene, exit, key, ctx.now, missed, true);
-      return { state: s, result: { ok: false, refused: 'wrong-answer', say: null, hint: riddle.hint, exit: exit.id, ...(missed.length >= RIDDLE_TRIES ? { stuck: true } : {}) } };
+      return { state: s, result: { ok: false, refused: 'wrong-answer', say: null, hint: riddle.hint, exit: exit.id, stuck: true } };
     }
     else keepRiddle(s, scene, exit, key, ctx.now, tried);
   }

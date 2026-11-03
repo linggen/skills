@@ -397,14 +397,15 @@ export async function crawl(opts) {
       }
       if (act.kind === 'fight') { await playFight(page, snap, { rec, sceneId, shot, outcome: ctx.fightMode(sceneId), reload: opts.reloads && ctx.fights[sceneId] === 1 ? async () => { await page.goto(`${base}/apps/lingjing/scripts/index.html?save=${save}&chat=off`); await sleep(5000); } : null }); continue; }
       if (act.kind === 'game-stuck') {
-        const ok = await page.evaluate(`globalThis.__lingjingPlay?.stuck?.(${JSON.stringify(act.game)}) ?? 'no-seam'`);
-        if (ok === 'no-seam') throw new Error('the page has no __lingjingPlay.stuck seam — install the skill first');
+        // No stuck gate since 11-03 (the ✕ stands from the first moment): the seam puts the board away as the ✕ does.
+        const ok = await page.evaluate(`globalThis.__lingjingPlay?.skip?.(${JSON.stringify(act.game)}) ?? 'no-seam'`);
+        if (ok === 'no-seam') throw new Error('the page has no __lingjingPlay.skip seam — install the skill first');
         await sleep(400);
         // The gate opened three times and still no 「算了，往下走」 to tap: a finding, and the board left through the seam
         // (10-26: 讨饼债 at 00-yinyue looped here for all 900 steps).
         ctx.stuckTries = { ...(ctx.stuckTries ?? {}), [act.game]: (ctx.stuckTries?.[act.game] ?? 0) + 1 };
         if (ctx.stuckTries[act.game] === 3) {
-          rec.find({ kind: 'no-skip', soft: true, scene: sceneId, what: `${act.game}: the stuck gate opened and no 「算了，往下走」 stood`, shot: await shot(`no-skip-${n}`) });
+          rec.find({ kind: 'no-skip', soft: true, scene: sceneId, what: `${act.game}: put away three times and still on the stage`, shot: await shot(`no-skip-${n}`) });
           await page.evaluate(`globalThis.__lingjingPlay?.skip?.(${JSON.stringify(act.game)})`);
           rec.seen('games', `${act.game}:skip`);
           await settle(page, snap, () => verb('look'), { ms: 9000 });
@@ -578,9 +579,9 @@ async function playBoardHands(page, { rec, sceneId, shot, task, policy, hand, r,
       await shot(`board-${task}-loss`); mode = 'casual'; continue;
     }
     if (mode === 'skip') {
-      const k = await page.evaluate(`(() => { const e = [...document.querySelectorAll('[data-game-skip="${task}"]')].find((x) => x.getClientRects().length); if (!e) return null; e.scrollIntoView({ block: 'nearest' }); const b = e.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; })()`);
-      if (k) { await sleep(400); await tapAt(hand, k.x, k.y); rec.seen('games', `${task}:hands-skip`); console.log(`      → 算了，往下走 after ${Math.round(el / 1000)} s`); await sleep(1500); return 'skipped'; }
-      if (el > 20000) { await sleep(1000); continue; } // a few honest tries, then he sits: the stuck clock
+      const k = await page.evaluate(`(() => { const e = [...document.querySelectorAll('[data-board-close="${task}"]')].find((x) => x.getClientRects().length); if (!e) return null; e.scrollIntoView({ block: 'nearest' }); const b = e.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; })()`);
+      if (k) { await sleep(400); await tapAt(hand, k.x, k.y); rec.seen('games', `${task}:hands-skip`); console.log(`      → ✕ after ${Math.round(el / 1000)} s`); await sleep(1500); return 'skipped'; }
+      if (el > 20000) { await sleep(1000); continue; } // a few honest tries; the ✕ stands from the first moment (Hanli 11-03)
     }
     const go = seen.controls.find((c) => START.test(c.g ?? '') && c.g !== 'again');
     if (mode === 'idle') { if (go) { await sleep(500); await tapAt(hand, go.x, go.y); } await sleep(200); continue; }

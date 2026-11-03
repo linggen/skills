@@ -129,7 +129,7 @@ function dealOf(game, data, task) {
   return d;
 }
 
-let go = null, abort = null, stuckTimer = null, toolTimer = null;
+let go = null, abort = null, toolTimer = null;
 
 /* ↺ 重来 and ? 问询 (games/shell.js restartHtml · cards.js boardAsk): every board hears them as a tap on its frame's bar
    (`.gshell > .gshell-bar [data-g][data-gfor]` — mount.js for a pure board, dash.js and fuqin.js on their own). The
@@ -178,7 +178,6 @@ async function mountBoard(spec) {
   if (!row) { post({ t: 'error', error: `no board ${game}` }); return; }
   abort?.abort();
   abort = new AbortController();
-  clearInterval(stuckTimer);
   clearInterval(toolTimer);
   forget(ID);
   await sheets(row.css ?? []);
@@ -204,10 +203,8 @@ async function mountBoard(spec) {
   // the context is woken here: the app's webview plays audio with no gesture asked (mediaTypesRequiringUserAction: none).
   sound.wake();
   post({ t: 'mounted', game, muted: sound.settings().muted });
-  // 「算了，往下走」 by the page's one rule (stuck.js): the board stood unwon long enough, or the game says so
-  // (its `stuck(state)`; a pure board's state through mount.js `peek`).
+  // The board's state for the bar's tools (a pure board's through mount.js `peek`).
   state = () => undefined;
-  const g = { mod, shownAt: performance.now(), get state() { return state(); } };
   toolBar(mod, () => state());
   // No stuck wait any more (Hanli 11-03: 「不需要卡住, 直接就给这个关闭按钮」): the app's way out is offered from the first moment.
   post({ t: 'stuck' });
@@ -216,7 +213,6 @@ async function mountBoard(spec) {
     lang, data: dealt, seed, level, reducedMotion, lines, signal: abort.signal, shell, story, onEvent: (f) => post({ t: 'event', f }),
     peek: (look) => { state = look; },
   });
-  clearInterval(stuckTimer);
   clearInterval(toolTimer);
   settle(ID, r);
   // The board's own 跳过 (stuck.js ownSkip): `skipped`, graded `skipped`, no stars — the app sends it as `task skip`; an app

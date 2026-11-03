@@ -87,3 +87,14 @@ test('留 on a board that cannot wait on a list (切磋, 秘境, 兽潮, 考考�
   assert.match(fn, /t\.mijing \|\| isTide\(content, id\) \|\| kaoHere\(content, state, id, ctx\.now\)\)\) return put\(leaveBoard\(/);
   assert.match(tasks, /if \(args\.action === 'keep'\) return keepOrPut\(/);
 });
+
+test('a story fight\'s card and a scene\'s riddle: 留 · ✕ from the first moment, both the pass (Hanli 11-03: no stuck waits anywhere)', () => {
+  const cards = read('../scripts/cards.js');
+  assert.match(cards, /const leave = exit !== e && exit\.stuck \? passOut\(exit\.id, ctx\.lang, 'duelpass'\) : '';/);
+  assert.match(cards, /const leave = ex\.stuck \? passOut\(t\.id, lang, 'riddlepass', off\) : '';/);
+  assert.match(cards, /const passOut = \(exitId, lang, cls, off = ''\) => `<div class="gshell-tools passout \$\{cls\}">\$\{outHtml\(lang,/);
+  assert.doesNotMatch(cards, /SKIP\[/, 'no 「算了，往下走」 word left');
+  assert.match(read('../scripts/rules/look.mjs'), /const stuck = true;/, 'a riddle may be left at once');
+  assert.match(read('../scripts/rules/skips.mjs'), /return game\?\.kind === 'duel' && !state\.wins\?\.\[game\.id\];/, 'a story fight may be left at once');
+  assert.ok(!/function stuckNow|STUCK_MS/.test(read('../scripts/stuck.js')), 'the stuck gate is gone');
+});

@@ -271,7 +271,7 @@ function boards(content, r, s, exit, policy) {
   const need = exit.needs?.task;
   if (!need || s.tasks?.[need]?.status === 'done') return s;
   const order = (sceneOf(content, s)?.show ?? []).filter((c) => c.card === 'board').map((c) => c.id);
-  const ids = [...order.slice(0, Math.max(0, order.indexOf(need))), need].filter((id) => s.tasks?.[id]?.status !== 'done' && !((policy === 'skip' || policy === 'none') && (s.skipped ?? []).some((e) => e.task === id)));
+  const ids = [...order.slice(0, Math.max(0, order.indexOf(need))), need].filter((id) => s.tasks?.[id]?.status !== 'done');
   for (const id of ids) {
     if (policy === 'skip' || policy === 'none') { s = r.must('task', s, { action: 'skip', id }); continue; }
     const grade = gradeOf(content, id, id === need ? exit.needs.grade : null);

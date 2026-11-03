@@ -198,7 +198,7 @@ function trackPay(verb, args, result, before, after, content, now) {
   } catch { /* the log is never the game's problem */ }
 }
 
-const PAGE_ACTIONS = { task: ['skip', 'replay', 'later', 'keep', 'kept-play', 'kept-drop'], tale: ['skip'] };
+const PAGE_ACTIONS = { task: ['skip', 'keep', 'kept-play', 'kept-drop'], tale: ['skip'] };
 export const pageOnly = (verb, args = {}) => Boolean(PAGE_ACTIONS[verb]?.includes(String(args.action ?? '')));
 function runLocked(verb, args, stateFile, reader) {
   const logFile = path.join(dataDir(), 'log.jsonl');

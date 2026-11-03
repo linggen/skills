@@ -1,7 +1,7 @@
 // 收手 — a board he opened by choice is put down at any moment (Hanli, 2026-10-26, at 兽潮's 先选一门本事: 「兽潮开始了,
-// 不能退出来吗? 必须玩完才行?」). One rule, the board's origin (rules/skips.mjs leaveOf): the story's own boards keep
-// 「算了，往下走」 once stuck; every other board may be left, costing nothing and paying nothing. 兽潮's night is not
-// counted and no cooldown starts; a board offered again goes back with the skipped and comes back another day.
+// 不能退出来吗? 必须玩完才行?」). One rule, the board's origin (rules/skips.mjs leaveOf): on the story's own boards
+// ✕ goes on (gives only) and 留 keeps it; every other board may be left, costing nothing and paying nothing. 兽潮's night is
+// not counted and no cooldown starts; a kept board taken up and put down is over for good.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -31,7 +31,7 @@ function yaoyuan({ ownDone = true } = {}) {
   s.quests = { ...(s.quests ?? {}), 'guan-shouchao': { done_at: START.toISOString() } }; // 兽潮's first night (the 执事堂's errand) held: the hourly tide is up
   s.told_scenes = [...new Set([...(s.told_scenes ?? []), s.scene])];
   if (ownDone) s.tasks = { ...s.tasks, 'yaoyuan-xunye': { status: 'done' }, 'yaoyuan-luobo': { status: 'done' } }; // and the 萝卜 (2026-10-26)
-  s.skipped = [{ task: 'deer-wind', scene: null, line: null, day: '2026-10-24' }];
+  s.tasks = { ...s.tasks, 'deer-wind': { status: 'done', skipped: true } }; // 射鹿 put away on the way
   s.stamina = 100;
   s.stamina_at = NOW.toISOString();
   return s;
@@ -41,7 +41,7 @@ const leave = (s, id, now = NOW) => task(s, content, ctx(now), { action: 'leave'
 test('the rule is the board\'s origin: the scene\'s own board is the story\'s, 兽潮 and 本王考考你 are his to put down', () => {
   const s = yaoyuan({ ownDone: false });
   assert.equal(storyBoard(content, s, 'yaoyuan-xunye'), true);
-  assert.equal(leaveOf(content, s, 'yaoyuan-xunye'), false, 'the story\'s own: 「算了，往下走」 once stuck');
+  assert.equal(leaveOf(content, s, 'yaoyuan-xunye'), false, 'the story\'s own: its ✕ goes on as a skip, never 收手');
   assert.equal(leaveOf(content, s, 'shouchao'), true);
   const l = look(s, content, ctx());
   const row = (id) => l.tasks.find((t) => t.id === id);
@@ -65,10 +65,13 @@ test('兽潮 put down: nothing written — no 灵气 spent, the night not counte
   assert.equal(s.stamina, 100);
 });
 
-test('a board offered again, put down: over for the story for good, nothing handed twice — never back by itself (Hanli 11-03)', () => {
-  const s0 = yaoyuan();
-  assert.equal(look(s0, content, ctx()).replay?.task, 'deer-wind');
-  const open = task(s0, content, ctx(), { action: 'replay', id: 'deer-wind' }).state;
+test('a kept board taken up again, put down: over for the story for good, nothing handed twice — never back by itself (Hanli 11-03)', () => {
+  const left = yaoyuan();
+  assert.equal(left.tasks['deer-wind']?.skipped, true, '射鹿 was left on the way');
+  // Kept for later (留, rules/skips.mjs keepBoard), then taken up from 收着的棋局.
+  const s0 = { ...left, kept: [{ task: 'deer-wind', story: true, scene: null, place: null, chapter: left.chapter, at: START.toISOString() }] };
+  assert.equal(look(s0, content, ctx()).replay, undefined, 'never offered by itself');
+  const open = task(s0, content, ctx(), { action: 'kept-play', id: 'deer-wind' }).state;
   assert.equal(open.tasks['deer-wind'].replay, true);
   assert.equal(leaveOf(content, open, 'deer-wind'), true);
   const r = leave(open, 'deer-wind');
@@ -103,10 +106,8 @@ test('the page: 收手 under a board he may leave, never under the story\'s own;
 });
 
 /* ── Every board has a way out (Hanli 10-26: 「查一下, 有很多小游戏没有声音和退出」) ──
-   The story's own board: 「算了，往下走」 once stuck (its gate must be able to open: the clock, or its own `stuck`); any
-   other: 收手 at any moment. Never a board the story needs but no scene shows (it would get neither). The card draws
+   Every board: 留 · ✕ from the first moment (Hanli 11-03); ✕ on one he chose is 收手. Never a board the story needs but no scene shows (it would get neither). The card draws
    the way out for every kind of board — a chat (jinchat), the breath kit (qimai, its own mount), a Phaser kit. */
-import { stuckNow } from '../scripts/stuck.js';
 
 const boardTasks = content.tasks.tasks.filter((t) => t.kind === 'board');
 const allScenes = Object.values(content.chapters).flatMap((ch) => Object.values(ch.scenes ?? {}));
@@ -116,19 +117,7 @@ const gameFile = (g) => new URL(`../scripts/games/${g}.js`, import.meta.url);
 test('no board the story needs is left with neither way out: every `needs.task` board is shown by a scene', () => {
   const needed = allScenes.flatMap((sc) => (sc.exits ?? []).map((e) => e.needs?.task).filter(Boolean));
   const hole = [...new Set(needed)].filter((id) => boardTasks.some((t) => t.id === id) && !shownIds.has(id));
-  assert.deepEqual(hole, [], 'needed by a way on, shown by no scene: no 「算了，往下走」 and no 收手');
-});
-
-test('every story board\'s game can open the stuck gate (the clock, or its own stuck)', async () => {
-  const shut = [];
-  for (const t of boardTasks.filter((x) => shownIds.has(x.id) && x.game && fs.existsSync(gameFile(x.game)))) {
-    const mod = await import(gameFile(t.game));
-    // The clock opens it after STUCK_MS; a board that opts out of the clock (讨饼债: her answers take a while) has its own
-    // `stuck` (no answer to be had, or the questions run out), which only a live play can show.
-    const g = { mod, state: null, shownAt: 0 };
-    if (!stuckNow(g, 10 * 60 * 1000) && typeof mod.stuck !== 'function') shut.push(`${t.id} (${t.game})`);
-  }
-  assert.deepEqual(shut, []);
+  assert.deepEqual(hole, [], 'needed by a way on, shown by no scene: no way out drawn');
 });
 
 test('the card draws the way out for every kind of board, as the shell bar\'s 留 · ✕ — the story\'s own and his alike, from the first moment', async () => {
@@ -138,7 +127,7 @@ test('the card draws the way out for every kind of board, as the shell bar\'s �
     const mod = await import(gameFile(game));
     let state = null;
     try { state = mod.html ? mod.newGame('t', 1, {}) : null; } catch { state = null; }
-    const g = { mod: { ...mod, stuck: () => true }, state, shownAt: 0 }; // stuck now: the drawing is what is held here
+    const g = { mod, state }; // from the first frame: no stuck wait
     const id = `t-${game}`;
     const page = (own) => ({ lang: 'zh', words: WORDS.zh, content: {}, reading: null, boardFor: () => g,
       look: { tasks: [{ id, kind: 'board', game, title: game, ...(own ? {} : { leave: true }) }], scene: own ? { show: [{ card: 'board', id }] } : { show: [] } } });

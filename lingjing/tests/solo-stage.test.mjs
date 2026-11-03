@@ -2,7 +2,7 @@
 // 「Mac上游戏界面需要独占UI, 不能被其他UI给挤出去」). The 兽潮 board stood under the scene's choices, the
 // 射鹿 再试一回 inside them, a second 再试一回 card and the tray — and its bottom fell under the footer.
 // One rule (queue.js gameAlone, the page's soloSlots): a board up is the whole of main, the tray goes with it.
-// And the offer to replay is drawn in ONE place (stage.mjs replayOnCard).
+// No board offers itself again since 11-03 (留 keeps it for later).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -11,7 +11,7 @@ import { newState } from '../scripts/state.mjs';
 import { look, playTo } from '../scripts/rules.mjs';
 import { toldUpTo } from '../scripts/rules/progress.mjs';
 import { gameAlone, onStage } from '../scripts/queue.js';
-import { replayOnCard, sceneGame, stageCards, stageSlots } from '../scripts/stage.mjs';
+import { sceneGame, stageCards, stageSlots } from '../scripts/stage.mjs';
 import { WORDS, cardHtml, panelActsHtml } from '../scripts/cards.js';
 
 const content = loadContent();
@@ -34,11 +34,11 @@ function yaoyuan() {
   return look(s, content, { now: NOW, quests: [] });
 }
 const page = (l) => ({ look: l, lang: 'zh', words: WORDS.zh, content: {}, reading: null });
-const replays = (html) => (html.match(/data-replay-play=/g) ?? []).length;
+const replays = (html) => (html.match(/data-replay-play=|再试一回/g) ?? []).length;
 
 test('gameAlone: a board up is the whole of main; the one he opened first; none up, nothing changes', () => {
   const board = { card: 'board', id: 'shouchao' }, kao = { card: 'board', id: 'benwang-kao' };
-  const cards = [{ card: 'meet', id: 'zheng' }, { card: 'panel' }, { card: 'replay', id: 'deer-wind' }, kao, board];
+  const cards = [{ card: 'meet', id: 'zheng' }, { card: 'panel' }, kao, board];
   const up = (c) => c.card === 'board';
   assert.deepEqual(gameAlone(cards, { up }), [kao]);
   assert.deepEqual(gameAlone(cards, { up, chosen: 'shouchao' }), [board], 'the board he opened from the tray');
@@ -70,20 +70,12 @@ test('兽潮 is not the scene\'s game: it waits behind the scene card (the tray\
   assert.ok(slots.main.some((c) => c.card === 'panel'));
 });
 
-test('the offer to replay is drawn once: among the scene\'s choices when a scene card stands, else its own card', () => {
+test('no board offers itself again (Hanli 11-03: 留 keeps it on 收着的棋局): no replay card, no 再试一回 among the choices', () => {
   const l = yaoyuan();
-  assert.equal(l.replay?.task, 'deer-wind', 'Look offers 射鹿 again');
-  assert.equal(replayOnCard(l), false);
-  const cards = stageCards(l);
-  assert.ok(!cards.some((c) => c.card === 'replay'), 'no card of its own beside the scene card');
-  // The scene card (the box put away) draws its choices — and the offer once; the box's choices, once.
-  const stage = cards.map((c) => cardHtml(c, page(l))).join('');
-  assert.equal(replays(stage), 1, 'once on the stage');
-  assert.equal(replays(panelActsHtml(page(l), { inBox: true })), 1, 'once in the box');
-  // No scene card: the offer is its own card, once.
-  const bare = { ...l, scene: { ...l.scene, panel: null } };
-  assert.equal(replayOnCard(bare), true);
-  assert.equal(replays(stageCards(bare).map((c) => cardHtml(c, page(bare))).join('')), 1);
+  assert.equal(l.replay, undefined);
+  const stage = stageCards(l).map((c) => cardHtml(c, page(l))).join('');
+  assert.equal(replays(stage), 0);
+  assert.equal(replays(panelActsHtml(page(l), { inBox: true })), 0);
 });
 
 test('a game alone never greys the page: the passage\'s lock reads the box, which steps aside for the game; its own controls are never locked', async () => {

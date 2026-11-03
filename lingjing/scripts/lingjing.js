@@ -34,8 +34,8 @@ import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml } fro
 import { since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton, threadsAt, asideOpens, doorLine, trayHourChipHtml } from './cards.js';
-import { ownSkip, slotNext } from './stuck.js';
+import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, threadsAt, asideOpens, doorLine, trayHourChipHtml } from './cards.js';
+import { ownSkip } from './stuck.js';
 import { fullOfferHtml, pouchHtml } from './pouch.js';
 import { fantongKailu, kailuDockHtml, potLeft, potOff, potRuns } from './fantong-kailu.js';
 import { catchTold, holdTold, spentBoard, toldHeld, toldInLook } from './board-deal.js';
@@ -3683,23 +3683,6 @@ async function errandSkipped(id, r) {
   bringWonIntoFocus();
   return true;
 }
-/* The skip's slot fills itself the moment he is stuck — the clock, or the game saying so — without
-   a repaint of the page: a live game's own repaints never touch it (it is outside [data-game]). */
-/* …and empties itself once the board is won or left (stuck.js slotNext). */
-function openStuckSlots() {
-  for (const slot of document.querySelectorAll('[data-skip-slot]')) {
-    const next = slotNext(boards.get(slot.dataset.skipSlot), Date.now(), Boolean(slot.firstElementChild));
-    if (next === 'fill') {
-      const cut = slot.dataset.skipCut ?? null; // an errand's board: 「跳过 · 酬减半」 (cards.js skipBoard)
-      slot.innerHTML = skipButton(slot.dataset.skipSlot, lang(), 'skipIcon' in slot.dataset, cut); // the shell bar's ✕, or the word under a board
-      bringIntoFocus(slot.firstElementChild);
-      // Stuck: she spurs him once a board, and may point to Ling (hersay.js stuck) — a story board's only; an errand's
-      // skip says its cut and nothing more (Hanli 10-27: no 银月 lines for it).
-      if (cut == null) herSay.say('stuck', '', { key: slot.dataset.skipSlot });
-    } else if (next === 'clear') slot.innerHTML = '';
-  }
-}
-setInterval(openStuckSlots, 1000);
 /* The way out shows where he is looking (live 2026-10-19, 喂饼 at 390: 「算了，往下走」 came under the
    stage's fold, cut in half): the stage's own scroller (#focus) moves just enough — never the page.
    Above the view, it moves up to it the same way (a won game's 所得 stands over the cards). */
@@ -3723,12 +3706,6 @@ async function keptTap(id, action) {
   show({ bookOpen: false });
   await refresh();
   if (action === 'kept-play' && !r.story) openFromTray(id);
-}
-/* A board left on an earlier day, offered again (Look's replay): 再试一回 lays it as it was; 改日 puts it off. */
-async function replayTap(id, play) {
-  const r = await write('task', { action: play ? 'replay' : 'later', id }).catch(failed);
-  if (!r.ok) keep({ doNote: refusal(r) });
-  await refresh();
 }
 function gameMove(gmove) {
   // A board's tap outside its host (the bar's ↺ 重来, a board's own 问询: `data-gfor`) acts on the board it names.
@@ -3857,10 +3834,10 @@ const CLICKS = [
   // The scene's choices (on its card, or inside the box at its last beat) come before the box's own taps.
   ['[data-look-at]', (el) => { if (!el.matches(':disabled')) run(`look:${el.dataset.lookAt}`, () => lookAt(el.dataset.lookAt)); }],
   ['[data-panel-duel]', (el) => { if (!el.matches(':disabled')) callDuel(el.dataset.panelDuel); }],
-  ['[data-panel-exit]', (el) => { if (el.matches(':disabled')) return; inertNow(el); run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.textContent.trim(), el.dataset.panelAnswer, el.dataset.panelPass === '1')); }],
+  // 留 on a way on that is no board (a fight, a riddle): it goes on as ✕ does, and says so (cards.js passOut).
+  ['[data-panel-exit]', (el) => { if (el.matches(':disabled')) return; inertNow(el); if (el.dataset.panelKeep === '1') keep({ doNote: words().unkept }); run(`panel:${el.dataset.panelExit}`, () => panelTap(el.dataset.panelExit, el.dataset.panelPass === '1' ? (el.getAttribute('aria-label') ?? el.textContent.trim()) : el.textContent.trim(), el.dataset.panelAnswer, el.dataset.panelPass === '1')); }],
   // The story's quiet controls — 回看, 跳过, 配音, 慢 中 快 — first; then a tap anywhere on the stage (the next sentence).
   // 回看 open, the lines wait under it (proto a: 「回看」 pauses the passage); closed, they go on.
-  ['[data-game-skip]', (el) => skipGame(el.dataset.gameSkip)],
   ['[data-board-close]', (el) => closeBoard(el.dataset.boardClose)],
   ['[data-board-keep]', (el) => keepGame(el.dataset.boardKeep)],
   // 收着的棋局 (cards.js keptGroupHtml): the tray's chip opens the 事 book at the list; 玩 takes one up, 丢 lets it go.
@@ -3870,8 +3847,6 @@ const CLICKS = [
   ['[data-told-on]', (el) => toldGone(el.dataset.toldOn)],
   ['[data-board-leave]', (el) => leaveGame(el.dataset.boardLeave)],
   ['[data-fight-tap]', (el) => fightTap(el.dataset.fightTap)],
-  ['[data-replay-play]', (el) => { run(`replay:${el.dataset.replayPlay}`, () => replayTap(el.dataset.replayPlay, true)); return true; }],
-  ['[data-replay-later]', (el) => { run(`replay:${el.dataset.replayLater}`, () => replayTap(el.dataset.replayLater, false)); return true; }],
   ['[data-dlg-log]', () => { show({ logOpen: !view.logOpen }); lines.hold(view.logOpen); }],
   ['[data-dlg-logclose]', () => { show({ logOpen: false }); lines.hold(false); }],
   ['[data-dlg-voice]', () => { setDub(!dubOn()); render(); }],
@@ -4026,7 +4001,7 @@ fenceBoards();
 // Its sounds and its kit's bed are the shell's (shellOf, by the module's id), and its win chimes (settle) as every board's does.
 wireLiveGames({ boardFor, lang, paused: () => popOpen() || anyPaused(),
   shellOf: (id, g) => shellFor(id, g.mod?.meta?.id), onGone: (id) => forgetShell(id),
-  onWon: (g) => { if (ownSkip(g.state)) return boardSkipped(g); g.sent = true; settleShell(g.taskId, { won: true, stars: g.state?.stars ?? null }); forgetShell(g.taskId); openStuckSlots(); run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
+  onWon: (g) => { if (ownSkip(g.state)) return boardSkipped(g); g.sent = true; settleShell(g.taskId, { won: true, stars: g.state?.stars ?? null }); forgetShell(g.taskId); run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
 /* A game on the mount() contract settles with its result: the board takes it, and a win goes the way every board's does. */
 function beatSettled(g, result) {
   if (g.left) return; // put down (收手): nothing to settle
@@ -4043,7 +4018,7 @@ function beatSettled(g, result) {
   g.state = { ...g.state, won: true, grade: graded, stars: result.stars ?? null };
   g.sent = true;
   forgetShell(g.taskId);
-  openStuckSlots();
+ 
   run(`win:${g.taskId}`, () => onWin(g.taskId));
 }
 /* A bout lost that is played once (切磋): the rules take the loss, the board leaves the stage, the page reads again. */
@@ -5346,9 +5321,8 @@ if (SCRATCH) {
       run(`win:${id}`, () => onWin(id));
       return true;
     },
-    // The stuck gate opened at once (stuck.js), and the board left the way the player leaves it.
-    stuck: (id) => { const g = boardFor(id); if (!g) return false; g.shownAt = 0; openStuckSlots(); return true; },
-    skip: (id) => { const g = boardFor(id); if (!g?.mod) return false; g.shownAt = 0; return skipGame(id); },
+    // The board put away the way the player does it (its ✕, closeBoard).
+    skip: (id) => { const g = boardFor(id); if (!g) return false; return closeBoard(id); },
     // 银月 in the fight (fightsay.js): her bubble, the counts, the last facts sent.
     // 台词预取: the last level's ask — its state, her lines by moment, how long it took.
     prefetch: () => prefetchLog,

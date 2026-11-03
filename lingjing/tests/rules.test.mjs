@@ -348,12 +348,12 @@ test('every answer carries the question ready: the scene\'s buttons, the riddle 
   assert.deepEqual(aside.result.ask.options.map(o => o.label), l.ask.options.map(o => o.label));
   assert.equal(VERBS.look({ ...asked.state, chance: DEALT }, content, ctx({ said: '你好' })).state, null, 'any other word leaves it on the table');
   // a miss: the hint, and the answers left; it never shuts (live 2026-10-15: two misses at 01-deep
-  // locked the only way on for a real day) — the second miss makes him stuck, and he may leave it
+  // locked the only way on for a real day) — and he may leave it at any moment (Hanli 11-03: 「不需要卡住」)
   const wrongs = rid.choices.filter(x => x !== rid.wrong && !content.riddles.zh.riddles[rid.key].a.includes(x));
   const miss = resolve(asked.state, content, ctx(), { exit: 'riddle', answer: rid.wrong });
-  assert.equal(miss.result.refused, 'wrong-answer'); assert.ok(miss.result.hint); assert.equal(miss.result.stuck, undefined);
+  assert.equal(miss.result.refused, 'wrong-answer'); assert.ok(miss.result.hint); assert.equal(miss.result.stuck, true);
   assert.deepEqual(askOf(content, miss.state, ctx(), miss.result).options.map(o => o.label), [...rid.choices.filter(x => x !== rid.wrong), '先不答']);
-  refused(resolve, miss.state, { exit: 'riddle', pass: true }, 'not-stuck');
+  assert.equal(resolve(asked.state, content, ctx(), { exit: 'riddle', pass: true }).result.ok, true, 'passed before any miss');
   const shut = resolve(miss.state, content, ctx(), { exit: 'riddle', answer: wrongs[0] });
   assert.equal(shut.result.refused, 'wrong-answer'); assert.ok(shut.result.hint); assert.equal(shut.result.stuck, true);
   assert.equal(look(miss.state, content, ctx()).ask.question, a.question, 'a miss leaves it on the table');

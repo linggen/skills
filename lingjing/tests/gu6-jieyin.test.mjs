@@ -8,8 +8,6 @@ import { loadContent, lint } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, resolve, task, win } from '../scripts/rules.mjs';
 import { chooseBoard, fallBack, meets, withCaps } from '../scripts/caps.js';
-import { stampShown, stuckNow, STUCK_MS } from '../scripts/stuck.js';
-import { skipBoard } from '../scripts/cards.js';
 import * as jieyinMod from '../scripts/games/jieyin.js';
 import { start, step, starsOf } from '../scripts/games/jieyin/sequence.js';
 import { artOf, castOf, levelAsked, swapLabel } from '../scripts/games/jieyin.js';
@@ -228,18 +226,6 @@ test('the source: 「改用…」 after `swapAfter` misses (3), only on a story 
   assert.match(page, /async function fallBackFrom\(g, result\) \{\n  if \(!\(await fellBack\(g\.taskId, result, g\.data, window\)\)\) return;\n  boards\.delete\(g\.taskId\);/);
 });
 
-test('the stuck rule holds on the 结印 board: 「算了，往下走」 after the stuck time, as on every scene board', () => {
-  const g = { mod: jieyinMod, state: { won: false }, taskId: 'qianye-qiajue' };
-  const ctx = { lang: 'zh' };
-  assert.doesNotMatch(skipBoard(g, g.taskId, ctx), /data-game-skip/, 'not at once');
-  g.shownAt -= STUCK_MS + 1;
-  assert.ok(stuckNow(g, Date.now()));
-  assert.match(skipBoard(g, g.taskId, ctx), /data-game-skip="qianye-qiajue"/);
-  assert.ok(stampShown);
-});
-
-/* Hanli 10-21 on his camera: 「手印识别的时候, 需要转动一下手才能识别. 需要提示用户一下」; 「告诉玩家, 用左手还是右手,
-   手掌朝自己还是摄像头. 需要提示清楚」. */
 test('the 讲堂 tells which hand and which way before he tries, turns him sooner, and shows 「转一转」 when a seal will not come', async () => {
   const { facingLine, turnOf } = await import('../scripts/games/jieyin/hint.js');
   const { iconSvg } = await import('../scripts/games/jieyin/pose.js');

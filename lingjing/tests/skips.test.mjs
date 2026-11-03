@@ -1,9 +1,8 @@
-// A story board left, and offered again (Hanli, 2026-10-15 — rules/skips.mjs, scripts/stuck.js):
-//   1. 「跳过这个按钮不要一开始就显示, 玩家卡住了才显示」 — the page's gate: never at the start;
-//      after STUCK_MS on the stage, or once the game says it is stuck, whichever first;
+// A board put away (✕) or kept for later (留) (Hanli, 2026-10-15 and 11-03 — rules/skips.mjs):
+//   1. (11-03, replacing 10-15's stuck gate) 「不需要卡住, 直接就给这个关闭按钮」 — 留 · ✕ from the first moment;
 //   2. 「跳过没有奖励」 — a skip pays nothing (no grant, grade, mark); the story moves on as after a win;
-//   3. 「最好后面能自动触发重玩」 — a board left comes back by itself on a later day, the stage idle,
-//      one a day; won then it pays in full; put off, it comes back another day;
+//   3. (11-03) 「可能用户想丢掉, 可能想以后玩」 — ✕ puts it away for good; 留 keeps it on 收着的棋局, never offered by
+//      itself; taken up and won, it pays in full once;
 //   4. 「对游戏进展要确保没有影响」 — every 卷一 scene and exit is reached skipping every board
 //      (tests/playtest.test.mjs), a grade-gated way on opens for a skipped board, 修为 keeps the
 //      book's pace (tests/balance.test.mjs).
@@ -14,7 +13,6 @@ import { loadContent } from '../scripts/content.mjs';
 import { look, resolve, task, win, pageOnly } from '../scripts/rules.mjs';
 import { dayKey, fitWorld } from '../scripts/state.mjs';
 import { stageCards, stageSlots, CARD_KINDS } from '../scripts/stage.mjs';
-import { STUCK_MS, slotNext, stampShown, stuckNow } from '../scripts/stuck.js';
 import { crawlRules } from './crawl.mjs';
 import { sceneBoards } from '../scripts/rules/skips.mjs';
 import { sceneOf } from '../scripts/rules/world.mjs';
@@ -165,34 +163,10 @@ test('✕ and 留 open every way a skip opens, at every story board of 卷一 (c
 test('a board not on the stage cannot be left; Ling never leaves or offers one (page-only)', () => {
   const { s, now } = at('00-zhuji/j07-dark');
   assert.equal(task(s, content, ctxAt(now), { action: 'skip', id: 'bread-share' }).result.refused, 'not-here');
-  for (const action of ['skip', 'replay', 'later']) assert.equal(pageOnly('task', { action }), true, action);
+  for (const action of ['skip', 'keep', 'kept-play', 'kept-drop']) assert.equal(pageOnly('task', { action }), true, action);
+  for (const action of ['replay', 'later']) assert.equal(task(s, content, ctxAt(now), { action, id: 'bread-share' }).result.refused, 'unknown-action', `${action}: the old replay is gone`);
   assert.equal(pageOnly('tale', { action: 'skip' }), true);
   assert.equal(pageOnly('task', { action: 'done' }), false);
-});
-
-test('the stuck gate (scripts/stuck.js): never at the start; after STUCK_MS, or once the game says it is stuck', async () => {
-  const rain = await import('../scripts/games/rain.js'); // was the old 射鹿 board's (deer.js, deleted 2026-10-20)
-  const g = { mod: rain, state: rain.newGame('s') };
-  assert.equal(stuckNow(g, 0), false, 'never before it was laid');
-  stampShown(g, 1000);
-  stampShown(g, 5000);
-  assert.equal(g.shownAt, 1000, 'the clock is kept across repaints');
-  assert.equal(stuckNow(g, 1000), false, 'not at the start');
-  assert.equal(stuckNow(g, 1000 + STUCK_MS - 1), false);
-  assert.equal(stuckNow(g, 1000 + STUCK_MS), true, 'stood unwon long enough');
-  assert.ok(STUCK_MS >= 60000 && STUCK_MS <= 90000);
-  // Flooded three times: stuck at once.
-  assert.equal(stuckNow({ ...g, state: { ...g.state, floods: 3 } }, 1001), true);
-  assert.equal(stuckNow({ ...g, state: { ...g.state, floods: 3, won: true } }, 1001), false, 'never once won');
-  assert.equal(stuckNow({ ...g, skipped: true }, 1000 + STUCK_MS), false, 'never once left');
-  // The games with a clear fail say when they are stuck.
-  const fails = { rain: { floods: 3 }, sneeze: { hits: 5 } }; // 黑地 · 最后一罚 · 一千米's old boards deleted 2026-10-19, the old 射鹿 2026-10-20
-  for (const [id, at] of Object.entries(fails)) {
-    const mod = await import(`../scripts/games/${id}.js`);
-    const s = mod.newGame('s');
-    assert.equal(mod.stuck(s), false, `${id}: not at the start`);
-    assert.equal(mod.stuck({ ...s, ...at }), true, `${id}: stuck after ${JSON.stringify(at)}`);
-  }
 });
 
 test('one rule for every board: no game draws a skip of its own; the page lays 留 and ✕, ungated', async () => {
@@ -217,22 +191,8 @@ test('one rule for every board: no game draws a skip of its own; the page lays �
 });
 
 // Live 2026-10-15: 「算了，往下走」 stood on under the won 最后一罚 — the slot was only filled, never emptied.
-test('the skip slot empties once its board is won or left, and fills only when stuck', () => {
-  const mod = { meta: {}, stuck: () => false };
-  const g = { mod, state: { won: false }, shownAt: 0 };
-  assert.equal(slotNext(g, 1000, false), null, 'not at the start');
-  assert.equal(slotNext(g, STUCK_MS + 1, false), 'fill', 'stuck: filled');
-  assert.equal(slotNext(g, STUCK_MS + 1, true), null, 'shown and still unwon: kept');
-  g.state = { won: true };
-  assert.equal(slotNext(g, STUCK_MS + 2, true), 'clear', 'won: cleared');
-  assert.equal(slotNext(g, STUCK_MS + 2, false), null, 'won: never filled again');
-  assert.equal(slotNext({ ...g, state: { won: false }, skipped: true }, STUCK_MS + 2, true), 'clear', 'left: cleared');
-  assert.equal(slotNext(undefined, 0, true), 'clear', 'gone: cleared');
-});
-
-test('the way out comes into sight: a skip slot filled below the stage\'s fold scrolls #focus to it, never the page (live 390, 2026-10-19)', () => {
+test('#focus moves to what must be seen, never the page (live 390, 2026-10-19)', () => {
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(src, /slot\.innerHTML = skipButton\(slot\.dataset\.skipSlot, lang\(\), 'skipIcon' in slot\.dataset, cut\);[^\n]*\n\s*bringIntoFocus\(slot\.firstElementChild\);/);
   const fn = src.slice(src.indexOf('function bringIntoFocus('), src.indexOf('function bringIntoFocus(') + 500);
   assert.match(fn, /const box = \$\('focus'\);/);
   assert.match(fn, /box\.scrollBy\(/);
