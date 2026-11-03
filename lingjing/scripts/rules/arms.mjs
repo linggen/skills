@@ -3,6 +3,7 @@
 import { dayKey, lockedOf, pick, tierOf, seedOf } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
 import { itemOf } from './errands.mjs';
+import { fitWear } from './wear.mjs';
 import { hashOf } from './travel.mjs';
 import { ofJuan, tierIndex } from './world.mjs';
 import { hasFound, stow } from './pouch.mjs';
@@ -139,6 +140,7 @@ export function refine(state, content, ctx, args) {
   s.bag[weapon.id] -= 1;
   if (!s.bag[weapon.id]) delete s.bag[weapon.id];
   if (s.wear?.weapon === weapon.id) delete s.wear.weapon;
+  fitWear(s); // a second copy she wore, gone with the last one
   s.treasure = { name, base: weapon.effect?.atk ?? 0, element: material.effect.core, level: 1 };
   return { state: s, result: { ok: true, refined: { from: pick(weapon.name, lang), with: pick(material.name, lang) }, treasure: treasureBrief(content, s), show: [{ card: 'treasure' }] } };
 }

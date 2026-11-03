@@ -4,7 +4,7 @@ The one list of what is in flight, parked, not started, and waiting on Hanli.
 Every agent reads it before starting and edits its own row when it lands (hash or tag, date).
 Systems themselves live in `design.md` (【已建】 · 【在建】 · 【远景】); this file is only the work.
 
-Updated 2026-11-02.
+Updated 2026-11-03.
 
 ## In flight
 
@@ -12,6 +12,10 @@ None.
 
 ## Done lately
 
+- 11-03 — **Story things kept; 银月 wears gear like him** (Hanli 11-03: 「可以, 都按你说的做」; design.md § 储物袋 › 剧情要用, § 银月 in the game; tests/pouch.test.mjs, tests/her-gear.test.mjs).
+  - `story-keep` refuses 丢 · 换 · 卖 on every freeSlot thing; the card says 「剧情要用 · 不占格」, no 丢, and the dashed tile's tooltip too. Marked `story` (agent's pick, Hanli delegated 11-03): 爷爷的弓, 《吐纳经》, 《黄庭经》, 《河洛剑诀》 — only the story hands them over, and something later reads them or the book says keep it. Not marked: 鹿皮, 踏马符, 赤铜葫芦 (the story's takes are `held: true`, its absence is written; the open chapter's key rule covers the 鹿皮), 萝卜 · 灵芝 (sold, carried by the errand rule). Her bell is now never sold either.
+  - Her three slots, `wear["yinyue.weapon|robe|pendant"]`; state v16 moves her one slot (the bells → 佩, 齐纨 → 法衣; items.json `slot`). Her card: 器攻 × 0.34, 防 × 0.5, 抗 × 1 (`her_card.gear`, agent's pick: +1 at most a slot, the lint's own +1 rule). One copy, one place (`worn-elsewhere`); fewer held than worn, hers come off first.
+  - Open: tools/battle-sim.mjs --her was red before this (3 rows at 元婴 over 97%); her full gear tips 筑基 95.3% → 99.7% on that yardstick. Hanli to weigh. The phone's pouch needs her three cells and the 给银月 button (bundle carries v16).
 - 11-03 — **The cloud save is for subscribers; one winner rule, declared** (Hanli: 「手机直连云端也做了吧. 订阅用户才存云端, 非注册付费用户, 只可以本地同步」 · 「应该鼓励用户订阅」 · 「按总进度比」; agent's picks, Hanli delegated 11-03; design.md § Online). SKILL.md `cloud.further` (tools/further.mjs, tests/skill-md.test.mjs) is read by the engine (Mac ↔ cloud; linggen `21503a88`) and the phone (↔ cloud over HTTPS, ↔ Mac; linggen-mobile `17badcd`). linggen.dev answers a free account 402 and keeps a lapsed copy (linggensite `9998540`, **not deployed — waits for Hanli**). Facts only (`cloud`, `kept_at`, `synced_at`, `rose_local_at`: page `GET /api/skill-cloud/lingjing` `save`, tools `LINGGEN_CLOUD_SAVE`); 银月 words them. Open: the Mac page's line and 银月's Progress reading `LINGGEN_CLOUD_SAVE` (another lane).
 - 11-03 — **A spent allowance, said on the stage** (Hanli 2026-11-03: 「试用期到期后, 要有消息提示用户订阅或者添加自己的模型」): the engine's `allowance_spent` fact (a hidden turn, a light turn) ends the stage's wait and opens scripts/spent-card.js — 订阅 or 用自己的模型 (chat.useOwnModel: Settings → Models, the refused turn re-sent once one is added); words in cards.js WORDS `spent*`, zh and en, also carried to the phone. npc-ask.js no longer reads the engine's `Error:` row as the keeper's line. Needs engine d37c7df3. tests/spent-card.test.mjs.
 - 11-02 — **Nine 层 past 练气, read as three 段** (Hanli approved 2026-11-02: 「以后可以仍然按层数算1-3=小成, 4-6=中, 7-9=大」 · 「9层用于计算, 小, 中, 大成用于显示」 · 「练气的UI不改了, 保持现在这样吧. 筑基以后再分3段UI吧」; design.md § 境界 › Nine 层 to count; tests/nine-layer.test.mjs). 筑基 and above: nine 层 (`display: "stages"`), named 「筑基 · 中成」, 圆满 on a 段's last 层; Look's `tier.realm` · `tier.duan` · `tier.layer` feed the three-段 bar (47879a65); 练气 unchanged. 段 trial into 四层 and 七层 (`breakthrough.duan`, no pill, a failure only an hour); 九层 the realm throw. Caps h09 `story` / h10 at 三层. State v15 carries old saves to the same point of their 段 (小成 · 0 → 一层 · 0). The pace kept (the coordinator's call, Hanli delegated 11-02: 「not a 4× grind」): each 段 asks its old step's 修为, split ×1.1 over its 层 (筑基 4,330 in all), its 层 pay at the 段's level, 气血 a sixth a 层; days per 回 as at 38d5d800. Also: tests/replay-sealed.test.mjs for 38d5d800's `play_pay.replay_sealed`.

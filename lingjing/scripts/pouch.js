@@ -48,8 +48,13 @@ function wornHtml(g, ctx) {
   const name = (it) => (it ? `<b data-pouch-item="${esc(it.id)}" role="button" tabindex="0">${esc(it.name)}</b>` : `<span class="dim">${esc(w.gearEmpty)}</span>`);
   const slots = g.slots.map((s) => cell(w.gearSlots[s.slot] ?? s.slot, name(s.item), s.item ? `<button class="act quiet" data-remove="${esc(s.item.id)}">${esc(w.gearOff)}</button>` : '')).join('');
   const treasure = t ? cell(w.gearSlots.treasure, `<b>${esc(t.name)}</b><span class="small dim">${esc(t.step)} · ${esc(t.element_name)}</span>`) : '';
-  const lift = g.her?.item ? liftSaid(g.her.item.effect, w) : '';
-  const her = g.her ? cell(say(w.gearHer, { name: g.her.name }), `${name(g.her.item)}${lift ? `<span class="small dim">${esc(lift)}</span>` : ''}`) : '';
+  // Hers: the same three (Hanli 11-03 — rules/wear.mjs), each with its own 卸下.
+  const herCell = (s) => {
+    const lift = s.item ? liftSaid(s.item.effect, w) : '';
+    const off = s.item ? `<button class="act quiet" data-remove="${esc(s.item.id)}" data-on="her" data-slot="${esc(s.slot)}">${esc(w.gearOff)}</button>` : '';
+    return cell(say(w.gearHerSlot, { name: g.her.name, slot: w.gearSlots[s.slot] ?? s.slot }), `${name(s.item)}${lift ? `<span class="small dim">${esc(lift)}</span>` : ''}`, off);
+  };
+  const her = g.her ? (g.her.slots ?? []).map(herCell).join('') : '';
   return `<div class="pwornrow">${slots}${pouchCellHtml(g.pouch, ctx)}${treasure}${her}</div>${gearFightHtml(g.fight, ctx)}${g.her ? herCardHtml(g.her, ctx) : ''}`;
 }
 
@@ -144,8 +149,16 @@ function detailHtml(i, g, ctx, pw, ui) {
   else if (e.learn) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.study)}</button>`);
   else if (e.pouch && !carriedKind(i, g)) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(say(pw.carry, { n: e.pouch }))}</button>`);
   else if (e.stamina) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.use)}</button>`);
-  if (i.slot && !i.worn) acts.push(`<button class="act" data-wear="${esc(i.id)}">${esc(say(w.gearTo, { slot: w.gearSlots[i.slot] ?? g.her?.name ?? i.slot }))}</button>`);
-  if (i.worn && (g.slots ?? []).some((s) => s.item?.id === i.id)) acts.push(`<button class="act quiet" data-remove="${esc(i.id)}">${esc(w.gearOff)}</button>`);
+  // 戴上 · 佩 and 给银月 · 佩: each place a 戴上 lands now (the rules' `wear_on`); 卸下 for each slot that wears it (`worn_on`).
+  for (const o of i.wear_on ?? []) {
+    const slot = w.gearSlots[o.slot] ?? o.slot;
+    acts.push(o.on === 'her' ? `<button class="act" data-wear="${esc(i.id)}" data-on="her">${esc(say(w.gearGive, { name: g.her?.name ?? '', slot }))}</button>`
+      : `<button class="act" data-wear="${esc(i.id)}">${esc(say(w.gearTo, { slot }))}</button>`);
+  }
+  for (const o of (i.worn_on ?? []).filter((o) => o.slot !== 'abode')) {
+    acts.push(o.on === 'her' ? `<button class="act quiet" data-remove="${esc(i.id)}" data-on="her" data-slot="${esc(o.slot)}">${esc(say(w.gearOffHer, { name: g.her?.name ?? '' }))}</button>`
+      : `<button class="act quiet" data-remove="${esc(i.id)}">${esc(w.gearOff)}</button>`);
+  }
   if (g.market && i.sell > 0 && !i.free) acts.push(`<button class="act quiet" data-sell="${esc(i.id)}">${esc(say(pw.sell, { n: i.sell }))}</button>`);
   if (!i.free && !i.worn) acts.push(`<button class="act quiet danger" data-toss="${esc(i.id)}">${esc(pw.toss)}</button>`);
   // 丢 asks here, on the pane — the page's own confirm, never window.confirm.

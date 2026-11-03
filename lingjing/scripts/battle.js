@@ -178,7 +178,8 @@ export function shuffle(ids, seed) {
    taller for this side (银月 by the realm and the cauldrons found,
    rules/companion.mjs herLifts): its body (`bodyOf`), a number added to what
    it does (`effectOf`; a `damage` it lacked is a blow at the beast itself, no
-   aim asked), and 护主 (`keywordsOf`).
+   aim asked), 护主 (`keywordsOf`), and `ward` { element: n } — a blow of that
+   element lands n lighter on the body (`minionLands`, at least 1: her 佩).
    `power` is what a worn 法器 adds to 主灵根一击; `boost` is the day's cast
    asked about fights — { element, n }: that element's 功法 hit n harder
    (or softer, n < 0). Both are locked at the door like the rest.
@@ -471,7 +472,13 @@ function hurt(st, side, amount, why = {}) {
   if (st.outcome === 'open') gather(st, side);
 }
 
+/* A blow at a body, less the 抗 its lift gives for that element (her 佩, rules/companion.mjs herGear), at least 1. */
+export const minionLands = (side, minion, amount, element) => {
+  const ward = (element && side?.lifts?.[minion?.id]?.ward?.[element]) || 0;
+  return ward && amount > 0 ? Math.max(1, amount - ward) : amount;
+};
 function hurtMinion(st, side, minion, amount, why = {}) {
+  amount = minionLands(side, minion, amount, why.element);
   minion.hp -= amount;
   st.log.push({ act: 'hurt-minion', who: side.who, id: minion.id, uid: minion.uid, amount, hp: minion.hp, ...why });
   if (minion.hp <= 0) withdraw(st, side, minion);

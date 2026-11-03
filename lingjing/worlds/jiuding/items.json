@@ -195,7 +195,7 @@
       }
     },
     {
-      "id": "moon-bell",
+      "id": "moon-bell", "slot": "pendant",
       "juan": 2,
       "kind": "artifact",
       "name": {
@@ -614,7 +614,7 @@
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-16, from the description."
     },
     {
-      "id": "qi-silk",
+      "id": "qi-silk", "slot": "robe",
       "juan": 3,
       "kind": "artifact",
       "name": {
@@ -1917,7 +1917,7 @@
       "art_source": "The talisman picture (a paper 符 under a seal), no ink of its own: a test thing, gone before launch. No comic icon: the small games draw their glyph (comicArt null)."
     },
     {
-      "id": "yinyue-lingdang",
+      "id": "yinyue-lingdang", "slot": "pendant",
       "kind": "artifact",
       "name": {
         "zh": "银月的小铃铛",

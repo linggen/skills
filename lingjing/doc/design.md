@@ -802,7 +802,7 @@ locks the two apart.
   (`state.wear`), a pouch (+room); gear counts in the fight only as § 斗法 says.
 - **`Trade {buy|sell|use, id}`** at a market (a place with `shop`), catalog
   prices, no 体力: `no-market`, `not-for-sale-here`, `no-stones`,
-  `not-in-bag`, `key-in-use`, `not-usable`, `bag-full`.
+  `not-in-bag`, `story-keep`, `not-usable`, `bag-full`, `worn-elsewhere`, `not-wearable`.
 - **按店进货 — a shelf is a shop's** (Hanli, 2026-10-05): a place's `has.shop` may
   be `{name, keeper, goods: [item ids], opens: {done: <scene>}, shut}` — its own
   goods only, nothing until `opens.done` is behind him (`shut` is what Look says
@@ -839,6 +839,13 @@ locks the two apart.
   are one component (bagGridHtml) — the 饭桶's 开炉 page and the card's swap
   draw the same bag. Tiles, 服用 · 佩戴 · 卖 · 丢. A story thing (`story: true`, e.g.
   紫须芝 carried back to 阿禾, 邹青松's letter) takes no slot, like a key.
+- **剧情要用** (Hanli 11-03): every freeSlot thing (a key, `story`, her bell, a key the open chapter needs,
+  a taken errand's carry) is never tossed, swapped out or sold — one refusal, `story-keep` (pouch.mjs
+  `storyKeep`); its card says 「剧情要用 · 不占格」, no 丢 or 卖, and its dashed tile's tooltip says the
+  same. `story: true` marks a thing only the story hands over that something later reads or the book
+  tells him to keep: 爷爷的弓, 《吐纳经》 (Ling reads its 功课 daily), 《黄庭经》, 《河洛剑诀》 (agent's
+  pick, Hanli delegated 11-03). Goods a shop or a beast gives again are not marked; the derived rules
+  cover them while the story needs them. What he or she wears takes no slot either (wear.mjs).
 - **杀人必摸尸** (the author, 2026-10-03: 「小满杀人后要捡走东西。游戏玩法」):
   a kill leaves 所得, in the book and the game alike. A foe's `drops` may be a
   list (an id twice is two of it); `card` names the card its win deals (not
@@ -970,7 +977,7 @@ is the pure core; the page draws it on the stage beside the chat.
   arms.mjs `boundOf`; +1 per 4 重; the bigger of the two counts), lent roots whose 功法 may enter
   the deck, a 法衣's 护体, a 佩's ward, a 符 in the bag as a talisman card.
 - **银月's card grows** with the realm (`rewards.json → her_card`) and by the
-  ③ ⑥ ⑨ cauldrons (月华 · 月障 · 月落).
+  ③ ⑥ ⑨ cauldrons (月华 · 月障 · 月落), and by what she wears (§ 银月 in the game).
 - **★ from 闭关** (§ 体力): each star −1 灵力 while cost > 1, then +1 to its number.
 - **The door contract** (every fight and mini-game): entered from the world;
   pays 体力 at the door (a fight's 4); **locks a loadout** (realm, roots, the ten,
@@ -1461,6 +1468,13 @@ Who she is, her memories and the book's use of her: story DESIGN and OUTLINE
   `art/memories/` may be colour (lint + tests). **Painted:** memory 1.
   **To paint:** 2–8 (tools/paint-memories.py; the draft prompts are verbatim in archive.md § doc/design.md as it stood 2026-09-30 § ③). Fragments (a place's
   `fragment`) are built, none placed yet.
+- **She wears gear like him** (Hanli 11-03): her own 法器 · 法衣 · 佩 (`wear["yinyue.<slot>"]`,
+  rules/wear.mjs). Any weapon, robe or pendant goes on her (`trade use … on: her`); her own things
+  in the slot they name (items.json `slot`: the bells 佩, 齐纨 法衣). One copy is worn in one
+  place (`worn-elsewhere`); two held, both. On her card (`her_card.gear`, agent's pick): 器攻 ×
+  0.34 → 攻, 防 × 0.5 → 气血 (each +1 at most, a realm step's size), 抗 × 1 off that element's blows
+  on her card (battle.js `minionLands`, at least 1); a thing's own `lift` on top. The gear panel
+  shows her three slots; 「戴上 · 佩」 and 「给银月 · 佩」, 卸下 per slot. v16 moved her one slot.
 - **The old 银月-at-结丹 quest** (the bell, the water, her riddle) is archived;
   its verb `ring` and the `alone` lines still run for chapters 01–09.
 

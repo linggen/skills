@@ -2,6 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { dayKey, pick, seedOf } from '../state.mjs';
 import { wornOf } from './arms.mjs';
+import { GEAR_SLOTS, herKey } from './wear.mjs';
 import { itemOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
 import { memoriesOf } from './memories.mjs';
@@ -237,7 +238,7 @@ export function herPast(content, state) {
    — each realm reached lifts her 攻/血 as theirs grow ("when you are
    stronger, so is she") — and BY the story: the ③ ⑥ ⑨ cauldron found each
    gives her an ability, and each takes one of her reflections (rewards.json
-   `her_card`). Plus whatever she wears (齐纨 +1 气血). */
+   `her_card`). Plus whatever she wears in her three slots (herGear). */
 const herCardOf = content => content.rewards.her_card ?? {};
 /* Cauldrons found: the chapters ended that hold one (every chapter but a corridor, or one marked `cauldron: false`). */
 export const cauldronsFound = (content, state) => (state.ended ?? []).filter(id => content.chapters[id] && !content.chapters[id].corridor && content.chapters[id].cauldron !== false).length;
@@ -259,9 +260,19 @@ const sumLift = (a, b) => Object.fromEntries([...new Set([...Object.keys(a), ...
   if (x && typeof x === 'object' || y && typeof y === 'object') return [k, sumLift(x ?? {}, y ?? {})];
   return [k, Boolean(x || y)];
 }));
+/* What she wears, on her card (Hanli 11-03 — rewards.json `her_card.gear`): a 法器's 器攻 to her 攻, a 法衣's 防 to her
+   气血, a 佩's 抗 off the blows of that element (battle.js hurtMinion); a thing of hers adds its own `lift` (齐纨 +1 气血). */
+function herGear(content, state, her) {
+  const rate = herCardOf(content).gear ?? {}, on = slot => wornOf(content, state, herKey(her, slot));
+  const [weapon, robe, pendant] = GEAR_SLOTS.map(on), n = (v, r) => Math.round((v ?? 0) * (r ?? 0));
+  const ward = Object.fromEntries(Object.entries(pendant?.effect?.ward ?? {}).map(([el, v]) => [el, n(v, rate.ward_per_point)]).filter(([, v]) => v > 0));
+  const own = { ...(n(weapon?.effect?.atk, rate.atk_per_atk) ? { atk: n(weapon.effect.atk, rate.atk_per_atk) } : {}),
+    ...(n(robe?.effect?.def, rate.hp_per_def) ? { hp: n(robe.effect.def, rate.hp_per_def) } : {}), ...(Object.keys(ward).length ? { ward } : {}) };
+  return [own, ...[weapon, robe, pendant].map(i => i?.effect?.lift ?? {})].reduce(sumLift, {});
+}
 function herLift(content, state) {
   const { tier, ...realm } = realmLift(content, state) ?? {};
-  const her = companionOf(content)?.id, worn = her ? wornOf(content, state, her)?.effect?.lift ?? {} : {};
+  const her = companionOf(content)?.id, worn = her ? herGear(content, state, her) : {};
   return [realm, ...herGifts(content, state).map(g => g.lift ?? {}), worn].reduce(sumLift, {});
 }
 const liftsAny = l => Object.values(l).some(v => (typeof v === 'object' ? liftsAny(v) : Boolean(v)));
@@ -279,6 +290,8 @@ export function herCard(content, state) {
   const lift = herLift(content, state), realm = realmLift(content, state), lang = state.lang;
   return {
     atk: row.atk + (lift.atk ?? 0), hp: row.hp + (lift.hp ?? 0),
+    // A 佩 on her: the blows of that element land lighter on her card.
+    ...(lift.ward && Object.keys(lift.ward).length ? { ward: lift.ward } : {}),
     ...(realm ? { realm: { tier: realm.tier, name: pick(content.ladder.tiers.find(t => t.id === realm.tier)?.name, lang), atk: realm.atk ?? 0, hp: realm.hp ?? 0 } } : {}),
     gifts: herGifts(content, state).map(g => ({ id: g.id, found: g.found, name: pick(g.name, lang), does: pick(g.does, lang) })),
   };

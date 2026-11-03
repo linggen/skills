@@ -6,6 +6,7 @@ import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, grantFrom } from './cards.mjs';
 import { breakthroughOf, itemOf, threadOf } from './errands.mjs';
+import { fitWear } from './wear.mjs';
 import { coolingUntil, duanOdds, duanPass, duanTried, oddsOf, throwOn } from './breakthrough.mjs';
 import { sceneBrief, spoken, wordsOf } from './look.mjs';
 import { hashOf } from './travel.mjs';
@@ -739,12 +740,12 @@ export { advanceChapter, clone, gainsOf, paysOf, replaying, hourOf, judgeAnswer,
 /* One of an item out of the bag (an exit's `take`). Never below nothing: an
    exit with `take.held` takes only if he still holds it (09-snow's 饭桶 eats
    the 赤铜葫芦 if it was not pawned), and a count that was never there is
-   not made NaN. The last one gone, it comes off his slot too. */
+   not made NaN. Fewer held than slots wear it, one comes off (rules/wear.mjs fitWear: hers first). */
 function takeOne(s, id) {
   const held = Number(s.bag?.[id]) || 0;
   if (held <= 0) return false;
-  if (held > 1) { s.bag[id] = held - 1; return true; }
-  delete s.bag[id];
-  for (const [slot, worn] of Object.entries(s.wear ?? {})) if (worn === id) delete s.wear[slot];
+  if (held > 1) s.bag[id] = held - 1;
+  else delete s.bag[id];
+  fitWear(s);
   return true;
 }

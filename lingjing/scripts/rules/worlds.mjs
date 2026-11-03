@@ -8,6 +8,7 @@ import { dayKey, migrate, pick, staminaCost } from '../state.mjs';
 import { callDue, companionOf, companionRiddle } from './companion.mjs';
 import { advanceChapter, clone, judgeAnswer, pay, refuse, RIDDLE_TRIES, spendStamina } from './core.mjs';
 import { advance, itemOf } from './errands.mjs';
+import { herKey, herSlot } from './wear.mjs';
 import { savedFile, savedFor, savesDir, skillDir, writeAtomic, writeMadeWorld } from './files.mjs';
 import { inPlay } from './language.mjs';
 import { nameOf, sceneBrief, spoken } from './look.mjs';
@@ -454,7 +455,8 @@ export function ring(state, content, ctx, args) {
     return { state: s, result: { ok: false, refused: closed ? 'riddle-closed' : 'wrong-answer', ...(closed ? {} : { hint: riddle.hint }) } };
   }
   s.companion = { joined: dayKey(ctx.now), awake: true };
-  s.wear = { ...(s.wear ?? {}), [c.id]: c.bell };
+  // Her bell on her, in its slot (rules/wear.mjs: a 佩).
+  s.wear = { ...(s.wear ?? {}), [herKey(c.id, herSlot(itemOf(content, c.bell), c.id) ?? 'pendant')]: c.bell };
   const paid = c.grant ? pay(content, s, ctx, c.grant) : null;
   // What the cauldrons already gave back comes to her at once: a story node (story.mjs).
   const node = joinNode(content, s, ctx.now);

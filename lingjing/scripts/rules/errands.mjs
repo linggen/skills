@@ -1,6 +1,6 @@
 // rules/errands.mjs — 差事: the errands taken and handed in, the book, the director's brief, the gear panel.
 // Part of the rules engine; rules.mjs is its one door.
-import { ARM_SLOTS, offLadderTier } from '../content.mjs';
+import { offLadderTier } from '../content.mjs';
 import { costOf } from '../battle.js';
 import { dayKey, fill, itemName, lockedOf, periodKey, pick, peakName, stepName, staminaMax, staminaRest, threshold, tierOf, seedOf } from '../state.mjs';
 import { canPick, cardCatalog, deckFor, gearFight, ownedCards, pickedCards, rootsOf, usable } from './cards.mjs';
@@ -24,6 +24,7 @@ import { tideBegun } from './shouchao.mjs';
 import { gamesToday, wallOf, wallPosts } from './rotation.mjs';
 import { coolingUntil, oddsOf } from './breakthrough.mjs';
 import { freeSlot, pouchBrief } from './pouch.mjs';
+import { GEAR_SLOTS, armSlot, herKey, herSlot, wornCount } from './wear.mjs';
 import { chapterLabel, comingOf } from './hui.mjs';
 import { storyAllows } from './cap.mjs';
 import { gatesOf, stageBrief, stageGate } from './gates.mjs';
@@ -703,8 +704,22 @@ const tamesOf = (content, state, item) => content.creatures.creatures
    from them; then the bag, each thing with where it would go or how it is
    used, so the page draws buttons it can press without guessing. A read the
    page asks for when the chip opens — never in Look: 1.5k characters a turn
-   is what Ling would pay for a panel only the player looks at. */
-const GEAR_SLOTS = ['weapon', 'robe', 'pendant'];
+   is what Ling would pay for a panel only the player looks at.
+   Hers are his three (Hanli 11-03; rules/wear.mjs): each bag thing says where a 戴上 lands now (`wear_on`: his slot,
+   hers, or both), and each slot it is worn in (`worn_on`), so 卸下 is per slot. */
+/* Whether a 戴上 into this key lands: already there, or a copy held that no other slot wears. */
+const fitsIn = (state, id, key) => state.wear?.[key] === id || wornCount(state, id) < (state.bag?.[id] ?? 0);
+function wearOn(state, item, her) {
+  const e = item.effect ?? {}, out = [];
+  // A `wear: abode` goes on the abode (人间功课's 护山阵旗, rules/gongke.mjs); one of hers only on her.
+  const mine = e.wear === 'abode' ? 'abode' : e.wear ? null : armSlot(item);
+  if (mine && state.wear?.[mine] !== item.id && fitsIn(state, item.id, mine)) out.push({ on: 'you', slot: mine });
+  const hers = her ? herSlot(item, her.id) : null;
+  if (hers && state.wear?.[herKey(her.id, hers)] !== item.id && fitsIn(state, item.id, herKey(her.id, hers))) out.push({ on: 'her', slot: hers });
+  return out;
+}
+const wornOn = (state, id, her) => Object.keys(state.wear ?? {}).filter(k => state.wear[k] === id)
+  .map(k => (her && k.startsWith(`${her.id}.`) ? { on: 'her', slot: k.slice(her.id.length + 1) } : { on: 'you', slot: k }));
 function gearBrief(content, state, now = new Date()) {
   const her = hasCompanion(state) ? companionOf(content) : null;
   // The shop where he stands — a market's, or a visiting shop's on its day — and what it pays (rules/visiting.mjs).
@@ -714,14 +729,17 @@ function gearBrief(content, state, now = new Date()) {
     const item = itemOf(content, id);
     if (!item) return { id, name: id, n };
     const e = item.effect ?? {};
-    // A `wear` goes on her (once she walks with him) or at the abode (人间功课's 护山阵旗, rules/gongke.mjs).
-    const slot = e.wear ? (e.wear === her?.id || e.wear === 'abode' ? e.wear : null) : ARM_SLOTS.get(item.kind) ?? null;
-    return { ...itemBrief(content, state, item), n, ...(shop?.buys ? { sell: buyBack(shop, item) } : {}), ...(slot ? { slot } : {}), ...(e.progress || e.learn || e.pouch || e.stamina ? { usable: true } : {}) };
+    // `slot`: where it goes on him (or the abode); `wear_on` / `worn_on` as above.
+    const slot = e.wear === 'abode' ? 'abode' : e.wear ? null : armSlot(item), on = wearOn(state, item, her), off = wornOn(state, id, her);
+    return { ...itemBrief(content, state, item), n, ...(shop?.buys ? { sell: buyBack(shop, item) } : {}), ...(slot ? { slot } : {}),
+      ...(on.length ? { wear_on: on } : {}), ...(off.length ? { worn_on: off } : {}), ...(e.progress || e.learn || e.pouch || e.stamina ? { usable: true } : {}) };
   });
   return {
     slots: GEAR_SLOTS.map(slot => ({ slot, item: worn(state.wear?.[slot]) })),
     // Her card as it stands (companion.mjs herCard): 攻/血, the realm it grew with, her abilities.
-    ...(her ? { her: { name: nameOf(content, her.id, state.lang), item: worn(state.wear?.[her.id]), card: herCard(content, state) } } : {}),
+    // Her three slots; `item` is her 佩 (the phone's one cell until it draws the three).
+    ...(her ? { her: { name: nameOf(content, her.id, state.lang), slots: GEAR_SLOTS.map(slot => ({ slot, item: worn(state.wear?.[herKey(her.id, slot)]) })),
+      item: worn(state.wear?.[herKey(her.id, 'pendant')]), card: herCard(content, state) } } : {}),
     // What the fight takes from them (cards.mjs § 装备入局): 主灵根一击 +power,
     // 护体 armor, 抗 by element, the 符 in hand, and the roots they lend.
     fight: (() => {

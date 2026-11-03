@@ -395,6 +395,18 @@ function herRows(decks, problems) {
     prev = row(`${zh[top] ?? top} + 第${g.found}鼎 ${g.name?.zh ?? g.id}`, top, lift, prev);
   }
   row(`${zh[top] ?? top} 全 + 齐纨 +0/+1`, top, addLift(lift, { hp: 1 }), prev);
+  // Her three slots (Hanli 11-03, rules/companion.mjs herGear): the best the world has on her, by her_card.gear —
+  // 法器 器攻 × atk_per_atk, 法衣 防 × hp_per_def (齐纨's +1 instead when it is better), 佩 抗 × ward_per_point.
+  const rate = HER.gear ?? {}, items = JSON.parse(fs.readFileSync(path.join(HERE, '../worlds/jiuding/items.json'), 'utf8')).items;
+  const best = (kind, n) => Math.max(0, ...items.filter(i => i.kind === kind).map(n));
+  const pend = items.filter(i => i.kind === 'pendant').sort((a, b) => Object.values(b.effect.ward).reduce((x, y) => x + y, 0) - Object.values(a.effect.ward).reduce((x, y) => x + y, 0))[0];
+  const gear = { atk: Math.round(best('weapon', i => i.effect?.atk ?? 0) * (rate.atk_per_atk ?? 0)), hp: Math.max(1, Math.round(best('robe', i => i.effect?.def ?? 0) * (rate.hp_per_def ?? 0))),
+    ward: Object.fromEntries(Object.entries(pend?.effect?.ward ?? {}).map(([el, n]) => [el, Math.round(n * (rate.ward_per_point ?? 0))])) };
+  const first = Object.keys(HER.realm ?? {})[0] ?? 'foundation', realmFirst = { ...(HER.realm?.[first] ?? {}) };
+  row(`${zh[first] ?? first} 印 + 她全副 +${gear.atk}/+${gear.hp}`, first, addLift(realmFirst, gear), at(first, realmFirst));
+  const realmTop = { ...(HER.realm?.[top] ?? {}) };
+  row(`${zh[top] ?? top} 印 + 她全副 +${gear.atk}/+${gear.hp}`, top, addLift(realmTop, gear), at(top, realmTop));
+  row(`${zh[top] ?? top} 全 + 她全副 +${gear.atk}/+${gear.hp}`, top, addLift(lift, gear), prev);
 }
 
 async function herOnly() {

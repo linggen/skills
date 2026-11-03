@@ -1,13 +1,12 @@
 // rules/travel.mjs — Story, travel, trade, language — and Ling driving the game.
 // Part of the rules engine; rules.mjs is its one door.
-import { ARM_SLOTS } from '../content.mjs';
 import { dayKey, fill, pick, staminaMax } from '../state.mjs';
 import { langWas } from './language.mjs';
 import { tierRank } from './arms.mjs';
 import { gainCard, ownedCards } from './cards.mjs';
 import { companionOf, hasCompanion } from './companion.mjs';
 import { clone, offerTasks, pay, paysOf, refuse, spendStamina } from './core.mjs';
-import { advance, bookOf, directorBrief, GEAR_SLOTS, itemBrief, itemOf, onStoryRoad, questOf, settleErrands } from './errands.mjs';
+import { advance, bookOf, directorBrief, itemBrief, itemOf, onStoryRoad, questOf, settleErrands } from './errands.mjs';
 import { arriveOnRoad } from './road.mjs';
 import { forSale, sceneBrief, shelfOf, shopOf, wordsOf } from './look.mjs';
 import { buyBack, visitorAway, visitorHere } from './visiting.mjs';
@@ -16,6 +15,7 @@ import { enteredBeat, refusalBeat } from './story.mjs';
 import { comingOf } from './hui.mjs';
 import { enter } from './worlds.mjs';
 import { bagFull, pouchBrief, roomFor, storyKeep } from './pouch.mjs';
+import { GEAR_SLOTS, armSlot, fitWear, herKey, herSlot, wornCount } from './wear.mjs';
 import { findFragment } from './memories.mjs';
 import { danduBrief, eatPill } from './dandu.mjs';
 import { resetCooldowns } from './events.mjs';
@@ -217,6 +217,28 @@ export function buyAt(content, s, ctx, item, price, qty = 1) {
   return dealt({ state: s, result: { ok: true, bought: item.id, ...(qty > 1 ? { qty } : {}), item: itemBrief(content, s, item), paid: { wealth: -total }, wealth: s.wealth } });
 }
 
+/* 戴上 (Hanli 11-03: 银月 wears gear like him — rules/wear.mjs): an arm on him in its kind's slot, or on her
+   (`on: 'her'`) in the same slot of hers; one of her own things (`effect.wear: <her id>`) only on her; the abode's
+   flag on the abode. One copy is worn in one place: on her, it is not on him (`worn-elsewhere`); two held, both
+   may be. Mutates `s`; null when the thing is not worn at all. */
+const onHer = (args, her) => Boolean(her) && (args.on === 'her' || args.on === her);
+function wearOne(content, s, item, args) {
+  const lang = s.lang, e = item.effect ?? {}, her = companionOf(content)?.id ?? null;
+  const toHer = (her && e.wear === her) || onHer(args, her);
+  if (toHer && !hasCompanion(s)) return refuse('no-companion', pick({ zh: '还没有人可以佩戴它。', en: 'There is no one to wear it yet.' }, lang));
+  const slot = e.wear === 'abode' ? 'abode' : toHer ? herSlot(item, her) : e.wear ? null : armSlot(item);
+  if (!slot) return toHer ? refuse('not-wearable', null) : null;
+  const key = toHer && slot !== 'abode' ? herKey(her, slot) : slot;
+  s.wear ??= {};
+  if (s.wear[key] !== item.id && wornCount(s, item.id) >= (s.bag[item.id] ?? 0)) {
+    const onHim = !Object.keys(s.wear).some(k => s.wear[k] === item.id && k.includes('.'));
+    return refuse('worn-elsewhere', pick(onHim ? { zh: '这件已在你身上，先卸下。', en: 'You are wearing that — take it off first.' }
+      : { zh: '这件已在她身上，先卸下。', en: 'She is wearing that — take it off her first.' }, lang), { on: onHim ? 'you' : 'her' });
+  }
+  s.wear[key] = item.id;
+  return { state: s, result: { ok: true, used: item.id, ...(toHer ? { on: 'her', slot } : { slot }), item: itemBrief(content, s, item), wear: s.wear } };
+}
+
 export function trade(state, content, ctx, args) {
   const item = itemOf(content, String(args.id ?? ''));
   const s = clone(state);
@@ -248,13 +270,15 @@ export function trade(state, content, ctx, args) {
     if (empty) return empty;
     s.bag[item.id] = held - 1;
     if (s.bag[item.id] <= 0) delete s.bag[item.id];
-    if (s.wear) for (const [slot, id] of Object.entries(s.wear)) if (id === item.id && !s.bag[item.id]) delete s.wear[slot];
+    fitWear(s); // the last copy sold comes off the slot that wore it (hers first)
     s.wealth += price;
     return { state: s, result: { ok: true, sold: item.id, item: itemBrief(content, s, item), paid: { wealth: price }, wealth: s.wealth } };
   }
   if (args.action === 'use') {
     if (held < 1) return refuse('not-in-bag', null);
     const e = item.effect ?? {};
+    // Given to her, only what she can wear — never a pill eaten by mistake.
+    if (onHer(args, companionOf(content)?.id) && !herSlot(item, companionOf(content).id)) return refuse('not-wearable', null);
     // 功法卷 — read once, learned for good: 望气术 (§ 意图) by its 卷, in order,
     // at the realm it asks.
     if (e.learn) {
@@ -301,27 +325,19 @@ export function trade(state, content, ctx, args) {
       const dandu = eatPill(content, s, item.id);
       return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), paid, ...(dandu ? { dandu: { ...dandu, now: danduBrief(content, s) } } : {}) } };
     }
-    if (e.wear && e.wear === companionOf(content)?.id && !hasCompanion(s)) {
-      return refuse('no-companion', pick({ zh: '还没有人可以佩戴它。', en: 'There is no one to wear it yet.' }, lang));
-    }
-    // Arms go on the player, each kind in its own slot; a `wear` is Yinyue's
-    // or the abode's.
-    const slot = e.wear ?? ARM_SLOTS.get(item.kind);
-    if (slot) {
-      s.wear ??= {};
-      s.wear[slot] = item.id;
-      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), wear: s.wear } };
-    }
+    const worn = wearOne(content, s, item, args);
+    if (worn) return worn;
     if (e.charm) return refuse('cast-in-a-bout', pick({ zh: `${pick(item.name, lang)}在${w.contest}时掷出，不在此。`, en: `A ${pick(item.name, lang)} is cast in a bout, not here.` }, lang));
     return refuse('not-usable', null);
   }
-  // 卸下 — an arm taken off, back to the bag. Only his three slots: what
-  // Yinyue wears is hers, and the 本命法宝 is bound, not worn.
+  // 卸下 — taken off one slot, back to the bag: his (`on` left out), or hers (`on: 'her'`), a `slot` named when
+  // she wears two. The abode's flag stays where it is set, and the 本命法宝 is bound, not worn.
   if (args.action === 'remove') {
-    const slot = GEAR_SLOTS.find(k => s.wear?.[k] === item.id);
-    if (!slot) return refuse('not-worn', null);
-    delete s.wear[slot];
-    return { state: s, result: { ok: true, removed: item.id, slot, wear: s.wear } };
+    const her = companionOf(content)?.id, keys = onHer(args, her) ? GEAR_SLOTS.map(k => herKey(her, k)) : GEAR_SLOTS;
+    const key = keys.filter(k => s.wear?.[k] === item.id).find(k => !args.slot || k.endsWith(String(args.slot)));
+    if (!key) return refuse('not-worn', null);
+    delete s.wear[key];
+    return { state: s, result: { ok: true, removed: item.id, slot: key.split('.').pop(), ...(key.includes('.') ? { on: 'her' } : {}), wear: s.wear } };
   }
   return refuse('unknown-action', null, { actions: ['buy', 'sell', 'use', 'remove'] });
 }

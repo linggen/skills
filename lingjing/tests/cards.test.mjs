@@ -335,7 +335,7 @@ test('储物袋 · 装备 open together: what he wears, what he carries, and the
   const s = {
     ...(await import('../scripts/state.mjs')).newState(content, 'zh', new Date('2026-09-22T12:00:00')),
     traits: ['wood', 'water', 'fire', 'earth'], tier: 'core', companion: { joined: '2026-09-18' },
-    bag: { 'bamboo-sword': 1, 'moon-bell': 1, 'qi-silk': 1, 'qi-pill': 1, talisman: 1 }, wear: { yinyue: 'moon-bell' },
+    bag: { 'bamboo-sword': 1, 'moon-bell': 1, 'qi-silk': 1, 'qi-pill': 1, talisman: 1 }, wear: { 'yinyue.pendant': 'moon-bell' },
   };
   const seen = look(s, content, { now: new Date('2026-09-22T12:00:00'), quests: [] });
   assert.equal(seen.gear, undefined, 'never in Look: Ling pays for every character of it');
@@ -375,8 +375,10 @@ test('储物袋 · 装备 open together: what he wears, what he carries, and the
   assert.equal(off.result.ok, true);
   assert.equal(off.state.wear.weapon, undefined);
   assert.equal(off.state.bag['bamboo-sword'], 1);
-  assert.equal(off.state.wear.yinyue, 'moon-bell', 'hers stays on her');
-  assert.equal(trade(worn, content, { now: new Date(), quests: [] }, { action: 'remove', id: 'moon-bell' }).result.refused, 'not-worn', 'what she wears is hers');
+  assert.equal(off.state.wear['yinyue.pendant'], 'moon-bell', 'hers stays on her');
+  assert.equal(trade(worn, content, { now: new Date(), quests: [] }, { action: 'remove', id: 'moon-bell' }).result.refused, 'not-worn', 'his 卸下 is his slots');
+  // Her slots have their own 卸下 (Hanli 11-03): `on: 'her'`.
+  assert.equal(trade(worn, content, { now: new Date(), quests: [] }, { action: 'remove', id: 'moon-bell', on: 'her' }).state.wear['yinyue.pendant'], undefined);
   // English stands up too
   assert.doesNotMatch(pouchHtml({ look: armed, gear: armedGear, lang: 'en', words: WORDS.en }, { sel: 'qi-pill' }), /undefined|\{[a-z]+\}/);
 });

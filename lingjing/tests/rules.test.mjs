@@ -1528,7 +1528,7 @@ test('no market away from one; a pill is used anywhere; a wear waits for her', (
   const withBell = { ...s, bag: { 'moon-bell': 1 } };
   refused(trade, withBell, { action: 'use', id: 'moon-bell' }, 'no-companion');
   const worn = must(trade, { ...withBell, companion: { joined: '2026-09-11' } }, { action: 'use', id: 'moon-bell' });
-  assert.deepEqual(worn.state.wear, { yinyue: 'moon-bell' });
+  assert.deepEqual(worn.state.wear, { 'yinyue.pendant': 'moon-bell' }, 'her bell: her 佩 (rules/wear.mjs)');
   assert.equal(worn.result.item.worn, true);
   // Her bell is a story thing (pouch.mjs freeSlot): never sold (Hanli 11-03).
   refused(trade, worn.state, { action: 'sell', id: 'moon-bell' }, 'story-keep');
@@ -2410,7 +2410,7 @@ test('银月 is found, not given: the call at 结丹, the bell, water, her riddl
   const joined = VERBS.ring(missed.state, content, ctx(), { answer: riddle.a[0] });
   assert.equal(joined.result.ok, true);
   assert.equal(joined.result.joined.name, '银月');
-  assert.equal(joined.state.wear.yinyue, 'moon-bell');
+  assert.equal(joined.state.wear['yinyue.pendant'], 'moon-bell');
   assert.ok(joined.result.paid.progress > 0);
   // Her first words are hers to say (her_beat), never a line in Ling's beat.
   assert.ok(!joined.result.beat.some(b => b.who === 'yinyue'));
@@ -2771,7 +2771,7 @@ test('银月 beside him: no score, no 谈心 or 疗伤 — her card grows with h
   assert.deepEqual(card.gifts.map(g => g.found), [3, 6]);
   for (const g of card.gifts) assert.ok(g.name && g.does && g.does.length <= 20, g.does);
   // what she wears lifts her card too: 齐纨 +1 气血
-  const silk = { ...her, tier: 'core', bag: { ...her.bag, 'qi-silk': 1 }, wear: { ...her.wear, yinyue: 'qi-silk' } };
+  const silk = { ...her, tier: 'core', bag: { ...her.bag, 'qi-silk': 1 }, wear: { ...her.wear, 'yinyue.robe': 'qi-silk' } };
   assert.deepEqual(lifts(silk), { yinyue: { atk: realm.core.atk, hp: realm.core.hp + 1 } });
   const { 'qi-silk': _gone, ...sold } = silk.bag;
   assert.deepEqual(lifts({ ...silk, bag: sold }), { yinyue: realm.core }, 'sold, it lifts nothing');

@@ -1,7 +1,8 @@
 // The player's state and the arithmetic over it. Pure: no files, no clock —
 // the caller passes `now`.
+import { herSlotsCarry } from './rules/wear.mjs';
 
-export const STATE_VERSION = 15;
+export const STATE_VERSION = 16;
 export const FIRST_WORLD = 'jiuding'; // the world every save before worlds was playing
 
 export function firstChapter(content) {
@@ -640,6 +641,10 @@ const MIGRATIONS = [
   // k is 段 k, the 修为 it held walked through its three 层 (they add up to the old step) — the same point of the 段; every
   // older carry runs first on the three-step ladder it was written for (ladderOf14).
   [15, m => { m.ladder_stages = true; }],
+  // v16 (2026-11-03, Hanli: 银月 wears gear like him): her one slot (`wear.<her id>`) became her three — 法器 · 法衣 · 佩,
+  // `wear["<her id>.<slot>"]`. Marked, carried by fitWorld (rules/wear.mjs herSlotsCarry): what she wore moves to the slot
+  // its kind goes in (her bells a 佩, 齐纨 a 法衣), never dropped.
+  [16, m => { m.her_slots = true; }],
 ];
 
 export function migrate(state, content = null) {
@@ -823,6 +828,7 @@ export function fitWorld(saved, content) {
   if ('ladder_zero' in state) state = zeroLayer(was, state);
   if ('ladder_pace' in state) state = paceLayer(was, state);
   if ('ladder_stages' in state) state = stagesCarry(content, state);
+  if ('her_slots' in state) state = herSlotsCarry(content, state);
   const tier = tierOf(content, state.tier);
   const chapter = content.chapters[state.chapter];
   // A scene renamed since — the prologue rewrite of 2026-09-28 — goes to the

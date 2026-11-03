@@ -3295,8 +3295,8 @@ function duiziHer(kind) {
 
 /* 储物袋: putting a thing on, taking a pill, selling at a market, is his own
    tap — the page calls Trade itself and redraws from the rules; no model turn. */
-async function useItem(id, action = 'use') {
-  const r = await write('trade', { action, id }).catch(failed);
+async function useItem(id, action = 'use', more = {}) {
+  const r = await write('trade', { action, id, ...more }).catch(failed);
   // A refusal is said where he tapped — a pill kept on a full day said
   // nothing, and looked like a button that did not work.
   await openGear();
@@ -3849,7 +3849,8 @@ const CLICKS = [
   ['[data-offer-letgo]', (el) => run(`offer:letgo:${el.dataset.offerLetgo}`, () => offerTap('letgo', { id: el.dataset.offerLetgo }))],
   ['[data-wear],[data-use],[data-remove]', (el) => {
     const id = el.dataset.wear ?? el.dataset.use ?? el.dataset.remove, action = el.dataset.remove ? 'remove' : 'use';
-    run(`item:${action}:${id}`, () => useItem(id, action));
+    // 银月's slots (Hanli 11-03): `data-on="her"` and the slot, carried to Trade as they are.
+    run(`item:${action}:${id}:${el.dataset.on ?? ''}`, () => useItem(id, action, { ...(el.dataset.on ? { on: el.dataset.on } : {}), ...(el.dataset.slot ? { slot: el.dataset.slot } : {}) }));
   }],
   ['[data-spoils-close]', () => show({ spoils: null })],
   ['[data-handin-close]', () => show({ handin: null })],

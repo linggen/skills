@@ -133,7 +133,8 @@ const GAME_KINDS = new Set(['duel', 'board']);
 export const gameOf = exit => (exit?.game == null ? null : typeof exit.game === 'string' ? { id: exit.game, kind: 'board' } : exit.game);
 export const ITEM_KINDS = new Set(['pill', 'weapon', 'robe', 'pendant', 'gear', 'artifact', 'treasure', 'key', 'material', 'charm', 'scroll', 'pouch']);
 /* What a player wears, each its own slot: a 法器 in hand, a 法衣, a 佩. */
-export const ARM_SLOTS = new Map([['weapon', 'weapon'], ['robe', 'robe'], ['pendant', 'pendant']]);
+import { ARM_SLOTS } from './rules/wear.mjs';
+export { ARM_SLOTS };
 export const WEAR_SLOTS = new Set(['yinyue', 'abode']);
 const VALUE_FIELDS = new Set(['name']);
 const SETTABLE = { traits: new Set(['v1']) };
@@ -1880,6 +1881,8 @@ function lintItems(content, bad) {
       else if (e.progress > table.progress) bad(where, `progress ${e.progress} is over the ${e.table} cap of ${table.progress}`);
     }
     if (e.wear != null && !WEAR_SLOTS.has(e.wear)) bad(where, `cannot wear on ${e.wear}`);
+    // A thing only she wears names which of her three slots it takes (rules/wear.mjs herSlot).
+    if (e.wear != null && e.wear !== 'abode' && !ARM_SLOTS.has(item.slot)) bad(where, 'a thing she wears names its slot: weapon, robe or pendant');
     // What a thing worn by a companion lifts: one point on her card, 攻 or
     // 气血 (+2/+2 won 97%, so kept small).
     if (e.lift != null) {

@@ -141,8 +141,9 @@
       "amend": 5
     }
   },
-  "_her_card": "银月's card grows both ways (Hanli, 2026-09-24: 两个都做). `realm`: with the player's realm, as the player's 气血/灵力 grow — the lift at the highest realm listed at or below theirs (the fight's own realm table, battle.js REALMS, ends at 元婴, so hers does too). `gifts`: the story gives her an ability at the 3rd, 6th and 9th cauldron found, each costing one of her reflections (companion.json secret); `lift` is what it adds to her card in a fight. No relationship score (redesign-v2 § 四). Numbers weighed by the gate (tools/battle-sim.mjs § 银月).",
+  "_her_card": "银月's card grows both ways (Hanli, 2026-09-24: 两个都做). `realm`: with the player's realm, as the player's 气血/灵力 grow — the lift at the highest realm listed at or below theirs (the fight's own realm table, battle.js REALMS, ends at 元婴, so hers does too). `gifts`: the story gives her an ability at the 3rd, 6th and 9th cauldron found, each costing one of her reflections (companion.json secret); `lift` is what it adds to her card in a fight. No relationship score (redesign-v2 § 四). Numbers weighed by the gate (tools/battle-sim.mjs § 银月). `gear` (Hanli 11-03: she wears 法器 · 法衣 · 佩 like him; the rates are the agent's pick, Hanli delegated): what she wears, on her card, by the item's own numbers — a 法器's 器攻 × `atk_per_atk` (rounded: 器攻 2–3 → +1, 1 → 0) to her 攻, a 法衣's 防 × `hp_per_def` (rounded: +1) to her 气血 — one realm step's size, the +1 a lift may be (content.mjs: +2/+2 won 97%) — and a 佩's 抗 × `ward_per_point` off each blow of that element on her card (at least 1 lands). tools/battle-sim.mjs --her: her full gear adds at most 4.3 points a step, but on that yardstick 筑基 goes 95.3% → 99.7% (the 元婴 rows were over the 97% line before her gear). A thing of hers adds its own `lift` on top (齐纨 +1 气血).",
   "her_card": {
+    "gear": { "atk_per_atk": 0.34, "hp_per_def": 0.5, "ward_per_point": 1 },
     "realm": {
       "foundation": { "atk": 0, "hp": 1 },
       "core": { "atk": 1, "hp": 1 },
