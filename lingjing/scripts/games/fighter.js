@@ -24,7 +24,7 @@
 // Lost, it settles { won: false } and the host deals it again (the story) or offers 再来 (the 游戏厅).
 import { sounded } from './kit/heard.js';
 import { inputKind, forInput } from './kit/device.js';
-import { painter, makeSheet, FIELD } from './fighter/draw.js';
+import { painter, makeSheet, FIELD, cueText } from './fighter/draw.js';
 import * as core from './fighter/core.js';
 import * as self from './fighter.js';
 
@@ -108,6 +108,12 @@ const CSS = `
 .g-fighter button[data-k=skill] { background: #f0c9a8; }
 .g-fighter button[data-k=skill].is-ready { background: #e7b84a; box-shadow: 0 0 0 3px rgba(231,184,74,.45); } /* a stock full: 技 is the 绝 */
 .g-fighter button.is-cool { opacity: .5; }
+/* The cue as a button (touch): 迎 in her push, 勾 as she holds back — one tap, there only while its window is open */
+.g-fighter.is-touch button.gf-cue { min-width: 76px; width: auto; padding: 0 14px; border-radius: 38px; height: 76px; font-size: 32px; font-weight: 800; background: #b22218; color: #f6eedc; border-color: #f6eedc;
+  box-shadow: 0 0 0 4px rgba(178,34,24,.4); animation: gf-cue .5s ease-in-out infinite alternate; align-self: center; }
+.g-fighter button.gf-cue[hidden] { display: none; }
+@keyframes gf-cue { to { transform: scale(1.08); box-shadow: 0 0 0 9px rgba(178,34,24,.18); } }
+html[data-board=fighter][data-input=touch] #stage .g-fighter.is-touch .gf-pad > :has(.gf-cue:not([hidden])) { opacity: 1; }
 .g-fighter button small { position: absolute; bottom: -3px; right: -4px; font: 600 9px ui-monospace, monospace; background: #2a241c; color: #f3ead6; border-radius: 6px; padding: 1px 4px; white-space: nowrap; }
 .g-fighter.is-touch button small { display: none; }
 .g-fighter.is-touch button { width: 48px; height: 48px; font-size: 20px; }
@@ -136,11 +142,11 @@ html[data-board=fighter] #stage .gf-field { width: min(100%, calc((100vh - 200px
 `;
 function sheet(doc) {
   const old = doc.getElementById('g-fighter-css');
-  if (old?.dataset.v === '4') return;
+  if (old?.dataset.v === '5') return;
   old?.remove();
   const st = doc.createElement('style');
   st.id = 'g-fighter-css';
-  st.dataset.v = '4';
+  st.dataset.v = '5';
   st.textContent = CSS;
   doc.head.append(st);
 }
@@ -181,7 +187,7 @@ function padHtml(level, lang, kind = 'desk') {
   };
   const dial = `<div class="gf-dial" role="group" aria-label="${lang === 'en' ? 'Move' : '方向'}">${DIAL_FACE.map((f, i) => `<i data-w="${i}" data-f="${f}" style="--a:${i * 45 + 90}deg"></i>`).join('')}<b></b></div>`;
   return `<div class="gf-pad">${kind === 'touch' ? dial : `<div class="gf-dirs">${b('jump')}${b('left')}${b('crouch')}${b('right')}</div>`}`
-    + `<div class="gf-acts"><div class="gf-spells">${b('feijian')}${b('fuwen')}${b('skill')}</div><div class="gf-diamond">${b('hpunch')}${b('light')}${b('heavy')}${b('lkick')}</div></div></div>`;
+    + `<div class="gf-acts">${kind === 'touch' ? '<button type="button" class="gf-cue" data-k="cue" hidden></button>' : ''}<div class="gf-spells">${b('feijian')}${b('fuwen')}${b('skill')}</div><div class="gf-diamond">${b('hpunch')}${b('light')}${b('heavy')}${b('lkick')}</div></div></div>`;
 }
 
 /** A sheet washed in one colour once, on its own canvas (心魔: 小满's own frames in shadow) — no per-frame filter, which
@@ -239,7 +245,8 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
       .then(([meta]) => { sheets[who] = makeSheet(meta, look.tint ? tinted(doc, img, look.tint) : img, look.height); })
       .catch((e) => console.warn('[fighter] frames', who, e));
   }
-  const draw = painter(canvas, { art, sheets, calm: () => Boolean(still?.matches) });
+  const draw = painter(canvas, { art, sheets, kind, calm: () => Boolean(still?.matches) });
+  const cueBtn = root.querySelector('button.gf-cue');
   const g = { state: core.newGame(seed, 1, { levels: [level] }) };
   peek?.(() => g.state);
   root.__fighter = () => g.state; // the builder's look at the bout (a live check drives it as a hand would)
@@ -274,6 +281,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
     for (const b of root.querySelectorAll('button[data-k]')) if (HELD.has(b.dataset.k)) b.classList.toggle('is-down', Boolean(held[b.dataset.k]?.size));
   };
   const press = (k, who) => {
+    if (k === 'cue') { const c = g.state.cue?.k; if (c) apply({ g: c === 'ying' ? 'ying' : 'hook' }); return; } // the cue's button: 迎 · 升勾
     if (HELD.has(k)) { held[k].add(who); sync(); return; }
     const btn = root.querySelector(`button[data-k="${k}"]`);
     btn?.classList.add('is-down');
@@ -384,6 +392,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
       if (skillBtn.classList.contains('is-ready') !== full) { skillBtn.classList.toggle('is-ready', full); skillFace.textContent = skillNames[full ? 1 : 0]; }
       skillBtn.classList.toggle('is-cool', !full && g.state.me.cdPf > 0);
       for (const [k, cd] of [['feijian', 'cdFj'], ['fuwen', 'cdFw']]) spellBtn[k]?.classList.toggle('is-cool', (g.state.me[cd] ?? 0) > 0);
+      if (cueBtn) { const t = g.state.cue && !g.state.end ? cueText(g.state, lang, 'touch') : ''; if (cueBtn.hidden !== !t) cueBtn.hidden = !t; if (t && cueBtn.textContent !== t) { cueBtn.textContent = t; cueBtn.setAttribute('aria-label', t); } }
       if (g.state.won) { const s = g.state; win.setTimeout(() => finish({ won: true, grade: s.grade, stars: s.stars }), winHold); started = false; }
       else if (g.state.lost) { win.setTimeout(() => finish({ won: false }), 500); started = false; }
     }

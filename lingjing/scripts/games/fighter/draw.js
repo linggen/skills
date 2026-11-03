@@ -855,18 +855,30 @@ function chain(ctx, view, lang, word) {
   ctx.restore();
 }
 
-function cueMark(ctx, s, lang) {
+/** The words of a cue (`level.cues.ying` · `.hook`): the word, and on the keys what to press — `keys`, with `{f}` the key
+    toward her (A or D: after 迎 she stands on his left). On a phone the cue is a button of its own (the mount's). */
+export function cueText(s, lang = 'zh', kind = 'desk') {
+  const c = s?.cue;
+  if (!c) return '';
+  const def = s.level?.cues?.[c.k];
+  const word = say(def, lang) || (lang === 'en' ? (c.k === 'ying' ? 'In!' : 'Hook!') : (c.k === 'ying' ? '迎' : '勾'));
+  if (kind === 'touch' || !def?.keys) return word;
+  const toward = (s.order ?? (Math.sign(s.foe.x - s.me.x) || 1)) < 0 ? 'A' : 'D';
+  return `${word} ${String(def.keys).replaceAll('{f}', toward)}`;
+}
+function cueMark(ctx, s, lang, kind) {
   const c = s.cue;
   if (!c) return;
-  const word = say(s.level?.cues?.[c.k], lang) || (lang === 'en' ? (c.k === 'ying' ? 'In!' : 'Hook!') : (c.k === 'ying' ? '迎' : '勾'));
-  const age = s.t - c.at, k = Math.min(1, age / 140), x = s.me.x, y = FLOOR - 310;
-  ctx.save();
-  ctx.globalAlpha = 1 - Math.max(0, age - 600) / 300;
-  ctx.fillStyle = 'rgba(178,34,24,.92)';
-  ctx.beginPath(); ctx.arc(x, y, 30 * (0.6 + 0.4 * k), 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#f6eedc'; ctx.font = `700 ${Math.round(34 * (0.6 + 0.4 * k))}px ${SERIF}`;
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(word, x, y + 1);
+  const text = cueText(s, lang, kind);
+  const age = s.t - c.at, k = Math.min(1, age / 140), x = Math.max(160, Math.min(W - 160, s.me.x)), y = FLOOR - 320;
+  ctx.save(); // full while its window is open: the rules take the cue away as it shuts
+  ctx.font = `800 ${Math.round(40 * (0.7 + 0.3 * k))}px ${SERIF}`;
+  const w = ctx.measureText(text).width + 44, h = 62 * (0.7 + 0.3 * k);
+  ctx.fillStyle = 'rgba(178,34,24,.94)';
+  ctx.beginPath(); ctx.roundRect(x - w / 2, y - h / 2, w, h, h / 2); ctx.fill();
+  ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(246,238,220,.85)'; ctx.stroke();
+  ctx.fillStyle = '#f6eedc'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, x, y + 2);
   ctx.restore();
 }
 
@@ -942,7 +954,7 @@ function cutIn(ctx, c, img, lang, age) {
 }
 
 /** A painter for one canvas: `draw(state, lang, text)` each frame; the poses ease from the last. */
-export function painter(canvas, { art = {}, sheets = {}, calm = () => false } = {}) {
+export function painter(canvas, { art = {}, sheets = {}, calm = () => false, kind = 'desk' } = {}) {
   const ctx = canvas.getContext('2d');
   const track = { me: {}, foe: {} };
   let layers = null, layersFor = null;
@@ -1057,7 +1069,7 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false } = 
     if (s.combo?.n >= 2 && s.combo.who === 'me') view.chain = { n: s.combo.n, at: view.chain?.n === s.combo.n ? view.chain.at : s.t };
     hud(ctx, s, art, lang, view);
     chain(ctx, view, lang, say(lv.words?.chain, lang) || (lang === 'en' ? 'hits' : '连'));
-    cueMark(ctx, s, lang);
+    cueMark(ctx, s, lang, kind);
     if (s.end) {
       const g = ctx.createRadialGradient(W / 2, H / 2, 160, W / 2, H / 2, 560);
       g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(10,8,6,.45)');

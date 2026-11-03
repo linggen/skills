@@ -470,5 +470,105 @@ test('the round pad (touch): 8 ways by the thumb\'s angle, a diagonal two at onc
   assert.deepEqual(at(0, 200), ['right'], 'past the rim still counts');
   const src = fs.readFileSync(new URL('../scripts/games/fighter.js', import.meta.url), 'utf8');
   assert.match(src, /kind === 'touch' \? dial :/, 'the pad on touch only; the desk keeps its four buttons');
-  assert.match(src, /dataset\.v = '4'/);
+  assert.match(src, /dataset\.v = '5'/);
+});
+
+/* 2026-11-03 (Hanli: 「好像卡住了, 秦燕不会滑倒失败呢」 · 「kl翻滚这个也没告诉玩家啊」 · 「手机上组合键不太好操作」): the edge always
+   comes to a cornered man, the cue says what to press while its window is open, and on the phone the cue is the button. */
+import { cornered, endWon, EDGE_LATE } from '../scripts/games/fighter/core.js';
+import { cueText } from '../scripts/games/fighter/draw.js';
+
+/* A passive hand: back to the slick's corner, and there (`guard`: holding away from her). Each edge she starts, counted
+   by her move count; his 血 kept so the bout runs on. */
+function cornerWait(seed, { guard = false, ms = 90000 } = {}) {
+  let s = F.newGame(seed, 1, deal);
+  const at = [];
+  for (let t = 0; t < ms && !s.end; t += 10) {
+    s.me.hp = 100;
+    if (!s.edge && s.in.dir !== -1) s = press(s, { g: 'walk', dir: -1 });
+    if (guard && !s.in.block) s = press(s, { g: 'block', on: true });
+    const had = s.edge;
+    s = run(s, 10);
+    if (!had && s.edge) at.push(s.foe.moves);
+  }
+  return at;
+}
+
+test('cornered and passive, he always gets her point at his throat: the first by EDGE_LATE moves past `after`, then again as it cools', () => {
+  const M = FOE.moves.edge;
+  for (const seed of ['c1', 'c2', 'c3', 'c4', 'c5']) for (const guard of [false, true]) {
+    const at = cornerWait(seed, { guard });
+    assert.ok(at.length >= 5, `${seed}/${guard}: only ${at.length} edges in 90 s`);
+    assert.ok(at[0] <= M.after + EDGE_LATE + 1, `${seed}/${guard}: the first edge at move ${at[0]}`);
+    for (let i = 1; i < at.length; i += 1) assert.ok(at[i] - at[i - 1] <= 12, `${seed}/${guard}: ${at[i] - at[i - 1]} moves between edges`);
+  }
+  // anywhere on the slick at the stage's edge is a corner (the slick is wider than `near`)
+  const s = F.newGame('slick', 1, deal);
+  s.me.x = STAGE.oil.to - 6; s.foe.x = s.me.x + 200;
+  assert.equal(cornered(s), -1);
+  s.me.x = STAGE.oil.to + 30;
+  assert.equal(cornered(s), 0, 'off the slick, past `near`: not cornered');
+});
+
+test('she out of reach with him cornered past `after`: she closes in, and the edge comes', () => {
+  let s = F.newGame('far', 1, deal);
+  s.me.x = STAGE.left + 20; s.foe.x = s.me.x + 320; s.foe.moves = FOE.moves.edge.after + EDGE_LATE; s.foe.think = 0; s.foe.cd.ice = 9999;
+  s = until(s, (x) => x.edge, 6000);
+  assert.ok(Math.abs(s.foe.x - s.me.x) < FOE.moves.poke.reach + 20, 'her point at his throat, from a blade\'s length');
+});
+
+test('K+L together too soon is one early press, not two: the second pair does not give her the read', () => {
+  let s = atTheEdge('pair');
+  s = press(s, { g: 'light' }); s = press(s, { g: 'lkick' });
+  assert.equal(s.early, 1);
+  s = run(s, 200);
+  s = press(s, { g: 'light' }); s = press(s, { g: 'lkick' });
+  assert.equal(s.early, 2);
+  assert.ok(s.edge, 'she waits again: no 「她看出来了」');
+});
+
+test('the cue says the keys on the desk while its window is open; after 迎 the hook\'s keys point toward her; replayed literally, they win', () => {
+  let s = atTheEdge('cue');
+  assert.equal(cueText(s, 'zh'), '', 'the guard: no cue yet');
+  s = until(s, (x) => x.edge?.phase === 'tell');
+  assert.equal(cueText(s, 'zh'), '迎 K+L');
+  assert.equal(cueText(s, 'en'), 'In! K+L');
+  assert.equal(cueText(s, 'zh', 'touch'), '迎');
+  s = press(s, { g: 'light' }); s = press(s, { g: 'lkick' }); // K+L, as it says
+  assert.equal(cueText(s, 'zh'), '', 'the window shut');
+  s = until(s, (x) => x.palm?.phase === 'hold');
+  const text = cueText(s, 'zh');
+  assert.equal(text, '勾 A S A+K', 'she stands on his left now: A is toward her');
+  const [f] = text.split(' ').slice(1);
+  const dir = f === 'A' ? -1 : 1;
+  for (const d of [{ g: 'walk', dir }, { g: 'walk', dir: 0 }, { g: 'crouch', on: true }, { g: 'crouch', on: false }, { g: 'walk', dir }, { g: 'light' }]) { s = press(s, d); s = run(s, 30); }
+  s = until(s, (x) => x.won, 4000);
+  assert.equal(s.end.kind, 'out');
+  // every fighter level with the cues carries the keys
+  for (const g of REG.games.filter((r) => r.mechanic === '格斗')) for (const lv of g.levels ?? []) {
+    if (lv.cues?.ying) assert.equal(lv.cues.ying.keys, 'K+L', lv.id);
+    if (lv.cues?.hook) assert.equal(lv.cues.hook.keys, '{f} S {f}+K', lv.id);
+  }
+});
+
+test('a touch-only hand wins: it fights as a thumb does, and answers her point and her palm only by the cue\'s button (迎 · 勾)', () => {
+  // the human-like hand's buttons, but in her edge and her palm nothing of its own: one tap of the cue, a beat late
+  const touch = (s) => {
+    if (s.edge || s.palm) {
+      if (s.cue && s.t - s.cue.at >= 250 && !s.cueTapped?.includes(s.cue.at)) { s.cueTapped = [...(s.cueTapped ?? []), s.cue.at]; return { g: s.cue.k === 'ying' ? 'ying' : 'hook' }; }
+      if (s.in.block) return { g: 'block', on: false };
+      return s.in.dir ? { g: 'walk', dir: 0 } : null;
+    }
+    return bot(s);
+  };
+  let wins = 0;
+  for (const seed of ['t1', 't2', 't3', 't4']) {
+    let s = F.newGame(seed, 1, deal);
+    for (let t = 0; t < 180000 && !s.won && !s.lost && !(s.end && !endWon(s.end) && s.t - s.end.at > 2000); t += 10) { const a = touch(s); if (a) s = press(s, a); s = run(s, 10); }
+    if (s.won) { wins += 1; assert.equal(s.end.kind, 'out'); }
+  }
+  assert.ok(wins >= 3, `a touch-only hand won ${wins} of 4`);
+  const src = fs.readFileSync(new URL('../scripts/games/fighter.js', import.meta.url), 'utf8');
+  assert.match(src, /class="gf-cue" data-k="cue" hidden/, 'the cue\'s button, on touch, hidden until its window');
+  assert.match(src, /g: c === 'ying' \? 'ying' : 'hook'/);
 });

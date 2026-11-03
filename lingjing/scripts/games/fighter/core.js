@@ -36,6 +36,9 @@
 //          (`tell`). A fresh press in the tell — 迎, forward, or any blow — takes him in along the flat of the blade (a cut
 //          on the arm) and out on her far side, she where he stood. Too soon (`early`) and she waits again; nothing in
 //          the tell and the inch comes.
+//          It comes whenever he stands cornered (near the edge, or anywhere on the slick at it) past `after`: she
+//          closes to a blade's length for it, and EDGE_LATE moves later nothing else comes first (2026-11-03, Hanli:
+//          「好像卡住了」). K+L together too soon count as one early press. `hook` is the 升勾 by name (the phone's 勾).
 //   palm   the green palm (左掌一翻，掌心里亮起一层青光): `glow` (she stands through any blow), `hold` — she holds back
 //          three tenths (「她收了三分」), her weight on her rear foot — then `strike`, landing at that share and never the
 //          last of him (大比不许伤人性命), and `after`, still loose. His 腿 in `hold` or `after` hooks her rear foot: over
@@ -82,7 +85,8 @@ export const QI_MAX = 300; // three stocks
 export const TAP_MS = 240; // a double tap (dash, back-step)
 export const HOP_MS = 130; // W let go this soon: a short hop
 export const INTRO_MS = 1300; // the bout's call before the hands are free (the mount sets it: `withIntro`)
-export const WAKE_MS = 160; //  a foe rising from the boards is untouchable this long
+export const WAKE_MS = 160;
+export const EDGE_LATE = 4; //  her moves past the edge's `after` with him cornered and no edge: she stops all else and comes in //  a foe rising from the boards is untouchable this long
 
 /* The stage, in units: the boards from `left` to `right`, the slick at the left edge (the corner he chose). */
 export const STAGE = { w: 960, left: 140, right: 930, oil: { from: 140, to: 250 } };
@@ -240,9 +244,9 @@ const oilBehind = (s) => {
 };
 /** Near an edge of the stage with his back to it: -1 the left edge, 1 the right, 0 neither. */
 export function cornered(s, near = s.R.foe.moves.edge.near) {
-  const back = -side(s);
-  if (back < 0 && s.me.x - s.R.stage.left <= near) return -1;
-  if (back > 0 && s.R.stage.right - s.me.x <= near) return 1;
+  const back = -side(s), oil = s.R.stage.oil;
+  if (back < 0 && (s.me.x - s.R.stage.left <= near || (oil && onOil(s, s.me.x) && oil.from - s.R.stage.left <= near))) return -1;
+  if (back > 0 && (s.R.stage.right - s.me.x <= near || (oil && onOil(s, s.me.x) && s.R.stage.right - oil.to <= near))) return 1;
   return 0;
 }
 const phaseOf = (act, t) => {
@@ -268,7 +272,7 @@ export function limbOut(s) {
 }
 
 /* ── His hands ── */
-const PRESS = new Set(['jump', 'light', 'lkick', 'hpunch', 'heavy', 'special', 'ying', 'skill', 'super', 'feijian', 'fuwen', 'max']);
+const PRESS = new Set(['jump', 'light', 'lkick', 'hpunch', 'heavy', 'special', 'ying', 'hook', 'skill', 'super', 'feijian', 'fuwen', 'max']);
 const PUNCH = new Set(['light', 'hpunch']);
 const PAIRED = new Set(['super', 'roll', 'blow']); // a press that takes the place of the pair's first key
 const tapped = (s, k) => s.hist.filter((h) => h.k === k && s.t - h.at <= TAP_MS).length >= 2;
@@ -353,6 +357,7 @@ function read(s, g) {
   if (g === 'super') return can ? 'super' : null;
   if (g === 'max') return full && !(me.max > s.t) ? 'max' : null;
   if (g === 'ying') return 'roll';
+  if (g === 'hook') return 'rise'; // the 升勾 by name (the phone's 勾 button in her palm's window): no motion, no way to get wrong
   // KOF '97's four buttons (A 轻拳 K · B 轻腿 L · C 重拳 O · D 重腿 ;): A+B rolls, C+D blows her back
   if ((g === 'light' && pair('lkick')) || (g === 'lkick' && pair('light'))) return 'roll';
   if ((g === 'hpunch' && pair('heavy')) || (g === 'heavy' && pair('hpunch'))) return 'blow';
@@ -375,6 +380,8 @@ function pressed(s, k) {
   const e = s.edge;
   if (!e || s.me.stun > s.t || s.me.down > s.t) return false;
   if (e.phase === 'guard') {
+    if (s.t - (e.earlyAt ?? -1e9) <= PAIR_MS) return true; // K+L together: one press too soon, not two
+    e.earlyAt = s.t;
     s.early += 1;
     e.early += 1;
     say(s, 'edgeEarly');
@@ -692,6 +699,9 @@ function startEdge(s) {
   say(s, 'edgeGuard');
 }
 
+/* The edge is hers to start: his back to the stage's edge, `after` moves in, off its cooldown, a foe who has it. */
+const edgeDue = (s) => s.R.foe.ai.edge !== false && Boolean(cornered(s)) && s.foe.moves >= s.R.foe.moves.edge.after && s.foe.cd.edge <= 0;
+
 /* Her mind: every `think` ms while her hands are free, one choice — readable on purpose. */
 function decide(s) {
   const foe = s.foe, me = s.me, R = s.R, ai = R.foe.ai, M = R.foe.moves, d = dist(s), t = s.t;
@@ -702,6 +712,11 @@ function decide(s) {
     if (M.run) { startRun(s); return; }
   }
   if ((me.stun > t + 200 && !(me.broken > t)) || me.down > t) { foe.vx = 0; foe.run = 0; return; }
+  // Cornered and the edge long due (EDGE_LATE of her moves past `after`): nothing else first — she comes to his throat.
+  if (edgeDue(s) && foe.moves >= M.edge.after + EDGE_LATE) {
+    if (d < M.poke.reach + 20) { startEdge(s); return; }
+    foe.run = 0; foe.vx = -side(s) * R.foe.speed; foe.think = t + 60; return;
+  }
   // Running in: on, until she is there — then her strike, her sweep or her throw.
   if (foe.run > t) {
     if (d <= M.poke.reach && closeIn(s)) return;
@@ -744,7 +759,10 @@ function decide(s) {
   // A poke of hers just landed and she runs on (`ai.chain`): the thrust after it, at once.
   if (foe.chain && t - foe.chain < 600 && d <= M.thrust.reach) { foe.chain = 0; startFoe(s, 'thrust'); return; }
   foe.chain = 0;
-  if (ai.edge !== false && cornered(s) && foe.moves >= M.edge.after && foe.cd.edge <= 0 && d < M.poke.reach + 20) { startEdge(s); return; }
+  if (edgeDue(s)) {
+    if (d < M.poke.reach + 20) { startEdge(s); return; }
+    if (d < 330) { foe.vx = -side(s) * R.foe.speed; foe.think = t + ai.think * 0.4; return; } // in to a blade's length
+  }
   if (ai.palmOn !== false && d < M.palm.reach + 16 && foe.bal <= M.palm.under && foe.cd.palm <= 0 && roll(s) < ai.palm) { startPalm(s, 'close'); return; }
   if (foe.qi >= QI && d < M.jianqi.reach - 20 && roll(s) < ai.qi) { startFoe(s, 'jianqi'); return; }
   if (ai.feijian > 0 && M.feijian && foe.cd.feijian <= 0 && d > 180 && roll(s) < ai.feijian) { startFoe(s, 'feijian'); return; }
