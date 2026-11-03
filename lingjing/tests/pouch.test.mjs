@@ -11,7 +11,7 @@ import { newState } from '../scripts/state.mjs';
 import { meet, trade, VERBS } from '../scripts/rules.mjs';
 import { drop, giveCharm } from '../scripts/rules/arms.mjs';
 import { pay } from '../scripts/rules/core.mjs';
-import { freeSlot, pouchCap, slotsUsed } from '../scripts/rules/pouch.mjs';
+import { freeSlot, pouchCap, roomFor, slotsUsed } from '../scripts/rules/pouch.mjs';
 import { itemOf } from '../scripts/rules/errands.mjs';
 
 // The engine on the old spine, every 卷 open (prologue.mjs everyJuan); tests/juan.test.mjs walls 卷一.
@@ -363,4 +363,17 @@ test('no 待取 is written anywhere: every door that stows sends a full pouch to
     assert.doesNotMatch(src, /\b(state|s)\.held\s*=|held:\s*\{\s*\.\.\.\(?(state|s)\.held/, `${f} writes no held`);
     assert.doesNotMatch(src, /storedLine|存进洞府待取/, `${f}: the old line`);
   }
+});
+
+test('what he wears is on him, not in the pouch (Hanli 11-03): a worn thing takes no slot; a spare of it does', () => {
+  const wear = { weapon: 'iron-sword', robe: 'grey-robe' };
+  assert.equal(slotsUsed(content, at({ 'iron-sword': 1, 'grey-robe': 1, 'qi-pill': 3 }, { wear })), 1, 'only the pills');
+  assert.equal(slotsUsed(content, at({ 'iron-sword': 2, 'grey-robe': 1 }, { wear })), 1, 'the second sword is in the pouch');
+  assert.equal(slotsUsed(content, at({ 'iron-sword': 1, 'grey-robe': 1 })), 2, 'taken off, they are back in the pouch');
+  // A full pouch with the sword worn: one more sword needs a slot of its own; its spare stack then takes more for free.
+  const full = at(fill(24, { 'iron-sword': 1 }, ['iron-sword']), { tier: 'qi', wear: { weapon: 'iron-sword' } });
+  assert.equal(slotsUsed(content, full), 24);
+  assert.equal(roomFor(content, full, 'iron-sword'), false, 'a second sword: no slot left');
+  const spare = { ...full, bag: { ...full.bag, 'iron-sword': 2 } };
+  assert.equal(roomFor(content, { ...spare, bag: { ...spare.bag, [plain[0]]: 0 } }, 'iron-sword'), true, 'a spare stack held: one more joins it');
 });

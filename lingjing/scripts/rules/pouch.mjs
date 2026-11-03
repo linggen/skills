@@ -47,10 +47,14 @@ function freeSlot(content, state, id) {
     && (questOf(content, q)?.need ?? []).some(n => n.kind === 'carry' && n.item === id));
 }
 
-const slotsUsed = (content, state) => Object.entries(state.bag ?? {}).filter(([id, n]) => n > 0 && !freeSlot(content, state, id)).length;
+/* What he wears is on him, not in the pouch (Hanli 11-03: 「已经佩戴或装备到身上的物品, 应该不占储物袋空间了」):
+   a stack takes a slot only for the ones left over after every slot that wears it (`state.wear`). */
+const wornOf = (state, id) => Object.values(state.wear ?? {}).filter(w => w === id).length;
+const spare = (state, id) => (state.bag?.[id] ?? 0) - wornOf(state, id);
+const slotsUsed = (content, state) => Object.keys(state.bag ?? {}).filter(id => spare(state, id) > 0 && !freeSlot(content, state, id)).length;
 
-/* Room for one more of this: a stack he holds, a free thing, or a slot open. */
-const roomFor = (content, state, id) => (state.bag?.[id] ?? 0) > 0 || freeSlot(content, state, id) || slotsUsed(content, state) < pouchCap(content, state);
+/* Room for one more of this: a spare stack he holds, a free thing, or a slot open. */
+const roomFor = (content, state, id) => spare(state, id) > 0 || freeSlot(content, state, id) || slotsUsed(content, state) < pouchCap(content, state);
 
 /* Into the pouch, or — full — to the door: one more on the offer queue (merged by id). What it did, named. */
 function stow(content, state, id, n = 1, from = null) {
