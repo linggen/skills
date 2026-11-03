@@ -271,6 +271,13 @@ const flat = (r, lang) => (r?.items ?? []).flatMap((it, i) => beatsOf(it, lang).
    its own count — this scene's passages, or (`before`) the last scene's
    unplayed beats that lead in — and never across a 回's turn (2026-10-14, 古二 →
    今 · 一 read 「8 / 62」: 古二's last passage counted in): each 回's passages count alone. */
+/* Does the reading still have a 大场面 to show — a beat laid on a piece (`{景=id}`) at or after the one on show? While it
+   does, what the step gave waits (lingjing.js revealHeld; Hanli 11-03 at 09-snow: 「应该是在饭桶大场面动画后给」). */
+export function pieceStillAhead(r, lang = 'zh') {
+  if (!playing(r)) return false;
+  const all = flat(r, lang), { at } = current(r, lang);
+  return all.slice(at).some((b) => b.piece);
+}
 export function current(r, lang = 'zh') {
   const all = flat(r, lang), j = Math.min(r.j, lastJ(r, r.i, lang));
   const at = Math.max(0, all.findIndex((b) => b.i === r.i && b.j === j));

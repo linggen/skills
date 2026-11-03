@@ -12,6 +12,9 @@ None.
 
 ## Done lately
 
+- 11-03 — **所得 after the 大场面, gear first** (Hanli 11-03 at 09-snow: 「是在饭桶动画场面前给的, 应该是在饭桶大场面动画后给」 · 「以为只拿到一张牌, 没看到剑」; tests/spoils-after-piece.test.mjs).
+  - The page holds a step's reveals while a 大场面 is owed or on: an exit's own piece (`pieceDue`), or a passage still owed or on show with a `{景}` beat ahead (09-snow's; dialogue.js `pieceStillAhead`). The rules pay at once. Gear reveals first; then 所得 stands with the gear on top (slot · name · what it does) and 戴上 / 给银月 (the pouch's `trade use`). A fight's 所得 marks its gear the same way. Look's `gained` items carry `slot` and `effect`.
+
 - 11-03 — **二十问 (they guess his animal): a stronger guesser, and a word at the end** (Hanli 11-03: 「AI有点弱, 而且知道正确答案后没反应. 怎么也要有个懊恼情绪, "竟然是..."」; tests/twenty-free.test.mjs).
   - Before: the model saw every prior question and answer each turn (and still does), but it had no strategy, and nothing summarized the answers. Told the animal, it got only a flat 「说一句收尾」 line. A chat with `after` lines (黑地里) got no word of theirs at all.
   - Every turn now carries a strategy: big splits first (mammal? water? bigger than a dog? kept at home? meat?), then narrow; never ask what is settled; guess at two or three left. It also carries the page's summary of what is known (是 · 不是 · 不知道 · 猜错过) and the guesses left. Turn budget unchanged (`max` 15).

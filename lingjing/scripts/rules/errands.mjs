@@ -732,7 +732,7 @@ function gearBrief(content, state, now = new Date()) {
     // `slot`: where it goes on him (or the abode); `wear_on` / `worn_on` as above.
     const slot = e.wear === 'abode' ? 'abode' : e.wear ? null : armSlot(item), on = wearOn(state, item, her), off = wornOn(state, id, her);
     return { ...itemBrief(content, state, item), n, ...(shop?.buys ? { sell: buyBack(shop, item) } : {}), ...(slot ? { slot } : {}),
-      ...(on.length ? { wear_on: on } : {}), ...(off.length ? { worn_on: off } : {}), ...(e.progress || e.learn || e.pouch || e.stamina ? { usable: true } : {}) };
+      ...(on.length ? { wear_on: on } : {}), ...(off.length ? { worn_on: off } : {}), ...(e.progress || e.learn || e.pouch ? { usable: true } : {}) };
   });
   return {
     slots: GEAR_SLOTS.map(slot => ({ slot, item: worn(state.wear?.[slot]) })),

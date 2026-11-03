@@ -41,6 +41,7 @@ import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { chapterLabel, huiOf, sideLine } from './hui.mjs';
 import { keptBrief, leaveOf, storyBoard } from './skips.mjs';
+import { armSlot } from './wear.mjs';
 import { asideLook } from './aside.mjs';
 import { trayLook } from './tray.mjs';
 import { capLook, capStory, underCap } from './cap.mjs';
@@ -857,7 +858,9 @@ function gainedBrief(content, state) {
   const g = state.gained, lang = state.lang;
   const items = (g.items ?? []).map(({ id, n }) => {
     const it = content.items.items.find(i => i.id === id);
-    return { id, n, name: itemName(it, state, lang) ?? id, kind: it?.kind ?? null, art: it?.art ?? null, hint: pick(it?.hint, lang) ?? null };
+    // A thing to wear says where it goes (`slot`) and what it does (`effect`): the page shows it first, its 戴上 at hand.
+    const slot = armSlot(it) ?? (it?.effect?.wear ? (it.slot ?? 'pendant') : null);
+    return { id, n, name: itemName(it, state, lang) ?? id, kind: it?.kind ?? null, art: it?.art ?? null, hint: pick(it?.hint, lang) ?? null, ...(slot ? { slot, effect: it.effect ?? null } : {}) };
   });
   return { n: g.n, scene: g.scene ?? null, items, ...(g.wealth ? { wealth: g.wealth } : {}) };
 }

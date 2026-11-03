@@ -470,18 +470,21 @@ export function spoilsHtml(spoils, ctx) {
   }).join('');
   // An arm of a rarity (a drop table's) says it: 「青铜古剑 · 稀有」.
   // 不拿重复的物品 (2026-10-15): the first of a thing is marked 新; a one-off had before came as its worth.
-  const things = (spoils.items ?? []).map((i) => thingHtml(i, ctx.lang === 'en')).join(' · ');
+  // Gear first, with its 戴上 (a thing with a `slot`, pouch.js spoilGearHtml); then cards and the other things.
+  const gear = (spoils.items ?? []).filter((i) => i.slot && ctx.gearRow).map((i) => ctx.gearRow(i)).join('');
+  const things = (spoils.items ?? []).filter((i) => !(i.slot && ctx.gearRow)).map((i) => thingHtml(i, ctx.lang === 'en')).join(' · ');
   // A 符 played is gone from the bag (result.spent), won or lost.
   const spent = (spoils.spent ?? []).map((id) => name(ctx.catalog[id], ctx.lang) || esc(id)).join(' · ');
   // What the win paid, in the card's own words — not only a float on the strip.
   const p = spoils.paid ?? {};
   const pays = [p.progress ? `${w.xw} +${p.progress}` : '', p.wealth ? `${w.ls} +${p.wealth}` : ''].filter(Boolean).join(' · ');
-  const gained = faces || things || pays || spoils.line;
+  const gained = gear || faces || things || pays || spoils.line;
   // Paid when the rules answered — the bar rose then: the card says so, and 收起 only puts it away (Hanli 11-02:
   // 「所得收起的卡, 在点之前已经收到奖励了吧, 点了收起好像没变化」).
   return `<div class="card spoils" data-spoils-close title="${esc(w.spoilsClose)}"><div class="cardtitle">${esc(gained ? w.spoils : w.spentTitle)}</div>
     ${pays ? `<div class="spoilpays">${esc(pays)} <span class="small dim spoilin">· ${esc(w.spoilsIn)}</span></div>` : ''}
     ${spoils.line ? `<div class="small">${esc(spoils.line)}</div>` : ''}
+    ${gear ? `<div class="spoilgears">${gear}</div>` : ''}
     ${faces ? `<div class="small dim">${esc(w.spoilsCard)}</div><div class="spoilfaces">${faces}</div>` : ''}
     ${things ? `<div class="small">${esc(w.spoilsBag)}${things}</div>` : ''}
     ${spent ? `<div class="small dim">${esc(w.spoilsSpent)}${spent}</div>` : ''}

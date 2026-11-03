@@ -36,7 +36,7 @@ import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
 import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, threadsAt, asideOpens, doorLine, trayHourChipHtml } from './cards.js';
 import { ownSkip } from './stuck.js';
-import { fullOfferHtml, pouchHtml } from './pouch.js';
+import { fullOfferHtml, pouchHtml, spoilGearHtml } from './pouch.js';
 import { fantongKailu, kailuDockHtml, potLeft, potOff, potRuns } from './fantong-kailu.js';
 import { catchTold, holdTold, spentBoard, toldHeld, toldInLook } from './board-deal.js';
 import { esc } from './esc.js';
@@ -72,7 +72,7 @@ import { placeArtOf } from './placeart.js';
 import { WINDS } from './rules/weather.mjs';
 import { parseDay } from './calendar.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
-import { advance, asidePlace, atLast, beatKey, choicesUp, readingAt as readingSetAside, current, DLG_WORDS, fitMode, huiAt, keepReading, leadsIn, loadReading, modeAt, sceneOfItem, logHtml, noted, ofPlay, playing, readingFor, sightNow, sightings, storyHolds, storyHtml, wholeBeats, withTold } from './dialogue.js';
+import { pieceStillAhead, advance, asidePlace, atLast, beatKey, choicesUp, readingAt as readingSetAside, current, DLG_WORDS, fitMode, huiAt, keepReading, leadsIn, loadReading, modeAt, sceneOfItem, logHtml, noted, ofPlay, playing, readingFor, sightNow, sightings, storyHolds, storyHtml, wholeBeats, withTold } from './dialogue.js';
 import { createLines, keepSpeed, paceOf, SPEEDS, speedNow, voiceOf } from './lines.js';
 import { isSight, artRoom, chatHeard, fitBox, mountChatToggle, paintSight, setAutoFold } from './sight.js';
 import { createPager } from './pager.js';
@@ -641,9 +641,36 @@ const STONES = { zh: '灵石', en: 'Spirit stones' };
 function gainedThings(was, now) {
   const g = now?.gained;
   if (!was || !g || g.n === was.gained?.n) return;
-  for (const it of g.items ?? []) revealQueue.push({ thing: it });
+  // The step that gave it plays a 大场面 (its story node's `setpiece`, new on this read): held for it from this moment,
+  // before the node is watched (watchNode) — so not one reveal slips out ahead of the piece.
+  const n = now.story_node;
+  if (n?.at && n.at !== was.story_node?.at && setpieceOf(n)) pieceDue = { id: setpieceOf(n), at: Date.now() };
+  // …and the passage the step owes may lay one under its words: held while it is owed and while a 景 is still ahead.
+  pieceSoon = true;
+  // Gear first (Hanli 11-03 at 古七's 09-snow: 「以为只拿到一张牌, 没看到剑」): a thing to wear before the rest.
+  const items = [...(g.items ?? [])].sort((a, b) => Number(Boolean(b.slot)) - Number(Boolean(a.slot)));
+  for (const it of items) revealQueue.push({ thing: it });
   if (g.wealth) revealQueue.push({ thing: { id: 'lingshi', n: g.wealth, name: STONES[lang()] ?? STONES.zh, art: 'art/items-comic/lingshi.webp', kind: 'stone' } });
+  // …and once the reveals are over, 所得 stays with what can be worn on top, its 戴上 at hand (spoilsGear).
+  const wear = items.filter((it) => it.slot);
+  if (wear.length) gearSpoilsOwed = { items, paid: g.wealth ? { wealth: g.wealth } : null };
   queueMicrotask(playReveals);
+}
+/* A set piece owed or on (Hanli 11-03: 「是在饭桶动画场面前给的, 应该是在饭桶大场面动画后给」): what the step gave is shown
+   after it — the pay landed in the rules at once; only the showing waits. `pieceDue` is the piece a story step owes (storyMoment),
+   let go when it closes; a piece laid under a passage's words (carriesPiece) holds them until that passage is read. */
+let pieceDue = null, gearSpoilsOwed = null, pieceSoon = false;
+const PIECE_DUE_MS = 180_000; // a piece that never came up (refused, the page reloaded) holds nothing past this
+function revealHeld() {
+  if (bout || pieceOn) return true;
+  // A passage owed (or being drawn) may carry a piece; one on show with a 景 still ahead does (09-snow's 扔了干净).
+  if (pieceSoon && (look?.tell_owed || drawingTold || pieceStillAhead(readingHere(), lang()))) return true;
+  pieceSoon = false;
+  if (!pieceDue) return false;
+  const carried = carriesPiece(readingOfPlay(), pieceDue.id);
+  // Laid under a passage's words and that passage read through, or waited out: it holds no more.
+  if ((carried && !playing(readingHere())) || Date.now() - pieceDue.at > PIECE_DUE_MS) { pieceDue = null; return false; }
+  return true;
 }
 /* A thing as the big card shows it: its picture, its name (×n), 丹 or 符 when it is one, its small print. */
 const thingCard = (t) => ({ id: t.id, name: t.n > 1 ? `${t.name} ×${t.n}` : t.name, art: t.art, pill: t.kind === 'pill', charm: t.kind === 'charm', kind: 'thing', line: t.hint ?? '' });
@@ -654,7 +681,8 @@ function gainedCards(was, now) {
   queueMicrotask(playReveals);
 }
 async function playReveals() {
-  if (revealing || bout || !revealQueue.length || !authored) return;
+  if (!revealQueue.length && gearSpoilsOwed && !revealing && !revealHeld()) return showGearSpoils();
+  if (revealing || revealHeld() || !revealQueue.length || !authored) return;
   revealing = true;
   try {
     const catalog = cardCatalog(), l = lang();
@@ -664,7 +692,32 @@ async function playReveals() {
     const cards = revealQueue.splice(0).map((x) => (x?.thing ? thingCard(x.thing) : catalog[x] ? sourced(catalog[x]) : null)).filter(Boolean);
     await revealCards(cards, { host: $('view') ?? document.body, target: () => document.querySelector('.gearchip'), lang: l, artBase: artBase(), isWords: authored?.cards?.is_words });
   } finally { revealing = false; }
-  if (revealQueue.length) playReveals();
+  playReveals();
+}
+/* A fight's or a board's 所得 that holds gear: the rules' gear read marks each thing that can be worn (`slot`, `wear_on`), so
+   it stands first with its 戴上 (spoilGearHtml) — the same as a story step's. */
+async function gearOnSpoils() {
+  const mine = view.spoils;
+  const g = await verb('gear').catch(() => null), bag = g?.gear?.bag ?? [];
+  if (view.spoils !== mine || !mine?.items?.some((it) => bag.find((b) => b.id === it.id)?.slot)) return;
+  show({ spoils: { ...mine, items: mine.items.map((it) => { const b = bag.find((x) => x.id === it.id); return b?.slot && b.slot !== 'abode' ? { ...it, ...b, name: it.name ?? b.name } : it; }), gear: { her: g?.gear?.her ?? null } } });
+}
+async function spoilWear(id, on) {
+  const r = await write('trade', { action: 'use', id, ...(on ? { on } : {}) }).catch(failed);
+  if (!r.ok) { keep({ doNote: refusal(r) }); return render(); }
+  const g = await verb('gear').catch(() => null), bag = g?.gear?.bag ?? [];
+  if (view.spoils) show({ spoils: { ...view.spoils, items: (view.spoils.items ?? []).map((it) => ({ ...it, ...(bag.find((b) => b.id === it.id) ?? { wear_on: [] }) })) } });
+  await refresh();
+}
+/* 所得 after a story step that gave gear: the gear first, its kind and what it does, 戴上 (and 给银月 where the rules allow) —
+   the rules' gear read says where a 戴上 lands (`wear_on`), as in the 储物袋. */
+async function showGearSpoils() {
+  const owed = gearSpoilsOwed;
+  gearSpoilsOwed = null;
+  const g = await verb('gear').catch(() => null);
+  const bag = g?.gear?.bag ?? [];
+  const items = owed.items.map((it) => ({ ...it, ...(bag.find((b) => b.id === it.id) ?? {}) }));
+  show({ spoils: { place: look?.place?.id ?? null, cards: [], items, paid: owed.paid, spent: [], line: null, gear: { her: g?.gear?.her ?? null } } });
 }
 
 /// Re-read the game. What it answers was read after the call: a read already
@@ -1643,6 +1696,7 @@ function putOff(key) {
 function spoilsCtx() {
   return {
     catalog: cardCatalog(), artBase: artBase(), lang: lang(), words: BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh,
+    gearRow: (i) => spoilGearHtml(i, { ...ctx(), her: view.spoils?.gear?.her ?? null }),
   };
 }
 
@@ -1760,7 +1814,7 @@ function keptScroll(el) {
 let frame = null;
 function render() {
   if (frame) return;
-  frame = requestAnimationFrame(() => { frame = null; draw(); beats.attach(); });
+  frame = requestAnimationFrame(() => { frame = null; draw(); beats.attach(); if ((revealQueue.length || gearSpoilsOwed) && !revealHeld()) playReveals(); });
 }
 
 
@@ -3921,6 +3975,8 @@ const CLICKS = [
     // 银月's slots (Hanli 11-03): `data-on="her"` and the slot, carried to Trade as they are.
     run(`item:${action}:${id}:${el.dataset.on ?? ''}`, () => useItem(id, action, { ...(el.dataset.on ? { on: el.dataset.on } : {}), ...(el.dataset.slot ? { slot: el.dataset.slot } : {}) }));
   }],
+  // 戴上 from 所得 (pouch.js spoilGearHtml): the 储物袋's own `trade use`, the card read again with where it is worn now.
+  ['[data-spoil-wear]', (el) => { run(`spoilwear:${el.dataset.spoilWear}`, () => spoilWear(el.dataset.spoilWear, el.dataset.on ?? null)); return true; }],
   ['[data-spoils-close]', () => show({ spoils: null })],
   ['[data-handin-close]', () => show({ handin: null })],
   ['[data-seclude-open]', () => run('seclude', () => openSeclude())],
@@ -4484,6 +4540,7 @@ async function settleBout(b, out = {}) {
   // A 符 played is spent from the bag, won or lost: the card says so (page fact).
   const spent = r.spent ?? [];
   if (got.length || paid || spent.length) keep({ spoils: { place: look?.place?.id ?? null, cards: got.filter((d) => d.card), items: got.filter((d) => !d.card), paid, spent, pending: true } });
+  if (got.some((d) => !d.card)) gearOnSpoils();
   // The strip counts up once the room has closed and the eye is back on it.
   riseAfter = performance.now() + 600;
   keep({ walkedOut: null });
@@ -4880,7 +4937,8 @@ async function playPiece(id, beats = null) {
   // In the stage (2026-10-14: the header and the footer are thin bars that stay; the chat stays beside).
   ($('view') ?? document.body).appendChild(box);
   const mine = pieceOn = { id, box, ctl: null, over: false };
-  const close = () => { if (pieceOn !== mine) return; mine.ctl?.destroy?.(); box.remove(); pieceOn = null; render(); };
+  // Closed, what the step gave is shown (revealHeld): the reveals queued behind it play now.
+  const close = () => { if (pieceOn !== mine) return; mine.ctl?.destroy?.(); box.remove(); pieceOn = null; if (pieceDue?.id === id) pieceDue = null; render(); queueMicrotask(playReveals); };
   render(); // up: the stage under it is drawn again, so what waits for it (the scene's choices, queue.js choicesStand) steps out
   box.addEventListener('click', (e) => {
     // 跳过 here is its last frame (Hanli, 2026-10-19: 「跳过不能跳过大场面」); once over, a tap puts it away.
@@ -5132,6 +5190,7 @@ function storyMoment(n) {
   // A set piece (哇时刻 ②, an exit's `setpiece`: 漳水立起, 筑基天象): the whole stage plays
   // it first; her memory and 鼎归 wait for it to end (playMemoryNow, playHoming).
   const piece = setpieceOf(n);
+  if (piece) pieceDue = { id: piece, at: Date.now() };
   // Once: a passage that lays the same piece under its words (a `{景=id}` beat) shows it there (carriesPiece) —
   // looked at once that passage is drawn, before the piece waits its turn (a piece waiting holds the beat's).
   if (piece) pieceOfChoice(piece, setpieceBeats(n));

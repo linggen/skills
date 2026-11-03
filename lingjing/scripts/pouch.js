@@ -136,6 +136,20 @@ function readsHtml(r, w) {
     <div class="small dim">${esc(r.passage.title)}</div>${quotes}<div class="small gloss">${esc(r.passage.gloss)}</div></div>`;
 }
 
+/// 所得's gear row (Hanli 11-03 at 09-snow: 「以为只拿到一张牌, 没看到剑」): its slot · name · what it does, then 戴上 · {slot}
+/// (and 给银月 · {slot}) wherever the rules' gear read says one lands (`wear_on`) — the 储物袋's own `trade use`.
+export function spoilGearHtml(i, ctx) {
+  const w = ctx.words, slot = w.gearSlots?.[i.slot] ?? i.slot ?? '';
+  const does = i.effect ? itemDoes(i.effect, ctx) : '';
+  const acts = (i.wear_on ?? []).map((o) => {
+    const at = w.gearSlots?.[o.slot] ?? o.slot;
+    return o.on === 'her' ? `<button class="act" data-spoil-wear="${esc(i.id)}" data-on="her">${esc(say(w.gearGive, { name: ctx.her?.name ?? '', slot: at }))}</button>`
+      : `<button class="act primary" data-spoil-wear="${esc(i.id)}">${esc(say(w.gearTo, { slot: at }))}</button>`;
+  }).join('');
+  const worn = !acts && (i.worn_on ?? []).length ? `<span class="chip">${esc(w.worn ?? '')}</span>` : '';
+  return `<div class="spoilgear"><div><b>${esc(slot)} · ${esc(i.name ?? i.id)}</b>${does ? ` <span class="small dim">· ${esc(does)}</span>` : ''} ${worn}</div>${acts ? `<div class="acts">${acts}</div>` : ''}</div>`;
+}
+
 /// What a thing is and does: its kind · effect, its about, who it wins over — the detail's lines, the 饭桶's info too.
 export function itemFactsHtml(i, ctx) {
   const kind = ctx.look?.words?.[i.kind] ?? i.kind ?? '';
@@ -152,7 +166,6 @@ function detailHtml(i, g, ctx, pw, ui) {
   if (e.progress != null) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.take)}</button>`);
   else if (e.learn) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.study)}</button>`);
   else if (e.pouch && !carriedKind(i, g)) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(say(pw.carry, { n: e.pouch }))}</button>`);
-  else if (e.stamina) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.use)}</button>`);
   // 戴上 · 佩 and 给银月 · 佩: each place a 戴上 lands now (the rules' `wear_on`); 卸下 for each slot that wears it (`worn_on`).
   for (const o of i.wear_on ?? []) {
     const slot = w.gearSlots[o.slot] ?? o.slot;
