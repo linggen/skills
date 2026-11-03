@@ -33,6 +33,9 @@ const his = (extra = {}) => ({ ...newState(content, 'zh', NOW), chapter: '00-zhu
   tier: 'qi', step: 9, progress: 0, wealth: 112, traits: ['metal', 'wood', 'water', 'fire', 'earth'], stamina: 100, stamina_at: NOW.toISOString(),
   // 守炉 · 丹房看炉 played (2026-10-21); 年八's last board played (入秋 waits on it since 2026-10-28).
   tasks: { 'danfang-kanlu': { status: 'done' }, 'yanceng-chu': { status: 'done' } }, ...extra });
+/* …and on at 瞿老's door (09-qulao), where 入秋's 九层圆满 waits since 2026-11-03 (圆满 near the cliff), 瞿老's 丹 board played. */
+const atQulao = (extra = {}) => his({ scene: '09-qulao', place: content.chapters['00-zhuji'].scenes['09-qulao'].at, done_scenes: [...his().done_scenes, '09-yanceng'],
+  tasks: { ...his().tasks, 'qulao-dan': { status: 'done' } }, ...extra });
 const BEHIND = ['09-shenshi/winter', '09-dingfeng/laba']; // 古八's 七层 and 八层, behind a save at 九层
 const words = { ...WORDS.zh, xw: '修为', ls: '灵石', qi: '体力' };
 
@@ -68,14 +71,15 @@ test('his save at 九层 in 古八: the gates behind him are paid once on load, 
   assert.match(html, /阶段任务 · 练气九层圆满/);
 });
 
-test('入秋 waits on 九层圆满 — the choice is the beat\'s name, refused with the 阶段任务 line until he earns it; it raises nothing', () => {
+test('入秋 walks on; 九层圆满 waits at 瞿老\'s door (09-qulao, since 2026-11-03), refused with the 阶段任务 line until he earns it; it raises nothing', () => {
   const exit = content.chapters['00-zhuji'].scenes['09-yanceng'].exits.find(e => e.id === 'ruqiu');
   assert.deepEqual(exit.label, { zh: '入秋', en: 'Autumn' });
-  const short = resolve(his({ progress: 100 }), content, ctx, { exit: 'ruqiu' });
+  assert.equal(resolve(his({ progress: 100 }), content, ctx, { exit: 'ruqiu' }).result.ok, true, '入秋 asks nothing now');
+  const short = resolve(atQulao({ progress: 100 }), content, ctx, { exit: 'listen' });
   assert.equal(short.result.refused, 'stage');
   assert.match(short.result.say, /阶段任务：先修炼到练气九层圆满/);
-  const full = his({ progress: threshold(content, his()) });
-  const on = resolve(full, content, ctx, { exit: 'ruqiu' });
+  const full = atQulao({ progress: threshold(content, his()) });
+  const on = resolve(full, content, ctx, { exit: 'listen' });
   assert.equal(on.result.ok, true, JSON.stringify(on.result).slice(0, 300));
   assert.deepEqual([on.state.tier, on.state.step, on.state.progress], [full.tier, full.step, full.progress], 'the story moved nothing');
 });
@@ -100,9 +104,9 @@ test('a stage quest met is 可交: 交差 pays 灵石 once and moves it to 已�
   assert.equal(quest(turned.state, content, ctx, { id: 'stage', action: 'turn' }).result.refused, 'no-stage', 'never twice');
   assert.equal(quest(his({ progress: 5 }), content, ctx, { id: 'stage', action: 'turn' }).result.refused, 'not-done');
   // Walked on without 交差: the next load settles it, once.
-  const walked = resolve(full, content, ctx, { exit: 'ruqiu' }).state;
+  const walked = resolve({ ...atQulao(), ...full, scene: '09-qulao', place: atQulao().place, done_scenes: atQulao().done_scenes, tasks: { ...full.tasks, 'qulao-dan': { status: 'done' } } }, content, ctx, { exit: 'listen' }).state;
   const settled = settleStages(content, walked, NOW);
-  assert.ok(settled.stages.includes('09-yanceng/ruqiu'));
+  assert.ok(settled.stages.includes('09-qulao/listen'));
   assert.equal(settleStages(content, settled, NOW), settled);
 });
 
@@ -160,6 +164,10 @@ test('every rise the book had is a gate: at that choice, or — inside a locked 
       // 定风 is the 五层 the book tells, and the second gate held 五层 shut two scenes past it).
       const twin = gates.find(g => g.hui === sc.hui && g.layer >= want && Object.values(content.chapters).some(c => c.scenes?.[g.scene]?.exits.some(x => g.exits.includes(x.id) && x.was_rise === r)));
       if (twin) continue;
+      // …or the gate a scene or two on in its 回 (入秋's 九层圆满 at 瞿老's door since 2026-11-03: 圆满 near the cliff).
+      let on = e.next, near = null;
+      for (let k = 0; k < 2 && on && !near; k += 1) { near = gates.find(g => g.scene === on && g.hui === sc.hui && g.layer >= want); on = ch.scenes[on]?.exits.find(x => x.next && !x.stay)?.next; }
+      if (near) continue;
       const locked = (ch.beats ?? []).some(b => b.scenes.indexOf(sc.id) > 0);
       assert.ok(locked, `${sc.id}/${e.id}: no gate at the choice, and it is not inside a locked beat`);
       const next = gates.filter(g => huiOrder(content, g.hui) > huiOrder(content, sc.hui))

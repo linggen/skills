@@ -94,7 +94,7 @@ test('the book as the model reads it: every 回\'s scenes, a way on from each, m
   const walk = bookWalk(content);
   for (const h of ['h01', 'h02', 'h04', 'h05', 'h07', 'h08', 'h11', 'h09', 'h10']) assert.ok(walk.some(w => w.hui === h), h);
   assert.ok(walk.every(w => w.minutes > 0));
-  assert.equal(walk.filter(w => w.gate).length, 11, 'the eleven ways a stage quest holds on 卷一\'s line (古五\'s three since 2026-10-31 — the door, the 石室\'s 三层 and 四层 —, 古七\'s three since 2026-11-03 (09-year\'s 伏天 dropped), 古八\'s three since 2026-10-28)');
+  assert.equal(walk.filter(w => w.gate).length, 9, 'the nine ways a stage quest holds on 卷一\'s line (古五\'s one since 2026-11-03 — the 石室\'s 三层; the 秘境\'s door and the 石室\'s 四层 went with the share holds —, 古七\'s three (09-year\'s 伏天 dropped 11-03), 古八\'s three since 2026-10-28, 入秋\'s at 09-qulao since 11-03)');
 });
 
 test('every errand and 榜文 says what work it is: 修行 pays 修为 for a fight, 杂役 pays 灵石 only; the model places each 修为 errand in its 回', () => {

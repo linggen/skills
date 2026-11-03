@@ -1,11 +1,11 @@
-// 古五's 石室 on 四层圆满 (Hanli 2026-10-28: 「游戏的层数要和剧情匹配」 · 「故事里是4层圆满, 游戏里保持一致」): in the 沉鼎秘境's
-// stone chamber the book has 小满 draw the 灵气 up to 四层圆满 (「再吸半天，第五层的门槛也许便摸得着了」), and on the way 「第二天晌午，
-// 他冲开了第四层」 — so wm-kaikai's way on waits on 三层圆满 right before that noon, and wm-xiqi's (老蔫's climb and fall, then the
-// third dawn) on 四层圆满 right before 「第三天天快亮」. Through the rooms before it (wm-xirang, wm-tama) the book still
-// has him at 二层: 古五's cap holds there (`holds`) until the story reaches the 石室's scene. Inside the 秘境 the world outside is
-// frozen, so the 修为 is earned in the room: the 石室's own 主力 levels, hosted there as practice. A save that came through the
-// 石室 before this (Hanli's, at 古六's eve on 三层) is never pulled back: it stands at the eve, which asks 三层圆满 (again since
-// 2026-11-03; 四层圆满 10-31 → 11-03 held 四层 full from the eve to 定风), earns it, and steps into 四层 for 褚先生's 「四层」.
+// 古五's 石室 (Hanli 2026-10-28: 「游戏的层数要和剧情匹配」; 2026-11-03: 「可以, 两件一起做」): in the 沉鼎秘境's stone chamber the
+// book has 小满 break through to 四层 (「第二天晌午，他冲开了第四层」) and 五层 only at 定风, years later — so wm-kaikai's way on
+// waits on 三层圆满 right before that noon, and since 2026-11-03 wm-xiqi asks nothing: 四层 is entered here and its bar held to
+// shares across 古六 (ladder caps.hui holds `share`), full by 定风. 「再吸半天，就五层了」 is 小满's own reach, which 银月 stops.
+// Through the rooms before it (wm-xirang, wm-tama) the book has him at 二层: 古五's cap holds there (`holds`) until the 石室, and
+// the bar on 二层 stops at 0.85 (巅峰, not 圆满) until wm-tama. Inside the 秘境 the world outside is frozen, so the 修为 is earned
+// in the room: the 石室's own 主力 levels, hosted there as practice. A save that came through the 石室 before its gates (his, at
+// 古六's eve on 三层) is never pulled back: it stands at the eve, which asks 三层圆满, earns it, and steps into 褚先生's 「四层」.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
@@ -32,13 +32,14 @@ const atShishi = (step, progress, extra = {}) => base({ scene: 'wm-kaikai', plac
 const atXiqi = (step, progress, extra = {}) => atShishi(step, progress, { scene: 'wm-xiqi', done_scenes: [...BEFORE, ...INSIDE, 'wm-kaikai'], ...extra });
 const rank = step => rankOf(content, 'qi', step);
 
-test('the data: 古五 reaches 四层, held at 二层 until the 石室; wm-kaikai · sit on 三层圆满, wm-xiqi · draw on 四层圆满, with the room\'s own words; 古六\'s eve on 三层圆满 (2026-11-03)', () => {
+test('the data: 古五 reaches 四层, held at 二层 until the 石室 (a share of it until wm-tama); wm-kaikai · sit on 三层圆满 with the room\'s own words; 四层 entered, held to 0.3 until 古六; 古六\'s eve on 三层圆满 (2026-11-03)', () => {
   const h07 = content.ladder.caps.hui.h07;
   assert.equal(h07.layer, 4);
-  assert.deepEqual(h07.holds, [{ layer: 2, until: 'wm-kaikai' }]);
+  assert.deepEqual(h07.holds, [{ layer: 2, share: 0.85, until: 'wm-tama' }, { layer: 2, until: 'wm-kaikai' }, { layer: 4, share: 0.3, until: 'wm-yaban' }]);
   const by = gatesOf(content).filter(g => ['h07', 'h08'].includes(g.hui)).map(g => `${g.scene}/${g.exits.join('|')}@${g.layer}`);
-  assert.deepEqual(by, ['wm-mijing/pay|refuse@2', 'wm-kaikai/sit@3', 'wm-xiqi/draw@4', 'wm-qianye/eve@3']);
-  for (const id of ['wm-kaikai', 'wm-xiqi']) assert.match(gatesOf(content).find(g => g.scene === id).say.zh, /石室/, 'inside, the refusal points at the room, not 功课');
+  assert.deepEqual(by, ['wm-kaikai/sit@3', 'wm-qianye/eve@3']);
+  assert.match(gatesOf(content).find(g => g.scene === 'wm-kaikai').say.zh, /石室/, 'inside, the refusal points at the room, not 功课');
+  assert.equal(SCENE.exits.find(e => e.id === 'sit').grant, undefined, 'no lump into wm-xiqi: nothing asks 四层圆满 there');
   // The room hosts the work: the 石室's two 主力 levels again, practice boards (hosted, not a stall).
   const room = Object.values(content.places).flatMap(d => d.places).find(p => p.id === 'mijing-shishi');
   assert.deepEqual(room.has.games, ['shishi-lingqi', 'shishi-yinshen']);
@@ -84,7 +85,8 @@ test('at wm-kaikai short of 三层圆满, at wm-xiqi short of 四层圆满: refu
   const noon = resolve(atShishi(3, th[3]), content, ctx, { exit: 'sit' });
   assert.equal(noon.result.ok, true, JSON.stringify(noon.result).slice(0, 300));
   assert.equal(noon.state.scene, 'wm-xiqi', 'into wm-xiqi: its gate waits there, never at the way in (the room has work)');
-  assert.match(resolve(atXiqi(4, 100), content, ctx, { exit: 'draw' }).result.say, /练气四层圆满。石室里的灵气还厚着/);
+  // wm-xiqi asks nothing since 2026-11-03: 四层 just entered, the way on is open.
+  assert.equal(resolve(atXiqi(4, 100), content, ctx, { exit: 'draw' }).result.ok, true);
   const l = look(atShishi(3, 100), content, ctx);
   assert.ok(l.sealed, 'inside the 秘境');
   const practice = (l.tasks ?? []).filter(t => t.practice).map(t => t.id).sort();
@@ -95,14 +97,15 @@ test('at wm-kaikai short of 三层圆满, at wm-xiqi short of 四层圆满: refu
   const played = task(win(s, content, ctx, { id: 'shishi-lingqi' }).state ?? s, content, ctx, { action: 'done', id: 'shishi-lingqi' });
   assert.equal(played.result.ok, true, JSON.stringify(played.result).slice(0, 300));
   assert.ok(played.state.progress > 100 || played.state.step > 3, `${played.state.step} · ${played.state.progress}`);
-  // 四层圆满: the stage quest handed in where it stands, inside (交差 is the instance's own, rules/sealed.mjs) …
-  const turned = quest(atXiqi(4, th[4], { stages: ['wm-kaikai/sit'] }), content, ctx, { id: 'stage', action: 'turn' });
+  // 三层圆满: the stage quest handed in where it stands, inside (交差 is the instance's own, rules/sealed.mjs).
+  const turned = quest(atShishi(3, th[3]), content, ctx, { id: 'stage', action: 'turn' });
   assert.equal(turned.result.ok, true, JSON.stringify(turned.result).slice(0, 200));
-  assert.equal(turned.result.key, 'wm-xiqi/draw');
-  // … and through, onto 「第三天天快亮」.
-  const full = resolve(atXiqi(4, th[4]), content, ctx, { exit: 'draw' });
+  assert.equal(turned.result.key, 'wm-kaikai/sit');
+  // On, onto 「第三天天快亮」: the bar on 四层 stops at 0.3 (the share hold until 古六) — the cap's own words say why.
+  const full = resolve(atXiqi(4, th[4] - 1), content, ctx, { exit: 'draw' });
   assert.equal(full.result.ok, true, JSON.stringify(full.result).slice(0, 300));
   assert.equal(full.state.scene, 'wm-chu');
+  assert.ok(look(atXiqi(4, Math.floor(0.3 * th[4])), content, ctx).capped?.say, 'at the share, 「走剧情破境 ›」');
 });
 
 test('a save already past the 石室 keeps its place: at 古六\'s eve on 三层 168/570 it stays on its layer, the eve asks 三层圆满 (2026-11-03), and grinding there is open', () => {
@@ -124,7 +127,7 @@ test('a save already past the 石室 keeps its place: at 古六\'s eve on 三层
   assert.equal(resolve(earnedFor(content, { ...eve, progress: th[3] }, 'eve'), content, ctx, { exit: 'eve' }).result.ok, true, '三层圆满 opens the eve');
   const done = { ...eve, step: 4, progress: th[4] };
   const back = settleStages(content, done, NOW).stages;
-  assert.ok(back.includes('wm-kaikai/sit') && back.includes('wm-xiqi/draw'), 'both 石室 quests, behind him, paid once');
+  assert.ok(back.includes('wm-kaikai/sit'), 'the 石室\'s quest, behind him, paid once');
   assert.equal(resolve(earnedFor(content, done, 'eve'), content, ctx, { exit: 'eve' }).result.ok, true);
 });
 

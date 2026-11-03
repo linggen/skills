@@ -29,11 +29,12 @@ test('every 回 past 古三 holds one (古九 aside); 古七\'s four as the book
   const by = {};
   for (const g of gatesOf(content)) (by[g.hui] ??= []).push(`${g.scene}@${g.layer}`);
   assert.deepEqual(by, {
-    // 古五's 石室 on 三层 then 四层圆满 (2026-10-31); 古六's eve on 三层圆满 again since 2026-11-03 (a save that came through the 石室
-    // short steps into 四层 for 褚先生's 「四层」 and fills it across the 大比, not at the eve)
-    h05: ['wm-chaifang@1'], h07: ['wm-mijing@2', 'wm-kaikai@3', 'wm-xiqi@4'], h08: ['wm-qianye@3'],
+    // 古五: the 石室's 三层圆满 (wm-kaikai); the 秘境's door (二层圆满) and the 石室's 四层圆满 (wm-xiqi) dropped 2026-11-03 (Hanli:
+    // 「可以, 两件一起做」) — 二层 stops at a share through the rooms, 四层 is entered in the 石室 and fills toward 定风. 古六's eve on
+    // 三层圆满 again (a catch-up for a save that came through the 石室 before its gates: 四层 for 褚先生's 「四层」).
+    h05: ['wm-chaifang@1'], h07: ['wm-kaikai@3'], h08: ['wm-qianye@3'],
     // 古七: 定风 is the 五层 the book tells (「那天早上……他过了五层」) — 09-year's 伏天 asks nothing since 2026-11-03 (it held 五层 two scenes past it)
-    h11: ['09-furnace@4', '09-yishui@5', '09-futian@6'], h09: ['09-shenshi@7', '09-dingfeng@8', '09-yanceng@9'],
+    h11: ['09-furnace@4', '09-yishui@5', '09-futian@6'], h09: ['09-shenshi@7', '09-dingfeng@8', '09-qulao@9'], // 入秋's 九层圆满 at 瞿老's door (09-qulao) since 2026-11-03
   });
   assert.equal(content.ladder.caps.hui.h11.layer, 6, '古七 grinds to 六层 (its rises come behind its gates)');
   // Nothing in the rules names a 回 or a scene of them.
@@ -140,12 +141,16 @@ test('古七\'s cap follows its stage quests (2026-10-16): grinding stops at the
   // Before 定风: 四层, full, and no further — the furnace's rise still carries him to 五层.
   const snow = grind(at([], 4, 0));
   assert.deepEqual([snow.step, snow.progress], [4, th[4]]);
-  // Past 定风, before 沂水: 五层 full, never 六层.
+  // Past 定风, before 沂水: 五层 to 0.7 until 09-fangshi (the share hold, 2026-11-03: 圆满 near 沂水), then full, never 六层.
   const year = grind(at(['09-furnace', '09-year', '09-lingcao'], 5, 0));
-  assert.deepEqual([year.step, year.progress], [5, th[5]]);
-  // Past 沂水: 六层 — the autumn's 七层 is the story's.
+  assert.deepEqual([year.step, year.progress], [5, Math.floor(0.7 * th[5])]);
+  const fang = grind(at(['09-furnace', '09-year', '09-lingcao', '09-fangshi'], 5, 0));
+  assert.deepEqual([fang.step, fang.progress], [5, th[5]]);
+  // Past 沂水: 六层 (0.7 until 09-nianyao) — the autumn's 七层 is the story's.
   const xie = grind(at(['09-furnace', '09-year', '09-lingcao', '09-yishui', '09-xie'], 6, 0));
-  assert.deepEqual([xie.step, xie.progress], [6, th[6]]);
+  assert.deepEqual([xie.step, xie.progress], [6, Math.floor(0.7 * th[6])]);
+  const nian = grind(at(['09-furnace', '09-year', '09-lingcao', '09-yishui', '09-xie', '09-nianyao'], 6, 0));
+  assert.deepEqual([nian.step, nian.progress], [6, th[6]]);
   // 定风 lifts nothing by itself (no story rise since 2026-10-16: 「不要直接跳层」) — but its gate passed, the 四层 he ground full
   // steps the moment the next 修为 comes, or on load (rules/cap.mjs settleHeld); 09-year's 伏天 holds nothing (2026-11-03).
   const fire = resolve({ ...snow, scene: '09-furnace', place: content.chapters['00-zhuji'].scenes['09-furnace'].at, tasks: { 'furnace-ding': { status: 'done' } }, stamina: 100, stamina_at: NOW.toISOString() }, content, ctx, { exit: 'fire' });

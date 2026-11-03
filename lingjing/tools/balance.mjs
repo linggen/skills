@@ -147,7 +147,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
   const walk = bookWalk(content, model), rooms = roomsPay(content);
   const quests = new Map(content.quests.map(q => [q.id, q]));
   const places = placeById(content);
-  const s = { tier: tiers[0].id, step: 0, progress: 0, stretch: 0, pill9: false };
+  const s = { tier: tiers[0].id, step: 0, progress: 0, stretch: 0, pill9: false, bank: 0 };
   const need = () => tierAt(s.tier).thresholds[s.step] + s.stretch;
   const zero = () => tierAt(s.tier).zero && s.step === 0;
   const up = (tier, step, carry, stretch = true) => { const c = Math.max(0, carry); s.tier = tier; s.step = step; s.progress = c; s.stretch = stretch ? Math.round(c * ratio) : 0; };
@@ -171,17 +171,48 @@ export function play(content, player, { model = content.balance.model, ladder = 
     // What the book authors (a scene's, a board's, a pill's, an errand's 修为) is a share of 练气一层 (play_pay.authored,
     // core.mjs amountsOf): read at the layer he stands on. The routines (功课, a fight, 闭关) come in already sized.
     const base = content.balance.play_pay?.authored?.base, scale = table === null && base ? need() / base : 1;
-    const add = n * scale * (tierAt(s.tier).pay ?? 1) * layerPay(table);
+    let add = n * scale * (tierAt(s.tier).pay ?? 1) * layerPay(table);
+    // Under a share mark (rules/cap.mjs shareMark): a fight's past it is 灵石, the rest waits in the 丹田 (`bank`).
+    const m = markAt();
+    if (m != null && add > Math.max(0, m - s.progress)) {
+      const past = add - Math.max(0, m - s.progress);
+      add -= past;
+      if (fight) { s.progress += add; book(D.xw, src, add); return past; }
+      s.bank += past;
+    }
     s.progress += add;
     for (;;) {
       if (s.progress < need()) break;
       const top = s.step >= tierAt(s.tier).thresholds.length - 1, cap = capAt();
-      if (!top && (!cap || rank(s.tier, s.step + 1) <= cap.grind)) { up(s.tier, s.step + 1, s.progress - need()); continue; }
+      if (!top && (!cap || rank(s.tier, s.step + 1) <= cap.grind)) { up(s.tier, s.step + 1, s.progress - need()); rebank(true); continue; }
       if (fight) { const over = Math.min(add, s.progress - need()); s.progress = need(); book(D.xw, src, add - over); return over; }
       break;
     }
     book(D.xw, src, add);
     return 0;
+  };
+  /* The share mark on the layer he stands on (rules/cap.mjs shareMark), or null. */
+  const markAt = () => {
+    const c = caps[capHui];
+    if (!c || zero()) return null;
+    const shares = (c.holds ?? []).filter(h => h.share != null && !reached(h.until) && rank(h.tier ?? tiers[0].id, stepOf(h.tier ?? tiers[0].id, h.layer)) === rank(s.tier, s.step)).map(h => h.share);
+    return shares.length ? Math.floor(Math.min(...shares) * need()) : null;
+  };
+  /* The bank back as the mark lifts; a carry past a new mark banked (rules/cap.mjs rebank). Then any step it opens. */
+  const rebank = (carried = false) => {
+    const m = markAt();
+    if (carried && m != null && s.progress > m) { s.bank += s.progress - m; s.progress = m; }
+    const back = Math.min(s.bank, m == null ? Infinity : Math.max(0, m - s.progress));
+    if (back > 0) { s.bank -= back; s.progress += back; }
+  };
+  const settle = () => {
+    rebank();
+    for (;;) {
+      if (zero() || s.progress < need()) break;
+      const top = s.step >= tierAt(s.tier).thresholds.length - 1, cap = capAt();
+      if (top || (cap && rank(s.tier, s.step + 1) > cap.grind)) break;
+      up(s.tier, s.step + 1, s.progress - need()); rebank(true);
+    }
   };
   /* Full where he may not step on: the 回's cap or a stage quest ahead (a fight's 修为 there is 灵石). */
   const held = () => { if (s.progress < need()) return false; const top = s.step >= tierAt(s.tier).thresholds.length - 1, cap = capAt(); return top || (cap && rank(s.tier, s.step + 1) > cap.grind); };
@@ -327,6 +358,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
           if (r.start == null) r.start = at();
           // A gated scene with boards of its own is read and played before its way on is asked (Hanli 10-27, doc/gates-2026-10-27.md:
           // 大比前夜's 掐诀 counts toward the 四层 he needs there); one with none is held at the way into it (rules/gates.mjs entryGate).
+          settle(); // standing here: a share hold this scene lets go gives its bank back (rules.mjs settleHeld, on every load)
           const late = Boolean(w.gate && (w.nboards || roomWorks(content, content.chapters[w.chapter]?.scenes?.[w.id]?.at)));
           const arrive = () => {
             if (!gates.has(w.id)) gates.set(w.id, { scene: w.id, hui: w.hui ?? hui, layer: { tier: w.gate.tier, step: w.gate.step }, pct: Math.min(1, gateMet(w.gate) ? 1 : (rank(s.tier, s.step) < rank(w.gate.tier, w.gate.step) ? 0 : s.progress / need())), below: rank(s.tier, s.step) < rank(w.gate.tier, w.gate.step), from: { tier: s.tier, step: s.step, progress: s.progress, need: need() }, at: played(), day: at(), did: { fights: 0, boards: 0, walls: 0 } });
@@ -350,6 +382,9 @@ export function play(content, player, { model = content.balance.model, ladder = 
             // …and each board's play pay, its minutes at the layer he stands on (rules/playpay.mjs playGrant; ★ `model.story_stars`):
             // the story's boards are where most of a layer's 修为 comes from before its gate (数值系统 phase 2).
             for (const t of w.tasks ?? []) gain(playGrant(content, { ...s, need: need(), plays: null }, t.id, t, NOW, model.story_stars ?? 2)?.progress ?? 0, false, 'play', 'boards');
+            // A grinder's side play at each scene (`scene_share` of the layer, tests/pacing.test.mjs: his real rate, Hanli 11-02:
+            // about +110 an action at 四层) — the player who fills a layer the moment its door opens.
+            if (player.scene_share) gain(player.scene_share * need(), false, 'play', 'grind');
             w.entered = true;
           }
           if (late && !arrive()) { gated = true; break; }
@@ -372,7 +407,9 @@ export function play(content, player, { model = content.balance.model, ladder = 
           // A story fight on the way takes its pills too.
           if (w.fight) takePills(1 / model.fight_win_rate);
           done.add(w.id);
-          trace.push({ id: w.id, hui: w.hui ?? hui, tier: s.tier, step: s.step, held: !zero() && held(), day: at() });
+          settle(); // a hold reached (the scene done): the bank back, a step it opens
+          const mk = markAt();
+          trace.push({ id: w.id, hui: w.hui ?? hui, ...(w.line ? { line: w.line } : {}), tier: s.tier, step: s.step, held: !zero() && held(), share: mk != null && s.progress >= mk, pct: zero() ? 0 : s.progress / need(), day: at() });
           r.end = at();
           i += 1;
         }

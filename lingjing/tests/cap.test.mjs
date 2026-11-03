@@ -34,8 +34,8 @@ test('every 古 回 declares its cap, as the book\'s realm line stands', () => {
   assert.deepEqual(Object.fromEntries(Object.keys(caps).map(id => [id, row(id)])), {
     h04: ['qi0', null], // 古三: 入门 at 零层 (the book; the game's too since 2026-10-15)
     h05: ['qi2', null], // 古四: the 小周天 → 一层 (入门, the one rise); past the 柴房 gate 二层 ground (十月廿五 「自己坐上了二层」, 2026-10-27)
-    h07: ['qi4', null], // 古五: 二层 ground to the door, held there through the rooms (`holds`); 三层 and 四层 ground in the 石室 (2026-10-31: 四层圆满, the book's)
-    h08: ['qi4', null], // 古六: 大比 on 四层 (ground in 古五's 石室; an older save grinds it here)
+    h07: ['qi4', null], // 古五: 二层 to a share (巅峰, not 圆满) through the rooms (`holds`, 2026-11-03), full by wm-tama; 三层 in the 石室, 四层 entered there (「冲开了第四层」)
+    h08: ['qi4', null], // 古六: 大比 on 四层, its bar held to shares across the 回 (0.45 · 0.6 · 0.8), full only by 定风 (2026-11-03)
     h11: ['qi6', null], // 古七 (its first half since 2026-10-07): 五层 and 六层 ground behind its stage quests
     h09: ['qi9', 'foundation3'], // 古八: 七层 to 九层圆满 ground (腊八 on 八层, 入秋 on 九层), the cliff → 筑基 by his throw
     h10: ['foundation3', null], // 古九: 筑基小成 — 一至三层 since 筑基 counts nine 层 (Hanli approved 2026-11-02)
@@ -69,7 +69,7 @@ test('古三\'s gate scene: 零层 only — 一层 is 古四\'s 小周天', () =
   assert.equal(named(s), '练气零层');
 });
 
-test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 through the 秘境\'s rooms, 息壤 lifts nothing, then 四层 in the 石室 (2026-10-31: the book\'s 四层圆满); 古六 holds there to the eve', () => {
+test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 through the 秘境\'s rooms, 息壤 lifts nothing, then 四层 in the 石室; 古六 holds 四层 to a share (2026-11-03)', () => {
   const th = content.ladder.tiers[0].thresholds;
   // (留给爹 waits on 喂饭桶 · 一根牛骨头 since 2026-10-21: played)
   const s0 = at('00-waimen', 'wm-diyilu', 'chaifang', ['00-prologue'], { step: 1, progress: th[1], tasks: { 'diyilu-niugu': { status: 'done' }, 'diyilu-tama': { status: 'done' } } });
@@ -95,8 +95,9 @@ test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 throu
   assert.equal(named(s), '练气四层', '古五: in the 石室, 四层 — the book\'s 「第五层的门槛」, no further');
   s = { ...s, scene: 'wm-qianye', place: 'waimen', done_scenes: [...s.done_scenes, 'wm-xiqi', 'wm-chu'] };
   grind(s);
-  assert.equal(named(s), '练气四层', '古六: 四层 to the eve (the gate asks 四层圆满); 五层 is 古七\'s'),
-  assert.ok(s.progress > threshold(content, s), 'full, and counting on');
+  assert.equal(named(s), '练气四层', '古六: 四层 to the eve (the gate asks 三层圆满 since 2026-11-03); 五层 is 古七\'s');
+  // …and the bar stops at the share hold's mark (0.45 until the 大比, 2026-11-03): the rest waits in the 丹田.
+  assert.deepEqual([s.progress, s.banked > 0], [Math.floor(0.45 * threshold(content, s)), true], 'a share of 四层, the rest banked');
 });
 
 test('古七: 四层 until 定风 is walked — each layer ground behind its gate; 古八 grinds 七层 for 年六, 八层 for 年七\'s 腊月, then 九层 for 入秋', () => {
@@ -124,8 +125,13 @@ test('古七: 四层 until 定风 is walked — each layer ground behind its gat
   const u = { ...laba.state, scene: '09-yanceng', place: 'jiangtang' };
   grind(u);
   assert.equal(named(u), '练气九层', 'then 九层, ground');
-  assert.ok(u.progress >= threshold(content, u), '圆满, ground — 入秋 opens');
-  const later = capOf(content, u);
+  // 九层 stops at 0.7 until 瞿老 (09-qulao, the 筑基 beat's door, where 入秋's gate stands since 2026-11-03); there it fills.
+  assert.equal(u.progress, Math.floor(0.7 * threshold(content, u)), 'a share of 九层 before 09-qulao');
+  const q = settleHeld(content, { ...u, scene: '09-qulao', done_scenes: [...u.done_scenes, '09-yanceng'] });
+  grind(q);
+  assert.ok(q.progress >= threshold(content, q), '圆满 at 瞿老 — 入秋 opens');
+  const k = q;
+  const later = capOf(content, k);
   assert.ok(later.story > later.grind, '古八\'s story reaches on to 筑基 (the breakthrough)');
 });
 

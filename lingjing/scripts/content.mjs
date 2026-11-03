@@ -14,7 +14,7 @@ import { rankOf, storyAllows } from './rules/cap.mjs';
 import { roomWorks } from './rules/gates.mjs';
 import { withWorth } from './rules/fantong-roll.mjs';
 import { rhythm } from './rhythm.mjs';
-import { huiOf } from './rules/hui.mjs';
+import { huiOf, huiOrder } from './rules/hui.mjs';
 import { KINDS as WEATHER_KINDS, SEASONS, WINDS } from './rules/weather.mjs';
 import { FESTIVAL_IDS } from './calendar.js';
 
@@ -1153,12 +1153,16 @@ function lintCaps(content, bad) {
     if (!huiOf(content, id)) bad(where, `${id} is not a 回 of the book`);
     if (!layerOk(e) || (e.story && !layerOk(e.story))) { bad(where, `${id}: a tier the ladder has and a layer of it`); continue; }
     if (e.story && rankOf(content, e.story.tier, stepOfLayer(content, e.story.tier, e.story.layer)) < rankOf(content, e.tier, stepOfLayer(content, e.tier, e.layer))) bad(where, `${id}: story under the player's own reach`);    for (const g of e.gates ?? []) lintGate(content, id, e, g, bad);
-    // A hold (rules/cap.mjs heldBy): a layer the tier has, under the 回's own, let go at a scene of that 回.
+    // A hold (rules/cap.mjs heldBy): a layer the tier has, under the 回's own, let go at a scene of that 回. A share hold
+    // (`share`, 2026-11-03: the bar stops at that share of the layer) may stand on the 回's own layer, and lift at a scene of
+    // a later 回 too — it then holds the whole 回 (a 回's entry rules only while the story stands in it).
     for (const h of e.holds ?? []) {
       const sc = Object.values(content.chapters ?? {}).map(ch => ch.scenes?.[h.until]).find(Boolean);
-      if (!sc || sc.hui !== id) bad(where, `${id}: hold until ${h.until}, not a scene of the 回`);
-      const ht = h.tier ?? first0;
-      if (!layerOk({ tier: ht, layer: h.layer }) || rankOf(content, ht, stepOfLayer(content, ht, h.layer)) >= rankOf(content, e.tier, stepOfLayer(content, e.tier, e.layer))) bad(where, `${id}: hold at ${h.layer}, a layer under the 回's own`);
+      const share = h.share != null;
+      if (share && !(h.share > 0 && h.share < 1)) bad(where, `${id}: hold share ${h.share}, a share of the layer (0 to 1)`);
+      if (!sc || (share ? huiOrder(content, sc.hui) < huiOrder(content, id) : sc.hui !== id)) bad(where, `${id}: hold until ${h.until}, not a scene of the 回${share ? ' or one after it' : ''}`);
+      const ht = h.tier ?? first0, r = rankOf(content, ht, stepOfLayer(content, ht, h.layer)), own = rankOf(content, e.tier, stepOfLayer(content, e.tier, e.layer));
+      if (!layerOk({ tier: ht, layer: h.layer }) || (share ? r > own : r >= own)) bad(where, `${id}: hold at ${h.layer}, a layer under the 回's own${share ? ' (or its own, for a share)' : ''}`);
     }
   }
   const first = content.ladder.tiers[0].id;

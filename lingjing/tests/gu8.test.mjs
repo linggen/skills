@@ -88,7 +88,7 @@ test('the boards: 考书 and 看炉 in 09-dabi, the years\' twenty in theirs —
 
 test('a stage quest a year: 七层圆满 at 年六\'s winter, 八层圆满 before 年七\'s 腊月, 九层圆满 before 入秋 — no 古八 exit lifts him', () => {
   for (const id of H09) for (const e of CH.scenes[id].exits) assert.equal(e.rise, undefined, `${id}/${e.id} lifts no layer`);
-  assert.deepEqual(content.ladder.caps.hui.h09.gates, [{ layer: 7, scene: '09-shenshi', exits: ['winter'] }, { layer: 8, scene: '09-dingfeng', exits: ['laba'] }, { layer: 9, scene: '09-yanceng', exits: ['ruqiu'] }]);
+  assert.deepEqual(content.ladder.caps.hui.h09.gates, [{ layer: 7, scene: '09-shenshi', exits: ['winter'] }, { layer: 8, scene: '09-dingfeng', exits: ['laba'] }, { layer: 9, scene: '09-qulao', exits: ['listen'] }]); // 入秋's 九层圆满 at 瞿老's door since 2026-11-03 (圆满 near the cliff)
   assert.ok(content.balance.master.lines.gu.hours.fit.gates.includes('09-dingfeng'), 'the refit holds them (fit.gates)');
 });
 

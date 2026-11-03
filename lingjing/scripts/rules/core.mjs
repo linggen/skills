@@ -20,7 +20,7 @@ import { companionOf } from './companion.mjs';
 import { grantMemory } from './memories.mjs';
 import { writeLedger } from './ledger.mjs';
 import { comingOf, sideLine } from './hui.mjs';
-import { capLook, pastCapSay, storyAllows, underCap } from './cap.mjs';
+import { capLook, pastCapSay, rebank, shareRoom, storyAllows, underCap } from './cap.mjs';
 import { entryGate, stageBrief, stageGate, stageSay } from './gates.mjs';
 import { fightStuck } from './skips.mjs';
 import { atScene, inMade, placeName, placeOf, placeOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
@@ -102,6 +102,9 @@ const converting = (content, grant) => {
 /* How much of `progress` would land past a mark he may not leave — tried on a copy. */
 function pastMark(content, state, progress, now) {
   if (progress <= 0 || zeroAt(content, state.tier, state.step)) return 0;
+  // Under a share mark (rules/cap.mjs shareMark): what lands past it.
+  const room = shareRoom(content, state);
+  if (room < progress) return progress - room;
   const trial = { tier: state.tier, step: state.step, progress: state.progress, ...(state.stretch ? { stretch: { ...state.stretch } } : {}) };
   const { hold } = addProgress(content, trial, progress, (tier, step) => underCap(content, state, tier, step) && duanPass(content, state, now, tier, step));
   return hold ? Math.min(progress, Math.max(0, hold.over ?? 0)) : 0;
@@ -135,7 +138,12 @@ function pay(content, state, ctx, grant, landing = state) {
     door = { held: { tier, step }, odds };
     return false;
   };
-  const { levels, hold: kept } = addProgress(content, state, progress - over, mayStep);
+  // Past a share mark (rules/cap.mjs shareMark) the rest waits in the 丹田 (`banked`), never on the bar.
+  const room = shareRoom(content, state), banked = Math.max(0, progress - over - room);
+  if (banked) state.banked = (state.banked ?? 0) + banked;
+  const { levels, hold: kept0 } = addProgress(content, state, progress - over - banked, mayStep);
+  if (levels.length) rebank(content, state, true);
+  const kept = banked && !kept0 ? { cap: true, held: 0, over: banked, share: true } : kept0;
   // The 段 trial thrown on this pay, written down: through, or held at the door with the hour started.
   const trial = door ? duanTried(content, state, ctx.now, door) : null;
   // At the 回's cap the held part is told in the world's words (rules/cap.mjs) — not when the rest went to 灵石. At a 段 door

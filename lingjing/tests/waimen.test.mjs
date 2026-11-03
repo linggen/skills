@@ -19,6 +19,7 @@ import { huiLabel, huiOf } from '../scripts/rules/hui.mjs';
 import { duelBrief } from '../scripts/rules/look.mjs';
 import { bookNo } from './book-num.mjs';
 import { earnedFor } from './earn.mjs';
+import { settleHeld } from '../scripts/rules/cap.mjs';
 
 const content = loadContent();
 const CH = content.chapters['00-waimen'];
@@ -496,7 +497,7 @@ test('息壤 keeps his 修为 and lifts nothing; its moment is the five doors op
   const lit0 = resolve(before(swallowed.state, 'light'), content, ctx(), { exit: 'light' }).state;
   const lit = resolve(before(lit0, 'after'), content, ctx(), { exit: 'after' }).state; // wm-tama's 踏马符 and 谷粒 (2026-10-26)
   const tag = resolve(before(lit, 'over'), content, ctx(), { exit: 'over' }).state; // wm-mingpai's name tag (the reading gaps, 2026-10-31)
-  // 息壤 · 五门 won: its own pay, the board's — and the 石室's stage quests earned (三层圆满, then 四层圆满; 2026-10-31)
+  // 息壤 · 五门 won: its own pay, the board's — and the 石室's stage quest earned (三层圆满; 2026-10-31)
   const noon = resolve(earnedFor(content, before(tag, 'sit'), 'sit'), content, ctx(), { exit: 'sit' });
   assert.equal(noon.result.ok, true, JSON.stringify(noon.result).slice(0, 200));
   assert.equal(noon.result.node?.doors, undefined, 'not at noon of the second day: the soil has not cracked open');
@@ -504,7 +505,9 @@ test('息壤 keeps his 修为 and lifts nothing; its moment is the five doors op
   const out = resolve(played, content, ctx(), { exit: 'draw' });
   // No story rise (Hanli, 2026-10-16: 「要让玩家去刷经验/修为等. 不要直接跳层」): the realm stands as he earned it.
   assert.deepEqual([swallowed.state.step, swallowed.state.progress], [2, 33], 'the swallow moved nothing');
-  assert.deepEqual([out.state.step, out.state.progress, out.result.rose], [played.step, played.progress, undefined], 'the story moved nothing');
+  // wm-xiqi asks nothing since 2026-11-03: the 三层 he filled steps on the load (rules/cap.mjs settleHeld), its door open.
+  const loaded = settleHeld(content, played);
+  assert.deepEqual([out.state.step, out.state.progress, out.result.rose], [loaded.step, loaded.progress, undefined], 'the story moved nothing');
   const node = out.result.node;
   assert.deepEqual(node.doors.map(d => d.el), ['metal', 'wood', 'water', 'fire', 'earth']);
   assert.ok(node.doors.every(d => d.line.startsWith('第')));

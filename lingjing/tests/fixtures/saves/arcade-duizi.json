@@ -16,7 +16,7 @@
   "tier": "qi",
   "step": 5,
   "progress": 11,
-  "wealth": 844,
+  "wealth": 580,
   "lines": {
    "jin": {
     "tier": "xinsheng",
@@ -702,8 +702,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 2431,
-   "wealth": 847
+   "progress": 1671,
+   "wealth": 583
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -1261,16 +1261,14 @@
   "handed": [],
   "stages": [
    "wm-chaifang/count",
-   "wm-mijing/pay",
    "wm-kaikai/sit",
-   "wm-xiqi/draw",
    "wm-qianye/eve",
    "09-furnace/fire"
   ],
   "furnace_name": "饭桶",
   "stretch": {
    "qi:2": 105,
-   "qi:3": 383
+   "qi:3": 291
   },
   "hunted": {
    "mijing-xiongya": 1

@@ -66,6 +66,32 @@ function heldBy(content, state, e) {
 /* A hold (ladder.json caps.hui.<回>.holds `{layer, until}`) is let go once the story stands at its scene or past it. */
 export const holdReached = (state, h) => state.scene === h.until || (state.done_scenes ?? []).includes(h.until);
 
+/* A share hold (`{layer, share, until}`, Hanli 11-03: 「应该让玩家在破镜前的剧情刚好圆满」): until the story reaches its scene,
+   the bar on that layer stops at `share` of it — 圆满 lands near the book's breakthrough, not scenes ahead of it. It holds
+   the layer too (heldBy: no step past it). The mark on the layer he stands on, or null where none binds. */
+export function shareMark(content, state) {
+  const e = entryOf(content, state);
+  if (!e || !tierOf(content, state.tier) || zeroAt(content, state.tier, state.step)) return null;
+  const first = content.ladder.tiers[0].id, now = rankOf(content, state.tier, state.step);
+  const shares = (e.holds ?? []).filter(h => h.share != null && !holdReached(state, h) && rankAt(content, { tier: h.tier ?? first, layer: h.layer }) === now).map(h => h.share);
+  return shares.length ? Math.floor(Math.min(...shares) * threshold(content, state)) : null;
+}
+
+/* The room under the share mark: what of `amount` the bar may take now (all of it where no mark binds). */
+export const shareRoom = (content, state) => { const m = shareMark(content, state); return m == null ? Infinity : Math.max(0, m - (state.progress ?? 0)); };
+
+/* 修为 past a share mark waits in the 丹田 (`banked` — the cap's own 「一分不丢」) and comes back as the mark lifts or he
+   steps on. Never pulls a save down: only a carry just made (`carried`, a step this pay made) is banked past the mark.
+   Mutates `s`. */
+export function rebank(content, s, carried = false) {
+  const m = shareMark(content, s);
+  if (carried && m != null && (s.progress ?? 0) > m) { s.banked = (s.banked ?? 0) + s.progress - m; s.progress = m; }
+  const back = Math.min(s.banked ?? 0, m == null ? Infinity : Math.max(0, m - (s.progress ?? 0)));
+  if (back > 0) { s.progress += back; s.banked -= back; }
+  if (s.banked != null && s.banked <= 0) delete s.banked;
+  return s;
+}
+
 /* A gate (ladder.json caps.hui.<回>.gates) walked through: its scene passed, or one of its ways
    taken that stays in the scene and marks it (古八's 腊八 · 再上五行台, `mark: y-dabi`, before 入秋
    in the same scene — 2026-10-16: two gates, one scene). */
@@ -93,7 +119,11 @@ export const storyAllows = (content, state, tier, step) => {
    line so the full bar reads as a wait, not a fault. Null otherwise. */
 export function capLook(content, state, lang) {
   const tier = tierOf(content, state.tier);
-  if (!content.ladder.caps || !tier || state.step >= tier.thresholds.length - 1 || zeroAt(content, state.tier, state.step)) return null;
+  if (!content.ladder.caps || !tier || zeroAt(content, state.tier, state.step)) return null;
+  // At a share mark (shareMark): the bar stops short, the same words — the way on is the story.
+  const m = shareMark(content, state);
+  if (m != null && (state.progress ?? 0) >= m && (state.progress ?? 0) < threshold(content, state)) return { say: pick(content.ladder.caps.say, lang), share: true };
+  if (state.step >= tier.thresholds.length - 1) return null;
   if ((state.progress ?? 0) < threshold(content, state) || underCap(content, state, state.tier, state.step + 1)) return null;
   return { say: pick(content.ladder.caps.say, lang) };
 }
@@ -123,9 +153,13 @@ export const pastCapSay = (content, lang) => pick(content.ladder.caps?.refuse, l
    a save with nothing to step comes back as it was (the same object). */
 export function settleHeld(content, state) {
   if (!state || !content.ladder?.caps || !tierOf(content, state.tier) || zeroAt(content, state.tier, state.step)) return state;
-  if ((state.progress ?? 0) < threshold(content, state)) return state;
+  // 修为 banked past a share mark comes back as the mark lifts (rebank).
+  const back = state.banked > 0 && shareRoom(content, state) > 0;
+  if (!back && (state.progress ?? 0) < threshold(content, state)) return state;
   const s = structuredClone(state);
+  if (back) rebank(content, s);
   // Never through a 段 door (四层, 七层 of a realm in 段): that step is the trial's, thrown by the next pay (rules/breakthrough.mjs).
-  const { levels } = addProgress(content, s, 0, (tier, step) => underCap(content, state, tier, step) && !stageDoor(content, tier, step));
-  return levels.length ? s : state;
+  const { levels } = addProgress(content, s, 0, (tier, step) => underCap(content, s, tier, step) && !stageDoor(content, tier, step));
+  if (levels.length) rebank(content, s, true);
+  return levels.length || back ? s : state;
 }

@@ -35,15 +35,13 @@
             "floor": 0.6,
             "gates": [
               "wm-chaifang",
-              "wm-mijing",
               "wm-kaikai",
-              "wm-xiqi",
               "wm-qianye",
               "09-yishui",
               "09-futian",
               "09-shenshi",
               "09-dingfeng",
-              "09-yanceng"
+              "09-qulao"
             ]
           }
         },

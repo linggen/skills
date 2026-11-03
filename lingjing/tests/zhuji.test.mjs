@@ -15,6 +15,7 @@ import { look, oddsOf, resolve, rollOf } from '../scripts/rules.mjs';
 import { pay } from '../scripts/rules/core.mjs';
 import { bookNo } from './book-num.mjs';
 import { earnedFor } from './earn.mjs';
+import { settleHeld } from '../scripts/rules/cap.mjs';
 
 const content = loadContent();
 // 练气九层圆满: the peak a throw is tried from (the threshold, re-derived 2026-10-15).
@@ -131,13 +132,18 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
   s = { ...s, place: CH.scenes[s.scene].at, stamina: 0, resting: true };
   assert.equal(s.bag['foundation-pill'], 1, 'the year-five 大比: the sect\'s 一转 is his, resealed into 饭桶');
   // 入秋 moves the story on (`next`): a story step's 3, like every scene's step.
-  assert.equal(resolve(s, content, ctx, { exit: 'ruqiu' }).result.refused, 'stage', '入秋 waits on 九层圆满, earned');
-  assert.equal(resolve(earnedFor(content, s, 'ruqiu'), content, ctx, { exit: 'ruqiu' }).result.refused, 'no-stamina', 'a spent pool still waits on the step');
+  // 入秋 asks no layer since 2026-11-03: 九层圆满 waits at 瞿老's door (09-qulao), near the cliff.
+  assert.equal(resolve(s, content, ctx, { exit: 'ruqiu' }).result.refused, 'no-stamina', 'a spent pool still waits on the step');
   const step = stepAt(s.scene, 'ruqiu'), autumn = go(full(s), 'ruqiu').state;
   assert.equal(content.rewards.stamina.max - autumn.stamina, step, '入秋: one story step, its reading minutes');
   assert.equal(autumn.step, 9, '九层');
-  assert.equal(autumn.progress, threshold(content, autumn), '圆满: the lake full');
   assert.equal(autumn.scene, '09-qulao');
+  // The lump on 入秋 (the gate table) lands under 九层's share hold, the rest banked; standing at 瞿老's door it comes back: full.
+  assert.equal(autumn.progress, Math.floor(0.7 * threshold(content, autumn)), 'at 九层\'s share until 瞿老');
+  assert.ok(autumn.banked > 0, 'the rest of the lump waits in the 丹田');
+  const there = settleHeld(content, autumn);
+  assert.equal(there.banked, undefined, 'standing at 瞿老\'s door: all of it back');
+  assert.ok(there.progress > autumn.progress && there.progress < threshold(content, there), 'the rest of 九层 his own, ground at the door (the gate)');
 });
 
 test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached for before the 一转, and 古十 opens at once', () => {
