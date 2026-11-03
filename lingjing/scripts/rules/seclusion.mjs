@@ -227,11 +227,12 @@ const SAY_IN = { zh: '正在闭关。先出关，再做别的。', en: 'You are 
    The verbs that change the world are refused `in-seclusion` (the simpler
    honest rule: nothing ends a seclusion but 出关, and 出关 is one tap on the
    stage's first card). Reading, Show, the language and the seclusion's own
-   verb stand. `true` holds the verb; a function holds only the calls it says. */
+   verb stand. `true` holds the verb; a function holds only the calls it says. 问签 (`divine`) stands too: the day's
+   签 is drawn in the morning, often before 出关 (Hanli 11-03: 「闭关也能摇签」). */
 const SECLUSION_HOLDS = {
   resolve: true, move: true, go: true, enter: true, leave: true, trade: true, tale: a => !['info', 'seed'].includes(a.action),
   meet: true, tame: true, refine: true, task: a => a.action !== 'list', win: true, duel: true, travel: true, build: true,
-  load: true, make: true, amend: true, lundao: true, divine: true, ring: true, deck: true, fantong: a => a.action === 'feed', haggle: true, duizi: a => ['open', 'reverse'].includes(a.action),
+  load: true, make: true, amend: true, lundao: true, ring: true, deck: true, fantong: a => a.action === 'feed', haggle: true, duizi: a => ['open', 'reverse'].includes(a.action),
   quest: a => !['info', 'kaifu'].includes(a.action),
 };
 export function seclusionHold(state, verb, args = {}) {

@@ -258,3 +258,10 @@ test('洞府: the running card shows the closed gate; 出关 opens it; the pictu
   const css = fs.readFileSync(path.resolve(import.meta.dirname, '../scripts/lingjing.css'), 'utf8');
   assert.match(css, /prefers-reduced-motion: reduce\) \{ \.card\.emerged \.gateopen \{ display: none; \}/);
 });
+
+test('问签 stands in 闭关 (Hanli 11-03: 「闭关也能摇签」): the day\'s 签 draws, the world stays held', async () => {
+  const { seclusionHold } = await import('../scripts/rules/seclusion.mjs');
+  const s = { seclusion: { at: '2026-11-03T01:00:00Z', focus: 'progress' }, lang: 'zh' };
+  assert.equal(seclusionHold(s, 'divine', {}), null);
+  assert.equal(seclusionHold(s, 'move', {})?.result?.refused, 'in-seclusion');
+});
