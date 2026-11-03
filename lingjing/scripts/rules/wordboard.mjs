@@ -36,6 +36,8 @@ export function taskOfChat(content, state, chat) {
 export function openBoard(state, now) {
   const b = state.word_board;
   if (!b || b.day !== dayKey(now)) return null;
+  // Opened at another scene (a reload left it, he walked on): not the board before him.
+  if (b.scene !== undefined && b.scene !== (state.scene ?? null)) return null;
   if (!b.told && b.task && state.tasks?.[b.task]?.status === 'done') return null;
   return b;
 }
@@ -62,7 +64,7 @@ export function pageWordBoard(content, state, args, now) {
     const s = clone(state);
     s.word_board = {
       chat, kind, task: taskOfChat(content, state, chat), face: String(args.face ?? ''), hints: listOf(args.hints),
-      answer: String(args.answer ?? ''), ...(args.src ? { src: String(args.src) } : {}), day: dayKey(now), at: now.toISOString(),
+      answer: String(args.answer ?? ''), ...(args.src ? { src: String(args.src) } : {}), scene: state.scene ?? null, day: dayKey(now), at: now.toISOString(),
     };
     return { keep: s, result: { ok: true } };
   }

@@ -445,7 +445,8 @@ export async function chainGame(ctx) {
         if (!mine) return end(chainOutcome({ done: true, hints: st.hints, choices: st.choices }), 'stuck', r.word);
         st = playLink(st, mine, 'them');
         theirs(mine, true);
-        keep(ctx, 'step', kept());
+        shown.length = 0; // a link's hints are its own
+        keep(ctx, 'step', { ...kept(), hints: hintsOf(shown) });
         react(chainLine(chat, { event: 'link', guess: r.word, mine, n: st.links, ch, cast, lang }));
         return draw();
       }

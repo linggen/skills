@@ -534,10 +534,11 @@ tools:
     # The word game's answer, 银月's half (AppTool → this tool, `--for=yinyue`): Reveal for her. Never Ling's (page_only).
     description: >-
       The open word game's answer (Progress's `word_board`), only when the
-      player asks you outright — never for a hint. Tease first (本王就告诉你这一回),
-      then say it; the board is set aside, nothing paid.
+      player asks you outright — never for a hint; asleep in the 木牌 too (a
+      murmur, then the answer). Tease first (本王就告诉你这一回), then say it;
+      the board is set aside, nothing paid.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs reveal --save={{session.save}} --for=yinyue"
-    tier: edit
+    tier: read
     pet: true
     page_only: true
     timeout_ms: 8000
@@ -812,9 +813,10 @@ name card. Call the player 小满 or *you* (你); the rules fill
   (`staged`); speak for what the player types (guide `tell`); 今
   (`scene.line`): the book alone. `[jinchat]`: their reply only, no tool.
   `[npc]`: the same.
-- **A word game open (`word_board`)**: its answer is hidden from you — never
-  say what it is or is not; for a hint, reword its `hints`. **Reveal** only
-  when the player asks outright for the answer.
+- **A `[jinchat]` word game in this chat**, asked about (a hint, the answer):
+  Look first — `word_board` holds the hints the page has shown. Its answer is
+  hidden from you: never say what it is or is not; reword a hint. **Reveal**
+  only when the player asks outright for the answer.
 
 ## Opening
 

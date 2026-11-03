@@ -134,6 +134,8 @@ test('the page keeps the open game; Look and 银月\'s Progress hand its face, t
   // Another day, or closed: gone.
   assert.equal(openBoard(s, new Date('2026-11-04T15:00:00')), null);
   assert.equal(pageWordBoard(content, s, { action: 'close', chat: 'qichangsong' }, now).keep.word_board, undefined);
+  // Opened at another scene: not the board before him.
+  assert.equal(openBoard({ ...s, scene: 'wm-ahe' }, now), null);
   // 二十问 has no hidden answer: never kept.
   assert.equal(pageWordBoard(content, at(), { action: 'open', chat: 'yinyue-twenty', kind: 'guess' }, now).result.ok, false);
 });
@@ -174,7 +176,10 @@ test('the page keeps the board through the rules, the Mac\'s alone, and watches 
   const skill = read('../SKILL.md');
   assert.match(skill, /- name: Reveal\n/);
   assert.match(skill, /- name: Whisper\n/);
-  assert.match(skill, /\*\*Reveal\*\* only\n  when the player asks outright for the answer\./);
+  assert.match(skill, /\*\*A `\[jinchat\]` word game in this chat\*\*, asked about \(a hint, the answer\):\n  Look first/);
+  assert.match(skill, /\*\*Reveal\*\*\n  only when the player asks outright for the answer\./);
+  // 银月's half is a pet tool: the engine runs only `tier: read` ones for her (skill/tools.rs pet_gate).
+  assert.match(skill, /- name: Whisper\n[\s\S]*?--for=yinyue"\n    tier: read\n    pet: true/);
   assert.match(skill, /A `word_board`'s answer: Whisper,\n      if asked outright\./);
   const rules = read('../scripts/rules.mjs');
   assert.match(rules, /if \(verb === 'wordboard' && !reader\)/, 'the page\'s verb, never Ling\'s');
