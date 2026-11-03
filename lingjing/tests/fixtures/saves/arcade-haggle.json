@@ -14,9 +14,9 @@
    "earth"
   ],
   "tier": "qi",
-  "step": 4,
-  "progress": 630,
-  "wealth": 907,
+  "step": 5,
+  "progress": 11,
+  "wealth": 844,
   "lines": {
    "jin": {
     "tier": "xinsheng",
@@ -702,8 +702,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 2430,
-   "wealth": 910
+   "progress": 2431,
+   "wealth": 847
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -1273,8 +1273,7 @@
    "wm-kaikai/sit",
    "wm-xiqi/draw",
    "wm-qianye/eve",
-   "09-furnace/fire",
-   "09-year/futian"
+   "09-furnace/fire"
   ],
   "furnace_name": "饭桶",
   "stretch": {

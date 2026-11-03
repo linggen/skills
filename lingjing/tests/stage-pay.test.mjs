@@ -156,6 +156,10 @@ test('every rise the book had is a gate: at that choice, or — inside a locked 
       const r = e.was_rise, want = typeof r === 'object' ? r.layer : r - 1; // 「to N」 is N−1 full; 「to N, full」 is N full
       const here = gates.find(g => g.scene === sc.id && g.exits.includes(e.id));
       if (here) { assert.ok(here.layer >= want, `${sc.id}/${e.id}: gate ${here.layer} < ${want}`); continue; }
+      // …or a catch-up of a rise its 回 already gates (09-year's 伏天, once the furnace's 五层 again: its gate dropped 2026-11-03 —
+      // 定风 is the 五层 the book tells, and the second gate held 五层 shut two scenes past it).
+      const twin = gates.find(g => g.hui === sc.hui && g.layer >= want && Object.values(content.chapters).some(c => c.scenes?.[g.scene]?.exits.some(x => g.exits.includes(x.id) && x.was_rise === r)));
+      if (twin) continue;
       const locked = (ch.beats ?? []).some(b => b.scenes.indexOf(sc.id) > 0);
       assert.ok(locked, `${sc.id}/${e.id}: no gate at the choice, and it is not inside a locked beat`);
       const next = gates.filter(g => huiOrder(content, g.hui) > huiOrder(content, sc.hui))
