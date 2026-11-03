@@ -51,7 +51,8 @@ import { bigPlay, createFightSay, cuesOf, fightFacts, strongFoe } from './fights
 import { CLOSE_AT, POOR_AT, createHerSay, herMode, mijingEndWhat, mijingWayWhat, shortFacts, wayFacts, whyFacts } from './hersay.js';
 import { factsFor, prefetchLines } from './games/prefetch.js';
 import { PREFETCH_TITLE, askHer as askHerLines } from './games/prefetch-ling.js';
-import { NPC_TITLE, npcAsk } from './npc-ask.js';
+import { NPC_TITLE, npcAsk, SPENT } from './npc-ask.js';
+import { openSpentCard } from './spent-card.js';
 import { openKanjia } from './kanjia.js';
 import { sound as kitSound } from './games/kit/sound.js';
 import { raiseUnease } from './unease.js';
@@ -3161,7 +3162,8 @@ async function kanjia(id) {
   if (view.kanjia) return;
   keep({ kanjia: id });
   const talk = HER_SEAM === 'stub' || CHATLESS ? null : npcAsk({ params: CHAT_PARAMS ?? null });
-  const ask = talk ? (line) => talk.say(line)
+  // A refused line (the allowance spent) shows the card; the panel keeps its own fallback words.
+  const ask = talk ? (line) => talk.say(line).catch((e) => { if (e?.message?.startsWith(SPENT)) allowanceSpent(e.message.slice(SPENT.length + 1)); throw e; })
     : HER_SEAM === 'stub' ? (line) => new Promise((done) => setTimeout(() => done(`[stub] ${[...line].length}`), 700))
       : () => Promise.reject(new Error('off'));
   const dir = look?.world?.dir ?? 'worlds/jiuding';
@@ -3983,6 +3985,14 @@ function noOne() {
   show({ doNote: words().noOne });
 }
 
+/* The engine's `allowance_spent` (or a side session's refused line, npc-ask.js SPENT): the turn is over, and the card
+   offers 订阅 or 用自己的模型 — the chat sends the refused turn again once a model is added (chat.useOwnModel). */
+function allowanceSpent(reason) {
+  streaming = false;
+  turnEnded();
+  openSpentCard(document, { words: words(), reason: reason === 'monthly' ? 'monthly' : 'trial', onOwn: () => (chat?.useOwnModel ? chat.useOwnModel() : window.LinggenUI?.openModels?.()) });
+}
+
 /* ── 银月 hears what happened (engine: POST /api/yinyue/event) ──
    Facts only, in the player's language; she is not woken now. The engine keeps
    them until the player has gone quiet — or, `big`, until the screen settles —
@@ -4623,6 +4633,9 @@ async function mountChat() {
       // finds her: SKILL.md `place.yinyue.absent_until`). The engine ran no
       // turn and kept nothing; the page says one plain line, never as hers.
       if (event === 'agent_absent') noOne();
+      // A turn of this chat was refused: the account's free tokens (or month's pool) are spent. A hidden turn shows
+      // nothing in the chat, so the stage stops waiting and says the two ways on (spent-card.js).
+      if (event === 'allowance_spent') allowanceSpent(payload?.reason);
       // An asked moment nobody will answer (the pet is off).
       if (event === 'device_topic' && payload?.topic === 'yinyue' && payload?.op === 'unanswered' && payload?.payload?.app === SKILL) greetUnanswered(payload.payload.text);
     },

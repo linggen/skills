@@ -10,6 +10,8 @@
 import { refusalOf } from './games/drawguess-rules.js';
 
 const SKILL = 'lingjing';
+/** A refused turn's error, `allowance_spent:<trial|monthly>`: the account's free tokens or month's pool are spent. */
+export const SPENT = 'allowance_spent';
 const POLL_MS = 500;
 /** The side session's title: the story page passes over it when it resumes the day's chat. */
 export const NPC_TITLE = 'NPC对话';
@@ -18,6 +20,15 @@ export const NPC_TITLE = 'NPC对话';
 export const NPC_WITHHELD = ['AskUser', 'GenerateImage', 'Look', 'Progress', 'Story', 'Resolve', 'Judge', 'Practice', 'Tale', 'Move', 'Trade',
   'Lundao', 'Duizi', 'Twenty', 'Couplet', 'Qian', 'Tame', 'Refine', 'Ring', 'Divine', 'Lang', 'Make', 'Enter', 'Leave', 'Build', 'Restart', 'Go', 'Undo',
   'Unstick', 'Saves', 'Save', 'Load', 'Forget', 'Worlds', 'Travel', 'Amend', 'Art', 'Meet', 'Quest', 'Show', 'Remember', 'Guide', 'Verb', 'AppTool'];
+
+/** A reply row is the character's line — unless it is the engine's error row for the turn (`Error: …`), which is
+    never said as theirs: a spent allowance throws SPENT (`allowance_spent:monthly`), any other error throws as is. */
+export function lineOrThrow(text) {
+  const t = String(text ?? '').trim();
+  if (!/^Error:/i.test(t)) return text;
+  if (/BILLING_REQUIRED/.test(t)) throw new Error(`${SPENT}:${/monthly_cap_exceeded/.test(t) ? 'monthly' : 'trial'}`);
+  throw new Error(t.replace(/^Error:\s*/i, ''));
+}
 
 /** Side sessions a closed page left behind (older than `ageSec`): their ids, each removed. */
 export function sweepNpc(sessions, remove, { nowSec = Date.now() / 1000, ageSec = 600 } = {}) {
@@ -68,7 +79,7 @@ export function npcAsk({ params = null, agent = 'ling', model = null, deps = {} 
       if (Date.now() > until) throw new Error('timeout');
       await new Promise((r) => setTimeout(r, deps.pollMs ?? POLL_MS));
       const got = await said();
-      if (got.length > seen) return got[seen];
+      if (got.length > seen) return lineOrThrow(got[seen]);
     }
   }
   async function close() {
