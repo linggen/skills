@@ -1489,23 +1489,10 @@
       "element": "fire",
       "atk": 5,
       "hp": 3,
+      "gear": "huochai-jian",
+      "_gear": "The sword 火柴's strike (Hanli 11-03: 「火柴是一把剑, 重复的牌就不用了」; agent's pick, delegated): never a card he holds or is given — while the sword is worn it is in his fight deck as the card was (items.json huochai-jian `strike`, cards.mjs strikeOf).",
       "art": "art/cards/huochai.webp",
-      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 9279.",
-      "from": [
-        {
-          "kind": "story",
-          "scene": "09-snow",
-          "who": {
-            "zh": "饭桶",
-            "en": "the Rice Bucket"
-          },
-          "line": {
-            "zh": "剑脊上自己刻着：火柴",
-            "en": "On its spine, by itself: Matchstick."
-          },
-          "src": "书"
-        }
-      ]
+      "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 9279."
     },
     {
       "id": "suijin",

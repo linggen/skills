@@ -1753,7 +1753,10 @@ function lintFrom(content, bad) {
   for (const c of content.cards?.cards ?? []) {
     const where = `card ${c.id}`;
     if (c.owner && !has.member(c.owner) && !has.creature(c.owner)) bad(where, `owned by unknown ${c.owner}`);
-    if (!c._token && !(c.from ?? []).length) bad(where, 'says no 出处 (from)');
+    if (!c._token && !c.gear && !(c.from ?? []).length) bad(where, 'says no 出处 (from)');
+    // A sword's strike (`gear`): the weapon names it back (`effect.strike`), and nothing deals it as a card.
+    if (c.gear && content.items.items.find(i => i.id === c.gear)?.effect?.strike !== c.id) bad(where, `the strike of ${c.gear}, which does not name it`);
+    if (c.gear && (c.from ?? []).length) bad(where, 'a sword\'s strike comes from nowhere but the sword');
     // What a 随从 is (cards.json `_is`, 2026-10-27): its face says it, never guessed from kind (a man in armour is no 灵兽).
     if (c.kind === 'minion' && !content.cards?.is_words?.[c.is]) bad(where, `a 随从 says no known \`is\` (${c.is ?? 'none'})`);
     for (const f of c.from ?? []) {

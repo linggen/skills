@@ -142,7 +142,7 @@ const toFuzhu = (s = start()) => {
   // gains only the first three (cards.md § 4), and these tests fight a 卷 boss with what a player holds later.
   return { ...at, scene: '00-fuzhu', place: 'sibei', bag: { ...at.bag, lingzhi: 1 }, cards: [...new Set([...(at.cards ?? []), ...ROAD_HAND])] };
 };
-const ROAD_HAND = ['mucao', 'huiqi', 'huoya', 'huodan', 'bingzhui', 'jinren', 'tuqiang', 'mutang', 'yangzhen', 'houtu', 'luying', 'huochai', 'zhennu', 'ruxi'];
+const ROAD_HAND = ['mucao', 'huiqi', 'huoya', 'huodan', 'bingzhui', 'jinren', 'tuqiang', 'mutang', 'yangzhen', 'houtu', 'luying', 'zhennu', 'ruxi'];
 /* A save read under the retired root rule, born without 金 (v1 — his own
    save's 木 水 火 土): what a root it lacks, lent by the arms, does. */
 const toFuzhuV1 = () => ({ ...toFuzhu(), traits: [...content.traits.v1] });

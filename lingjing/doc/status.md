@@ -12,6 +12,8 @@ None.
 
 ## Done lately
 
+- 11-03 — **火柴 is the sword, not a card** (Hanli 11-03: 「给武器就不要给牌了吧」 · 「火柴是一把剑, 重复的牌就不用了」; option a, agent's pick, delegated; tests/card-retire.test.mjs). The only card that doubled a piece of gear. 09-snow and 腊八's `extra` deal it no more; saves drop it from cards and deck on load (state.mjs `RETIRED_CARDS`, 剑影 renamed onto it too). Worn, the sword puts its strike in the fight deck as the card was (items.json `strike`, cards.json `gear`, cards.mjs `strikeOf`) — the card keeps its catalog place, which the deck's seeded shuffle reads. The 7 pool fights of 古七–古九 are back in their band.
+
 - 11-03 — **所得 after the 大场面, gear first** (Hanli 11-03 at 09-snow: 「是在饭桶动画场面前给的, 应该是在饭桶大场面动画后给」 · 「以为只拿到一张牌, 没看到剑」; tests/spoils-after-piece.test.mjs).
   - The page holds a step's reveals while a 大场面 is owed or on: an exit's own piece (`pieceDue`), or a passage still owed or on show with a `{景}` beat ahead (09-snow's; dialogue.js `pieceStillAhead`). The rules pay at once. Gear reveals first; then 所得 stands with the gear on top (slot · name · what it does) and 戴上 / 给银月 (the pouch's `trade use`). A fight's 所得 marks its gear the same way. Look's `gained` items carry `slot` and `effect`.
 

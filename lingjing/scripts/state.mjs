@@ -796,6 +796,16 @@ function renamedCards(content, state) {
 const RETIRED_KEYS = ['mishi', 'mishi_offer', 'mishi_log', 'cases', 'twenty', 'rerun', 'reruns'];
 /* Things the world no longer has, dropped from the bag on load: the test-only 体力卡 (Hanli 11-03: 「体力卡删掉」). */
 export const RETIRED_ITEMS = ['tili-ka'];
+/* Cards no longer held, dropped from what he holds on load (cards, the picked deck and its leftovers, 新, where each came
+   from, its stars): 火柴, a card that doubled the sword of that name (Hanli 11-03: 「火柴是一把剑, 重复的牌就不用了」) — now the
+   sword's own strike, dealt while it is worn (cards.mjs gearFight). A picked deck short of ten is filled by the roots (deckFor). */
+export const RETIRED_CARDS = ['huochai'];
+function retiredCards(state) {
+  const gone = id => RETIRED_CARDS.includes(id);
+  const list = k => (Array.isArray(state[k]) && state[k].some(gone) ? { [k]: state[k].filter(id => !gone(id)) } : {});
+  const keyed = k => (state[k] && Object.keys(state[k]).some(gone) ? { [k]: Object.fromEntries(Object.entries(state[k]).filter(([id]) => !gone(id))) } : {});
+  return { ...list('cards'), ...list('deck'), ...list('deck_out'), ...list('cards_new'), ...keyed('card_from'), ...keyed('card_stars') };
+}
 const keptFrom = state => [...(state.kept ?? []), ...state.skipped.filter(e => e?.task && !(state.kept ?? []).some(k => k.task === e.task))
   .map(e => ({ task: e.task, story: true, scene: e.scene ?? null, place: null, chapter: state.chapter ?? null, at: e.day ? `${e.day}T00:00:00.000Z` : null }))].slice(0, 20);
 const bagWithout = bag => Object.fromEntries(Object.entries(bag).filter(([id]) => !RETIRED_ITEMS.includes(id)));
@@ -891,6 +901,8 @@ export function fitWorld(saved, content) {
     // rules/skips.mjs keepBoard, Hanli 11-03): his to take up, never offered by itself. At most 20.
     ...(state.skipped?.length ? { skipped: [], kept: keptFrom(state) } : {}),
   };
+  // Cards retired since (RETIRED_CARDS) go — after their old names were carried onto the new (renamedCards above).
+  Object.assign(fix, retiredCards({ ...state, ...fix }));
   // A scene given a board after the save walked into it (the opening's beats, 2026-10-14):
   // its tasks are offered now, as entering it would have — a save standing there is never shut out.
   const here = chapter?.scenes?.[fix.scene ?? state.scene];

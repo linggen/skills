@@ -64,6 +64,13 @@ export function deck(state, content, ctx, args) {
   return { state: s, result: { ok: true, gear: gearBrief(content, s, ctx?.now) } };
 }
 
+/* A worn weapon's strike (`effect.strike`: a card marked `gear` with that weapon — 火柴's, Hanli 11-03: 「火柴是一把剑, 重复的牌就
+   不用了」) is in his deck for a fight while the sword is worn, dealt as the card was: never a card he holds or is given. */
+export function strikeOf(content, state) {
+  const w = wornOf(content, state, 'weapon'), id = w?.effect?.strike, c = id ? cardCatalog(content)[id] : null;
+  return c && c.gear === w.id ? id : null;
+}
+const armed = (content, state) => { const id = strikeOf(content, state); return id ? { ...state, cards: [...new Set([...ownedCards(content, state), id])] } : state; };
 function autoDeck(content, state) {
   // Only what has been obtained (his, 2026-09-22) — 得牌 below.
   const owned = new Set(ownedCards(content, state));
@@ -183,7 +190,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   const gear = gearFight(content, state), lifts = withHer ? herLifts(content, state) : null;
   // Before the root test (the 三试 comes first) he fights with what no root claims:
   // the rootless things he holds (deckFor reads no roots, so a 功法 stays out).
-  const deck = deckFor(content, state), stars = starsIn(state, deck);
+  const deck = deckFor(content, armed(content, state)), stars = starsIn(state, deck);
   // 新: a card gained and not yet played (cards_new), marked in the hand until it is.
   const fresh = (state.cards_new ?? []).filter(id => deck.includes(id));
   // 丹囊: the pills he carries in (his last pick, as the bag still holds them).
@@ -301,7 +308,7 @@ const starterOf = (content, traits) => {
 };
 /* The cards a source gives: every card whose `from` names it (kind and key: a scene, a task, a creature, an item). */
 export const cardsFrom = (content, kind, key) => (content.cards?.cards ?? [])
-  .filter(c => !c._token && (c.from ?? []).some(f => f.kind === kind && (f.scene ?? f.task ?? f.creature ?? f.item) === key));
+  .filter(c => !c._token && !c.gear && (c.from ?? []).some(f => f.kind === kind && (f.scene ?? f.task ?? f.creature ?? f.item) === key));
 /* Every card a source gives, into his hand: a scene left, a board won (cards.md § 2). */
 export function grantFrom(content, state, kind, key, from) {
   return cardsFrom(content, kind, key).map(c => gainCard(content, state, c.id, from)).filter(Boolean);
@@ -323,7 +330,7 @@ export const ownedCards = (content, state) => state.cards ?? ownedAtStart(conten
    the scene, when one is played, names its 回 (rules/hui.mjs). */
 function gainCard(content, state, id, from = null) {
   const card = cardCatalog(content)[id];
-  if (!card || card._token) return null;
+  if (!card || card._token || card.gear) return null; // a sword's strike is the sword's (strikeOf), never handed over
   const owned = ownedCards(content, state);
   if (owned.includes(id)) { state.cards = owned; return null; }
   state.cards = [...owned, id];

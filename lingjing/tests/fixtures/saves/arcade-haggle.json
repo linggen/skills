@@ -945,8 +945,7 @@
    "bingzhui",
    "tuqiang",
    "mutang",
-   "yangzhen",
-   "huochai"
+   "yangzhen"
   ],
   "card_from": {
    "niangbing": {
@@ -1048,13 +1047,6 @@
     "place": "waimen",
     "chapter": "00-waimen",
     "scene": "wm-zhaojing"
-   },
-   "huochai": {
-    "how": "story",
-    "day": "2026-10-01",
-    "place": "chaifang",
-    "chapter": "00-zhuji",
-    "scene": "09-snow"
    }
   },
   "looked": [
@@ -1291,8 +1283,7 @@
    "bingzhui",
    "tuqiang",
    "mutang",
-   "yangzhen",
-   "huochai"
+   "yangzhen"
   ],
   "told_scenes": [
    "00-baicai",
