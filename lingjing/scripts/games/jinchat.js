@@ -29,6 +29,7 @@ import { HOST_SYSTEM, castOf, outcome, parseChat, stubReply, turnLine } from './
 import { dictOf, kindOf, poolPick, poolPlay, stubLine } from './jinchat-games.js';
 import { chainGame, coupletGame, guessGame, riddleGame, tableOf } from './jinchat-play.js';
 import { createTalk, talkStyle } from '../npc-talk.js';
+import { verb } from '../rules.js';
 
 export const meta = {
   id: 'jinchat',
@@ -41,6 +42,7 @@ export const meta = {
 
 const PLAY = { riddle: riddleGame, guess: guessGame, couplet: coupletGame, chain: chainGame };
 const TIMEOUT_MS = 45000; // Ling's prompt is the whole game's: a turn is 7–30 s (live 10-22)
+const WATCH_MS = 6000; // a word game open on the stage looks for a Reveal in the chat this often (rules/wordboard.mjs peek)
 
 const T = {
   zh: {
@@ -53,7 +55,9 @@ const T = {
     tell: '没猜着。说出来，你心里是什么：', itWas: '它是……', tellGo: '说',
     duilian: '对对子', upLabel: '上联', downLabel: '下联', downIt: '对下联……', downGo: '对', triedDown: '没对上 {n} 回', srcBy: '——{src}',
     why: { len: '上联 {n} 个字，你对了 {have} 个', tail: '下联末一个字该是平声，「{ch}」是仄声', same: '「{ch}」和上联同一个位置是同一个字',
-      copy: '「{ch}」是上联里用过的字', echo: '上联叠了字，下联同一个位置也该叠', form: '字数平仄都合，可不是这一副的下联' },
+      copy: '「{ch}」是上联里用过的字', echo: '上联叠了字，下联同一个位置也该叠', form: '字数平仄都合，可不是这一副的下联',
+      close: '只差一两个字，可要紧的字眼丢了——再想想' },
+    original: '原句：{a}', chainTold: '一条接得上的：「{w}」',
     jielong: '成语接龙', chainRule: '首字接末字 · 接满 {links} 条', chainAt: '已接 {n}/{links}', chainNeed: '下一条的头一个字',
     linkIt: '「{ch}」字开头的成语……', linkGo: '接', chainStuck: '{name}接不上了。',
     chainWhy: { unknown: '「{w}」不在成语谱里，换一个（不算错）', mismatch: '得以「{ch}」字开头', used: '「{w}」用过了' },
@@ -68,7 +72,9 @@ const T = {
     tell: 'Not guessed. Say what you thought of:', itWas: 'It was…', tellGo: 'Say',
     duilian: 'Couplets', upLabel: 'First line', downLabel: 'Second line', downIt: 'The second line…', downGo: 'Match', triedDown: '{n} unmatched', srcBy: '— {src}',
     why: { len: 'the first line has {n} characters, yours {have}', tail: 'the second line should end on a level tone; 「{ch}」 is oblique', same: '「{ch}」 stands where the first line has it',
-      copy: '「{ch}」 is the first line\'s', echo: 'the first line repeats a character; the second should repeat in the same place', form: 'the form holds, but it is not this couplet\'s line' },
+      copy: '「{ch}」 is the first line\'s', echo: 'the first line repeats a character; the second should repeat in the same place', form: 'the form holds, but it is not this couplet\'s line',
+      close: 'only a character or two off, but the key image is lost — think again' },
+    original: 'The original: {a}', chainTold: 'One that links: 「{w}」',
     jielong: 'Idiom chain', chainRule: 'Start from the last character · {links} links', chainAt: 'Linked {n}/{links}', chainNeed: 'the next idiom starts with',
     linkIt: 'An idiom starting with 「{ch}」…', linkGo: 'Link', chainStuck: '{name} cannot go on.',
     chainWhy: { unknown: '「{w}」 is not in the idiom list; try another (no miss)', mismatch: 'it must start with 「{ch}」', used: '「{w}」 is used already' },
@@ -236,9 +242,30 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     await typeOut(p.lines.slice(0, 2));
   };
   const settle = async () => { await Promise.race([g.inflight ?? Promise.resolve(), wait(12000)]); g.hush = true; };
+  // The open word game kept on the save for Ling's Look (rules/wordboard.mjs) — its face, the hints shown, the answer
+  // she is handed only by Reveal — and the watch for a board told in the chat. The Mac's page alone: a host with its
+  // own model (the phone) has no Look to hand it to; a refused or failed call changes nothing in the game.
+  const kept = typeof data.ask !== 'function';
+  const board = (action, o = {}) => (kept && !signal?.aborted ? verb('wordboard', { action, chat: data.chat, ...o }).catch(() => null) : Promise.resolve(null));
+  const watchTold = (onTold) => {
+    if (!kept) return () => {};
+    let off = false, t = null;
+    const tick = async () => {
+      if (off || signal?.aborted || doc.hidden) { if (!off && !signal?.aborted) t = setTimeout(tick, WATCH_MS); return; }
+      const r = await board('peek');
+      if (off || signal?.aborted) return;
+      if (r?.told) { off = true; onTold(r.told); return; }
+      t = setTimeout(tick, WATCH_MS);
+    };
+    t = setTimeout(tick, WATCH_MS);
+    signal?.addEventListener('abort', () => { off = true; clearTimeout(t); }, { once: true });
+    return () => { off = true; clearTimeout(t); };
+  };
+  // The board taken off the stage (its task done in the chat, 收手): the record goes with it.
+  signal?.addEventListener('abort', () => { if (kept) verb('wordboard', { action: 'close', chat: data.chat }).catch(() => null); }, { once: true });
   const playGame = async () => {
     const ctx = {
-      root, chat: g.chat, cast: g.cast, lang, w, id: data.chat, add, typeOut, typing, react, settle, sound, foot, log,
+      root, chat: g.chat, cast: g.cast, lang, w, id: data.chat, add, typeOut, typing, react, settle, sound, foot, log, board, watchTold,
       table: twentyOf, tones: tonesOf, dict: chengyuOf,
       ask: (text) => (g.live && data.seam !== 'stub' ? send(text, 60000) : Promise.resolve({ text: '' })),
     };

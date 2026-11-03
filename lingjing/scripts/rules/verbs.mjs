@@ -30,6 +30,7 @@ import { resume, setAside } from './aside.mjs';
 import { duizi } from './duizi.mjs';
 import { mijing } from './mijing.mjs';
 import { unstick } from './unstick.mjs';
+import { reveal } from './wordboard.mjs';
 import { story } from './story.mjs';
 import { tale, taleInfo } from './tale.mjs';
 import { go, lang, move, summarize, trade } from './travel.mjs';
@@ -85,6 +86,8 @@ export const VERBS = gated({
     return { state: null, result: { ok: true, gear: { ...g, ...(open ? { fantong: true, bag: g.bag.filter(i => i.id !== key) } : {}), ...(pangluOpen(c, s) ? { panglu: true } : {}) } } };
   },
   appear, remember, unstick,
+  // A 对话 board's word game told on his outright ask (rules/wordboard.mjs): Ling's Reveal, 银月's Whisper.
+  reveal,
   // 本王考考你 (rules/kao.mjs): a round begun on the page, counted against the night's cap.
   kao,
   // The page's map: each province's places, and the 九州 in ink as the save stands (rules/inkmap.mjs).

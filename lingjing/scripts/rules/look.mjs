@@ -48,6 +48,7 @@ import { entryGate, stageBack, stageBrief, stageGate, stageNow, stagesPaid } fro
 import { practiceHint } from './scrolls.mjs';
 import { homeOf } from './home.mjs';
 import { owesTell } from './tell.mjs';
+import { wordBoardLook } from './wordboard.mjs';
 import { mainRoot, rootName } from './roots.mjs';
 import { memoriesLook } from './memories.mjs';
 import { todayBrief } from './festival.mjs';
@@ -708,6 +709,8 @@ export function look(state, content, ctx) {
     ...(duiziBrief(content, state, ctx.now) ? { duizi: duiziBrief(content, state, ctx.now) } : {}),
     // 今日棋局 (rules/rotation.mjs): each place of his plate whose boards turn with the day, with today's — the plate's tags.
     ...(boardsLook(content, state, ctx.now)),
+    // A 对话 board's word game open on the stage (rules/wordboard.mjs): its face, the hints shown, the rule — never its answer untold.
+    ...wordBoardLook(state, ctx.now),
     // 所得: errands that handed themselves in here, until he walks on.
     ...(handedHere(content, state).length ? { handed: handedHere(content, state) } : {}),
     // 机缘: where, and how long it lasts — the page counts it down.

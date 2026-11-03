@@ -338,6 +338,8 @@ function boardPay(content, s, t, id, paid) {
    could claim would be a self-reported one. */
 export function win(state, content, ctx, args) {
   const id = String(args.id ?? '');
+  // A word board told on his ask (rules/wordboard.mjs reveal) is over as a skip: no win comes after it.
+  if (state.tasks?.[id]?.told) return refuse('told', null);
   const inScene = sceneOf(content, state)?.exits.some(e => gameOf(e)?.id === id && gameOf(e).kind !== 'duel');
   if (!inScene && !taskOpen(content, state, id, ctx.now)) return shouchaoShut(content, state, id, ctx.now) ?? qiecuoShut(content, state, id, ctx.now) ?? refuse('not-here', null);
   // A scene's boards are played in `show` order: a later one waits for those before it.

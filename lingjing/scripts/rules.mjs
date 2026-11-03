@@ -71,6 +71,7 @@ export { eventDone, eventShare, eventUp, eventWait } from './rules/events.mjs';
 import { fitPresence } from './rules/companion.mjs';
 import { fitHeld } from './rules/pouch.mjs';
 import { pageHerGame } from './rules/hergame.mjs';
+import { pageWordBoard } from './rules/wordboard.mjs';
 export { judge, pageNames, pageThrows, resolve, riddleOf } from './rules/core.mjs';
 export { heardOf, openPromises, remember, settlePromise, writeLedger } from './rules/ledger.mjs';
 export { oddsOf, rollOf } from './rules/breakthrough.mjs';
@@ -269,6 +270,14 @@ function runLocked(verb, args, stateFile, reader) {
     const c = (keep ?? state).companion;
     return { ...r.result, awake: Boolean(c?.awake), asleep: Boolean(c?.asleep && !c?.awake) };
   }
+  // A 对话 board's word game while it is open (rules/wordboard.mjs): the page's record of it — its face, the hints
+  // shown, the answer kept from Ling until Reveal; `peek` is the page's watch for a told board. Never logged.
+  if (verb === 'wordboard' && !reader) {
+    const r = pageWordBoard(content, state, args, now);
+    const keep = r.keep ?? (raw && state !== raw ? state : null);
+    if (keep) writeAtomic(stateFile, stateText(keep));
+    return r.result;
+  }
   const fn = VERBS[verb];
   if (!fn) return { ok: false, refused: 'unknown-verb', verbs: ['init', ...Object.keys(VERBS), 'undo'] };
   if (BUILDING_WAITS.has(verb)) {
@@ -387,7 +396,7 @@ function runLocked(verb, args, stateFile, reader) {
   const staged = reader === 'ling' && TELLS.has(verb) && out.result?.ok !== false ? stagedOf(content, asking) : null;
   const result = staged ? { ...paged, staged } : paged;
   // 对对子's her half (rules/duizi.mjs, `--for=yinyue`) is handed over as it is, like 二十问.
-  if (PLAIN.has(verb) || (['duizi', 'divine'].includes(verb) && reader === 'yinyue')) return result;
+  if (PLAIN.has(verb) || (['duizi', 'divine', 'reveal'].includes(verb) && reader === 'yinyue')) return result;
   const answer = withAsk(result, content, asking, { now, quests: readQuests(), said: args.said, verb });
   // Written down, so the next bare Look does not ask it again. Cleared by
   // walking somewhere, because `asked_at` is the place it was asked at.

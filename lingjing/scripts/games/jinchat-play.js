@@ -17,13 +17,16 @@
 //                     the model cannot give is the table's question instead (offline: the table plays it all, unseen).
 //
 // ctx: { root, chat, cast, lang, w (words), add(line), typeOut(lines), react(text, o) → Promise, sound(name),
-//        foot(text), table() → Promise<twenty table>, ask(text) → Promise<{text}> (the open 二十问's turns), typing(on), log(row) }
-// Each answers a Promise of the result: { won: true, grade, stars }.
+//        foot(text), table() → Promise<twenty table>, ask(text) → Promise<{text}> (the open 二十问's turns), typing(on), log(row),
+//        board(action, o) (the open game kept on the save for Ling's Look, rules/wordboard.mjs: open · step · close),
+//        watchTold(fn) → stop (fn({ answer, src }) once Ling or 银月 told it on his outright ask) }
+// Each answers a Promise of the result: { won: true, grade, stars } — or, told, { won: false, left: true, told: true }
+// (over as a skip: the rules already set it down, nothing is paid).
 
 import {
   answerFree, answerGuess, chainChoices, chainHint, chainLine, chainOf, chainOutcome, checkDown, checkLink, checkRiddle,
-  coupletLine, coupletOf, freeLine, freeOutcome, freeSummary, freshChain, freshFree, freshGuess, judgeGuess, needOf, nextMove,
-  playLink, replyOf, resultLine, riddleLine, riddleOf, riddleOutcome, shapeOf, yesNoOf,
+  coupletLine, coupletOf, freeLine, freeOutcome, freeSummary, freshChain, freshFree, freshGuess, judgeGuess, needOf, nearOf, nextMove,
+  playLink, replyOf, resultLine, riddleLine, riddleOf, riddleOutcome, shapeOf, wayOn, yesNoOf,
 } from './jinchat-games.js';
 
 const pick = (v, lang) => (v == null ? '' : typeof v === 'string' ? v : v[lang] ?? v.zh ?? '');
@@ -55,12 +58,18 @@ async function playAfter(ctx, lines) {
   }
 }
 
+/* The open game on the save (rules/wordboard.mjs), and its watch: told in the chat, the board shows the answer and ends as
+   left — the rules set it down as a skip already. Absent (a test's ctx, the phone's host), nothing is kept. */
+const keep = (ctx, action, o = {}) => ctx.board?.(action, o);
+const hintsOf = (list) => JSON.stringify(list);
+const watch = (ctx, fn) => ctx.watchTold?.(fn) ?? (() => {});
+
 /* ════════ 猜谜 ════════ */
 
 export async function riddleGame(ctx) {
   const { chat, lang, w } = ctx;
   const game = chat.game, r = riddleOf(game, lang);
-  const st = { misses: 0, hints: 0, choices: false, done: false };
+  const st = { misses: 0, hints: 0, shown: [], choices: false, done: false };
   const label = pick(game.label, lang) || w.riddle;
   // A 灯谜 as it is hung at a lantern fair: the red lantern, the riddle on the paper slip beneath it (Hanli 10-27: the
   // boards in the house style, 「画面不精致」 never again).
@@ -68,10 +77,13 @@ export async function riddleGame(ctx) {
   // A quiet game (`quiet`: 黑地里, the ambulance) asks no one: the moment is no game of theirs, only his answer and the book.
   const react = game.quiet ? () => Promise.resolve() : ctx.react;
   react(riddleLine(chat, { event: 'open', riddle: r, cast: ctx.cast, lang }));
+  keep(ctx, 'open', { kind: 'riddle', face: r.q, answer: r.answers[0] ?? '' });
   const card = () => [...ctx.root.querySelectorAll('.g-jc-riddle')].at(-1);
   const showHint = () => {
     if (st.hints >= r.hints.length) return '';
     const h = r.hints[st.hints++];
+    st.shown.push(h);
+    keep(ctx, 'step', { hints: hintsOf(st.shown) });
     card()?.querySelector('.g-jc-hints')?.insertAdjacentHTML('beforeend', `<li><b>${esc(fill(w.hintAt, { n: st.hints }))}</b>${esc(h)}</li>`);
     ctx.sound('hint');
     return h;
@@ -79,9 +91,23 @@ export async function riddleGame(ctx) {
   const status = () => ctx.foot(fill(w.tried, { n: st.misses }) + (r.hints.length ? ` · ${fill(w.hinted, { n: st.hints, max: r.hints.length })}` : ''));
 
   return new Promise((resolve) => {
+    // Told in the chat on his ask (Ling's Reveal, 银月's Whisper): the answer on the slip, and over — as a skip.
+    const stop = watch(ctx, (told) => {
+      if (st.done) return;
+      st.done = true;
+      strip(ctx, '');
+      const ans = card()?.querySelector('.g-jc-ans');
+      if (ans) { ans.hidden = false; ans.textContent = fill(w.answer, { a: told.answer || (r.answers[0] ?? '') }); }
+      ctx.sound('skip');
+      ctx.log({ kind: 'riddle', chat: ctx.id, told: true, misses: st.misses, hints: st.hints });
+      keep(ctx, 'close');
+      resolve({ won: false, left: true, told: true });
+    });
     const finish = async (solved, guess) => {
       if (st.done) return;
       st.done = true;
+      stop();
+      keep(ctx, 'close');
       strip(ctx, '');
       const ans = card()?.querySelector('.g-jc-ans');
       if (ans) { ans.hidden = false; ans.textContent = fill(w.answer, { a: r.answers[0] ?? '' }); }
@@ -104,7 +130,7 @@ export async function riddleGame(ctx) {
       // A miss lights the next hint by itself after the first; past `tries`, the choices.
       const hint = st.misses >= 2 ? showHint() : '';
       if (st.misses >= r.tries && r.choices.length && !st.choices) st.choices = true;
-      react(riddleLine(chat, { event: 'miss', guess: text, hint, choices: st.choices && st.misses === r.tries, riddle: r, cast: ctx.cast, lang }));
+      react(riddleLine(chat, { event: 'miss', guess: text, hint, shown: st.shown, choices: st.choices && st.misses === r.tries, riddle: r, cast: ctx.cast, lang }));
       draw();
     };
     const draw = () => {
@@ -235,7 +261,7 @@ export async function coupletGame(ctx) {
   const { chat, lang, w } = ctx;
   const game = chat.game, c = coupletOf(game, lang);
   const tones = await ctx.tones().catch(() => null);
-  const st = { misses: 0, hints: 0, choices: false, done: false };
+  const st = { misses: 0, hints: 0, shown: [], choices: false, done: false };
   const label = pick(game.label, lang) || w.duilian;
   // A pair of red scrolls as they hang by a door: the 上联 on the right, the 下联's blank on the left (Hanli 10-27: the
   // boards in the house style). Solved, his characters fill it; skipped, the classic's.
@@ -244,6 +270,7 @@ export async function coupletGame(ctx) {
     + `<ol class="g-jc-hints"></ol><p class="g-jc-dl-why" hidden></p><p class="g-jc-ans" hidden></p></div>` });
   const react = game.quiet ? () => Promise.resolve() : ctx.react;
   react(coupletLine(chat, { event: 'open', c, cast: ctx.cast, lang }));
+  keep(ctx, 'open', { kind: 'couplet', face: c.up, answer: c.answers[0] ?? '', ...(c.src ? { src: c.src } : {}) });
   const card = () => [...ctx.root.querySelectorAll('.g-jc-duilian')].at(-1);
   const fillDown = (text, cls) => {
     const el = card()?.querySelector('.g-jc-dl-scroll.is-down .g-jc-dl-text');
@@ -252,6 +279,8 @@ export async function coupletGame(ctx) {
   const showHint = () => {
     if (st.hints >= c.hints.length) return '';
     const h = c.hints[st.hints++];
+    st.shown.push(h);
+    keep(ctx, 'step', { hints: hintsOf(st.shown) });
     card()?.querySelector('.g-jc-hints')?.insertAdjacentHTML('beforeend', `<li><b>${esc(fill(w.hintAt, { n: st.hints }))}</b>${esc(h)}</li>`);
     ctx.sound('hint');
     return h;
@@ -259,37 +288,62 @@ export async function coupletGame(ctx) {
   const whyOf = (raw) => { const f = shapeOf(c, raw, tones); return fill(w.why[f?.id ?? 'form'], f ?? {}); };
   const status = () => ctx.foot(fill(w.triedDown, { n: st.misses }) + (c.hints.length ? ` · ${fill(w.hinted, { n: st.hints, max: c.hints.length })}` : ''));
 
+  // The original under the scrolls (a near line counted, or told): 「原句：……——src」.
+  const original = (a) => fill(w.original, { a }) + (c.src ? ` ${fill(w.srcBy, { src: c.src })}` : '');
   return new Promise((resolve) => {
-    const finish = async (solved, guess) => {
+    // Told in the chat on his ask (Ling's Reveal, 银月's Whisper): the classic's 下联 on its scroll, and over — as a skip.
+    const stop = watch(ctx, (told) => {
       if (st.done) return;
       st.done = true;
+      strip(ctx, '');
+      const a = told.answer || (c.answers[0] ?? '');
+      fillDown(a, 'is-shown');
+      const why = card()?.querySelector('.g-jc-dl-why');
+      if (why) why.hidden = true;
+      const ans = card()?.querySelector('.g-jc-ans');
+      if (ans) { ans.hidden = false; ans.textContent = original(a); }
+      ctx.sound('skip');
+      ctx.log({ kind: 'couplet', chat: ctx.id, told: true, misses: st.misses, hints: st.hints });
+      keep(ctx, 'close');
+      resolve({ won: false, left: true, told: true });
+    });
+    // `near`: his line a character or two off an accepted 下联, counted one star lower — the original named.
+    const finish = async (solved, guess, near = '') => {
+      if (st.done) return;
+      st.done = true;
+      stop();
+      keep(ctx, 'close');
       strip(ctx, '');
       fillDown(solved ? guess : c.answers[0] ?? '', solved ? 'is-his' : 'is-shown');
       const why = card()?.querySelector('.g-jc-dl-why');
       if (why) why.hidden = true;
       const ans = card()?.querySelector('.g-jc-ans');
-      if (ans && c.src) { ans.hidden = false; ans.textContent = fill(w.srcBy, { src: c.src }); }
+      if (ans && near) { ans.hidden = false; ans.textContent = original(near); }
+      else if (ans && c.src) { ans.hidden = false; ans.textContent = fill(w.srcBy, { src: c.src }); }
       ctx.sound(solved ? 'right' : 'skip');
-      const o = riddleOutcome({ solved, hints: st.hints, choices: st.choices });
-      ctx.log({ kind: 'couplet', chat: ctx.id, solved, misses: st.misses, hints: st.hints, choices: st.choices, guess: guess ?? null });
+      const o = riddleOutcome({ solved, hints: st.hints, choices: st.choices, near: Boolean(near) });
+      ctx.log({ kind: 'couplet', chat: ctx.id, solved, near: Boolean(near), misses: st.misses, hints: st.hints, choices: st.choices, guess: guess ?? null });
       if (game.after?.length) { await ctx.settle(); await playAfter(ctx, game.after); }
-      else await react(coupletLine(chat, { event: solved ? 'solved' : 'skip', guess, c, cast: ctx.cast, lang }), { wait: true });
+      else await react(coupletLine(chat, { event: near ? 'near' : solved ? 'solved' : 'skip', guess, answer: near, c, cast: ctx.cast, lang }), { wait: true });
       resolve(o);
     };
     const guess = (raw) => {
       const text = String(raw ?? '').trim();
       if (!text || st.done) return;
       ctx.add({ who: 'me', text });
-      if (checkDown(c, text) === 'right') return finish(true, text);
+      const v = checkDown(c, text);
+      if (v === 'right') return finish(true, text);
+      if (v === 'near') return finish(true, text, nearOf(c, text)?.answer ?? c.answers[0] ?? '');
       st.misses += 1;
       ctx.sound('wrong');
-      // What is off is the page's fact, shown under the scrolls and handed to their voice.
-      const why = whyOf(text);
+      // What is off is the page's fact, shown under the scrolls and handed to their voice — a line a character or two off
+      // with its key image lost says so (「只差一两个字……」), never which.
+      const why = v === 'close' ? w.why.close : whyOf(text);
       const el = card()?.querySelector('.g-jc-dl-why');
       if (el) { el.hidden = false; el.textContent = why; }
       const hint = st.misses >= 2 ? showHint() : '';
       if (st.misses >= c.tries && c.choices.length && !st.choices) st.choices = true;
-      react(coupletLine(chat, { event: 'miss', guess: text, why, hint, c, cast: ctx.cast, lang }));
+      react(coupletLine(chat, { event: 'miss', guess: text, why, hint, shown: st.shown, c, cast: ctx.cast, lang }));
       draw();
     };
     const draw = () => {
@@ -331,12 +385,28 @@ export async function chainGame(ctx) {
   // The person's opening idiom is on the table before anyone speaks; their voice comes when it comes.
   theirs(ch.start, false);
   react(chainLine(chat, { event: 'open', ch, cast, lang }));
+  // Kept for Ling's Look: the idiom he follows, and one way on — what a Reveal tells (rules/wordboard.mjs).
+  const kept = () => ({ face: st.said.at(-1), answer: wayOn(dict, st) ?? '' });
+  keep(ctx, 'open', { kind: 'chain', ...kept() });
   const status = () => ctx.foot(fill(w.chainAt, { n: st.links, links: ch.links }) + (st.misses ? ` · ${fill(w.tried, { n: st.misses })}` : ''));
 
   return new Promise((resolve) => {
+    // Told in the chat on his ask: their way on laid out as theirs, and over — as a skip.
+    const stop = watch(ctx, (told) => {
+      if (done) return;
+      done = true;
+      strip(ctx, '');
+      if (told.answer) ctx.add({ who: 'note', text: fill(w.chainTold, { w: told.answer }) });
+      ctx.sound('skip');
+      ctx.log({ kind: 'chain', chat: ctx.id, told: true, links: st.links });
+      keep(ctx, 'close');
+      resolve({ won: false, left: true, told: true });
+    });
     const end = async (o, event, guess = '') => {
       if (done) return;
       done = true;
+      stop();
+      keep(ctx, 'close');
       strip(ctx, '');
       ctx.sound(o.grade === 'skipped' ? 'skip' : 'right');
       ctx.log({ kind: 'chain', chat: ctx.id, links: st.links, said: st.said, hints: st.hints, choices: st.choices, grade: o.grade });
@@ -348,13 +418,14 @@ export async function chainGame(ctx) {
     const hintRow = (text) => ctx.add({ who: 'note', text: `${fill(w.hintAt, { n: lh })}${text}` });
     // Hints are per link (two each: 「欺人□□」, then 「欺人太□」); the count for the stars is the whole game's.
     let lh = 0, at = 0;
+    const shown = [];
     const showHint = () => {
       if (at !== st.said.length) { at = st.said.length; lh = 0; }
       if (lh >= 2) return '';
       lh += 1;
       st.hints += 1;
       const h = chainHint(dict, st, lh);
-      if (h) { hintRow(h); ctx.sound('hint'); }
+      if (h) { hintRow(h); ctx.sound('hint'); shown.push(h); keep(ctx, 'step', { hints: hintsOf(shown) }); }
       return h;
     };
     const link = (raw) => {
@@ -374,6 +445,7 @@ export async function chainGame(ctx) {
         if (!mine) return end(chainOutcome({ done: true, hints: st.hints, choices: st.choices }), 'stuck', r.word);
         st = playLink(st, mine, 'them');
         theirs(mine, true);
+        keep(ctx, 'step', kept());
         react(chainLine(chat, { event: 'link', guess: r.word, mine, n: st.links, ch, cast, lang }));
         return draw();
       }

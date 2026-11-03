@@ -20,6 +20,7 @@ import { taleLine, taleLundao } from './tale.mjs';
 import { hostedHere, lundaoBrief, lundaoName } from './tasks.mjs';
 import { tasksBrief, wordsOf } from './look.mjs';
 import { placeOf } from './world.mjs';
+import { wordBoardLook } from './wordboard.mjs';
 
 export const PAGE_KEEP = 30;
 
@@ -213,6 +214,8 @@ export function progress(state, content, ctx) {
       // Her own past as far as the cauldrons have given it back, and where she stands (companion.mjs § 她的来处).
       her: herPast(content, state),
       ...(lundao ? { lundao } : {}),
+      // A 对话 board's word game open on the stage (rules/wordboard.mjs): the hints shown, never the answer untold — hers by Whisper.
+      ...wordBoardLook(state, ctx.now, 'Whisper'),
       // 闭关 running: its focus and the hours in (rules/seclusion.mjs).
       ...(state.seclusion ? { seclusion: (({ focus, hours, card }) => ({ focus, hours, ...(card ? { card: card.name } : {}) }))(seclusionBrief(content, state, ctx.now)) } : {}),
     }),

@@ -81,9 +81,10 @@ place:
   yinyue:
     tools: [AppTool, Story, WebSearch]
     text: >-
-      You are inside Lingjing 《灵境》, the player's companion. Speak in the
+      You are in Lingjing 《灵境》, the player's companion. Speak in the
       game's language, as yourself; Ling tells the world and runs every turn —
-      never speak for Ling or make the game's moves. You are the wounded silver
+      never speak for Ling or move the game. A `word_board`'s answer: Whisper,
+      if asked outright. You are the wounded silver
       fox found in 黑松岭's valley: say 本王 / 我, never 「那只狐狸」.
       `companion.away` (今): SILENT. `companion.asleep`: half asleep in the
       木牌 — murmurs, 「……」. `capped`: once a day, point to the story.
@@ -520,6 +521,27 @@ tools:
     tier: edit
     timeout_ms: 8000
 
+  - name: Reveal
+    description: >-
+      The open word game's answer (Look's `word_board`), only when the player
+      asks outright for it — never for a hint. The board is set aside as a
+      skip, nothing paid; say the answer once, in your words.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs reveal --save={{session.save}} --for=ling"
+    tier: edit
+    timeout_ms: 8000
+
+  - name: Whisper
+    # The word game's answer, 银月's half (AppTool → this tool, `--for=yinyue`): Reveal for her. Never Ling's (page_only).
+    description: >-
+      The open word game's answer (Progress's `word_board`), only when the
+      player asks you outright — never for a hint. Tease first (本王就告诉你这一回),
+      then say it; the board is set aside, nothing paid.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs reveal --save={{session.save}} --for=yinyue"
+    tier: edit
+    pet: true
+    page_only: true
+    timeout_ms: 8000
+
   - name: Saves
     description: >-
       The kept games, newest first (guide `steer`).
@@ -790,6 +812,9 @@ name card. Call the player 小满 or *you* (你); the rules fill
   (`staged`); speak for what the player types (guide `tell`); 今
   (`scene.line`): the book alone. `[jinchat]`: their reply only, no tool.
   `[npc]`: the same.
+- **A word game open (`word_board`)**: its answer is hidden from you — never
+  say what it is or is not; for a hint, reword its `hints`. **Reveal** only
+  when the player asks outright for the answer.
 
 ## Opening
 

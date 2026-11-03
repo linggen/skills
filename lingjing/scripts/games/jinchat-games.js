@@ -110,7 +110,9 @@ export function checkRiddle(riddle, raw, lang = 'zh') {
 
 /** How a riddle came out: solved with no hint and no choices → 3; solved after them → 2; skipped or never solved → 1.
     Every way is `won` (the story goes on; the 今 pays nothing, a 古 board pays as before). */
-export function riddleOutcome({ solved = false, hints = 0, choices = false } = {}) {
+export function riddleOutcome({ solved = false, hints = 0, choices = false, near = false } = {}) {
+  // A near 下联 (Hanli 11-03: 「对对子, 不用要求那么严格吧?」) wins one star lower, as `hinted` (agent's pick: no new grade id).
+  if (solved && near) return { over: true, won: true, grade: 'hinted', stars: !hints && !choices ? 2 : 1 };
   if (solved && !hints && !choices) return { over: true, won: true, grade: 'solved', stars: 3 };
   if (solved) return { over: true, won: true, grade: 'hinted', stars: 2 };
   return { over: true, won: true, grade: 'skipped', stars: 1 };
@@ -213,15 +215,35 @@ export function coupletOf(game, lang = 'zh') {
     tries: Number(game?.tries) || 3,
     src: pick(g.src, lang),
     kind: pick(g.label ?? game?.label, lang),
+    keys: list(g.keys, lang),
   };
 }
 
 const hanJoin = (s) => hanOf(s).join('');
-/** His 下联, judged by the data alone: 'right' (one of the accepted 下联, its characters alone compared) · 'wrong' · 'empty'. */
+/** How many characters at most a near 下联 may differ in place from an accepted one (Hanli 11-03). */
+export const NEAR_MAX = 2;
+/** The accepted 下联 nearest his, of the same length: `{ answer, diff }` (characters differing in place), or null. */
+export function nearOf(c, raw) {
+  const said = hanOf(raw);
+  let best = null;
+  for (const a of c.answers) {
+    const h = hanOf(a);
+    if (!said.length || h.length !== said.length) continue;
+    const diff = h.reduce((n, x, i) => n + (x !== said[i] ? 1 : 0), 0);
+    if (!best || diff < best.diff) best = { answer: a, diff };
+  }
+  return best;
+}
+/** His 下联, judged by the data alone (its characters alone compared): 'right' (one of the accepted 下联) · 'near' (the
+    same length, at most NEAR_MAX characters off in place, and every `keys` image kept — anywhere in the line: 红梅香自苦寒来
+    keeps 梅 a place along) · 'close' (as near, but a key image lost) · 'wrong' · 'empty'. */
 export function checkDown(c, raw) {
   const said = hanJoin(raw);
   if (!said) return 'empty';
-  return c.answers.some((a) => hanJoin(a) === said) ? 'right' : 'wrong';
+  if (c.answers.some((a) => hanJoin(a) === said)) return 'right';
+  const n = nearOf(c, raw);
+  if (!n || n.diff > NEAR_MAX) return 'wrong';
+  return (c.keys ?? []).every((k) => said.includes(hanJoin(k))) ? 'near' : 'close';
 }
 
 /* A 上联's repeats (花开花落: the 1st and 3rd the same) the 下联 answers in kind (云卷云舒), and repeats nothing the 上联 does not. */
@@ -320,6 +342,8 @@ const W = {
     open: '你先开口，照你平常说话的样子叫他猜（谜面别重复，答案一个字也别漏）。',
     miss: '他猜：「{guess}」。页面判了：不对。（谜底别说破，也别替他猜。）回他一句——损他也行，激他也行。{hint}',
     hint: '页面这会儿亮出了提示：「{hint}」。',
+    shown: '页面已经亮出的提示：{hints}。',
+    rule: '（这一局开着，他在哪儿问都一样：答案藏着，你也不知道——别说它是什么，也别说它不是什么；要提示，只把页面亮出的提示换个说法，推他一把。）',
     choices: '页面给了他四个选项挑。',
     solved: '他猜中了：「{guess}」（页面判的）。用一句话认了。',
     skip: '他不猜了，跳过；页面亮出了谜底：「{answer}」。回他一句，收个尾。',
@@ -336,6 +360,7 @@ const W = {
     cOpen: '你先开口，照你平常说话的样子叫他对下联（上联别重复，下联一个字也别说，别替他对）。',
     cMiss: '他对：「{guess}」。页面判了：没对上（{why}）。下联别说破，也别替他对。回他一句——损他也行，激他也行。{hint}',
     cSolved: '他对上了：「{guess}」（页面判的）。用一句话认了。',
+    cNear: '他对：「{guess}」——跟原句差一两个字，页面算他对上了；原句是「{answer}」。用一句话认了，顺口念出原句。',
     cSkip: '他不对了，跳过；页面亮出了下联：「{answer}」。回他一句，收个尾。',
     chain: '这一局是成语接龙：{names}先出「{start}」，他接；下一条的头一个字，得是上一条的末一个字，接满{links}条算他赢。接没接上，页面判。',
     lOpen: '你先开口，照你平常说话的样子叫他接（只说你出的那一条，别替他接，也别提示他）。',
@@ -353,6 +378,8 @@ const W = {
     open: 'Speak first, in your own voice, daring him to guess (don\'t repeat the riddle; never let slip a letter of the answer).',
     miss: 'He guesses: "{guess}". The page judged it: wrong. (Never give the answer away; never guess for him.) Answer him in a line — a jab or a dare. {hint}',
     hint: 'The page now shows a hint: "{hint}".',
+    shown: 'Hints the page has shown so far: {hints}.',
+    rule: '(While this round is open, wherever he asks: the answer is hidden, and you do not know it — never say what it is, nor what it is not; asked for help, only reword a hint the page has shown, and nudge.)',
     choices: 'The page has given him four choices.',
     solved: 'He has it: "{guess}" (the page judged it). Own it in a line.',
     skip: 'He gives up and skips; the page shows the answer: "{answer}". Answer him in a line and close it.',
@@ -369,6 +396,7 @@ const W = {
     cOpen: 'Speak first, in your own voice, daring him to match it (don\'t repeat the line; never say a word of the answer).',
     cMiss: 'He answers: "{guess}". The page judged it: no match ({why}). Never give the answer away. Answer him in a line. {hint}',
     cSolved: 'He has matched it: "{guess}" (the page judged it). Own it in a line.',
+    cNear: 'He answers: "{guess}" — a character or two off the original, and the page counts it a match; the original reads "{answer}". Own it in a line and say the original.',
     cSkip: 'He gives up; the page shows the second line: "{answer}". Answer him in a line and close it.',
     chain: 'This round is an idiom chain: {names} open with "{start}", he follows; each must start with the last character of the one before, {links} links to win. The page judges.',
     lOpen: 'Speak first, in your own voice, daring him to follow (only your own idiom; never one for him, never a hint).',
@@ -386,28 +414,37 @@ const headOf = (chat, cast, lang) => {
   return [fill(w.head, { title: pick(chat.title, lang), when: pick(chat.when, lang), names: namesOf(cast, lang), multi: cast.length > 1 ? w.multi : '' }), fill(w.facts, { facts: pick(chat.game?.facts ?? chat.facts, lang) })].join('');
 };
 
+/* The hints the page has shown before this one (`shown`, in order), as a fact: what their voice may reword when he asks. */
+const shownOf = (w, shown, hint, lang) => {
+  const before = (shown ?? []).filter((h) => h && h !== hint);
+  return before.length ? fill(w.shown, { hints: before.map((h) => (lang === 'en' ? `"${h}"` : `「${h}」`)).join(lang === 'en' ? '; ' : '') }) : '';
+};
+
 /** The hidden line for one moment of a riddle: `event` open · miss · solved · skip. Never the answer before he has it
-    (skip is after the page shows it). */
-export function riddleLine(chat, { event, guess = '', hint = '', choices = false, riddle, cast = [], lang = 'zh' }) {
+    (skip is after the page shows it); never the choices (the answer is one of them). The open line carries the rule for
+    the round (`rule`): he may ask about it anywhere, and their voice — and Ling's — never says what it is or is not. */
+export function riddleLine(chat, { event, guess = '', hint = '', shown = [], choices = false, riddle, cast = [], lang = 'zh' }) {
   const w = W[lang] ?? W.zh;
   const kind = riddle.kind ? (lang === 'en' ? ` (${riddle.kind})` : `（${riddle.kind}）`) : '';
   const body = {
-    open: () => `${fill(w.riddle, { names: namesOf(cast, lang), q: riddle.q, kind })}${w.open}`,
-    miss: () => fill(w.miss, { guess, hint: [hint ? fill(w.hint, { hint }) : '', choices ? w.choices : ''].join('') }),
+    open: () => `${fill(w.riddle, { names: namesOf(cast, lang), q: riddle.q, kind })}${w.open}${w.rule}`,
+    miss: () => fill(w.miss, { guess, hint: [shownOf(w, shown, hint, lang), hint ? fill(w.hint, { hint }) : '', choices ? w.choices : ''].join('') }),
     solved: () => fill(w.solved, { guess }),
     skip: () => fill(w.skip, { answer: riddle.answers[0] ?? '' }),
   }[event]?.() ?? '';
   return event === 'open' ? `${headOf(chat, cast, lang)}${body}` : `[HIDDEN] [jinchat] ${pick(chat.title, lang)}·${body}`;
 }
 
-/** The hidden line for one moment of a 对对子: `event` open · miss · solved · skip (the 下联 only after the page shows it). */
-export function coupletLine(chat, { event, guess = '', why = '', hint = '', c, cast = [], lang = 'zh' }) {
+/** The hidden line for one moment of a 对对子: `event` open · miss · solved · near (his line a character or two off,
+    counted: the original named, `answer`) · skip (the 下联 only after the page shows it, or counts his). */
+export function coupletLine(chat, { event, guess = '', why = '', hint = '', shown = [], answer = '', c, cast = [], lang = 'zh' }) {
   const w = W[lang] ?? W.zh;
   const kind = c.kind ? (lang === 'en' ? ` (${c.kind})` : `（${c.kind}）`) : '';
   const body = {
-    open: () => `${fill(w.couplet, { names: namesOf(cast, lang), up: c.up, kind })}${w.cOpen}`,
-    miss: () => fill(w.cMiss, { guess, why, hint: hint ? fill(w.hint, { hint }) : '' }),
+    open: () => `${fill(w.couplet, { names: namesOf(cast, lang), up: c.up, kind })}${w.cOpen}${w.rule}`,
+    miss: () => fill(w.cMiss, { guess, why, hint: [shownOf(w, shown, hint, lang), hint ? fill(w.hint, { hint }) : ''].join('') }),
     solved: () => fill(w.cSolved, { guess }),
+    near: () => fill(w.cNear, { guess, answer: answer || (c.answers[0] ?? '') }),
     skip: () => fill(w.cSkip, { answer: c.answers[0] ?? '' }),
   }[event]?.() ?? '';
   return event === 'open' ? `${headOf(chat, cast, lang)}${body}` : `[HIDDEN] [jinchat] ${pick(chat.title, lang)}·${body}`;
@@ -419,7 +456,7 @@ export function chainLine(chat, { event, guess = '', mine = '', why = '', n = 0,
   const w = W[lang] ?? W.zh;
   const o = { guess, mine, why, n, links: ch.links };
   const body = {
-    open: () => `${fill(w.chain, { names: namesOf(cast, lang), start: ch.start, links: ch.links })}${w.lOpen}`,
+    open: () => `${fill(w.chain, { names: namesOf(cast, lang), start: ch.start, links: ch.links })}${w.lOpen}${w.rule}`,
     link: () => fill(w.lLink, o), miss: () => fill(w.lMiss, o), done: () => fill(w.lDone, o), stuck: () => fill(w.lStuck, o), skip: () => w.lSkip,
   }[event]?.() ?? '';
   return event === 'open' ? `${headOf(chat, cast, lang)}${body}` : `[HIDDEN] [jinchat] ${pick(chat.title, lang)}·${body}`;
