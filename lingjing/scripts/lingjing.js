@@ -806,10 +806,16 @@ function qiHtml() {
     <i class="ring" style="--p:${Number(d.p) || 0}"></i><span class="st">${esc(qiWord(d.st, w))}</span>${cnt}</span>`;
 }
 
-/// Filled to the 回's cap (Look's `capped`, rules/cap.mjs): the bar stands full and a small
-/// seal by its count says it waits — the world's line is the seal's title, never a row on the
-/// bar (Hanli, 2026-10-15: the line took the strip's room and crushed the name to a column).
-const capSay = () => (look.capped?.say ? `<span class="capseal" role="note" title="${esc(look.capped.say)}" aria-label="${esc(look.capped.say)}">${esc(words().capSeal)}</span>` : '');
+/// Filled to the 回's cap (Look's `capped`, rules/cap.mjs): the bar stands full and, in the count's own room, one chip
+/// says the way on is the story — 「走剧情破境 ›」 (Hanli 11-03: the old 候 seal said only "wait", its reason a hover
+/// the phone never had; the realm's name already says 圆满). A tap opens the 事 book at the story goal; the numbers and
+/// the world's line are its title. Never a row on the bar (2026-10-15: a line there crushed the name to a column).
+function capGo(bar, w) {
+  const c = look.capped;
+  if (!c?.say) return '';
+  const title = fill(w.capGoTitle, { xw: w.xw, progress: bar.progress, of: bar.next, say: c.say });
+  return `<button class="capgo" data-book title="${esc(title)}" aria-label="${esc(title)}">${esc(w.capGo)}</button>`;
+}
 
 /// How far past the full mark the 修为 stands, as a share of the bar (0 when it is not; at most the whole bar).
 const spillPct = (progress, next) => (next && progress > next ? Math.min(100, Math.round(((progress - next) / next) * 100)) : 0);
@@ -819,7 +825,7 @@ const spillPct = (progress, next) => (next && progress > next ? Math.min(100, Ma
 /// the rise paints (paintRise).
 function xwHtml(bar, pct, over, w) {
   const d = duanOf(bar.tier);
-  const num = `<span class="num"><span data-count="progress">${esc(bar.progress)}</span>/${esc(bar.next)}</span>${bar.line ? '' : capSay()}`;
+  const num = (!bar.line && capGo(bar, w)) || `<span class="num"><span data-count="progress">${esc(bar.progress)}</span>/${esc(bar.next)}</span>`;
   const fillBar = (cls, p, spill) => `<div class="bar ${cls}${spill ? ' over' : ''}"><i style="width:${p || 0}%"></i>${cls === 'now' ? `<em class="spill" style="width:${spill}%"></em>` : ''}</div>`;
   if (!d) return `<span class="realm">${esc(bar.tier.name)}</span>
     <div class="xw"><span class="lbl">${esc(w.xw)}</span>${fillBar('now', pct, over)}${num}</div>`;

@@ -20,6 +20,7 @@
 // catches up.
 import { addProgress, pick, stageDoor, stepOfLayer, threshold, tierOf, zeroAt } from '../state.mjs';
 import { huiNow, huiOrder } from './hui.mjs';
+import { atScene, inMade, placeName, placeOf, sceneOf } from './world.mjs';
 
 /* A realm and layer as one number, low to high: tier index, then layer. */
 export const rankOf = (content, tier, step) => content.ladder.tiers.findIndex(t => t.id === tier) * 100 + step;
@@ -96,6 +97,22 @@ export function capLook(content, state, lang) {
   if ((state.progress ?? 0) < threshold(content, state) || underCap(content, state, state.tier, state.step + 1)) return null;
   return { say: pick(content.ladder.caps.say, lang) };
 }
+
+/* Where the story goes on while the cap holds — the way past it (Hanli 11-03: 「走剧情破境」). Standing in a scene of the
+   story: `here`, and its place. Else the goal line's (errands.mjs waypointOf `way`): its words, its place and first road.
+   Null when there is no story ahead to point at. */
+export function capStory(content, state, way) {
+  if (!inMade(state) && atScene(content, state)) {
+    const sc = sceneOf(content, state), p = placeOf(content, sc?.at ?? state.place);
+    return { here: true, scene: sc.id, ...(p ? { place: placeName(content, state, p) } : {}) };
+  }
+  if (!way) return null;
+  return { text: way.text ?? way.title ?? '', ...(way.place ? { place: way.place } : {}), ...(way.toward ? { toward: way.toward } : {}),
+    ...(way.coming ? { coming: true } : {}), ...(way.held ? { held: true } : {}) };
+}
+
+/* A 修为 pill at the cap, kept, in the world's words (rules/travel.mjs `xw-full`). */
+export const capPillSay = (content, lang) => pick(content.ladder.caps?.pill ?? content.ladder.caps?.say, lang);
 
 /* A breakthrough past the cap, refused in the world's words. */
 export const pastCapSay = (content, lang) => pick(content.ladder.caps?.refuse, lang);

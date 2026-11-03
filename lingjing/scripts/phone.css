@@ -86,8 +86,8 @@
   .topbar .langsw { order: 3; margin-left: auto; }
   .topbar .langsw button.on { display: none; }
   .topbar .xw { width: 96px; }
-  /* At the 回's cap the 候 seal stands by the count: the bar grows for it, never over 灵石 (live, 2026-10-15). */
-  .topbar .xw:has(.capseal) { width: auto; min-width: 96px; }
+  /* At the 回's cap the story chip stands in the count's room, the bar at the width the count and 候 had (measured 11-03: the header keeps its rows). */
+  .topbar .xw:has(.capgo) { width: auto; min-width: 120px; }
   /* In 段 (筑基 and above): the realm's 「筑基 · 中成」 names the bar, so 修为's word gives its room to the three segments. */
   .topbar .xw.duan { width: auto; min-width: 128px; }
   .topbar .xw.duan .lbl { display: none; }

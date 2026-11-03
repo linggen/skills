@@ -8,7 +8,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { lint, loadContent } from '../scripts/content.mjs';
 import { newState, stepName, threshold } from '../scripts/state.mjs';
-import { look, resolve } from '../scripts/rules.mjs';
+import { look, progress, resolve } from '../scripts/rules.mjs';
 import { pay } from '../scripts/rules/core.mjs';
 import { capOf, settleHeld } from '../scripts/rules/cap.mjs';
 import { earnedFor } from './earn.mjs';
@@ -193,4 +193,27 @@ test('古四 past the 柴房 gate: the full 一层 steps to 二层 on load, as t
   assert.equal(named(before), '练气一层');
   assert.equal(settleHeld(content, before), before);
   assert.ok(look(before, content, ctx).capped, '候 by the full bar until the gate');
+});
+
+test('at the cap the way on is the story (Hanli 11-03): Look\'s `capped.story` — the scene he stands in, else the goal line — and 银月\'s Progress fact', () => {
+  // Standing in a scene of the story: `here`, and its place.
+  const s = gusi({ step: 1, progress: threshold(content, gusi({ step: 1 })) + 50 });
+  const l = look(s, content, ctx);
+  assert.ok(l.capped, 'capped');
+  assert.equal(l.capped.story.here, true);
+  assert.equal(l.capped.story.scene, 'wm-ahe');
+  assert.ok(l.capped.story.place?.name, 'its place named');
+  // Off the scene (walked away): the goal line's words and place, the same the 事 book's head shows.
+  const la = look({ ...s, place: 'houshan' }, content, ctx);
+  assert.equal(la.capped.story.here, undefined);
+  assert.equal(la.capped.story.text, la.waypoint.text);
+  assert.deepEqual([la.capped.story.place.id, la.capped.story.toward.id], [la.waypoint.place.id, la.waypoint.toward.id]);
+  // 银月 reads it as a fact (SKILL.md Progress): the story, never a sentence of the page's.
+  const p = progress(s, content, ctx).result;
+  assert.deepEqual(p.capped, { story: { here: true, place: l.capped.story.place.name } });
+  assert.equal(progress({ ...s, progress: 10 }, content, ctx).result.capped, undefined, 'below the top, none');
+  // The words point to the story, never to more sitting.
+  assert.match(content.ladder.caps.say.zh, /剧情/);
+  assert.doesNotMatch(content.ladder.caps.say.zh, /再坐/);
+  assert.match(content.ladder.caps.say.en, /story/);
 });

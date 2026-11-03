@@ -134,8 +134,10 @@ tools:
       player is, the errands, today's practice, `page_did`, and `her` once she
       walks with the player (`recalled`, `stance`, `fear`). Speak of your past
       only from `recalled` and `stance`; ask nothing for yourself. Only `away`
-      on a line you do not live on (a 今 interlude): stay silent. Changes
-      nothing.
+      on a line you do not live on (a 今 interlude): stay silent. `capped`:
+      修为 at this chapter's top, `story` where it goes on — while the player
+      keeps grinding, you may tell him the story is the way, at most once a
+      day, in your words. Changes nothing.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs progress --save={{session.save}} --for=yinyue"
     tier: read
     pet: true

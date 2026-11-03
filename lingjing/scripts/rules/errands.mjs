@@ -26,7 +26,7 @@ import { coolingUntil, oddsOf } from './breakthrough.mjs';
 import { freeSlot, pouchBrief } from './pouch.mjs';
 import { GEAR_SLOTS, armSlot, herKey, herSlot, wornCount } from './wear.mjs';
 import { chapterLabel, comingOf } from './hui.mjs';
-import { storyAllows } from './cap.mjs';
+import { capLook, storyAllows } from './cap.mjs';
 import { gatesOf, stageBrief, stageGate } from './gates.mjs';
 import { errandLine } from './errand-line.mjs';
 import { mijingHold } from './mijing.mjs';
@@ -647,7 +647,9 @@ const EFFECT_BRIEF = {
   // 圆满: nothing lands (`full`), and the card says why (Hanli 11-03).
   progress: (e, content, lang, state) => {
     const p = state ? paysOf(content, state, new Date(), { table: e.table, progress: e.progress, tier: e.tier }) : null;
-    return { progress: p?.progress ?? Math.round(e.progress), ...(p?.full && !p.progress ? { full: true } : {}) };
+    // …and at the 回's cap, `capped`: the card points to the story (Hanli 11-03), not to a breakthrough of his own.
+    const full = p?.full && !p.progress;
+    return { progress: p?.progress ?? Math.round(e.progress), ...(full ? { full: true } : {}), ...(full && capLook(content, state, lang) ? { capped: true } : {}) };
   },
   learn: e => ({ learn: e.learn, level: e.level, tier: e.tier }),
   wear: e => ({ wear: e.wear, ...(e.lift ? { lift: e.lift } : {}) }),

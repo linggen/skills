@@ -13,7 +13,8 @@ import { cultivating, pick, stepName, threshold } from '../state.mjs';
 import { withoutLocked } from './locks.mjs';
 import { herAway, herPast } from './companion.mjs';
 import { staminaBrief } from './daily.mjs';
-import { bookOf, questOf } from './errands.mjs';
+import { bookOf, questOf, waypointOf } from './errands.mjs';
+import { capLook, capStory } from './cap.mjs';
 import { seclusionBrief } from './seclusion.mjs';
 import { taleLine, taleLundao } from './tale.mjs';
 import { hostedHere, lundaoBrief, lundaoName } from './tasks.mjs';
@@ -178,6 +179,13 @@ function lundaoHelp(content, state, now) {
    pool, where the player stands, the errands in hand, today's practice, and
    what the page did since the reader last asked (rules.mjs adds `page_did`).
    A read: it changes nothing but the reader's place in the log. */
+/* `capped: {story}` — 修为 at the 回's cap and the story ahead to point at: its place (`here` when he stands in it), its words. */
+function capFact(content, state, ctx) {
+  if (!capLook(content, state, state.lang)) return {};
+  const s = capStory(content, state, waypointOf(content, state, ctx));
+  return s ? { capped: { story: { ...(s.here ? { here: true } : {}), ...(s.text ? { text: s.text } : {}), ...(s.place?.name ? { place: s.place.name } : {}) } } } : {};
+}
+
 export function progress(state, content, ctx) {
   // On a line of the book she does not live on (a 今 interlude): she is not
   // in that world, and her read of it says only that (companion.mjs herAway).
@@ -194,6 +202,8 @@ export function progress(state, content, ctx) {
       ok: true, name: state.name ?? null,
       tier: stepName(content, state.tier, state.step, lang), ...(cultivating(content, state) ? { progress: state.progress, next: threshold(content, state) } : {}),
       stamina: { now: st.now, max: st.max, ...(st.empty ? { empty: true, rest_at: st.rest_at } : {}) },
+      // At the 回's cap (rules/cap.mjs): the way on is the story — where it waits (Hanli 11-03; SKILL.md Progress: hers to tell, once a day).
+      ...capFact(content, state, ctx),
       place: here ? { id: here.id, name: pick(here.name, lang) } : null,
       book: bookOf(content, state, lang, ctx).map(b => ({ title: b.title, ready: b.ready })),
       tale: taleLine(content, state, ctx.now),

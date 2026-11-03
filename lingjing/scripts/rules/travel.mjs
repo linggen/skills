@@ -6,6 +6,7 @@ import { tierRank } from './arms.mjs';
 import { gainCard, ownedCards } from './cards.mjs';
 import { companionOf, hasCompanion } from './companion.mjs';
 import { clone, offerTasks, pay, paysOf, refuse, spendStamina } from './core.mjs';
+import { capLook, capPillSay } from './cap.mjs';
 import { advance, bookOf, directorBrief, itemBrief, itemOf, onStoryRoad, questOf, settleErrands } from './errands.mjs';
 import { arriveOnRoad } from './road.mjs';
 import { forSale, sceneBrief, shelfOf, shopOf, wordsOf } from './look.mjs';
@@ -316,7 +317,8 @@ export function trade(state, content, ctx, args) {
       // the reason said. A 九转 that clears 丹毒 owed still goes down.
       const clears = (item.zhuan ?? 0) >= 9 && (s.dandu ?? 0) > 0;
       if (!clears && paysOf(content, clone(s), ctx.now ?? new Date(), { table: e.table, progress: e.progress, tier: e.tier })?.full) {
-        return refuse('xw-full', pick({ zh: '你现在修为圆满，服下也不长修为；破境之后再服。', en: 'Your cultivation is full; it would do nothing now. Take it after you break through.' }, lang));
+        // At the 回's cap the way on is the story (Hanli 11-03); elsewhere (a 段 door, a realm's peak) the generic line.
+        return refuse('xw-full', capLook(content, s, lang) ? capPillSay(content, lang) : pick({ zh: '你现在修为圆满，服下也不长修为；破境之后再服。', en: 'Your cultivation is full; it would do nothing now. Take it after you break through.' }, lang));
       }
       s.bag[item.id] = held - 1;
       if (s.bag[item.id] <= 0) delete s.bag[item.id];

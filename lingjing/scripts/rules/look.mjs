@@ -43,7 +43,7 @@ import { chapterLabel, huiOf, sideLine } from './hui.mjs';
 import { leaveOf, replayBrief, storyBoard } from './skips.mjs';
 import { asideLook } from './aside.mjs';
 import { trayLook } from './tray.mjs';
-import { capLook, underCap } from './cap.mjs';
+import { capLook, capStory, underCap } from './cap.mjs';
 import { entryGate, stageBack, stageBrief, stageGate, stageNow, stagesPaid } from './gates.mjs';
 import { practiceHint } from './scrolls.mjs';
 import { homeOf } from './home.mjs';
@@ -640,6 +640,8 @@ export function look(state, content, ctx) {
     ...(state.traits.length === 5 && mainRoot(state) ? { main: mainRoot(state) } : {}),
     speed: speedOf(content, state),
   };
+  const way = waypointOf(content, state, ctx), cap = capLook(content, state, lang), story = cap && capStory(content, state, way);
+  const capped = cap && { ...cap, ...(story ? { story } : {}) };
   const brief = {
     ok: true, lang, name: state.name, gender: genderOf(state), seed: seedOf(state), ...(state.run ? { run: state.run, ...(state.run_by ? { run_by: state.run_by } : {}) } : {}),
     // What the story has marked (a choice it will remember), and the beasts whose first sight has played.
@@ -666,7 +668,8 @@ export function look(state, content, ctx) {
     // `next` are the 古's — the top bar on a 今 scene reads 「沈芒 新生一层 · 修为 x/y」 from it (stage.mjs barOf).
     ...(linesOf(content).length ? { lines: linesLook(content, state, lang) } : {}),
     // Filled to the 回's cap (rules/cap.mjs): the full bar and the world's line under it — a wait, not a fault.
-    ...(capLook(content, state, lang) ? { capped: capLook(content, state, lang) } : {}),
+    // …and where the story goes on past it (`story`, Hanli 11-03: the way on is the story, never more sitting).
+    ...(capped ? { capped } : {}),
     traits,
     bag: Object.entries(state.bag).map(([id, n]) => ({ id, name: itemName(itemOf(content, id), state, lang) ?? id, n })),
     // Things the player named (小铜炉 · 饭桶): the 图鉴 card's title reads it.
@@ -688,7 +691,7 @@ export function look(state, content, ctx) {
     ...(owesTell(content, state) ? { tell_owed: true } : {}),
     // 所见 — what was looked at, the newest scenes, and what was passed by (rules/examine.mjs).
     ...(state.looked?.length ? { seen: seenLog(content, state, SEEN_KEEP) } : {}),
-    waypoint: waypointOf(content, state, ctx),
+    waypoint: way,
     // Inside a 秘境探险 run the roads wait outside (rules/mijing.mjs mijingHold): the map's rooms are the only ways.
     place: state.mijing?.run ? { ...placeBrief(content, state, ctx.now), roads: [] } : placeBrief(content, state, ctx.now),
     director: directorBrief(content, state, ctx),

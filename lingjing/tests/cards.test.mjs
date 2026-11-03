@@ -675,3 +675,36 @@ test("外门库房's shelf: 回春丹 · 回气丹 say their fight from Look's e
   assert.equal(itemDoes(shelf['huiqi-pill'].effect, { words: WORDS.zh }), '斗法里服下：灵力 +3');
   assert.equal((seen.shops ?? []).find((x) => x.steps === 0)?.label, '库房');
 });
+
+test('at the 回\'s cap (Hanli 11-03): the story goal wears 「破境在此」, the 事 book opens to it even in the scene, the pill card points to the story', async () => {
+  const { WORDS, cardHtml, bookPopHtml, bookChipHtml } = await import('../scripts/cards.js');
+  const way = { scene: 'wm-ahe', text: '外门大比 · 腊月初八。路通向沉鼎观 · 外门。', place: { id: 'waimen', name: '沉鼎观 · 外门' }, toward: { id: 'waimen', name: '沉鼎观 · 外门' } };
+  const capped = (story) => ({ say: '这一回的修为到顶了。', story });
+  const ctx = (look) => ({ look: { place: { id: 'houshan' }, ...look }, lang: 'zh', words: WORDS.zh });
+  // Walked off: the goal line (stage), 下一步 and the book's head all carry the mark; uncapped, none.
+  const off = ctx({ waypoint: way, capped: capped({ text: way.text, place: way.place, toward: way.toward }) });
+  assert.match(cardHtml({ card: 'goal' }, off), /class="capmark">破境在此</);
+  assert.match(cardHtml({ card: 'next' }, off), /破境在此/);
+  assert.match(bookPopHtml(off), /bookgoal[^]*破境在此[^]*data-go="waimen"/, 'the head, its mark and its one walk');
+  assert.doesNotMatch(bookPopHtml(ctx({ waypoint: way })), /破境在此/, 'not capped: no mark');
+  // A cauldron's gate is no story goal: no mark on it.
+  assert.doesNotMatch(cardHtml({ card: 'goal' }, ctx({ waypoint: { ...way, gate: { kind: 'stage', step: '四层圆满', now: { step: '四层', progress: 1, of: 2 } } }, capped: capped({ text: way.text }) })), /破境在此/);
+  // In the story's scene (no goal line): the chip still stands, and the book opens to 「剧情就在此处」 with no road to tap.
+  const here = ctx({ waypoint: null, capped: capped({ here: true, scene: 'wm-ahe', place: { id: 'waimen', name: '沉鼎观 · 外门' } }) });
+  assert.match(bookChipHtml(here, false, false), /data-book/);
+  const pop = bookPopHtml(here);
+  assert.match(pop, /剧情就在此处 · 沉鼎观 · 外门[^]*破境在此/);
+  assert.doesNotMatch(pop, /data-go=/);
+  assert.doesNotMatch(pop, new RegExp(WORDS.zh.bookNone));
+  // Words for the chip and its title, in both languages.
+  for (const l of ['zh', 'en']) for (const k of ['capGo', 'capGoTitle', 'capMark', 'capHere', 'effProgressCapped']) assert.ok(WORDS[l][k], `${l}.${k}`);
+});
+
+test('the top bar at the cap: one chip in the count\'s room, never a row; the 候 seal gone', () => {
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /class="capgo" data-book/, 'a tap opens the 事 book');
+  assert.match(page, /\(!bar\.line && capGo\(bar, w\)\) \|\| `<span class="num">/, 'in place of the count');
+  assert.doesNotMatch(page, /capseal/);
+  const phone = fs.readFileSync(new URL('../scripts/phone.css', import.meta.url), 'utf8');
+  assert.match(phone, /\.topbar \.xw:has\(\.capgo\) \{ width: auto; min-width: 120px; \}/);
+});

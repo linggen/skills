@@ -10,6 +10,7 @@ import { look, trade, VERBS } from '../scripts/rules.mjs';
 import { rollFeed, chances } from '../scripts/rules/fantong.mjs';
 import { cureDandu, eatPill } from '../scripts/rules/dandu.mjs';
 import { paysOf } from '../scripts/rules/core.mjs';
+import { capLook } from '../scripts/rules/cap.mjs';
 
 const content = loadContent();
 const T0 = new Date('2026-10-21T20:00:00');
@@ -161,9 +162,11 @@ test('圆满 (Hanli 11-03): a 修为 pill would pay nothing — the card says wh
   const r = trade(s, content, ctx(), { action: 'use', id: 'qi-pill' });
   if (paysOfFull(s)) {
     assert.equal(r.result.refused, 'xw-full', JSON.stringify(r.result));
-    assert.match(r.result.say, /圆满/);
+    // At the 回's cap the line points to the story (Hanli 11-03, ladder.json caps.pill); else the generic 圆满 line.
+    if (capLook(content, s, 'zh')) assert.equal(r.result.say, content.ladder.caps.pill.zh);
+    else assert.match(r.result.say, /圆满/);
     assert.equal(s.bag['qi-pill'], 6, 'kept');
-    if (brief?.effect) assert.equal(brief.effect.full, true);
+    if (brief?.effect) { assert.equal(brief.effect.full, true); assert.equal(Boolean(brief.effect.capped), Boolean(capLook(content, s, 'zh'))); }
   }
   // A 九转 with 丹毒 owed still goes down: it clears the turns.
   const owed = { ...s, dandu: 16 };
