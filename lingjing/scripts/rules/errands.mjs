@@ -643,7 +643,11 @@ const EFFECT_BRIEF = {
   key: () => ({ key: true }),
   // What lands at the layer he stands on (数值系统 phase 2: a pill is a share of the layer), never the authored number.
   // Where nothing lands (零层, before 入门) it says 0: the card never promises what eating it would not pay.
-  progress: (e, content, lang, state) => ({ progress: (state ? paysOf(content, state, new Date(), { table: e.table, progress: e.progress, tier: e.tier })?.progress : null) ?? Math.round(e.progress) }),
+  // 圆满: nothing lands (`full`), and the card says why (Hanli 11-03).
+  progress: (e, content, lang, state) => {
+    const p = state ? paysOf(content, state, new Date(), { table: e.table, progress: e.progress, tier: e.tier }) : null;
+    return { progress: p?.progress ?? Math.round(e.progress), ...(p?.full && !p.progress ? { full: true } : {}) };
+  },
   learn: e => ({ learn: e.learn, level: e.level, tier: e.tier }),
   wear: e => ({ wear: e.wear, ...(e.lift ? { lift: e.lift } : {}) }),
   charm: () => ({ charm: true }),

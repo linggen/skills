@@ -153,3 +153,25 @@ test('the furnace\'s 破境丹 is one 阶 above its owner: 筑基丹 while he is
     for (const o of r.outs) assert.ok(!/^foundation-pill/.test(o.out), o.out);
   }
 });
+
+test('圆满 (Hanli 11-03): a 修为 pill would pay nothing — the card says why, and eating it is refused, the pill kept', () => {
+  const need = content.ladder.tiers.find(t => t.id === 'qi').thresholds[5];
+  const s = player({ progress: need * 2 });
+  const brief = look(s, content, ctx()).bag?.items?.find?.(i => i.id === 'qi-pill') ?? null;
+  const r = trade(s, content, ctx(), { action: 'use', id: 'qi-pill' });
+  if (paysOfFull(s)) {
+    assert.equal(r.result.refused, 'xw-full', JSON.stringify(r.result));
+    assert.match(r.result.say, /圆满/);
+    assert.equal(s.bag['qi-pill'], 6, 'kept');
+    if (brief?.effect) assert.equal(brief.effect.full, true);
+  }
+  // A 九转 with 丹毒 owed still goes down: it clears the turns.
+  const owed = { ...s, dandu: 16 };
+  assert.equal(trade(owed, content, ctx(), { action: 'use', id: 'qi-pill-9' }).result.ok, true);
+});
+function paysOfFull(s) {
+  const e = item('qi-pill').effect;
+  const p = paysOf(content, structuredClone(s), T0, { table: e.table, progress: e.progress, tier: e.tier });
+  assert.equal(p.full, true, 'the state is 圆满');
+  return true;
+}

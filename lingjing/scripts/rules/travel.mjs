@@ -6,7 +6,7 @@ import { langWas } from './language.mjs';
 import { tierRank } from './arms.mjs';
 import { gainCard, ownedCards } from './cards.mjs';
 import { companionOf, hasCompanion } from './companion.mjs';
-import { clone, offerTasks, pay, refuse, spendStamina } from './core.mjs';
+import { clone, offerTasks, pay, paysOf, refuse, spendStamina } from './core.mjs';
 import { advance, bookOf, directorBrief, GEAR_SLOTS, itemBrief, itemOf, onStoryRoad, questOf, settleErrands } from './errands.mjs';
 import { arriveOnRoad } from './road.mjs';
 import { forSale, sceneBrief, shelfOf, shopOf, wordsOf } from './look.mjs';
@@ -288,6 +288,12 @@ export function trade(state, content, ctx, args) {
       return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), stamina: { now: s.stamina, gained: Math.max(0, s.stamina - (before ?? 0)) }, ...(reset ? { reset } : {}) } };
     }
     if (e.progress) {
+      // 圆满 (Hanli 11-03: 「修为圆满, 聚气丹无法起作用」): a pill would pay nothing and still owe 丹毒 — kept in the bag,
+      // the reason said. A 九转 that clears 丹毒 owed still goes down.
+      const clears = (item.zhuan ?? 0) >= 9 && (s.dandu ?? 0) > 0;
+      if (!clears && paysOf(content, clone(s), ctx.now ?? new Date(), { table: e.table, progress: e.progress, tier: e.tier })?.full) {
+        return refuse('xw-full', pick({ zh: '你现在修为圆满，服下也不长修为；破境之后再服。', en: 'Your cultivation is full; it would do nothing now. Take it after you break through.' }, lang));
+      }
       s.bag[item.id] = held - 1;
       if (s.bag[item.id] <= 0) delete s.bag[item.id];
       const paid = pay(content, s, ctx, { table: e.table, progress: e.progress, tier: e.tier });
