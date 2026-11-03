@@ -768,12 +768,17 @@ export function translate(text) {
   return null;
 }
 
+// Write only what changes. A word that is the same in both languages
+// ("Xcode DerivedData", "Apple Shifu") rewritten as itself is still a
+// mutation, which the watcher answered by translating it again — for ever:
+// the first full rescan to draw the cleanup card froze the tab (2026-11-03).
 function swapText(node) {
   const said = translate(node.nodeValue);
   if (said == null) return;
   const lead = node.nodeValue.match(/^\s*/)[0];
   const tail = node.nodeValue.match(/\s*$/)[0];
-  node.nodeValue = lead + said + tail;
+  const next = lead + said + tail;
+  if (next !== node.nodeValue) node.nodeValue = next;
 }
 
 function swapAttrs(el) {
@@ -781,7 +786,7 @@ function swapAttrs(el) {
     const v = el.getAttribute?.(a);
     if (!v) continue;
     const said = translate(v);
-    if (said != null) el.setAttribute(a, said);
+    if (said != null && said !== v) el.setAttribute(a, said);
   }
 }
 
