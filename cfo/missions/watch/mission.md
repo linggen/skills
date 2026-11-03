@@ -46,9 +46,7 @@ what makes the night's earnings story judgeable.
 1. Call `CheckReports`. `new` is the work list; `failed` names companies whose
    source didn't answer this time — the next run checks them again.
 2. `new` is empty → go to pass 2. Nothing else to do here.
-3. Call `Investments` once, so you know which of these the user holds and how
-   many shares.
-4. For each item `{symbol, name, form, period, filed, url}`:
+3. For each item `{symbol, name, form, period, filed, url}`:
    - **Read it** with `ReadReport`. An item with a `url` → that url.
      `form: "earnings"` (a TSX company, no url) → `WebSearch` for that
      quarter's results release on the company's own site, then `ReadReport`
@@ -65,15 +63,16 @@ what makes the night's earnings story judgeable.
      - **Segment name** $X.XB (+N%); gross margin N% (+N pts)
      - **Guidance** next quarter revenue $X.XB
      - **Returned** $X.XB in buybacks and dividends
-     **Take:** one sentence — what it means for this holder.
+     **Take:** one sentence — what the quarter means for the company.
      ```
 
      The headline is the period with revenue and EPS against a year ago; 2–4
      bullets led by a bold label (what moved, guidance, any dividend or
-     buyback change); `**Take:**` is what it means for someone holding it
-     (use their shares when they hold it). Only `**bold**`, `- ` bullets and
-     line breaks. Every figure comes from the document; leave out what isn't
-     there.
+     buyback change); `**Take:**` is what the quarter means for the company
+     and its stock. A summary is about the company, never the reader: not
+     whether they hold it or watch it, no shares, no value. Only `**bold**`,
+     `- ` bullets and line breaks. Every figure comes from the document;
+     leave out what isn't there.
 
 These reads are the work of the pass — they don't count against pass 2's
 reading budget.

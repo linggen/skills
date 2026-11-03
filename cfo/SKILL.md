@@ -211,8 +211,9 @@ tools:
           Short markdown, one fact per line: a bold period headline with
           revenue and EPS against a year ago; 2–4 "- " bullets led by a bold
           label (a segment or margin, guidance, dividend or buyback); a last
-          line "**Take:** …" — what it means for this holder. Only **bold**,
-          bullets and line breaks.
+          line "**Take:** …" — what the quarter means for the company, never
+          whether the reader holds it or how much. Only **bold**, bullets and
+          line breaks.
     cmd: "perl $SKILL_DIR/scripts/market.pl save-report symbol={{symbol}} period={{period}} form={{form}} filed={{filed}} url={{url}} summary={{summary}}"
     tier: read
     timeout_ms: 8000
@@ -837,14 +838,16 @@ return the same shape. For each item:
    - **Segment name** $X.XB (+N%); gross margin N% (+N pts)
    - **Guidance** next quarter revenue $X.XB
    - **Returned** $X.XB in buybacks and dividends
-   **Take:** one sentence — what it means for this holder.
+   **Take:** one sentence — what the quarter means for the company.
    ```
 
    - Headline: the period (quarter or year), revenue and EPS, each with the
      change from a year ago.
    - 2–4 bullets, each led by a bold label: what moved (a segment, the
      margin), guidance, any dividend or buyback change.
-   - `**Take:**` — what it means for this holder, one sentence.
+   - `**Take:**` — what the quarter means for the company, one sentence.
+     The summary is about the company, never the reader: not whether they
+     hold it or watch it, no shares, no value.
    - Only `**bold**`, `- ` bullets and line breaks; no headings, tables or
      links. Every figure from the document; leave out what isn't there.
 4. **Chat:** a sentence or two per company with your take. The summary is
