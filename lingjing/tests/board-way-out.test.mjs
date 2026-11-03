@@ -51,9 +51,8 @@ test('the shell bar lays its icons in one order: ? · 🔊 · Ⅱ · ✕ — the
   assert.match(page, /ask: toolHtml\('ask', bw\.how, 'data-fight-tap="help"'\), close: toolHtml\('close', bw\.quit, 'data-fight-tap="quit"'\)/);
   assert.match(page, /\['\[data-fight-tap\]', \(el\) => fightTap\(el\.dataset\.fightTap\)\]/);
   assert.match(read('../scripts/battle.css'), /\.gshell:has\(> \.gshell-bar \[data-fight-tap\]\) \.btop :is\(\.bquit, \.bhelpbtn\) \{ display: none; \}/);
-  // 开炉: back to the pouch is its ✕, no word over the pane.
-  const { kailuPaneHtml } = await import('../scripts/fantong-kailu.js');
-  const k = kailuPaneHtml('zh');
-  assert.match(k, /class="gshell-btn gshell-close" title="储物袋" aria-label="储物袋" data-pouch-pane="">✕<\/button><\/div>/);
-  assert.doesNotMatch(k, /class="act quiet pback"/);
+  // 开炉 docks in the 储物袋's own page (Hanli 11-03): no ✕ and no way back of its own — the pouch's 合上 is the way out.
+  const { kailuDockHtml } = await import('../scripts/fantong-kailu.js');
+  const k = kailuDockHtml('zh', { brief: { inputs: [] } });
+  assert.doesNotMatch(k, /gshell-close|data-pouch-pane|class="act quiet pback"/);
 });

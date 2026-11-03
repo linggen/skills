@@ -708,25 +708,24 @@ body.fighting .footrow { display: none; }
 .gkstamp { color: var(--faint); margin-right: 6px; }
 .gkstamp.done, .gkstamp.paid { display: inline-block; color: var(--seal); border: 1.5px solid var(--seal); border-radius: 4px; padding: 0 6px; font-family: var(--serif); transform: rotate(-4deg); background: var(--seal-soft); }
 .gkadds { color: var(--dim); }
-/* 喂饭桶 · 开炉 (fantong-kailu.js; Hanli 11-02): the 饭桶 and the bag on one page. Side by side on the Mac and a phone
-   held sideways — the 饭桶 (its canvas cropped to the pot while it fills, the three places, 灵石, 开炉) left, the bag's
-   tabs and one scrolling grid right; on a phone held upright, stacked: a compact 饭桶 on top, the grid, 开炉 held at
-   the bottom. While it chews and reveals (`busy`) the bag folds away and the canvas has the page, whole. */
-.ftk { display: grid; grid-template-columns: minmax(220px, 40%) minmax(0, 1fr); grid-template-areas: "pot bag" "go bag"; gap: 10px 16px; align-items: start; }
-.ftk-pot { grid-area: pot; min-width: 0; }
-.ftk-bag { grid-area: bag; min-width: 0; }
-.ftk-bag .ptabs { flex-wrap: wrap; overflow: visible; }
-.ftk-bag .pgrid { max-height: min(62vh, 560px); overflow-y: auto; padding: 2px; }
-.ftk-go { grid-area: go; display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
-/* The tile picked: what it is, and 放进饭桶 — under the 饭桶 on the Mac and sideways, over 开炉 in the bar a phone holds. */
-.ftk-info { align-self: stretch; display: flex; gap: 10px; align-items: flex-start; margin: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
-.ftk-info.empty { justify-content: center; text-align: center; }
-.ftk-info > img, .ftk-info > .noart { width: 64px; flex: none; aspect-ratio: 4 / 3; object-fit: contain; border-radius: 6px; background: var(--raised); }
-.ftk-info .pdbody { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 2px; }
-.ftk-info .acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-.ftk-info .poff { font-size: 12.5px; padding: 1px 8px; border-radius: 4px; background: var(--raised); color: var(--dim); }
+/* 喂饭桶 · 开炉 docked in the 储物袋's page (fantong-kailu.js kailuDockHtml; Hanli 11-03: one page, no 饭桶 tab): beside the
+   grid on the Mac and a phone held sideways, under it on a phone held upright (foldable; 开炉 held in sight at the bottom).
+   Its canvas is cropped to the pot while it fills; while it chews and reveals (`run`) the grid and the worn row fold
+   away and the canvas has the page, whole — at full colour: never the page's `.busy` (opacity .5; 「开炉画面是灰色的」).
+   Where it cannot be fed (`rest`: a cooldown, a day's cap; `none`: not his yet) it stands dimmed, with the reason. */
+.lu.pouch:has(.pmain.docked) { max-width: 1080px; }
+.pdockrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, 310px); gap: 16px; align-items: start; }
+.pmain.run .pdockrow { grid-template-columns: minmax(0, 520px); justify-content: center; }
+.ftdock { min-width: 0; display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.ftdock-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ftdock-head > b { font-family: var(--serif); font-size: 15px; }
+.ftdock-fold { display: none; padding: 1px 10px; font-size: 12.5px; }
+.ftdock.rest .ftdock-body, .ftdock.none .ftdock-body, .ftdock.none .ftk-go { opacity: .55; filter: saturate(.6); }
+.ftdock.none .ftdock-body { min-height: 0; }
+.ftdock .gshell-how { display: none; }
+.ftdock:not(.run) .gshell-slot { aspect-ratio: 720 / 680; overflow: hidden; } /* the pot, not the empty floor below it */
+.ftk-go { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; }
 .ftk-fire { min-width: 160px; font-size: 17px; letter-spacing: .2em; }
-.ftk:not(.busy) .gshell-slot { aspect-ratio: 720 / 680; overflow: hidden; } /* the pot, not the empty floor below it */
 .ftk-ctl { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
 .ftk-places { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .ftk-place { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 64px; padding: 4px; border: 1.5px dashed var(--line); border-radius: 10px; font: inherit; font-size: 12px; color: var(--faint); background: var(--surface); }
@@ -736,28 +735,27 @@ body.fighting .footrow { display: none; }
 .ftk-ls { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13.5px; }
 .ftk-ls .act { min-width: 34px; padding: 2px 8px; }
 .ftk-wait { text-align: center; margin: 0; }
-.ftk .ptile[draggable="true"] { cursor: grab; }
-.ftk.busy { grid-template-columns: minmax(0, 520px); grid-template-areas: "pot"; justify-content: center; }
-.ftk.busy .ftk-bag, .ftk.busy .ftk-go, .ftk.busy .ftk-ctl { display: none; }
+.ftdock.run .ftk-ctl, .ftdock.run .ftk-go, .ftdock.run .ftdock-fold { display: none; }
+/* What came out, said as the 储物袋's detail says it (Hanli 11-03: 「开出来的物品, 显示一下详细信息」). */
+.ftk-out { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--raised); }
+.ftk-outrow { display: flex; gap: 10px; align-items: flex-start; }
+.ftk-outrow > img, .ftk-outrow > .noart { width: 56px; flex: none; aspect-ratio: 4 / 3; object-fit: contain; border-radius: 6px; background: var(--surface); }
+.ftk-outrow .pdbody { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.pouch .ptile[draggable="true"] { cursor: grab; }
+.pdetail .ftoff { font-size: 12.5px; padding: 1px 8px; border-radius: 4px; background: var(--raised); color: var(--dim); }
 @media (max-width: 600px) and (orientation: portrait) {
-  .ftk { grid-template-columns: minmax(0, 1fr); grid-template-areas: "pot" "bag" "go"; }
-  .ftk-pot .gshell-how { display: none; } /* compact: the bar's name and ✕; how it plays is the canvas's own line */
-  .ftk:not(.busy) .ftk-pot .gshell-slot { width: min(100%, 30vh); margin: 0 auto; }
+  .pdockrow { grid-template-columns: minmax(0, 1fr); }
+  .ftdock-fold { display: inline-block; }
+  .ftdock.fold .ftdock-body, .ftdock.fold .ftk-out { display: none; }
+  .ftdock:not(.run) .gshell-slot { width: min(100%, 30vh); margin: 0 auto; }
   .ftk-places { gap: 4px; }
   .ftk-place { min-height: 52px; }
-  .ftk-bag .pgrid { max-height: none; overflow: visible; }
-  .ftk-go { position: sticky; bottom: 0; z-index: 2; gap: 6px; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--ground) 18%); }
-  .ftk-info { padding: 6px 8px; box-shadow: 0 -6px 16px rgba(0, 0, 0, .08); }
-  .ftk-info > img, .ftk-info > .noart { width: 52px; }
-  .ftk-info .about { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .ftk.busy .ftk-pot { display: block; }
+  .ftdock:not(.run) .ftk-go { position: sticky; bottom: 0; z-index: 2; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--surface) 18%); }
 }
 /* A phone held sideways (short): side by side still, the 饭桶's column narrower so the pot and its places fit the height. */
 @media (max-height: 700px) and (orientation: landscape) {
-  .ftk { grid-template-columns: minmax(180px, 34vh) minmax(0, 1fr); }
-  .ftk-pot .gshell-how { display: none; }
-  .ftk-bag .pgrid { max-height: 58vh; }
-  .ftk.busy .ftk-pot { max-width: 46vh; margin: 0 auto; }
+  .pdockrow { grid-template-columns: minmax(0, 1fr) minmax(200px, 34vh); }
+  .pmain.run .pdockrow { grid-template-columns: minmax(0, 46vh); }
 }
 .lurecipe { margin: 2px 0; font-size: 13.5px; }
 .luftgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; margin-top: 6px; }

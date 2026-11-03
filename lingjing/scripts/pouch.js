@@ -17,7 +17,7 @@ export const POUCH_WORDS = {
     deck: '牌组', deckNew: '新 {n}', empty: '储物袋是空的。', tabEmpty: '这里还没有东西。', pick: '点一样东西看看。',
     take: '服用', wear: '佩戴', study: '参悟', carry: '换上 · 多 {n} 格', use: '使用', sell: '卖 {n}', toss: '丢',
     tossAsk: '丢掉{name} ×{n}？丢了就找不回了。', tossYes: '丢掉', tossNo: '留着',
-    free: '剧情要用 · 不占格', fantong: '饭桶',
+    free: '剧情要用 · 不占格', fantong: '饭桶', ftPut: '放进饭桶',
     pouchSlot: '储物袋', pouchPlain: '随身储物袋', pouchCap: '{name} · {n} 格', pouchDup: '这样的储物袋已在身上，再用无益。',
   },
   en: {
@@ -27,7 +27,7 @@ export const POUCH_WORDS = {
     deck: 'Deck', deckNew: '{n} new', empty: 'The pouch is empty.', tabEmpty: 'Nothing here yet.', pick: 'Tap a thing to look at it.',
     take: 'Take', wear: 'Wear', study: 'Study', carry: 'Carry it · +{n} slots', use: 'Use', sell: 'Sell {n}', toss: 'Drop',
     tossAsk: 'Throw away {name} ×{n}? It is gone for good.', tossYes: 'Throw away', tossNo: 'Keep it',
-    free: 'The story needs it · takes no slot', fantong: 'Rice Bucket',
+    free: 'The story needs it · takes no slot', fantong: 'Rice Bucket', ftPut: 'Into the bucket',
     pouchSlot: 'Pouch', pouchPlain: 'Plain pouch', pouchCap: '{name} · {n} slots', pouchDup: 'You carry one like it already; another adds nothing.',
   },
 };
@@ -83,7 +83,7 @@ export function tileHtml(i, ctx, o = {}) {
   const on = i.worn || carriedKind(i, o.g), attr = o.attr ?? 'data-pouch-item', off = o.off ?? null, dead = off != null, tap = !dead || o.look;
   // A story thing's dashed tile says why on hover (the detail's own line, POUCH_WORDS.free).
   const free = i.free ? ` title="${esc((POUCH_WORDS[ctx.lang] ?? POUCH_WORDS.zh).free)}"` : '';
-  return `<button class="ptile${o.sel === i.id ? ' sel' : ''}${on ? ' worn' : ''}${i.free ? ' free' : ''}${i.glow ? ' glow' : ''}${dead ? ' off' : ''}"${free}${tap ? ` ${attr}="${esc(i.id)}"` : ' aria-disabled="true"'} aria-pressed="${o.sel === i.id}">
+  return `<button${o.drag ? ' draggable="true"' : ''} class="ptile${o.sel === i.id ? ' sel' : ''}${on ? ' worn' : ''}${i.free ? ' free' : ''}${i.glow ? ' glow' : ''}${dead ? ' off' : ''}"${free}${tap ? ` ${attr}="${esc(i.id)}"` : ' aria-disabled="true"'} aria-pressed="${o.sel === i.id}">
     ${artOf(i, ctx)}<span class="pname">${esc(i.name)}</span>${zhuanHtml(i.zhuan, ctx.lang)}${i.n > 1 ? `<b class="pn">×${esc(i.n)}</b>` : ''}${on && !off ? `<span class="pmark">${esc(ctx.words.worn)}</span>` : ''}${off ? `<span class="poff">${esc(off)}</span>` : ''}</button>`;
 }
 
@@ -165,6 +165,10 @@ function detailHtml(i, g, ctx, pw, ui) {
   }
   if (g.market && i.sell > 0 && !i.free) acts.push(`<button class="act quiet" data-sell="${esc(i.id)}">${esc(say(pw.sell, { n: i.sell }))}</button>`);
   if (!i.free && !i.worn) acts.push(`<button class="act quiet danger" data-toss="${esc(i.id)}">${esc(pw.toss)}</button>`);
+  // 放进饭桶 (the 饭桶 docked on this page, fantong-kailu.js potOff): the button where it may go in now, else the reason.
+  const ft = ui.ftOff ? ui.ftOff(i.id) : undefined;
+  if (ft === null) acts.push(`<button class="act" data-ft-put="${esc(i.id)}">${esc(pw.ftPut)}</button>`);
+  else if (ft) acts.push(`<span class="poff ftoff">${esc(pw.fantong)} · ${esc(ft)}</span>`);
   // 丢 asks here, on the pane — the page's own confirm, never window.confirm.
   const ask = ui.toss === i.id ? `<div class="ptoss" role="alertdialog"><span>${esc(say(pw.tossAsk, { name: i.name, n: i.n }))}</span>
     <button class="act danger" data-toss-yes="${esc(i.id)}">${esc(pw.tossYes)}</button><button class="act quiet" data-toss-no>${esc(pw.tossNo)}</button></div>` : '';
@@ -177,8 +181,9 @@ function detailHtml(i, g, ctx, pw, ui) {
 }
 
 /// The panel. `ui` is the page's own view of it: `tab`, `sel` (the item
-/// tapped), `toss` (the item asking 丢?), `pane` ('deck' | 'fantong' | 'panglu' | null).
-/// Its head is one row of segments — 储物袋 (the grid) · 饭桶 · 旁炉 · 牌组 — and one 合上 at
+/// tapped), `toss` (the item asking 丢?), `pane` ('deck' | 'panglu' | null), `ftOff(id)` (may it go into the docked
+/// 饭桶: null yes, else why), `ftRun` (the pot chews or reveals).
+/// Its head is one row of segments — 储物袋 (the grid, the 饭桶 docked in it) · 旁炉 · 牌组 — and one 合上 at
 /// the right; a segment is the way between them, so no pane carries a 「回储物袋」 of its own
 /// (Hanli 10-27: 「回储物袋这个按钮和其他几个关系不合理」). The 牌组 is its own panel, off its own chip.
 export function pouchHtml(ctx, ui = {}) {
@@ -186,22 +191,19 @@ export function pouchHtml(ctx, ui = {}) {
   const close = `<button class="act quiet" data-pouch-close>${esc(pw.close)}</button>`;
   if (!g) return `<div class="lu pouch"><header class="luhead"><b>${esc(pw.title)}</b>${close}</header><div class="loading">…</div></div>`;
   const p = g.pouch ?? { used: g.bag.length, cap: null };
-  // 饭桶 (fantong-kailu.js): the 开炉 game in the grid's place, its pane drawn by the page and handed in as `ctx.fantongPane`.
   // 人间功课 is the 事 book's (cards.js choreRow; Hanli 11-02: 「人间功课也在物品UI里显示, 应该在任务里吧. 任务里已经有了」).
-  const pane = ui.pane === 'deck' && g.cards?.length ? 'deck' : ui.pane === 'fantong' && g.fantong ? 'fantong'
-    : ui.pane === 'panglu' && g.panglu ? 'panglu' : null;
+  const pane = ui.pane === 'deck' && g.cards?.length ? 'deck' : ui.pane === 'panglu' && g.panglu ? 'panglu' : null;
   // 储物袋满了 stands in the panel too, over every pane: the 饭桶's outputs land while he is in here.
   const note = (ctx.gearNote ? `<div class="donote">${esc(ctx.gearNote)}</div>` : '') + fullOfferHtml(ctx.look?.full_offer, ctx, { swap: ui.offerSwap, tab: ui.tab });
   const used = p.cap != null ? `<span class="pused${p.used > p.cap ? ' over' : p.used >= p.cap ? ' full' : ''}">${esc(say(pw.used, p))}</span>` : '';
   const seg = (id, label, extra = '') => `<button role="tab" class="pseg${pane === id ? ' on' : ''}" data-pouch-pane="${id ?? ''}" aria-selected="${pane === id}">${esc(label)}${extra}</button>`;
-  const segs = [seg(null, pw.title, used), g.fantong ? seg('fantong', pw.fantong) : '',
+  const segs = [seg(null, pw.title, used),
     // 旁炉 (panglu.js): at the 丹房's side furnace once it is his (rules/panglu.mjs) — Look's `panglu`, the last batch the page's.
     g.panglu ? seg('panglu', (PANGLU_WORDS[ctx.lang] ?? PANGLU_WORDS.zh).chip) : '',
     // 牌组 — the last tab (Hanli, 2026-10-27: 「牌组合进储物袋吧, 放到功课后面」), 新 n on cards not yet played.
     g.cards?.length ? seg('deck', pw.deck, ctx.look?.cards_new?.length ? ` <b class="pnew">${esc(say(pw.deckNew, { n: ctx.look.cards_new.length }))}</b>` : '') : ''].join('');
   const head = `<header class="luhead phead"><div class="psegs" role="tablist">${segs}</div>${close}</header>`;
   const shell = (body) => `<div class="lu pouch" role="dialog" aria-label="${esc(pw.title)}">${head}${note}${body}</div>`;
-  if (pane === 'fantong') return shell(ctx.fantongPane ?? '');
   if (pane === 'panglu') return shell(pangluHtml(ctx.look?.panglu ?? null, ctx.pangluLast ?? null, ctx.lang, ctx.artBase ?? ''));
   if (pane === 'deck') return shell(`<section class="psec">${deckHtml(g, ctx)}</section>`);
   const over = p.cap != null && p.used > p.cap ? `<p class="small pover">${esc(say(pw.over, { n: p.used - p.cap }))}</p>` : '';
@@ -209,6 +211,10 @@ export function pouchHtml(ctx, ui = {}) {
   const dandu = ctx.look?.dandu ? `<p class="small pdandu">${esc(ctx.look.dandu.say)}</p>` : '';
   const worn = `<section class="psec">${wornHtml(g, ctx)}</section>`;
   const sel = g.bag.find((i) => i.id === ui.sel) ?? null;
-  const { tabs, grid } = bagGridHtml(g.bag, ctx, { tab: ui.tab, tile: (i) => tileHtml(i, ctx, { sel: ui.sel, g }) });
-  return shell(`${worn}<section class="psec">${over}${dandu}${tabs}<div class="pbody">${grid}${g.bag.length ? detailHtml(sel, g, ctx, pw, ui) : ''}</div></section>`);
+  const { tabs, grid } = bagGridHtml(g.bag, ctx, { tab: ui.tab, tile: (i) => tileHtml(i, ctx, { sel: ui.sel, g, drag: ui.ftOff?.(i.id) === null }) });
+  const bag = `<section class="psec pbag">${over}${dandu}${tabs}<div class="pbody">${grid}${g.bag.length ? detailHtml(sel, g, ctx, pw, ui) : ''}</div></section>`;
+  // 饭桶 (fantong-kailu.js kailuDockHtml): docked beside the grid, or under it on a phone held upright — never a tab of its
+  // own (Hanli 11-03); while the pot runs (`ui.ftRun`) the grid and the worn row fold away.
+  if (ctx.fantongDock) return shell(`<div class="pmain docked${ui.ftRun ? ' run' : ''}">${ui.ftRun ? '' : worn}<div class="pdockrow">${ui.ftRun ? '' : bag}${ctx.fantongDock}</div></div>`);
+  return shell(`${worn}${bag}`);
 }
