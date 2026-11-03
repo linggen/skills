@@ -57,7 +57,7 @@ test('before the 灵石 (the prologue\'s lock), a shop shows nothing to buy', ()
   const s = { ...newState(content, 'zh', NOW), place: 'shiao' };
   const l = look(s, content, ctx);
   assert.deepEqual(l.place?.shelf ?? [], []);
-  assert.deepEqual(ids(at('shiao')).sort(), ['duan-dao', 'ganliang', 'straw-cloak', 'tili-ka'], 'the pedlar, once he has stones (the test-only 体力卡 among them, doc/status.md § Before launch)');
+  assert.deepEqual(ids(at('shiao')).sort(), ['duan-dao', 'ganliang', 'straw-cloak'], 'the pedlar, once he has stones');
 });
 
 test('冀\'s errands keep the story\'s time: the city before the 漳水, the city after', () => {

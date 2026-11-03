@@ -1,6 +1,6 @@
 // rules/travel.mjs — Story, travel, trade, language — and Ling driving the game.
 // Part of the rules engine; rules.mjs is its one door.
-import { dayKey, fill, pick, staminaMax } from '../state.mjs';
+import { dayKey, fill, pick } from '../state.mjs';
 import { langWas } from './language.mjs';
 import { tierRank } from './arms.mjs';
 import { gainCard, ownedCards } from './cards.mjs';
@@ -19,7 +19,6 @@ import { bagFull, pouchBrief, roomFor, storyKeep } from './pouch.mjs';
 import { GEAR_SLOTS, armSlot, fitWear, herKey, herSlot, wornCount } from './wear.mjs';
 import { findFragment } from './memories.mjs';
 import { danduBrief, eatPill } from './dandu.mjs';
-import { resetCooldowns } from './events.mjs';
 
 /* ── Story, travel, language ── */
 
@@ -299,18 +298,6 @@ export function trade(state, content, ctx, args) {
       if (s.bag[item.id] <= 0) delete s.bag[item.id];
       s.pouch = [...(s.pouch ?? []), item.id];
       return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), pouch: pouchBrief(content, s) } };
-    }
-    // `stamina: "full"` (the test-only 体力卡): the pool full now, his rest over; `reset: "cooldowns"` clears every
-    // cooldown the world keeps (rules/events.mjs resetCooldowns — the day's counts stay).
-    if (e.stamina) {
-      s.bag[item.id] = held - 1;
-      if (s.bag[item.id] <= 0) delete s.bag[item.id];
-      const now = ctx.now ?? new Date(), before = s.stamina;
-      s.stamina = staminaMax(content, s);
-      s.stamina_at = now.toISOString();
-      delete s.resting;
-      const reset = e.reset ? resetCooldowns(content, s, now) : null;
-      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), stamina: { now: s.stamina, gained: Math.max(0, s.stamina - (before ?? 0)) }, ...(reset ? { reset } : {}) } };
     }
     if (e.progress) {
       // 圆满 (Hanli 11-03: 「修为圆满, 聚气丹无法起作用」): a pill would pay nothing and still owe 丹毒 — kept in the bag,

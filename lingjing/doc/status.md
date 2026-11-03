@@ -12,6 +12,7 @@ None.
 
 ## Done lately
 
+- 11-03 — **体力卡 gone** (Hanli 11-03: 「体力卡删掉」, for 2.0; tests/tili-ka.test.mjs). Removed: the item, its price, the four shelves, the `stamina`/`reset` effect, and the 重置冷却 hook (events.mjs `resetCooldowns` and its 7 owners; nothing else used them). A held one drops from the bag on load (state.mjs fitWorld `RETIRED_ITEMS`). levels/numbers.json regenerated; arcade saves unchanged.
 - 11-03 — **A board's own 跳过 is a skip; a told word board stays on its card** (Hanli 11-03: 「修一下吧」; tests/own-skip.test.mjs).
   - Why it paid: the word boards' 跳过 (riddleOutcome `skipped`) and ropekit's ended as wins, and the page sent every `won` end to `win`, then `task done` or Ling's Resolve.
   - Fix: stuck.js `ownSkip`. The page sends a skip through `boardSkipped`: 收手 for a board he chose, `task skip` otherwise (a story board pays its `gives` only and comes back another day; an errand's board takes its cut). The rules lock: `win` with grade `skipped` is that same skip. mount.js and the phone's host mark the skip.
@@ -279,7 +280,6 @@ None.
 
 ## Before launch: delete
 
-- The 体力卡 (`tili-ka`, items.json `test: true`): its item, its price (balance.json `prices`), the four shelves' `goods` (worlds/jiuding/places/xu.json: zhishi, fangshi, yanwu's visitor, shiao), tests/tili-ka.test.mjs. The `stamina` / `reset` effect and rules/events.mjs `resetCooldowns` may stay (nothing else uses them) or go with it.
 - Review the 体力 numbers again for launch (rewards.json stamina, 2026-11-02: max 100 · rest 100 · 1 体力 ≈ 1 分钟 · no clock refill · 闭关 fills it in 1 h · away ≥10 min counts as 闭关 for 体力 · no quest pays it; balance.json model.minutes.tide 5 is an agent's pick). The morning's 150 · 1 h · 150 · 30 and the old 100 · 5 h · 100 · 20 are both gone. Then `node tools/balance.mjs` and a hand-played sitting (does 100 feel like ~100 minutes?).
 
 ## Partly built (【在建】 in design.md)

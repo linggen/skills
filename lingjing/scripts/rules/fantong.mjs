@@ -19,7 +19,6 @@ import { huiNow, huiOrder } from './hui.mjs';
 import { isLocked } from './locks.mjs';
 import { freeSlot, hasFound, pouchBrief, stow, fullLine } from './pouch.mjs';
 import { LINGSHI, familyOfKind, kindOf, odds, roll, tierOfItem } from './fantong-roll.mjs';
-import { onCooldownReset } from './events.mjs';
 
 export { GRADES, familyOf, gradeWeights, kindOf, powerOf, tierOfItem, worthOf } from './fantong-roll.mjs';
 
@@ -132,14 +131,6 @@ function nextAt(t, state, now) {
   }
   return next > now.getTime() ? new Date(next) : null;
 }
-/* 重置冷却 (rules/events.mjs resetCooldowns): the bucket hungry again — the last feed's time let go; the day's
-   feeds (`day`, `today`, the `per_day` limit) are a day limit, kept. */
-onCooldownReset('fantong', (content, state) => {
-  if (!state.fantong?.at) return false;
-  const { at, ...rest } = state.fantong;
-  state.fantong = rest;
-  return true;
-});
 const ZH_N = ['', '一', '两', '三', '四', '五', '六', '七', '八', '九', '十', '十一', '十二'];
 /* How long, in the world's words: 刻 (a quarter hour) under two hours, else 时辰. */
 export function waitWords(ms, lang) {

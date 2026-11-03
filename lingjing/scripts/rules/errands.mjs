@@ -658,8 +658,6 @@ const EFFECT_BRIEF = {
   fight: e => ({ fight: { ...(e.fight.heal ? { heal: e.fight.heal } : {}), ...(e.fight.mana ? { mana: e.fight.mana } : {}) } }),
   pouch: e => ({ pouch: e.pouch }),
   waive: e => ({ waive: e.waive }),
-  // The test-only 体力卡: the pool full at once, and (`reset`) every cooldown cleared (travel.mjs trade use).
-  stamina: e => ({ stamina: e.stamina, ...(e.reset ? { reset: e.reset } : {}) }),
   atk: (e, content, lang) => ({ atk: e.atk, ...(e.root ? { root: e.root, root_name: ELEMENT_NAME(content, lang, e.root) } : {}) }),
   def: e => ({ def: e.def }),
   ward: (e, content, lang) => ({ ward: e.ward, wards: Object.entries(e.ward).map(([el, n]) => ({ id: el, name: ELEMENT_NAME(content, lang, el), n })) }),

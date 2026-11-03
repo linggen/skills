@@ -52,36 +52,3 @@ export function eventKeep(state, id, fields) {
   return state.events[id];
 }
 
-/* ── 重置冷却: every cooldown cleared at once (the test-only 体力卡, items.json `effect.reset: "cooldowns"` — Hanli
-   2026-11-02: 「让体力卡重置冷却?」) ──
-   One hook, nothing named here: an owner of a cooldown registers how its own clock is cleared, and
-   resetCooldowns walks them all. A clear mutates `state`, answers truthy when it cleared something, and leaves the
-   day's counts (a day limit — 对对子's three, 问卦's one, the 饭桶's `per_day`, an event's paid-in-full `n` — is no
-   cooldown). Registered: `events` (below), `pool-rest` (world.mjs), `fantong` (rules/fantong.mjs), `breakthrough`
-   (rules/breakthrough.mjs), `shouchao-clock` (rules/shouchao.mjs, its clock from before rules/events.mjs).
-   A new cooldown registers itself where it lives: onCooldownReset('<name>', (content, state, now) => cleared). */
-const RESETS = new Map();
-export function onCooldownReset(name, clear) {
-  RESETS.set(name, clear);
-}
-/* Every registered cooldown cleared now. Mutates `state`; answers the names that cleared something. */
-export function resetCooldowns(content, state, now) {
-  const cleared = [];
-  for (const [name, clear] of RESETS) if (clear(content, state, now)) cleared.push(name);
-  return cleared;
-}
-/* The cooldown names registered (tests, and a new owner checking it is in). */
-export const cooldownOwners = () => [...RESETS.keys()];
-
-/* The world's events: each up now. The record keeps only the day's count (`day`, `n`); its clock and its own
-   progress (妖兽出没's `taken` — so a fresh batch stands now) are let go. A record that is missing is left missing. */
-onCooldownReset('events', (content, state) => {
-  let any = false;
-  for (const id of Object.keys(content.balance?.events ?? {})) {
-    const rec = eventRec(state, id);
-    if (!rec) continue;
-    state.events = { ...state.events, [id]: { day: rec.day ?? null, n: rec.n ?? 0 } };
-    any = true;
-  }
-  return any;
-});

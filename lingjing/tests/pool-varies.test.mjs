@@ -60,7 +60,7 @@ test('the 灯谜 comes back once its deal carries a riddle pool (`deal.pool`)', 
   assert.ok(everIn(pooled, at('zhishi', { pool_won: { [RIDDLE]: START.toISOString() } }), RIDDLE));
 });
 
-test('a board counted done is stamped won, apart from the 体力卡\'s cooldowns; a loss is not', () => {
+test('a board counted done is stamped won, apart from the draw\'s rest; a loss is not', () => {
   const s = at('zhishi'), now = new Date(2026, 9, 21, 9);
   const next = structuredClone(s);
   stampPlay(PLAY_KINDS, content, s, next, 'task', { action: 'done', id: RIDDLE }, now);

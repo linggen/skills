@@ -271,7 +271,7 @@ export const staminaLimited = content => content.rewards?.stamina?.limit !== fal
 
 /* 体力是控制单次游戏时长的: 1 体力 ≈ 1 分钟 (Hanli 2026-11-02). It comes back in 闭关 only — the real one
    (rules/seclusion.mjs) or time away (`refill.away_min` with no player verb counts as 闭关 for 体力 alone,
-   rules.mjs awayFit) — and by the 体力卡; never by the clock while he plays, unless a world declares
+   rules.mjs awayFit); never by the clock while he plays, unless a world declares
    `refill.clock_hours`. One rate for both: the pool's top in `refill.seclusion_hours`, linear on real minutes. */
 const refillOf = q => q.refill ?? {};
 const HOUR_MS = 3600_000;
@@ -794,6 +794,9 @@ function renamedCards(content, state) {
    断案's cases (both 2026-10-27); the player-asks 二十问's day (`twenty`, 2026-10-28 — 录's `animals` stay); the 秘境
    rerun's run and its clocks (`rerun`, `reruns`, 2026-10-28 — runLeft lets an open run go first). */
 const RETIRED_KEYS = ['mishi', 'mishi_offer', 'mishi_log', 'cases', 'twenty', 'rerun', 'reruns'];
+/* Things the world no longer has, dropped from the bag on load: the test-only 体力卡 (Hanli 11-03: 「体力卡删掉」). */
+export const RETIRED_ITEMS = ['tili-ka'];
+const bagWithout = bag => Object.fromEntries(Object.entries(bag).filter(([id]) => !RETIRED_ITEMS.includes(id)));
 
 /* 刷副本 retired 2026-10-28 (Hanli: 「按你说的来」): a save that stood inside a run of the 秘境's outer rooms leaves it as
    leaving would have — the fight on a run's beast let go unsettled (nothing paid, nothing lost), the room's fight record
@@ -881,6 +884,7 @@ export function fitWorld(saved, content) {
     ...(state.seed == null ? { seed: state.name && state.name !== hero?.name ? state.name : (state.created ?? '') } : {}),
     // Each other line's place (rules/lines.mjs): one never held starts at zero (v14).
     ...fitLines(content, state),
+    ...(Object.keys(state.bag ?? {}).some(id => RETIRED_ITEMS.includes(id)) ? { bag: bagWithout(state.bag) } : {}),
   };
   // A scene given a board after the save walked into it (the opening's beats, 2026-10-14):
   // its tasks are offered now, as entering it would have — a save standing there is never shut out.

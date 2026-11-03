@@ -31,7 +31,7 @@ import { hashOf } from './travel.mjs';
 import { beatOf, passed, sceneOf } from './world.mjs';
 import { keyDrop } from './mijing.mjs';
 import { TIDES } from '../games/tide.js';
-import { eventDone, eventRec, eventShare, eventWait, onCooldownReset } from './events.mjs';
+import { eventDone, eventRec, eventShare, eventWait } from './events.mjs';
 
 const tideTask = content => (content.tasks?.tasks ?? []).find(t => t.shouchao) ?? null;
 
@@ -50,15 +50,6 @@ function withClock(state, t) {
   const day = state.shouchao?.day;
   return { ...state, events: { ...state.events, [EVENT]: { at, day: day?.key ?? null, n: day?.count ?? 0 } } };
 }
-/* 重置冷却 (rules/events.mjs resetCooldowns): a save whose clock is still the old one (withClock) comes up now too —
-   its day's count carried onto the event's record, its hour let go. A record of its own is the `events` clear's. */
-onCooldownReset('shouchao-clock', (content, state) => {
-  if (eventRec(state, EVENT)) return false;
-  const rec = eventRec(withClock(state, tideTask(content)), EVENT);
-  if (!rec?.at) return false;
-  state.events = { ...state.events, [EVENT]: { day: rec.day, n: rec.n } };
-  return true;
-});
 /* Milliseconds until the tide comes again (0: it is up now): `every_h` from the last night counted. */
 export const tideWait = (content, state, now) => eventWait(content, withClock(state, tideTask(content)), EVENT, now);
 const cooling = (content, state, now) => tideWait(content, state, now) > 0;

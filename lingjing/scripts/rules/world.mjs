@@ -1,6 +1,6 @@
 // rules/world.mjs — Reading the state, and the places: the province as a map.
 // Part of the rules engine; rules.mjs is its one door.
-import { eventRec, eventWait, onCooldownReset } from './events.mjs';
+import { eventRec, eventWait } from './events.mjs';
 import { dayKey, pick, seedOf, staminaCost } from '../state.mjs';
 import { itemBrief, itemOf } from './errands.mjs';
 import { meetBrief, meetHere } from './road.mjs';
@@ -380,17 +380,6 @@ function poolRestLeft(content, state, place, now) {
   const rest = (poolOf(content, place)?.rest ?? content.balance?.cooldowns?.pool_rest_min ?? POOL_REST_MIN) * 60000;
   return Math.max(0, Date.parse(rec.at) + rest - now.getTime());
 }
-/* 重置冷却 (rules/events.mjs resetCooldowns): every pool awake — each hunt's run of wins counted from naught (the beasts
-   it remembers, `last`, and the day's fights kept). An event's pool is the event's own (the `events` clear). */
-onCooldownReset('pool-rest', (content, state) => {
-  let any = false;
-  for (const [key, rec] of Object.entries(state.duels ?? {})) {
-    if (!key.startsWith(huntKey('')) || !rec?.streak) continue;
-    state.duels = { ...state.duels, [key]: { ...rec, streak: 0 } };
-    any = true;
-  }
-  return any;
-});
 const poolResting = (content, state, place, now) => poolRestLeft(content, state, place, now) > 0;
 /* Look's `waits` row for a pool at rest where he stands: its name, the world's line (the pool's `rest_say`, else
    creatures.json `hunt.rest_say`) and the minutes left — the page draws it waiting, never a blank stretch. */

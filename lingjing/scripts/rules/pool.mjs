@@ -13,7 +13,6 @@
 import { dayKey, seedOf } from '../state.mjs';
 import { placeOf } from './world.mjs';
 import { yiWeightOfEntry } from './fortune.mjs';
-import { onCooldownReset } from './events.mjs';
 
 export const DRAW = 3;
 /* The weights (agent's pick, Hanli delegated 11-02): not played in a day ×2, its 时辰's lean ×3, where he stands ×2,
@@ -36,7 +35,7 @@ export const BRANCH = ['zi', 'chou', 'yin', 'mao', 'chen', 'si', 'wu', 'wei', 's
 export const playedAt = (state, id) => (state.pool_played?.[id] ? new Date(state.pool_played[id]) : null);
 
 /* A verb that plays a pool member: its id stamped on the save that verb wrote — and, a win, on `pool_won` (kept apart:
-   the 体力卡 clears `pool_played`, never what he has won). Mutates `next`. */
+   `pool_played` is the draw's rest, `pool_won` what he has won). Mutates `next`. */
 export function stampPlay(kinds, content, state, next, verb, args, now) {
   for (const k of kinds) {
     const id = k.pool?.plays?.(verb, args, content, state);
@@ -126,9 +125,3 @@ export function drawPool(content, state, rows, kinds, now) {
   return { shichen: sc, drawn: drawn.map(d => ({ ...d.e, ...(d.played ? { played: true } : {}) })), members: new Set(members.map(e => e.id)), open, retired };
 }
 
-/* The 体力卡 (test only) clears the pool's cooldowns too: every game played comes back to the draw at once. */
-onCooldownReset('pool-played', (content, state) => {
-  if (!state.pool_played || !Object.keys(state.pool_played).length) return false;
-  delete state.pool_played;
-  return true;
-});

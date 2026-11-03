@@ -113,14 +113,6 @@ test('a real 闭关 on the command line: the pool rises while it runs and is ful
   } finally { done(); }
 });
 
-test('the 体力卡 still fills the pool at once', () => {
-  const s = player({ stamina: 0, resting: true, bag: { 'tili-ka': 1 } });
-  const r = VERBS.trade(s, content, { now: T0, quests: [] }, { action: 'use', id: 'tili-ka' });
-  assert.equal(r.result.ok, true, JSON.stringify(r.result));
-  assert.equal(r.state.stamina, Q.max);
-  assert.equal(r.state.resting, undefined);
-});
-
 test('an empty pool: 闭关 is one tap away — the tray\'s card says so, and behind a story gate it stands too', () => {
   const l = look(player({ stamina: 0, resting: true }), content, { now: T0, quests: [] });
   assert.equal(l.stamina.empty, true);
