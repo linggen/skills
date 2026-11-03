@@ -3988,7 +3988,7 @@
     "mode": "pve",
     "you": {
      "tier": "foundation",
-     "step": 1,
+     "step": 0.3333333333333333,
      "root": "wood",
      "deck": [
       "mutang",
@@ -4110,7 +4110,7 @@
     "mode": "pve",
     "you": {
      "tier": "foundation",
-     "step": 1,
+     "step": 0.3333333333333333,
      "root": "wood",
      "deck": [
       "mutang",
@@ -4260,7 +4260,7 @@
     "mode": "pve",
     "you": {
      "tier": "foundation",
-     "step": 1,
+     "step": 0.3333333333333333,
      "root": "wood",
      "deck": [
       "mutang",
@@ -4407,7 +4407,7 @@
     "mode": "pve",
     "you": {
      "tier": "foundation",
-     "step": 1,
+     "step": 0.3333333333333333,
      "root": "wood",
      "deck": [
       "mutang",
@@ -4554,7 +4554,7 @@
     "mode": "pve",
     "you": {
      "tier": "foundation",
-     "step": 1,
+     "step": 0.3333333333333333,
      "root": "wood",
      "deck": [
       "mutang",
