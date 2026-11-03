@@ -584,6 +584,22 @@ export function lintMade(scene, madeScenes, content) {
 export { RHYTHM_CAP } from './rhythm.mjs';
 export const warnings = (content, opts = {}) => rhythm(content, opts);
 
+/* A board's pay is its played row's mechanic (rules/playpay.mjs playedRow; live 2026-11-02: `cliff-shangya` paid as the
+   打地鼠 its game had been replaced from). Rows that share a task in different mechanics are refused, but for the ones it
+   no longer plays (`replaced`, `cut`) and the games its `alt` plays on another device; and the task's own `game` must be
+   a live row of its own, so the pay never falls back to the first row by task. */
+function lintPlayedRows(content, bad) {
+  const rows = content.games?.games ?? [], tasks = new Map(content.tasks.tasks.map(t => [t.id, t]));
+  const by = new Map();
+  for (const g of rows) if (g.task && !g.replaced && !g.cut) by.set(g.task, [...(by.get(g.task) ?? []), g]);
+  for (const [id, live] of by) {
+    const t = tasks.get(id), alts = new Set((t?.alt ?? []).map(a => a.game));
+    const own = live.filter(g => !alts.has(g.id) || g.id === t?.game);
+    if (new Set(own.map(g => g.mechanic)).size > 1) bad(`games ${id}`, `rows of different mechanics share the task: ${own.map(g => `${g.id} (${g.mechanic})`).join(', ')} — mark the old one \`replaced\`, or make it the task's \`alt\``);
+    if (t?.game && live.length && !live.some(g => g.id === t.game)) bad(`games ${id}`, `the task plays ${t.game}, but no live row of it names the task`);
+  }
+}
+
 export function lint(content) {
   const problems = [];
   const bad = (where, msg) => problems.push(`${where}: ${msg}`);
@@ -597,6 +613,7 @@ export function lint(content) {
   lintGongke(content, bad);
   lintFrom(content, bad);
   lintArts(content, bad);
+  lintPlayedRows(content, bad);
   bilingual(content, 'content', bad);
   for (const [part, node] of Object.entries(content)) {
     if (!['dir', 'world', 'names'].includes(part)) refusedNames(node, content, part, bad);

@@ -2068,7 +2068,9 @@ async function settleWin(taskId, won, grade) {
   if (isTale(taskId)) return taleWon(taskId);
   if (isArcadeBoard(taskId)) return arcadeWon(taskId, grade);
   const stars = won?.state?.stars; // a small game's stars (喂饼's corners), kept on the save
-  const r = await write('win', { id: taskId, ...(grade ? { grade } : {}), ...(Number.isFinite(stars) ? { stars } : {}) }).catch(failed);
+  // The game it was played as (caps.js chooseBoard: an `alt` on a device with a camera), so it pays by that row (rules/playpay.mjs playedRow).
+  const row = look?.tasks?.find((t) => t.id === taskId)?.game ?? null;
+  const r = await write('win', { id: taskId, ...(grade ? { grade } : {}), ...(Number.isFinite(stars) ? { stars } : {}), ...(row ? { row } : {}) }).catch(failed);
   // Refused (not here, not open), the win is kept on the board and sent again
   // when it can count — never told to Ling as a win he cannot pay (2026-09-23:
   // 洛书 solved at 邺城 showed solved at 碣石 and was never paid). Said once;

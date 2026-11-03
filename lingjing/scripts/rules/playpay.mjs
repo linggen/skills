@@ -14,8 +14,23 @@
 import { dayKey, staminaCost } from '../state.mjs';
 import { sealedOf } from './world.mjs';
 
-const kindOf = (content, id, task) => (content.games?.games ?? []).find(g => g.task === id)?.mechanic
-  ?? (content.games?.games ?? []).find(g => g.id === task?.game && !g.replaced)?.mechanic ?? null;
+/* The row of games.json actually played for a board, and so its mechanic (its 灵石 and minutes): `row` — the game the page
+   played it as (an `alt`'s, a games.json row id, or one of its levels' ids) — else the task's own `game`; then the task's
+   live row (not `replaced`, not `cut`); the first row naming the task last. Several rows share a task — the ones a board
+   was played as before its game was replaced (live 2026-11-02: `cliff-shangya`, 几何冲刺 now, paid as the 打地鼠 it was) —
+   so the first row by task is never trusted alone. */
+/* The row a name points at for this board: a row naming the task by its id, or by one of its levels' ids; else the game's
+   own live row. Null for a name no row holds. */
+export function namedRow(content, id, name) {
+  if (!name) return null;
+  const all = content.games?.games ?? [], rows = all.filter(g => g.task === id);
+  return rows.find(g => g.id === name) ?? rows.find(g => (g.levels ?? []).some(l => l.id === name)) ?? all.find(g => g.id === name && !g.replaced && !g.cut) ?? null;
+}
+export function playedRow(content, id, task, row = null) {
+  const rows = (content.games?.games ?? []).filter(g => g.task === id);
+  return namedRow(content, id, row) ?? namedRow(content, id, task?.game) ?? rows.find(g => !g.replaced && !g.cut) ?? rows[0] ?? null;
+}
+const kindOf = (content, id, task, row = null) => playedRow(content, id, task, row)?.mechanic ?? null;
 
 /* The 修为 the layer he stands on asks (`need` when a model plays it), else its threshold — the reference's yardstick only. */
 export function needOf(content, state) {
@@ -93,10 +108,11 @@ const playsToday = (state, id, now) => (state.plays?.day === dayKey(now) ? state
 
 /* The grant a board's win is worth now, or null where the world declares no play pay. `stars`: the win's; `first`: a story
    board's first clear (+50%). A board costs its 体力 (`game`); its kind names its 灵石 and the minutes the reference reads. */
-export function playGrant(content, state, id, task, now, stars = null, { first = false } = {}) {
+export function playGrant(content, state, id, task, now, stars = null, { first = false, row = null } = {}) {
   const pp = content.balance?.play_pay;
   if (!pp) return null;
-  const kind = kindOf(content, id, task);
+  // The row he played it as (`row`, else the one the win wrote down: tasks.mjs win `play_rows`).
+  const kind = kindOf(content, id, task, row ?? state?.play_rows?.[id] ?? null);
   const minutes = pp.minutes?.[kind] ?? pp.minutes?.default ?? 0;
   const star = stars == null ? 1 : pp.stars?.[String(stars)] ?? 1;
   // Inside a sealed instance (world.mjs sealedOf: the 秘境 of 古五) the room's boards are all there is to play: they replay

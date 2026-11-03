@@ -1,6 +1,6 @@
 // rules/tasks.mjs — Tasks and quests: boards, errands handed in, win, duel, 论道.
 // Part of the rules engine; rules.mjs is its one door.
-import { fightReplay, hauntPlayId, playCounted, playGrant } from './playpay.mjs';
+import { fightReplay, hauntPlayId, namedRow, playCounted, playGrant } from './playpay.mjs';
 import { festivalDone } from './festival.mjs';
 import { climbWon } from './climb.mjs';
 import { battle } from '../battle.js';
@@ -360,6 +360,11 @@ export function win(state, content, ctx, args) {
   // This win's own ★, for its pay by the minutes (rules/playpay.mjs): the best ever is the record, this one the pay.
   if (stars != null) s.play_stars = { ...s.play_stars, [id]: stars };
   else if (s.play_stars?.[id] != null) { const { [id]: _, ...rest } = s.play_stars; s.play_stars = rest; }
+  // The game it was played as (`row`: the page's — an `alt` on a device with a camera, a games.json row or level id), for
+  // its pay by that row's mechanic (rules/playpay.mjs playedRow). A row the task has no such game for is not kept.
+  const row = args.row == null ? null : String(args.row);
+  if (row && namedRow(content, id, row)) s.play_rows = { ...s.play_rows, [id]: row };
+  else if (s.play_rows?.[id] != null) { const { [id]: _, ...rest } = s.play_rows; s.play_rows = rest; }
   // A board that climbs (rules/climb.mjs): the level he was dealt is behind him; the next deal is the one after.
   climbWon(s, content.tasks.tasks.find(t => t.id === id));
   // A board won gives the card its book action is (cards.json `from: {kind: 'beat', task}` —
