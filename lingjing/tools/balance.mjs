@@ -388,10 +388,11 @@ export function play(content, player, { model = content.balance.model, ladder = 
         const sealed = inside();
         if (sealed) {
           if (roomPlays.day !== day) roomPlays = { day, ids: {} };
-          const replay = content.balance.play_pay?.replay ?? [1], floor = replay.at(-1);
+          // No falloff inside (play_pay.replay_sealed, Hanli approved 2026-11-02): the room's boards are all there is.
+          const replay = content.balance.play_pay?.replay_sealed ?? content.balance.play_pay?.replay ?? [1], floor = replay.at(-1);
           const plays = { day: dayKey(NOW), ids: roomPlays.ids };
           const best = roomBoards(sealed).map(t => ({ t, g: playGrant(content, { ...s, need: need(), plays }, t.id, t, NOW, model.story_stars ?? 2) }))
-            .filter(x => x.g && replay[Math.min(roomPlays.ids[x.t.id] ?? 0, replay.length - 1)] > floor)
+            .filter(x => x.g && (replay.length === 1 || replay[Math.min(roomPlays.ids[x.t.id] ?? 0, replay.length - 1)] > floor))
             .sort((a, b) => (b.g.progress ?? 0) - (a.g.progress ?? 0))[0];
           if (!best || left < best.g.minutes || !spend(C.game)) break;
           left -= best.g.minutes;

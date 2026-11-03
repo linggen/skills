@@ -67,7 +67,12 @@
    "refuse": {
     "zh": "须子还没扎完那五扇门——推着它们，走一圈。",
     "en": "The roots are not through the five doors yet — push them round once."
-   }
+   },
+   "grant": {
+    "table": "gate",
+    "progress": 760
+   },
+   "_gate": "2026-11-02 (agent's pick, Hanli approved: 「可以, 按你说的做」): the 秘境's story 修为 lump on the way into wm-xiqi (its stage quest waits on 圆满, and inside the sealed 秘境 only the 石室's boards pay, ~1 修为 a minute). It lands while he is held at the mark (ladder caps.hui.h07 holds), so it carries over as stretch and the gate layer still asks play: about 1.75 days at his pace a gate (tools/balance.mjs, his 68 min a day). balance.json pay.gate."
   }
  ],
  "show": [

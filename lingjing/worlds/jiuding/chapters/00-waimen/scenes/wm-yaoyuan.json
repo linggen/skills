@@ -47,8 +47,9 @@
    },
    "means": "faces the bristling zheng without striking, shows empty hands and sets the radish down before it; it eats, falls asleep in front of him, and joins him",
    "grant": {
-    "table": "scene",
-    "cast": "zheng"
+    "table": "gate",
+    "cast": "zheng",
+    "progress": 210
    },
    "ledger": [
     {
@@ -73,7 +74,8 @@
     "zh": "它扒拉到第二株，停了下来，鼻子朝西边抽了两抽。风打了个转，它闻着了。它盯着他藏身的那丛灵草，身子往下一伏，五条尾巴一齐竖了起来，嘴里「咔、咔、咔」地响，又急又硬。小满心口跟着一紧，便让肚子一落，落得长长的，把那一紧按了下去，这才慢慢地站起身来，两只手摊开，让它瞧见他手里什么也没有——除了一根萝卜。他走了三步，弯下腰，把萝卜轻轻放在它面前的地上，退了回去，又蹲下了。\n\n它停下嘴，看了看萝卜，又看了看他。那个眼神，小满到老都记得：头一层是「你在侮辱谁？」，第二层是「本兽吃的是灵草」，第三层——第三层他当时没看懂，后来才懂了，那一层是：「……这是给我的？」它盯着萝卜看了很久很久。然后，它把萝卜吃了。\n\n它吃萝卜，跟吃灵草不一样。吃灵草，它是抱着啃，啃一口，四下里张望一眼，像怕人抢；吃萝卜，它是趴在地上，两只前爪按着，一口一口，吃得很慢，连萝卜缨子都吃了。吃完了，打了个又长又响的嗝，就地一歪，五条尾巴把自己团团围住，睡着了——没跑，当着一个生人的面。\n\n小满蹲在那里，一动也不敢动。这东西偷了一年的灵草，越偷越饿；一根萝卜，不值一文钱，是人家给它的，它倒吃饱了。他想起了马小宝睡着了还在食盒里摸的那一只手，心口有一点发凉。",
     "en": "It pawed over to a second herb and stopped, its nose twitching twice towards the west. The wind had turned, and it had his scent. It stared at the clump of herbs where he was hiding and crouched low, all five tails standing up together, tock, tock, tock in its mouth, fast and hard. Xiaoman's chest tightened, so he let his belly drop, a long drop, and pressed the tightness down. Only then did he slowly stand up, both hands open, letting it see there was nothing in them, except a radish. He took three steps, bent down, laid the radish gently on the ground in front of it, stepped back and squatted down again.\n\nIt stopped eating and looked at the radish, then at him. That look, Xiaoman remembered until he was old. The first layer of it was \"Who do you think you're insulting?\" The second was \"This beast eats spirit herbs.\" The third, the third he didn't understand at the time; he understood only later. That layer was: \"...This is for me?\" It stared at the radish for a long, long time. Then it ate the radish.\n\nThe way it ate the radish wasn't the way it ate spirit herbs. With spirit herbs it hugged them and gnawed, a bite, a look all round, as if afraid someone would snatch them away. The radish it ate lying down on the ground, both front paws holding it, bite by bite, very slowly, and it even ate the leaves. When it had finished it gave a long, loud burp, toppled over on the spot, wrapped its five tails round itself and went to sleep. It didn't run. In front of a stranger.\n\nXiaoman squatted there not daring to move. This thing had been stealing spirit herbs for a year, and the more it stole the hungrier it got; a radish, not worth a copper, given to it by somebody, and it was full. He thought of Ma Xiaobao's hand that went on feeling around in the food box even when he was asleep, and his chest went a little cold."
    },
-   "_tame": "狰是一根萝卜收的，不是打的 (cards.md § 1, 第四回「把一根萝卜放在它面前」)：没有斗法，grant.cast 照旧。"
+   "_tame": "狰是一根萝卜收的，不是打的 (cards.md § 1, 第四回「把一根萝卜放在它面前」)：没有斗法，grant.cast 照旧。",
+   "_gate": "2026-11-02 (agent's pick, Hanli approved: 「可以, 按你说的做」): a story 修为 lump on the way into wm-chaifang, whose stage quest waits on 圆满 — the gate layer's need less about a day and a half of play at his pace (~174 修为 a day, his 11-02 replayed), so the gate is ground, never jumped (the lint: a gate lump stays under the layer it leads to; balance.json pay.gate)."
   }
  ],
  "story": {

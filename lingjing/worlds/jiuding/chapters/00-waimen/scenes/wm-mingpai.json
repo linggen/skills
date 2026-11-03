@@ -83,7 +83,12 @@
    "story": {
     "zh": "他在河滩上听执事念过。他拖着他走到石台外沿，那根锈烂的铁橛子跟前，推了下去。那块名牌是铜的，他在手心里掂了两掂——铜能换钱；留着，便是一条人命挂在腰上。他把它也扔了下去。隔了很久很久，底下传上来一声。很轻，像一滴水。",
     "en": "He'd heard the steward read it out on the riverbed. He dragged the man to the outer edge of the ledge, to the rusted iron peg, and pushed him over. The name tag was copper. He weighed it in his palm twice. Copper could be sold; but keep it, and it was a man's life hanging at his waist. He threw it over too. After a long, long time a sound came up from below. Very faint, like a drop of water."
-   }
+   },
+   "grant": {
+    "table": "gate",
+    "progress": 760
+   },
+   "_gate": "2026-11-02 (agent's pick, Hanli approved: 「可以, 按你说的做」): the 秘境's story 修为 lump on the way into wm-kaikai (its stage quest waits on 圆满, and inside the sealed 秘境 only the 石室's boards pay, ~1 修为 a minute). It lands while he is held at the mark (ladder caps.hui.h07 holds), so it carries over as stretch and the gate layer still asks play: about 1.75 days at his pace a gate (tools/balance.mjs, his 68 min a day). balance.json pay.gate."
   }
  ]
 }

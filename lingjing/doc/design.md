@@ -381,6 +381,11 @@ prints.** (rules/playpay.mjs; balance.json `master.xiuwei` → `play_pay.xiuwei`
   month 15; a day's east-wall tags 5 together; a night's 闭关 23.5 (47 at 练气一层); an errand's work its 5 minutes. A pill is
   its 转's share of 470 as units at R(1) (一转 ≈ 14 at 一层), riding R so 「抵N日打坐」 holds; what the book authors (a scene's,
   a quest's, a rumor's) is the number written. 切磋 a bout's 体力 × R × ★; 圆满 → 灵石 flat (`convert.rate`).
+- **The story's 圆满 gates** (agent's pick, Hanli approved 2026-11-02 「可以, 按你说的做」): fixed pay made each gate days of
+  grinding (第五回 ~40 typical days). A `gate` lump (`grant: {table: 'gate', progress}`, balance.json `pay.gate`) on the way
+  into each gate scene — the only 修为 the story grants (content.mjs lintEarned) — and no replay falloff inside a sealed
+  instance (`play_pay.replay_sealed`): each gate is about one to two days at his pace, every 回 in its band. Values and
+  model days in status.md.
 - Open (status.md): above 筑基 the formula's S grows fast (a 结丹 step ≈ 62 sittings) while the ladder's need and the
   realms' `pay` do not follow it; retuned with 卷二.
 

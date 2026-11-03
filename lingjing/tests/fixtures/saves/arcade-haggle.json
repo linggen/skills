@@ -20,8 +20,11 @@
   "lines": {
    "jin": {
     "tier": "xinsheng",
-    "step": 0,
-    "progress": 162
+    "step": 1,
+    "progress": 82,
+    "stretch": {
+     "xinsheng:1": 1
+    }
    }
   },
   "bag": {
@@ -699,7 +702,7 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 700,
+   "progress": 2430,
    "wealth": 910
   },
   "stamina": 100,
@@ -1274,6 +1277,10 @@
    "09-year/futian"
   ],
   "furnace_name": "饭桶",
+  "stretch": {
+   "qi:2": 105,
+   "qi:3": 383
+  },
   "hunted": {
    "mijing-xiongya": 1
   },
@@ -1288,9 +1295,6 @@
    "yangzhen",
    "huochai"
   ],
-  "stretch": {
-   "qi:3": 3
-  },
   "told_scenes": [
    "00-baicai",
    "00-masan",

@@ -121,7 +121,7 @@ test('the heal runs on the next load through the rules\' door, and pays exactly 
   fs.rmSync(data, { recursive: true, force: true });
 });
 
-test('no story choice in 卷一 raises 修为 or 层: no rise but 入门 (零层 → 一层), no 修为 granted, no step filled — linted', () => {
+test('no story choice in 卷一 raises 修为 or 层: no rise but 入门 (零层 → 一层), no 修为 granted but a gate\'s declared lump, no step filled — linted', () => {
   assert.deepEqual(lint(content), []);
   const first = content.ladder.tiers[0];
   for (const ch of Object.values(content.chapters).filter(c => c.juan === 1)) for (const sc of Object.values(ch.scenes)) {
@@ -129,7 +129,9 @@ test('no story choice in 卷一 raises 修为 or 层: no rise but 入门 (零层
     for (const e of sc.exits) {
       const where = `${sc.id}/${e.id}`;
       if (e.rise != null) assert.ok(first.zero && e.rise === 1, `${where}: only 入门 rises`);
-      assert.ok(!e.grant?.progress, `${where}: grants 修为`);
+      // …but a declared `gate` lump into a scene whose stage quest waits on 圆满 (2026-11-02, fixed pay; Hanli approved).
+      const gates = new Set(Object.values(content.ladder.caps.hui).flatMap(h => (h?.gates ?? []).map(g => g.scene)));
+      assert.ok(!e.grant?.progress || (e.grant.table === 'gate' && gates.has(e.next)), `${where}: grants 修为`);
       assert.equal(e.fill, undefined, `${where}: fills a step`);
       const item = e.grant?.item ? content.items.items.find(i => i.id === e.grant.item) : null;
       assert.equal(item?.fill, undefined, `${where}: ${item?.id} fills a step`);

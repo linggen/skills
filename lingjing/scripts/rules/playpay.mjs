@@ -12,6 +12,7 @@
 // 修为) is the number written. 灵石 by the kind, on the same ★ and replay. No daily cap; 修为 stops at the gate and turns
 // to 灵石 there (`play` converts, core.mjs pay). Nothing here names a board.
 import { dayKey, staminaCost } from '../state.mjs';
+import { sealedOf } from './world.mjs';
 
 const kindOf = (content, id, task) => (content.games?.games ?? []).find(g => g.task === id)?.mechanic
   ?? (content.games?.games ?? []).find(g => g.id === task?.game && !g.replaced)?.mechanic ?? null;
@@ -94,7 +95,9 @@ export function playGrant(content, state, id, task, now, stars = null, { first =
   const kind = kindOf(content, id, task);
   const minutes = pp.minutes?.[kind] ?? pp.minutes?.default ?? 0;
   const star = stars == null ? 1 : pp.stars?.[String(stars)] ?? 1;
-  const replay = pp.replay ?? [1];
+  // Inside a sealed instance (world.mjs sealedOf: the 秘境 of 古五) the room's boards are all there is to play: they replay
+  // at `replay_sealed` (Hanli approved 2026-11-02: no falloff there), else the day's falling share.
+  const replay = (sealedOf(content, state) ? pp.replay_sealed : null) ?? pp.replay ?? [1];
   const share = replay[Math.min(playsToday(state, id, now), replay.length - 1)];
   const f = star * share;
   const units = staminaCost(content, 'game');

@@ -1571,7 +1571,12 @@ function lintEarned(where, exit, content, bad) {
   const first = content.ladder.tiers[0], r = exit.rise;
   const entry = first.zero && r === 1;
   if (r != null && !entry) bad(where, 'the story raises a layer: make it a stage quest (caps.hui.<回>.gates)');
-  if (exit.grant?.progress) bad(where, 'the story grants 修为: it is earned (功课, fights, 秘境, 闭关)');
+  // One exception (2026-11-02, fixed pay; agent's pick, Hanli approved 「可以, 按你说的做」): a `gate` lump on the way into a
+  // scene whose stage quest waits on 圆满 (caps.hui.<回>.gates) — the gate is still ground (doc/status.md); nowhere else.
+  const gateScenes = new Set(Object.values(content.ladder.caps?.hui ?? {}).flatMap(h => (h?.gates ?? []).map(g => g.scene)));
+  const lump = exit.grant?.table === 'gate' && gateScenes.has(exit.next);
+  if (exit.grant?.table === 'gate' && !lump) bad(where, 'a `gate` lump leads into a gate scene (caps.hui.<回>.gates) or nowhere');
+  if (exit.grant?.progress && !lump) bad(where, 'the story grants 修为: it is earned (功课, fights, 秘境, 闭关)');
   if (exit.fill != null) bad(where, 'the story fills a step to 圆满');
   const item = exit.grant?.item ? content.items?.items?.find?.(i => i.id === exit.grant.item) : null;
   if (item?.fill != null) bad(where, `grants ${item.id}, which fills a step to 圆满`);

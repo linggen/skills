@@ -112,7 +112,9 @@ test('古七: 四层 until 定风 is walked — each layer ground behind its gat
   const tt = { ...t, tasks: { ...t.tasks, 'shenshi-qingshen': { status: 'done' } } };
   const winter = resolve(tt, content, ctx, { exit: 'winter' });
   assert.equal(winter.result.ok, true, JSON.stringify(winter.result).slice(0, 200));
-  assert.equal(winter.result.paid?.progress ?? 0, 0, '那年冬天 grants no 修为 (what he banked past 七层 is his own)');
+  // 那年冬天 pays only the gate's declared lump into 09-dingfeng (2026-11-02, fixed pay; Hanli approved) — the rest is his own.
+  const lump = content.chapters['00-zhuji'].scenes['09-shenshi'].exits.find(e => e.id === 'winter').grant.progress;
+  assert.ok((winter.result.paid?.progress ?? 0) <= lump, '那年冬天 grants no 修为 but the gate\'s lump');
   const v = { ...winter.state, place: 'houshan' };
   grind(v);
   assert.equal(named(v), '练气八层', 'held at 年七\'s 八层');
