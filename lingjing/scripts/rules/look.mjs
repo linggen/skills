@@ -43,7 +43,7 @@ import { chapterLabel, huiOf, sideLine } from './hui.mjs';
 import { leaveOf, replayBrief, storyBoard } from './skips.mjs';
 import { asideLook } from './aside.mjs';
 import { trayLook } from './tray.mjs';
-import { capLook } from './cap.mjs';
+import { capLook, underCap } from './cap.mjs';
 import { entryGate, stageBack, stageBrief, stageGate, stageNow, stagesPaid } from './gates.mjs';
 import { practiceHint } from './scrolls.mjs';
 import { homeOf } from './home.mjs';
@@ -617,7 +617,8 @@ function tierStages(content, state, lang, now) {
   const g = stageOf(content, state.tier, state.step, lang);
   if (!g) return {};
   const tier = content.ladder.tiers.find(t => t.id === state.tier);
-  const odds = g.at === g.per && !g.last ? duanOdds(content, state, now, state.tier, state.step + 1) : null;
+  // Only where the door is his to try: past the 回's cap (古九's 三层) no die is thrown, so none is promised.
+  const odds = g.at === g.per && !g.last && underCap(content, state, state.tier, state.step + 1) ? duanOdds(content, state, now, state.tier, state.step + 1) : null;
   const cooling = odds ? duanCooling(state, now) : null;
   const trial = odds ? { to: odds.to.name, chance: odds.chance, ...(cooling ? { again_at: cooling } : {}) } : null;
   return {

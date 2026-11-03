@@ -133,6 +133,7 @@ test('the trial stands at 六层 too; 一层 → 二层 inside a 段 throws noth
   for (let i = 0; i < 60; i += 1) pay(content, s, ctx, { table: 'seclusion', progress: 90 });
   assert.deepEqual([s.step, s.duan], [2, undefined]);
   assert.equal(lookOf(s).tier.name, '筑基 · 小成圆满');
+  assert.equal(lookOf(s).tier.duan.trial, undefined, 'the cap shuts the door: no trial promised');
   assert.equal(content.ladder.caps.hui.h10.layer, 3);
   assert.deepEqual(content.ladder.caps.hui.h09.story, { tier: 'foundation', layer: 3 });
 });

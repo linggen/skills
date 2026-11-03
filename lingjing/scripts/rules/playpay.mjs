@@ -6,7 +6,7 @@
 // normal 1 · elite 1.5 · boss/副本 2, a first clear +50%; ★ 0.6 · 0.8 · 1.0; the gap −15% a level he stands above the
 // content (to 20%), +10% a level below it (to +30%); the replay 100 · 50 · 10% the same thing the same day. What has no
 // 体力 of its own (人间功课, a wall tag, an errand's work, a night's 闭关) is priced in 体力-units the same way. A level: each
-// 练气 层 one; a realm's step of three 层-worth three. The content level is where he stands unless the thing says its own
+// 层 one, past 练气 too (nine 层 a realm since 2026-11-02, Hanli approved; before, a step of three 层-worth three). The content level is where he stands unless the thing says its own
 // (`level`). Every knob is balance.json `play_pay.xiuwei`, derived from `master.xiuwei` (tools/master.mjs); % of the
 // layer survives only as the reference tools/numbers.mjs prints. What the book authors (a scene's, a pill's, a rumor's
 // 修为) is the number written. 灵石 by the kind, on the same ★ and replay. No daily cap; 修为 stops at the gate and turns
