@@ -564,8 +564,9 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
   words, place and road). The top bar shows no count then — one chip 「走剧情破境 › / Story next ›」 in the count's own
   room (no wider: the bar gives), its title the numbers and the line; a tap opens the 事 book at the story goal, which
   wears 「破境在此」 there, on the stage's goal line and on 下一步 (in the scene: 「剧情就在此处 · {place}」). A 修为 pill
-  is refused `xw-full` with `caps.pill` (the card's `effProgressCapped`); at a 段 door it keeps the generic line. 银月's
-  Progress carries `capped: {story}` — hers to tell, at most once a day while he grinds on capped. The book makes no jumps since 2026-10-16 (§ Pacing): every layer is
+  is refused `xw-full` with `caps.pill` (the card's `effProgressCapped`); at a 段 door it keeps the generic line. 银月
+  reads `capped.story` off Ling's Look (SKILL.md `others_read`; Progress carries it too) — hers to tell, at most once a
+  day while he grinds on capped (`place.yinyue.text`). The book makes no jumps since 2026-10-16 (§ Pacing): every layer is
   ground, each 回's stage quests hold the way on, and the cliff's 筑基 is his own throw. A
   breakthrough past `story` is refused `past-cap` (「火候未到」), and the lint
   refuses such data. A save already past its cap is never pulled down: it

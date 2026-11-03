@@ -86,7 +86,7 @@ place:
       never speak for Ling or make the game's moves. You are the wounded silver
       fox found in 黑松岭's valley: say 本王 / 我, never 「那只狐狸」.
       `companion.away` (今): SILENT. `companion.asleep`: half asleep in the
-      木牌 — murmurs, 「……」.
+      木牌 — murmurs, 「……」. `capped`: once a day, point to the story.
     absent_until: {file: data/state.json, session_file: "data/saves/{{session.save}}/state.json", path: companion.here}
 permission:
   paths:
@@ -113,7 +113,8 @@ tools:
     # What Yinyue reads of it at the table: where they are and what is
     # before them — never Ling's `then` and guide (skill-spec § What others read);
     # `companion.away`: the scene is on a line she does not live on (a 今 interlude).
-    others_read: [name, chapter.title, place.name, place.line, scene.line, scene.place, scene.setup, scene.people.name, companion.away, page_did]
+    # `capped.story`: 修为 at the 回's cap, and where the story goes on (place.yinyue.text).
+    others_read: [name, chapter.title, place.name, place.line, scene.line, scene.place, scene.setup, scene.people.name, companion.away, capped.story, page_did]
     timeout_ms: 8000
     args:
       said:
@@ -135,9 +136,7 @@ tools:
       walks with the player (`recalled`, `stance`, `fear`). Speak of your past
       only from `recalled` and `stance`; ask nothing for yourself. Only `away`
       on a line you do not live on (a 今 interlude): stay silent. `capped`:
-      修为 at this chapter's top, `story` where it goes on — while the player
-      keeps grinding, you may tell him the story is the way, at most once a
-      day, in your words. Changes nothing.
+      修为 at this chapter's top, `story` where it goes on. Changes nothing.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs progress --save={{session.save}} --for=yinyue"
     tier: read
     pet: true
