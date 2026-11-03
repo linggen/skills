@@ -6,7 +6,7 @@ import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, grantFrom } from './cards.mjs';
 import { breakthroughOf, itemOf, threadOf } from './errands.mjs';
-import { coolingUntil, oddsOf, throwOn } from './breakthrough.mjs';
+import { coolingUntil, duanOdds, duanPass, duanTried, oddsOf, throwOn } from './breakthrough.mjs';
 import { sceneBrief, spoken, wordsOf } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { herBeat, storyNode, withHerBeat } from './story.mjs';
@@ -84,7 +84,7 @@ const paysOf = (content, state, now, grant) => {
   const progress = shut.includes('cultivation') ? 0 : due, wealth = shut.includes('wealth') ? 0 : coin;
   // At 圆满 the row says what lands (Hanli 10-28: 「修为圆满了, 已接任务里应该不奖励修为了吧? 应该走剧情进阶后才能获得修为」):
   // the 修为 past the held mark as 灵石 where its table converts, else none — and `full`, so the row can say why.
-  const conv = converting(content, grant), past = pastMark(content, state, progress);
+  const conv = converting(content, grant), past = pastMark(content, state, progress, now);
   if (!past) return { progress, wealth };
   const lingshi = conv && !shut.includes('wealth') ? Math.round(past * convertRate(content, state, conv)) : 0;
   return { progress: progress - past, wealth: wealth + lingshi, full: true };
@@ -99,11 +99,18 @@ const converting = (content, grant) => {
   return c && (c.tables ?? []).includes(grant?.table) ? c : null;
 };
 /* How much of `progress` would land past a mark he may not leave — tried on a copy. */
-function pastMark(content, state, progress) {
+function pastMark(content, state, progress, now) {
   if (progress <= 0 || zeroAt(content, state.tier, state.step)) return 0;
   const trial = { tier: state.tier, step: state.step, progress: state.progress, ...(state.stretch ? { stretch: { ...state.stretch } } : {}) };
-  const { hold } = addProgress(content, trial, progress, (tier, step) => underCap(content, state, tier, step));
+  const { hold } = addProgress(content, trial, progress, (tier, step) => underCap(content, state, tier, step) && duanPass(content, state, now, tier, step));
   return hold ? Math.min(progress, Math.max(0, hold.over ?? 0)) : 0;
+}
+
+/* Held at a 段 door: the try just thrown, else the hour still running (and the chance the next pay will throw at). */
+function duanHeld(content, state, now, trial) {
+  if (trial) return trial;
+  const at = { tier: state.tier, step: state.step + 1 }, o = duanOdds(content, state, now, at.tier, at.step);
+  return o ? { to: o.to, chance: o.chance, cooling: true, again_at: state.duan?.until ?? null } : null;
 }
 
 function pay(content, state, ctx, grant, landing = state) {
@@ -114,13 +121,26 @@ function pay(content, state, ctx, grant, landing = state) {
   const due = amountsOf(content, state, ctx.now, grant);
   const base = shut.includes('cultivation') ? 0 : due.base, progress = shut.includes('cultivation') ? 0 : due.progress;
   // A fight's 修为 past the held mark is paid as 灵石 (converting, above).
-  const conv = converting(content, grant), over = conv ? pastMark(content, state, progress) : 0;
+  const conv = converting(content, grant), over = conv ? pastMark(content, state, progress, ctx.now) : 0;
   const lingshi = over && !shut.includes('wealth') ? Math.round(over * convertRate(content, state, conv)) : 0;
   const wealth = (shut.includes('wealth') ? 0 : due.wealth) + lingshi;
   state.day.progress += base; state.day.wealth += wealth; state.wealth += wealth;
-  const { levels, hold: kept } = addProgress(content, state, progress - over, (tier, step) => underCap(content, state, tier, step));
-  // At the 回's cap the held part is told in the world's words (rules/cap.mjs) — not when the rest went to 灵石.
-  const hold = over ? null : kept?.cap ? { ...kept, say: capLook(content, state, state.lang)?.say ?? null } : kept;
+  // The door of each step: the 回's cap, then — into 四层 and 七层 of a realm in 段 — the 段 trial's die (rules/breakthrough.mjs).
+  let door = null;
+  const mayStep = (tier, step) => {
+    if (!underCap(content, state, tier, step)) return false;
+    const odds = duanOdds(content, state, ctx.now, tier, step);
+    if (duanPass(content, state, ctx.now, tier, step)) { if (odds) door = { to: { tier, step }, odds }; return true; }
+    door = { held: { tier, step }, odds };
+    return false;
+  };
+  const { levels, hold: kept } = addProgress(content, state, progress - over, mayStep);
+  // The 段 trial thrown on this pay, written down: through, or held at the door with the hour started.
+  const trial = door ? duanTried(content, state, ctx.now, door) : null;
+  // At the 回's cap the held part is told in the world's words (rules/cap.mjs) — not when the rest went to 灵石. At a 段 door
+  // the trial holds it (`duan`), not the cap.
+  const atDoor = Boolean(kept?.cap && door?.held);
+  const hold = atDoor ? { duan: duanHeld(content, state, ctx.now, trial), held: 0, over: kept.over ?? 0 } : over ? null : kept?.cap ? { ...kept, say: capLook(content, state, state.lang)?.say ?? null } : kept;
   if (grant.cast && !state.cast.includes(grant.cast)) state.cast.push(grant.cast);
   // A beast that joins brings its card; a grant may name one outright.
   const day = dayKey(ctx.now);
@@ -134,9 +154,10 @@ function pay(content, state, ctx, grant, landing = state) {
   const full = fullLine(state, [stowed, ...extra]);
   // An art is taught by a person, in a scene — never by the beast itself.
   const learned = grant.art ? learn(content, state, grant.art) : null;
-  const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) }));
+  // A 层 inside a 段 is the bar's, never a rise told (筑基 · 小成 → 筑基 · 小成): only a step whose name moves.
+  const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) })).filter(l => l.from !== l.to);
   // `progress` is what the realm really took; at the peak the rest is held.
-  return { progress: progress - over - (hold?.held ?? 0), wealth, ...(over ? { converted: { progress: over, wealth: lingshi } } : {}), cast: grant.cast ?? null, item: grant.item ?? null, ...(extra.length ? { more: extra } : {}), ...(full ? { offered: true, pouch_full: full } : {}), levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
+  return { progress: progress - over - (hold?.held ?? 0), wealth, ...(trial ? { duan: trial } : {}), ...(over ? { converted: { progress: over, wealth: lingshi } } : {}), cast: grant.cast ?? null, item: grant.item ?? null, ...(extra.length ? { more: extra } : {}), ...(full ? { offered: true, pouch_full: full } : {}), levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
 }
 
 /* What a story grant put in his hands: its thing (`n` of it), the rest (`more`), and the 灵石 it paid. Null: nothing. */

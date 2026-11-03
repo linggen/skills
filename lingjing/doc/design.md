@@ -366,8 +366,8 @@ Hanli 2026-11-02, on 1022 修为 in 68 minutes (1.5 layers at 练气四层): 「
 nothing pays a share of the layer at runtime; % of the layer and minutes of play stay only as the reference tools/numbers.mjs
 prints.** (rules/playpay.mjs; balance.json `master.xiuwei` → `play_pay.xiuwei`, derived by `node tools/numbers.mjs --apply`.)
 
-- **Levels.** Each 练气 层 is one level (零层 0, pays none); a realm's step of three 层 counts three (筑基小成 L12, 中成 15,
-  大成 18, 结丹小成 21 …). A realm up: ×`sittings.realm` 1.3 to S and ×`rate.realm` 1.2 to R.
+- **Levels.** Each 层 is one level (零层 0, pays none) — past 练气 too since the nine 层 (2026-11-02: 筑基一层 L10 … 九层
+  L18, 结丹九层 L27; levelOf); before, a realm's step of three 层 counted three (筑基小成 L12, 中成 15, 大成 18). A realm up: ×`sittings.realm` 1.3 to S and ×`rate.realm` 1.2 to R.
 - **Sittings per level** S(L) = 2 × 1.1^(L−1); a sitting is 100 体力 ≈ 100 minutes. **修为 per 体力** R(L) = 2 × 1.05^(L−1).
   **Need** need(L) = R(L) × 100 × S(L) — the reference the ladder is read against (练气一层 400 by the formula, 470 on the
   ladder; 九层 1267 against 1010). The ladder's thresholds are not moved by this.
@@ -426,7 +426,7 @@ Hanli: 「所有物品, 任务的数值请写一个工具进行校验 … 全局
     are built (`lines.jin`, 2026-10-28: its own `need`, `hours` and `games`, below § each line its own 修为); 未来 gets a
     row of its own, with its own pace, when its pay is built.
     - `need`: 练气一层 470, ×1.1 a layer, ×1.3 into the next realm. Every pay is a share of the layer, so these are the
-      numbers he reads, never the pace. 筑基小成 (1310) is above 练气九层 (1010).
+      numbers he reads, never the pace. 筑基一层 (1310) is above 练气九层 (1010); nine 层 a realm past 练气 since 2026-11-02.
     - `hours`: a layer's play hours (the games' rate), a curve (练气 2 h +0.5 h a layer; 筑基 4 h, +2 h a realm), then
       **fitted**: in the book's order a 回 whose typical days fall outside its band has the hours of the layers it grinds
       scaled until it lands (master.mjs fitHours). Today 古六's 三–四层 fit to ~1.0–1.2 h and 古八's 七–九层 to ~1.4–1.6 h:
@@ -516,6 +516,35 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
   `ladder.json → layers_were`, added to what it held; 结丹一层 · 222 is
   结丹小成 · 222, 筑基九层 filled is 筑基圆满). A v5 save is already on three
   steps and is never marked `ladder9`.
+- **Nine 层 to count, three 段 to read, past 练气** (Hanli approved 2026-11-02:
+  「以后可以仍然按层数算1-3=小成, 4-6=中, 7-9=大」 · 「9层用于计算, 小, 中, 大成用于显示」 ·
+  「练气的UI不改了, 保持现在这样吧. 筑基以后再分3段UI吧」). Every realm past 练气 has nine 层
+  again (`steps`, one threshold each, the master table's: balance.json `layers`, tools/master.mjs
+  reads the step count from the ladder) and `display: "stages"`: 一至三层 小成, 四至六层 中成,
+  七至九层 大成 (`phases`, ids `stage_ids` xiao · zhong · da; state.mjs `stageOf`). Every name of a
+  step reads the realm and the 段 — 「筑基 · 中成」, "Foundation Establishment · Middle Attainment"
+  (`stepName`; `phaseName` the same) — so Ling, the 事 book, the gates and the breakthrough's `to`
+  (「结丹 · 小成」) say the 段, never the 层; 圆满 only on the 段's last 层 filled (「筑基 · 小成圆满」 at
+  三层; `fullName`), the realm's 圆满 (`peakName` 筑基圆满) as before. Look adds, on 筑基 and above
+  only, `tier.realm`, `tier.duan` {id, name, at (the 层's place in the 段, 1–3), marks (its three
+  thresholds), trial?} and `tier.layer` (「第四层」, the tooltip's): the strip's three-segment bar
+  (stage.mjs duanOf, 47879a65) — 练气's Look, bar and names are unchanged (「练气四层」). A 层 inside a
+  段 is the bar's: a pay's `levels` drops a step whose name does not move, and the rise seal fires on
+  a 段 change only. **The 段 trial**: the step into 四层 and into 七层 is a light throw, no pill
+  (ladder.json `breakthrough.duan`: base 75 + the realm throw's 体力 · 闭关 · 银月 · 五行 rows,
+  floor/cap shared), thrown by the pay that carries him over the 段's last 层 (core.mjs pay's door,
+  rules/breakthrough.mjs `duanPass`/`duanTried`, seeded as the realm throw); a failure costs only
+  the hour (`cooldown_hours` 1): the 层 stays full, the 修为 counts on past its mark, and the next pay
+  after the hour throws a new die. Look's `tier.duan.trial` gives the chance on the 段's last 层
+  (`again_at` while it cools); a pay's result carries `duan`. A load never steps through a 段 door
+  (cap.mjs settleHeld). 九层圆满 into the next realm is the realm throw, unchanged; 练气 has no 段
+  trial. The caps' 筑基 is 三层 (h09's `story`, h10): 古九 grinds the whole of 小成. Old saves (v15,
+  `stagesCarry`): every older carry runs on the three-step ladder it was written for (`ladderOf14`,
+  `thresholds_were["14"]`), then 小成 → 三层, 中成 → 六层, 大成 → 九层, the bar and the stretch as
+  full as they stood (筑基圆满 waits at the cliff still). The numbers: the master table's ×1.1 a
+  层 over nine 层 makes a realm's whole about four times its three steps' (筑基 17,800 against
+  4,330; 古九's grind to 三层 4,330 against 1,310); the realms past 筑基 grow faster still — open,
+  with 卷二's pace. The book's own 「四层」 prose stays as written.
 - **修为 caps per 回** (Hanli, 2026-10-05: 「游戏里修炼有个上限吧? 和故事对齐」;
   rules/cap.mjs, `ladder.json → caps`): each 古 回 declares how far the
   player's own work reaches (`tier` + `layer`, a 层 of 练气 or a step above it) and, where its scenes carry him

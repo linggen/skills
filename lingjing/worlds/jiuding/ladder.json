@@ -1,7 +1,8 @@
 {
   "version": 1,
   "_balance": "Thresholds are balance.json's (`layers`, folded in by content.mjs withBalance; tools/balance.mjs --fit re-derives 练气's from the stage quests, design.md § Pacing). `pay` scales every reward in that realm. `thresholds_were` keeps the ladders old saves were played on (state.mjs paceLayer).",
-  "_about": "The ladder: tiers (this world's realms) with their steps and the progress each step asks for; `pay` scales rewards in that tier; `gate` names the chapter a tier waits for. 练气 has nine 层 above 零层 (our one exception to 凡人, story DESIGN § 道统; 零层 is `zero`): `phases` names them three by three — 一至三层 小成, 四至六层 中成, 七至九层 大成. Every realm past 练气 has no 层: its three steps are 小成, 中成, 大成 themselves (Hanli, 2026-10-09; 小成/中成/大成 is the Daoist word, 《钟吕传道集》, replacing 初期/中期/后期). `full` is the word for a step filled — 练气二层圆满, 筑基中成圆满, 筑基大成圆满 — nothing more goes in until the next step; only the realm's last step filled, its 圆满 (筑基圆满, 练气圆满), is tried for a breakthrough. 巅峰 is the spoken word for the same point (外门's 「九层巅峰」); 圆满 is the formal one, and only it stands in a table. Past 练气 each realm had three steps until 2026-10-03, nine 层 from then to 2026-10-09, and three steps again since, each the sum of its three 层 (state.mjs v6 threeToNine, v7 nineToThree; the thresholds are the pre-10-03 ones, so the realm's whole never changed).",
+  "_about": "The ladder: tiers (this world's realms) with their steps and the progress each step asks for; `pay` scales rewards in that tier; `gate` names the chapter a tier waits for. 练气 has nine 层 above 零层 (our one exception to 凡人, story DESIGN § 道统; 零层 is `zero`): `phases` names them three by three — 一至三层 小成, 四至六层 中成, 七至九层 大成. Every realm past 练气 has no 层: its three steps are 小成, 中成, 大成 themselves (Hanli, 2026-10-09; 小成/中成/大成 is the Daoist word, 《钟吕传道集》, replacing 初期/中期/后期). `full` is the word for a step filled — 练气二层圆满, 筑基中成圆满, 筑基大成圆满 — nothing more goes in until the next step; only the realm's last step filled, its 圆满 (筑基圆满, 练气圆满), is tried for a breakthrough. 巅峰 is the spoken word for the same point (外门's 「九层巅峰」); 圆满 is the formal one, and only it stands in a table. Past 练气 each realm had three steps until 2026-10-03, nine 层 from then to 2026-10-09, and three steps again from then to 2026-11-02, each the sum of its three 层 (state.mjs v6 threeToNine, v7 nineToThree; the thresholds are the pre-10-03 ones, so the realm's whole never changed). Since 2026-11-02 (Hanli approved: 「以后可以仍然按层数算1-3=小成, 4-6=中, 7-9=大」 · 「9层用于计算, 小, 中, 大成用于显示」 · 「练气的UI不改了, 保持现在这样吧. 筑基以后再分3段UI吧」) every realm past 练气 counts nine 层 again (`steps`, one threshold each) and shows them as three 段 (`display: \"stages\"`): 一至三层 小成, 四至六层 中成, 七至九层 大成 (`phases`, ids `stage_ids`), read 「筑基 · 中成」 — the 层 is the bar's and the tooltip's, never a name (state.mjs stepName, stageOf). Into 四层 and 七层 a light 段 trial is thrown (`breakthrough.duan`); 九层圆满 is the realm's breakthrough as ever. 练气 is unchanged: its 层 named, no 段 trial. A save from the three steps is carried by state v15 (state.mjs stagesCarry: 小成 → 三层, 中成 → 六层, 大成 → 九层, the bar as full as it stood; `thresholds_were[\"14\"]` is the three-step ladder it was played on).",
+  "stage_ids": ["xiao", "zhong", "da"],
   "tiers": [
     {
       "id": "qi",
@@ -51,177 +52,121 @@
       "id": "foundation",
       "gate": 1,
       "_thresholds_were": "筑基's (and every realm's above it, each its own) thresholds a save older than state v13 was played on (2026-10-27, 数值系统 phase 2: the master table's numbers; state.mjs paceLayer).",
-      "thresholds_were": { "13": [400, 500, 600] },
+      "thresholds_were": { "13": [400, 500, 600], "14": [1310, 1440, 1580] },
+      "display": "stages",
       "pay": 1,
       "name": {
         "zh": "筑基",
         "en": "Foundation Establishment"
       },
       "steps": {
-        "zh": [
-          "小成",
-          "中成",
-          "大成"
-        ],
-        "en": [
-          "Lesser Attainment",
-          "Middle Attainment",
-          "Greater Attainment"
-        ]
+        "zh": ["一层", "二层", "三层", "四层", "五层", "六层", "七层", "八层", "九层"],
+        "en": ["Layer 1", "Layer 2", "Layer 3", "Layer 4", "Layer 5", "Layer 6", "Layer 7", "Layer 8", "Layer 9"]
       }
     },
     {
       "id": "core",
       "gate": 2,
-      "thresholds_were": { "13": [800, 1000, 1200] },
+      "thresholds_were": { "13": [800, 1000, 1200], "14": [2060, 2270, 2490] },
+      "display": "stages",
       "pay": 1,
       "name": {
         "zh": "结丹",
         "en": "Core Formation"
       },
       "steps": {
-        "zh": [
-          "小成",
-          "中成",
-          "大成"
-        ],
-        "en": [
-          "Lesser Attainment",
-          "Middle Attainment",
-          "Greater Attainment"
-        ]
+        "zh": ["一层", "二层", "三层", "四层", "五层", "六层", "七层", "八层", "九层"],
+        "en": ["Layer 1", "Layer 2", "Layer 3", "Layer 4", "Layer 5", "Layer 6", "Layer 7", "Layer 8", "Layer 9"]
       }
     },
     {
       "id": "nascent",
       "gate": 3,
-      "thresholds_were": { "13": [1600, 2000, 2400] },
+      "thresholds_were": { "13": [1600, 2000, 2400], "14": [3240, 3560, 3920] },
+      "display": "stages",
       "pay": 2,
       "name": {
         "zh": "元婴",
         "en": "Nascent Soul"
       },
       "steps": {
-        "zh": [
-          "小成",
-          "中成",
-          "大成"
-        ],
-        "en": [
-          "Lesser Attainment",
-          "Middle Attainment",
-          "Greater Attainment"
-        ]
+        "zh": ["一层", "二层", "三层", "四层", "五层", "六层", "七层", "八层", "九层"],
+        "en": ["Layer 1", "Layer 2", "Layer 3", "Layer 4", "Layer 5", "Layer 6", "Layer 7", "Layer 8", "Layer 9"]
       }
     },
     {
       "id": "deity",
       "gate": 4,
-      "thresholds_were": { "13": [3000, 3600, 4200] },
+      "thresholds_were": { "13": [3000, 3600, 4200], "14": [5100, 5610, 6170] },
+      "display": "stages",
       "pay": 3,
       "name": {
         "zh": "化神",
         "en": "Deity Transformation"
       },
       "steps": {
-        "zh": [
-          "小成",
-          "中成",
-          "大成"
-        ],
-        "en": [
-          "Lesser Attainment",
-          "Middle Attainment",
-          "Greater Attainment"
-        ]
+        "zh": ["一层", "二层", "三层", "四层", "五层", "六层", "七层", "八层", "九层"],
+        "en": ["Layer 1", "Layer 2", "Layer 3", "Layer 4", "Layer 5", "Layer 6", "Layer 7", "Layer 8", "Layer 9"]
       }
     },
     {
       "id": "void",
       "gate": 5,
-      "thresholds_were": { "13": [5000, 6000, 7000] },
+      "thresholds_were": { "13": [5000, 6000, 7000], "14": [8020, 8820, 9700] },
+      "display": "stages",
       "pay": 6,
       "name": {
         "zh": "炼虚",
         "en": "Void Refinement"
       },
       "steps": {
-        "zh": [
-          "小成",
-          "中成",
-          "大成"
-        ],
-        "en": [
-          "Lesser Attainment",
-          "Middle Attainment",
-          "Greater Attainment"
-        ]
+        "zh": ["一层", "二层", "三层", "四层", "五层", "六层", "七层", "八层", "九层"],
+        "en": ["Layer 1", "Layer 2", "Layer 3", "Layer 4", "Layer 5", "Layer 6", "Layer 7", "Layer 8", "Layer 9"]
       }
     },
     {
       "id": "body",
       "gate": 6,
-      "thresholds_were": { "13": [8000, 9500, 11000] },
+      "thresholds_were": { "13": [8000, 9500, 11000], "14": [12610, 13870, 15260] },
+      "display": "stages",
       "pay": 9,
       "name": {
         "zh": "合道",
         "en": "Union with the Dao"
       },
       "steps": {
-        "zh": [
-          "小成",
-          "中成",
-          "大成"
-        ],
-        "en": [
-          "Lesser Attainment",
-          "Middle Attainment",
-          "Greater Attainment"
-        ]
+        "zh": ["一层", "二层", "三层", "四层", "五层", "六层", "七层", "八层", "九层"],
+        "en": ["Layer 1", "Layer 2", "Layer 3", "Layer 4", "Layer 5", "Layer 6", "Layer 7", "Layer 8", "Layer 9"]
       }
     },
     {
       "id": "maha",
       "gate": 7,
-      "thresholds_were": { "13": [12500, 14500, 16500] },
+      "thresholds_were": { "13": [12500, 14500, 16500], "14": [19840, 21820, 24010] },
+      "display": "stages",
       "pay": 14,
       "name": {
         "zh": "归真",
         "en": "Return to Truth"
       },
       "steps": {
-        "zh": [
-          "小成",
-          "中成",
-          "大成"
-        ],
-        "en": [
-          "Lesser Attainment",
-          "Middle Attainment",
-          "Greater Attainment"
-        ]
+        "zh": ["一层", "二层", "三层", "四层", "五层", "六层", "七层", "八层", "九层"],
+        "en": ["Layer 1", "Layer 2", "Layer 3", "Layer 4", "Layer 5", "Layer 6", "Layer 7", "Layer 8", "Layer 9"]
       }
     },
     {
       "id": "tribulation",
       "gate": 8,
-      "thresholds_were": { "13": [19000, 22000, 25000] },
+      "thresholds_were": { "13": [19000, 22000, 25000], "14": [31210, 34330, 37760] },
+      "display": "stages",
       "pay": 20,
       "name": {
         "zh": "渡劫",
         "en": "Tribulation Transcendence"
       },
       "steps": {
-        "zh": [
-          "小成",
-          "中成",
-          "大成"
-        ],
-        "en": [
-          "Lesser Attainment",
-          "Middle Attainment",
-          "Greater Attainment"
-        ]
+        "zh": ["一层", "二层", "三层", "四层", "五层", "六层", "七层", "八层", "九层"],
+        "en": ["Layer 1", "Layer 2", "Layer 3", "Layer 4", "Layer 5", "Layer 6", "Layer 7", "Layer 8", "Layer 9"]
       }
     }
   ],
@@ -351,7 +296,7 @@
       8675
     ]
   },
-  "_caps": "The cap per 回 (Hanli, 2026-10-05: 「游戏里修炼有个上限吧? 和故事对齐」; rules/cap.mjs): `hui` names, for each 古 回, the highest step (a 层 of 练气, a 成 above it) the player's own work reaches there (`tier`, `layer` as the book names it: a 层 of 练气 from 零层 (0), a 成 above it from 1) and, when the 回's scenes carry him further, how far its story goes (`story`; else the same). Filled to the cap, fights pay 灵石 and the rest counts on past the mark (`say` by the full bar); a scene's rise or breakthrough past `story` is refused (`refuse`). A 回 with none takes the one before it in the book (a 今 interlude, its 古); after 卷一 the save waits in 古九's chapter, so it stays 筑基小成 until 卷二 is written and given its caps; a chapter with no 回 (the old spine) has none — its realm gate rules it. A save already past its cap is never pulled down: it fills its own step and waits for the story. From the book (story/jiuding-lu/OUTLINE.md 境界线, DESIGN § 六·八 定例): 古三 入门 at 零层 (`layer` 0: nothing grinds 零层); 古四 一层 by the 小周天 (wm-zhoutian's rise), held there through 九月 (褚先生's roll call: 小满 一层), 十月廿五 二层 (lifted at 古四's close, wm-diyilu — the 回's `story`); 古五 二层 → 四层 by 息壤 (wm-xirang); 古六 四层 (大比 on 四层); 古七 (h11) 四层 until the years carry him to 七层 (09-year `futian`); 古八 (h09) 七层, the years after to 九层圆满 (09-dabi) and the cliff to 筑基 (09-cliff); 古九 (h10) 筑基小成 — the first step of 筑基 (古七 split in two, Hanli 2026-10-07).",
+  "_caps": "The cap per 回 (Hanli, 2026-10-05: 「游戏里修炼有个上限吧? 和故事对齐」; rules/cap.mjs): `hui` names, for each 古 回, the highest step (a 层 of 练气, a 成 above it) the player's own work reaches there (`tier`, `layer` as the book names it: a 层 of 练气 from 零层 (0), a 成 above it from 1) and, when the 回's scenes carry him further, how far its story goes (`story`; else the same). Filled to the cap, fights pay 灵石 and the rest counts on past the mark (`say` by the full bar); a scene's rise or breakthrough past `story` is refused (`refuse`). A 回 with none takes the one before it in the book (a 今 interlude, its 古); after 卷一 the save waits in 古九's chapter, so it stays 筑基小成 until 卷二 is written and given its caps; a chapter with no 回 (the old spine) has none — its realm gate rules it. A save already past its cap is never pulled down: it fills its own step and waits for the story. From the book (story/jiuding-lu/OUTLINE.md 境界线, DESIGN § 六·八 定例): 古三 入门 at 零层 (`layer` 0: nothing grinds 零层); 古四 一层 by the 小周天 (wm-zhoutian's rise), held there through 九月 (褚先生's roll call: 小满 一层), 十月廿五 二层 (lifted at 古四's close, wm-diyilu — the 回's `story`); 古五 二层 → 四层 by 息壤 (wm-xirang); 古六 四层 (大比 on 四层); 古七 (h11) 四层 until the years carry him to 七层 (09-year `futian`); 古八 (h09) 七层, the years after to 九层圆满 (09-dabi) and the cliff to 筑基 (09-cliff); 古九 (h10) 筑基小成 — the first step of 筑基 (古七 split in two, Hanli 2026-10-07); since 2026-11-02 筑基 counts nine 层 and 小成 is 一至三层, so h09's `story` and h10 name `layer` 3 (筑基三层: the whole of 小成).",
   "caps": {
     "say": {
       "zh": "坐到圆满了。火候未到，关还冲不得——再坐，气一分不少，都在丹田里攒着。",
@@ -395,9 +340,9 @@
           { "layer": 5, "scene": "09-yishui", "exits": ["night"] },
           { "layer": 6, "scene": "09-futian", "exits": ["spar"] }
         ] },
-      "h09": { "tier": "qi", "layer": 9, "story": { "tier": "foundation", "layer": 1 },
+      "h09": { "tier": "qi", "layer": 9, "story": { "tier": "foundation", "layer": 3 },
         "gates": [{ "layer": 7, "scene": "09-shenshi", "exits": ["winter"] }, { "layer": 8, "scene": "09-dingfeng", "exits": ["laba"] }, { "layer": 9, "scene": "09-yanceng", "exits": ["ruqiu"] }] },
-      "h10": { "tier": "foundation", "layer": 1 }
+      "h10": { "tier": "foundation", "layer": 3 }
     }
   },
   "treasure_steps": {
@@ -498,6 +443,12 @@
       "wound": 0.3,
       "progress": 0.3,
       "cooldown_hours": 6
+    },
+    "_duan": "The 段 trial (Hanli approved 2026-11-02, the nine-层 change): in a realm shown in 段 (`display: \"stages\"`) the step into 四层 and into 七层 — 小成 → 中成, 中成 → 大成 — is a light throw, no pill: `base` plus the realm throw's `body`, `seclusion`, `her` and `element` factors (`factors`), held between `floor` and `cap`. It is thrown where the 修为 carries him over the 段's last 层 (state.mjs addProgress's door, rules/breakthrough.mjs duanPass), seeded as the realm throw (the save, the realm, the 段, the try). A failure costs nothing but the hour: the 层 stays full, the 修为 keeps counting past its mark, and the trial waits `cooldown_hours` before the next pay throws again. 九层圆满 into the next realm is the realm throw above, unchanged; 练气 has none.",
+    "duan": {
+      "base": 75,
+      "factors": ["body", "seclusion", "her", "element"],
+      "cooldown_hours": 1
     },
     "_odds": "筑基 follows the book (story DESIGN § 定例 · 沉鼎观的数; 2026-10-03): without a pill about one in ten gets through (base 10), the sect's one 一转 lifts it to a few in ten, a 九转 makes it near-certain. `floor` 5: a throw is never hopeless."
   }

@@ -165,8 +165,8 @@ test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached 
   assert.equal(r.state.step, 0);
   assert.ok(r.state.progress < threshold(content, r.state), '小成, not filled by the pill');
   assert.equal(r.result.breakthrough.full, undefined);
-  assert.equal(r.result.breakthrough.to, '筑基小成', 'Ling hears it as it stands');
-  assert.equal(look(r.state, content, ctx).tier.name, '筑基小成');
+  assert.equal(r.result.breakthrough.to, '筑基 · 小成', 'Ling hears it as it stands (in 段 since 2026-11-02)');
+  assert.equal(look(r.state, content, ctx).tier.name, '筑基 · 小成');
   assert.deepEqual([r.state.chapter, r.state.scene], ['01-ji', 'j09-noise'], '今 · 四 first (2026-10-05)');
   // 古九's 「完」 (the book's number) stands on the next 回's first scene — 今 · 四's — with what he did and the teaser.
   const close = look({ ...r.state, place: 'zhangnan' }, content, ctx).chapter.close;
@@ -191,21 +191,23 @@ test('no pill fills a step (2026-10-16): the 九转 and the sect\'s 一转 both 
   const plain = win(cliff({ 'foundation-pill': 1 }));
   assert.equal(plain.result.breakthrough.pill.id, 'foundation-pill');
   assert.equal(plain.result.breakthrough.full, undefined);
-  assert.equal(plain.result.breakthrough.to, '筑基小成');
+  assert.equal(plain.result.breakthrough.to, '筑基 · 小成');
   assert.equal(plain.state.step, 0);
   assert.ok(plain.state.progress < threshold(content, plain.state), '小成, not filled');
-  assert.equal(look(plain.state, content, ctx).tier.name, '筑基小成');
-  // The 九转: 小成 too, ground full — and no work carries it on to 中成; 古九 (卷一's end) stops at 筑基小成.
+  assert.equal(look(plain.state, content, ctx).tier.name, '筑基 · 小成');
+  // The 九转: 小成 too, ground full — and no work carries it on to 中成; 古九 (卷一's end) stops at 筑基 · 小成圆满 (三层,
+  // the whole of 小成 since 筑基 counts nine 层, Hanli approved 2026-11-02). In 今 · 四 (j09, under 古八's cap) the 层 he
+  // landed on fills and waits; in 古九 he grinds 一至三层.
   const nine = win(cliff({ 'foundation-pill-9': 1, 'foundation-pill': 1 }));
-  assert.deepEqual([nine.result.breakthrough.pill.id, nine.result.breakthrough.to], ['foundation-pill-9', '筑基小成']);
-  const filled = nine.state;
-  for (const s of [filled, { ...filled, chapter: '01-ji', scene: null, place: 'zhangyuan', ended: [...filled.ended, '01-ji'], done_scenes: Object.keys(content.chapters['01-ji'].scenes) }]) {
+  assert.deepEqual([nine.result.breakthrough.pill.id, nine.result.breakthrough.to], ['foundation-pill-9', '筑基 · 小成']);
+  const filled = nine.state, ji = Object.keys(content.chapters['01-ji'].scenes).filter(id => id !== '01-end');
+  for (const [s, step, name] of [[filled, 0, '筑基 · 小成'], [{ ...filled, chapter: '01-ji', scene: null, place: 'zhangyuan', ended: [...filled.ended, '01-ji'], done_scenes: [...ji, '01-end'] }, 2, '筑基 · 小成圆满']]) {
     let got = 0, last = null;
     for (let i = 0; i < 50; i += 1) { last = pay(content, s, ctx, { table: 'seclusion', progress: 90 }); got += last.progress; }
-    assert.ok(got > 0 && s.step === 0 && s.tier === 'foundation', 'it counts on past the mark (2026-10-15), and still no 中成');
+    assert.ok(got > 0 && s.step === step && s.tier === 'foundation', 'it counts on past the mark (2026-10-15), and still no 中成');
     assert.equal(last.hold?.cap, true, 'the cap keeps 中成 shut');
     assert.ok(s.progress > threshold(content, s), 'the bar shows it past the mark');
-    assert.equal(look(s, content, ctx).tier.name, '筑基小成圆满');
+    assert.equal(look(s, content, ctx).tier.name, name);
   }
 });
 

@@ -1,7 +1,7 @@
 // The player's state and the arithmetic over it. Pure: no files, no clock —
 // the caller passes `now`.
 
-export const STATE_VERSION = 14;
+export const STATE_VERSION = 15;
 export const FIRST_WORLD = 'jiuding'; // the world every save before worlds was playing
 
 export function firstChapter(content) {
@@ -443,11 +443,30 @@ export const stepOfLayer = (content, tierId, layer) => layer - (tierOf(content, 
 /* 修为 counts where the save stands: past 零层 (the header's bar stands from 一层). */
 export const cultivating = (content, state) => !zeroAt(content, state.tier, state.step);
 
+/* A realm shown in 段 (ladder.json `display: "stages"`, Hanli approved 2026-11-02: 「9层用于计算, 小, 中, 大成用于显示」 ·
+   「筑基以后再分3段UI吧」): nine 层 to count, three 段 to read — 一至三层 小成, 四至六层 中成, 七至九层 大成 (`phases`, ids
+   `stage_ids`). `stageOf` is where a step stands in them: the 段 (`index`, `id`, `name`), the 层's place inside it (`at`
+   1–3), the 段's first step and its size. Null for a realm that names its 层 (练气) and for a world without phases. */
+export const staged = (content, tierId) => tierOf(content, tierId)?.display === 'stages' && Boolean(content.ladder.phases);
+export function stageOf(content, tierId, step, lang = 'zh') {
+  if (!staged(content, tierId)) return null;
+  const tier = tierOf(content, tierId), names = pick(content.ladder.phases, lang), n = names.length;
+  const per = Math.ceil(tier.thresholds.length / n), index = Math.min(n - 1, Math.floor(step / per));
+  return { index, id: content.ladder.stage_ids?.[index] ?? String(index), name: names[index], at: step - index * per + 1, per, first: index * per, last: index === n - 1 };
+}
+/* The step into a new 段 past its first (四层, 七层): where the 段 trial is thrown (rules/breakthrough.mjs duanPass). */
+export const stageDoor = (content, tierId, step) => { const g = step > 0 ? stageOf(content, tierId, step) : null; return Boolean(g && g.at === 1); };
+
 export function stepName(content, tierId, step, lang) {
   const tier = tierOf(content, tierId);
+  // In 段: the realm and the 段 (「筑基 · 中成」) — the 层 is the bar's, never a name.
+  const g = stageOf(content, tierId, step, lang);
+  if (g) return `${pick(tier.name, lang)} · ${g.name}`;
   const name = pick(tier.name, lang), s = tier.steps[lang][step];
   return lang === 'zh' ? `${name}${s}` : `${name} · ${s}`;
 }
+/* The 层 as the tooltip names it, in a realm shown in 段: 「第四层」, "Layer 4". */
+export const layerName = (content, tierId, step, lang) => (lang === 'zh' ? `第${tierOf(content, tierId).steps.zh[step]}` : tierOf(content, tierId).steps.en[step]);
 
 /* The phase a step falls in (ladder.json `phases`, three steps each): 练气四层
    is 练气中成 — the formal word, as a 名册 writes it. A realm of three steps
@@ -455,6 +474,8 @@ export function stepName(content, tierId, step, lang) {
 export function phaseName(content, tierId, step, lang) {
   const tier = tierOf(content, tierId), phases = content.ladder.phases;
   if (!tier || !phases) return null;
+  // In 段 the step's name is its phase already (筑基 · 中成).
+  if (staged(content, tierId)) return stepName(content, tierId, step, lang);
   // 零层 is before the phases (一至三层 小成): it reads as itself.
   if (zeroAt(content, tierId, step)) return stepName(content, tierId, step, lang);
   const from = tier.zero ? 1 : 0;
@@ -469,6 +490,9 @@ export function phaseName(content, tierId, step, lang) {
 export function fullName(content, tierId, step, lang) {
   const name = stepName(content, tierId, step, lang), full = content.ladder.full;
   if (!full) return name;
+  // In 段 only the 段's last 层 filled is its 圆满 (筑基 · 小成圆满 at 三层); a 层 before it full is the 段 still.
+  const g = stageOf(content, tierId, step, lang);
+  if (g && g.at < g.per) return name;
   return lang === 'zh' ? `${name}${pick(full, lang)}` : `${name}, ${pick(full, lang)}`;
 }
 
@@ -605,6 +629,11 @@ const MIGRATIONS = [
   // own `tier` · `step` · `progress` · `stretch`, untouched: no mark, so paceLayer never runs); 今 starts at zero in `lines.jin`,
   // filled by fitWorld (fitLines) — the line's ladder is the world's.
   [14, m => { m.lines ??= {}; }],
+  // v15 (2026-11-02, Hanli approved: 「以后可以仍然按层数算1-3=小成, 4-6=中, 7-9=大」 · 「9层用于计算, 小, 中, 大成用于显示」):
+  // every realm past 练气 counts nine 层 again, shown as three 段. Marked, carried by fitWorld (stagesCarry): the old step
+  // k is 层 3k+3 — 小成 三层, 中成 六层, 大成 九层 — the bar as full as it stood; every older carry runs first on the
+  // three-step ladder it was written for (ladderOf14).
+  [15, m => { m.ladder_stages = true; }],
 ];
 
 export function migrate(state, content = null) {
@@ -702,6 +731,30 @@ export function paceLayer(content, saved) {
   return { ...s, progress: Math.round((s.progress ?? 0) * k), ...(st ? { stretch: { ...s.stretch, [key]: Math.round(st * k) } } : {}) };
 }
 
+/* The world as a v14 save knew it: every realm shown in 段 on its three steps again (ladder.json `thresholds_were["14"]`,
+   named by `phases`), so the carries written before 2026-11-02 read the save on the ladder they were written against. */
+export function ladderOf14(content) {
+  const three = t => (t.display === 'stages' && t.thresholds_were?.['14'] ? (({ display, ...r }) => ({ ...r, thresholds: [...t.thresholds_were['14']], steps: { ...content.ladder.phases } }))(t) : t);
+  return { ...content, ladder: { ...content.ladder, tiers: content.ladder.tiers.map(three) } };
+}
+
+/* A save from the three steps (marked by v15, 2026-11-02): in a realm shown in 段 its step k (小成 0, 中成 1, 大成 2) is
+   the 段's last 层 — 三层, 六层, 九层 — and its bar stands as full as it stood (`thresholds_were["14"]`), the stretch
+   with it: 筑基小成 · 655/1310 is 筑基三层 · 790/1580, 筑基圆满 is 九层圆满 still, so a save waiting at a cliff can throw.
+   The 段 it read is the 段 it reads. A realm that names its 层 (练气) is left as it was. */
+export function stagesCarry(content, saved) {
+  const { ladder_stages, ...s } = saved;
+  const tier = tierOf(content, s.tier), was = tier?.thresholds_were?.['14'];
+  if (tier?.display !== 'stages' || !was || !(Number.isInteger(s.step) && s.step >= 0 && s.step < was.length)) return s;
+  const per = Math.ceil(tier.thresholds.length / was.length), step = s.step * per + per - 1, k = tier.thresholds[step] / was[s.step];
+  const oldKey = stretchKey(s.tier, s.step), st = s.stretch?.[oldKey];
+  const stretch = s.stretch ? Object.fromEntries(Object.entries(s.stretch).filter(([key]) => !key.startsWith(`${s.tier}:`))) : null;
+  if (st) stretch[stretchKey(s.tier, step)] = Math.round(st * k);
+  const out = { ...s, step, progress: Math.round((s.progress ?? 0) * k) };
+  if (stretch && Object.keys(stretch).length) out.stretch = stretch; else delete out.stretch;
+  return out;
+}
+
 /* What a save rooted before 2026-10-16 held without writing it down: the `_legacy_starter` of
    its roots, 银月 once she walked with it, and its tamed beasts that are cards. */
 function legacyCards(content, state) {
@@ -754,10 +807,13 @@ export function fitWorld(saved, content) {
   let state = 'branch' in saved ? rest : saved;
   // The book set aside at a scene the save no longer stands on (rules/aside.mjs): let go, so Move is never kept shut.
   if (state.aside && state.aside.scene !== state.scene) state = (({ aside, ...r }) => r)(state);
-  if ('ladder3' in state) state = threeToNine(content, state);
-  if ('ladder9' in state) state = nineToThree(content, state);
-  if ('ladder_zero' in state) state = zeroLayer(content, state);
-  if ('ladder_pace' in state) state = paceLayer(content, state);
+  // A save from before the nine 层 (v15) is carried by the older steps on the three-step ladder it knew, then into 段.
+  const was = 'ladder_stages' in state ? ladderOf14(content) : content;
+  if ('ladder3' in state) state = threeToNine(was, state);
+  if ('ladder9' in state) state = nineToThree(was, state);
+  if ('ladder_zero' in state) state = zeroLayer(was, state);
+  if ('ladder_pace' in state) state = paceLayer(was, state);
+  if ('ladder_stages' in state) state = stagesCarry(content, state);
   const tier = tierOf(content, state.tier);
   const chapter = content.chapters[state.chapter];
   // A scene renamed since — the prologue rewrite of 2026-09-28 — goes to the

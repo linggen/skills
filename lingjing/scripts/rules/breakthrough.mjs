@@ -14,7 +14,7 @@
 // and every other thing held are never lost — the pill carried included: it
 // is eaten only by a throw that lands (the card's promise, 「境界与所藏不失」;
 // live 2026-10-01 a failed throw ate the one 九转 and the next try had less).
-import { pick, settleStamina, staminaLimited, threshold, seedOf } from '../state.mjs';
+import { pick, settleStamina, staminaLimited, threshold, seedOf, stageDoor, stageOf } from '../state.mjs';
 import { herAwake, herGifts } from './companion.mjs';
 import { itemOf } from './errands.mjs';
 import { strongRoots } from './roots.mjs';
@@ -157,3 +157,60 @@ export function lastThrow(state, now) {
   const last = state.breakthrough?.last;
   return last && now - new Date(last.at) <= HOUR ? last : null;
 }
+
+/* ── The 段 trial (Hanli approved 2026-11-02, the nine-层 change; ladder.json `breakthrough.duan`) ──
+   In a realm shown in 段 the step into 四层 and into 七层 — 小成 → 中成, 中成 → 大成 — is a light throw, no pill: `base`
+   plus the realm throw's `factors` (体力, a 闭关, 银月, the realm's 五行), held between the realm rule's `floor` and `cap`.
+   It is thrown where the 修为 carries him over the 段's last 层 (state.mjs addProgress asks its door, `duanPass`); the die
+   is the save's, the realm's, the 段's and the try's, so a reload lands the same. A failure costs only the hour: the 层
+   stays full, the 修为 counts on past its mark, and after `cooldown_hours` the next pay throws a new die. 九层圆满 into
+   the next realm is the realm throw (above), unchanged. Kept on the save as `duan` {tries, until, last}. */
+const DUAN = content => RULE(content)?.duan ?? null;
+const duanKey = (tier, step) => `${tier}:${step}`;
+export const duanCooling = (state, now) => (state.duan?.until && new Date(state.duan.until) > now ? state.duan.until : null);
+
+/* The trial's chance into (tier, step) — the step a 段 door (四层, 七层) — as Look shows it and the throw uses it. Null where
+   there is none: not a door, no rule. */
+export function duanOdds(content, state, now, tier, step) {
+  const rule = RULE(content), d = DUAN(content);
+  if (!rule || !d || !stageDoor(content, tier, step)) return null;
+  const pool = { stamina: state.stamina, stamina_at: state.stamina_at };
+  settleStamina(content, pool, now);
+  const x = { to: tier, now, stamina: pool.stamina };
+  const parts = (d.factors ?? []).filter(id => FACTORS[id] && id !== 'pill').map(id => [id, FACTORS[id](content, state, rule, x)]).filter(([, p]) => p).map(([id, p]) => ({ id, ...p }));
+  const raw = d.base + parts.reduce((n, p) => n + p.n, 0);
+  const g = stageOf(content, tier, step, state.lang);
+  return { to: { tier, step, id: g.id, name: g.name }, chance: Math.max(rule.floor, Math.min(rule.cap, raw)), base: d.base, parts, cooldown_hours: d.cooldown_hours };
+}
+const duanRoll = (state, tier, step) => hashOf(`${seedOf(state)}|duan|${duanKey(tier, step)}|${state.duan?.tries?.[duanKey(tier, step)] ?? 0}`) % 100;
+
+/* The door into (tier, step), read and never written: open where it is no 段 door; shut while the trial cools; else this
+   try's die against the chance. The pay that steps through it, or is held at it, writes the try (duanTried). */
+export function duanPass(content, state, now, tier, step) {
+  const odds = duanOdds(content, state, now, tier, step);
+  if (!odds) return true;
+  if (duanCooling(state, now)) return false;
+  return duanRoll(state, tier, step) < odds.chance;
+}
+
+/* What the pay just did at a 段 door, written down: `to` the door it stepped through (a landed try), or `held` the door it
+   stopped at with its 修为 over the mark (a failed try — the hour starts). Nothing when no die was thrown (cooling, no
+   door). Returns the try for the result, or null. */
+export function duanTried(content, state, now, { to = null, held = null, odds = null } = {}) {
+  const at = to ?? held;
+  if (!at || (held && duanCooling(state, now))) return null;
+  const o = odds ?? duanOdds(content, state, now, at.tier, at.step);
+  if (!o) return null;
+  const key = duanKey(at.tier, at.step), success = Boolean(to);
+  const tries = { ...state.duan?.tries, [key]: (state.duan?.tries?.[key] ?? 0) + 1 };
+  const until = success ? null : new Date(now.getTime() + (o.cooldown_hours ?? 1) * HOUR).toISOString();
+  state.duan = { tries, ...(until ? { until } : {}), last: { to: key, chance: o.chance, success, at: now.toISOString() } };
+  return { to: o.to, chance: o.chance, success, ...(until ? { again_at: until } : {}) };
+}
+/* 重置冷却 (rules/events.mjs): the 段 trial open again. */
+onCooldownReset('duan', (content, state) => {
+  if (!state.duan?.until) return false;
+  const { until, ...rest } = state.duan;
+  state.duan = rest;
+  return true;
+});

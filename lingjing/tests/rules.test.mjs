@@ -2231,11 +2231,11 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   // the gate: not at the peak of 筑基
   const held = refused(resolve, s, { exit: 'take' }, 'not-at-peak', nctx());
   assert.ok(held.say.startsWith('鼎气扑到你身上'));
-  assert.equal(held.peak_step, 3, 'three steps a realm past 练气: 小成, 中成, 大成');
+  assert.equal(held.peak_step, 9, 'nine 层 a realm past 练气, shown as 小成, 中成, 大成 (Hanli approved 2026-11-02)');
   // at the peak (筑基圆满): the Core forms, then paid into the new tier
-  s = lucky({ ...s, step: 2, progress: TH('foundation')[2] }, 'core', nctx());
+  s = lucky({ ...s, step: 8, progress: TH('foundation')[8] }, 'core', nctx());
   r = answerN(resolve, s, { exit: 'take' });
-  assert.deepEqual(btOf(r.result.breakthrough), { from: '筑基圆满', to: '结丹小成', tier: 'core', success: true });
+  assert.deepEqual(btOf(r.result.breakthrough), { from: '筑基圆满', to: '结丹 · 小成', tier: 'core', success: true });
   assert.equal(r.state.tier, 'core'); assert.equal(r.state.step, 0);
   assert.equal(r.state.progress, atLayer(r.state, 60)); // the way on's 60, read at 结丹小成 (play_pay.authored)
   assert.equal(r.state.scene, '02-end');
@@ -2313,11 +2313,11 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   // the gate: not at the peak of 结丹
   const held = refused(resolve, s, { exit: 'take' }, 'not-at-peak', dctx());
   assert.ok(held.say.startsWith('鼎气涌上来'));
-  assert.equal(held.peak_step, 3);
+  assert.equal(held.peak_step, 9);
   // at the peak (结丹圆满): the Nascent Soul forms, then paid into the new tier — which pays double
-  s = lucky({ ...s, step: 2, progress: TH('core')[2] }, 'nascent', dctx());
+  s = lucky({ ...s, step: 8, progress: TH('core')[8] }, 'nascent', dctx());
   r = answerD(resolve, s, { exit: 'take' });
-  assert.deepEqual(btOf(r.result.breakthrough), { from: '结丹圆满', to: '元婴小成', tier: 'nascent', success: true });
+  assert.deepEqual(btOf(r.result.breakthrough), { from: '结丹圆满', to: '元婴 · 小成', tier: 'nascent', success: true });
   assert.equal(r.state.tier, 'nascent'); assert.equal(r.state.step, 0);
   assert.equal(r.state.progress, atLayer(r.state, 60) * content.ladder.tiers.find(t => t.id === 'nascent').pay); // read at 元婴, × the realm's pay
   assert.equal(r.state.scene, '03-end');
@@ -2353,7 +2353,7 @@ test('a cauldron the player cannot take yet offers the way back, and says what i
   const l = look(s, content, c);
   const take = l.scene.exits.find(e => e.id === 'take');
   assert.equal(take.breakthrough.ready, false);
-  assert.deepEqual(take.breakthrough.need, { step: '结丹圆满', progress: TH('core')[2], to: '元婴' });
+  assert.deepEqual(take.breakthrough.need, { step: '结丹圆满', progress: TH('core').at(-1), to: '元婴' });
   assert.ok(!l.ask.options.some(o => o.exit === 'take'), 'no breath to tap');
   const back = l.ask.options.find(o => o.move);
   assert.equal(back?.label, '先回蓬莱');
@@ -2364,10 +2364,10 @@ test('a cauldron the player cannot take yet offers the way back, and says what i
   assert.notEqual(choice.options.find(o => o.move)?.move, 'liubo');
   // and the goal says why the story waits: what the breath asks, where he stands, no road to it
   const waits = look(away.state, content, c).waypoint;
-  assert.deepEqual(waits.gate, { step: '结丹圆满', progress: TH('core')[2], to: '元婴', now: { step: '结丹小成', progress: 222, of: TH('core')[0] } });
+  assert.deepEqual(waits.gate, { step: '结丹圆满', progress: TH('core').at(-1), to: '元婴', now: { step: '结丹 · 小成', progress: 222, of: TH('core')[0] } });
   assert.equal(waits.toward, undefined);
   // at the peak, the breath is the odds card's throw — never the chat's (Hanli, 2026-09-28)
-  const peak = { ...s, step: 2, progress: TH('core')[2] };
+  const peak = { ...s, step: 8, progress: TH('core')[8] };
   const ready = look(peak, content, c);
   assert.equal(ready.scene.exits.find(e => e.id === 'take').breakthrough.ready, true);
   assert.ok(ready.stage.some(x => x.card === 'breakthrough' && x.id === 'take'), JSON.stringify(ready.stage));

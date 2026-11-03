@@ -42,7 +42,7 @@ const atJi = (extra = {}) => ({
 /* At 青鼎, the peak of 结丹, 银月 found — the third cauldron's gift is hers. */
 const atQing = (extra = {}) => ({
   ...atJi(), chapter: '03-qing', scene: '03-cauldron', place: 'liubo', ended: ['00-prologue', '01-ji', '02-yan'],
-  tier: 'core', step: 2, progress: content.ladder.tiers.find(t => t.id === 'core').thresholds.at(-1), companion: { joined: '2026-09-20' }, ...extra,
+  tier: 'core', step: content.ladder.tiers.find(t => t.id === 'core').thresholds.length - 1, progress: content.ladder.tiers.find(t => t.id === 'core').thresholds.at(-1), companion: { joined: '2026-09-20' }, ...extra,
 });
 /* The try whose die lands (or not) under the chance. */
 function tryThat(state, to, lands) {
@@ -256,7 +256,7 @@ test('the page writes what fell down for Ling and Yinyue, and Undo takes the thr
   const first = cli('resolve', '--exit=take');
   assert.equal(first.breakthrough.success, false);
   const after = state();
-  assert.match(after.page_did.at(-1).what, new RegExp(`tried the breakthrough to 筑基小成 on the page's card \\(\\d+% chance\\) and the tribulation threw them back: 体力 −${WOUND}, −${Math.round(PEAK * content.ladder.breakthrough.fail.progress)} 修为; the cauldron is shut until .*The realm is kept`));
+  assert.match(after.page_did.at(-1).what, new RegExp(`tried the breakthrough to 筑基 · 小成 on the page's card \\(\\d+% chance\\) and the tribulation threw them back: 体力 −${WOUND}, −${Math.round(PEAK * content.ladder.breakthrough.fail.progress)} 修为; the cauldron is shut until .*The realm is kept`));
   assert.equal(cli('undo').ok, true);
   assert.equal(state().progress, PEAK, 'taken back');
   const again = cli('resolve', '--exit=take');
@@ -268,8 +268,8 @@ test('the page writes what fell down for Ling and Yinyue, and Undo takes the thr
   assert.match(told.guide.story, /渡劫 — the breakthrough is a throw/);
   fs.rmSync(data, { recursive: true, force: true });
 
-  const won = notePage('resolve', {}, { ok: true, breakthrough: { success: true, chance: 42, low: true, to: '筑基小成' }, beat: [{ text: '三道雷。' }] }, { lang: 'zh' }, content, NOW);
-  assert.match(won.page_did.at(-1).what, /broke through to 筑基小成 on the page's card \(42% chance, against the odds\) — beat: 三道雷。/);
+  const won = notePage('resolve', {}, { ok: true, breakthrough: { success: true, chance: 42, low: true, to: '筑基 · 小成' }, beat: [{ text: '三道雷。' }] }, { lang: 'zh' }, content, NOW);
+  assert.match(won.page_did.at(-1).what, /broke through to 筑基 · 小成 on the page's card \(42% chance, against the odds\) — beat: 三道雷。/);
 });
 
 test('after a failed throw the cliff is never a dead end: the shut hours first, then 闭关 named as the way back to the peak', () => {

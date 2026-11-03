@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadContent } from '../scripts/content.mjs';
-import { STATE_VERSION, fitWorld, layerPayOf, migrate, newState, realmName, staminaCost } from '../scripts/state.mjs';
+import { STATE_VERSION, fitWorld, layerPayOf, migrate, newState, realmName, staminaCost, stepName } from '../scripts/state.mjs';
 import { look, quest, resolve } from '../scripts/rules.mjs';
 import { pay, paysOf } from '../scripts/rules/core.mjs';
 import { choreGrant } from '../scripts/rules/chores.mjs';
@@ -82,8 +82,10 @@ test('every 回 the stage quests hold reaches the book\'s layer at its close —
   for (const who of Object.keys(M.players)) {
     const p = play(content, M.players[who]);
     assert.ok(p.rows.every(r => r.end != null), `${who} ends 卷一`);
-    assert.deepEqual([p.end.tier, p.end.step], ['foundation', 0], `${who}: 筑基小成 at 卷一's end`);
-    assert.ok(rank(p.end.tier, p.end.step) <= rank('foundation', 0));
+    // 筑基 in nine 层 since 2026-11-02 (Hanli approved): 小成 is 一至三层, 古九's cap 三层 — 卷一 ends inside 小成.
+    assert.equal(p.end.tier, 'foundation', `${who}: 筑基 at 卷一's end`);
+    assert.equal(stepName(content, p.end.tier, p.end.step, 'zh'), '筑基 · 小成', `${who}: 筑基 · 小成 at 卷一's end`);
+    assert.ok(rank(p.end.tier, p.end.step) <= rank('foundation', 2));
   }
 });
 
@@ -205,7 +207,9 @@ test('a save from before keeps its 层 and its bar as full as it stood — a v8 
   assert.equal('ladder_pace' in cliff, false, 'the mark goes once carried');
   const zhuji = migrate(save(9, { chapter: '01-ji', scene: null, tier: 'foundation', step: 0, progress: 100 }), content);
   const fd = content.ladder.tiers[1];
-  assert.deepEqual([zhuji.tier, zhuji.step, zhuji.progress], ['foundation', 0, Math.round(100 * fd.thresholds[0] / fd.thresholds_were['13'][0])], 'past 练气: its bar as full as it stood (v13, the master table\'s 筑基)');
+  // v13's master table read it on the three steps (thresholds_were 14), then v15 carries 小成 to 三层 — the bar as full as it stood.
+  const v14 = Math.round(100 * fd.thresholds_were['14'][0] / fd.thresholds_were['13'][0]);
+  assert.deepEqual([zhuji.tier, zhuji.step, zhuji.progress], ['foundation', 2, Math.round(v14 * fd.thresholds[2] / fd.thresholds_were['14'][0])], 'past 练气: its bar as full as it stood (v13, the master table\'s 筑基; v15, 小成 → 三层)');
 });
 
 test('v13 (数值系统 phase 2): a 练气二层 save keeps its 层, its bar and the stretch over its mark as full as they stood', () => {

@@ -18,7 +18,7 @@
 // A save already past the cap (one played before 2026-10-05) is never pulled
 // down: it keeps its layer and fills it, and goes no higher until the story
 // catches up.
-import { addProgress, pick, stepOfLayer, threshold, tierOf, zeroAt } from '../state.mjs';
+import { addProgress, pick, stageDoor, stepOfLayer, threshold, tierOf, zeroAt } from '../state.mjs';
 import { huiNow, huiOrder } from './hui.mjs';
 
 /* A realm and layer as one number, low to high: tier index, then layer. */
@@ -108,6 +108,7 @@ export function settleHeld(content, state) {
   if (!state || !content.ladder?.caps || !tierOf(content, state.tier) || zeroAt(content, state.tier, state.step)) return state;
   if ((state.progress ?? 0) < threshold(content, state)) return state;
   const s = structuredClone(state);
-  const { levels } = addProgress(content, s, 0, (tier, step) => underCap(content, state, tier, step));
+  // Never through a 段 door (四层, 七层 of a realm in 段): that step is the trial's, thrown by the next pay (rules/breakthrough.mjs).
+  const { levels } = addProgress(content, s, 0, (tier, step) => underCap(content, state, tier, step) && !stageDoor(content, tier, step));
   return levels.length ? s : state;
 }

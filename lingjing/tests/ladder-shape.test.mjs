@@ -6,12 +6,16 @@
 // 筑基圆满, is the one state a breakthrough is tried from. 巅峰 is the spoken
 // word for 圆满, never in a formal table. Saves from the three-step ladder
 // (before 2026-10-03) and the nine-层 one (10-03 → 10-09) are carried over
-// exactly (state.mjs v6 threeToNine, v7 nineToThree). 法宝 and 本命法宝 begin
+// exactly (state.mjs v6 threeToNine, v7 nineToThree). Since 2026-11-02 (Hanli
+// approved: 「以后可以仍然按层数算1-3=小成, 4-6=中, 7-9=大」 · 「9层用于计算, 小, 中,
+// 大成用于显示」) every realm past 练气 counts nine 层 again and reads them as three
+// 段 — 「筑基 · 中成」 — and a save from the three steps is carried by v15
+// (stagesCarry: 小成 → 三层, 中成 → 六层, 大成 → 九层). 法宝 and 本命法宝 begin
 // at 结丹. The 筑基丹 is sold nowhere: 全观一年一颗.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
-import { fitWorld, fullName, migrate, newState, nineToThree, paceLayer, peakName, phaseName, realmName, stepName, threeToNine } from '../scripts/state.mjs';
+import { fitWorld, fullName, ladderOf14, migrate, newState, nineToThree, paceLayer, peakName, phaseName, realmName, stepName, threeToNine } from '../scripts/state.mjs';
 import { boundOf, growTreasure, treasureBrief } from '../scripts/rules/arms.mjs';
 import { look, seclude } from '../scripts/rules.mjs';
 
@@ -21,7 +25,7 @@ const NOW = new Date('2026-10-03T12:00:00');
 const THREE = { foundation: [400, 500, 600], core: [800, 1000, 1200], nascent: [1600, 2000, 2400], deity: [3000, 3600, 4200], void: [5000, 6000, 7000], body: [8000, 9500, 11000], maha: [12500, 14500, 16500], tribulation: [19000, 22000, 25000] };
 const pos = ({ step, progress }) => ({ step, progress });
 
-test('练气 has 零层 and nine 层 above it in three phases; every realm above it three steps, 小成 中成 大成; a step filled is 圆满', () => {
+test('练气 has 零层 and nine 层 above it in three phases; every realm above it nine 层 shown as three 段, 小成 中成 大成; a 段 filled is 圆满', () => {
   const { tiers, phases, full, layers_were } = content.ladder;
   assert.deepEqual(phases, { zh: ['小成', '中成', '大成'], en: ['Lesser Attainment', 'Middle Attainment', 'Greater Attainment'] });
   assert.deepEqual(full, { zh: '圆满', en: 'Consummation' });
@@ -34,11 +38,14 @@ test('练气 has 零层 and nine 层 above it in three phases; every realm above
   assert.deepEqual(qi.steps.en.slice(0, 2), ['Layer 0', 'Layer 1']);
   for (let i = 2; i < 10; i += 1) assert.ok(qi.thresholds[i] > qi.thresholds[i - 1], `练气 层 ${i} asks more than 层 ${i - 1}`);
   for (const t of above) {
-    assert.deepEqual(t.steps, content.ladder.phases, `${t.id}: its steps are the phases`);
-    // The three steps it had until state v13 (2026-10-27: the master table's numbers since, balance.json `master`).
+    assert.equal(t.display, 'stages', `${t.id}: shown in 段`);
+    assert.deepEqual(t.steps.zh, ['一层', '二层', '三层', '四层', '五层', '六层', '七层', '八层', '九层'], `${t.id}: nine 层 to count`);
+    assert.equal(t.thresholds.length, 9);
+    // The three steps it had until state v13 (2026-10-27: the master table's numbers since, balance.json `master`), and until v15.
     const was = t.thresholds_were['13'];
     assert.deepEqual(was, THREE[t.id], `${t.id}: the three steps`);
-    assert.ok(t.thresholds.every((n, k) => k === 0 || n > t.thresholds[k - 1]), `${t.id}: each step more than the one before`);
+    assert.equal(t.thresholds_were['14'].length, 3, `${t.id}: the three steps a v14 save was played on`);
+    assert.ok(t.thresholds.every((n, k) => k === 0 || n > t.thresholds[k - 1]), `${t.id}: each 层 more than the one before`);
     // The nine 层 it had 10-03 → 10-09 sum, three by three, to those steps: a realm's whole never changed then.
     for (let p = 0; p < 3; p += 1) assert.equal(layers_were[t.id].slice(p * 3, p * 3 + 3).reduce((a, b) => a + b), was[p], `${t.id} step ${p}`);
   }
@@ -48,34 +55,41 @@ test('练气 has 零层 and nine 层 above it in three phases; every realm above
   assert.equal(phaseName(content, 'qi', 9, 'zh'), '练气大成');
   assert.equal(phaseName(content, 'qi', 0, 'zh'), '练气零层', '零层 is before the phases');
   assert.equal(stepName(content, 'qi', 0, 'en'), 'Qi Condensation · Layer 0');
-  assert.equal(phaseName(content, 'foundation', 0, 'zh'), '筑基小成');
-  assert.equal(phaseName(content, 'core', 2, 'en'), 'Core Formation · Greater Attainment');
-  assert.equal(stepName(content, 'foundation', 1, 'zh'), '筑基中成');
+  // In 段: 一至三层 小成, 四至六层 中成, 七至九层 大成 — the realm and the 段, never the 层.
+  const names = [0, 1, 2, 3, 4, 5, 6, 7, 8].map(k => stepName(content, 'foundation', k, 'zh'));
+  assert.deepEqual(names, ['筑基 · 小成', '筑基 · 小成', '筑基 · 小成', '筑基 · 中成', '筑基 · 中成', '筑基 · 中成', '筑基 · 大成', '筑基 · 大成', '筑基 · 大成']);
+  assert.equal(phaseName(content, 'foundation', 0, 'zh'), '筑基 · 小成');
+  assert.equal(phaseName(content, 'core', 8, 'en'), 'Core Formation · Greater Attainment');
+  assert.equal(stepName(content, 'foundation', 4, 'en'), 'Foundation Establishment · Middle Attainment');
   assert.equal(stepName(content, 'qi', 4, 'zh'), '练气四层');
-  // 圆满 is the full point of any step; the realm's last, short, is the breakthrough's `from`.
+  // 圆满 is the full point of a 练气 层 and of a 段's last 层; the realm's last, short, is the breakthrough's `from`.
   assert.equal(fullName(content, 'qi', 2, 'zh'), '练气二层圆满');
-  assert.equal(fullName(content, 'foundation', 1, 'zh'), '筑基中成圆满');
-  assert.equal(fullName(content, 'foundation', 2, 'en'), 'Foundation Establishment · Greater Attainment, Consummation');
+  assert.equal(fullName(content, 'foundation', 5, 'zh'), '筑基 · 中成圆满');
+  assert.equal(fullName(content, 'foundation', 4, 'zh'), '筑基 · 中成', 'a 层 inside the 段 full is the 段 still');
+  assert.equal(fullName(content, 'foundation', 8, 'en'), 'Foundation Establishment · Greater Attainment, Consummation');
   assert.equal(peakName(content, 'foundation', 'zh'), '筑基圆满');
   assert.equal(peakName(content, 'qi', 'zh'), '练气圆满');
   assert.equal(realmName(content, { tier: 'qi', step: 2, progress: qi.thresholds[2] - 1 }, 'zh'), '练气二层');
   assert.equal(realmName(content, { tier: 'qi', step: 2, progress: qi.thresholds[2] }, 'zh'), '练气二层圆满');
   assert.equal(realmName(content, { tier: 'qi', step: 0, progress: 0 }, 'zh'), '练气零层', '零层 is never 圆满');
   assert.equal(realmName(content, { tier: 'qi', step: 0, progress: 0 }, 'en'), 'Qi Condensation · Layer 0');
-  assert.equal(realmName(content, { tier: 'foundation', step: 2, progress: content.ladder.tiers[1].thresholds[2] }, 'zh'), '筑基大成圆满');
+  assert.equal(realmName(content, { tier: 'foundation', step: 8, progress: content.ladder.tiers[1].thresholds[8] }, 'zh'), '筑基 · 大成圆满');
+  assert.equal(realmName(content, { tier: 'foundation', step: 2, progress: content.ladder.tiers[1].thresholds[2] }, 'zh'), '筑基 · 小成圆满');
   assert.doesNotMatch(JSON.stringify(content.ladder.tiers), /巅峰|大圆满/, '巅峰 is the spoken word for 圆满, never in a formal table');
   assert.doesNotMatch(JSON.stringify({ tiers, phases, full }), /初期|中期|后期/);
 });
 
 test('a save from the nine-层 ladder lands on the same 修为: 层 1–3 小成, 4–6 中成, 7–9 大成, the 层 passed added', () => {
-  const at = (tier, step, progress) => nineToThree(content, { tier, step, progress, ladder9: true });
+  // Carried on the three-step ladder it met at v7 (ladderOf14: the world as a v14 save knew it), then into 段 by v15.
+  const v14 = ladderOf14(content);
+  const at = (tier, step, progress) => nineToThree(v14, { tier, step, progress, ladder9: true });
   assert.deepEqual(pos(at('core', 0, 222)), { step: 0, progress: 222 }, '结丹一层 · 222 is 结丹小成 · 222');
   assert.deepEqual(pos(at('foundation', 4, 50)), { step: 1, progress: 160 + 50 }, '筑基五层 · 50: 四层 passed');
   assert.deepEqual(pos(at('foundation', 2, 100)), { step: 0, progress: 128 + 133 + 100 });
   const filled = at('foundation', 8, 208);
   assert.deepEqual(pos(filled), { step: 2, progress: 600 }, '筑基九层 filled is 筑基圆满');
   // …on the ladder it was played on; v13 (paceLayer) reads it onto the master table's, 圆满 still.
-  assert.equal(realmName(content, paceLayer(content, { ...filled, ladder_pace: 13 }), 'zh'), '筑基大成圆满');
+  assert.equal(realmName(v14, paceLayer(v14, { ...filled, ladder_pace: 13 }), 'zh'), '筑基大成圆满');
   assert.equal('ladder9' in filled, false);
   // 练气 always had nine: untouched.
   assert.deepEqual(pos(at('qi', 5, 40)), { step: 5, progress: 40 });
@@ -85,9 +99,10 @@ test('a save from the nine-层 ladder lands on the same 修为: 层 1–3 小成
   assert.equal(marked.ladder9, true);
   const fitted = migrate(marked, content);
   assert.equal(fitted.ladder9, undefined);
-  // …and v13 (paceLayer) reads that bar onto the master table's 结丹大成, as full as it stood.
-  const core = content.ladder.tiers.find(t => t.id === 'core'), v13 = n => Math.round(n * core.thresholds[2] / core.thresholds_were['13'][2]);
-  assert.deepEqual(pos(fitted), { step: 2, progress: v13(384 + 300) }, '结丹八层 · 300 is 结丹大成 · 七层 passed + 300');
+  // …v13 (paceLayer) reads that bar onto the master table's 结丹大成, as full as it stood; v15 carries 大成 to 九层, the same.
+  const core = content.ladder.tiers.find(t => t.id === 'core'), was14 = core.thresholds_were['14'][2];
+  const v13 = n => Math.round(n * was14 / core.thresholds_were['13'][2]), v15 = n => Math.round(n * core.thresholds[8] / was14);
+  assert.deepEqual(pos(fitted), { step: 8, progress: v15(v13(384 + 300)) }, '结丹八层 · 300 is 结丹大成 · 七层 passed + 300, then 结丹九层');
   assert.deepEqual(fitWorld(fitted, content), fitted, 'fitting again changes nothing');
   assert.deepEqual(migrate(old, content), fitted, 'one call with the world does the same');
 });
@@ -100,8 +115,9 @@ test('a save from the three-step ladder (before 2026-10-03) needs nothing: its s
   const fitted = migrate(marked, content);
   assert.equal('ladder3' in fitted, false);
   const core = content.ladder.tiers.find(t => t.id === 'core');
-  assert.deepEqual(pos(fitted), { step: 2, progress: Math.round(1100 * core.thresholds[2] / core.thresholds_were['13'][2]) }, 'its bar as full as it stood (v13)');
-  assert.deepEqual(pos(threeToNine(content, { tier: 'foundation', step: 1, progress: 250, ladder3: true })), { step: 1, progress: 250 });
+  const was14 = core.thresholds_were['14'][2], v13 = Math.round(1100 * was14 / core.thresholds_were['13'][2]);
+  assert.deepEqual(pos(fitted), { step: 8, progress: Math.round(v13 * core.thresholds[8] / was14) }, 'its bar as full as it stood (v13), 大成 → 九层 (v15)');
+  assert.deepEqual(pos(threeToNine(ladderOf14(content), { tier: 'foundation', step: 1, progress: 250, ladder3: true })), { step: 1, progress: 250 });
 });
 
 test('no shelf sells the 筑基丹: 全观一年一颗 — the item stays, a gift or the sect\'s', () => {

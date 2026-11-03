@@ -123,7 +123,7 @@ test('the 事 chip: how many in hand, what can be handed in — and its popover 
   // the stage keeps one slim line of it, with nothing to tap
   const line = cardHtml({ card: 'goal' }, pageCtx(look({ ...open, chapter: '03-qing', scene: '03-cauldron', place: 'penglai' }, content, at)));
   const core = content.ladder.tiers.find(t => t.id === 'core').thresholds;
-  assert.match(line, new RegExp(`class="goalline".*鼎气要结丹圆满 · ${core[2]} 修为才受得住 — 如今 结丹小成 · 206/${core[0]}`, 's'));
+  assert.match(line, new RegExp(`class="goalline".*鼎气要结丹圆满 · ${core.at(-1)} 修为才受得住 — 如今 结丹 · 小成 · 206/${core[0]}`, 's'));
   assert.doesNotMatch(line, /<button/);
 });
 

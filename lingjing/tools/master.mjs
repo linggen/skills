@@ -105,7 +105,9 @@ export function getPath(obj, path) { return path.split('.').reduce((o, k) => (o 
    items.json's (kind, 转, family, effect) — read, never written. */
 export function derive(raw0, { ladder, items }) {
   const raw = structuredClone(raw0), M = raw.master, gu = M.lines.gu;
-  const tiers = ladder.tiers.filter(t => gu.tiers.includes(t.id)).map(t => ({ id: t.id, zero: Boolean(t.zero), steps: raw.layers?.[t.id]?.length ?? (t.zero ? 10 : 3) }));
+  // The step count is the ladder's own (`steps`, 零层 among 练气's): since 2026-11-02 every realm past 练气 counts nine 层 (Hanli
+  // approved: 「9层用于计算, 小, 中, 大成用于显示」), each one threshold — never the row balance.json held before.
+  const tiers = ladder.tiers.filter(t => gu.tiers.includes(t.id)).map(t => ({ id: t.id, zero: Boolean(t.zero), steps: t.steps?.zh?.length ?? raw.layers?.[t.id]?.length ?? (t.zero ? 10 : 3) }));
   raw.layers = { ...raw.layers, ...needsOf(gu, tiers) };
   const pp = raw.play_pay;
   pp.hours = hoursOf(gu, tiers);

@@ -37,8 +37,8 @@ test('every 古 回 declares its cap, as the book\'s realm line stands', () => {
     h07: ['qi4', null], // 古五: 二层 ground to the door, held there through the rooms (`holds`); 三层 and 四层 ground in the 石室 (2026-10-31: 四层圆满, the book's)
     h08: ['qi4', null], // 古六: 大比 on 四层 (ground in 古五's 石室; an older save grinds it here)
     h11: ['qi6', null], // 古七 (its first half since 2026-10-07): 五层 and 六层 ground behind its stage quests
-    h09: ['qi9', 'foundation1'], // 古八: 七层 to 九层圆满 ground (腊八 on 八层, 入秋 on 九层), the cliff → 筑基 by his throw
-    h10: ['foundation1', null], // 古九: 筑基小成
+    h09: ['qi9', 'foundation3'], // 古八: 七层 to 九层圆满 ground (腊八 on 八层, 入秋 on 九层), the cliff → 筑基 by his throw
+    h10: ['foundation3', null], // 古九: 筑基小成 — 一至三层 since 筑基 counts nine 层 (Hanli approved 2026-11-02)
   });
   assert.deepEqual(lint(content).filter(p => /cap/.test(p)), []);
 });
@@ -146,16 +146,19 @@ test('a breakthrough past where the 回\'s story reaches is refused in the world
 
 test('卷一\'s end: 古八 over, 卷二 waiting — 筑基小成 filled, and nothing ground carries him past it', () => {
   const ch = content.chapters['01-ji'];
-  const s = at('01-ji', null, 'zhangyuan', ['00-prologue', '00-waimen', '00-zhuji', '01-ji'], { tier: 'foundation', done_scenes: Object.keys(ch.scenes) });
+  // Played in the book's order, 01-end (古九's) the last scene done: the save waits in 古九, under its cap.
+  const s = at('01-ji', null, 'zhangyuan', ['00-prologue', '00-waimen', '00-zhuji', '01-ji'], { tier: 'foundation', done_scenes: [...Object.keys(ch.scenes).filter(id => id !== '01-end'), '01-end'] });
   const { got } = grind(s, 300);
-  assert.equal(named(s), '筑基小成');
-  assert.equal(got, s.progress, 'every grant counted, past the mark');
+  assert.equal(named(s), '筑基 · 小成');
+  assert.equal(s.step, 2, '筑基三层: the whole of 小成 ground, no further');
+  assert.ok(s.progress > threshold(content, s) && got > s.progress, 'every grant counted: 一层 and 二层 passed, 三层 past its mark');
   assert.equal(look(s, content, ctx).capped.say, content.ladder.caps.say.zh);
-  assert.equal(look(s, content, ctx).tier.name, '筑基小成圆满', 'a step filled reads 圆满');
+  assert.equal(look(s, content, ctx).tier.name, '筑基 · 小成圆满', 'the 段 filled reads 圆满');
   // In 古八 itself, the same.
   const t = at('01-ji', '01-arrive', 'yecheng', ['00-prologue', '00-waimen', '00-zhuji'], { tier: 'foundation' });
   grind(t, 300);
-  assert.equal(named(t), '筑基小成');
+  assert.equal(named(t), '筑基 · 小成');
+  assert.equal(t.step, 2);
 });
 
 test('an old save already past its cap is never pulled down: it fills its own step and goes no higher', () => {
@@ -165,10 +168,10 @@ test('an old save already past its cap is never pulled down: it fills its own st
   const { got } = grind(s);
   assert.equal(named(s), '练气六层', 'not one layer down, not one up');
   assert.equal(got, s.progress - 40, 'every grant counted, past the mark');
-  // 筑基中成 in 古八: kept, filled, held.
-  const f = at('01-ji', '01-arrive', 'yecheng', ['00-prologue', '00-waimen', '00-zhuji'], { tier: 'foundation', step: 1, progress: 0 });
+  // 筑基五层 (中成) in 古八: kept, filled, held.
+  const f = at('01-ji', '01-arrive', 'yecheng', ['00-prologue', '00-waimen', '00-zhuji'], { tier: 'foundation', step: 4, progress: 0 });
   grind(f, 300);
-  assert.equal(named(f), '筑基中成');
+  assert.deepEqual([named(f), f.step], ['筑基 · 中成', 4]);
 });
 
 // Hanli's save 10-27: 古四 past the 柴房 gate, at wm-baoming (「十月廿五坐上的二层…二层巅峰」), the bar
