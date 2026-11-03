@@ -828,7 +828,8 @@ export function fitWorld(saved, content) {
   if ('ladder_zero' in state) state = zeroLayer(was, state);
   if ('ladder_pace' in state) state = paceLayer(was, state);
   if ('ladder_stages' in state) state = stagesCarry(content, state);
-  if ('her_slots' in state) state = herSlotsCarry(content, state);
+  // Also unmarked: an older rules bundle (the phone's, before it carries v16) may still write her one slot on a v16 save.
+  if ('her_slots' in state || typeof state.wear?.[content.world?.companion?.id] === 'string') state = herSlotsCarry(content, state);
   const tier = tierOf(content, state.tier);
   const chapter = content.chapters[state.chapter];
   // A scene renamed since — the prologue rewrite of 2026-09-28 — goes to the

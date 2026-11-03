@@ -103,6 +103,8 @@ test('a v15 save: her one slot moves to the slot her thing goes in — the bell 
   assert.deepEqual(migrate(v15({ yinyue: 'qi-silk' }, { 'qi-silk': 1 }), content).wear, { 'yinyue.robe': 'qi-silk' });
   assert.deepEqual(migrate(v15({ yinyue: 'yinyue-lingdang' }, { 'yinyue-lingdang': 1 }), content).wear, { 'yinyue.pendant': 'yinyue-lingdang' });
   assert.deepEqual(migrate(v15({ robe: 'grey-robe' }, { 'grey-robe': 1 }), content).wear, { robe: 'grey-robe' }, 'nothing of hers: as it was');
+  // An older bundle writing her one slot on a v16 save (the phone before its rebuild): carried on the next load too.
+  assert.deepEqual(migrate({ ...at({ 'moon-bell': 1 }), version: 16, wear: { yinyue: 'moon-bell' } }, content).wear, { 'yinyue.pendant': 'moon-bell' });
   // Once carried, carried: a v16 save meets the world again unchanged.
   assert.deepEqual(migrate(bell, content).wear, bell.wear);
 });
