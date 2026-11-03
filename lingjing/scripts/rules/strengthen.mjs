@@ -164,7 +164,9 @@ function keptOdds(content, state, o, f, now) {
 export function weighOdds(content, state, o, f, now = new Date(), deals = STRONG_DEALS) {
   const catalog = cardCatalog(content), setup = setupFor(content, state, f, now);
   const before = fightOdds(setup, catalog, deals).win, after = fightOdds(setupFor(content, taken(state, o), f, now), catalog, deals).win;
-  return { key: keyOf(setup, o, f), for: f, before, after };
+  // Kept on the save: the fight by its ids, never its name (a name kept here stayed in the language of the weighing).
+  const { name: _shown, ...fight } = f;
+  return { key: keyOf(setup, o, f), for: fight, before, after };
 }
 
 /* Fitted as a save is read (rules.mjs, after match.mjs standFit): the odds for the first step he can act on against the

@@ -13,7 +13,7 @@ import { spawnSync } from 'node:child_process';
 import { lint, loadContent } from '../scripts/content.mjs';
 import { newState, stepOfLayer, threshold } from '../scripts/state.mjs';
 import { look, quest, resolve } from '../scripts/rules.mjs';
-import { gateKey, gatesOf, settleStages, stageNow } from '../scripts/rules/gates.mjs';
+import { gateKey, gatesOf, settleStages, stageBack, stageNow } from '../scripts/rules/gates.mjs';
 import { huiOrder } from '../scripts/rules/hui.mjs';
 import { WORDS, bookPopHtml } from '../scripts/cards.js';
 
@@ -47,7 +47,11 @@ test('his save at 九层 in 古八: the gates behind him are paid once on load, 
   assert.equal(healed.wealth, 112 + owed.length * PAY, 'each gate behind him, once');
   assert.deepEqual([...healed.stages].sort(), owed.map(gateKey).sort());
   assert.equal(healed.stage_back.n, owed.length);
-  assert.ok(healed.stage_back.steps.includes('练气八层圆满') && healed.stage_back.steps.includes('练气七层圆满'), '年六\'s 七层 and 年七\'s 八层 too: he is past them');
+  const told = stageBack(content, healed, NOW).steps;
+  assert.ok(told.includes('练气八层圆满') && told.includes('练气七层圆满'), '年六\'s 七层 and 年七\'s 八层 too: he is past them');
+  // The save keeps the gates' keys, never their names: named in the language Look is drawn in.
+  assert.ok(!('steps' in healed.stage_back), 'no name in the save');
+  assert.ok(stageBack(content, healed, NOW, 'en').steps.every(n => !/[\u4e00-\u9fff]/.test(n)), 'in English, English');
   // Never twice.
   assert.equal(settleStages(content, healed, new Date(NOW.getTime() + 3_600_000)), healed, 'nothing more owed: the same save back');
   const row = stageNow(content, healed);

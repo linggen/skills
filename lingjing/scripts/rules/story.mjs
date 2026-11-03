@@ -426,4 +426,5 @@ export function enteredBeat(content, s, scene, now) {
 
 /* Look's `story_node`: the last node while it is fresh (the page's; Ling has it in the result). */
 const NODE_FRESH = 30 * 60000;
-export const nodeLook = (state, now) => (state.node && now - new Date(state.node.at) < NODE_FRESH ? { story_node: state.node } : {});
+// A node told in the other language (stateText stamps it) is not drawn again in this one: its words are that language's.
+export const nodeLook = (state, now) => (state.node && now - new Date(state.node.at) < NODE_FRESH && (!state.node.lang || !state.lang || state.node.lang === state.lang) ? { story_node: state.node } : {});

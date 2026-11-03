@@ -132,14 +132,22 @@ export function settleStages(content, state, now) {
     s.stages = [...(s.stages ?? []), gateKey(g)];
     wealth += pay(content, s, { now }, STAGE_GRANT(content)).wealth;
   }
-  s.stage_back = { at: now.toISOString(), n: owed.length, wealth, steps: owed.map(g => fullName(content, g.tier, g.step, s.lang)) };
+  // The gates' keys, never their names: named as Look is drawn, in the language then (a name kept here stayed English
+  // under 中, 11-02).
+  s.stage_back = { at: now.toISOString(), n: owed.length, wealth, gates: owed.map(gateKey) };
   return s;
 }
 
-/* The settled ones' note, for the page — a day long, then let go. */
-export function stageBack(state, now) {
+/* The settled ones' note, for the page — a day long, then let go — each step named now. A save from before 11-02 kept
+   `steps` as names in the language of that moment: each is read back to its gate by either language's name. */
+export function stageBack(content, state, now, lang = state.lang) {
   const b = state.stage_back;
-  return b && now - new Date(b.at) < 86_400_000 ? b : null;
+  if (!b || now - new Date(b.at) >= 86_400_000) return null;
+  const all = gatesOf(content), byKey = new Map(all.map(g => [gateKey(g), g]));
+  const named = (n) => all.find(g => ['zh', 'en'].some(l => fullName(content, g.tier, g.step, l) === n));
+  const { gates, steps, ...rest } = b;
+  const held = gates ? gates.map(k => byKey.get(k)) : (steps ?? []).map(named);
+  return { ...rest, steps: held.map((g, i) => (g ? fullName(content, g.tier, g.step, lang) : steps?.[i])).filter(Boolean) };
 }
 
 /* Stage quests handed in, in the 回 he stands in — the 事 book's 已交. */

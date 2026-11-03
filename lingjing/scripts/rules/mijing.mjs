@@ -415,13 +415,15 @@ export function endRun(s, content, ctx, how, extra = {}) {
   // `from: {kind: 'beast'}` — never a card at random; none when he holds them all).
   const card = how === 'clear' ? [t.boss, ...(t.xiong ?? []), ...(t.beasts ?? [])].map(b => creatureOf(content, b.creature)).filter(Boolean)
     .reduce((got, c) => got ?? winCard(content, s, c, ctx.now), null) : null;
-  const named = stowed.map((g, i) => ({ id: items[i].id, name: g.name, n: items[i].n, ...(g.offered ? { offered: true } : {}) }));
-  const last = { tier: t.n, name: pick(t.name, s.lang), how, reached, of, minutes: r.minutes, paid: { progress: paid.progress, wealth: paid.wealth }, items: named, ...(card ? { card } : {}), at: ctx.now.toISOString() };
+  // The save keeps ids only: the 重, the items and the card are named as Look is drawn, in the language then (lastLook) —
+  // a name cached here stayed in the language of the win (Hanli 11-02: the spoils card in English under 中).
+  const kept = stowed.map((g, i) => ({ id: items[i].id, n: items[i].n, ...(g.offered ? { offered: true } : {}) }));
+  const last = { tier: t.n, how, reached, of, minutes: r.minutes, paid: { progress: paid.progress, wealth: paid.wealth }, items: kept, ...(card ? { card: { id: card.id, card: true } } : {}), at: ctx.now.toISOString() };
   const cleared = how === 'clear' ? [...new Set([...(s.mijing.cleared ?? []), t.n])].sort((a, b) => a - b) : s.mijing.cleared ?? [];
   s.mijing = { ...s.mijing, cleared, last };
   delete s.mijing.run;
   const full = fullLine(s, stowed);
-  return { state: s, result: { ok: true, ended: how, ...extra, last, ...(full ? { pouch_full: full } : {}) } };
+  return { state: s, result: { ok: true, ended: how, ...extra, last: lastLook(content, last, s.lang), ...(full ? { pouch_full: full } : {}) } };
 }
 function leaveRun(state, content, ctx) {
   if (!runOf(state)) return refuse('not-in-a-run', null);
@@ -638,6 +640,13 @@ function roomBrief(content, state, run) {
   if (room.yielded) out.yielded = true;
   return out;
 }
+/* The last run as Look draws it: every name from its id, in the language now (a save from before 11-02 kept names —
+   they are drawn again from the ids it also kept). */
+function lastLook(content, last, lang) {
+  const row = tierRow(content, last.tier), card = last.card?.id ? cardCatalog(content)[last.card.id] : null;
+  return { ...last, name: pick(row?.name, lang) ?? last.name ?? '', items: (last.items ?? []).map(i => ({ ...i, name: nameOf(content, i.id, lang) })),
+    ...(last.card ? { card: { ...last.card, name: pick(card?.name, lang) ?? last.card.name ?? last.card.id } } : {}) };
+}
 /* Look's `mijing`: inside a run, the map as it stands (what is behind, where he is, where he may go), his 气血, boons,
    pack and the room's business; at a door, the 重 and which are open, and his 秘境令; after a run, what it paid. */
 export function mijingBrief(content, state, now) {
@@ -666,6 +675,6 @@ export function mijingBrief(content, state, now) {
     return keys > 0 && at ? { away: true, keys, key_name: nameOf(content, tab.key, lang), door: placeName(content, state, placeOf(content, at)) } : null;
   }
   const tiers = (tab.tiers ?? []).map(t => ({ n: t.n, name: pick(t.name, lang), open: tierOpen(content, state, t.n), cleared: (state.mijing?.cleared ?? []).includes(t.n), ...(tierOpen(content, state, t.n) ? {} : { why: shutWhy(content, state, t) }) }));
-  return { door, keys: keysHeld(content, state), key_name: nameOf(content, tab.key, lang), tiers, ...(last ? { last } : {}),
+  return { door, keys: keysHeld(content, state), key_name: nameOf(content, tab.key, lang), tiers, ...(last ? { last: lastLook(content, last, lang) } : {}),
     ...(door ? { place: placeName(content, state, placeOf(content, state.place)) } : {}) };
 }

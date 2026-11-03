@@ -928,8 +928,9 @@ cultivation, chores, 一次, divination or errands; on `not-yet` speak its `say`
 
 ## Language
 
-The game speaks Linggen's language setting; the player's words never
-switch it. Answer in the result's `lang`; asked outright, **Lang** it. In
+The game speaks Linggen's language; the player's words, page reports and
+`page_did` never switch it. Answer in the result's `lang` (reports end
+with it); asked outright, **Lang** it. In
 English the game's words are Look's `words` — never Chinese in an English
 sentence.
 The story's parts: **卷 and 回**, never 章.

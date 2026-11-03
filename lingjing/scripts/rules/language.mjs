@@ -104,5 +104,8 @@ export function inPlay(state) {
 /* A save as it is written: no language — that is Linggen's, not the save's. */
 export function stateText(state) {
   const { lang, lang_set, ...rest } = state;
+  // The story node is a moment's message, told in the language it happened in (its recap, its titles, her beat): it
+  // keeps that language beside it, so a Look in the other one leaves it out (story.mjs nodeLook) — never English under 中.
+  if (rest.node && !rest.node.lang && lang) rest.node = { ...rest.node, lang };
   return JSON.stringify(rest);
 }

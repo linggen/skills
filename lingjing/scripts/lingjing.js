@@ -2207,8 +2207,10 @@ async function payKeptWins() {
   if (paid) await refresh();
 }
 
-/// Tell Ling, unseen: a board or a bout the page played.
-const report = (text) => deliver(text, true);
+/// Tell Ling, unseen: a board or a bout the page played. Its code words are English, and the engine's chat line says to
+/// answer in the language the turn is written in — so each report names the game's language, and Ling answers in it
+/// (SKILL.md § Language; Hanli 11-02: Ling's lines in English under 中).
+const report = (text) => deliver(`${text} (lang ${lang()})`, true);
 
 /// The player's word from the stage: shown in the chat as their own line.
 /// A tap while Ling is still talking is not dropped — the engine queues it
@@ -5066,7 +5068,7 @@ async function recapWhenSettled(greeted) {
   await refresh();
   if (!look?.recap_due || streaming || saying) return;
   recapSent = look.recap?.mystery ?? '';
-  chat.sendHidden('[scene] recap');
+  chat.sendHidden(`[scene] recap (lang ${lang()})`);
 }
 function recapTold() {
   const q = recapSent;

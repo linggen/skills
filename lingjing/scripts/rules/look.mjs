@@ -719,7 +719,7 @@ export function look(state, content, ctx) {
     ...doorLook(content, state),
     // Handed in, this 回 (the book's 已交); and those settled by themselves on a load, a day long (gates.mjs settleStages).
     ...(stagesPaid(content, state).length ? { stages_paid: stagesPaid(content, state) } : {}),
-    ...(stageBack(state, ctx.now) ? { stage_back: stageBack(state, ctx.now) } : {}),
+    ...(stageBack(content, state, ctx.now) ? { stage_back: stageBack(content, state, ctx.now) } : {}),
     // A visiting shop in season (rules/visiting.mjs): where, today or in n days, in its own line.
     ...(visitorsBrief(content, state, ctx.now).length ? { visitors: visitorsBrief(content, state, ctx.now) } : {}),
     // 铺子 (rules/shops.mjs): every open shop he can walk to, its kind and how many roads away — the map's marks, 去往, 「有铺子」.
