@@ -91,12 +91,23 @@ function unlinkTrack(row) {
   }
 }
 
+/// "Searched, nothing (timed) found" — and by which matcher (lyrics_match.py
+/// MATCHER). A stamp with no matcher, or an older one, counts as never
+/// searched (lyrics-chase.mjs): a lookup that hit a failed request passes none.
+function stampMissing(row, matcher) {
+  row.lrc_missing = new Date().toISOString();
+  const n = Number.parseInt(matcher, 10);
+  if (Number.isInteger(n) && n > 0) row.lrc_matcher = n;
+  else delete row.lrc_matcher;
+}
+
 /// Lyrics on a row. Words with no timings still count as lyrics, and are
-/// stamped as searched so nobody asks LRCLIB about them again for a month.
-function setLrc(row, lrc, timed = true) {
+/// stamped as searched so nobody asks again until the stamp goes stale.
+function setLrc(row, lrc, timed = true, matcher) {
   row.lrc = lrc;
-  if (timed) delete row.lrc_missing;
-  else row.lrc_missing = new Date().toISOString();
+  if (!timed) return stampMissing(row, matcher);
+  delete row.lrc_missing;
+  delete row.lrc_matcher;
 }
 
 /// A landed file becomes a library row, or fills the gaps of the row it
@@ -112,7 +123,7 @@ function addTrack(lib, t) {
   }
   if (row.file !== t.file) row.file = t.file;
   if (t.year && !row.year) row.year = t.year;
-  if (t.lrc) setLrc(row, t.lrc, t.lrc_timed !== false);
+  if (t.lrc) setLrc(row, t.lrc, t.lrc_timed !== false, t.lrc_matcher);
   if (t.source_id) row.source_id = String(t.source_id);
   // Named by the catalogue, asked for by another title: both stay findable.
   if (t.requested_title && t.requested_title !== row.title) row.requested_title = String(t.requested_title);
@@ -136,7 +147,7 @@ function replacedTake(lib, item, r) {
   const tried = [...(row.sources_tried || []), row.source_id].filter(Boolean);
   row.sources_tried = [...new Set(tried)];
   if (r.source_id) row.source_id = String(r.source_id);
-  if (r.lrc) setLrc(row, r.lrc, r.lrc_timed !== false);
+  if (r.lrc) setLrc(row, r.lrc, r.lrc_timed !== false, r.lrc_matcher);
   dropThumbs(row.file);
 }
 
@@ -360,23 +371,25 @@ const VERBS = {
     return { ok: true, added, id: row.id };
   },
 
-  // [timed|untimed] — words with no timings are kept, and stamped.
+  // [timed|untimed] [matcher] — words with no timings are kept, and stamped
+  // by the matcher that settled on them (none: the lookup was not settled).
   'track-set-lrc': (a) => {
     const file = arg(a[0], 'file');
     const lrc = arg(a[1], 'lrc');
     const lib = loadStore();
     const [t] = tracksNamed(lib, [file]);
-    setLrc(t, lrc, String(a[2] || '').trim() !== 'untimed');
+    setLrc(t, lrc, String(a[2] || '').trim() !== 'untimed', a[3]);
     persist(lib);
     return { ok: true };
   },
 
-  // Searched, and the words were nowhere: the backfill leaves it a month.
+  // [matcher] — searched, and the words were nowhere: the chase leaves it a
+  // month, or until a newer matcher.
   'track-no-lyrics': (a) => {
     const file = arg(a[0], 'file');
     const lib = loadStore();
     const [t] = tracksNamed(lib, [file]);
-    t.lrc_missing = new Date().toISOString();
+    stampMissing(t, a[1]);
     persist(lib);
     return { ok: true };
   },

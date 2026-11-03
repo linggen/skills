@@ -31,9 +31,17 @@
 # recording was chosen for its sound, and every player shows words-only
 # sidecars as such.
 #
+# A "nothing here" stamp is only as good as the matcher that made it, so every
+# answer carries MATCHER, and a stamp from an older one counts as never
+# searched (lyrics-chase.mjs). Bump it whenever the matcher finds more: every
+# song stamped before gets one new try. A lookup in which any request failed
+# — LRCLIB said 503 ServerOverloaded on 2026-11-03 — is not settled: its
+# "nothing" is no answer, and nothing is stamped from it.
+#
 # CLI: one JSON object (argv[1] or stdin) → one JSON line.
-#   in : {artist, title, file, version?, other_titles?}
-#   out: {ok, body, synced, duration, gap, seconds, title, source} — or {ok:false, error}
+#   in : {artist, title, file, version?, other_titles?}  — or --version
+#   out: {ok, body, synced, duration, gap, seconds, title, source, settled, matcher}
+#        — or {ok:false, error, settled, matcher}
 
 import concurrent.futures
 import json
@@ -45,6 +53,22 @@ import urllib.parse
 import urllib.request
 
 UA = "DJ/1.0 (music library; lyrics lookup)"
+
+# Which matcher answered. 2: NetEase asked when LRCLIB times nothing (7ad5a8b7).
+MATCHER = 2
+
+# Requests that failed during this lookup (an error, not an empty answer).
+_FAILED = []
+
+
+def failed(what):
+    """Note a request that got no answer; list.append is thread-safe."""
+    _FAILED.append(what)
+
+
+def settled():
+    """Whether every request since the last reset got an answer."""
+    return not _FAILED
 
 FIT_SECONDS = 5  # a set timed within this of the file is timed for the file
 HOME_WIDTH = 2  # copies of one set within this of each other agree on a length
@@ -278,6 +302,7 @@ def lrclib_search(q, timeout=12):
         req = urllib.request.Request(url, headers={"User-Agent": UA})
         arr = json.loads(urllib.request.urlopen(req, timeout=timeout).read().decode())
     except Exception:
+        failed("lrclib")
         return []
     return arr if isinstance(arr, list) else []
 
@@ -346,6 +371,7 @@ def _netease_get(path, params):
             "User-Agent": UA, "Referer": "https://music.163.com"})
         got = json.loads(urllib.request.urlopen(req, timeout=NETEASE_TIMEOUT).read().decode())
     except Exception:
+        failed("netease")
         return None
     return got if isinstance(got, dict) else None
 
@@ -456,6 +482,7 @@ def for_file(artist, title, path, version="studio", other_titles=()):
     the file carries the catalogue's (郭富城 風中密碼 is really 風裡密碼, and
     LRCLIB knows only the real one), or the reverse. Each gets the whole query
     ladder before the song is given up on."""
+    _FAILED.clear()
     seconds = file_seconds(path) if path else 0
     titles = list(dict.fromkeys(t for t in [title, *other_titles] if str(t or "").strip()))
     words = None
@@ -487,8 +514,20 @@ def _from_netease(artist, titles, seconds, version):
 
 # ------------------------------------------------------------------------- cli
 
+def answer(req):
+    """The CLI's answer for one request."""
+    got = for_file(req.get("artist"), req.get("title"), req.get("file"),
+                   str(req.get("version") or "studio").lower(),
+                   [t for t in req.get("other_titles") or [] if isinstance(t, str)])
+    tail = {"settled": settled(), "matcher": MATCHER}
+    return {"ok": True, **got, **tail} if got else {"ok": False, "error": "no lyrics found", **tail}
+
+
 def main():
     raw = sys.argv[1] if len(sys.argv) > 1 else ""
+    if raw == "--version":
+        print(json.dumps({"ok": True, "matcher": MATCHER}))
+        return
     if not raw or raw.startswith("{{"):
         raw = sys.stdin.read()
     try:
@@ -496,11 +535,7 @@ def main():
     except Exception:
         print(json.dumps({"ok": False, "error": "couldn't read the request"}))
         return
-    got = for_file(req.get("artist"), req.get("title"), req.get("file"),
-                   str(req.get("version") or "studio").lower(),
-                   [t for t in req.get("other_titles") or [] if isinstance(t, str)])
-    print(json.dumps({"ok": True, **got} if got else
-                     {"ok": False, "error": "no lyrics found"}, ensure_ascii=False))
+    print(json.dumps(answer(req), ensure_ascii=False))
 
 
 if __name__ == "__main__":

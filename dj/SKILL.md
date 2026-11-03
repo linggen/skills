@@ -45,6 +45,10 @@ app:
 sync:
   dir: ~/Music/DJ
   topic: dj
+  # Each time a phone lists the library, the engine runs this in the
+  # background, one run at a time: lyrics a song lacks are chased on the Mac
+  # while the DJ page is closed. No model call.
+  on-list: bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/lyrics-chase.mjs
   items: [mp3, m4a, flac, wav, ogg, aac]
   subdirs:
     karaoke: .karaoke

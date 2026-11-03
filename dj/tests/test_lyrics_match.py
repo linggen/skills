@@ -233,5 +233,48 @@ class NetEase(unittest.TestCase):
         self.assertEqual(self.calls, [])
 
 
+class Settled(unittest.TestCase):
+    """A failed request is no answer: "nothing found" from it stamps nothing."""
+
+    def setUp(self):
+        self.saved = {k: getattr(lm, k) for k in ("file_seconds",)}
+        self.urlopen = lm.urllib.request.urlopen
+        lm.file_seconds = lambda path: 221
+
+    def tearDown(self):
+        for k, v in self.saved.items():
+            setattr(lm, k, v)
+        lm.urllib.request.urlopen = self.urlopen
+
+    def answer(self):
+        return lm.answer({"artist": "路虎", "title": "听雪落下的声音", "file": "/x.mp3"})
+
+    def test_an_overloaded_server_leaves_the_song_unsettled(self):
+        def overloaded(*a, **k):
+            raise lm.urllib.error.HTTPError("u", 503, "ServerOverloaded", {}, None)
+        lm.urllib.request.urlopen = overloaded
+        got = self.answer()
+        self.assertEqual((got["ok"], got["settled"], got["matcher"]), (False, False, lm.MATCHER))
+
+    def test_empty_answers_everywhere_are_a_settled_nothing(self):
+        class Empty:
+            def __init__(self, body):
+                self.body = body
+
+            def read(self):
+                return self.body
+
+        lm.urllib.request.urlopen = lambda req, timeout=0: Empty(
+            b"[]" if "lrclib" in req.full_url else b"{}")
+        got = self.answer()
+        self.assertEqual((got["ok"], got["settled"]), (False, True))
+
+    def test_a_new_lookup_forgets_the_last_failure(self):
+        lm.failed("lrclib")
+        lm.urllib.request.urlopen = lambda req, timeout=0: type(
+            "R", (), {"read": lambda self: b"[]"})()
+        self.assertTrue(self.answer()["settled"])
+
+
 if __name__ == "__main__":
     unittest.main()

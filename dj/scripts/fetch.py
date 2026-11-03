@@ -196,23 +196,25 @@ def pick_source(bins, track, exclude):
 def write_lyrics(track, path):
     """Lyrics fitted to the file that actually landed — yt-dlp may have walked
     past a dead first choice — asked under the song's title and then under the
-    one it was requested by. Returns (lrc path or None, timed)."""
+    one it was requested by. Returns (lrc path or None, timed, matcher): the
+    matcher that settled on them, None when a request failed on the way — an
+    untimed stamp with no matcher is asked again (lyrics-chase.mjs)."""
     if FAKE:
-        return None, False
+        return None, False, None
     try:
         import lyrics_match
         got = lyrics_match.for_file(naming.tag(track.get("artist")), naming.tag(track.get("title")),
                                     path, str(track.get("version") or "studio").lower(),
                                     [naming.tag(track.get("requested_title"))] if track.get("requested_title") else ())
     except Exception:
-        return None, False
+        return None, False, None
     body = got and got.get("body")
     if not body or not body.strip():
-        return None, False
+        return None, False, None
     lrc = os.path.splitext(path)[0] + ".lrc"
     with open(lrc, "w", encoding="utf-8") as f:
         f.write(body if body.endswith("\n") else body + "\n")
-    return lrc, bool(got.get("synced"))
+    return lrc, bool(got.get("synced")), lyrics_match.MATCHER if lyrics_match.settled() else None
 
 
 def fetch_track(bins, cfg, track, exclude=(), skip_first=False, dest=None, cancelled=None, guard=False):
@@ -255,9 +257,10 @@ def fetch_track(bins, cfg, track, exclude=(), skip_first=False, dest=None, cance
     finally:
         if dest:
             shutil.rmtree(out_dir, ignore_errors=True)
-    lrc, timed = write_lyrics(track, path)
+    lrc, timed, matcher = write_lyrics(track, path)
     named = {"title": track["title"], "requested_title": track["requested_title"]} if track.get("requested_title") else {}
-    return {"ok": True, "file": path, "lrc": lrc, "lrc_timed": timed, "source_id": vid, **named}
+    return {"ok": True, "file": path, "lrc": lrc, "lrc_timed": timed, "lrc_matcher": matcher,
+            "source_id": vid, **named}
 
 
 def canonical(track, picked, dest=None):
@@ -615,9 +618,9 @@ def cli_rename():
     bins = load_bins()
     row = {"artist": r["artist"], "title": r["title"]}
     tagged = retag(bins, path, row) if bins.get("ok") else False
-    lrc, timed = write_lyrics(row, path)
+    lrc, timed, matcher = write_lyrics(row, path)
     if lrc:
-        action("track-set-lrc", r["file"], lrc, "timed" if timed else "untimed")
+        action("track-set-lrc", r["file"], lrc, "timed" if timed else "untimed", str(matcher or ""))
     return {"ok": True, "file": r["file"], "was": r["was"], "tagged": tagged,
             "lyrics": bool(lrc), "lyrics_timed": bool(timed)}
 
