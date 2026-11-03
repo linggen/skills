@@ -52,10 +52,14 @@ function wornHtml(g, ctx) {
   const herCell = (s) => {
     const lift = s.item ? liftSaid(s.item.effect, w) : '';
     const off = s.item ? `<button class="act quiet" data-remove="${esc(s.item.id)}" data-on="her" data-slot="${esc(s.slot)}">${esc(w.gearOff)}</button>` : '';
-    return cell(say(w.gearHerSlot, { name: g.her.name, slot: w.gearSlots[s.slot] ?? s.slot }), `${name(s.item)}${lift ? `<span class="small dim">${esc(lift)}</span>` : ''}`, off);
+    return cell(w.gearSlots[s.slot] ?? s.slot, `${name(s.item)}${lift ? `<span class="small dim">${esc(lift)}</span>` : ''}`, off);
   };
-  const her = g.her ? (g.her.slots ?? []).map(herCell).join('') : '';
-  return `<div class="pwornrow">${slots}${pouchCellHtml(g.pouch, ctx)}${treasure}${her}</div>${gearFightHtml(g.fight, ctx)}${g.her ? herCardHtml(g.her, ctx) : ''}`;
+  // One row a person, named (Hanli 11-03: 「每个角色装备栏占1行, 写清楚角色名」): his slots, pouch and treasure,
+  // his fight line under them; then hers, her card under hers.
+  const row = (who, cells, under) => `<div class="pwho"><div class="pwhoname">${esc(who)}</div><div class="pwornrow">${cells}</div>${under}</div>`;
+  const me = row(ctx.look?.name || w.gearMe, `${slots}${pouchCellHtml(g.pouch, ctx)}${treasure}`, gearFightHtml(g.fight, ctx));
+  const her = g.her ? row(g.her.name, (g.her.slots ?? []).map(herCell).join(''), herCardHtml(g.her, ctx)) : '';
+  return `${me}${her}`;
 }
 
 /* 储物袋 — the pouch he carries, a cell of the worn row: the bigger ones put to use (rules/pouch.mjs `carried`,

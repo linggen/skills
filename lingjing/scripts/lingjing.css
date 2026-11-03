@@ -636,6 +636,8 @@ body.fighting .footrow { display: none; }
 .psec { margin-top: 14px; font-family: var(--ui); }
 .psec h3 { font-family: var(--serif); font-size: 14px; letter-spacing: .15em; color: var(--dim); margin: 0 0 6px; font-weight: 600; }
 .pwornrow { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 6px; }
+.pwho + .pwho { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.pwhoname { font-family: var(--serif); font-weight: 600; font-size: 13.5px; margin-bottom: 5px; }
 .pworn { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .pworn .lbl { font-size: 11.5px; color: var(--faint); }
 .pworn b { font-family: var(--serif); overflow-wrap: anywhere; }

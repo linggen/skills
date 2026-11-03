@@ -119,9 +119,12 @@ test('the panel: her three slots, 戴上 · 法器 and 给银月 · 法器 side 
     assert.deepEqual(gear.her.slots.map(x => [x.slot, x.item?.id ?? null]), [['weapon', 'iron-sword'], ['robe', null], ['pendant', null]]);
     const c = { look: { lang, words: content.dictionary.words?.[lang] ?? {} }, gear, lang, words: WORDS[lang] };
     const h = pouchHtml(c, { sel: 'bamboo-sword' });
-    assert.match(h, zh ? /银月 · 法器<\/span><b data-pouch-item="iron-sword"/ : /Yinyue · Weapon<\/span><b data-pouch-item="iron-sword"/);
+    // One named row a person (Hanli 11-03): hers is headed 银月, her cells say only the slot.
+    const herRow = h.slice(h.indexOf(zh ? '<div class="pwhoname">银月</div>' : '<div class="pwhoname">Yinyue</div>'));
+    assert.ok(herRow.length < h.length, 'her row, named');
+    assert.match(herRow, zh ? /法器<\/span><b data-pouch-item="iron-sword"/ : /Weapon<\/span><b data-pouch-item="iron-sword"/);
     assert.match(h, /data-remove="iron-sword" data-on="her" data-slot="weapon"/);
-    assert.match(h, zh ? /银月 · 法衣<\/span><span class="dim">—/ : /Yinyue · Robe<\/span><span class="dim">—/);
+    assert.match(herRow, zh ? /法衣<\/span><span class="dim">—/ : /Robe<\/span><span class="dim">—/);
     assert.match(h, zh ? /data-wear="bamboo-sword">戴上 · 法器</ : /data-wear="bamboo-sword">Wear · Weapon</);
     assert.match(h, zh ? /data-wear="bamboo-sword" data-on="her">给银月 · 法器</ : /data-wear="bamboo-sword" data-on="her">Give Yinyue · Weapon</);
     const sword = pouchHtml(c, { sel: 'iron-sword' });
