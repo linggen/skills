@@ -893,14 +893,17 @@ function riseStats() {
   // The strip's bar (stage.mjs barOf): the 古's, or on a 今 scene the 今's — its own tier ids, so a walk across lines is never a gain.
   const bar = barOf(look);
   const now = { world: look.world?.id, line: bar.line, tier: bar.tier?.id, progress: bar.progress, wealth: look.wealth, next: bar.next, cast: (look.cast ?? []).map((b) => b.id),
-    // A tier in 段 rises by its 段 (「筑基 · 中成」): a 层 within it is the bar's, never a seal (duanOf).
-    rank: duanOf(bar.tier)?.label ?? bar.tier?.name, step: duanOf(bar.tier) ? 1 + ((bar.tier.step ?? 1) - 1) / bar.tier.duan.marks.length : bar.tier?.step, // in 段 a 层 is a third of a step's 气血 (state.mjs hpStep) chapter: look.chapter?.id, hui: look.chapter?.hui ?? look.chapter?.id, stamina: look.stamina?.now, resting: Boolean(look.stamina?.resting),
+    // A tier in 段 rises by its 段 (「筑基 · 中成」): a 层 within it is the bar's, never a seal (duanOf). In 段 a 层 is a third
+    // of a step's 气血 (state.mjs hpStep). (Until 11-02 this note sat mid-line and hid chapter, hui and 体力 from the strip.)
+    rank: duanOf(bar.tier)?.label ?? bar.tier?.name, lang: lang(), step: duanOf(bar.tier) ? 1 + ((bar.tier.step ?? 1) - 1) / bar.tier.duan.marks.length : bar.tier?.step, chapter: look.chapter?.id, hui: look.chapter?.hui ?? look.chapter?.id, stamina: look.stamina?.now, resting: Boolean(look.stamina?.resting),
     her: look.companion?.card ? { atk: look.companion.card.atk, hp: look.companion.card.hp } : null };
   const before = shown;
   shown = now;
   // 大成就: a realm risen, a 回 begun — the stage marks it and 银月 speaks
   // at once (his, 2026-09-23: 境界突破等大成就达成时, 显示一个动画, 并让银月说点什么).
-  if (before && before.world === now.world) {
+  // The same world in the same language: a realm's name read again in the other language is no rise (11-02: tapping En
+  // put up the 「练气四层圆满 → Qi Condensation…」 seal, and the stage held empty behind it until a reload).
+  if (before && before.world === now.world && before.lang === now.lang) {
     // The last point spent: 银月 sends him back to the real world to rest —
     // real life is hers, not Ling's (his rule, 2026-09-23).
     if (before.stamina > 0 && now.stamina === 0 && !before.resting) {

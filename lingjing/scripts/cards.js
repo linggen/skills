@@ -24,7 +24,7 @@ const mijing = (card, ctx) => mijingCardHtml(card, ctx);
 
 export const WORDS = {
   zh: {
-    title: '灵境', lookHead: '看', lookAt: '看看{label}', goOn: '接着', invite: '也可以直接说你想怎么做', chatHint: '你想怎么做？', xw: '修为', xwFull: '修为已满', ls: '灵石', tray: '手边的棋局', trayEmpty: '手边无局，随处走走。',
+    title: '灵境', listSep: '、', lookHead: '看', lookAt: '看看{label}', goOn: '接着', invite: '也可以直接说你想怎么做', chatHint: '你想怎么做？', xw: '修为', xwFull: '修为已满', ls: '灵石', tray: '手边的棋局', trayEmpty: '手边无局，随处走走。',
     play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', playedToday: '今日已玩', quest: '人间功课',
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。', boardDoneToday: '今日丹已成 · 明日再炼', gameDoneToday: '今日已成 · 明日再来', lundaoWon: '今日论道已胜 · 明日再来', lundaoLost: '今日论道已毕 · 明日再来',
     tamed: '已收服', untamed: '未收服', beatenToday: '今日已降', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', mapLocked: '{title} · 剧情未完，地图暂不开放', unfoldNew: '地图展开', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架', kanjia: '砍价', kanjiaWhich: '砍哪一件？', kanjiaDone: '今天只照价', shortBy: '差 {n}',
@@ -90,7 +90,7 @@ export const WORDS = {
     taleKept: '已解开 · 体力回来便记上', taleDuel: '降了{name}，此事便了', taleWhere: '{game} · {who}', taleRiddle: '点选作答', handedTitle: '交差 · {title}', handedNext: '接下来 · {title}', handedWait: '下一步 · {title} — 手上已满，了一件再去{at}接', needKinds: { subdue: '降', tame: '驯', carry: '带', visit: '到', board: '成', answer: '答', chore: '做' }, goalWait: '{title} · {opens} 开', goalOpen: '{title} · 未开', goalGate: '鼎气要{step} · {progress} 修为才受得住', goalStage: '阶段任务 · 修炼到{step}', gateShort: '还差 {n} 修为', gateGo: '去修炼', gateGoAt: '去修炼 · {name}', stageTitle: '阶段任务 · {step}', stageMet: '已圆满 · 交差领赏', stageBack: '补发 · 先前过的{n}件阶段任务（{steps}）', stageBackPaid: '灵石 +{n} 已到账', stageDone: '阶段任务 · {step}', stageWork: '{name}长修为', goalNow: '如今 {step} · {progress}/{of}', goalNowDuan: '如今 {step} {progress}/{of}', goalGrow: '功课、传闻、斗法，都长修为',
   },
   en: {
-    title: 'Lingjing', lookHead: 'Look', lookAt: 'Look at {label}', goOn: 'Go on', invite: 'Or just say what you do', chatHint: 'What do you do?', xw: 'Cultivation', xwFull: 'Cultivation full', ls: 'Spirit stones', tray: 'Boards at hand', trayEmpty: 'No board at hand. Wander a while.',
+    title: 'Lingjing', listSep: ', ', lookHead: 'Look', lookAt: 'Look at {label}', goOn: 'Go on', invite: 'Or just say what you do', chatHint: 'What do you do?', xw: 'Cultivation', xwFull: 'Cultivation full', ls: 'Spirit stones', tray: 'Boards at hand', trayEmpty: 'No board at hand. Wander a while.',
     play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', playedToday: 'Played today', quest: 'Real-life practice',
     paid: 'Counted', due: 'To do', seen: 'Done — to collect', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.', boardDoneToday: 'Done for today — brew again tomorrow', gameDoneToday: 'Done for today — again tomorrow', lundaoWon: 'Won for today — again tomorrow', lundaoLost: 'Done for today — again tomorrow',
     tamed: 'Won over', untamed: 'Not won over', beatenToday: 'Beaten today', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', mapWhole: 'All nine provinces', mapLocked: '{title} · the story is under way; the map waits', unfoldNew: 'A new region', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf', kanjia: 'Haggle', kanjiaWhich: 'Haggle over which?', kanjiaDone: 'List price today', shortBy: '{n} short',
@@ -1294,7 +1294,7 @@ function taskGroups(ctx) {
     ...quests.filter((q) => q.paid && q.period !== 'once').map((q) => ({ tag: periodTag(q.period), title: q.title, device: q.device, stamp: gongkeBits(look.gongke?.rows?.find((r) => r.id === q.id), ctx.lang).stamp })),
     ...(ctx.kaifu ?? []).filter((r) => r.paid).map((r) => ({ tag: 'once', title: r.title, device: r.device })),
     ...(look.stages_paid ?? []).map((step) => ({ tag: 'stage', title: say(w.stageDone, { step }) })),
-    ...(look.stage_back ? [{ tag: 'stage', title: say(w.stageBack, { n: look.stage_back.n, steps: look.stage_back.steps.join('、') }), stamp: say(w.stageBackPaid, { n: look.stage_back.wealth }) }] : []),
+    ...(look.stage_back ? [{ tag: 'stage', title: say(w.stageBack, { n: look.stage_back.n, steps: look.stage_back.steps.join(w.listSep) }), stamp: say(w.stageBackPaid, { n: look.stage_back.wealth }) }] : []),
   ];
   return out;
 }

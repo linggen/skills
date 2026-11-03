@@ -11,7 +11,7 @@ export const LU_WORDS = {
   zh: {
     chip: '九鼎录', title: '九鼎录', close: '合上', found: '已寻回 {n}/9', map: '九鼎',
     states: { found: '已寻回', current: '寻访中', dark: '未至' },
-    seen: '所见', missed: '未细看：{what}', now: '眼下：{what}', mystery: '谜：{q}', people: '人物谱', her: '{name}记起的', open: '悬而未决',
+    seen: '所见', listSep: '、', missed: '未细看：{what}', now: '眼下：{what}', mystery: '谜：{q}', people: '人物谱', her: '{name}记起的', open: '悬而未决',
     kinds: { story: '途中所遇', tamed: '随行', fought: '交过手', known: '相识' },
     none: '还没有什么可记的。', ending: '终局 · {title}', noOpen: '眼下没有悬着的谜。',
     sep: '',
@@ -23,7 +23,7 @@ export const LU_WORDS = {
   en: {
     chip: 'Nine Cauldrons', title: 'The Nine Cauldrons', close: 'Close', found: '{n}/9 found', map: 'The nine',
     states: { found: 'found', current: 'seeking', dark: 'not yet' },
-    seen: 'What you saw', missed: 'Passed by: {what}', now: 'Now: {what}', mystery: 'The riddle: {q}', people: 'People met', her: 'What {name} remembers', open: 'Still open',
+    seen: 'What you saw', listSep: ', ', missed: 'Passed by: {what}', now: 'Now: {what}', mystery: 'The riddle: {q}', people: 'People met', her: 'What {name} remembers', open: 'Still open',
     kinds: { story: 'met on the way', tamed: 'walks with you', fought: 'fought', known: 'acquainted' },
     none: 'Nothing to record yet.', ending: 'The end · {title}', noOpen: 'No riddle open now.',
     sep: ' ',
@@ -92,7 +92,7 @@ export function luHtml(book, { lang = 'zh', her = null, artBase = '', codex = nu
 export function seenHtml(seen, w) {
   if (!seen?.length) return '';
   const row = (r) => `<div class="luseen"><h4>${esc(r.place)}</h4>${r.found.map((f) => `<p><b>${esc(f.label)}</b>${esc(f.text)}</p>`).join('')}`
-    + `${r.missed?.length ? `<p class="dim">${esc(say(w.missed, { what: r.missed.join('、') }))}</p>` : ''}</div>`;
+    + `${r.missed?.length ? `<p class="dim">${esc(say(w.missed, { what: r.missed.join(w.listSep) }))}</p>` : ''}</div>`;
   return `<section class="lusec luseenall"><h3>${esc(w.seen)}</h3>${seen.map(row).join('')}</section>`;
 }
 

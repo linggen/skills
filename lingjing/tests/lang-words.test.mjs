@@ -65,3 +65,22 @@ test('world data: every text with a zh has an en', () => {
   assert.ok(files.length > 50);
   assert.deepEqual(missing, []);
 });
+
+test('a list is joined in its own language: 、 in Chinese, a comma in English', async () => {
+  const { WORDS } = await import('../scripts/cards.js');
+  const { MIJING_WORDS } = await import('../scripts/mijing.js');
+  const { LU_WORDS } = await import('../scripts/lu.js');
+  for (const [at, zh, en] of [['WORDS.listSep', WORDS.zh.listSep, WORDS.en.listSep], ['MIJING_WORDS.sep', MIJING_WORDS.zh.sep, MIJING_WORDS.en.sep], ['LU_WORDS.listSep', LU_WORDS.zh.listSep, LU_WORDS.en.listSep]]) {
+    assert.equal(zh, '、', at);
+    assert.equal(en, ', ', at);
+  }
+  // No page script joins a list with 、 whatever the language (a join of the zh branch only is fine: it names its language).
+  const bare = [];
+  const files = [...fs.readdirSync(SCRIPTS).filter(f => /\.m?js$/.test(f)), ...fs.readdirSync(path.join(SCRIPTS, 'rules')).filter(f => f.endsWith('.mjs')).map(f => `rules/${f}`)];
+  for (const f of files) {
+    fs.readFileSync(path.join(SCRIPTS, f), 'utf8').split('\n').forEach((line, i) => {
+      if (/\.join\('、'\)/.test(line) && !/zh \?|=== 'zh'|lang\(\) === 'en' \?|`[^`]*[\u4e00-\u9fff][^`]*\$\{[^}]*\.join\('、'\)/.test(line)) bare.push(`${f}:${i + 1}`);
+    });
+  }
+  assert.deepEqual(bare, []);
+});

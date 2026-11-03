@@ -10,7 +10,7 @@ import { worldPath } from './rules.js';
 export const MIJING_WORDS = {
   zh: {
     door: '石门', keys: '{name} × {n}', enter: '探秘境', noKey: '没有秘境令', story: '故事还没走到那里', before: '先过上一重', cleared: '已过',
-    hp: '气血', boons: '加持', pack: '囊中', nothing: '空', wealth: '灵石 {n}', leave: '出秘境', depth: '第 {n} / {of} 间',
+    hp: '气血', boons: '加持', pack: '囊中', nothing: '空', sep: '、', wealth: '灵石 {n}', leave: '出秘境', depth: '第 {n} / {of} 间',
     pickRoom: '挑一条路走：点亮着的那一间。', fight: '{kind} · {name}挡在{room}。出手吧。', board: '{kind} · {room}', yield: '撤 · 折{pct}气血',
     heal: '歇一歇 · 回{n}气血', temper: '炼{name} · 本趟少一点灵力', reward: '挑一样加持（本趟有效）', skip: '都不要', got: '得：{what}',
     hpUp: '气血 +{n}', hpDown: '气血 −{n}', withdrew: '它一口气用尽，走了。', stars: '{n}★', away: '{keys} · 石门在{door}', goDoor: '去石门 ›',
@@ -19,7 +19,7 @@ export const MIJING_WORDS = {
   },
   en: {
     door: 'The stone door', keys: '{name} × {n}', enter: 'Enter', noKey: 'No realm token', story: 'The story has not got there', before: 'Clear the one before', cleared: 'cleared',
-    hp: 'Life', boons: 'Boons', pack: 'Pack', nothing: 'empty', wealth: '{n} stones', leave: 'Leave the realm', depth: 'Room {n} of {of}',
+    hp: 'Life', boons: 'Boons', pack: 'Pack', nothing: 'empty', sep: ', ', wealth: '{n} stones', leave: 'Leave the realm', depth: 'Room {n} of {of}',
     pickRoom: 'Pick your way: tap a lit room.', fight: '{kind} · {name} bars {room}. Strike.', board: '{kind} · {room}', yield: 'Back off · {pct} Life',
     heal: 'Rest · +{n} Life', temper: 'Temper {name} · cheaper this run', reward: 'Pick a boon (this run only)', skip: 'None', got: 'Found: {what}',
     hpUp: 'Life +{n}', hpDown: 'Life −{n}', withdrew: 'It ran out of breath and left.', stars: '{n}★', away: '{keys} · the door is at {door}', goDoor: 'To the door ›',
@@ -91,11 +91,11 @@ export function mapSvg(m) {
   return `<svg class="mj-map" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${ways}${all.map(node).join('')}</svg>`;
 }
 
-const itemsLine = (items, t) => (items ?? []).map((i) => `${i.name}${i.n > 1 ? ` × ${i.n}` : ''}`).join('、') || t.nothing;
+const itemsLine = (items, t) => (items ?? []).map((i) => `${i.name}${i.n > 1 ? ` × ${i.n}` : ''}`).join(t.sep) || t.nothing;
 function gotLine(got, t) {
   if (!got) return '';
   const parts = [...(got.items ?? []).map((i) => `${i.name}${i.n > 1 ? ` × ${i.n}` : ''}`), ...(got.wealth ? [fill(t.wealth, { n: got.wealth })] : [])];
-  return parts.length ? `<div class="small">${esc(fill(t.got, { what: parts.join('、') }))}</div>` : '';
+  return parts.length ? `<div class="small">${esc(fill(t.got, { what: parts.join(t.sep) }))}</div>` : '';
 }
 const hpLine = (n, t) => (n > 0 ? fill(t.hpUp, { n }) : n < 0 ? fill(t.hpDown, { n: -n }) : '');
 

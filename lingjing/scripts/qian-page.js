@@ -154,7 +154,7 @@ export function createQianPage({ write, refresh, show, keep, view, herLine, herH
     askedOn = look?.today?.date ?? 'today';
     const r = await write('divine', { action: 'asked' }).catch(() => ({ ok: false }));
     if (!r.ok) return;
-    const zh = lang() !== 'en', yi = d.almanac?.yi?.map((x) => x.name).join('、');
+    const zh = lang() !== 'en', yi = d.almanac?.yi?.map((x) => x.name).join(zh ? '、' : ', ');
     const what = zh
       ? `傍晚了。今天他抽的是第${d.n}签（${d.grade.name}），黄历宜：${yi || '无'}；游戏里宜${d.yi?.name ?? ''}。你可以轻轻问他一句：今天应验了吗？（比如「今天宜会友，见到谁了吗？」）只问一次；他答了，就用 Qian 工具 action verify、said 记下他的话。他不答也不追。`
       : `It is evening. Today he drew stick ${d.n} (${d.grade.name}); the almanac says good for: ${yi || 'nothing much'}; in the game, good for ${d.yi?.name ?? ''}. You may lightly ask him once whether it came true. If he answers, keep his words with the Qian tool (action verify, said). If not, let it go.`;

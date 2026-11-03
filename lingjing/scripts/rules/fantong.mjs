@@ -316,7 +316,7 @@ function feed(state, content, ctx, args, t) {
   const nextNow = nextAt(t, s, now);
   const newRecipe = discovered ?? paged;
   return { state: s, result: {
-    ok: true, fed: { ids, id: ids[0], names: ids.map(id => itemName(itemOf(content, id), s, lang) ?? id), name: ids.map(id => itemName(itemOf(content, id), s, lang) ?? id).join('、'), lingshi, press },
+    ok: true, fed: { ids, id: ids[0], names: ids.map(id => itemName(itemOf(content, id), s, lang) ?? id), name: ids.map(id => itemName(itemOf(content, id), s, lang) ?? id).join(lang === 'en' ? ', ' : '、'), lingshi, press },
     out, ...(extra ? { with: extra } : {}), ...(twin ? { twin } : {}), outs: briefs,
     grade: roll.grade, grade_name: wordsOf(t, lang).grades?.[roll.grade] ?? roll.grade,
     ...(lifted ? { lifted: { id: lifted, name: itemName(itemOf(content, lifted), s, lang) } } : {}),
