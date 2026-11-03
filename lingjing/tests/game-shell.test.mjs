@@ -84,6 +84,10 @@ test('a Mac window: the story\'s game card takes the stage up to 720, a tall fie
   assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\) \{ --game-reserve: 230px; --board-ar: 1\.15; --board-rows: 0px;\s+max-width: min\(96%, max\(var\(--board-min, 600px\), calc\(\(100dvh - var\(--game-reserve\) - var\(--board-rows\)\) \* var\(--board-ar\) \+ 34px\)\)\); \}/);
   assert.doesNotMatch(mac, /max-width: 720px/, 'no 720 px cap left');
   for (const sel of ['zhazhai-stage', 'g-taiko', 'kailu-stage', 'g-qimai', 'g-xiangqi', 'g-huarong-board', 'g-jc']) assert.ok(mac.includes(`:has(> .gshell .${sel}`), `${sel}: its own shape`);
+  // 华容道's arrows beside its board, so the board takes the height and nothing scrolls at 1000×650 (11-03)
+  assert.match(mac, /\.focus \.card\.gamecard \.g-huarong:not\(\.is-won\) \{ display: grid; grid-template-columns: auto minmax\(180px, 220px\);/);
+  assert.match(mac, /\.g-huarong:not\(\.is-won\) > \.g-huarong-board \{ grid-column: 1; grid-row: 1 \/ span 8; \}/);
+  assert.match(read('../scripts/games/kailu.js'), /^const GAP = 22;/m, '开炉\'s table stops short of the card\'s own edge');
   assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\.is-tall\) \{ --game-reserve: 204px;\s+max-width: calc\(200px \+ 18px \+ 34px \+ \(100dvh - var\(--game-reserve\)\) \* var\(--ar, \.5625\) \+ var\(--beside, 0px\)\); \}/);
   assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\.is-tall \[data-landscape="true"\]\) \{ max-width: min\(96%, calc\(\(100dvh - var\(--game-reserve\)\) \* var\(--ar, 1\.08\) \+ 34px\)\); \}/);
   assert.match(mac, /\.gshell\.is-tall:has\(\[data-landscape="true"\]\) \{ display: flex;/);

@@ -109,7 +109,7 @@ async function sample(lang, seed, force) {
    from its top to the box's bottom edge, so the tray and 开炉 under the pot are in sight with no scroll (live 10-21:
    at 1440×900 it ran 70 px past the pouch, 50 at 390 — the window's height less a guessed reserve). Elsewhere (the
    游戏厅, the try page) the window's rule stands. Again on a resize of the window or of that box. */
-const GAP = 12;
+const GAP = 22; // the card's own padding and edge under the table (a story card: 12 ran it 4 px past the stage, 11-03)
 function scrollerOf(el) {
   const win = el.ownerDocument.defaultView;
   for (let a = el.parentElement; a && a !== el.ownerDocument.body; a = a.parentElement) if (/auto|scroll/.test(win.getComputedStyle(a).overflowY)) return a;
