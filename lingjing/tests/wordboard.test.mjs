@@ -176,12 +176,12 @@ test('the page keeps the board through the rules, the Mac\'s alone, and watches 
   const skill = read('../SKILL.md');
   assert.match(skill, /- name: Reveal\n/);
   assert.match(skill, /- name: Whisper\n/);
-  assert.match(skill, /\*\*A `\[jinchat\]` word game in this chat\*\*, asked about \(a hint, the answer\):\n  Look first/);
-  assert.match(skill, /\*\*Reveal\*\*\n  only when the player asks outright for the answer\./);
+  assert.match(skill, /\*\*A `\[jinchat\]` word game asked about\*\*: Look; `word_board` says what to do\./);
+  assert.match(skill, /- name: Reveal\n    description: >-\n      The open word game's answer: only on an outright ask, never a hint\./);
   // 银月's half is a pet tool: the engine runs only `tier: read` ones for her (skill/tools.rs pet_gate).
   assert.match(skill, /- name: Whisper\n[\s\S]*?--for=yinyue"\n    tier: read\n    pet: true/);
   // Her place text is at its budget: Whisper's own description and Progress's `word_board` rule say when.
-  assert.match(skill, /- name: Whisper\n[\s\S]*?only when the\n      player asks you outright — never for a hint/);
+  assert.match(skill, /- name: Whisper\n[\s\S]*?only on an outright ask, never a hint/);
   const rules = read('../scripts/rules.mjs');
   assert.match(rules, /if \(verb === 'wordboard' && !reader\)/, 'the page\'s verb, never Ling\'s');
 });

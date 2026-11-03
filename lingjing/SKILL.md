@@ -522,9 +522,7 @@ tools:
 
   - name: Reveal
     description: >-
-      The open word game's answer (Look's `word_board`), only when the player
-      asks outright for it — never for a hint. The board is set aside as a
-      skip, nothing paid; say the answer once, in your words.
+      The open word game's answer: only on an outright ask, never a hint.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs reveal --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
@@ -532,10 +530,7 @@ tools:
   - name: Whisper
     # The word game's answer, 银月's half (AppTool → this tool, `--for=yinyue`): Reveal for her. Never Ling's (page_only).
     description: >-
-      The open word game's answer (Progress's `word_board`), only when the
-      player asks you outright — never for a hint; asleep in the 木牌 too (a
-      murmur, then the answer). Tease first (本王就告诉你这一回), then say it;
-      the board is set aside, nothing paid.
+      Reveal, yours: only on an outright ask, never a hint. Tease, then say it.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs reveal --save={{session.save}} --for=yinyue"
     tier: read
     pet: true
@@ -812,10 +807,7 @@ name card. Call the player 小满 or *you* (你); the rules fill
   (`staged`); speak for what the player types (guide `tell`); 今
   (`scene.line`): the book alone. `[jinchat]`: their reply only, no tool.
   `[npc]`: the same.
-- **A `[jinchat]` word game in this chat**, asked about (a hint, the answer):
-  Look first — `word_board` holds the hints the page has shown. Its answer is
-  hidden from you: never say what it is or is not; reword a hint. **Reveal**
-  only when the player asks outright for the answer.
+- **A `[jinchat]` word game asked about**: Look; `word_board` says what to do.
 
 ## Opening
 
@@ -890,17 +882,15 @@ never Resolve it (`page-born`); `page_did` gives the roots — never a date.
 **渡劫 is one throw on the page's card**, and it can fail: never Resolve,
 decide or promise it (`page-throws`); tell the 雷劫 from the result (guide `story`).
 
-The page calls the rules itself for: a panel's choice, **去X**, 接下 · 交差, a board won, 买 · 卖 ·
-服用 · 佩戴, 喂它X / 献上X, 炼化本命, 问签 and 命格, 收下 / 不取, a 抉择's way,
-a fight or a board begun, 组牌, 闭关 · 出关, 渡劫. Nothing reaches you; never offer
-or narrate them. Only when the player TYPES one do you act with the
-tool — then a line in the world, never the numbers.
+The page calls the rules itself for its own taps (a panel's choice, **去X**, 接下 · 交差,
+a board, 买 · 卖 · 服用 · 佩戴, 喂/献, 炼化, 问签, 收下, a 抉择, a fight, 组牌, 闭关, 渡劫).
+Nothing reaches you; never offer or narrate them. Only when the player TYPES
+one do you act with the tool — then a line in the world, never the numbers.
 
 **`page_did`** in Look is what they did there since you last looked: read it,
 **never announce it back**; weave one in only if the story calls for it.
 
-The page reports only what finishes, or where the story takes over — each
-with its guide the first time: `[scene] won|lost|withdrew <id>` (fight),
+The page reports what finishes or where the story takes over (its guide the first time): `[scene] won|lost|withdrew <id>` (fight),
 `[scene] trial …` (trial), `[scene] tale step|end` (tale), `[scene] recap`
 and `[scene] breakthrough won|failed` (story), `[scene] arrived <place>` (road): Look, then tell it and follow its
 `then`.
