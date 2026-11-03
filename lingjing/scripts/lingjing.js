@@ -4632,15 +4632,27 @@ async function mountChat() {
 /// 问签 (qian-page.js): the shake, the draw through the rules, 银月's reading as facts, the evening's 应验 question.
 const qianPage = createQianPage({ write, refresh: () => refresh(), show, keep, view, herLine: herReadingLine, tellHer: tellYinyue, herHere, lang, refusal, failed, saveKey: () => herKey(), playerName: () => look?.name ?? null });
 
+/* A 层 risen inside one 段 (Look's tier.duan, 筑基 and above): the same realm and 段, a later place in it. */
+const layerStep = (a, b) => Boolean(a?.duan && b?.duan && a.id === b.id && a.duan.id === b.duan.id && b.duan.at > a.duan.at);
+/* The 修为 won across such a step, from Look's own numbers: the rest of the 层 left (its `next`), each 层 passed whole
+   (the 段's `marks`), and what the new 层 holds. */
+function gainAcross(before, now) {
+  const a = before.tier.duan.at, b = now.tier.duan.at, marks = now.tier.duan.marks ?? [];
+  const passed = marks.slice(a, b - 1).reduce((n, m) => n + (m ?? 0), 0);
+  return Math.max(0, (before.next ?? 0) - (before.progress ?? 0)) + passed + Math.max(0, now.progress ?? 0);
+}
+
 /// Something won in Ling's turn — 修为, or 灵石 not from a sale: 银月 hears the
 /// rise as facts and says what she will, in her own words (his rule: Yinyue
 /// writes every message; the page never speaks a line Ling wrote for her). A
 /// realm risen is the stage's own moment (`feat`), told to her there.
 function cheer(before) {
   if (!before || !look || !herHere() || before.world?.id !== look.world?.id) return;
-  if (look.tier?.id !== before.tier?.id || look.tier?.step !== before.tier?.step) return;
+  // A new realm, or a step that is no 层 inside one 段 (练气's every step; a 段 crossed), is the stage's moment, never a gain.
+  const across = layerStep(before.tier, look.tier);
+  if (look.tier?.id !== before.tier?.id || (look.tier?.step !== before.tier?.step && !across)) return;
   const held = (l) => (l.bag ?? []).reduce((n, b) => n + (b.n ?? 0), 0);
-  const progress = Math.max(0, (look.progress ?? 0) - (before.progress ?? 0));
+  const progress = across ? gainAcross(before, look) : Math.max(0, (look.progress ?? 0) - (before.progress ?? 0));
   const wealth = look.wealth > before.wealth && held(look) >= held(before) ? look.wealth - before.wealth : 0;
   if (!progress && !wealth) return;
   const w = words();
