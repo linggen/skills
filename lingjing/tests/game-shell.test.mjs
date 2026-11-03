@@ -80,9 +80,12 @@ test('a Mac window: the story\'s game card takes the stage up to 720, a tall fie
   // stage — on a Mac only, so the phone's card is the one it was.
   const css = read('../scripts/games/shell.css');
   const mac = css.slice(css.indexOf('@media (min-width: 900px)'));
-  assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\) \{ max-width: 720px; --game-reserve: 230px; \}/);
+  // no fixed cap (Hanli 11-03: 「游戏界面都大一些」): up to 96% of the stage, as wide as the board drawn at the page's height
+  assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\) \{ --game-reserve: 230px; --board-ar: 1\.15; --board-rows: 0px;\s+max-width: min\(96%, max\(var\(--board-min, 600px\), calc\(\(100dvh - var\(--game-reserve\) - var\(--board-rows\)\) \* var\(--board-ar\) \+ 34px\)\)\); \}/);
+  assert.doesNotMatch(mac, /max-width: 720px/, 'no 720 px cap left');
+  for (const sel of ['zhazhai-stage', 'g-taiko', 'kailu-stage', 'g-qimai', 'g-xiangqi', 'g-huarong-board', 'g-jc']) assert.ok(mac.includes(`:has(> .gshell .${sel}`), `${sel}: its own shape`);
   assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\.is-tall\) \{ --game-reserve: 204px;\s+max-width: calc\(200px \+ 18px \+ 34px \+ \(100dvh - var\(--game-reserve\)\) \* var\(--ar, \.5625\) \+ var\(--beside, 0px\)\); \}/);
-  assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\.is-tall \[data-landscape="true"\]\) \{ max-width: 720px; \}/);
+  assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\.is-tall \[data-landscape="true"\]\) \{ max-width: min\(96%, calc\(\(100dvh - var\(--game-reserve\)\) \* var\(--ar, 1\.08\) \+ 34px\)\); \}/);
   assert.match(mac, /\.gshell\.is-tall:has\(\[data-landscape="true"\]\) \{ display: flex;/);
   assert.match(mac, /@container scene \(max-width: 620px\) \{ \.focus \.card\.gamecard > \.gshell\.is-tall \{ display: flex;/);
   assert.equal(css.slice(0, css.indexOf('@media (min-width: 900px)')).includes('.focus'), false, 'nothing of the story\'s outside the Mac rule');

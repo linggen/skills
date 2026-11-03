@@ -88,7 +88,28 @@
    a narrow stage (the chat open in a small window), nor for 守墙关's landscape 药园 (1040 : 960): the bar goes back
    over the field, which would have only the narrow column beside it, and the landscape card stays at 720. */
 @media (min-width: 900px) {
-  .focus .card.gamecard:has(> .gshell) { max-width: 720px; --game-reserve: 230px; }
+  /* Every board on the Mac stage as large as the page lets it (Hanli 11-03: 「游戏界面都大一些」): no fixed cap — the card
+     up to 96% of the stage, and as wide as its board drawn at the page's height (`--board-ar`, the board's width : height
+     less the rows it keeps under it, `--board-rows`), never narrower than it was (`--board-min`, each board's own floor);
+     each engine scales itself to the box it is given. */
+  .focus .card.gamecard:has(> .gshell) { --game-reserve: 230px; --board-ar: 1.15; --board-rows: 0px;
+    max-width: min(96%, max(var(--board-min, 600px), calc((100dvh - var(--game-reserve) - var(--board-rows)) * var(--board-ar) + 34px))); }
+  .focus .card.gamecard:has(> .gshell .zhazhai-stage) { --board-ar: 1.778; }
+  .focus .card.gamecard .zhazhai-stage { width: min(100%, calc((100dvh - var(--game-reserve)) * 16 / 9)) !important; margin: 0 auto; }
+  .focus .card.gamecard:has(> .gshell .g-taiko) { --board-ar: 1.6; }
+  .focus .card.gamecard:has(> .gshell .kailu-stage) { --board-ar: .667; --board-min: 700px; }
+  /* 气走经脉 · 冲刺: the scene and the rows under it (the head, the line, the hint) */
+  .focus .card.gamecard:has(> .gshell .g-qimai) { --board-ar: 1.636; --board-rows: 150px; }
+  .focus .card.gamecard:has(> .gshell .g-dash:not(:has(.is-climb))) { --board-ar: 1.79; --board-rows: 145px; }
+  .focus .card.gamecard .g-ink:is(.g-qimai, .g-dash) { max-width: min(100%, max(400px, calc((100dvh - var(--game-reserve) - var(--board-rows)) * var(--board-ar)))); }
+  /* 象棋 · 华容道: the board by the page's height, its pieces' type with it */
+  .focus .card.gamecard:has(> .gshell .g-xiangqi) { --board-ar: .9; --board-rows: 170px; }
+  .focus .card.gamecard .g-xiangqi-board { width: min(100%, max(360px, calc((100dvh - var(--game-reserve) - var(--board-rows)) * .9))); }
+  .focus .card.gamecard:has(> .gshell .g-huarong-board) { --board-ar: .8; --board-rows: 235px; }
+  .focus .card.gamecard :is(.g-huarong-board, .g-huarong-help) { width: min(100%, max(320px, calc((100dvh - var(--game-reserve) - var(--board-rows)) * .8))); max-width: none; }
+  /* 对话 · the word games (jinchat): the chat as tall as the page leaves, wider, its type larger */
+  .focus .card.gamecard:has(> .gshell .g-jc) { --board-ar: 1.2; }
+  .focus .card.gamecard .g-jc { max-width: min(100%, 860px); height: max(360px, calc(100dvh - var(--game-reserve) - 20px)); font-size: clamp(15px, calc(10px + .6vw), 18px); }
   /* 格斗 (fighter.js): its field as tall as the page leaves under the bar, the how line and the keys' pad, and the card
      as wide as that field drawn up to 2.4:1 — or the stage, if narrower (the chat open in a small window: 16:9 as before). */
   .focus .card.gamecard:has(> .gshell .g-fighter) { --gf-hm: max(240px, calc(100dvh - 416px)); max-width: min(96%, calc(var(--gf-hm) * 2.4 + 32px)); }
@@ -96,7 +117,7 @@
   .focus .card.gamecard:has(> .gshell .g-fighter.pad-off) { --gf-hm: max(260px, calc(100dvh - 250px)); }
   .focus .card.gamecard:has(> .gshell.is-tall) { --game-reserve: 204px;
     max-width: calc(200px + 18px + 34px + (100dvh - var(--game-reserve)) * var(--ar, .5625) + var(--beside, 0px)); }
-  .focus .card.gamecard:has(> .gshell.is-tall [data-landscape="true"]) { max-width: 720px; }
+  .focus .card.gamecard:has(> .gshell.is-tall [data-landscape="true"]) { max-width: min(96%, calc((100dvh - var(--game-reserve)) * var(--ar, 1.08) + 34px)); }
   .focus .card.gamecard > .gshell.is-tall:has([data-landscape="true"]) { display: flex; --game-reserve: 230px; }
   @container scene (max-width: 620px) { .focus .card.gamecard > .gshell.is-tall { display: flex; --game-reserve: 230px; } }
   /* …and those two play the side as the strip under the stage, its room kept (the column's is free). */
