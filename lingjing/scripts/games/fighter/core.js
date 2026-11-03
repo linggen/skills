@@ -684,7 +684,6 @@ function closeIn(s) {
 function startPalm(s, from) {
   const m = s.R.foe.moves.palm;
   s.palm = { phase: 'glow', at: s.t, from, landed: false };
-  s.seen = { ...s.seen, palm: true };
   s.foe.act = { k: 'palm', at: s.t, m: { startup: m.glow + m.hold, active: m.strike, recover: m.after } };
   s.foe.cd.palm = m.cd;
   s.foe.moves += 1;
@@ -695,7 +694,6 @@ function startPalm(s, from) {
 function startEdge(s) {
   const foe = s.foe;
   s.edge = { phase: 'guard', at: s.t, guard: pickGuard(s), early: 0, side: cornered(s) };
-  s.seen = { ...s.seen, edge: true };
   foe.act = { k: 'edge', at: s.t, m: { startup: 1e9, active: 0, recover: 0 } };
   foe.vx = 0;
   foe.moves += 1;
@@ -1296,11 +1294,9 @@ function endStep(s) {
   } else s.lost = true;
 }
 
-/* A bout the slick should end (no `win`, no `outlast`). Its book's moment comes first: until it has been offered — her
-   point at his throat where she has the edge (迎剑), else her held-back palm/stamp (看他的脚) — her 稳 keeps a sliver, so
-   a quick hand never skips the book's 迎 and 勾; after it, an empty 稳 ends the bout (`spent`). */
+/* A bout the slick should end (no `win`, no `outlast`): her 稳 is a health bar to the eye (Hanli 11-03: 「血槽么....」), so
+   emptied it ends the bout at once, at any move (`spent`); over the slick stays the book's clean way. */
 const slickBout = (s) => !s.R.stage.win && !s.level?.outlast?.moves && Boolean(s.R.stage.oil);
-const offered = (s) => (s.R.foe.ai.edge !== false ? s.seen?.edge : s.seen?.palm) || false;
 
 /* A bout of sparring (`stage.win: 'yield'`, 切磋 at the 演武场): no slick to send her off — her 稳 gone, she yields
    (认输); and when the incense is out (`level.time`, `stage.timeUp`) the one standing looser loses, as a judge would
@@ -1310,7 +1306,8 @@ function sparEnd(s) {
   if (st.win === 'yield' && s.foe.bal <= 0) { s.end = { kind: 'yield', at: s.t, won: true }; s.foe.vx = 0; say(s, 'yield'); bump(s, 'down'); return; }
   // A bout won over the slick (no `win`, no `outlast`: 迎剑, 看他的脚): her 稳 emptied all the same, she goes down at last —
   // a win, below the book's way (`spent`: clumsy, two stars; Hanli 11-03: 「敌人没血了还是不死呢, 卡住了吧」).
-  if (slickBout(s) && offered(s) && s.foe.bal <= 0 && !s.edge && !s.palm && !s.foe.air) { s.end = { kind: 'spent', at: s.t, won: true }; s.foe.vx = 0; s.foe.act = null; say(s, 'spent'); bump(s, 'down'); return; }
+  // Mid-trick too: an empty bar is a fallen foe (her point at his throat, her palm, put away with her).
+  if (slickBout(s) && s.foe.bal <= 0 && !s.foe.air) { s.end = { kind: 'spent', at: s.t, won: true }; s.foe.vx = 0; s.foe.act = null; s.edge = null; s.palm = null; s.cue = null; say(s, 'spent'); bump(s, 'down'); return; }
   if (st.timeUp && s.t >= (s.level?.time ?? Infinity)) {
     const mine = s.me.hp / s.R.me.hp, hers = s.foe.bal / s.R.foe.bal, won = mine > hers;
     s.end = { kind: 'time', at: s.t, won };
@@ -1341,7 +1338,6 @@ function step(s) {
   shotsStep(s, STEP_MS);
   if (s.combo.n && s.foe.stun <= s.t && s.t - s.combo.at > 200) s.combo = { ...s.combo, n: 0 };
   if (me.hp <= 0 && !s.end) { s.end = { kind: 'down', at: s.t, won: false }; me.down = s.t + END_MS * 2; say(s, 'lost'); bump(s, 'down'); }
-  if (slickBout(s) && !offered(s) && s.foe.bal < 1) s.foe.bal = 1; // the book's moment first (slickBout)
   if (!s.end) sparEnd(s);
   if (!s.end && s.level.outlast?.moves && s.foe.moves >= s.level.outlast.moves && !busy(s.foe, s.t) && !s.edge && !s.palm) {
     s.end = { kind: 'outlast', at: s.t, won: true }; // she has made her moves and he stands: her point comes to rest

@@ -430,3 +430,31 @@ test('周衡\'s 灯谜: the first play (n 0, or no count) always asks 人参; ea
     assert.notEqual(poolPick(shen, POOL, poolPlay(row, lang, () => k)).riddle, poolPick(shen, POOL, poolPlay(row, lang, () => k + 1)).riddle, `${lang} ${k}`);
   }
 });
+
+/* 2026-11-03 (Hanli on the phone: 「猜谜都会卡在这里」): a won word board's closing lines never wait on his hand — his
+   `me` line goes by itself after AFTER_ME_MS; a tap (click or pointerup) only sends it sooner. */
+import { AFTER_ME_MS, playAfter } from '../scripts/games/jinchat-play.js';
+function fakeCtx(afterMs) {
+  const said = [], listeners = {};
+  const chip = { addEventListener: (type, fn) => { listeners[type] = fn; } };
+  const slot = { set innerHTML(v) { this.html = v; }, get innerHTML() { return this.html ?? ''; }, querySelector: () => chip };
+  return { said, listeners, ctx: { lang: 'zh', afterMs, root: { querySelector: () => slot }, add: (l) => said.push(l), typeOut: async (ls) => { for (const l of ls) said.push(l); } } };
+}
+test('the closing lines play to the end with no tap; a tap or a pointer let go sends his line sooner', async () => {
+  assert.ok(AFTER_ME_MS > 1000 && AFTER_ME_MS < 5000);
+  const lines = [{ who: 'me', text: { zh: '秦师姐。秘境里那一回……' } }, { who: 'neimen-shijie', text: { zh: '我不让你。你也别让我。' } }];
+  const a = fakeCtx(30);
+  await playAfter(a.ctx, lines);
+  assert.deepEqual(a.said.map((l) => l.text), ['秦师姐。秘境里那一回……', '我不让你。你也别让我。'], 'untapped: over all the same');
+  for (const type of ['click', 'pointerup']) {
+    const b = fakeCtx(60000);
+    const done = playAfter(b.ctx, lines);
+    await new Promise((r) => setTimeout(r, 5));
+    b.listeners[type]();
+    await done;
+    assert.equal(b.said.length, 2, `${type}: sent at once`);
+  }
+  // every word game closes through it
+  const src = fs.readFileSync(new URL('../scripts/games/jinchat-play.js', import.meta.url), 'utf8');
+  assert.equal((src.match(/await playAfter\(ctx, (?:chat\.)?game\.after\)/g) ?? []).length, 4, 'riddle · couplet · chain · guess');
+});

@@ -19,7 +19,8 @@
 // ctx: { root, chat, cast, lang, w (words), add(line), typeOut(lines), react(text, o) → Promise, sound(name),
 //        foot(text), table() → Promise<twenty table>, ask(text) → Promise<{text}> (the open 二十问's turns), typing(on), log(row),
 //        board(action, o) (the open game kept on the save for Ling's Look, rules/wordboard.mjs: open · step · close),
-//        watchTold(fn) → stop (fn({ answer, src }) once Ling or 银月 told it on his outright ask) }
+//        watchTold(fn) → stop (fn({ answer, src }) once Ling or 银月 told it on his outright ask), afterMs (a test's
+//        AFTER_ME_MS) }
 // Each answers a Promise of the result: { won: true, grade, stars } — or, told, { won: false, left: true, told: true, kind,
 // answer, src? } (over as a skip: the rules already set it down, nothing is paid; the page holds the card with it).
 
@@ -44,14 +45,22 @@ const lanternOf = (ctx) => (ch) => (ctx.chat.look === 'dark' ? '' : lantern(ch))
 const lantern = (ch) => `<div class="g-jc-lan" aria-hidden="true"><span class="g-jc-lan-cap"></span><span class="g-jc-lan-body"><b>${esc(ch)}</b></span><span class="g-jc-lan-cap is-low"></span><span class="g-jc-lan-cord"></span></div>`;
 const btn = (cls, label, data = '') => `<button type="button" class="g-jc-gbtn ${cls}"${data}>${esc(label)}</button>`;
 
-/* The book's closing lines (`game.after`): theirs typed out; his (`who: me`) a chip he taps, then his bubble. */
-async function playAfter(ctx, lines) {
+/* The book's closing lines (`game.after`): theirs typed out; his (`who: me`) a chip he may tap, then his bubble. The
+   game is over by then, so the close never waits on his hand: unanswered, his line goes by itself after AFTER_ME_MS
+   (2026-11-03, Hanli on the phone: 「猜谜都会卡在这里」 — every word board with a `me` line stood on its dashed chip, the
+   board never ended and the story could not go on). A tap (click, or the pointer let go on it) only sends it sooner. */
+export const AFTER_ME_MS = 2600;
+export async function playAfter(ctx, lines) {
   for (const l of lines ?? []) {
     const text = pick(l.text, ctx.lang);
     if (l.who !== 'me') { await ctx.typeOut([{ who: l.who, text }]); continue; }
     await new Promise((resolve) => {
       const el = strip(ctx, `<div class="g-jc-chips is-game"><button type="button" class="g-jc-chip">${esc(text)}</button></div>`);
-      el.querySelector('.g-jc-chip').addEventListener('click', () => resolve(), { once: true });
+      const chip = el.querySelector('.g-jc-chip');
+      let done = false;
+      const go = () => { if (done) return; done = true; clearTimeout(t); resolve(); };
+      const t = setTimeout(go, ctx.afterMs ?? AFTER_ME_MS);
+      for (const type of ['click', 'pointerup']) chip.addEventListener(type, go, { once: true });
     });
     strip(ctx, '');
     ctx.add({ who: 'me', text });

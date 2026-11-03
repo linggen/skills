@@ -96,7 +96,7 @@ test('the palm lands at three tenths and never ends him (大比不许伤人性�
 
 test('a hook on dry stone staggers her, never takes her off; she never strikes a man who is down; the spell keeps its cooldown', () => {
   let s = F.newGame('dry', 1, deal);
-  s.me.x = 500; s.foe.x = 580; s.foe.bal = 40; s.foe.think = 0; s.foe.cd.ice = 9999;
+  s.me.x = 500; s.foe.x = 580; s.foe.bal = 50; s.foe.think = 0; s.foe.cd.ice = 9999; // the hook's 45 leaves her standing
   s = until(s, (x) => x.palm?.phase === 'hold', 20000);
   s = press(s, { g: 'heavy' });
   s = run(s, 1500);
@@ -137,7 +137,7 @@ test('a human-like hand wins within three tries, in a bout of a minute or so; a 
   const r = playModule(F, bot, { tries: 3, deal, limit: 180000 });
   assert.ok(r.won, `lost all three: ${JSON.stringify(r.runs)}`);
   const won = r.runs.at(-1);
-  assert.ok(won.ms >= 20000 && won.ms <= 120000, `${won.ms} ms`);
+  assert.ok(won.ms >= 10000 && won.ms <= 120000, `${won.ms} ms`); // her 稳 emptied may end it before the slick (11-03)
   const slow = playModule(F, bot, { tries: 3, deal, limit: 180000, reaction: 320 });
   assert.ok(slow.won, 'a slower hand (320 ms) too');
   const mash = (s) => (s.end ? null : { g: (s.t / 150 | 0) % 2 ? 'light' : 'heavy' });
@@ -153,6 +153,13 @@ test('its sounds: every name a bout makes is declared', () => {
   const hear = (s, n) => { for (const e of F.sounds(s, n)) heard.add(e); return n; };
   const spy = { ...F, tick: (s, ms) => hear(s, F.tick(s, ms)), act: (s, d) => { const r = F.act(s, d); hear(s, r.state); return r; } };
   for (const seed of ['snd', 'snd-2', 'snd-3']) playOnce(spy, bot, { seed, deal, limit: 120000 }); // v7: a bout may end by the 绝 before her palm
+  // …and the book's line itself (an emptied 稳 may end the bots' bouts first, 11-03): 迎, the palm, the hook, the slip
+  let b = atTheEdge('snd-slick');
+  for (let t = 0; t < 4000 && b.edge?.phase !== 'tell'; t += 10) b = spy.tick(b, 10);
+  b = spy.act(b, { g: 'light' }).state;
+  for (let t = 0; t < 4000 && b.palm?.phase !== 'hold'; t += 10) b = spy.tick(b, 10);
+  b = spy.act(b, { g: 'heavy' }).state;
+  for (let t = 0; t < 6000 && !b.won; t += 10) b = spy.tick(b, 10);
   for (const e of heard) assert.ok(F.meta.sounds.includes(e), e);
   for (const e of ['hit', 'block', 'glow', 'hook', 'slip']) assert.ok(heard.has(e), `${e} sounded`);
 });
@@ -565,7 +572,7 @@ test('a touch-only hand wins: it fights as a thumb does, and answers her point a
   for (const seed of ['t1', 't2', 't3', 't4']) {
     let s = F.newGame(seed, 1, deal);
     for (let t = 0; t < 180000 && !s.won && !s.lost && !(s.end && !endWon(s.end) && s.t - s.end.at > 2000); t += 10) { const a = touch(s); if (a) s = press(s, a); s = run(s, 10); }
-    if (s.won) { wins += 1; assert.equal(s.end.kind, 'out'); }
+    if (s.won) { wins += 1; assert.ok(['out', 'spent'].includes(s.end.kind)); } // over the slick, or her 稳 emptied
   }
   assert.ok(wins >= 3, `a touch-only hand won ${wins} of 4`);
   const src = fs.readFileSync(new URL('../scripts/games/fighter.js', import.meta.url), 'utf8');
@@ -612,26 +619,28 @@ test('on the Mac the story card gives the fighter the page\'s height and the sta
 /* 2026-11-03 (Hanli: 「敌人没血了还是不死呢, 卡住了吧」, 看他的脚 · 等风): in a bout the slick should end, an empty 稳 ends it
    too — a win below the book's way (`spent`: clumsy, two stars) — once the book's moment has been offered. */
 const FUSHI = REG.games.find((g) => g.scene === 'wm-fushi' && g.id === 'fighter').levels[0];
-test('稳 emptied ends a slick bout as a two-star win, once the book\'s moment came; before it, a sliver holds', () => {
+test('稳 emptied ends a slick bout at once, at any move, as a two-star win (Hanli 11-03: 「血槽么....」)', () => {
   for (const lv of [LEVEL, FUSHI]) {
-    let s = F.newGame('spent', 1, { levels: [lv] });
-    s.foe.bal = 0; s.foe.think = 1e9;
-    s = run(s, 200);
-    assert.equal(s.end, null, `${lv.id}: not before the book's moment`);
-    assert.equal(s.foe.bal, 1, 'a sliver of 稳 holds');
-    s.seen = { edge: true, palm: true }; s.foe.bal = 0;
-    s = until(s, (x) => x.won, 4000);
-    assert.equal(s.end.kind, 'spent');
-    assert.equal(s.grade, 'clumsy');
-    assert.equal(s.stars, 2);
+    for (const moves of [0, 30]) {
+      let s = F.newGame('spent', 1, { levels: [lv] });
+      s.foe.moves = moves; s.foe.bal = 0; s.foe.think = 1e9;
+      s = run(s, 20);
+      assert.equal(s.end?.kind, 'spent', `${lv.id} at move ${moves}: down at once`);
+      s = until(s, (x) => x.won, 4000);
+      assert.equal(s.grade, 'clumsy');
+      assert.equal(s.stars, 2);
+    }
     assert.ok(lv.won.spent.zh && lv.won.spent.en && lv.lines.spent.zh && lv.lines.spent.en, `${lv.id}: its words`);
   }
+  // mid-trick too: her point at his throat goes with her
+  let e = atTheEdge('spent-edge'); e.foe.bal = 0; e = run(e, 20);
+  assert.equal(e.end?.kind, 'spent'); assert.equal(e.edge, null);
   // a sparring bout yields as ever; an outlast bout is never ended by it
   const yieldLv = REG.games.find((g) => g.scene === 'wm-dabi' && g.id === 'fighter').levels[0];
   let y = F.newGame('y', 1, { levels: [yieldLv] }); y.foe.bal = 0; y = run(y, 50);
   assert.equal(y.end?.kind, 'yield');
   const outLv = REG.games.find((g) => g.levels?.some((l) => l.id === 'liuyun')).levels.find((l) => l.id === 'liuyun');
-  let o = F.newGame('o', 1, { levels: [outLv] }); o.foe.bal = 0; o.seen = { edge: true, palm: true }; o.foe.think = 1e9; o = run(o, 500);
+  let o = F.newGame('o', 1, { levels: [outLv] }); o.foe.bal = 0; o.foe.think = 1e9; o = run(o, 500);
   assert.equal(o.end, null, 'outlast: no spent end');
 });
 
