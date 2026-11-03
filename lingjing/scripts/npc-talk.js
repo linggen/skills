@@ -24,9 +24,17 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const W = { zh: { typing: '对方正在输入…', sound: '声音', close: '关闭' }, en: { typing: 'typing…', sound: 'Sound', close: 'Close' } };
 
+/* The face in a portrait: most are full-length standing figures (640×960), so the avatar zooms to the head at the
+   top (Hanli 11-03: 「秦雁的头像里看不到头了」). A person whose picture is framed otherwise declares `face`
+   ({zoom, x, y}: background size in % of the box, position in %); zoom 1 shows the whole picture, covered. */
+const FACE = { zoom: 260, x: 50, y: 3 };
+const faceStyle = (f = {}) => {
+  const { zoom, x, y } = { ...FACE, ...f };
+  return `background-size:${zoom <= 100 ? 'cover' : `${zoom}% auto`};background-position:${x}% ${y}%`;
+};
 /** A speaker's face: the portrait (resolved against `base`), else the first letter of the name. */
 export function avatarHtml(c, base = null) {
-  if (c?.art) return `<img class="g-jc-av" src="${esc(base ? new URL(c.art, base).href : c.art)}" alt="" draggable="false">`;
+  if (c?.art) return `<span class="g-jc-av is-pic" role="img" aria-label="${esc(c.name ?? '')}" style="background-image:url('${esc(base ? new URL(c.art, base).href : c.art)}');${faceStyle(c.face)}"></span>`;
   return `<span class="g-jc-av is-letter">${esc([...(c?.name ?? '·')][0])}</span>`;
 }
 
@@ -151,6 +159,7 @@ export const TALK_STYLE = `
 .g-jc-row { display: flex; align-items: flex-start; gap: 7px; animation: g-jc-pop .22s ease-out; }
 .g-jc-row.is-me { flex-direction: row-reverse; }
 .g-jc-av { flex: none; width: 36px; height: 36px; border-radius: 10px; border: 2.5px solid var(--jc-ink); object-fit: cover; background: #fff; }
+.g-jc-av.is-pic { display: block; background-repeat: no-repeat; }
 .g-jc-av.is-letter { display: grid; place-items: center; font-weight: 800; background: #ffd66b; }
 .g-jc-col { display: flex; flex-direction: column; gap: 2px; max-width: 76%; min-width: 0; }
 .g-jc-row.is-me .g-jc-col { align-items: flex-end; }

@@ -82,7 +82,9 @@ test('the hidden call is a side session of its own — bound to the save, every 
 });
 
 test('the talk component: a face, a bubble, the frame with the shell\'s ✕', () => {
-  assert.match(avatarHtml({ name: '周衡', art: 'a.webp' }), /<img class="g-jc-av" src="a.webp"/);
+  // A standing portrait zooms to the head at the top (Hanli 11-03); a declared `face` frames it otherwise.
+  assert.match(avatarHtml({ name: '周衡', art: 'a.webp' }), /class="g-jc-av is-pic"[^>]*background-image:url\('a\.webp'\);background-size:260% auto;background-position:50% 3%/);
+  assert.match(avatarHtml({ name: '银月', art: 'f.webp', face: { zoom: 100 } }), /background-size:cover;background-position:50% 3%/);
   assert.match(avatarHtml({ name: '钱掌柜' }), /is-letter">钱</);
   assert.match(bubbleHtml({ who: 'keeper', text: '<b>' }, [{ id: 'keeper', name: '周衡' }]), /g-jc-bub">&lt;b&gt;</);
   assert.match(bubbleHtml({ who: 'me', text: '我常来' }), /is-me/);

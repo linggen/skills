@@ -28,7 +28,7 @@ export function castOf(chat, people = {}, lang = 'zh') {
   return (chat?.who ?? []).map((w) => {
     const id = typeof w === 'string' ? w : w.id;
     const p = people[id] ?? (typeof w === 'object' ? w : {});
-    return { id, name: pick(p.name, lang) || id, art: p.art ?? null, voice: pick(p.voice, lang) };
+    return { id, name: pick(p.name, lang) || id, art: p.art ?? null, ...(p.face ? { face: p.face } : {}), voice: pick(p.voice, lang) };
   });
 }
 
