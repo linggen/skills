@@ -558,7 +558,16 @@ export function hardErrors(content) {
   for (const c of content.creatures.creatures) if (c.hp != null && !(c.hp > 0)) out.push({ where: `creature ${c.id}`, say: `hp ${c.hp}` });
   for (const id of Object.keys(b.prices ?? {})) if (!items.has(id)) out.push({ where: `balance.prices.${id}`, say: `a price for ${id}, which items.json does not hold` });
   for (const [id, p] of Object.entries(b.prices ?? {})) if (p.buy && p.sell > p.buy) out.push({ where: `balance.prices.${id}`, say: `sells back for ${p.sell}, over its price ${p.buy}` });
-  for (const t of content.ladder.tiers) t.thresholds.forEach((n, k) => { if (k > (t.zero ? 1 : 0) && n < t.thresholds[k - 1]) out.push({ where: `layers.${t.id}[${k}]`, say: `${n} under the layer below (${t.thresholds[k - 1]})` }); });
+  // A realm in 段 (筑基 and above since 2026-11-02): each 层 more than the one below inside its 段, each 段 more than the one
+  // before — a 段's first 层 may ask less than the last 层 of the 段 below (balance.json `master.lines.gu._need_stages`).
+  for (const t of content.ladder.tiers) {
+    const per = t.display === 'stages' ? Math.ceil(t.thresholds.length / content.ladder.phases.zh.length) : 0;
+    t.thresholds.forEach((n, k) => { if (k > (t.zero ? 1 : 0) && (!per || k % per) && n < t.thresholds[k - 1]) out.push({ where: `layers.${t.id}[${k}]`, say: `${n} under the layer below (${t.thresholds[k - 1]})` }); });
+    if (per) for (let k = per; k < t.thresholds.length; k += per) {
+      const sum = a => t.thresholds.slice(a, a + per).reduce((x, y) => x + y, 0);
+      if (sum(k) < sum(k - per)) out.push({ where: `layers.${t.id}[${k}..]`, say: `a 段 of ${sum(k)} under the 段 below (${sum(k - per)})` });
+    }
+  }
   return out;
 }
 

@@ -520,7 +520,7 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
   「以后可以仍然按层数算1-3=小成, 4-6=中, 7-9=大」 · 「9层用于计算, 小, 中, 大成用于显示」 ·
   「练气的UI不改了, 保持现在这样吧. 筑基以后再分3段UI吧」). Every realm past 练气 has nine 层
   again (`steps`, one threshold each, the master table's: balance.json `layers`, tools/master.mjs
-  reads the step count from the ladder) and `display: "stages"`: 一至三层 小成, 四至六层 中成,
+  reads the step count from the ladder; each 段 asks what its step asked on three — `stagesSplit`, below) and `display: "stages"`: 一至三层 小成, 四至六层 中成,
   七至九层 大成 (`phases`, ids `stage_ids` xiao · zhong · da; state.mjs `stageOf`). Every name of a
   step reads the realm and the 段 — 「筑基 · 中成」, "Foundation Establishment · Middle Attainment"
   (`stepName`; `phaseName` the same) — so Ling, the 事 book, the gates and the breakthrough's `to`
@@ -540,11 +540,17 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
   (cap.mjs settleHeld). 九层圆满 into the next realm is the realm throw, unchanged; 练气 has no 段
   trial. The caps' 筑基 is 三层 (h09's `story`, h10): 古九 grinds the whole of 小成. Old saves (v15,
   `stagesCarry`): every older carry runs on the three-step ladder it was written for (`ladderOf14`,
-  `thresholds_were["14"]`), then 小成 → 三层, 中成 → 六层, 大成 → 九层, the bar and the stretch as
-  full as they stood (筑基圆满 waits at the cliff still). The numbers: the master table's ×1.1 a
-  层 over nine 层 makes a realm's whole about four times its three steps' (筑基 17,800 against
-  4,330; 古九's grind to 三层 4,330 against 1,310); the realms past 筑基 grow faster still — open,
-  with 卷二's pace. The book's own 「四层」 prose stays as written.
+  `thresholds_were["14"]`), then step k is 段 k and the 修为 it held walks through the 段's 层 to the
+  same point of it (小成 · 0 is 一层 · 0, 655 of 1310 is 二层 · 255, 筑基圆满 is 九层圆满, waiting at the
+  cliff still), the stretch shared over the 层 by size. **The pace is kept** (the coordinator's call,
+  Hanli delegated 2026-11-02: nine 层 are a way of counting, 「not a 4× grind」): each 段 asks exactly
+  what its step asked on three (balance.json `master.lines.gu._need_stages`, `need.stage_split` 1.1;
+  tools/master.mjs `stagesSplit`: 筑基 400 · 440 · 470 | 440 · 480 · 520 | 480 · 530 · 570, 4,330 in all;
+  古九's grind to 三层 1,310 as before), so a 段's first 层 may ask less than the 层 below it (the
+  numbers check reads a realm in 段 by 段); every 层 of a 段 pays at the 段's level (playpay.mjs
+  levelOf: 筑基一至三层 L12, as 筑基小成); 气血 grows half a point a step as before, a sixth a 层
+  (state.mjs hpStep). tools/balance.mjs's days per 回 are 38d5d800's to the tenth. The book's own
+  「四层」 prose stays as written.
 - **修为 caps per 回** (Hanli, 2026-10-05: 「游戏里修炼有个上限吧? 和故事对齐」;
   rules/cap.mjs, `ladder.json → caps`): each 古 回 declares how far the
   player's own work reaches (`tier` + `layer`, a 层 of 练气 or a step above it) and, where its scenes carry him

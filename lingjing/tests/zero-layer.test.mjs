@@ -82,9 +82,9 @@ test('an old save heals on load: before the 小周天 零层, past it 一层, pa
   // A realm past 练气 is not touched.
   const zhuji = heal(v7({ chapter: '01-ji', tier: 'foundation', step: 0, progress: 100, done_scenes: ['09-dabi'] }));
   // 筑基 kept, its bar read onto the master table's 筑基 as full as it stood (v13, 2026-10-27).
-  // …and v15 (nine 层 in 段, 2026-11-02): 小成 is 三层, as full as it stood.
+  // …and v15 (nine 层 in 段, 2026-11-02): walked into 小成's 层 — 328 is inside 一层.
   const fd = content.ladder.tiers[1], v14 = Math.round(100 * fd.thresholds_were['14'][0] / fd.thresholds_were['13'][0]);
-  assert.deepEqual([zhuji.tier, zhuji.step, zhuji.progress], ['foundation', 2, Math.round(v14 * fd.thresholds[2] / fd.thresholds_were['14'][0])]);
+  assert.deepEqual([zhuji.tier, zhuji.step, zhuji.progress], ['foundation', 0, v14]);
 });
 
 test('a healed save before the 小周天 plays on: the night lifts it to 一层 like a new one', () => {

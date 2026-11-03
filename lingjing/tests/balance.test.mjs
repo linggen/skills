@@ -74,7 +74,8 @@ test('the thresholds are the master table\'s (tools/master.mjs needsOf, 数值�
   const th = B.layers.qi, N = B.master.lines.gu.need;
   assert.equal(th[1], N.first);
   for (let i = 2; i < th.length; i += 1) assert.ok(th[i] > th[i - 1], `层 ${i}`);
-  assert.ok(B.layers.foundation[0] > th.at(-1), '筑基小成 above 练气九层');
+  // 筑基 in 段 (2026-11-02): its 小成 asks the old step's whole, above 练气九层; its 一层 alone is a third of that.
+  assert.ok(B.layers.foundation.slice(0, 3).reduce((a, b) => a + b) > th.at(-1), '筑基小成 above 练气九层');
 });
 
 test('every 回 the stage quests hold reaches the book\'s layer at its close — never ahead, never behind', () => {
@@ -207,9 +208,10 @@ test('a save from before keeps its 层 and its bar as full as it stood — a v8 
   assert.equal('ladder_pace' in cliff, false, 'the mark goes once carried');
   const zhuji = migrate(save(9, { chapter: '01-ji', scene: null, tier: 'foundation', step: 0, progress: 100 }), content);
   const fd = content.ladder.tiers[1];
-  // v13's master table read it on the three steps (thresholds_were 14), then v15 carries 小成 to 三层 — the bar as full as it stood.
+  // v13's master table read it on the three steps (thresholds_were 14), then v15 walks it into 小成's 层 — the same point of the 段.
   const v14 = Math.round(100 * fd.thresholds_were['14'][0] / fd.thresholds_were['13'][0]);
-  assert.deepEqual([zhuji.tier, zhuji.step, zhuji.progress], ['foundation', 2, Math.round(v14 * fd.thresholds[2] / fd.thresholds_were['14'][0])], 'past 练气: its bar as full as it stood (v13, the master table\'s 筑基; v15, 小成 → 三层)');
+  assert.ok(v14 < fd.thresholds[0], 'inside 一层');
+  assert.deepEqual([zhuji.tier, zhuji.step, zhuji.progress], ['foundation', 0, v14], 'past 练气: its bar as full as it stood (v13, the master table\'s 筑基; v15, by its share of 小成)');
 });
 
 test('v13 (数值系统 phase 2): a 练气二层 save keeps its 层, its bar and the stretch over its mark as full as they stood', () => {

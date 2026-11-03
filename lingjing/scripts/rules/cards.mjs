@@ -1,7 +1,7 @@
 // rules/cards.mjs — 斗法 v3 and 得牌: the deck a player takes in, and the cards they have obtained.
 // Part of the rules engine; rules.mjs is its one door.
 import { MODES, POUCH_MAX, REALMS as CARD_REALMS, shuffle } from '../battle.js';
-import { dayKey, pick, seedOf } from '../state.mjs';
+import { dayKey, hpStep, pick, seedOf } from '../state.mjs';
 import { boundOf, duelSeed, wornOf } from './arms.mjs';
 import { herAwake, herLifts } from './companion.mjs';
 import { clone, refuse } from './core.mjs';
@@ -148,7 +148,8 @@ function rootsOf(content, state) {
   const lent = [wornOf(content, state, 'weapon')?.effect?.root, boundOf(content, state)?.element].filter(Boolean);
   return new Set([...(state.traits ?? []), ...lent]);
 }
-export const hpMaxOf = state => Math.round((CARD_REALMS[state.tier] ?? CARD_REALMS.qi).hp + (state.step ?? 0) * 0.5);
+/* 气血 at full: the realm's, half a point a step — in 段 a third of that a 层 (state.mjs hpStep). */
+export const hpMaxOf = (state, content = null) => Math.round((CARD_REALMS[state.tier] ?? CARD_REALMS.qi).hp + (content ? hpStep(content, state.tier, state.step ?? 0) : state.step ?? 0) * 0.5);
 
 /* The fight open on the save, when it is THIS one (`game` its id) — a door
    left open on another creature holds nothing for this fight. */
@@ -191,7 +192,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
     mode: 'pve',
     seed: deal ? `${duelSeed(state, creature, now)}|${deal}` : duelSeed(state, creature, now),
     you: {
-      tier: state.tier, step: state.step ?? 0, root: main, deck, extra: [...(creature.extra ?? []), ...gear.charms],
+      tier: state.tier, step: hpStep(content, state.tier, state.step ?? 0), root: main, deck, extra: [...(creature.extra ?? []), ...gear.charms],
       // The fight's own word (an exit game's `foe.fatigue: false`, world.mjs weighed): no 反噬 on a dry deck.
       ...(creature.fatigue === false ? { fatigue: false } : {}),
       ...(party.length ? { party } : {}),

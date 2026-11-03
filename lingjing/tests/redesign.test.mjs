@@ -55,9 +55,10 @@ test('a save from before the cut migrates: what is held stays, what only the cut
   // v6/v7: the old 筑基中期 (step 1) is 筑基中成 again — the three steps are back (2026-10-09), its 修为 as it was.
   // The realm kept; the bar read onto the master table's 筑基 as full as it stood (v13, 2026-10-27).
   const fd = content.ladder.tiers[1];
-  // v15 (2026-11-02, nine 层 shown in 段): 中成 is 六层, the bar as full as it stood.
+  // v15 (2026-11-02, nine 层 shown in 段): 中成 is 段 中成, the 修为 walked through its 层 — the same point of the 段.
   const v14 = Math.round(40 * fd.thresholds_were['14'][1] / fd.thresholds_were['13'][1]);
-  assert.deepEqual([m.tier, m.step, m.progress], ['foundation', 5, Math.round(v14 * fd.thresholds[5] / fd.thresholds_were['14'][1])]);
+  assert.ok(v14 < fd.thresholds[3]);
+  assert.deepEqual([m.tier, m.step, m.progress], ['foundation', 3, v14]);
   assert.equal('ladder9' in m, false, 'a three-step save is never carried as a nine-层 one');
   assert.equal('ladder3' in m, false, 'the mark is spent once the save meets its world');
   // Gone: the wound, the bond and its marks, her tending, the day's 温养 and 写符.
@@ -124,7 +125,7 @@ test('the command line migrates the save on disk once, on the first call, and th
     const saved = JSON.parse(fs.readFileSync(file, 'utf8'));
     assert.equal(saved.version, STATE_VERSION);
     assert.equal('ladder3' in saved, false);
-    assert.deepEqual([saved.tier, saved.step], ['foundation', 5], 'the old 中期 is 中成 — 六层 since the nine 层 (v15)');
+    assert.deepEqual([saved.tier, saved.step], ['foundation', 3], 'the old 中期 is 中成 — its 四层 since the nine 层 (v15)');
     for (const k of ['wounds', 'bond', 'tended', 'journey']) assert.equal(saved[k], undefined, k);
     assert.equal(saved.treasure.exp, undefined);
     assert.deepEqual(saved.bag, oldSave().bag);

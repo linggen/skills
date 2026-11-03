@@ -35,11 +35,22 @@ export function needsOf(line, tiers) {
       out[t.id] = row; last = N.first * N.layer ** (t.steps - z - 1);
       continue;
     }
-    const first = last * N.realm, row = [];
-    for (let k = 0; k < t.steps; k++) row.push(round10(first * N.layer ** k, N.round));
-    out[t.id] = row; last = first * N.layer ** (t.steps - 1);
+    // A realm shown in 段 (`stages`, ladder.json `display: "stages"`): each 段 asks what its step asked when the realm had
+    // three (the realm's pace kept, Hanli's call delegated 2026-11-02), split over its 层 by `stage_split` (stagesSplit).
+    const n = t.stages ?? t.steps, first = last * N.realm, row = [];
+    for (let k = 0; k < n; k++) row.push(round10(first * N.layer ** k, N.round));
+    out[t.id] = t.stages ? row.flatMap(total => stagesSplit(total, t.steps / n, N.stage_split ?? N.layer, N.round)) : row;
+    last = first * N.layer ** (n - 1);
   }
   return out;
+}
+
+/* A 段's 修为 over its `per` 层: shaped ×`shape` a 层, rounded, the last 层 taking the rest — so the three add up to the 段
+   exactly (筑基小成 1310 → 400 · 440 · 470). */
+export function stagesSplit(total, per, shape, r = 10) {
+  const w = Array.from({ length: per }, (_, k) => shape ** k), sum = w.reduce((a, b) => a + b, 0);
+  const row = w.slice(0, -1).map(x => round10(total * x / sum, r));
+  return [...row, total - row.reduce((a, b) => a + b, 0)];
 }
 
 /* A layer's play hours: the first realm by 层 (its row keyed by its id — 古's `qi`, 零层 0; 今's `xinsheng`), each realm
@@ -106,8 +117,9 @@ export function getPath(obj, path) { return path.split('.').reduce((o, k) => (o 
 export function derive(raw0, { ladder, items }) {
   const raw = structuredClone(raw0), M = raw.master, gu = M.lines.gu;
   // The step count is the ladder's own (`steps`, 零层 among 练气's): since 2026-11-02 every realm past 练气 counts nine 层 (Hanli
-  // approved: 「9层用于计算, 小, 中, 大成用于显示」), each one threshold — never the row balance.json held before.
-  const tiers = ladder.tiers.filter(t => gu.tiers.includes(t.id)).map(t => ({ id: t.id, zero: Boolean(t.zero), steps: t.steps?.zh?.length ?? raw.layers?.[t.id]?.length ?? (t.zero ? 10 : 3) }));
+  // approved: 「9层用于计算, 小, 中, 大成用于显示」), each one threshold — never the row balance.json held before; a realm in 段
+  // (`stages`) keeps its three steps' 修为, each 段 split over its 层.
+  const tiers = ladder.tiers.filter(t => gu.tiers.includes(t.id)).map(t => ({ id: t.id, zero: Boolean(t.zero), steps: t.steps?.zh?.length ?? raw.layers?.[t.id]?.length ?? (t.zero ? 10 : 3), ...(t.display === 'stages' ? { stages: ladder.phases.zh.length } : {}) }));
   raw.layers = { ...raw.layers, ...needsOf(gu, tiers) };
   const pp = raw.play_pay;
   pp.hours = hoursOf(gu, tiers);

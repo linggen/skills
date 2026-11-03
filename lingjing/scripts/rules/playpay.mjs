@@ -6,7 +6,7 @@
 // normal 1 · elite 1.5 · boss/副本 2, a first clear +50%; ★ 0.6 · 0.8 · 1.0; the gap −15% a level he stands above the
 // content (to 20%), +10% a level below it (to +30%); the replay 100 · 50 · 10% the same thing the same day. What has no
 // 体力 of its own (人间功课, a wall tag, an errand's work, a night's 闭关) is priced in 体力-units the same way. A level: each
-// 层 one, past 练气 too (nine 层 a realm since 2026-11-02, Hanli approved; before, a step of three 层-worth three). The content level is where he stands unless the thing says its own
+// 练气 层 one; past it a 段 of three 层-worth three, each of its 层 at the 段's level (nine 层 in 段 since 2026-11-02). The content level is where he stands unless the thing says its own
 // (`level`). Every knob is balance.json `play_pay.xiuwei`, derived from `master.xiuwei` (tools/master.mjs); % of the
 // layer survives only as the reference tools/numbers.mjs prints. What the book authors (a scene's, a pill's, a rumor's
 // 修为) is the number written. 灵石 by the kind, on the same ★ and replay. No daily cap; 修为 stops at the gate and turns
@@ -26,7 +26,9 @@ export function needOf(content, state) {
 /* ── The formula ── */
 const X = content => content.balance?.play_pay?.xiuwei ?? null;
 /* His level on a ladder (`content.ladder.tiers`: 古's, or a line's world): the first realm one a 层 (零层 0); a realm of
-   three steps three a step, one of nine 层 one a 层. Its realm's index beside it. null off the ladder. */
+   three steps three a step, one of nine 层 one a 层 — but one shown in 段 (ladder.json `display: "stages"`, 筑基 and above
+   since 2026-11-02) is read by its 段, three a 段, every 层 of it the 段's level (筑基一至三层 L12, as 筑基小成 was): the realm's
+   pace kept. Its realm's index beside it. null off the ladder. */
 export function levelOf(content, tier, step = 0) {
   const tiers = content.ladder?.tiers ?? [], at = tiers.findIndex(t => t.id === tier);
   if (at < 0) return null;
@@ -36,7 +38,9 @@ export function levelOf(content, tier, step = 0) {
   if (at === 0) return { level: first.zero ? step : step + 1, realm: 0 };
   let level = top;
   for (let i = 1; i < at; i++) level += steps(tiers[i]) * per(tiers[i]);
-  return { level: level + (step + 1) * per(tiers[at]), realm: at };
+  const t = tiers[at], n = t.display === 'stages' ? content.ladder?.phases?.zh?.length : 0;
+  if (n) { const g = Math.ceil(steps(t) / n); return { level: level + (Math.floor(step / g) + 1) * g, realm: at }; }
+  return { level: level + (step + 1) * per(t), realm: at };
 }
 /* R(L): the 修为 one 体力 is worth at content level L of realm r. 0 at level 0 (零层 pays none). */
 export function rateAt(content, level, realm = 0) {

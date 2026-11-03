@@ -44,8 +44,17 @@ test('the master table and balance.json agree: node tools/numbers.mjs --apply is
 });
 
 test('the 层 climb across realms: every step asks more than the one before it, 筑基小成 more than 练气九层', () => {
-  const c = loadContent(), all = c.ladder.tiers.flatMap(t => t.thresholds.filter((n, k) => !(t.zero && k === 0)));
+  // A realm in 段 (2026-11-02) climbs by its 段 — each the old step's 修为 — and by 层 inside one; its 一层 alone may ask less
+  // than the 层 below it (balance.json `master.lines.gu._need_stages`).
+  const c = loadContent(), per = t => (t.display === 'stages' ? t.thresholds.length / c.ladder.phases.zh.length : 1);
+  const all = c.ladder.tiers.flatMap(t => {
+    const row = t.thresholds.filter((n, k) => !(t.zero && k === 0)), p = per(t);
+    for (let k = 1; k < row.length; k++) if (k % p) assert.ok(row[k] > row[k - 1], `${t.id} 层 ${k}: ${row[k]} over ${row[k - 1]}`);
+    return Array.from({ length: row.length / p }, (_, g) => row.slice(g * p, g * p + p).reduce((a, b) => a + b, 0));
+  });
   for (let k = 1; k < all.length; k++) assert.ok(all[k] > all[k - 1], `step ${k}: ${all[k]} over ${all[k - 1]}`);
+  // Each 段 asks what the realm's step asked on three (the pace kept): 筑基 4,330 in all, not 17,800.
+  for (const t of c.ladder.tiers.slice(1)) assert.deepEqual([0, 1, 2].map(g => t.thresholds.slice(g * 3, g * 3 + 3).reduce((a, b) => a + b, 0)), t.thresholds_were['14'], t.id);
 });
 
 // 2026-11-02 (Hanli 「不要按照百分比给」): a pill is a fixed number at R, not a share of the layer — its % is the reference only;

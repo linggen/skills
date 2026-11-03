@@ -894,7 +894,7 @@ function riseStats() {
   const bar = barOf(look);
   const now = { world: look.world?.id, line: bar.line, tier: bar.tier?.id, progress: bar.progress, wealth: look.wealth, next: bar.next, cast: (look.cast ?? []).map((b) => b.id),
     // A tier in 段 rises by its 段 (「筑基 · 中成」): a 层 within it is the bar's, never a seal (duanOf).
-    rank: duanOf(bar.tier)?.label ?? bar.tier?.name, step: bar.tier?.step, chapter: look.chapter?.id, hui: look.chapter?.hui ?? look.chapter?.id, stamina: look.stamina?.now, resting: Boolean(look.stamina?.resting),
+    rank: duanOf(bar.tier)?.label ?? bar.tier?.name, step: duanOf(bar.tier) ? 1 + ((bar.tier.step ?? 1) - 1) / bar.tier.duan.marks.length : bar.tier?.step, // in 段 a 层 is a third of a step's 气血 (state.mjs hpStep) chapter: look.chapter?.id, hui: look.chapter?.hui ?? look.chapter?.id, stamina: look.stamina?.now, resting: Boolean(look.stamina?.resting),
     her: look.companion?.card ? { atk: look.companion.card.atk, hp: look.companion.card.hp } : null };
   const before = shown;
   shown = now;

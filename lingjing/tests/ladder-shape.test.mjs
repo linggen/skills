@@ -9,13 +9,13 @@
 // exactly (state.mjs v6 threeToNine, v7 nineToThree). Since 2026-11-02 (Hanli
 // approved: 「以后可以仍然按层数算1-3=小成, 4-6=中, 7-9=大」 · 「9层用于计算, 小, 中,
 // 大成用于显示」) every realm past 练气 counts nine 层 again and reads them as three
-// 段 — 「筑基 · 中成」 — and a save from the three steps is carried by v15
-// (stagesCarry: 小成 → 三层, 中成 → 六层, 大成 → 九层). 法宝 and 本命法宝 begin
+// 段 — 「筑基 · 中成」, each 段 the old step's 修为 — and a save from the three steps is
+// carried by v15 (stagesCarry: to the same point of its 段). 法宝 and 本命法宝 begin
 // at 结丹. The 筑基丹 is sold nowhere: 全观一年一颗.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
-import { fitWorld, fullName, ladderOf14, migrate, newState, nineToThree, paceLayer, peakName, phaseName, realmName, stepName, threeToNine } from '../scripts/state.mjs';
+import { fitWorld, fullName, ladderOf14, migrate, stagesCarry, newState, nineToThree, paceLayer, peakName, phaseName, realmName, stepName, threeToNine } from '../scripts/state.mjs';
 import { boundOf, growTreasure, treasureBrief } from '../scripts/rules/arms.mjs';
 import { look, seclude } from '../scripts/rules.mjs';
 
@@ -45,7 +45,8 @@ test('练气 has 零层 and nine 层 above it in three phases; every realm above
     const was = t.thresholds_were['13'];
     assert.deepEqual(was, THREE[t.id], `${t.id}: the three steps`);
     assert.equal(t.thresholds_were['14'].length, 3, `${t.id}: the three steps a v14 save was played on`);
-    assert.ok(t.thresholds.every((n, k) => k === 0 || n > t.thresholds[k - 1]), `${t.id}: each 层 more than the one before`);
+    assert.ok(t.thresholds.every((n, k) => k % 3 === 0 || n > t.thresholds[k - 1]), `${t.id}: each 层 more than the one before inside its 段`);
+    for (let g = 0; g < 3; g += 1) assert.equal(t.thresholds.slice(g * 3, g * 3 + 3).reduce((a, b) => a + b), t.thresholds_were['14'][g], `${t.id} 段 ${g}: the old step's 修为 (the realm's pace kept)`);
     // The nine 层 it had 10-03 → 10-09 sum, three by three, to those steps: a realm's whole never changed then.
     for (let p = 0; p < 3; p += 1) assert.equal(layers_were[t.id].slice(p * 3, p * 3 + 3).reduce((a, b) => a + b), was[p], `${t.id} step ${p}`);
   }
@@ -99,10 +100,11 @@ test('a save from the nine-层 ladder lands on the same 修为: 层 1–3 小成
   assert.equal(marked.ladder9, true);
   const fitted = migrate(marked, content);
   assert.equal(fitted.ladder9, undefined);
-  // …v13 (paceLayer) reads that bar onto the master table's 结丹大成, as full as it stood; v15 carries 大成 to 九层, the same.
+  // …v13 (paceLayer) reads that bar onto the master table's 结丹大成, as full as it stood; v15 walks it into 大成's 层.
   const core = content.ladder.tiers.find(t => t.id === 'core'), was14 = core.thresholds_were['14'][2];
-  const v13 = n => Math.round(n * was14 / core.thresholds_were['13'][2]), v15 = n => Math.round(n * core.thresholds[8] / was14);
-  assert.deepEqual(pos(fitted), { step: 8, progress: v15(v13(384 + 300)) }, '结丹八层 · 300 is 结丹大成 · 七层 passed + 300, then 结丹九层');
+  const v13 = n => Math.round(n * was14 / core.thresholds_were['13'][2]), v15 = n => pos(stagesCarry(content, { tier: 'core', step: 2, progress: n, ladder_stages: true }));
+  assert.deepEqual(pos(fitted), v15(v13(384 + 300)), '结丹八层 · 300 is 结丹大成 · 七层 passed + 300, then its 层');
+  assert.ok(fitted.step >= 6, '大成');
   assert.deepEqual(fitWorld(fitted, content), fitted, 'fitting again changes nothing');
   assert.deepEqual(migrate(old, content), fitted, 'one call with the world does the same');
 });
@@ -116,7 +118,8 @@ test('a save from the three-step ladder (before 2026-10-03) needs nothing: its s
   assert.equal('ladder3' in fitted, false);
   const core = content.ladder.tiers.find(t => t.id === 'core');
   const was14 = core.thresholds_were['14'][2], v13 = Math.round(1100 * was14 / core.thresholds_were['13'][2]);
-  assert.deepEqual(pos(fitted), { step: 8, progress: Math.round(v13 * core.thresholds[8] / was14) }, 'its bar as full as it stood (v13), 大成 → 九层 (v15)');
+  assert.deepEqual(pos(fitted), pos(stagesCarry(content, { tier: 'core', step: 2, progress: v13, ladder_stages: true })), 'its bar as full as it stood (v13), into 大成\'s 层 (v15)');
+  assert.ok(fitted.step >= 6);
   assert.deepEqual(pos(threeToNine(ladderOf14(content), { tier: 'foundation', step: 1, progress: 250, ladder3: true })), { step: 1, progress: 250 });
 });
 

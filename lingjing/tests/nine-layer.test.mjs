@@ -7,16 +7,21 @@
 //    three-段 bar reads (stage.mjs duanOf); 练气's Look as it was;
 // 4. the 段 trial into 四层 and 七层: a light throw (no pill) on the pay that carries him over, a failure only an hour;
 //    九层 keeps the realm throw; 练气 has none;
-// 5. old saves: v14's 小成 · 中成 · 大成 are 三层 · 六层 · 九层, the bar as full as it stood, once;
-// 6. a 层 inside a 段 is never told as a rise; the caps' 筑基 is 三层.
+// 5. old saves: v14's 小成 · 中成 · 大成 are those 段, the 修为 walked to the same point of the 段, once;
+// 6. a 层 inside a 段 is never told as a rise; the caps' 筑基 is 三层;
+// 7. the realm's pace kept (the coordinator's call, Hanli delegated 11-02: 「not a 4× grind」): each 段 asks the old
+//    step's 修为, split ×1.1 over its 层; every 层 of a 段 pays at the 段's level; 气血 grows by the realm as it did.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
-import { STATE_VERSION, fullName, layerName, migrate, newState, realmName, stageOf, stepName, threshold } from '../scripts/state.mjs';
+import { STATE_VERSION, fullName, hpStep, layerName, migrate, newState, realmName, stageOf, stepName, threshold } from '../scripts/state.mjs';
 import { look } from '../scripts/rules.mjs';
 import { pay } from '../scripts/rules/core.mjs';
 import { duanOdds, duanPass } from '../scripts/rules/breakthrough.mjs';
 import { duanOf } from '../scripts/stage.mjs';
+import { hpMaxOf } from '../scripts/rules/cards.mjs';
+import { levelOf } from '../scripts/rules/playpay.mjs';
+import { stagesSplit } from '../tools/master.mjs';
 
 process.env.LINGJING_STAMINA_LIMIT ??= '1';
 
@@ -138,17 +143,37 @@ test('the trial stands at 六层 too; 一层 → 二层 inside a 段 throws noth
   assert.deepEqual(content.ladder.caps.hui.h09.story, { tier: 'foundation', layer: 3 });
 });
 
-test('old saves: v14\'s 小成 · 中成 · 大成 are 三层 · 六层 · 九层, the bar and the stretch as full as they stood — once', () => {
+test('the pace kept: each 段 asks the old step\'s 修为, split ×1.1 over its 层; its 层 pay at the 段\'s level; 气血 by the realm as before', () => {
+  for (const t of content.ladder.tiers.slice(1)) {
+    const was = t.thresholds_were['14'];
+    assert.deepEqual([0, 1, 2].map(g => t.thresholds.slice(g * 3, g * 3 + 3).reduce((a, b) => a + b, 0)), was, `${t.id}: a realm's whole as on three steps`);
+    assert.deepEqual(t.thresholds, was.flatMap(n => stagesSplit(n, 3, content.balance.master.lines.gu.need.stage_split, 10)), `${t.id}: derived, never typed`);
+  }
+  assert.deepEqual(FD.thresholds, [400, 440, 470, 440, 480, 520, 480, 530, 570]);
+  assert.equal(FD.thresholds.slice(0, 3).reduce((a, b) => a + b), 1310, '古九\'s grind to 三层: 1310, as 筑基小成 was');
+  assert.deepEqual([0, 1, 2, 3, 5, 6, 8].map(k => levelOf(content, 'foundation', k).level), [12, 12, 12, 15, 15, 18, 18]);
+  // 气血: half a point a step on three → a sixth a 层 on nine; 九层 is the old 大成's +1 … plus the 层 inside it.
+  assert.deepEqual([0, 3, 6].map(k => hpStep(content, 'foundation', k)), [0, 1, 2], 'each 段\'s first 层 is its old step');
+  assert.equal(hpStep(content, 'qi', 4), 4, '练气 as it was');
+  const hp = k => hpMaxOf({ tier: 'foundation', step: k }, content);
+  assert.deepEqual([hp(0), hp(3), hp(6)], [0, 1, 2].map(k => hpMaxOf({ tier: 'foundation', step: k })), '气血 at each 段\'s door as the old step\'s');
+});
+
+test('old saves: v14\'s 小成 · 中成 · 大成 are those 段, the 修为 walked to the same point of the 段 — once', () => {
   const was = FD.thresholds_were['14'];
   const v14 = (step, progress, extra = {}) => ({ ...gujiu(), version: 14, step, progress, lines: { jin: { tier: 'xinsheng', step: 0, progress: 0 } }, ...extra });
   const pos = s => [s.tier, s.step, s.progress];
-  assert.deepEqual(pos(migrate(v14(0, 655), content)), ['foundation', 2, Math.round(655 * FD.thresholds[2] / was[0])], '小成 halfway: 三层 halfway');
-  assert.deepEqual(pos(migrate(v14(1, 0), content)), ['foundation', 5, 0], '中成 · 0: 六层 · 0');
+  assert.deepEqual(pos(migrate(v14(0, 0), content)), ['foundation', 0, 0], '小成 · 0: 一层 · 0 — no 层 given');
+  assert.deepEqual(pos(migrate(v14(0, 655), content)), ['foundation', 1, 655 - 400], '655 of 1310: mid-段, 二层 · 255');
+  assert.deepEqual(pos(migrate(v14(1, 0), content)), ['foundation', 3, 0], '中成 · 0: 四层 · 0');
+  assert.deepEqual(pos(migrate(v14(0, 1500), content)), ['foundation', 2, 1500 - 840], 'past the mark at the cap: 三层, as far past');
   const peak = migrate(v14(2, was[2]), content);
   assert.deepEqual(pos(peak), ['foundation', 8, FD.thresholds[8]], '筑基圆满 waits at the cliff still');
   assert.equal(realmName(content, peak, 'zh'), '筑基 · 大成圆满');
+  // The stretch over the step's mark shared by the 层's size (31 · 34 · 36 of 100): the 段 asks what the step did.
   const st = migrate(v14(0, 1400, { stretch: { 'foundation:0': 100, 'qi:9': 7 } }), content);
-  assert.deepEqual(st.stretch, { 'qi:9': 7, 'foundation:2': Math.round(100 * FD.thresholds[2] / was[0]) }, 'the stretch on its new key');
+  assert.deepEqual(pos(st), ['foundation', 2, 1400 - (400 + 31) - (440 + 34)]);
+  assert.deepEqual(st.stretch, { 'qi:9': 7, 'foundation:2': 36 }, 'the stretch on its new key');
   const m = migrate(v14(1, 700), content);
   assert.equal(m.version, STATE_VERSION);
   assert.equal('ladder_stages' in m, false, 'the mark goes once carried');

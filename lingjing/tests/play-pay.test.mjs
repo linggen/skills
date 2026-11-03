@@ -23,8 +23,9 @@ test('the formula\'s knobs: R and S by level, a 层 one level (筑基 in nine �
   assert.deepEqual([BOARD, staminaCost(content, 'duel'), staminaCost(content, 'shouchao')], [3, 4, 5]);
   assert.deepEqual(levelOf(content, 'qi', 0), { level: 0, realm: 0 });
   assert.deepEqual(levelOf(content, 'qi', 4), { level: 4, realm: 0 });
-  assert.deepEqual(levelOf(content, 'foundation', 0), { level: 10, realm: 1 }, '筑基一层: one level past 练气九层');
-  assert.deepEqual(levelOf(content, 'foundation', 8), { level: 18, realm: 1 }, '筑基九层: the realm\'s top as before');
+  // In 段 (2026-11-02) every 层 is its 段's level, as the step was: 筑基一至三层 L12, 四至六层 15, 七至九层 18.
+  assert.deepEqual([0, 2, 3, 8].map(k => levelOf(content, 'foundation', k).level), [12, 12, 15, 18], '筑基小成: three levels past 练气九层');
+  assert.deepEqual(levelOf(content, 'foundation', 0), { level: 12, realm: 1 });
   assert.deepEqual(levelOf(content, 'core', 8), { level: 27, realm: 2 });
   assert.equal(rateAt(content, 1), 2);
   assert.ok(Math.abs(rateAt(content, 12, 1) - R(12, 1)) < 1e-9);

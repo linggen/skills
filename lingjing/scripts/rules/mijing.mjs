@@ -17,7 +17,7 @@
 // fought by the page's own 斗法 room through `duel` (tasks.mjs → mijingDuel: no 灵气, no haunt pay, no day's lock —
 // the 令 paid for the run); a board room's task is hosted while he stands in it (look.mjs tasksBrief → mijingHosted,
 // mijingRow; tasks.mjs win/done → mijingBoardHere, mijingBoardDone); a pick room is answered on the run's own card.
-import { dayKey, lockedOf, pick, seedOf } from '../state.mjs';
+import { dayKey, hpStep, lockedOf, pick, seedOf } from '../state.mjs';
 import { clone, pay, refuse } from './core.mjs';
 import { battle, POUCH_MAX, REALMS } from '../battle.js';
 import { cardCatalog, deckFor, fightPill, fightSetup, winCard } from './cards.mjs';
@@ -175,7 +175,7 @@ export function keyDrop(content, s, ctx, source) {
 const boonsOf = (content, run) => (run?.boons ?? []).map(id => boonRow(content, id)).filter(Boolean);
 const sum = (list, f) => list.reduce((t, x) => t + (f(x) ?? 0), 0);
 /* The run's 气血 cap: the fight's own (battle.js sideOf, to the point), a share more by its boons (固本: `hpScale`). */
-const hpCap = (content, state, boons) => Math.max(1, Math.round(((REALMS[state.tier] ?? REALMS.qi).hp + (state.step ?? 0) * 0.5) * (1 + sum(boons, b => b.hp_max))));
+const hpCap = (content, state, boons) => Math.max(1, Math.round(((REALMS[state.tier] ?? REALMS.qi).hp + hpStep(content, state.tier, state.step ?? 0) * 0.5) * (1 + sum(boons, b => b.hp_max))));
 const hurtOf = (content, run, stars) => {
   const k = knobs(content), share = (k.hurt?.[String(stars)] ?? k.hurt?.['1'] ?? 0.2) * boonsOf(content, run).reduce((m, b) => m * (b.hurt ?? 1), 1);
   return Math.round(run.hp_max * share);

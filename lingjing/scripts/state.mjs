@@ -454,6 +454,12 @@ export function stageOf(content, tierId, step, lang = 'zh') {
   const per = Math.ceil(tier.thresholds.length / n), index = Math.min(n - 1, Math.floor(step / per));
   return { index, id: content.ladder.stage_ids?.[index] ?? String(index), name: names[index], at: step - index * per + 1, per, first: index * per, last: index === n - 1 };
 }
+/* The step as the fight's 气血 counts it (half a point a step, battle.js): in 段, a 层 is a third of the step it was part of
+   (the coordinator's call, Hanli delegated 2026-11-02: a realm's 气血 grows as it did on three steps, no hidden buff). */
+export function hpStep(content, tierId, step = 0) {
+  const g = staged(content, tierId) ? stageOf(content, tierId, step) : null;
+  return g ? (step * content.ladder.phases.zh.length) / tierOf(content, tierId).thresholds.length : step;
+}
 /* The step into a new 段 past its first (四层, 七层): where the 段 trial is thrown (rules/breakthrough.mjs duanPass). */
 export const stageDoor = (content, tierId, step) => { const g = step > 0 ? stageOf(content, tierId, step) : null; return Boolean(g && g.at === 1); };
 
@@ -631,8 +637,8 @@ const MIGRATIONS = [
   [14, m => { m.lines ??= {}; }],
   // v15 (2026-11-02, Hanli approved: 「以后可以仍然按层数算1-3=小成, 4-6=中, 7-9=大」 · 「9层用于计算, 小, 中, 大成用于显示」):
   // every realm past 练气 counts nine 层 again, shown as three 段. Marked, carried by fitWorld (stagesCarry): the old step
-  // k is 层 3k+3 — 小成 三层, 中成 六层, 大成 九层 — the bar as full as it stood; every older carry runs first on the
-  // three-step ladder it was written for (ladderOf14).
+  // k is 段 k, the 修为 it held walked through its three 层 (they add up to the old step) — the same point of the 段; every
+  // older carry runs first on the three-step ladder it was written for (ladderOf14).
   [15, m => { m.ladder_stages = true; }],
 ];
 
@@ -739,18 +745,21 @@ export function ladderOf14(content) {
 }
 
 /* A save from the three steps (marked by v15, 2026-11-02): in a realm shown in 段 its step k (小成 0, 中成 1, 大成 2) is
-   the 段's last 层 — 三层, 六层, 九层 — and its bar stands as full as it stood (`thresholds_were["14"]`), the stretch
-   with it: 筑基小成 · 655/1310 is 筑基三层 · 790/1580, 筑基圆满 is 九层圆满 still, so a save waiting at a cliff can throw.
-   The 段 it read is the 段 it reads. A realm that names its 层 (练气) is left as it was. */
+   段 k, whose three 层 add up to what the step asked (balance.json `master.lines.gu._need_stages`), so the 修为 it held walks
+   through them and lands at the same point of the 段: 筑基小成 · 0 is 一层 · 0, 655 of 1310 is 二层 · 255, 筑基圆满 is
+   九层圆满 still (a save waiting at a cliff can throw). The stretch over the step's mark is shared over the 层 by their size,
+   so the 段 asks what the step did; the 层 it lands on keeps its share. A realm that names its 层 (练气) is left as it was. */
 export function stagesCarry(content, saved) {
   const { ladder_stages, ...s } = saved;
   const tier = tierOf(content, s.tier), was = tier?.thresholds_were?.['14'];
   if (tier?.display !== 'stages' || !was || !(Number.isInteger(s.step) && s.step >= 0 && s.step < was.length)) return s;
-  const per = Math.ceil(tier.thresholds.length / was.length), step = s.step * per + per - 1, k = tier.thresholds[step] / was[s.step];
-  const oldKey = stretchKey(s.tier, s.step), st = s.stretch?.[oldKey];
+  const per = Math.ceil(tier.thresholds.length / was.length), from = s.step * per, total = tier.thresholds.slice(from, from + per).reduce((a, b) => a + b, 0);
+  const st = s.stretch?.[stretchKey(s.tier, s.step)] ?? 0, share = k => Math.round(st * tier.thresholds[k] / total);
+  let step = from, progress = s.progress ?? 0;
+  while (step < from + per - 1 && progress >= tier.thresholds[step] + share(step)) { progress -= tier.thresholds[step] + share(step); step += 1; }
   const stretch = s.stretch ? Object.fromEntries(Object.entries(s.stretch).filter(([key]) => !key.startsWith(`${s.tier}:`))) : null;
-  if (st) stretch[stretchKey(s.tier, step)] = Math.round(st * k);
-  const out = { ...s, step, progress: Math.round((s.progress ?? 0) * k) };
+  const out = { ...s, step, progress };
+  if (stretch && share(step)) stretch[stretchKey(s.tier, step)] = share(step);
   if (stretch && Object.keys(stretch).length) out.stretch = stretch; else delete out.stretch;
   return out;
 }
