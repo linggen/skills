@@ -13,7 +13,7 @@ None.
 ## Done lately
 
 - 11-03 — **Two ways out of every board, from the first frame: 留 and ✕** (Hanli 11-03: 「跳过, 我们统一改成右上角的关闭按钮了. 不需要卡住」 · 「还是加一个按钮好一些, 可能用户想丢掉, 可能想以后玩」; design.md § Skip; tests/way-out.test.mjs, tests/skips.test.mjs).
-  - ✕ (不玩了): a story board goes on (`gives` only) and never comes back; a board he chose is put down; an errand's takes its cut; a 游戏厅 board is dealt again. 留: the same, and it waits in 收着的棋局 (`kept`, ≤20, 丢 each; the 事 book's group, the tray's 「收着 n」; Look `kept`). Taken up (`task kept-play`) and won, it pays its grant once. Old saves' `skipped` list is moved to `kept` on load.
+  - ✕ (不玩了): a story board goes on (`gives` only) and never comes back; a board he chose is put down; an errand's takes its cut; a 游戏厅 board is dealt again. 留: the same, and it waits in 收着的棋局 (`kept`, ≤20, 丢 each; the 事 book's group, the tray's 「收着 n」; Look `kept`). Taken up (`task kept-play`) and won, it pays its grant once. Old saves' `skipped` list is moved to `kept` on load. 留 on a 切磋 bout, a 秘境 room, 兽潮's night or 考考你 does what ✕ does and says so. The 主页's 「收着的 n 局」 and the aside tray open the kept list.
   - The modules' own 跳过 are gone: the word boards and ropekit's. The stuck slot is gone from the board bar. 讨饼债's `skipped` grade is dropped from its marks, so explore's dead end at 00-yinyue is gone.
   - Left as they were: a story fight's 「算了，往下走」 after its losses (a rules gate), a panel riddle's pass, and the tale board's word skip (no shell bar).
   - Phone: the host offers its skip at once (`stuck` posted on mount). The app needs 留 and the kept list (see the deploy request).

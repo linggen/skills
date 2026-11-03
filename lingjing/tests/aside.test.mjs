@@ -132,7 +132,7 @@ test('the box offers 先放一放 only with something to play meanwhile; the tra
   const look = { aside: { on: true, offers: [{ kind: 'replay', id: 'rain-basins', title: '接雨' }, { kind: 'her', id: 'tale' }] } };
   const words = { asideTitle: 'T', asideHint: 'H', asideNone: 'N', asideResume: 'R', asideKinds: { replay: '再玩 · {title}', tale: '今日传闻' } };
   const html = asideHtml({ look, words });
-  assert.match(html, /data-replay-play="rain-basins">再玩 · 接雨</);
+  assert.match(html, /data-kept-play="rain-basins">再玩 · 接雨</);
   assert.match(html, /<span class="chip">今日传闻<\/span>/, 'a kind with no opener of its own is named, not a dead button');
   assert.match(html, /data-aside-resume/);
   assert.equal(asideHtml({ look: {}, words }), '');

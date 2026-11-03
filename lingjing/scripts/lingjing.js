@@ -3663,7 +3663,7 @@ async function onSkip(g, action = 'skip') {
   }
   tracker.boardEnd(id, action === 'keep' ? 'left' : 'skipped');
   // Kept and not the story's (rules/skips.mjs keepBoard `left`): off the stage, onto the list — nothing else happens.
-  if (action === 'keep' && !r.skipped) { beats.leave(id); boards.delete(id); forgetShell(id); keep({ opened: view.opened?.id === id ? null : view.opened }); await refresh(); return true; }
+  if (action === 'keep' && !r.skipped) { beats.leave(id); boards.delete(id); forgetShell(id); keep({ opened: view.opened?.id === id ? null : view.opened, doNote: r.say ?? null }); await refresh(); return true; }
   // An errand's board skipped (跳过 · 酬减半, rules/tasks.mjs errandSkip): counted for the errand at the cut pay — off the
   // stage as a won one leaves it, what it paid as 所得, the errand handed in after it; no word of hers.
   if (r.for === 'errand') return errandSkipped(id, r);

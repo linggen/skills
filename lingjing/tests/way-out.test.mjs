@@ -17,7 +17,7 @@ async function boardOf(id) {
   const mod = await import(`../scripts/games/${id}.js`);
   if (!mod.meta) return null;
   if (mountOnly(mod)) return { mod, state: { won: false } };
-  try { return { mod, state: mod.newGame('t', 1, {}) }; } catch { return { mod, state: { won: false } }; }
+  return { mod, state: mod.newGame('t', 1, {}) };
 }
 const KINDS = {
   story: (id) => ({ task: { id: `t-${id}`, kind: 'board', game: id, title: id }, scene: { show: [{ card: 'board', id: `t-${id}` }] } }),
@@ -29,14 +29,15 @@ const KINDS = {
 test('every game, every kind of board: one 留 and one ✕ at the bar\'s right, from the first frame — no stuck wait', async () => {
   assert.ok(IDS.length >= 25, `${IDS.length} games`);
   let n = 0;
+  const drawn = [], unshelled = [];
   for (const id of IDS) {
     const g = await boardOf(id);
-    if (!g) continue;
+    if (!g) { unshelled.push(id); continue; }
+    drawn.push(id);
     for (const [kind, of] of Object.entries(KINDS)) {
       const { task, scene } = of(id);
-      let html;
-      try { html = cardHtml({ card: 'board', id: task.id }, { lang: 'zh', words: WORDS.zh, content: {}, reading: null, boardFor: () => ({ ...g, taskId: task.id }), look: { tasks: [task], scene } }); } catch { continue; }
-      if (!html.includes('gshell-tools')) continue;
+      const html = cardHtml({ card: 'board', id: task.id }, { lang: 'zh', words: WORDS.zh, content: {}, reading: null, boardFor: () => ({ ...g, taskId: task.id }), look: { tasks: [task], scene } });
+      assert.match(html, /gshell-tools/, `${id} as ${kind}: drawn in the shell`);
       const bar = tools(html);
       assert.equal((bar.match(/✕/g) ?? []).length, 1, `${id} as ${kind}: one ✕`);
       assert.equal((bar.match(/data-board-keep=/g) ?? []).length, 1, `${id} as ${kind}: one 留`);
@@ -45,7 +46,8 @@ test('every game, every kind of board: one 留 and one ✕ at the bar\'s right, 
       n += 1;
     }
   }
-  assert.ok(n >= IDS.length * 2, `${n} cards drawn`);
+  assert.equal(n, drawn.length * Object.keys(KINDS).length, 'every game as every kind');
+  assert.deepEqual(unshelled, [], 'a game with no module meta');
   // The story's 炼丹 herbs too.
   const herbs = newBoard([{ id: 'a', tile: '参', label: '参' }], 'alchemy-first');
   const html = cardHtml({ card: 'board', id: 'alchemy-first' }, { lang: 'zh', words: WORDS.zh, content: {}, reading: null, boardFor: () => herbs, look: { tasks: [{ id: 'alchemy-first', kind: 'board', title: '炼丹' }], scene: { show: [{ card: 'board', id: 'alchemy-first' }] } } });
@@ -71,5 +73,17 @@ test('the page: ✕ is the skip path for each kind, 留 the keep; a fight\'s ✕
   const keep = page.slice(page.indexOf('function keepGame('), page.indexOf('async function onSkip('));
   assert.match(keep, /onSkip\(g, 'keep'\)/);
   assert.match(page, /write\('task', \{ action, id \}\)/);
+  const cards = read('../scripts/cards.js');
+  assert.match(cards, /skipped: \(r, h\) => \(r\.id \? `<button class="act quiet hometodo" data-kept-open>/, 'the 主页 row opens the kept list');
+  assert.match(cards, /replay: \(o\) => `data-kept-play="\$\{esc\(o\.id\)\}"`/, 'the aside tray takes a kept board up');
+  assert.doesNotMatch(page.slice(page.indexOf('function keptTap('), page.indexOf('function keptTap(') + 400), /'replay'/);
   assert.match(page, /close: toolHtml\('close', bw\.quit, 'data-fight-tap="quit"'\)/, 'a fight\'s ✕ is its own walk-out');
+});
+
+test('留 on a board that cannot wait on a list (切磋, 秘境, 兽潮, 考考你) does what ✕ does and says so — never refused', () => {
+  const tasks = read('../scripts/rules/tasks.mjs');
+  const fn = tasks.slice(tasks.indexOf('function keepOrPut('), tasks.indexOf('function keepOrPut(') + 700);
+  assert.match(fn, /isBout\(content, id\)\) return put\(qiecuoOver\(state, content, ctx, id, 'skipped'\)\)/);
+  assert.match(fn, /t\.mijing \|\| isTide\(content, id\) \|\| kaoHere\(content, state, id, ctx\.now\)\)\) return put\(leaveBoard\(/);
+  assert.match(tasks, /if \(args\.action === 'keep'\) return keepOrPut\(/);
 });

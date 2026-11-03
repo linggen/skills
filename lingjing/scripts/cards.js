@@ -53,7 +53,7 @@ export const WORDS = {
     elite: '精英',
     // 闭关 (rules/seclusion.mjs) — the chooser, the running card, 出关.
     tamesFor: '收服{names}所需',
-    replayPlay: '再试一回', replayLater: '改日', boardLeave: '收手', boardLeft: '没走完，往下走了。', keptGroup: '收着的棋局 · {n}', keptChip: '收着 {n}', keptPlay: '玩', keptDrop: '丢', keptAt: '{where} · {when}', toldSaid: { couplet: '原句：{a}', riddle: '谜底：{a}', chain: '接得上的：{a}' }, toldBy: '——{src}', toldOn: '往下走',
+    replayPlay: '再试一回', replayLater: '改日', boardLeave: '收手', boardLeft: '没走完，往下走了。', keptGroup: '收着的棋局 · {n}', boardKeep: '留着以后玩', boardClose: '不玩了', keptChip: '收着 {n}', keptPlay: '玩', keptDrop: '丢', keptAt: '{where} · {when}', toldSaid: { couplet: '原句：{a}', riddle: '谜底：{a}', chain: '接得上的：{a}' }, toldBy: '——{src}', toldOn: '往下走',
     keptWin: '已胜 · 体力回来即记上', emptyNoPlay: '体力耗尽：这局赢了也记不上。', emptyShut: '体力耗尽', waitShi: '约 {n} 时辰后', waitKe: '约 {n} 刻后',
     // 手边的棋局 (rules/tray.mjs): a game's name where the rules give none, what is left by its unit, the walk there.
     trayName: { duizi: '对对子', seclusion: '闭关', divine: '问签', errands: '执事堂差事', mijing: '秘境', chance: '机缘', fantong: '饭桶', yaoshou: '妖兽出没' },
@@ -121,7 +121,7 @@ export const WORDS = {
     loading: 'Unfolding…', offline: 'Lingjing has not woken yet.', connecting: 'Reaching Lingjing…',
     elite: 'Elite',
     tamesFor: 'Wins over {names}',
-    replayPlay: 'Try again', replayLater: 'Another day', boardLeave: 'Put down', boardLeft: 'Left unfinished — on you go.', keptGroup: 'Kept for later · {n}', keptChip: 'Kept {n}', keptPlay: 'Play', keptDrop: 'Drop', keptAt: '{where} · {when}', toldSaid: { couplet: 'The original: {a}', riddle: 'The answer: {a}', chain: 'One that follows: {a}' }, toldBy: ' — {src}', toldOn: 'Go on',
+    replayPlay: 'Try again', replayLater: 'Another day', boardLeave: 'Put down', boardLeft: 'Left unfinished — on you go.', keptGroup: 'Kept for later · {n}', boardKeep: 'Keep for later', boardClose: 'Put it away', keptChip: 'Kept {n}', keptPlay: 'Play', keptDrop: 'Drop', keptAt: '{where} · {when}', toldSaid: { couplet: 'The original: {a}', riddle: 'The answer: {a}', chain: 'One that follows: {a}' }, toldBy: ' — {src}', toldOn: 'Go on',
     keptWin: 'Won — counted once stamina is back', emptyNoPlay: 'Stamina spent: a win here would not count yet.', emptyShut: 'Stamina spent', waitShi: 'back in about {n} h', waitKe: 'back in about {n} min',
     trayName: { duizi: 'Couplets', seclusion: 'Seclusion', divine: 'Draw a stick', errands: "Stewards' errands", mijing: 'The hidden realm', chance: 'A chance', fantong: 'Rice Bucket', yaoshou: 'Beasts about' },
     trayLeft: { night: 'tide {n}', batch: 'this batch {n}/{of}', couplets: '{n} today', rounds: '{n} rounds today', errands: '{n} waiting', keys: 'keys ×{n}', ends: '{t} left', today: 'open today', tomorrow: 'up tomorrow' },
@@ -1081,13 +1081,13 @@ export const HOME_WORDS = {
     resume: '接着读', way: '去{name} ›', turnin: '交差 · {title}', errand: '去办 · {title}', fight: '斗 · {title}', board: '开局 · {title}',
     boardPays: '开局 · {title} · 修为 +{n}', take: '接下 · {title}', go: '去{name} ›', goWhat: '去{name} · {what}', wait: '{title} · {t}后', seclude: '闭关',
     ready: '可交 {n} · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · 修为 +{n}',
-    tide: '兽潮 · 开局', yaoshou: '{title} · {place} · 还有 {n} 只', skipped: '先放下的 {n} 局', waitAt: '{title} · {at} 再开', enough: '{what} · 够了',
+    tide: '兽潮 · 开局', yaoshou: '{title} · {place} · 还有 {n} 只', skipped: '收着的 {n} 局', waitAt: '{title} · {at} 再开', enough: '{what} · 够了',
     door: '{door} · {step}即开', doorOpen: '{door} · 门已开', doorAt: '还在门外 · 在{here}' },
   en: { stage: 'Stage quest · {step}', short: '{n} cultivation to go', chores: 'chores +{n}', plays: 'about {n} games', playsMore: 'then about {n} games', todo: 'Waiting',
     resume: 'Read on', way: 'Go to {name} ›', turnin: 'Hand in · {title}', errand: 'Do it · {title}', fight: 'Fight · {title}', board: 'Play · {title}',
     boardPays: 'Play · {title} · cultivation +{n}', take: 'Take · {title}', go: 'Go to {name} ›', goWhat: 'To {name} · {what}', wait: '{title} · in {t}', seclude: 'Seclusion',
     ready: '{n} to hand in · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · cultivation +{n}',
-    tide: 'Beast tide · play', yaoshou: '{title} · {place} · {n} left', skipped: '{n} games set aside', waitAt: '{title} · opens again at {at}', enough: '{what} · enough',
+    tide: 'Beast tide · play', yaoshou: '{title} · {place} · {n} left', skipped: '{n} games kept', waitAt: '{title} · opens again at {at}', enough: '{what} · enough',
     door: '{door} · opens at {step}', doorOpen: '{door} · open', doorAt: 'Not inside yet · at {here}' },
 };
 /* The clock time `min` minutes from now, 「15:40」. */
@@ -1138,7 +1138,8 @@ const HOME_TODO = {
   yaoshou: (r, h) => (r.place ? `<button class="act quiet hometodo" data-go="${esc(r.place.id)}">${esc(say(h.yaoshou, { title: r.title, place: bareName(r.place.name), n: r.left }))}</button>` : ''),
   // A cooldown: the tap says when it opens again, on the clock (Hanli 10-28: every 待办 answers a tap).
   wait: (r, h, ctx) => `<button class="act quiet hometodo" data-home-wait="${esc(say(h.waitAt, { title: r.title, at: clockIn(r.wait_min) }))}">${esc(say(h.wait, { title: r.title, t: homeWait(r.wait_min, ctx.words) }))}</button>`,
-  skipped: (r, h) => (r.id ? `<button class="act quiet hometodo" data-replay-play="${esc(r.id)}">${esc(say(h.skipped, { n: r.n }))}</button>`
+  // 收着的棋局 (rules/skips.mjs keepBoard): the row opens the list in the 事 book.
+  skipped: (r, h) => (r.id ? `<button class="act quiet hometodo" data-kept-open>${esc(say(h.skipped, { n: r.n }))}</button>`
     : `<span class="small dim hometodo">${esc(say(h.skipped, { n: r.n }))}</span>`),
   strengthen: (r, h, ctx) => homeWay(r.way, 'todo', ctx),
 };
@@ -2051,7 +2052,7 @@ function waitRowHtml(w, ctx) {
 /* 先放一放 (rules/aside.mjs): the book set aside — what Look says may be played meanwhile, each by the page's own
    opener for it (one table), and 接着读. A kind with no opener of its own stands where it always does. */
 const ASIDE_OPEN = {
-  replay: (o) => `data-replay-play="${esc(o.id)}"`, fantong: () => 'data-gear-open="fantong"', pool: (o) => `data-duel-start="${esc(o.id)}"`,
+  replay: (o) => `data-kept-play="${esc(o.id)}"`, fantong: () => 'data-gear-open="fantong"', pool: (o) => `data-duel-start="${esc(o.id)}"`,
   tide: (o) => `data-play="${esc(o.id)}"`, seclusion: () => 'data-seclude-open', duizi: () => 'data-duizi-open', divine: () => 'data-divine',
 };
 /* An offer the page can open where the book was set aside (the others stand where they always do). */

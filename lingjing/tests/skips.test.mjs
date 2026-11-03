@@ -16,6 +16,8 @@ import { dayKey, fitWorld } from '../scripts/state.mjs';
 import { stageCards, stageSlots, CARD_KINDS } from '../scripts/stage.mjs';
 import { STUCK_MS, slotNext, stampShown, stuckNow } from '../scripts/stuck.js';
 import { crawlRules } from './crawl.mjs';
+import { sceneBoards } from '../scripts/rules/skips.mjs';
+import { sceneOf } from '../scripts/rules/world.mjs';
 
 const content = loadContent();
 const DAY = 864e5;
@@ -140,6 +142,26 @@ test('收着的棋局: at most 20 — one more refused in the world\'s words; �
   for (const action of ['keep', 'kept-play', 'kept-drop']) assert.equal(pageOnly('task', { action }), true, action);
 });
 
+/* The story's boards at a save's scene: its own (`show`) and those a way on waits on (`needs.task`), not yet over. */
+const sceneBoardsHere = (s) => { const sc = sceneOf(content, s); return [...new Set([...sceneBoards(sc), ...(sc?.exits ?? []).map((e) => e.needs?.task).filter(Boolean)])].filter((id) => s.tasks?.[id]?.status !== 'done'); };
+test('✕ and 留 open every way a skip opens, at every story board of 卷一 (crawl: every board left)', () => {
+  let n = 0;
+  for (const [key, { s, now }] of crawl.states) {
+    for (const id of sceneBoardsHere(s)) {
+      const skip = task(s, content, ctxAt(now), { action: 'skip', id });
+      if (!skip.result.ok) continue;
+      const kept = task(s, content, ctxAt(now), { action: 'keep', id });
+      assert.equal(kept.result.ok, true, `${key} ${id}: ${JSON.stringify(kept.result)}`);
+      const { kept: list, ...rest } = kept.state;
+      const { kept: _, ...skipped } = skip.state;
+      assert.deepEqual(rest, skipped, `${key} ${id}: 留 is ✕ and the list`);
+      assert.deepEqual(list.map((e) => e.task), [...(s.kept ?? []).map((e) => e.task), id]);
+      n += 1;
+    }
+  }
+  assert.ok(n >= 20, `${n} boards`);
+});
+
 test('a board not on the stage cannot be left; Ling never leaves or offers one (page-only)', () => {
   const { s, now } = at('00-zhuji/j07-dark');
   assert.equal(task(s, content, ctxAt(now), { action: 'skip', id: 'bread-share' }).result.refused, 'not-here');
@@ -173,7 +195,7 @@ test('the stuck gate (scripts/stuck.js): never at the start; after STUCK_MS, or 
   }
 });
 
-test('one rule for every board: no game draws a skip of its own; the page lays it, gated', async () => {
+test('one rule for every board: no game draws a skip of its own; the page lays 留 and ✕, ungated', async () => {
   const dir = new URL('../scripts/games/', import.meta.url);
   for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.js') && x !== 'ink.js' && x !== 'seeded.js')) {
     const mod = await import(new URL(f, dir));
@@ -182,8 +204,10 @@ test('one rule for every board: no game draws a skip of its own; the page lays i
     for (const lang of ['zh', 'en']) assert.doesNotMatch(mod.html(s, lang), /data-g="skip"/, `${f}: no skip from the start`);
   }
   const cards = fs.readFileSync(new URL('../scripts/cards.js', import.meta.url), 'utf8');
-  assert.match(cards, /const btn = always \|\| stuckNow\(g, now\) \? skipButton\(id, ctx\.lang, icon, cut\) : '';/, 'the page\'s skip waits on the gate (a board taken up by choice: from the first moment)');
-  assert.match(cards, /data-skip-slot="\$\{esc\(id\)\}" data-skip-icon\$\{cutAttr\}>\$\{btn\}/, 'in a shell\'s bar the slot is the ✕');
+  // No stuck wait (Hanli 11-03: 「不需要卡住, 直接就给这个关闭按钮」): the bar's two ways out stand whenever the board is in play.
+  const board = cards.slice(cards.indexOf('function board(card, ctx)'), cards.indexOf('/// What an item does'));
+  assert.match(board, /const out = !today && !made && !shut && !g\?\.state\?\.won && !g\?\.sent\n\s*\? outHtml\(ctx\.lang, `data-board-keep=/);
+  assert.doesNotMatch(board, /stuckNow|skipBoard\(g, id, ctx, \{ icon/, 'no gate, no stuck slot in the bar');
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   assert.match(page, /write\('task', \{ action, id \}\)/, 'a skip is the rules\' skip (or 留), never a win');
   assert.doesNotMatch(page.slice(page.indexOf('function skipGame'), page.indexOf('async function onSkip')), /won: true|onWin/, 'never sent as a win');

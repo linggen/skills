@@ -54,7 +54,7 @@ export function task(state, content, ctx, args) {
   if (args.action === 'replay') return replayBoard(state, content, ctx, String(args.id ?? ''));
   if (args.action === 'later') return laterBoard(state, content, ctx, String(args.id ?? ''));
   // 留: kept for later (收着的棋局, rules/skips.mjs keepBoard) — taken up again, or dropped (丢).
-  if (args.action === 'keep') return keepBoard(state, content, ctx, String(args.id ?? ''));
+  if (args.action === 'keep') return keepOrPut(state, content, ctx, String(args.id ?? ''));
   if (args.action === 'kept-play') return playKept(state, content, ctx, String(args.id ?? ''), taskOpen(content, state, String(args.id ?? ''), ctx.now) || hostedHere(content, state, String(args.id ?? ''), ctx.now));
   if (args.action === 'kept-drop') return dropKept(state, content, ctx, String(args.id ?? ''));
   // 收手: a board he opened by choice, put down (rules/skips.mjs leaveOf).
@@ -379,6 +379,17 @@ export function win(state, content, ctx, args) {
   // 射鹿 → 一箭 · 偏左半寸, 吹鹅毛 → 吐纳). Won, never skipped: a skip pays nothing (rules/skips.mjs).
   const cards = grantFrom(content, s, 'beat', id, { how: 'beat', day: dayKey(ctx.now) });
   return { state: s, result: { ok: true, won: id, ...(graded ? { grade: graded.grade } : {}), ...(stars != null ? { stars } : {}), ...(cards.length ? { cards } : {}) } };
+}
+
+/* 留 on a board that cannot wait on a list — a 切磋 bout (its cooldown), a 秘境 room's (only inside its run), 兽潮's night, 本王考考你
+   — does what ✕ does, and says so: never refused (a user's action is never gated), never kept where it could not be played. */
+const UNKEPT = { zh: '这一局留不住，收起来了。', en: 'This one cannot be kept; it is put away.' };
+function keepOrPut(state, content, ctx, id) {
+  const t = taskOf(content, id);
+  const put = (r) => (r.result.ok ? { ...r, result: { ...r.result, kept: null, say: pick(UNKEPT, state.lang) } } : r);
+  if (t && isBout(content, id)) return put(qiecuoOver(state, content, ctx, id, 'skipped'));
+  if (t && (t.mijing || isTide(content, id) || kaoHere(content, state, id, ctx.now))) return put(leaveBoard(state, content, ctx, id));
+  return keepBoard(state, content, ctx, id);
 }
 
 /* The lock (Hanli 11-03: 「跳过 still pays」 — a board's own 跳过 went in as a 1-star win, so a 古 board paid on a skip). */
