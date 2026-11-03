@@ -35,6 +35,7 @@ export const BACKOFF_MS = 30 * 60 * 1000; // after a failed request, no runs for
 const PAUSE_MS = Number(process.env.DJ_CHASE_PAUSE_MS ?? 2000); // between two songs
 const PASS_CAP = 25; // songs per pass; the next run goes on
 const SEARCH_MS = 90_000;
+const LOCK_STALE_MS = 35 * 60 * 1000; // longer than any run lives
 
 const LOCK = path.join(DATA, '.lyrics-chase.pid');
 const AGAIN = path.join(DATA, '.lyrics-chase.again');
@@ -112,8 +113,11 @@ function takeLock() {
     } catch (e) {
       if (e.code !== 'EEXIST') throw e;
     }
+    // Past the engine's 30-minute kill, the file is a leftover even when its
+    // pid has been handed to another process since.
+    const fresh = Date.now() - fs.statSync(LOCK).mtimeMs < LOCK_STALE_MS;
     const holder = Number(fs.readFileSync(LOCK, 'utf8').trim());
-    if (holder && alive(holder)) return false;
+    if (fresh && holder && alive(holder)) return false;
     fs.rmSync(LOCK, { force: true });
   }
   return false;

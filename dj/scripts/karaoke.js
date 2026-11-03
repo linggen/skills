@@ -326,7 +326,7 @@ async function ensureAudioFile(t) {
     have.add(r.file);
     await runAction('track-add', JSON.stringify({
       artist: t.artist, title: r.title || t.title, requested_title: r.requested_title, year: t.year || undefined,
-      file: r.file, lrc: r.lrc || undefined, lrc_timed: r.lrc_timed, lrc_matcher: r.lrc_matcher, source_id: r.source_id,
+      file: r.file, lrc: r.lrc || undefined, lrc_timed: r.lrc_timed, source_id: r.source_id,
     }));
     return true;
   } catch (e) {
