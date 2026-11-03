@@ -13,6 +13,7 @@
 //   lingjing-book.json  { "book": <book.json>, "files": { "<file>": "<markdown>" } } — the novel 《九鼎录》 itself, every
 //                       回 and appendix entry book.json names (zh), so the phone's 读原著 reads with no Mac
 //                       (Hanli 10-26: 「同意」 to the phone UI proposal). The Mac link stays the reader's refresh.
+//                       Drafts (`draft: true`) are cut: neither their index entry nor their text ships.
 //
 // Usage: node tools/phone-bundle.mjs [--out <dir>]   (needs `npm ci` in tools/phone for esbuild)
 import fs from 'node:fs';
@@ -83,10 +84,12 @@ export function worldFiles({ world = 'jiuding' } = {}) {
   return out;
 }
 
-/** The novel for the phone's 读原著: book.json and the text of every entry it names (zh, the reader's language). */
-export function bookFiles({ book = 'jiuding-lu' } = {}) {
-  const dir = path.join(SKILL, 'story', book);
-  const index = JSON.parse(fs.readFileSync(path.join(dir, 'book.json'), 'utf8'));
+/** The novel for the phone's 读原著: book.json and the text of every entry it names (zh, the reader's language) —
+    the published book only: a 回 marked `draft: true` (book.json `_form`: one Hanli holds back) is cut from the index
+    and its text never packed, so a store build carries no draft even unread (Hanli 11-03: 「九鼎录带上」). */
+export function bookFiles({ book = 'jiuding-lu', root = path.join(SKILL, 'story') } = {}) {
+  const dir = path.join(root, book);
+  const index = publishedBook(JSON.parse(fs.readFileSync(path.join(dir, 'book.json'), 'utf8')));
   const named = [...(index.volumes ?? []).flatMap((v) => v.hui ?? []), ...(index.appendix ?? [])].map((e) => e.file).filter(Boolean);
   const files = {};
   for (const f of named) {
@@ -95,6 +98,11 @@ export function bookFiles({ book = 'jiuding-lu' } = {}) {
     if (fs.existsSync(file)) files[f] = fs.readFileSync(file, 'utf8');
   }
   return { book: index, files };
+}
+
+/** book.json with every draft 回 taken out (book-order.js shownIn without `draft`). */
+export function publishedBook(index) {
+  return { ...index, volumes: (index.volumes ?? []).map((v) => ({ ...v, hui: (v.hui ?? []).filter((h) => !h.draft) })) };
 }
 
 /** SKILL.md's `place.<who>.text` (a folded `>-` block), as the engine reads it: lines joined by spaces. */

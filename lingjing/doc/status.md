@@ -12,6 +12,7 @@ None.
 
 ## Done lately
 
+- 11-03 — **The phone's 读原著 ships published only** (Hanli 11-03: 「九鼎录带上」, the store build): tools/phone-bundle.mjs cuts every `draft: true` 回 from the packed book — index and text; the phone shows only the 回 the save has reached. None is marked draft today. tests/phone-bundle.test.mjs.
 - 11-03 — **体力卡 gone** (Hanli 11-03: 「体力卡删掉」, for 2.0; tests/tili-ka.test.mjs). Removed: the item, its price, the four shelves, the `stamina`/`reset` effect, and the 重置冷却 hook (events.mjs `resetCooldowns` and its 7 owners; nothing else used them). A held one drops from the bag on load (state.mjs fitWorld `RETIRED_ITEMS`). levels/numbers.json regenerated; arcade saves unchanged.
 - 11-03 — **A board's own 跳过 is a skip; a told word board stays on its card** (Hanli 11-03: 「修一下吧」; tests/own-skip.test.mjs).
   - Why it paid: the word boards' 跳过 (riddleOutcome `skipped`) and ropekit's ended as wins, and the page sent every `won` end to `win`, then `task done` or Ling's Resolve.

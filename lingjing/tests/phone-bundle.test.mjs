@@ -146,6 +146,18 @@ test("the novel travels for the phone's 读原著: every 回 book.json names, it
   assert.ok(Object.keys(files).every((f) => !f.includes('..') && f.endsWith('.md')));
 });
 
+test('a draft 回 never ships: cut from the packed index, its text never packed', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'phone-book-'));
+  const dir = path.join(root, 'b');
+  fs.mkdirSync(dir);
+  fs.writeFileSync(path.join(dir, 'book.json'), JSON.stringify({ volumes: [{ id: 'v1', hui: [
+    { id: 'h01', line: 'gu', file: '01.md' }, { id: 'h02', line: 'gu', file: '02.md', draft: true }, { id: 'h03', line: 'gu', file: '03.md' }] }] }));
+  for (const f of ['01.md', '02.md', '03.md']) fs.writeFileSync(path.join(dir, f), `# ${f}`);
+  const { book, files } = bookFiles({ book: 'b', root });
+  assert.deepEqual(book.volumes[0].hui.map((h) => h.id), ['h01', 'h03']);
+  assert.deepEqual(Object.keys(files).sort(), ['01.md', '03.md']);
+});
+
 test("银月's word at a page moment travels in the bundle: 灵石 short on the shelf, her mode, the facts and the Mac's own pool", async (t) => {
   const build = await builder();
   if (!build) return t.skip('esbuild is not installed (npm ci in lingjing/tools/phone)');
