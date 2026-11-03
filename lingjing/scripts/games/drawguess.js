@@ -31,7 +31,7 @@ const T = {
   zh: {
     draw: '画', start: '开始', pen: '笔', eraser: '擦', clear: '清空', done: '画好了', who: '猜者', names: { ling: '灵', yinyue: '银月' },
     checking: '{who}在看纸……', looking: '{who}在看……', looks: '还能看 {n} 眼',
-    blind: '这个模型看不见图，画猜开不了。', far: '连不上灵。', nochat: '这里没有对话，画猜在游戏里玩。', err: '{who}没看清，再画画。',
+    blind: '这个模型看不见图。在聊天里换一个能看图的模型（比如 GPT），再点下面的「再试」。', retry: '换好了，再试', far: '连不上灵。', nochat: '这里没有对话，画猜在游戏里玩。', err: '{who}没看清，再画画。',
     absent: '还没遇见银月。', unavailable: '银月不在。', asleep: '银月在木牌里睡着，叫不应。',
     won: '对了，是「{w}」。', time: '时间到。是「{w}」。',
     next: '下一句', again: '再画一张', write: '就写字吧', off: '这个测试存档不叫银月（chat=off）。', plain: '这一句只写了字：「{w}」。',
@@ -41,7 +41,7 @@ const T = {
   en: {
     draw: 'Draw', start: 'Start', pen: 'Brush', eraser: 'Eraser', clear: 'Clear', done: 'Done', who: 'Guesser', names: { ling: 'Ling', yinyue: 'Yinyue' },
     checking: '{who} is looking at the paper…', looking: '{who} is looking…', looks: '{n} looks left',
-    blind: 'This model can\'t see pictures, so this game can\'t start.', far: 'Ling can\'t be reached.', nochat: 'No chat here: play it in the game.', err: '{who} couldn\'t make it out. Keep drawing.',
+    blind: 'This model can\'t see pictures. Pick one that can (GPT, say) in the chat, then tap Try again below.', retry: 'Try again', far: 'Ling can\'t be reached.', nochat: 'No chat here: play it in the game.', err: '{who} couldn\'t make it out. Keep drawing.',
     absent: 'You haven\'t met Yinyue yet.', unavailable: 'Yinyue isn\'t here.', asleep: 'Yinyue is asleep in the token and does not answer.',
     won: 'Right — {w}.', time: 'Time. It was {w}.',
     next: 'Next line', again: 'Draw another', write: 'Just write it', off: 'This test save calls no one (chat=off).', plain: 'This line is in words only: {w}.',
@@ -67,7 +67,9 @@ const STYLE = `.g-dg{gap:8px}.g-dg-head{display:flex;align-items:baseline;gap:10
 .g-dg-paper{position:relative;width:100%;aspect-ratio:1;border-radius:6px;overflow:hidden;background:radial-gradient(130% 100% at 40% 30%,#ecdabb,${PAPER} 60%,#d8bf98);box-shadow:0 6px 22px rgba(0,0,0,.16)}
 .g-dg-paper canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M3 21c1.5-.3 2.6-1 3.2-2.2L18.6 6.4a2 2 0 0 0-2.8-2.8L3.4 16C2.6 17 2.6 19 3 21z' fill='%23f3e6c8' stroke='%23332' stroke-width='1.3'/%3E%3Cpath d='M3 21c.9-.2 1.6-.6 2-1.3' stroke='%23111' stroke-width='2'/%3E%3C/svg%3E\") 2 22, crosshair}
 .g-dg-paper.is-off canvas{cursor:default}
-.g-dg-veil{position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;font-family:var(--serif);color:#4a3d2c;font-size:15px;line-height:1.7;pointer-events:none}
+.g-dg-veil{position:absolute;inset:0;display:grid;place-items:center;align-content:center;padding:20px;text-align:center;font-family:var(--serif);color:#4a3d2c;font-size:15px;line-height:1.7;pointer-events:none;background:rgba(244,236,220,.86)}
+.g-dg-veil:empty{background:none}
+.g-dg-retry{pointer-events:auto;margin-top:10px;padding:6px 16px;border-radius:999px;border:1px solid #8a6a3a;background:#fffaf0;color:#5b4423;font:inherit;cursor:pointer}
 .g-dg-bar{display:flex;gap:8px;width:100%}.g-dg-bar .g-btn-soft{flex:0 0 auto}.g-dg-bar .g-btn-main{flex:1;min-width:0}
 .g-dg .g-btn:disabled{opacity:.45;cursor:default}
 .g-dg-bar .g-dg-tool{padding:8px 12px;font-family:var(--serif);font-size:17px;background:transparent;border-color:var(--line);color:var(--dim)}
@@ -482,6 +484,14 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     g.loop?.stop();
     setPhase(phase);
     veil.textContent = text;
+    // Blind or out of reach is not for good (Hanli 11-03: he switched the chat to GPT and nothing could start it again):
+    // 再试 checks again from the top — the model as the chat now has it.
+    if (phase === 'blind' || phase === 'far') {
+      const again = document.createElement('button');
+      again.type = 'button'; again.className = 'g-dg-retry'; again.textContent = w.retry;
+      again.addEventListener('click', () => { start(); });
+      veil.append(document.createElement('br'), again);
+    }
     foot('');
     tools(false);
     if (data.fallback) { goBtn.textContent = w.write; goBtn.disabled = false; }
