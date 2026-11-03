@@ -89,6 +89,10 @@ const CSS = `
    比例, 画面更大些」): wider than 16:9, more of the world at its sides (draw.js fieldOf), never stretched. With no
    --gf-hm, 16:9 as ever. */
 .g-fighter:not(.is-touch) { container-type: inline-size; }
+.g-fighter.pad-off .gf-pad { display: none; }
+.g-fighter .gf-padtoggle { position: absolute; right: 8px; bottom: 8px; z-index: 2; width: auto; height: auto; border-radius: 6px; padding: 2px 9px;
+  font: 600 12px "Songti SC","STSong","Noto Serif SC",serif; border: 1px solid rgba(42,36,28,.45); background: rgba(243,234,214,.72); color: #2a241c; opacity: .7; }
+.g-fighter .gf-padtoggle:hover, .g-fighter .gf-padtoggle:focus-visible { opacity: 1; }
 .g-fighter:not(.is-touch) .gf-field { aspect-ratio: auto; height: clamp(calc(100cqi / 2.4), var(--gf-hm, 56.25cqi), 56.25cqi); }
 .g-fighter .gf-pad { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; padding: 0 2px; }
 .g-fighter .gf-dirs { display: grid; grid-template-columns: repeat(3, auto); gap: 6px; }
@@ -150,11 +154,11 @@ html[data-board=fighter] #stage .gf-field { width: min(100%, calc((100vh - 200px
 `;
 function sheet(doc) {
   const old = doc.getElementById('g-fighter-css');
-  if (old?.dataset.v === '7') return;
+  if (old?.dataset.v === '8') return;
   old?.remove();
   const st = doc.createElement('style');
   st.id = 'g-fighter-css';
-  st.dataset.v = '7';
+  st.dataset.v = '8';
   st.textContent = CSS;
   doc.head.append(st);
 }
@@ -173,6 +177,9 @@ const CODES = {
   ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'jump', ArrowDown: 'crouch', Space: 'jump',
 };
 const HELD = new Set(['left', 'right', 'crouch']);
+/* The desk's pad, shown or not (`1`: shown), per browser. */
+export const PAD_KEY = 'lingjing.fighter.pad';
+const padShown = (win) => { try { return win.localStorage.getItem(PAD_KEY) === '1'; } catch { return false; } };
 /* W is a press when it goes down (the jump) and a word when it comes up (let go soon: a short hop). */
 const LIFT = { jump: 'jumpRelease' };
 
@@ -224,8 +231,21 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   sheet(doc);
   const root = doc.createElement('div');
   root.className = `g-fighter${kind === 'touch' ? ' is-touch' : ''}`;
-  root.innerHTML = `<div class="gf-field"><canvas></canvas></div>${padHtml(level, lang, kind)}`;
+  // On a desk the pad is off by default (Hanli 11-03: 「格斗画面还是有点小, 能再大点吗?」): the keys are named in the how
+  // line, and its height is the field's; 「显示按键」 brings it back, remembered in this browser. A touch screen keeps it.
+  const padOn = kind === 'touch' || padShown(win);
+  root.classList.toggle('pad-off', !padOn);
+  const padWord = (on) => (lang === 'en' ? (on ? 'Hide keys' : 'Show keys') : (on ? '收起按键' : '显示按键'));
+  root.innerHTML = `<div class="gf-field"><canvas></canvas>${kind === 'touch' ? '' : `<button type="button" class="gf-padtoggle" data-pad aria-pressed="${padOn}">${padWord(padOn)}</button>`}</div>${padHtml(level, lang, kind)}`;
   container.replaceChildren(root);
+  root.querySelector('[data-pad]')?.addEventListener('click', (e) => {
+    const on = root.classList.contains('pad-off');
+    root.classList.toggle('pad-off', !on);
+    e.currentTarget.textContent = padWord(on);
+    e.currentTarget.setAttribute('aria-pressed', String(on));
+    try { win.localStorage.setItem(PAD_KEY, on ? '1' : '0'); } catch { /* this load only */ }
+    e.currentTarget.blur(); // Space and the keys stay the bout's
+  });
   const canvas = root.querySelector('canvas');
   const art = {};
   for (const who of ['me', 'foe']) {

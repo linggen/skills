@@ -477,7 +477,7 @@ test('the round pad (touch): 8 ways by the thumb\'s angle, a diagonal two at onc
   assert.deepEqual(at(0, 200), ['right'], 'past the rim still counts');
   const src = fs.readFileSync(new URL('../scripts/games/fighter.js', import.meta.url), 'utf8');
   assert.match(src, /kind === 'touch' \? dial :/, 'the pad on touch only; the desk keeps its four buttons');
-  assert.match(src, /dataset\.v = '7'/);
+  assert.match(src, /dataset\.v = '8'/);
 });
 
 /* 2026-11-03 (Hanli: 「好像卡住了, 秦燕不会滑倒失败呢」 · 「kl翻滚这个也没告诉玩家啊」 · 「手机上组合键不太好操作」): the edge always
@@ -611,7 +611,13 @@ test('on the Mac the story card gives the fighter the page\'s height and the sta
   const src = fs.readFileSync(new URL('../scripts/games/fighter.js', import.meta.url), 'utf8');
   assert.match(src, /\.g-fighter:not\(\.is-touch\) \.gf-field \{ aspect-ratio: auto; height: clamp\(calc\(100cqi \/ 2\.4\), var\(--gf-hm, 56\.25cqi\), 56\.25cqi\); \}/, 'from 16:9 to 2.4:1, 16:9 where the host sets no height');
   const shell = fs.readFileSync(new URL('../scripts/games/shell.css', import.meta.url), 'utf8');
-  assert.match(shell, /\.focus \.card\.gamecard:has\(> \.gshell \.g-fighter\) \{ --gf-hm: max\(300px, calc\(100dvh - 410px\)\); max-width: max\(720px, min\(1680px, calc\(var\(--gf-hm\) \* 2\.4 \+ 32px\)\)\); \}/);
+  assert.match(shell, /\.focus \.card\.gamecard:has\(> \.gshell \.g-fighter\) \{ --gf-hm: max\(240px, calc\(100dvh - 416px\)\); max-width: min\(96%, calc\(var\(--gf-hm\) \* 2\.4 \+ 32px\)\); \}/, 'no 720 cap: up to 96% of the stage');
+  assert.match(shell, /\.focus \.card\.gamecard:has\(> \.gshell \.g-fighter\.pad-off\) \{ --gf-hm: max\(260px, calc\(100dvh - 250px\)\); \}/, 'the pad off: its height the field\'s');
+  // the desk's pad off by default, 「显示按键」 to bring it back, kept per browser; a touch screen keeps its pad
+  assert.match(src, /const padOn = kind === 'touch' \|\| padShown\(win\);/);
+  assert.match(src, /export const PAD_KEY = 'lingjing\.fighter\.pad';/);
+  assert.match(src, /\.g-fighter\.pad-off \.gf-pad \{ display: none; \}/);
+  assert.match(src, /'显示按键'/);
   // …inside the Mac's window rule only: the phone and a narrow stage as they were
   assert.ok(shell.indexOf('.g-fighter) { --gf-hm') > shell.indexOf('@media (min-width: 900px)'));
 });
