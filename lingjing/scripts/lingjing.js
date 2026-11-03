@@ -52,6 +52,7 @@ import { CLOSE_AT, POOR_AT, createHerSay, herMode, mijingEndWhat, mijingWayWhat,
 import { factsFor, prefetchLines } from './games/prefetch.js';
 import { PREFETCH_TITLE, askHer as askHerLines } from './games/prefetch-ling.js';
 import { NPC_TITLE, npcAsk, SPENT } from './npc-ask.js';
+import { answerPage } from './sync-now.js';
 import { openSpentCard } from './spent-card.js';
 import { openKanjia } from './kanjia.js';
 import { sound as kitSound } from './games/kit/sound.js';
@@ -5301,6 +5302,8 @@ async function greetByHer(grew = null) {
    `&days=N` moves its clock N days ahead, then the URL forgets both so a
    reload plays on. */
 const SCRATCH_BADGE = SCRATCH ? `测试存档 · ${SCRATCH}` : '';
+// 同步 in settings asks this page first (sync-now.js): a board or fight up, or a 测试存档, and it does not run.
+answerPage(() => ({ open: Boolean(bout) || [...boards.values()].some((b) => b?.state && !b.sent), scratch: SCRATCH || null }));
 const SCRATCH_NOTE = 'Ling 和 银月 都在，只读写 data/saves/' + (SCRATCH ?? '') + '/ — 不碰主存档，不同步云端';
 async function scratchBoot() {
   // Low in the right corner (2026-10-05): over the top strip it hid the 回 and the place.

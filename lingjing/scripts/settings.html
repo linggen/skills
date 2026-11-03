@@ -8,7 +8,7 @@
   <!-- Its engine calls ride the data channel (first, so every script below has it). -->
   <script src="/shared/channel.js"></script>
   <!-- The app shell's Settings (/shared/app-mode.js loads this page into its overlay). One row today: the play log
-       (数据埋点, rules/analytics.mjs) — what it keeps in one line, and its switch. -->
+       (数据埋点, rules/analytics.mjs) — what it keeps in one line, and its switch; and 同步 by hand (sync-now.js). -->
   <style>
     :root { --paper: #f6efe2; --ink: #2b241c; --mute: #7a6d5c; --line: #d8cbb4; --seal: #a8382a; }
     @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --paper: #1d1a16; --ink: #ece3d3; --mute: #a39784; --line: #3a342b; --seal: #d0604e; } }
@@ -32,10 +32,16 @@
       <div><b id="name">游戏记录</b><small id="line"></small></div>
       <button type="button" id="sw" aria-pressed="false">…</button>
     </div>
+    <div class="row">
+      <div><b id="syncName">同步</b><small id="syncLine"></small></div>
+      <button type="button" id="syncGo">同步</button>
+    </div>
     <p class="err" id="err" hidden></p>
   </main>
   <script type="module">
     import { verb } from './rules.js';
+    import { syncCloud, fetchCloud } from '/shared/api.js';
+    import { SYNC_WORDS, syncNow } from './sync-now.js';
     const en = !/^zh/i.test(navigator.language || 'zh');
     const W = en
       ? { title: 'Lingjing · Settings', name: 'Play log', line: 'Play times and results, kept on this Mac only — never uploaded.', on: 'On', off: 'Off' }
@@ -51,6 +57,19 @@
     };
     let off = Boolean((await call({ action: 'status' }))?.off);
     paint(off);
+    // 同步 (sync-now.js): the edges' own sync, by hand — never under an open board, never a 测试存档.
+    const S = SYNC_WORDS[en ? 'en' : 'zh'], go = document.getElementById('syncGo'), said = document.getElementById('syncLine');
+    document.getElementById('syncName').textContent = S.name;
+    said.textContent = S.line;
+    go.textContent = S.go;
+    go.addEventListener('click', async () => {
+      go.disabled = true;
+      go.textContent = '…';
+      const line = await syncNow({ sync: () => syncCloud('lingjing'), signedIn: async () => Boolean((await fetchCloud('lingjing').catch(() => null))?.signed_in), en });
+      said.textContent = `${line} · ${new Date().toLocaleTimeString(en ? 'en' : 'zh', { hour: '2-digit', minute: '2-digit' })}`;
+      go.disabled = false;
+      go.textContent = S.go;
+    });
     sw.addEventListener('click', async () => {
       const r = await call({ action: off ? 'on' : 'off' });
       if (r?.ok) { off = Boolean(r.off); paint(off); }
