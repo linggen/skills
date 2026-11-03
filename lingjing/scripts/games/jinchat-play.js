@@ -20,8 +20,8 @@
 //        foot(text), table() → Promise<twenty table>, ask(text) → Promise<{text}> (the open 二十问's turns), typing(on), log(row),
 //        board(action, o) (the open game kept on the save for Ling's Look, rules/wordboard.mjs: open · step · close),
 //        watchTold(fn) → stop (fn({ answer, src }) once Ling or 银月 told it on his outright ask) }
-// Each answers a Promise of the result: { won: true, grade, stars } — or, told, { won: false, left: true, told: true }
-// (over as a skip: the rules already set it down, nothing is paid).
+// Each answers a Promise of the result: { won: true, grade, stars } — or, told, { won: false, left: true, told: true, kind,
+// answer, src? } (over as a skip: the rules already set it down, nothing is paid; the page holds the card with it).
 
 import {
   answerFree, answerGuess, chainChoices, chainHint, chainLine, chainOf, chainOutcome, checkDown, checkLink, checkRiddle,
@@ -63,6 +63,8 @@ async function playAfter(ctx, lines) {
 const keep = (ctx, action, o = {}) => ctx.board?.(action, o);
 const hintsOf = (list) => JSON.stringify(list);
 const watch = (ctx, fn) => ctx.watchTold?.(fn) ?? (() => {});
+/* Told, the end says what was told, for the page to hold on the card (board-deal.js catchTold). */
+const toldEnd = (kind, answer, src) => ({ won: false, left: true, told: true, kind, answer: String(answer ?? ''), ...(src ? { src } : {}) });
 
 /* ════════ 猜谜 ════════ */
 
@@ -101,7 +103,7 @@ export async function riddleGame(ctx) {
       ctx.sound('skip');
       ctx.log({ kind: 'riddle', chat: ctx.id, told: true, misses: st.misses, hints: st.hints });
       keep(ctx, 'close');
-      resolve({ won: false, left: true, told: true });
+      resolve(toldEnd('riddle', told.answer || (r.answers[0] ?? ''), told.src));
     });
     const finish = async (solved, guess) => {
       if (st.done) return;
@@ -305,7 +307,7 @@ export async function coupletGame(ctx) {
       ctx.sound('skip');
       ctx.log({ kind: 'couplet', chat: ctx.id, told: true, misses: st.misses, hints: st.hints });
       keep(ctx, 'close');
-      resolve({ won: false, left: true, told: true });
+      resolve(toldEnd('couplet', a, told.src ?? c.src));
     });
     // `near`: his line a character or two off an accepted 下联, counted one star lower — the original named.
     const finish = async (solved, guess, near = '') => {
@@ -400,7 +402,7 @@ export async function chainGame(ctx) {
       ctx.sound('skip');
       ctx.log({ kind: 'chain', chat: ctx.id, told: true, links: st.links });
       keep(ctx, 'close');
-      resolve({ won: false, left: true, told: true });
+      resolve(toldEnd('chain', told.answer ?? '', null));
     });
     const end = async (o, event, guess = '') => {
       if (done) return;

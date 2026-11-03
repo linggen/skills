@@ -53,7 +53,7 @@ export const WORDS = {
     elite: '精英',
     // 闭关 (rules/seclusion.mjs) — the chooser, the running card, 出关.
     tamesFor: '收服{names}所需',
-    replayPlay: '再试一回', replayLater: '改日', boardLeave: '收手', boardLeft: '没走完，往下走了。',
+    replayPlay: '再试一回', replayLater: '改日', boardLeave: '收手', boardLeft: '没走完，往下走了。', toldSaid: { couplet: '原句：{a}', riddle: '谜底：{a}', chain: '接得上的：{a}' }, toldBy: '——{src}', toldOn: '往下走',
     keptWin: '已胜 · 体力回来即记上', emptyNoPlay: '体力耗尽：这局赢了也记不上。', emptyShut: '体力耗尽', waitShi: '约 {n} 时辰后', waitKe: '约 {n} 刻后',
     // 手边的棋局 (rules/tray.mjs): a game's name where the rules give none, what is left by its unit, the walk there.
     trayName: { duizi: '对对子', seclusion: '闭关', divine: '问签', errands: '执事堂差事', mijing: '秘境', chance: '机缘', fantong: '饭桶', yaoshou: '妖兽出没' },
@@ -121,7 +121,7 @@ export const WORDS = {
     loading: 'Unfolding…', offline: 'Lingjing has not woken yet.', connecting: 'Reaching Lingjing…',
     elite: 'Elite',
     tamesFor: 'Wins over {names}',
-    replayPlay: 'Try again', replayLater: 'Another day', boardLeave: 'Put down', boardLeft: 'Left unfinished — on you go.',
+    replayPlay: 'Try again', replayLater: 'Another day', boardLeave: 'Put down', boardLeft: 'Left unfinished — on you go.', toldSaid: { couplet: 'The original: {a}', riddle: 'The answer: {a}', chain: 'One that follows: {a}' }, toldBy: ' — {src}', toldOn: 'Go on',
     keptWin: 'Won — counted once stamina is back', emptyNoPlay: 'Stamina spent: a win here would not count yet.', emptyShut: 'Stamina spent', waitShi: 'back in about {n} h', waitKe: 'back in about {n} min',
     trayName: { duizi: 'Couplets', seclusion: 'Seclusion', divine: 'Draw a stick', errands: "Stewards' errands", mijing: 'The hidden realm', chance: 'A chance', fantong: 'Rice Bucket', yaoshou: 'Beasts about' },
     trayLeft: { night: 'tide {n}', batch: 'this batch {n}/{of}', couplets: '{n} today', rounds: '{n} rounds today', errands: '{n} waiting', keys: 'keys ×{n}', ends: '{t} left', today: 'open today', tomorrow: 'up tomorrow' },
@@ -500,6 +500,9 @@ function board(card, ctx) {
   const tasks = ctx.look.tasks || [];
   const task = tasks.find((t) => t.id === card.id) ?? tasks.find((t) => t.kind === 'board' && t.game === card.id);
   const id = task?.id ?? card.id;
+  // Told in the chat (board-deal.js toldHeld): what was told stands on the card till he puts it away.
+  const told = ctx.toldOf?.(id);
+  if (told) return toldCard(id, task?.title ?? ctx.boardTitle?.(id) ?? ctx.words.play, told, ctx.words);
   const today = boardDoneToday(ctx.look, id);
   const made = task && (task.status === 'done' || task.won);
   // Won and kept (the pool was empty): say it waits for 体力, not that nothing happened.
@@ -555,6 +558,13 @@ function board(card, ctx) {
   // Not in play (loading, done, kept, shut): no shell, so the words stay under the card as before.
   const under = framed ? '' : `${skips ? skipBoard(g, id, ctx) : ''}${own && !leaveBtn ? '' : acts([leaveBtn, about])}`;
   return `<div class="card gamecard${own ? ' scenegame' : ''}"${tall}>${framed ?? `<div class="cardtitle">${esc(title)}</div>${body}`}${under}</div>`;
+}
+
+/// A word board told in the chat (Ling's Reveal, 银月's Whisper): 「原句：…」 and 往下走 — no win line, nothing paid.
+function toldCard(id, title, told, w) {
+  const said = say(w.toldSaid[told.kind] ?? w.toldSaid.couplet, { a: told.answer }) + (told.src ? say(w.toldBy, { src: told.src }) : '');
+  return `<div class="card gamecard scenegame told"><div class="cardtitle">${esc(title)}</div><div class="say">${esc(said)}</div>`
+    + `<div class="acts"><button class="act" data-told-on="${esc(id)}">${esc(w.toldOn)}</button></div></div>`;
 }
 
 /// What an item does, in one line — a pill's dose, arms' numbers, a 符.

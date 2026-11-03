@@ -82,11 +82,11 @@ const RULE = 'A word game is open on the stage (`face`); its answer is hidden an
 const TOLD = 'Told: the answer was given (`answer`); the board is over, as a skip. Say it once if not yet said; never a reward.';
 
 /** Look's `word_board` (and 银月's Progress, `tool` Whisper): the open game as they may know it — its kind, face, the hints shown, the rule; never the answer
-    before it is told. */
+    before it is told. Told, its task too: the page holds that board's card with 原句 (board-deal.js toldInLook). */
 export function wordBoardLook(state, now, tool = 'Reveal') {
   const b = openBoard(state, now);
   if (!b) return {};
-  return { word_board: { kind: b.kind, face: b.face, hints: b.hints ?? [], ...(b.told ? { told: true, answer: b.answer, rule: TOLD } : { rule: RULE.replace('{tool}', tool) }) } };
+  return { word_board: { kind: b.kind, face: b.face, hints: b.hints ?? [], ...(b.told ? { told: true, answer: b.answer, ...(b.src ? { src: b.src } : {}), ...(b.task ? { task: b.task } : {}), rule: TOLD } : { rule: RULE.replace('{tool}', tool) }) } };
 }
 
 /** Reveal (Ling's; 银月's Whisper): the open word game's answer, on his outright ask. The board is told — over for the

@@ -35,3 +35,8 @@ export function slotNext(g, now, shown) {
   if (shown) return !g || g.state?.won || g.skipped ? 'clear' : null;
   return stuckNow(g, now) ? 'fill' : null;
 }
+
+/** A board's own 跳过 (Hanli 11-03: 「跳过 still pays」 — the word boards' 跳过 and ropekit's ended as wins): the module's
+    end says so — `grade: 'skipped'` (jinchat-games.js), `skipped: true` (ropekit, mount.js), `note: 'skipped'` (ink.js).
+    The page and the phone's host send it as a skip, never a win; the rules' `win` turns one sent anyway into a skip. */
+export const ownSkip = (o) => Boolean(o && (o.grade === 'skipped' || o.skipped === true || o.note === 'skipped'));

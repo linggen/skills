@@ -35,10 +35,10 @@ import { since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
 import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, skipButton, threadsAt, asideOpens, doorLine, trayHourChipHtml } from './cards.js';
-import { slotNext } from './stuck.js';
+import { ownSkip, slotNext } from './stuck.js';
 import { fullOfferHtml, pouchHtml } from './pouch.js';
 import { fantongKailu, kailuPaneHtml, potLeft } from './fantong-kailu.js';
-import { spentBoard } from './board-deal.js';
+import { catchTold, holdTold, spentBoard, toldHeld, toldInLook } from './board-deal.js';
 import { esc } from './esc.js';
 import { forInput } from './games/kit/device.js';
 import { revealCards, whenceLine } from './card-reveal.js';
@@ -452,7 +452,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, homeFrom: homePct, boardTitle: (id) => boardTitles.get(id) ?? null, pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, oddsFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, qianShaking: view.qianShaking, qianNote: view.qianNote, qianHer: view.qianHer, qianHerWaiting: view.qianHerWaiting, qianFriendOpen: view.qianFriendOpen, qianFriendName: view.qianFriendName, qianFriendBirth: view.qianFriendBirth, qianFriendNoKeep: view.qianFriendNoKeep, qianFriendNote: view.qianFriendNote, qianFriend: view.qianFriend, qianFriendHer: view.qianFriendHer, qianFriendWaiting: view.qianFriendWaiting, qianFriendFresh: view.qianFriendFresh, qianPngReady: view.qianPngReady, qianCan: view.qianCan, qianShareNote: view.qianShareNote, qianShown: view.qianShown, qianBookOpen: view.qianBookOpen, qianBook: view.qianBook, herHere: herHere(), fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, kanjiaPick: view.kanjiaPick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, homeFrom: homePct, boardTitle: (id) => boardTitles.get(id) ?? null, toldOf: (id) => (toldHeld(boards.get(id)) ? boards.get(id).told : null), pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, oddsFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, qianShaking: view.qianShaking, qianNote: view.qianNote, qianHer: view.qianHer, qianHerWaiting: view.qianHerWaiting, qianFriendOpen: view.qianFriendOpen, qianFriendName: view.qianFriendName, qianFriendBirth: view.qianFriendBirth, qianFriendNoKeep: view.qianFriendNoKeep, qianFriendNote: view.qianFriendNote, qianFriend: view.qianFriend, qianFriendHer: view.qianFriendHer, qianFriendWaiting: view.qianFriendWaiting, qianFriendFresh: view.qianFriendFresh, qianPngReady: view.qianPngReady, qianCan: view.qianCan, qianShareNote: view.qianShareNote, qianShown: view.qianShown, qianBookOpen: view.qianBookOpen, qianBook: view.qianBook, herHere: herHere(), fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, kanjiaPick: view.kanjiaPick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -729,6 +729,8 @@ async function readOnce() {
   watchVeil();
   watchNode();
   watchMemory();
+  // A word board told in her turn (Look's `word_board`): held on its card before anything takes it off (board-deal.js).
+  catchTold(boards.get(toldInLook(look)?.task), toldInLook(look));
   watchTell();
   watchWayOn();
   if (look.world?.atlas) await loadAtlas();
@@ -1294,6 +1296,8 @@ function stageNow() {
   // The book first: a game waits until the passage that leads into it is told (queue.js afterBook).
   cards = afterBook(cards, cardsAhead());
   watchAppear(cards);
+  // A told word board stands through all of it, as a win's last line does (`winning`), till he puts it away.
+  cards = holdTold(cards, toldUp());
   // 兽潮 waits in the tray (开局) and stands only opened (stage.mjs sceneGame): the 主页 is the stage's default.
   cards = cards.filter((c) => !(c.card === 'board' && tideBoard(c.id) && view.opened?.id !== c.id && !view.focus.some((f) => f.card === 'board' && f.id === c.id)));
   const queued = cards.filter(inQueue);
@@ -2040,8 +2044,8 @@ const refusal = (r) => r?.say || words().refused?.[r?.refused] || words().notDon
 /* A board's last line is read before it closes (2026-10-01: 「手指一松…轰然倒下」
    never showed — the win took the board off the stage at once). */
 const WIN_LINE_MS = 2800;
-/* A board left by its own 跳过 (二十问 · 猜谜 · 对对子 · 接龙: won, `grade: 'skipped'`) has no last line to read: it
-   goes on at once (Hanli 11-02: 「点「跳过」有时要 4–8 秒」 — 讨饼债's 跳过 stood still 4.5–5 s, 2.8 s of it this pause). */
+/* A board left by its own 跳过 never comes here now (boardSkipped, Hanli 11-03); were one to, it has no last line to read:
+   it goes on at once (Hanli 11-02: 「点「跳过」有时要 4–8 秒」 — 讨饼债's 跳过 stood still 4.5–5 s, 2.8 s of it this pause). */
 const winLineMs = (grade) => (grade === 'skipped' ? 0 : stillMotion() ? 1200 : WIN_LINE_MS);
 /* The scene's way on that waited on this board (exit `needs.task`): the win
    is that deed, so it is taken — live, 射鹿 won still offered 往左偏半寸 /
@@ -2506,7 +2510,8 @@ function inertNow(el) {
    is kept per save in this browser, so a reload finds its place. */
 let drawingTold = false;
 async function watchTell() {
-  if (!look?.tell_owed || drawingTold) return;
+  // A told board held on its card (toldGone): the passage after it waits for 往下走 — never the box beside it.
+  if (!look?.tell_owed || drawingTold || toldUp().length) return;
   drawingTold = true;
   try {
     const t = await write('tell').catch(() => null);
@@ -3583,6 +3588,38 @@ function skipGame(id) {
   run(`skip:${g.taskId}`, () => onSkip(g));
   return true;
 }
+/* A board's own 跳过 (the word boards', ropekit's; stuck.js ownSkip — Hanli 11-03: 「跳过 still pays」, it went in as a
+   1-star win): a skip, never a win — at once, no win line. A board he opened by choice (Look's `leave`, no errand's cut)
+   is put down (收手); every other is the rules' skip — the story's set aside for a later day, its `gives` only; an
+   errand's at its cut. A 试玩 board is dealt again. */
+function boardSkipped(g) {
+  const id = g.taskId, task = look?.tasks?.find((t) => t.id === id);
+  g.state = { ...g.state, won: false, live: false };
+  forgetShell(id);
+  if (isArcadeBoard(id)) { tracker.boardEnd(id, 'skipped'); boards.delete(id); render(); return true; }
+  if (task?.leave && !task.skip && !task.replay) return leaveGame(id);
+  return skipGame(id);
+}
+/* The told boards held on the stage now (board-deal.js toldHeld). */
+const toldUp = () => [...boards.entries()].filter(([, g]) => toldHeld(g)).map(([id]) => id);
+/* 往下走 under a told board: put away — its play taken down (its watch, the open game's record), the passage owed after it
+   drawn, the way on taken as after a skip (onSkip). */
+function toldGone(id) {
+  const g = boards.get(id);
+  if (!toldHeld(g)) return true;
+  g.toldDone = true;
+  tracker.boardEnd(id, 'skipped');
+  beats.leave(id);
+  forgetShell(id);
+  leaveWonBoard(id);
+  render();
+  run(`told:${id}`, async () => {
+    await refresh();
+    const on = winExit(id, null, true);
+    if (on && !look?.tell_owed) await panelTap(on.id, look?.scene?.panel?.taps?.find((t) => t.id === on.id)?.label ?? on.id);
+  });
+  return true;
+}
 async function onSkip(g) {
   const id = g.taskId;
   const r = isTale(id) ? await write('tale', { action: 'skip', board: id }).catch(failed) : await write('task', { action: 'skip', id }).catch(failed);
@@ -3684,6 +3721,7 @@ function gameAct(ghost, action, at) {
   if (before != null && !answered(before, g.mod.html(g.state, lang()), r)) { tapNope(document, at); press = 'nope'; } // never a silent tap
   sounded(shellFor(g.taskId, g.mod.meta?.id), g.mod, was, g.state, press); // its sound, as off the story (games/kit/heard.js)
   render();
+  if (r.won && !g.sent && ownSkip(g.state)) return boardSkipped(g);
   if (r.won && !g.sent) { g.sent = true; settleShell(g.taskId, { won: true, stars: g.state?.stars ?? null }); forgetShell(g.taskId); run(`win:${g.taskId}`, () => onWin(g.taskId)); }
   if (r.state.wait && g.mod.think) rivalTurn(g);
   return true;
@@ -3782,6 +3820,7 @@ const CLICKS = [
   // The story's quiet controls — 回看, 跳过, 配音, 慢 中 快 — first; then a tap anywhere on the stage (the next sentence).
   // 回看 open, the lines wait under it (proto a: 「回看」 pauses the passage); closed, they go on.
   ['[data-game-skip]', (el) => skipGame(el.dataset.gameSkip)],
+  ['[data-told-on]', (el) => toldGone(el.dataset.toldOn)],
   ['[data-board-leave]', (el) => leaveGame(el.dataset.boardLeave)],
   ['[data-fight-tap]', (el) => fightTap(el.dataset.fightTap)],
   ['[data-replay-play]', (el) => { run(`replay:${el.dataset.replayPlay}`, () => replayTap(el.dataset.replayPlay, true)); return true; }],
@@ -3941,15 +3980,18 @@ fenceBoards();
 // Its sounds and its kit's bed are the shell's (shellOf, by the module's id), and its win chimes (settle) as every board's does.
 wireLiveGames({ boardFor, lang, paused: () => popOpen() || anyPaused(),
   shellOf: (id, g) => shellFor(id, g.mod?.meta?.id), onGone: (id) => forgetShell(id),
-  onWon: (g) => { g.sent = true; settleShell(g.taskId, { won: true, stars: g.state?.stars ?? null }); forgetShell(g.taskId); openStuckSlots(); run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
+  onWon: (g) => { if (ownSkip(g.state)) return boardSkipped(g); g.sent = true; settleShell(g.taskId, { won: true, stars: g.state?.stars ?? null }); forgetShell(g.taskId); openStuckSlots(); run(`win:${g.taskId}`, () => onWin(g.taskId)); } });
 /* A game on the mount() contract settles with its result: the board takes it, and a win goes the way every board's does. */
 function beatSettled(g, result) {
   if (g.left) return; // put down (收手): nothing to settle
+  // Told in the chat (jinchat-play.js toldEnd): held on its card with what was told (board-deal.js).
+  if (result?.told) { if (catchTold(g, result)) render(); return; }
   if (!result?.won && !result?.left) tracker.boardLost(g.taskId);
   // A bout played once (切磋, its deal's `once`): lost, it is over — the rules count it and its cooldown starts.
   if (!result?.won && !result?.left && g.data?.once && !g.sent) { g.sent = true; run(`lost:${g.taskId}`, () => onOnceLost(g)); return; }
   if (!result?.won && !g.sent && !g.skipped) fallBackFrom(g, result);
   if (!result?.won || g.sent || g.skipped) return;
+  if (ownSkip(result)) return boardSkipped(g);
   // A game that gives stars but no grade (结印) is graded by its deal's `grades` (stars → grade), as 砸寨 grades itself.
   const graded = result.grade ?? g.data?.grades?.[String(result.stars)] ?? null;
   g.state = { ...g.state, won: true, grade: graded, stars: result.stars ?? null };

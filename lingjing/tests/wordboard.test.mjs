@@ -172,7 +172,8 @@ test('the page keeps the board through the rules, the Mac\'s alone, and watches 
   assert.match(page, /board\('peek'\)/);
   const play = read('../scripts/games/jinchat-play.js');
   for (const k of ['riddle', 'couplet', 'chain']) assert.match(play, new RegExp(`keep\\(ctx, 'open', \\{ kind: '${k}'`), k);
-  assert.equal((play.match(/resolve\(\{ won: false, left: true, told: true \}\)/g) ?? []).length, 3, 'told: over as left, never a win');
+  assert.equal((play.match(/resolve\(toldEnd\('(riddle|couplet|chain)', /g) ?? []).length, 3, 'told: over as left, never a win');
+  assert.match(play, /const toldEnd = \(kind, answer, src\) => \(\{ won: false, left: true, told: true, kind, answer: String\(answer \?\? ''\)/, 'with what was told, for the page to hold');
   const skill = read('../SKILL.md');
   assert.match(skill, /- name: Reveal\n/);
   assert.match(skill, /- name: Whisper\n/);

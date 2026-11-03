@@ -241,7 +241,7 @@ test('every runner sounds each step: off the story (mount.js), the story\'s cloc
   assert.equal((mount.match(/sounded\(shell, mod,/g) ?? []).length, 3, 'mount.js: an act, a tick and the rival\'s answer');
   assert.equal((live.match(/sounded\(shellFor\(/g) ?? []).length, 3, 'live-games.js: a press, the catch-up and the clock');
   assert.match(page, /shellOf: \(id, g\) => shellFor\(id, g\.mod\?\.meta\?\.id\)/, 'the story\'s live boards get their shell (sounds, bed)');
-  assert.match(page, /onWon: \(g\) => \{ g\.sent = true; settleShell\(g\.taskId/, 'a story board\'s win chimes');
+  assert.match(page, /onWon: \(g\) => \{ if \(ownSkip\(g\.state\)\) return boardSkipped\(g\); g\.sent = true; settleShell\(g\.taskId/, 'a story board\'s win chimes (its own 跳过 is no win)');
   assert.match(page, /sounded\(shellFor\(g\.taskId, g\.mod\.meta\?\.id\), g\.mod, was, g\.state, press\)/, 'a tapped story board sounds');
   assert.match(page, /shellFor\(fightShell\(b\), 'kapai'\)/, 'the story\'s card fight sounds as the 游戏厅\'s');
   assert.match(page, /shellFor\(board\.taskId, 'lianliankan'\)\.sound\(event\)/, 'the herb board sounds');

@@ -17,7 +17,7 @@ import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { gamesToday } from './rotation.mjs';
 import { stow, fullLine } from './pouch.mjs';
-import { laterBoard, leaveBoard, replayBoard, sceneBoards, skipBoard, storyBoard } from './skips.mjs';
+import { laterBoard, leaveBoard, leaveOf, replayBoard, sceneBoards, skipBoard, storyBoard } from './skips.mjs';
 import { sideLine } from './hui.mjs';
 import { boardLine, lineGrant, linePay } from './lines.mjs';
 import { writeLedger } from './ledger.mjs';
@@ -340,6 +340,8 @@ export function win(state, content, ctx, args) {
   const id = String(args.id ?? '');
   // A word board told on his ask (rules/wordboard.mjs reveal) is over as a skip: no win comes after it.
   if (state.tasks?.[id]?.told) return refuse('told', null);
+  // A board's own 跳过 sent as a win (grade `skipped`: an older phone app, any host) is the skip it is, never a win.
+  if (winIsSkip(args)) return ownSkip(state, content, ctx, id);
   const inScene = sceneOf(content, state)?.exits.some(e => gameOf(e)?.id === id && gameOf(e).kind !== 'duel');
   if (!inScene && !taskOpen(content, state, id, ctx.now)) return shouchaoShut(content, state, id, ctx.now) ?? qiecuoShut(content, state, id, ctx.now) ?? refuse('not-here', null);
   // A scene's boards are played in `show` order: a later one waits for those before it.
@@ -373,6 +375,17 @@ export function win(state, content, ctx, args) {
   // 射鹿 → 一箭 · 偏左半寸, 吹鹅毛 → 吐纳). Won, never skipped: a skip pays nothing (rules/skips.mjs).
   const cards = grantFrom(content, s, 'beat', id, { how: 'beat', day: dayKey(ctx.now) });
   return { state: s, result: { ok: true, won: id, ...(graded ? { grade: graded.grade } : {}), ...(stars != null ? { stars } : {}), ...(cards.length ? { cards } : {}) } };
+}
+
+/* The lock (Hanli 11-03: 「跳过 still pays」 — a board's own 跳过 went in as a 1-star win, so a 古 board paid on a skip). */
+export const winIsSkip = args => args?.grade === 'skipped' || args?.skipped === true || args?.skipped === 'true';
+/* A board's own 跳过, wherever it was played: an errand's board at its cut (errandSkip), the story's (or one offered
+   again) set aside for a later day (skips.mjs skipBoard: its `gives` only), any other put down as 收手 (leaveBoard). */
+export function ownSkip(state, content, ctx, id) {
+  const errand = errandSkip(state, content, ctx, id);
+  if (errand) return errand;
+  const story = skipBoard(state, content, ctx, id);
+  return story.result.ok || !leaveOf(content, state, id) ? story : leaveBoard(state, content, ctx, id);
 }
 
 /* A board's stars, clamped to the most its task declares (`stars`); none for a task without. */

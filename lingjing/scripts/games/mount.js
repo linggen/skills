@@ -23,6 +23,7 @@ import { answered, morph, sceneAt, tapGate, tapInk, tapNope } from '../live-game
 import { crosses, stroke } from './swipe.js';
 import { sounded } from './kit/heard.js';
 import { thinker } from '../think.js';
+import { ownSkip } from '../stuck.js';
 
 /* The rival's turn (a module that `think`s and `answer`s, as 象棋 does): thought off the page in the story's one
    Worker (think.js; inline where there is none), laid in by `answer` only if the board still waits on that ask — the
@@ -37,7 +38,9 @@ const WIN_HOLD = 1600; // the won frame (its seal) stands this long before the g
 /** Where a finger went down, as tapNope takes an element (its ring goes there, not the pad's middle). */
 const atFinger = (e) => ({ getBoundingClientRect: () => ({ left: e.clientX, top: e.clientY, width: 0, height: 0 }) });
 const live = (mod, s) => Boolean(mod.tick && s?.live && !s.won && !s.wait);
-const settled = (s, left = false) => (left ? { won: false, left: true } : { won: true, ...(s.grade != null ? { grade: s.grade } : {}), ...(s.stars != null ? { stars: s.stars } : {}) });
+// A board's own 跳过 ends `skipped` (stuck.js ownSkip): said so, and graded `skipped`, so a host sends it as a skip, never a win.
+const settled = (s, left = false) => (left ? { won: false, left: true } : ownSkip(s) ? { won: true, grade: 'skipped', skipped: true }
+  : { won: true, ...(s.grade != null ? { grade: s.grade } : {}), ...(s.stars != null ? { stars: s.stars } : {}) });
 
 
 /** The contract for a pure module: answers `mount(container, opts)`. */

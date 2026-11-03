@@ -37,7 +37,7 @@ import { enablePlayback } from './audio-session.js';
 
 // The native audio session does not set WebKit's own Web Audio category.
 enablePlayback();
-import { stuckNow } from '../../stuck.js';
+import { ownSkip, stuckNow } from '../../stuck.js';
 import { mountPure } from '../mount.js';
 
 const ID = 'board';
@@ -218,8 +218,11 @@ async function mountBoard(spec) {
   clearInterval(stuckTimer);
   clearInterval(toolTimer);
   settle(ID, r);
+  // The board's own 跳过 (stuck.js ownSkip): `skipped`, graded `skipped`, no stars — the app sends it as `task skip`; an app
+  // that still sends it as `win` sends grade `skipped`, and the rules take that as the skip (rules/tasks.mjs win).
+  const skip = ownSkip(r);
   post({
-    t: 'end', won: Boolean(r?.won), stars: r?.stars ?? null, grade: r?.grade ?? null, left: Boolean(r?.left), next: r?.next ?? null,
+    t: 'end', won: Boolean(r?.won), stars: skip ? null : r?.stars ?? null, grade: skip ? 'skipped' : r?.grade ?? null, left: Boolean(r?.left), skipped: skip, next: r?.next ?? null,
     stats: r?.stats ?? null, outcome: r?.outcome ?? null, ...(story ? { picks } : {}),
   });
 }
