@@ -1717,22 +1717,34 @@ sub watch_notice {
     };
 }
 
-# One line's facts, as the phone builds them: who it is about (their tickers
-# only), what happened, how much it matters. Never their money — a notice
-# shows no figure of what they hold or what moved (Hanli 2026-11-02).
+# One line's facts, as the phone builds them: who it is about, what
+# happened, how much it matters. Never their money — a notice shows no figure
+# of what they hold or what moved (Hanli 2026-11-02) — and an economy line
+# names its topic, never the holdings it touches (Hanli 2026-11-03).
 sub watch_fact {
     my ($it, $mine) = @_;
-    my %theirs = %$mine ? %$mine : map { $_ => 1 } @{ $it->{holdings} || [] };
-    my @syms = $it->{symbol}
-        ? ($it->{symbol}, grep { $theirs{$_} && $_ ne $it->{symbol} } @{ $it->{also} || [] })
-        : @{ $it->{holdings} || [] };
-    my %seen;
-    @syms = grep { !$seen{$_}++ } @syms;
     return {
-        about         => @syms ? join(', ', @syms) : 'the economy',
+        about         => $it->{symbol} ? company_about($it, $mine) : economy_about($it),
         what_happened => $it->{line},
         matters       => $it->{materiality} // 'low',
     };
+}
+
+# A company line: its ticker, and any other of theirs the headline names.
+sub company_about {
+    my ($it, $mine) = @_;
+    my %seen = ($it->{symbol} => 1);
+    return join ', ', $it->{symbol}, grep { $mine->{$_} && !$seen{$_}++ } @{ $it->{also} || [] };
+}
+
+# An economy line: what it is about, by the event's kind; no tickers.
+my %ECONOMY_ABOUT = (fed => 'interest rates', fomc => 'interest rates', rate => 'interest rates',
+                     boc => 'interest rates', fx => 'the US and Canadian dollar', policy => 'US policy');
+sub economy_about {
+    my ($it) = @_;
+    return { CPI => 'inflation', 'jobs report' => 'jobs' }->{ $it->{release} // '' } // 'the economy'
+        if ($it->{kind} // '') eq 'data';
+    return $ECONOMY_ABOUT{ $it->{kind} // '' } // 'the economy';
 }
 
 # A candidate with Ling's judgment, or undef when she judged it nothing. The

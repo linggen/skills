@@ -246,7 +246,8 @@ tools:
           "materiality": "high" | "medium" | "low" | "none", "holdings": the
           user's symbols an economy event touches, "line": one factual
           sentence — what happened, with the event's own figures; no advice,
-          no prediction, none of the user's money (code adds their stake)}.
+          no prediction, none of the user's money (code adds their stake); an
+          economy line names no ticker}.
     cmd: "perl $SKILL_DIR/scripts/market.pl save-watch judgments={{judgments}}"
     tier: read
     timeout_ms: 15000

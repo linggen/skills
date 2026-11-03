@@ -811,7 +811,7 @@ t('with Toronto held, the check runs any weekday until 16:00 (US Thanksgiving; a
         items => [
             { id => 'news:AAPL:1', symbol => 'AAPL', also => ['MSFT', 'ZZZZ'], holdings => ['AAPL'], line => 'Apple beat.',
               materiality => 'high', held => JSON::PP::true, stake => 812.4, moved => JSON::PP::true, exposure => 9000, currency => 'USD' },
-            { id => 'cal:fomc:2026-10-28', holdings => ['VFV.TO'], line => 'The Fed held.', materiality => 'medium',
+            { id => 'cal:fomc:2026-10-28', kind => 'fomc', scope => 'economy', holdings => ['VFV.TO'], line => 'The Fed held.', materiality => 'medium',
               held => JSON::PP::true, stake => 40, moved => JSON::PP::false, exposure => 12000.6, currency => 'CAD' },
             { id => 'news:X:2', symbol => 'X', line => 'Stranger news.', materiality => 'low', held => JSON::PP::false, stake => 0, currency => 'USD' },
         ],
@@ -827,7 +827,12 @@ t('with Toronto held, the check runs any weekday until 16:00 (US Thanksgiving; a
     my ($aapl, $fed) = @{ $n->{facts} || [] };
     t('a company line names its ticker and their other tickers, never a stranger\'s', $aapl && $aapl->{about} eq 'AAPL, MSFT');
     t('a notice carries none of their money', !grep { /^their_/ } map { keys %$_ } @{ $n->{facts} || [] });
-    t('an economy line names the holdings it touches', $fed && $fed->{about} eq 'VFV.TO');
+    t('an economy line names its topic, never the holdings it touches', $fed && $fed->{about} eq 'interest rates');
+    t('CPI and jobs are their own topics; an unknown kind is the economy',
+      watch_fact({ kind => 'data', release => 'CPI', holdings => ['VFV.TO'] }, {})->{about} eq 'inflation'
+      && watch_fact({ kind => 'data', release => 'jobs report' }, {})->{about} eq 'jobs'
+      && watch_fact({ kind => 'policy', holdings => ['TSLA'] }, {})->{about} eq 'US policy'
+      && watch_fact({ kind => 'odd', holdings => ['TSLA'] }, {})->{about} eq 'the economy');
     t('what happened and how much it matters ride along', $fed && $fed->{what_happened} eq 'The Fed held.' && $fed->{matters} eq 'medium');
     t('a quiet night says nothing', !defined watch_notice($doc, '2026-10-26', {}));
     t('a brief for another day says nothing', !defined watch_notice($doc, '2026-10-28', {}));

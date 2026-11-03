@@ -108,8 +108,9 @@ reading budget.
      from the headline — and it is one story, so `none` the repeats.
    - **line** — one plain factual sentence a person reads at a glance: what
      happened, with the event's own figures. No advice, no prediction, no
-     "you", none of the user's money — code adds their stake. `none` needs
-     no line.
+     "you", none of the user's money — code adds their stake. An economy
+     line names no ticker: the ones it touches go in `holdings`. `none`
+     needs no line.
    - Reading: an event's fields are usually enough. When a filing or a
      policy document can't be judged from its title, read it with
      `ReadReport` — at most 3 reads a night.
