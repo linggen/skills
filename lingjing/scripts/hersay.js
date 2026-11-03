@@ -49,7 +49,6 @@ export const MOMENTS = {
   game_first: { group: 'cheer', once: 'key' }, //          the first win at an AI mini-game, ever
   bt_failed: { group: 'comfort' },
   skipped: { group: 'comfort', once: 30 * 60_000 }, //     a board left: gentle, never guilt
-  stuck: { group: 'comfort', once: 'key' }, //             once a board — and Ling's help is there
   grind: { group: 'comfort', once: 'day' }, //             a long day of the same fights
   poor: { group: 'comfort', once: 'day' }, //              the purse near empty
   gongke: { group: 'cheer', once: 'key' }, //              a real-life chore handed in (rules/gongke.mjs): once a chore a day
@@ -108,7 +107,6 @@ const ASKS = {
   game_first: { zh: '玩家第一次赢下这个游戏。', en: 'Their first win at this game.' },
   bt_failed: { zh: '渡劫失败，雷把玩家打了回来。境界还在。', en: 'The breakthrough failed; realm kept.' },
   skipped: { zh: '玩家放下了一个解不开的题，往下走了。别怪他，轻轻带过。', en: 'They left a puzzle and moved on. No blame.' },
-  stuck: { zh: '玩家卡在一个题上好一会儿了。激他一句；可以提一句问问Ling。', en: 'Stuck on a puzzle a while. Spur them; Ling can help.' },
   grind: { zh: '玩家今天已经打了很多场一样的仗。轻轻一句，可以让他歇歇。', en: 'The same fights all day. Light; maybe rest.' },
   poor: { zh: '玩家的灵石快见底了。轻轻一句。', en: 'Nearly out of stones. Light.' },
   gongke: { zh: '玩家在人间做完了一件功课，书里有它的意思。', en: 'A real-life chore done; the book gives it a meaning.' },
@@ -178,7 +176,6 @@ export const POOLS = {
       game_first: ['赢了？本王还以为要等到明年。', '头一回就赢——哼，本王教得好。'],
       bt_failed: ['雷劈一下就怕了？本王当年挨的比这多。歇好了再来。', '境界还在，怕什么。……疼就歇着，本王守着。'],
       skipped: ['不解也罢，这种题配不上本王的人。走。', '放下就放下，往前看。'],
-      stuck: ['盯着它发呆，它也不会自己开。……实在不行，问问Ling。', '换个想法。本王不说，你自己来。……卡住了就问Ling。'],
       grind: ['打了一天了，手不酸？歇一歇，本王也乏了。', '天天打这几只，它们都认得你了。歇会儿。'],
       poor: ['灵石见底了？本王的储物袋……哼，自己想办法。', '穷成这样，出门别说是本王的人。'],
       short: ['钱不够？凡人，跟他砍砍价。', '差那么几块灵石，嘴皮子磨一磨——砍价去。'],
@@ -210,7 +207,6 @@ export const POOLS = {
       game_first: ['Won? This king thought it would take till next year.', 'First win — hmph. This king taught you well.'],
       bt_failed: ['One bolt and you flinch? This king took worse. Rest, then again.', 'The realm is kept; what is there to fear. …Rest if it hurts. This king keeps watch.'],
       skipped: ['Leave it — a riddle like that is beneath one of mine. On.', 'Set it down and look ahead.'],
-      stuck: ['Staring will not open it. …If it will not give, ask Ling.', 'Think another way. This king will not say. …Stuck, ask Ling.'],
       grind: ['A whole day of this — your arms not sore? Rest. Even this king is tired.', 'The same few beasts every day; they know your face by now. Rest a while.'],
       poor: ['Out of stones? This king’s pouch is… hmph. Find your own way.', 'This poor — do not tell anyone you are mine.'],
       short: ['Short, mortal? Haggle him down.', 'A few stones shy — work your tongue. Haggle.'],
@@ -245,7 +241,6 @@ export const POOLS = {
       game_first: ['……赢了？……哼。', '……总算赢了一回。'],
       bt_failed: ['……雷劈的？……歇着，再来。', '……境界还在。……怕什么。'],
       skipped: ['……不解就不解。走。', '……放下吧。'],
-      stuck: ['……还没解开？……问Ling去。', '……换个想法。……本王困。'],
       grind: ['……还打？……歇会儿。', '……手不酸？……睡了。'],
       poor: ['……又没灵石了？……哼。', '……穷。'],
       short: ['……钱不够……砍价……', '……差几块……跟他……砍砍。'],
@@ -277,7 +272,6 @@ export const POOLS = {
       game_first: ['…Won? …Hmph.', '…At last, one win.'],
       bt_failed: ['…The lightning? …Rest. Then again.', '…The realm is kept. …What is there to fear.'],
       skipped: ['…Leave it then. On.', '…Set it down.'],
-      stuck: ['…Still stuck? …Ask Ling.', '…Think another way. …This king is sleepy.'],
       grind: ['…Still fighting? …Rest.', '…Arms not sore? …Sleeping.'],
       poor: ['…Out of stones again? …Hmph.', '…Poor.'],
       short: ['…Short… haggle…', '…A few stones… talk him down.'],

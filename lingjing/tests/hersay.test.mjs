@@ -105,11 +105,12 @@ test('the grind word comes once, at the GRIND_AT-th repeatable fight of a day', 
   assert.equal(r.asked.filter((a) => a.kind === 'grind').length + r.lines.filter((l) => l.kind === 'grind' && l.from === 'react').length, 1);
 });
 
-test('once-rules: a stuck board once per board, a skip once in 30 min, a first win once per game', () => {
+test('once-rules: a rare find once per key, a skip once in 30 min, a first win once per game', () => {
   const r = rig();
-  assert.ok(r.say.say('stuck', '', { key: 'b1' }));
-  assert.equal(r.say.say('stuck', '', { key: 'b1' }), null);
-  assert.ok(r.say.say('stuck', '', { key: 'b2' }));
+  assert.ok(r.say.say('rare', '', { key: 'b1' }));
+  assert.equal(r.say.say('rare', '', { key: 'b1' }), null);
+  assert.ok(r.say.say('rare', '', { key: 'b2' }));
+  assert.equal(r.say.say('stuck', '', { key: 'b3' }), null, 'no stuck spur since the stuck wait went (Hanli 11-03)');
   assert.ok(r.say.say('skipped', ''));
   r.clock.t += 10 * 60_000;
   assert.equal(r.say.say('skipped', ''), null);
