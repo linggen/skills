@@ -65,7 +65,7 @@ test('兽潮 put down: nothing written — no 灵气 spent, the night not counte
   assert.equal(s.stamina, 100);
 });
 
-test('a board offered again, put down: back with the skipped, over for the story, nothing handed twice — and offered again tomorrow', () => {
+test('a board offered again, put down: over for the story for good, nothing handed twice — never back by itself (Hanli 11-03)', () => {
   const s0 = yaoyuan();
   assert.equal(look(s0, content, ctx()).replay?.task, 'deer-wind');
   const open = task(s0, content, ctx(), { action: 'replay', id: 'deer-wind' }).state;
@@ -75,11 +75,11 @@ test('a board offered again, put down: back with the skipped, over for the story
   assert.equal(r.result.ok, true);
   const s = r.state;
   assert.deepEqual({ status: s.tasks['deer-wind'].status, skipped: s.tasks['deer-wind'].skipped }, { status: 'done', skipped: true });
-  assert.deepEqual(s.skipped.filter((e) => e.task === 'deer-wind').map((e) => e.day), ['2026-10-26']);
+  assert.deepEqual((s.skipped ?? []).filter((e) => e.task === 'deer-wind'), [], 'put away, not queued again');
   assert.deepEqual(s.bag ?? {}, open.bag ?? {}, 'nothing stowed again');
   assert.equal(s.wealth, open.wealth, 'nothing paid');
   assert.equal(look(s, content, ctx()).replay, undefined, 'not again today');
-  assert.equal(look(s, content, ctx(TOMORROW)).replay?.task, 'deer-wind', 'back another day');
+  assert.equal(look(s, content, ctx(TOMORROW)).replay, undefined, 'nor another day: 留 is what keeps a board');
 });
 
 test('先放一放: putting a board down never moves the story, so the set-aside book lets it through', () => {
@@ -131,7 +131,7 @@ test('every story board\'s game can open the stuck gate (the clock, or its own s
   assert.deepEqual(shut, []);
 });
 
-test('the card draws the way out for every kind of board, as the shell bar\'s ✕: the stuck slot on the story\'s own, 收手 on his', async () => {
+test('the card draws the way out for every kind of board, as the shell bar\'s 留 · ✕ — the story\'s own and his alike, from the first moment', async () => {
   const kinds = [...new Set(boardTasks.map((t) => t.game).filter((g) => g && fs.existsSync(gameFile(g))))].sort();
   assert.ok(kinds.includes('jinchat') && kinds.includes('qimai') && kinds.includes('shouqiang'));
   for (const game of kinds) {
@@ -146,9 +146,10 @@ test('the card draws the way out for every kind of board, as the shell bar\'s �
     assert.match(own, new RegExp(`class="gshell[^"]*" data-shell="${id}"`), `${game}: the shell's frame (its 🔊)`);
     // The way out is the shell bar's ✕, last at the far right (Hanli 10-27: 「收手按钮改成右上的关闭icon button吧」).
     const bar = (html) => html.slice(html.indexOf('<div class="gshell-tools">'), html.indexOf('</header>'));
-    assert.match(bar(own), new RegExp(`<span data-skip-slot="${id}" data-skip-icon><button[^>]*class="gshell-btn gshell-close" title="算了，往下走"[^>]*data-game-skip="${id}">✕</button></span></div>`), `${game}: stuck, the story's own board's ✕ goes on (「算了，往下走」)`);
+    const out = new RegExp(`data-board-keep="${id}">留</button><button type="button" class="gshell-btn gshell-close" title="不玩了" aria-label="不玩了" data-board-close="${id}">✕</button></div>`);
+    assert.match(bar(own), out, `${game}: the story's own board: 留 · ✕`);
     const his = cardHtml({ card: 'board', id }, page(false));
-    assert.match(bar(his), new RegExp(`class="gshell-btn gshell-close" title="收手" aria-label="收手" data-board-leave="${id}">✕</button></div>`), `${game}: his board's ✕ is 收手`);
+    assert.match(bar(his), out, `${game}: his board: 留 · ✕ (✕ puts it down, closeBoard)`);
     assert.doesNotMatch(his, />收手<|>问询<|class="acts gskip"/, `${game}: no words under the board`);
   }
 });

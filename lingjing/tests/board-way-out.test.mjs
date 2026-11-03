@@ -1,6 +1,6 @@
 // Every board that is not a story scene's own shows its way out at every moment (Hanli 10-27: 「这个也没有跳过去的办法」):
 // the rules mark it leavable (Look's task `leave`, rules/skips.mjs leaveOf) and its card draws 收手 — the shell bar's ✕ — while it plays; a
-// 传闻's step board draws 「算了，往下走」 from the first moment. Story boards keep the stuck gate (10-15).
+// 传闻's step board draws 「算了，往下走」 from the first moment. Since 11-03 every board's bar has 留 · ✕ from the first moment.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -27,10 +27,11 @@ test('its card draws 收手 as the shell bar\'s ✕ while it plays (any board ki
     const playing = cardHtml({ card: 'board', id: t.id }, { look, lang: 'zh', words: WORDS.zh, content: {}, boardFor: () => ({ taskId: t.id, mod: fake, state: {} }) });
     // ✕ in the shell's bar, top right, last: ? · 🔊 (· Ⅱ) · ✕ (Hanli 10-27: 「收手按钮改成右上的关闭icon button吧」).
     const tools = playing.match(/<header class="gshell-bar">[\s\S]*?<div class="gshell-tools">([\s\S]*?)<\/div>/)?.[1] ?? '';
-    assert.match(tools, new RegExp(`^<button[^>]*class="gshell-btn gshell-ask"[^>]*>\\?</button><button[^>]*data-shell-mute[\\s\\S]*data-board-leave="${t.id}">✕</button>$`), `${t.id}: ? first, ✕ (收手) last in the bar`);
+    // …and 留 before it (Hanli 11-03: 「可能用户想丢掉, 可能想以后玩」): ✕ is closeBoard, which puts a chosen board down (收手).
+    assert.match(tools, new RegExp(`^<button[^>]*class="gshell-btn gshell-ask"[^>]*>\\?</button><button[^>]*data-shell-mute[\\s\\S]*data-board-keep="${t.id}">留</button><button[^>]*data-board-close="${t.id}">✕</button>$`), `${t.id}: ? first, 留 · ✕ last in the bar`);
     assert.doesNotMatch(playing, />收手<|>问询</, `${t.id}: no words under the board`);
     const won = cardHtml({ card: 'board', id: t.id }, { look, lang: 'zh', words: WORDS.zh, content: {}, boardFor: () => ({ taskId: t.id, mod: fake, state: { won: true } }) });
-    assert.doesNotMatch(won, /data-board-leave/, `${t.id}: won, no ✕ to put it down`);
+    assert.doesNotMatch(won, /data-board-close|data-board-keep/, `${t.id}: won, no ✕ or 留`);
   }
 });
 

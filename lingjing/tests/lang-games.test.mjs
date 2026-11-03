@@ -119,6 +119,7 @@ const KEPT = {
   'jinchat-rules.js': ['<!--成-->'], // the goal's machine tag, the same in both languages
   'prefetch-ling.js': ['台词预取'], // a side session's internal title, never shown
   'sadoushou/tide.js': ['左', '右'], // goldZh, beside its goldEn
+  'shell.js': ['留'], // the 留 seal on the bar's keep button, a glyph like ✕ (its words are in both languages)
   'shoulu.js': ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'], // the numerals the zh table counts its waves in
   'shoulu/core.js': ['剑', '火', '寒', '雷'], // each 符's glyph on its tower (the names beside them are in the words table)
   'shoulu/draw.js': ['守', '炉', '丹', '符'], // the 守炉 seal · the furnace's 丹 · a spot's 符 mark

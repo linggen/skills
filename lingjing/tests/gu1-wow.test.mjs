@@ -57,7 +57,7 @@ test('讨饼债: 银月 leads — a reverse 二十问 she wagers, she voices it,
   for (const lang of ['zh', 'en']) assert.ok(c.game.facts[lang] && task.how[lang]);
   assert.match(c.game.facts.zh, /沈小满/);
   assert.match(c.game.facts.zh, /别报名字/);
-  assert.deepEqual(task.marks, { stumped: 'bing-debt', guessed: null, skipped: null });
+  assert.deepEqual(task.marks, { stumped: 'bing-debt', guessed: null }); // a skip is no grade (Hanli 11-03)
   assert.equal(scenes['00-yinyue'].exits.find((e) => e.id === 'follow').refuse.zh, '她还没认——先跟她赌完这一局二十问。');
 });
 

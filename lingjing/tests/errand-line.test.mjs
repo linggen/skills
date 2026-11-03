@@ -165,7 +165,7 @@ test('待办: every kind that asks something of him is a tap (a cooldown and the
     const chip = out.slice(out.indexOf('hometodos'));
     assert.match(chip, TAPS, `${name}: ${chip}`);
   }
-  // A cooldown says when it opens again; the boards set aside open the first again.
+  // A cooldown says when it opens again; the boards kept for later open their list (收着的棋局).
   assert.match(homeHtml({ home: { gate: null, next: null, todo: [{ kind: 'wait', id: 'w', title: 'x', wait_min: 5 }] } }), /data-home-wait="x · \d+:\d\d 再开"/);
-  assert.match(homeHtml({ home: { gate: null, next: null, todo: [{ kind: 'skipped', n: 2, id: 'b1' }] } }), /data-replay-play="b1"/);
+  assert.match(homeHtml({ home: { gate: null, next: null, todo: [{ kind: 'skipped', n: 2, id: 'b1' }] } }), /data-kept-open/);
 });
