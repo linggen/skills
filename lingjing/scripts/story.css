@@ -24,6 +24,8 @@
 .capgo { flex: none; white-space: nowrap; margin: 0; padding: 0 5px;
   border: 1px solid color-mix(in srgb, var(--ling) 55%, transparent); border-radius: 3px; font: 600 10.5px/1.6 var(--serif); color: var(--ling); background: var(--ling-soft); cursor: pointer; }
 .capgo:hover { background: color-mix(in srgb, var(--ling) 22%, transparent); }
+.capgo.is-here { cursor: default; opacity: .75; }
+.capgo.is-here:hover { background: var(--ling-soft); }
 /* …and the story goal it opens to wears 「破境在此」 (cards.js capMark). */
 .capmark { margin-left: 6px; padding: 0 4px; border-radius: 3px; font: 600 11px/1.5 var(--serif); color: var(--ling); background: var(--ling-soft); white-space: nowrap; }
 .topbar .headcards:empty { display: none; }

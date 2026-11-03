@@ -819,6 +819,9 @@ function capGo(bar, w) {
   const c = look.capped;
   if (!c?.say) return '';
   const title = fill(w.capGoTitle, { xw: w.xw, progress: bar.progress, of: bar.next, say: c.say });
+  // Already in the story scene that goes on (Look's capped.story.here): nothing to send him to — a quiet mark, no tap
+  // (Hanli 11-03: 「走剧情的时候…走剧情按钮会怎么处理?」).
+  if (c.story?.here) return `<span class="capgo is-here" title="${esc(title)}">${esc(w.capIn)}</span>`;
   return `<button class="capgo" data-book title="${esc(title)}" aria-label="${esc(title)}">${esc(w.capGo)}</button>`;
 }
 

@@ -217,3 +217,13 @@ test('at the cap the way on is the story (Hanli 11-03): Look\'s `capped.story` �
   assert.doesNotMatch(content.ladder.caps.say.zh, /再坐/);
   assert.match(content.ladder.caps.say.en, /story/);
 });
+
+test('in the story scene that goes on, the bar says 圆满 · 剧情中 with no tap; elsewhere 走剧情破境 › opens the book (Hanli 11-03)', async () => {
+  const fs = await import('node:fs');
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /if \(c\.story\?\.here\) return `<span class="capgo is-here"[^`]*\$\{esc\(w\.capIn\)\}<\/span>`;/);
+  assert.match(page, /<button class="capgo" data-book/);
+  const { WORDS } = await import('../scripts/cards.js');
+  assert.equal(WORDS.zh.capIn, '圆满 · 剧情中');
+  assert.equal(WORDS.en.capIn, 'Full · in the story');
+});
