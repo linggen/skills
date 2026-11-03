@@ -121,7 +121,7 @@ test('at the door: swap drops a stack for the new thing, take wants room, letgo 
   const took = VERBS.bag(tossed.state, content, ctx(), { action: 'take', id: 'qi-pill' });
   assert.equal(took.state.bag['qi-pill'], 2);
   // A key the story needs and a thing worn are not thrown away, nor swapped out.
-  assert.equal(VERBS.bag(at({ 'ferry-token': 1 }), content, ctx(), { action: 'toss', id: 'ferry-token' }).result.refused, 'key-in-use');
+  assert.equal(VERBS.bag(at({ 'ferry-token': 1 }), content, ctx(), { action: 'toss', id: 'ferry-token' }).result.refused, 'story-keep');
   assert.equal(VERBS.bag(at({ 'bamboo-sword': 1 }, { wear: { weapon: 'bamboo-sword' } }), content, ctx(), { action: 'toss', id: 'bamboo-sword' }).result.refused, 'worn');
   assert.equal(VERBS.bag(at({ 'bamboo-sword': 1 }, { wear: { weapon: 'bamboo-sword' }, full_offer: [{ id: 'qi-pill', n: 1 }] }), content, ctx(), { action: 'swap', id: 'bamboo-sword', take: 'qi-pill' }).result.refused, 'worn');
   assert.equal(VERBS.bag(at({}), content, ctx(), { action: 'letgo', id: 'qi-pill' }).result.refused, 'not-offered');
@@ -376,4 +376,35 @@ test('what he wears is on him, not in the pouch (Hanli 11-03): a worn thing take
   assert.equal(roomFor(content, full, 'iron-sword'), false, 'a second sword: no slot left');
   const spare = { ...full, bag: { ...full.bag, 'iron-sword': 2 } };
   assert.equal(roomFor(content, { ...spare, bag: { ...spare.bag, [plain[0]]: 0 } }, 'iron-sword'), true, 'a spare stack held: one more joins it');
+});
+
+test('a story thing (Hanli 11-03): no slot, never tossed nor sold; the card says 「剧情要用 · 不占格」 with no 丢 — zh and en', async () => {
+  const { WORDS } = await import('../scripts/cards.js');
+  const { pouchHtml } = await import('../scripts/pouch.js');
+  // 爷爷的弓 and the scrolls the story hands over once: items.json `story`.
+  for (const id of ['old-bow', 'tuna-jing', 'huangting', 'heluo']) assert.equal(itemOf(content, id).story, true, id);
+  const s = at({ 'old-bow': 1, 'qi-pill': 1 }, { place: 'ye' });
+  assert.equal(slotsUsed(content, s), 1, 'only the pill');
+  const tossed = VERBS.bag(s, content, ctx(), { action: 'toss', id: 'old-bow' }).result;
+  assert.equal(tossed.refused, 'story-keep');
+  assert.equal(tossed.say, '剧情要用，先留着。');
+  assert.equal(VERBS.bag({ ...s, full_offer: [{ id: 'ginseng', n: 1 }] }, content, ctx(), { action: 'swap', id: 'old-bow', take: 'ginseng' }).result.refused, 'story-keep');
+  // 爷爷的弓 has a market price (balance.json 17): the shop path is shut for it all the same.
+  assert.ok(itemOf(content, 'old-bow').sell > 0);
+  assert.equal(trade(s, content, ctx(), { action: 'sell', id: 'old-bow' }).result.refused, 'story-keep');
+  // Worn, it is still his to put on and take off.
+  assert.equal(trade(s, content, ctx(), { action: 'use', id: 'old-bow' }).state.wear.weapon, 'old-bow');
+  const ctxOf = (lang) => ({ look: { lang, words: content.dictionary.words?.[lang] ?? {} }, gear: VERBS.gear({ ...s, lang }, content, ctx()).result.gear, lang, words: WORDS[lang] });
+  for (const lang of ['zh', 'en']) {
+    const line = lang === 'zh' ? '剧情要用 · 不占格' : 'The story needs it · takes no slot';
+    const h = pouchHtml(ctxOf(lang), { sel: 'old-bow' });
+    const detail = h.slice(h.indexOf('class="pdetail'));
+    assert.ok(detail.includes(line), `${lang}: the detail's line`);
+    assert.doesNotMatch(detail, /data-toss=|data-sell=/, `${lang}: no 丢, no 卖`);
+    assert.match(h, new RegExp(`class="ptile sel free"[^>]*title="${line}"[^>]*data-pouch-item="old-bow"`), `${lang}: the dashed tile says it`);
+    assert.equal(WORDS[lang].refused['story-keep'].length > 0, true);
+    // A key: the same line.
+    const k = pouchHtml({ ...ctxOf(lang), gear: VERBS.gear({ ...s, bag: { 'ferry-token': 1 }, lang }, content, ctx()).result.gear }, { sel: 'ferry-token' });
+    assert.ok(k.slice(k.indexOf('class="pdetail')).includes(line), `${lang}: a key says it too`);
+  }
 });

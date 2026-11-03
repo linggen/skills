@@ -677,6 +677,8 @@ function itemBrief(content, state, item) {
     buy: item.buy, sell: item.sell, held: state.bag[item.id] ?? 0,
     effect: effectBrief(content, lang, item.effect, state),
     worn: Object.values(state.wear ?? {}).includes(item.id),
+    // `free`: a thing the story needs (pouch.mjs freeSlot) — no slot, never tossed or sold; the card says so.
+    ...(freeSlot(content, state, item.id) ? { free: true } : {}),
     // A furnace pill's 转 (丹纹): the card draws that many lines, nine in gold (story/jiuding-lu/DESIGN.md § 丹药等级).
     ...(item.zhuan ? { zhuan: item.zhuan } : {}),
     // A 仙丹 (仙阶, a 阶 off the ladder): no 纹 — it glows (story DESIGN § 六·五).
@@ -714,9 +716,7 @@ function gearBrief(content, state, now = new Date()) {
     const e = item.effect ?? {};
     // A `wear` goes on her (once she walks with him) or at the abode (人间功课's 护山阵旗, rules/gongke.mjs).
     const slot = e.wear ? (e.wear === her?.id || e.wear === 'abode' ? e.wear : null) : ARM_SLOTS.get(item.kind) ?? null;
-    // `free`: a thing the story still needs, which takes no slot of the 储物袋.
-    return { ...itemBrief(content, state, item), n, ...(shop?.buys ? { sell: buyBack(shop, item) } : {}), ...(slot ? { slot } : {}), ...(e.progress || e.learn || e.pouch || e.stamina ? { usable: true } : {}),
-      ...(freeSlot(content, state, id) ? { free: true } : {}) };
+    return { ...itemBrief(content, state, item), n, ...(shop?.buys ? { sell: buyBack(shop, item) } : {}), ...(slot ? { slot } : {}), ...(e.progress || e.learn || e.pouch || e.stamina ? { usable: true } : {}) };
   });
   return {
     slots: GEAR_SLOTS.map(slot => ({ slot, item: worn(state.wear?.[slot]) })),

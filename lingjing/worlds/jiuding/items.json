@@ -1276,7 +1276,7 @@
       }
     },
     {
-      "id": "old-bow",
+      "id": "old-bow", "story": true,
       "kind": "weapon",
       "name": {
         "zh": "爷爷的弓",
@@ -1389,7 +1389,7 @@
       "art_source": "The true gold's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
-      "id": "tuna-jing",
+      "id": "tuna-jing", "story": true,
       "kind": "scroll",
       "name": {
         "zh": "吐纳经",
@@ -1449,7 +1449,7 @@
       }
     },
     {
-      "id": "huangting",
+      "id": "huangting", "story": true,
       "kind": "scroll",
       "name": {
         "zh": "黄庭经",
@@ -1462,7 +1462,7 @@
       }
     },
     {
-      "id": "heluo",
+      "id": "heluo", "story": true,
       "kind": "scroll",
       "name": {
         "zh": "河洛剑诀",

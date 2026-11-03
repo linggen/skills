@@ -17,7 +17,7 @@ export const POUCH_WORDS = {
     deck: '牌组', deckNew: '新 {n}', empty: '储物袋是空的。', tabEmpty: '这里还没有东西。', pick: '点一样东西看看。',
     take: '服用', wear: '佩戴', study: '参悟', carry: '换上 · 多 {n} 格', use: '使用', sell: '卖 {n}', toss: '丢',
     tossAsk: '丢掉{name} ×{n}？丢了就找不回了。', tossYes: '丢掉', tossNo: '留着',
-    free: '剧情所需，不占格', fantong: '饭桶',
+    free: '剧情要用 · 不占格', fantong: '饭桶',
     pouchSlot: '储物袋', pouchPlain: '随身储物袋', pouchCap: '{name} · {n} 格', pouchDup: '这样的储物袋已在身上，再用无益。',
   },
   en: {
@@ -27,7 +27,7 @@ export const POUCH_WORDS = {
     deck: 'Deck', deckNew: '{n} new', empty: 'The pouch is empty.', tabEmpty: 'Nothing here yet.', pick: 'Tap a thing to look at it.',
     take: 'Take', wear: 'Wear', study: 'Study', carry: 'Carry it · +{n} slots', use: 'Use', sell: 'Sell {n}', toss: 'Drop',
     tossAsk: 'Throw away {name} ×{n}? It is gone for good.', tossYes: 'Throw away', tossNo: 'Keep it',
-    free: 'the story needs it — takes no slot', fantong: 'Rice Bucket',
+    free: 'The story needs it · takes no slot', fantong: 'Rice Bucket',
     pouchSlot: 'Pouch', pouchPlain: 'Plain pouch', pouchCap: '{name} · {n} slots', pouchDup: 'You carry one like it already; another adds nothing.',
   },
 };
@@ -72,7 +72,9 @@ export function tileHtml(i, ctx, o = {}) {
   // `off` '' : resting (a cooldown) — no tap, no chip.
   // `o.look`: a tap still opens its detail when it cannot be had here (the 饭桶's, to say why) — dimmed, not disabled.
   const on = i.worn || carriedKind(i, o.g), attr = o.attr ?? 'data-pouch-item', off = o.off ?? null, dead = off != null, tap = !dead || o.look;
-  return `<button class="ptile${o.sel === i.id ? ' sel' : ''}${on ? ' worn' : ''}${i.free ? ' free' : ''}${i.glow ? ' glow' : ''}${dead ? ' off' : ''}"${tap ? ` ${attr}="${esc(i.id)}"` : ' aria-disabled="true"'} aria-pressed="${o.sel === i.id}">
+  // A story thing's dashed tile says why on hover (the detail's own line, POUCH_WORDS.free).
+  const free = i.free ? ` title="${esc((POUCH_WORDS[ctx.lang] ?? POUCH_WORDS.zh).free)}"` : '';
+  return `<button class="ptile${o.sel === i.id ? ' sel' : ''}${on ? ' worn' : ''}${i.free ? ' free' : ''}${i.glow ? ' glow' : ''}${dead ? ' off' : ''}"${free}${tap ? ` ${attr}="${esc(i.id)}"` : ' aria-disabled="true"'} aria-pressed="${o.sel === i.id}">
     ${artOf(i, ctx)}<span class="pname">${esc(i.name)}</span>${zhuanHtml(i.zhuan, ctx.lang)}${i.n > 1 ? `<b class="pn">×${esc(i.n)}</b>` : ''}${on && !off ? `<span class="pmark">${esc(ctx.words.worn)}</span>` : ''}${off ? `<span class="poff">${esc(off)}</span>` : ''}</button>`;
 }
 

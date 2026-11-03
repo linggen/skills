@@ -127,7 +127,7 @@ function pouchBrief(content, state) {
 }
 
 /* Bag — the panel's own verb. `toss` throws one slot away (the whole stack), never a thing the story still needs
-   or one he wears. At the door (`state.full_offer`): `swap` drops the stack `id` and takes the offer `take` in its
+   (`story-keep`) or one he wears. At the door (`state.full_offer`): `swap` drops the stack `id` and takes the offer `take` in its
    place; `take` takes an offer in once there is room; `letgo` lets an offer go. */
 const named = (content, s, id, n) => ({ id, name: pick(itemOf(content, id)?.name, s.lang) ?? id, n });
 const offerAt = (s, id) => (s.full_offer ?? []).find(o => o.id === id && o.n > 0) ?? null;
@@ -135,9 +135,14 @@ const offerGone = (s, id) => {
   s.full_offer = (s.full_offer ?? []).filter(o => o.id !== id);
   if (!s.full_offer.length) delete s.full_offer;
 };
+/* 剧情要用 (Hanli 11-03: story things never take a slot, are never tossed or sold): one refusal for every door
+   that would let a freeSlot thing go — 丢, 换, 卖 (travel.mjs trade). */
+const storyKeep = (content, s, id) => (freeSlot(content, s, id)
+  ? refuse('story-keep', pick({ zh: '剧情要用，先留着。', en: 'The story needs it — keep it.' }, s.lang)) : null);
 const tossRefused = (content, s, id) => {
   if (!(s.bag[id] > 0)) return refuse('not-in-bag', null);
-  if (freeSlot(content, s, id)) return refuse('key-in-use', pick({ zh: '这东西还有用处，先留着。', en: 'You will need that yet — keep it.' }, s.lang));
+  const keep = storyKeep(content, s, id);
+  if (keep) return keep;
   if (Object.values(s.wear ?? {}).includes(id)) return refuse('worn', pick({ zh: '先卸下再丢。', en: 'Take it off first.' }, s.lang));
   return null;
 };
@@ -185,4 +190,4 @@ export function bag(state, content, ctx, args) {
   return { state: s, result: { ...r, pouch: pouchBrief(content, s) } };
 }
 
-export { hasFound, bagFull, fitHeld, freeSlot, fullLine, doorOffers, pouchBrief, pouchCap, roomFor, slotsUsed, stow };
+export { hasFound, bagFull, fitHeld, freeSlot, storyKeep, fullLine, doorOffers, pouchBrief, pouchCap, roomFor, slotsUsed, stow };

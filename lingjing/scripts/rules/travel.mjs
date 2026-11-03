@@ -15,7 +15,7 @@ import { roadsOf, guardOf, atScene, beatOf, chapterOpen, fittingPlace, inCorrido
 import { enteredBeat, refusalBeat } from './story.mjs';
 import { comingOf } from './hui.mjs';
 import { enter } from './worlds.mjs';
-import { bagFull, pouchBrief, roomFor } from './pouch.mjs';
+import { bagFull, pouchBrief, roomFor, storyKeep } from './pouch.mjs';
 import { findFragment } from './memories.mjs';
 import { danduBrief, eatPill } from './dandu.mjs';
 import { resetCooldowns } from './events.mjs';
@@ -241,9 +241,9 @@ export function trade(state, content, ctx, args) {
     // A shop that buys only some kinds (`buys`, a visiting shop) turns the rest away in its own words.
     const price = buyBack(shop, item);
     if (price == null) return refuse('not-bought-here', pick(shop.buys?.say, lang) ?? null);
-    if (item.effect?.key && keyInUse(content, s, item.id)) {
-      return refuse('key-in-use', pick({ zh: '这东西还有用处，先留着。', en: 'You will need that yet — keep it.' }, lang));
-    }
+    // A thing the story needs (a key in use, a `story` thing, a taken errand's carry: pouch.mjs freeSlot) is never sold.
+    const keep = storyKeep(content, s, item.id);
+    if (keep) return keep;
     const empty = spendStamina(content, s, ctx, 'shop');
     if (empty) return empty;
     s.bag[item.id] = held - 1;

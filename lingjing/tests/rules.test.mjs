@@ -1530,8 +1530,8 @@ test('no market away from one; a pill is used anywhere; a wear waits for her', (
   const worn = must(trade, { ...withBell, companion: { joined: '2026-09-11' } }, { action: 'use', id: 'moon-bell' });
   assert.deepEqual(worn.state.wear, { yinyue: 'moon-bell' });
   assert.equal(worn.result.item.worn, true);
-  const bellSold = must(trade, worn.state, { action: 'sell', id: 'moon-bell' }).state;
-  assert.deepEqual(bellSold.wear, {}, 'sold, no longer worn');
+  // Her bell is a story thing (pouch.mjs freeSlot): never sold (Hanli 11-03).
+  refused(trade, worn.state, { action: 'sell', id: 'moon-bell' }, 'story-keep');
 });
 
 test('写符 is gone: no verb, never a choice — a 符 comes from fights and rumors, and cast in a bout it is spent', () => {
@@ -1564,8 +1564,8 @@ test('写符 is gone: no verb, never a choice — a 符 comes from fights and ru
 test('a key the story still needs cannot be sold', () => {
   // At the market with the prologue not yet done: 夫诸 still needs the lingzhi.
   const s = { ...toMarket(), chapter: '00-prologue', scene: null, ended: [], done_scenes: ['00-river'], bag: { lingzhi: 1 } };
-  const r = refused(trade, s, { action: 'sell', id: 'lingzhi' }, 'key-in-use');
-  assert.equal(r.say, '这东西还有用处，先留着。');
+  const r = refused(trade, s, { action: 'sell', id: 'lingzhi' }, 'story-keep');
+  assert.equal(r.say, '剧情要用，先留着。');
   const done = { ...s, ended: ['00-prologue'] };
   assert.equal(must(trade, done, { action: 'sell', id: 'lingzhi' }).state.wealth, 110);
 });
