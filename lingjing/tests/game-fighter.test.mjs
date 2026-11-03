@@ -470,7 +470,7 @@ test('the round pad (touch): 8 ways by the thumb\'s angle, a diagonal two at onc
   assert.deepEqual(at(0, 200), ['right'], 'past the rim still counts');
   const src = fs.readFileSync(new URL('../scripts/games/fighter.js', import.meta.url), 'utf8');
   assert.match(src, /kind === 'touch' \? dial :/, 'the pad on touch only; the desk keeps its four buttons');
-  assert.match(src, /dataset\.v = '6'/);
+  assert.match(src, /dataset\.v = '7'/);
 });
 
 /* 2026-11-03 (Hanli: 「好像卡住了, 秦燕不会滑倒失败呢」 · 「kl翻滚这个也没告诉玩家啊」 · 「手机上组合键不太好操作」): the edge always
@@ -598,4 +598,13 @@ test('a wide phone draws the world wider, never stretched: the field\'s height f
   const src = fs.readFileSync(new URL('../scripts/games/fighter.js', import.meta.url), 'utf8');
   assert.match(src, /h = r\.height > 0 \? Math\.max\(180, Math\.round\(r\.height \* dpr\)\)/, 'the canvas takes its box\'s shape');
   assert.equal(WIDE_MAX, 2.4);
+});
+
+test('on the Mac the story card gives the fighter the page\'s height and the stage\'s width, up to 2.4:1 (Hanli 11-03: 「画面更大些」)', () => {
+  const src = fs.readFileSync(new URL('../scripts/games/fighter.js', import.meta.url), 'utf8');
+  assert.match(src, /\.g-fighter:not\(\.is-touch\) \.gf-field \{ aspect-ratio: auto; height: clamp\(calc\(100cqi \/ 2\.4\), var\(--gf-hm, 56\.25cqi\), 56\.25cqi\); \}/, 'from 16:9 to 2.4:1, 16:9 where the host sets no height');
+  const shell = fs.readFileSync(new URL('../scripts/games/shell.css', import.meta.url), 'utf8');
+  assert.match(shell, /\.focus \.card\.gamecard:has\(> \.gshell \.g-fighter\) \{ --gf-hm: max\(300px, calc\(100dvh - 410px\)\); max-width: max\(720px, min\(1680px, calc\(var\(--gf-hm\) \* 2\.4 \+ 32px\)\)\); \}/);
+  // …inside the Mac's window rule only: the phone and a narrow stage as they were
+  assert.ok(shell.indexOf('.g-fighter) { --gf-hm') > shell.indexOf('@media (min-width: 900px)'));
 });

@@ -90,6 +90,9 @@
    over the field, which would have only the narrow column beside it, and the landscape card stays at 720. */
 @media (min-width: 900px) {
   .focus .card.gamecard:has(> .gshell) { max-width: 720px; --game-reserve: 230px; }
+  /* 格斗 (fighter.js): its field as tall as the page leaves under the bar, the how line and the keys' pad, and the card
+     as wide as that field drawn up to 2.4:1 — or the stage, if narrower (the chat open in a small window: 16:9 as before). */
+  .focus .card.gamecard:has(> .gshell .g-fighter) { --gf-hm: max(300px, calc(100dvh - 410px)); max-width: max(720px, min(1680px, calc(var(--gf-hm) * 2.4 + 32px))); }
   .focus .card.gamecard:has(> .gshell.is-tall) { --game-reserve: 204px;
     max-width: calc(200px + 18px + 34px + (100dvh - var(--game-reserve)) * var(--ar, .5625) + var(--beside, 0px)); }
   .focus .card.gamecard:has(> .gshell.is-tall [data-landscape="true"]) { max-width: 720px; }

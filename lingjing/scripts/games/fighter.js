@@ -84,6 +84,12 @@ const CSS = `
 .g-fighter { display: flex; flex-direction: column; gap: 8px; width: 100%; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: none; }
 .g-fighter .gf-field { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: #e4d6b8; }
 .g-fighter canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* On a desk the field is as wide as its card and as tall as the page lets it (--gf-hm, set by the card's host: the
+   story's games/shell.css, the 游戏厅's arcade.css), from 16:9 down to 2.4:1 (Hanli 11-03: 「mac上格斗的屏幕似乎也可以同样
+   比例, 画面更大些」): wider than 16:9, more of the world at its sides (draw.js fieldOf), never stretched. With no
+   --gf-hm, 16:9 as ever. */
+.g-fighter:not(.is-touch) { container-type: inline-size; }
+.g-fighter:not(.is-touch) .gf-field { aspect-ratio: auto; height: clamp(calc(100cqi / 2.4), var(--gf-hm, 56.25cqi), 56.25cqi); }
 .g-fighter .gf-pad { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; padding: 0 2px; }
 .g-fighter .gf-dirs { display: grid; grid-template-columns: repeat(3, auto); gap: 6px; }
 .g-fighter .gf-dirs [data-k=jump] { grid-column: 2; }
@@ -144,11 +150,11 @@ html[data-board=fighter] #stage .gf-field { width: min(100%, calc((100vh - 200px
 `;
 function sheet(doc) {
   const old = doc.getElementById('g-fighter-css');
-  if (old?.dataset.v === '6') return;
+  if (old?.dataset.v === '7') return;
   old?.remove();
   const st = doc.createElement('style');
   st.id = 'g-fighter-css';
-  st.dataset.v = '6';
+  st.dataset.v = '7';
   st.textContent = CSS;
   doc.head.append(st);
 }
