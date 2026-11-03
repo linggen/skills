@@ -6,18 +6,40 @@
 <title>Lingjing board</title>
 <style>
   html, body { margin: 0; height: 100%; background: #0b0f0a; overflow: hidden; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: none; }
-  #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; --game-reserve: 0px; }
+  /* The webview reaches the screen's foot (lingjing_board.dart: the home indicator's band is the page's); the app hands
+     the band's height in as --safe-b (inside the app's webview env() reads 0). A board drawn in the page lays its paper
+     under the band and keeps its controls above it; a Phaser board stands above it (--game-reserve: its 100dvh less this). */
+  :root { --safe-b: env(safe-area-inset-bottom, 0px); }
+  #stage { position: fixed; inset: 0 0 var(--safe-b); display: flex; align-items: center; justify-content: center; --game-reserve: var(--safe-b); }
+  html.is-dom #stage { bottom: 0; }
   /* A board drawn in the page (rain, bread, qimai, shoulu, kapai, jinchat): the paper ground, from the top, scrolling. */
   html.is-dom, html.is-dom body { background: var(--ground); }
-  html.is-dom #stage { display: flex; flex-direction: column; overflow: auto; -webkit-overflow-scrolling: touch; padding: 10px 10px calc(16px + env(safe-area-inset-bottom)); }
+  html.is-dom #stage { display: flex; flex-direction: column; overflow: auto; -webkit-overflow-scrolling: touch; padding: 10px 10px calc(16px + var(--safe-b)); }
   /* …standing at the bottom, where the thumb reaches (Hanli on the phone 2026-10-26: 接雨 「太靠上了, 不方便手指点击」); a board taller than the screen still scrolls from its top. */
   html.is-dom #stage > * { margin-top: auto; flex-shrink: 0; }
   /* …as wide as the page, as the Mac's stage gives it: a board sized by `min(100%, …)` (五子棋's 15×15) shrank to a
      thumbnail when the column fitted it to its content (sim 10-26, step 2). */
   html.is-dom #stage { align-items: stretch; }
+  /* 守炉 (shoulu) sizes its field from where it stands (shoulu.js fit: the window's height less the field's top and what is
+     under it): stood at the foot it measured only the room it already took, and kept the 320 px floor (sim 11-02, a
+     252 pt field under half a screen of paper). From the top it takes the height; the controls still end at the thumb. */
+  html[data-board=shoulu] #stage > * { margin-top: 0; }
+  /* The page-drawn boards at the phone's own size (Hanli 11-02: 「游戏画面大小不太对, 没有铺满屏幕」): their sheets size them
+     for a card in the Mac's story (a 240 px grid, a 340 px board), and this page is the whole screen. Each grows to the
+     width, as far as the height its other rows leave (100dvh here is the webview, the band under it included) — and
+     never below the Mac's size (华容道 shrinks to fit a short phone: its 5 rows ran under the foot on an SE). A board as wide as the screen already (五子棋, and
+     the wide scenes: 接雨, 气走经脉, 冲刺, 太鼓, 押宝) is held by its own shape and stays at the thumb. */
+  html[data-board=simon] .g-simon-grid { width: min(92%, max(240px, calc((100dvh - 300px) / 1.2))); grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  html[data-board=huarong] .g-huarong-board { width: min(100%, calc((100dvh - 250px) * .8)); }
+  html[data-board=xiangqi] .g-xiangqi-board { width: min(100%, max(360px, calc((100dvh - 190px) * .9))); }
+  html[data-board=luoshu] .g-luoshu-board { max-width: min(100%, max(340px, calc((100dvh - 290px) * 1.07))); }
+  html[data-board=pintu] .g-pintu-board { width: min(100%, max(340px, calc(100dvh - 230px))); }
+  /* 炼丹 (lianliankan): lingjing.css's 250 px of tiles, its hint over it (two children: the hint stood alone mid-page). */
+  html[data-board=lianliankan] #stage > .board { margin-top: 10px; max-width: min(100%, max(250px, calc(100dvh - 230px))); width: 100%; }
+  html[data-board=lianliankan] .board .tile { font-size: min(34px, 8vw); }
   /* 斗法 (kapai): the room fills the page as in the 游戏厅 (arcade.css .is-fill): its own phone rules answer the
      `scene` container (battle.css @container scene), which the Mac's story page gives it. */
-  html[data-board=kapai] #stage { padding: 0 0 env(safe-area-inset-bottom); overflow: hidden; }
+  html[data-board=kapai] #stage { padding: 0 0 var(--safe-b); overflow: hidden; }
   html[data-board=kapai] .g-kapai { height: 100%; width: 100%; align-self: stretch; margin-top: 0; overflow: hidden; container: scene / inline-size; }
   /* 聊天 (jinchat): the card is the page, as a chat app's — from under the bar to the thumb, the list filling what is
      between. Its own size (min(520px, 64dvh), a card in the Mac's story column) stood at the foot of the page with an
@@ -35,9 +57,9 @@
   /* The side (games/shell.js frameHtml's, here the page's own): 结印's box and its ready card stand in a strip under
      the field, never over it (Hanli 10-28: 「不要挡住游戏画面」); while a helper is docked the field keeps out of it. */
   body > [data-shell-side] { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 8px;
-    align-items: flex-start; justify-content: center; padding: 6px 10px calc(6px + env(safe-area-inset-bottom)); }
+    align-items: flex-start; justify-content: center; padding: 6px 10px calc(6px + var(--safe-b)); }
   body > [data-shell-side]:not(:has(> :not([hidden]))) { display: none; }
-  body:has(> [data-shell-side] > :not([hidden])) #stage { bottom: calc(164px + env(safe-area-inset-bottom)); --jy-strip: 164px; }
+  body:has(> [data-shell-side] > :not([hidden])) #stage { bottom: calc(164px + var(--safe-b)); --jy-strip: 164px; }
 </style>
 </head>
 <body>
