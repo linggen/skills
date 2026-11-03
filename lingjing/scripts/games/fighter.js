@@ -365,10 +365,11 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
 
   /* ── The loop ── */
   const textNow = (s) => {
-    if (s.won) return say(level.won?.[s.grade], lang);
+    if (s.won) return say((s.end?.kind === 'spent' && level.won?.spent) || level.won?.[s.grade], lang); // 稳 emptied: he went down at last
     if (s.lost || s.end?.kind === 'down') return say(level.lines?.lost, lang);
     if (s.end?.kind === 'out') return say(level.lines?.[s.palmLanded ? 'outClumsy' : 'out'], lang);
     if (s.end?.kind === 'outlast') return say(level.lines?.outlast, lang);
+    if (s.end?.kind === 'spent') return say(level.lines?.spent, lang);
     if (!started) return shell?.lead ? '' : say(level.ready, lang); // the lead card reads it where there is one
     const l = s.line;
     if (l && l !== line?.from) line = { from: l, text: say(level.lines?.[l.key], lang), at: performance.now() };

@@ -608,3 +608,60 @@ test('on the Mac the story card gives the fighter the page\'s height and the sta
   // …inside the Mac's window rule only: the phone and a narrow stage as they were
   assert.ok(shell.indexOf('.g-fighter) { --gf-hm') > shell.indexOf('@media (min-width: 900px)'));
 });
+
+/* 2026-11-03 (Hanli: 「敌人没血了还是不死呢, 卡住了吧」, 看他的脚 · 等风): in a bout the slick should end, an empty 稳 ends it
+   too — a win below the book's way (`spent`: clumsy, two stars) — once the book's moment has been offered. */
+const FUSHI = REG.games.find((g) => g.scene === 'wm-fushi' && g.id === 'fighter').levels[0];
+test('稳 emptied ends a slick bout as a two-star win, once the book\'s moment came; before it, a sliver holds', () => {
+  for (const lv of [LEVEL, FUSHI]) {
+    let s = F.newGame('spent', 1, { levels: [lv] });
+    s.foe.bal = 0; s.foe.think = 1e9;
+    s = run(s, 200);
+    assert.equal(s.end, null, `${lv.id}: not before the book's moment`);
+    assert.equal(s.foe.bal, 1, 'a sliver of 稳 holds');
+    s.seen = { edge: true, palm: true }; s.foe.bal = 0;
+    s = until(s, (x) => x.won, 4000);
+    assert.equal(s.end.kind, 'spent');
+    assert.equal(s.grade, 'clumsy');
+    assert.equal(s.stars, 2);
+    assert.ok(lv.won.spent.zh && lv.won.spent.en && lv.lines.spent.zh && lv.lines.spent.en, `${lv.id}: its words`);
+  }
+  // a sparring bout yields as ever; an outlast bout is never ended by it
+  const yieldLv = REG.games.find((g) => g.scene === 'wm-dabi' && g.id === 'fighter').levels[0];
+  let y = F.newGame('y', 1, { levels: [yieldLv] }); y.foe.bal = 0; y = run(y, 50);
+  assert.equal(y.end?.kind, 'yield');
+  const outLv = REG.games.find((g) => g.levels?.some((l) => l.id === 'liuyun')).levels.find((l) => l.id === 'liuyun');
+  let o = F.newGame('o', 1, { levels: [outLv] }); o.foe.bal = 0; o.seen = { edge: true, palm: true }; o.foe.think = 1e9; o = run(o, 500);
+  assert.equal(o.end, null, 'outlast: no spent end');
+});
+
+test('看他的脚: his stamp over the grease, the 勾 cue shown, hooked — off the rim, clean, three stars', () => {
+  let s = F.newGame('lu', 1, { levels: [FUSHI] });
+  s.me.x = 770; s.foe.x = 870; s.foe.bal = 50; s.foe.think = 0; s.foe.cd.ice = 9999; s.foe.cd.palm = 0;
+  s = until(s, (x) => x.palm?.phase === 'hold', 20000);
+  assert.equal(s.cue?.k, 'hook', 'the 勾 cue is up');
+  assert.match(cueText(s, 'zh'), /^勾 /, 'the desk names its keys');
+  s = press(s, { g: 'hook' }); // the phone's 勾
+  s = until(s, (x) => x.won, 6000);
+  assert.equal(s.end.kind, 'out');
+  assert.equal(s.grade, 'clean');
+  assert.equal(s.stars, 3);
+});
+
+test('a touch-only hand wins 看他的脚: the stamp answered only by the cue\'s 勾 button', () => {
+  const touch = (s) => {
+    if (s.palm) {
+      if (s.cue && s.t - s.cue.at >= 200 && !s.cueTapped?.includes(s.cue.at)) { s.cueTapped = [...(s.cueTapped ?? []), s.cue.at]; return { g: 'hook' }; }
+      if (s.in.block) return { g: 'block', on: false };
+      return s.in.dir ? { g: 'walk', dir: 0 } : null;
+    }
+    return bot(s);
+  };
+  let wins = 0;
+  for (const seed of ['l1', 'l2', 'l3', 'l4']) {
+    let s = F.newGame(seed, 1, { levels: [FUSHI] });
+    for (let t = 0; t < 180000 && !s.won && !s.lost && !(s.end && !endWon(s.end) && s.t - s.end.at > 2000); t += 10) { const a = touch(s); if (a) s = press(s, a); s = run(s, 10); }
+    if (s.won) wins += 1;
+  }
+  assert.ok(wins >= 3, `won ${wins} of 4`);
+});

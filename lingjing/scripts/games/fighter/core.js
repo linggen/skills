@@ -90,6 +90,7 @@ export const EDGE_LATE = 4; //  her moves past the edge's `after` with him corne
 
 /* The stage, in units: the boards from `left` to `right`, the slick at the left edge (the corner he chose). */
 export const STAGE = { w: 960, left: 140, right: 930, oil: { from: 140, to: 250 } };
+export const SPENT_STARS = 2; // her 稳 emptied in a bout the slick should end: a win, never the book's three
 export const OUTLAST_CLEAN = 0.6; // an outlast bout's `clean`: this share of his 血 or more left
 export const OUTLAST_STARS = [0.6, 0.3]; // ★3 from the first share left, ★2 from the second, else ★1
 
@@ -683,6 +684,7 @@ function closeIn(s) {
 function startPalm(s, from) {
   const m = s.R.foe.moves.palm;
   s.palm = { phase: 'glow', at: s.t, from, landed: false };
+  s.seen = { ...s.seen, palm: true };
   s.foe.act = { k: 'palm', at: s.t, m: { startup: m.glow + m.hold, active: m.strike, recover: m.after } };
   s.foe.cd.palm = m.cd;
   s.foe.moves += 1;
@@ -693,6 +695,7 @@ function startPalm(s, from) {
 function startEdge(s) {
   const foe = s.foe;
   s.edge = { phase: 'guard', at: s.t, guard: pickGuard(s), early: 0, side: cornered(s) };
+  s.seen = { ...s.seen, edge: true };
   foe.act = { k: 'edge', at: s.t, m: { startup: 1e9, active: 0, recover: 0 } };
   foe.vx = 0;
   foe.moves += 1;
@@ -1280,6 +1283,10 @@ function endStep(s) {
     s.won = true;
     s.grade = left >= OUTLAST_CLEAN ? 'clean' : 'clumsy';
     s.stars = left >= OUTLAST_STARS[0] ? 3 : left >= OUTLAST_STARS[1] ? 2 : 1;
+  } else if (e.kind === 'spent') {
+    s.won = true;
+    s.grade = 'clumsy';
+    s.stars = SPENT_STARS;
   } else if (e.won) {
     s.won = true;
     // `level.clumsyUnder`: a bout with no palm (何七's, 马小宝's) is clumsy when he won with less than that share of his 血
@@ -1289,12 +1296,21 @@ function endStep(s) {
   } else s.lost = true;
 }
 
+/* A bout the slick should end (no `win`, no `outlast`). Its book's moment comes first: until it has been offered — her
+   point at his throat where she has the edge (迎剑), else her held-back palm/stamp (看他的脚) — her 稳 keeps a sliver, so
+   a quick hand never skips the book's 迎 and 勾; after it, an empty 稳 ends the bout (`spent`). */
+const slickBout = (s) => !s.R.stage.win && !s.level?.outlast?.moves && Boolean(s.R.stage.oil);
+const offered = (s) => (s.R.foe.ai.edge !== false ? s.seen?.edge : s.seen?.palm) || false;
+
 /* A bout of sparring (`stage.win: 'yield'`, 切磋 at the 演武场): no slick to send her off — her 稳 gone, she yields
    (认输); and when the incense is out (`level.time`, `stage.timeUp`) the one standing looser loses, as a judge would
    call it. The story's bout keeps neither: over the slick, or his fall. */
 function sparEnd(s) {
   const st = s.R.stage;
   if (st.win === 'yield' && s.foe.bal <= 0) { s.end = { kind: 'yield', at: s.t, won: true }; s.foe.vx = 0; say(s, 'yield'); bump(s, 'down'); return; }
+  // A bout won over the slick (no `win`, no `outlast`: 迎剑, 看他的脚): her 稳 emptied all the same, she goes down at last —
+  // a win, below the book's way (`spent`: clumsy, two stars; Hanli 11-03: 「敌人没血了还是不死呢, 卡住了吧」).
+  if (slickBout(s) && offered(s) && s.foe.bal <= 0 && !s.edge && !s.palm && !s.foe.air) { s.end = { kind: 'spent', at: s.t, won: true }; s.foe.vx = 0; s.foe.act = null; say(s, 'spent'); bump(s, 'down'); return; }
   if (st.timeUp && s.t >= (s.level?.time ?? Infinity)) {
     const mine = s.me.hp / s.R.me.hp, hers = s.foe.bal / s.R.foe.bal, won = mine > hers;
     s.end = { kind: 'time', at: s.t, won };
@@ -1325,6 +1341,7 @@ function step(s) {
   shotsStep(s, STEP_MS);
   if (s.combo.n && s.foe.stun <= s.t && s.t - s.combo.at > 200) s.combo = { ...s.combo, n: 0 };
   if (me.hp <= 0 && !s.end) { s.end = { kind: 'down', at: s.t, won: false }; me.down = s.t + END_MS * 2; say(s, 'lost'); bump(s, 'down'); }
+  if (slickBout(s) && !offered(s) && s.foe.bal < 1) s.foe.bal = 1; // the book's moment first (slickBout)
   if (!s.end) sparEnd(s);
   if (!s.end && s.level.outlast?.moves && s.foe.moves >= s.level.outlast.moves && !busy(s.foe, s.t) && !s.edge && !s.palm) {
     s.end = { kind: 'outlast', at: s.t, won: true }; // she has made her moves and he stands: her point comes to rest
