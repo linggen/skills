@@ -40,7 +40,7 @@ import { allPlaces, atScene, doorOf, lockOf, creatureOf, encounterOf, foeOf, ofJ
 import { rowOf } from './ledger.mjs';
 import { building } from './worlds.mjs';
 import { chapterLabel, huiOf, sideLine } from './hui.mjs';
-import { leaveOf, replayBrief, storyBoard } from './skips.mjs';
+import { keptBrief, leaveOf, replayBrief, storyBoard } from './skips.mjs';
 import { asideLook } from './aside.mjs';
 import { trayLook } from './tray.mjs';
 import { capLook, capStory, underCap } from './cap.mjs';
@@ -737,6 +737,8 @@ export function look(state, content, ctx) {
     ...taleLook(content, state, ctx),
     // A board left on an earlier day, offered again now the stage is idle (rules/skips.mjs): the page's optional beat.
     ...(replayBrief(content, state, ctx.now) ? { replay: replayBrief(content, state, ctx.now) } : {}),
+    // 收着的棋局 (rules/skips.mjs keepBoard): the boards he kept for later — title, where, when; never offered by themselves.
+    ...((state.kept ?? []).length ? { kept: keptBrief(content, state, (id) => pick(placeOf(content, id)?.name, lang) ?? null) } : {}),
     // 秘境探险 (rules/mijing.mjs): inside a run its map and room; at the door the 重 and the 秘境令; after, what it paid.
     ...(mijingBrief(content, state, ctx.now) ? { mijing: mijingBrief(content, state, ctx.now) } : {}),
     // Every cooldown he waits out, one shape: { id, title, shut, wait_min } — the page draws each as one waiting row.

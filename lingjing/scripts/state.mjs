@@ -796,6 +796,8 @@ function renamedCards(content, state) {
 const RETIRED_KEYS = ['mishi', 'mishi_offer', 'mishi_log', 'cases', 'twenty', 'rerun', 'reruns'];
 /* Things the world no longer has, dropped from the bag on load: the test-only 体力卡 (Hanli 11-03: 「体力卡删掉」). */
 export const RETIRED_ITEMS = ['tili-ka'];
+const keptFrom = state => [...(state.kept ?? []), ...state.skipped.filter(e => e?.task && !(state.kept ?? []).some(k => k.task === e.task))
+  .map(e => ({ task: e.task, story: true, scene: e.scene ?? null, place: null, chapter: state.chapter ?? null, at: e.day ? `${e.day}T00:00:00.000Z` : null }))].slice(0, 20);
 const bagWithout = bag => Object.fromEntries(Object.entries(bag).filter(([id]) => !RETIRED_ITEMS.includes(id)));
 
 /* 刷副本 retired 2026-10-28 (Hanli: 「按你说的来」): a save that stood inside a run of the 秘境's outer rooms leaves it as
@@ -885,6 +887,9 @@ export function fitWorld(saved, content) {
     // Each other line's place (rules/lines.mjs): one never held starts at zero (v14).
     ...fitLines(content, state),
     ...(Object.keys(state.bag ?? {}).some(id => RETIRED_ITEMS.includes(id)) ? { bag: bagWithout(state.bag) } : {}),
+    // A board skipped under the old rule (it came back by itself on a later day) is kept for later now (收着的棋局,
+    // rules/skips.mjs keepBoard, Hanli 11-03): his to take up, never offered by itself. At most 20.
+    ...(state.skipped?.length ? { skipped: [], kept: keptFrom(state) } : {}),
   };
   // A scene given a board after the save walked into it (the opening's beats, 2026-10-14):
   // its tasks are offered now, as entering it would have — a save standing there is never shut out.

@@ -37,7 +37,7 @@ import { enablePlayback } from './audio-session.js';
 
 // The native audio session does not set WebKit's own Web Audio category.
 enablePlayback();
-import { ownSkip, stuckNow } from '../../stuck.js';
+import { ownSkip } from '../../stuck.js';
 import { mountPure } from '../mount.js';
 
 const ID = 'board';
@@ -209,7 +209,8 @@ async function mountBoard(spec) {
   state = () => undefined;
   const g = { mod, shownAt: performance.now(), get state() { return state(); } };
   toolBar(mod, () => state());
-  stuckTimer = setInterval(() => { if (stuckNow(g, performance.now())) { clearInterval(stuckTimer); post({ t: 'stuck' }); } }, 1000);
+  // No stuck wait any more (Hanli 11-03: 「不需要卡住, 直接就给这个关闭按钮」): the app's way out is offered from the first moment.
+  post({ t: 'stuck' });
   const stage = document.getElementById('stage');
   const r = await mount(stage, {
     lang, data: dealt, seed, level, reducedMotion, lines, signal: abort.signal, shell, story, onEvent: (f) => post({ t: 'event', f }),

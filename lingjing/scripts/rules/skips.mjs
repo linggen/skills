@@ -54,15 +54,12 @@ export function skipBoard(state, content, ctx, id) {
   if (held?.status === 'done') return refuse('already-done', null);
   if (order.slice(0, Math.max(0, order.indexOf(id))).some(b => !boardOver(state, b))) return refuse('board-waits', null);
   const s = clone(state);
-  const day = dayKey(ctx.now);
   delete s.wins?.[id];
   s.tasks[id] = { status: 'done', skipped: true, period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
   // The rest of the scene's passage, owed after its first board — as after a win (tasks.mjs taskDone).
   if (!again && scene?.story_after && order[0] === id) s.tell_owed = [...(s.tell_owed ?? []), `after/${scene.id}`];
-  // Kept to be offered again: where it was left, on which line, on which day.
-  // A board offered again and left again keeps where it was first left.
-  const from = again ? held.from ?? {} : { scene: scene?.id ?? null, line: lineAt(content, scene) };
-  s.skipped = [...(s.skipped ?? []).filter(e => e.task !== id), { task: id, scene: from.scene ?? null, line: from.line ?? null, day }];
+  // Put away for good (Hanli 11-03: 「可能用户想丢掉, 可能想以后玩」): it never comes back by itself — 留 keeps it (keepBoard).
+  s.skipped = (s.skipped ?? []).filter(e => e.task !== id);
   // A thing the story needs from the board (`gives`) is handed over all the same; the reward is not.
   const full = t.gives?.bag ? fullLine(s, [stow(content, s, t.gives.bag, 1, 'task')]) : null;
   return { state: s, result: { ok: true, skipped: id, paid: null, gives: t.gives ?? null, ...(full ? { pouch_full: full } : {}) } };
@@ -117,11 +114,11 @@ export function leaveBoard(state, content, ctx, id) {
   if (!taskOf(content, id)) return refuse('unknown-task', null);
   if (!leaveOf(content, state, id)) return refuse('story-board', null);
   if (!replayHeld(state, id)) return { state: null, result: { ok: true, left: id } };
-  const t = taskOf(content, id), held = state.tasks[id], from = held.from ?? {};
+  const t = taskOf(content, id);
   const s = clone(state);
   delete s.wins?.[id];
+  // A kept board taken up again and put down: put away for good (留 keeps it again, keepBoard).
   s.tasks[id] = { status: 'done', skipped: true, period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
-  s.skipped = [...(s.skipped ?? []).filter(e => e.task !== id), { task: id, scene: from.scene ?? null, line: from.line ?? null, day: dayKey(ctx.now) }];
   return { state: s, result: { ok: true, left: id, again: true } };
 }
 
@@ -146,4 +143,50 @@ export function laterBoard(state, content, ctx, id) {
   s.skipped = (s.skipped ?? []).map(e => (e.task === id ? { ...e, later: today } : e));
   s.replay_day = today;
   return { state: s, result: { ok: true, later: id } };
+}
+
+/* ── 收着的棋局 (Hanli 11-03: 「还是加一个按钮好一些, 可能用户想丢掉, 可能想以后玩」) ──
+   Two ways out of every board, side by side from the first moment: ✕ puts it away (above: skipBoard · leaveBoard, an
+   errand's at its cut), 留 keeps it for later. Kept, a story board goes on exactly as on ✕ — its `gives` handed over, no
+   grant — and waits on `kept`; any other board is put down and waits there too. Never offered by itself: he takes one
+   up from the 事 book or the tray's 「收着 n」. Taken up, it stands as on its first day; won, it pays its grant once and
+   is off the list. At most KEPT_MAX; each may be dropped (丢). */
+export const KEPT_MAX = 20;
+export const KEPT_SAY = { zh: '收着的满了，先玩掉一局或丢一局。', en: 'Your kept games are full: play one or drop one first.' };
+export const keptOf = state => state.kept ?? [];
+export function keepBoard(state, content, ctx, id) {
+  if (!taskOf(content, id)) return refuse('unknown-task', null);
+  if (keptOf(state).some(e => e.task === id)) return refuse('already-kept', null);
+  if (keptOf(state).length >= KEPT_MAX) return refuse('kept-full', pick(KEPT_SAY, state.lang));
+  const story = storyBoard(content, state, id) || replayHeld(state, id);
+  const base = story ? skipBoard(state, content, ctx, id) : { state: clone(state), result: { ok: true, left: id } };
+  if (!base.result.ok) return base;
+  const s = base.state;
+  s.kept = [...keptOf(s), { task: id, story, scene: state.scene ?? null, place: state.place ?? null, chapter: state.chapter ?? null, at: ctx.now.toISOString() }];
+  return { state: s, result: { ...base.result, kept: id } };
+}
+/* 丢: off the list, for good. */
+export function dropKept(state, content, ctx, id) {
+  if (!keptOf(state).some(e => e.task === id)) return refuse('not-kept', null);
+  const s = clone(state);
+  s.kept = keptOf(s).filter(e => e.task !== id);
+  return { state: s, result: { ok: true, dropped: id } };
+}
+/* Taken up from the list: off it; a story board stands offered again (won, tasks.mjs taskDone pays it in full, once). A
+   board the place hosts is the page's to open (its tray's 开局); one not open here is refused and stays kept. */
+export function playKept(state, content, ctx, id, openHere) {
+  const e = keptOf(state).find(x => x.task === id);
+  if (!e) return refuse('not-kept', null);
+  const story = state.tasks?.[id]?.status === 'done' && state.tasks[id].skipped;
+  if (!story && !openHere) return refuse('not-here', pick({ zh: '这一局不在这里玩。', en: 'That game is not played here.' }, state.lang));
+  const s = clone(state);
+  s.kept = keptOf(s).filter(x => x.task !== id);
+  if (story) s.tasks[id] = { status: 'offered', replay: true, kept: true, from: { scene: e.scene ?? null, line: null } };
+  return { state: s, result: { ok: true, play: id, story: Boolean(story) } };
+}
+/* Look's `kept`: each kept board's title, where it was kept and when — the Mac's 事 book and tray chip, the phone's list. */
+export function keptBrief(content, state, placeName) {
+  return keptOf(state).filter(e => taskOf(content, e.task)).map(e => ({
+    id: e.task, title: pick(taskOf(content, e.task).title, state.lang), where: placeName(e.place) ?? null, at: e.at, story: Boolean(e.story),
+  }));
 }

@@ -32,9 +32,11 @@ test('every verb is in exactly one bucket: always, refused, or a kind\'s — a v
   assert.deepEqual(ASIDE_KINDS.map(k => k.kind), ['replay', 'gongke', 'fantong', 'pool', 'tide', 'seclusion', 'her']);
 });
 
-test('set aside → a skipped board played → back at the same beat; the scene\'s own board and Move wait', () => {
-  const { s: s0, now } = at('00-prologue/00-baicai');
-  assert.ok((s0.skipped ?? []).some(e => e.task === 'rain-basins'), '接雨 was left at 00-shiao');
+test('set aside → a kept board played → back at the same beat; the scene\'s own board and Move wait', () => {
+  const { s: left, now } = at('00-prologue/00-baicai');
+  assert.equal(left.tasks['rain-basins']?.skipped, true, '接雨 was left at 00-shiao');
+  // Kept for later there (留, rules/skips.mjs keepBoard, Hanli 11-03): it waits on 收着的棋局.
+  const s0 = { ...left, kept: [{ task: 'rain-basins', story: true, scene: '00-shiao', place: 'shiao', chapter: '00-prologue', at: now.toISOString() }] };
   // Before: the control has something to offer (接雨, left), and before 入门 nothing else.
   const before = lookOf(s0, now).aside;
   assert.equal(before.on, false);
@@ -56,7 +58,8 @@ test('set aside → a skipped board played → back at the same beat; the scene\
   assert.equal(call('move', s1, now, { place: 'shiao' }).result.refused, 'aside');
   assert.ok(call('resolve', s1, now, { exit }).result.say, 'in the world\'s words');
   // What is open: the skipped board, at once (not only the day's replay), played and counted.
-  const s2 = must('task', s1, now, { action: 'replay', id: 'rain-basins' }).state;
+  const s2 = must('task', s1, now, { action: 'kept-play', id: 'rain-basins' }).state;
+  assert.deepEqual(s2.kept, [], 'off the list');
   const s3 = must('win', s2, now, { id: 'rain-basins' }).state;
   assert.ok(s3.wins['rain-basins']);
   assert.deepEqual(s3.tell_owed ?? [], s1.tell_owed ?? [], 'a replay owes the box nothing new');
@@ -88,7 +91,7 @@ test('nothing open, no control: a save with no board left and nothing else reach
 
 test('the kinds open only by their own rules: 闭关 and 问卦 wait for their gates, a pool for its place', () => {
   const { s, now } = at('00-prologue/00-baicai');
-  const kinds = new Set(lookOf(s, now).aside.offers.map(o => o.kind));
+  const kinds = new Set((lookOf(s, now).aside?.offers ?? []).map(o => o.kind));
   for (const k of ['rerun', 'gongke', 'fantong', 'pool', 'tide', 'seclusion', 'her']) assert.ok(!kinds.has(k), `${k} is shut before 入门`);
   // After 入门, at a scene of 古五 with the 秘境 behind him: what its systems have open, each by its own rule.
   const { s: w, now: t } = at('00-waimen/wm-laoyin');

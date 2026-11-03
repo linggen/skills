@@ -116,7 +116,7 @@ export function crawlRules(content, { start = new Date('2026-09-29T09:00:00'), c
       const forced = [];
       // A 回's stage quest (rules/gates.mjs): the routine's days are the economy's — earned here.
       let s = earnedFor(content, prepare(content, fresh(s0, now), exit, now, forced, boards, marked), exit.id);
-      for (const e of s.skipped ?? []) left.add(e.task);
+      for (const [id, t] of Object.entries(s.tasks ?? {})) if (t?.skipped) left.add(id); // left (no longer queued to come back, Hanli 11-03)
       let r = resolve(s, content, { now, quests: [] }, argsFor(content, s, exit));
       // A day that must pass (the 大比 is tomorrow): the page's clock moves on.
       for (let d = 0; d < 3 && r.result.refused === 'needs' && exit.needs?.day_after; d++) {

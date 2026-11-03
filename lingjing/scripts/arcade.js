@@ -11,7 +11,7 @@ import { esc } from './esc.js';
 import { forInput } from './games/kit/device.js';
 import { mountPure } from './games/mount.js';
 import { playAlone, restartOf, timedOf, tallOf } from './games/shell.js';
-import { arcadeDeal, arcadePlayUrl, arcadeStageUrl, visitDays } from './arcade-board.js';
+import { arcadeDeal, arcadePlayUrl, arcadeStageUrl, keptAdd, keptRead, visitDays } from './arcade-board.js';
 import { devPrefetch } from './games/prefetch-ling.js';
 
 const q = new URLSearchParams(location.search);
@@ -19,8 +19,8 @@ export const devOnly = (params) => params.get('dev') === '1';
 const lang = () => (q.get('lang') === 'en' ? 'en' : 'zh');
 const root = document.getElementById('arcade');
 const W = {
-  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', all: '全部', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏', old: '旧版 · 已删或已被新游戏替换', levels: '关卡', cut: '已删', stage: '在游戏页试玩', pick: '换一个', pickNote: '挑一个对手 · 手牌与同行照剧情此时', rhythm: '节奏', byKind: '按类型', byStory: '按故事', zhuli: '主力', story: '故事', stats: '游戏记录', numbers: '数值', rhythmNote: '沿主线：读了多少字、玩了什么 · 条越长读得越久，红的超过 {cap} 字', same: (k) => `连着两个${k}`, longest: '最长', roaming: '游荡斗法', side: '支线斗法', chars: '字' },
-  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', all: 'All', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game', old: 'Old versions · cut or replaced', levels: 'Levels', cut: 'Cut', stage: 'Tried on the game page', pick: 'Pick another', pickNote: 'Pick a foe · your hand and party as the story has them there', rhythm: 'Rhythm', byKind: 'By kind', byStory: 'By story', zhuli: 'Featured', story: 'Story', stats: 'Play log', numbers: 'Numbers', rhythmNote: 'Along the main line: what is read, what is played · a longer bar is a longer read; red is over {cap} characters', same: (k) => `Two ${k} in a row`, longest: 'longest', roaming: 'roaming fights', side: 'side fights', chars: 'chars' },
+  zh: { title: '游戏厅', note: '测试用 · 不存档、不结算', all: '全部', back: '← 游戏厅', again: '再来', won: '成', grade: '评', left: '离开', lang: 'En', loading: '……', missing: '这个游戏没找到', home: '返回游戏', old: '旧版 · 已删或已被新游戏替换', levels: '关卡', cut: '已删', stage: '在游戏页试玩', pick: '换一个', pickNote: '挑一个对手 · 手牌与同行照剧情此时', rhythm: '节奏', byKind: '按类型', byStory: '按故事', zhuli: '主力', story: '故事', stats: '游戏记录', numbers: '数值', rhythmNote: '沿主线：读了多少字、玩了什么 · 条越长读得越久，红的超过 {cap} 字', kept: '收着的棋局', same: (k) => `连着两个${k}`, longest: '最长', roaming: '游荡斗法', side: '支线斗法', chars: '字' },
+  en: { title: 'Arcade', note: 'Testing only · nothing saved, nothing paid', all: 'All', back: '← Arcade', again: 'Again', won: 'Won', grade: 'grade', left: 'Left', lang: '中', loading: '…', missing: 'No such game', home: 'Back to game', old: 'Old versions · cut or replaced', levels: 'Levels', cut: 'Cut', stage: 'Tried on the game page', pick: 'Pick another', pickNote: 'Pick a foe · your hand and party as the story has them there', rhythm: 'Rhythm', byKind: 'By kind', byStory: 'By story', zhuli: 'Featured', story: 'Story', stats: 'Play log', numbers: 'Numbers', rhythmNote: 'Along the main line: what is read, what is played · a longer bar is a longer read; red is over {cap} characters', kept: 'Kept for later', same: (k) => `Two ${k} in a row`, longest: 'longest', roaming: 'roaming fights', side: 'side fights', chars: 'chars' },
 };
 const w = () => W[lang()];
 // A row's `mechanic` (games.json) is its type, in Chinese — what kind of game a tile is before it opens
@@ -155,6 +155,11 @@ function headHtml() {
     + `<a class="arcade-view" href="stats.html?dev=1${save ? `&save=${encodeURIComponent(save)}` : ''}">${esc(w().stats)}</a>`
     + `<a class="arcade-lang" href="${langHref()}">${esc(w().lang)}</a>${home()}</header>`;
 }
+const keptHtml = () => {
+  const list = keptRead();
+  return list.length ? `<section class="arcade-kept"><h2>${esc(w().kept)} <span class="dim small">${list.length}</span></h2><div class="arcade-kept-row">`
+    + list.map((e) => `<a class="arcade-kindchip" href="${href({ game: e.id, n: String(e.n ?? '') })}">${esc(e.title ?? e.id)}</a>`).join('') + '</div></section>' : '';
+};
 const section = (title, tiles) => `<section><h2>${esc(title)}</h2><div class="arcade-grid">${tiles.join('')}</div></section>`;
 /* 按类型: the kits' groups first (兽潮 · 主力 · 结印 · 练习, then the rest), then the story's boards by their kind, each
    kind a section (「故事 · 塔防」…) in the order the book first meets it. */
@@ -172,7 +177,7 @@ async function listPage() {
     kinds.get(k).push([g, i]);
   }
   const story = await Promise.all([...kinds].map(async ([k, rows]) => section(`${w().story} · ${kindOf({ mechanic: k })}`, await Promise.all(rows.map(([g, i]) => tileHtml(g, i))))));
-  root.innerHTML = headHtml() + `${kindsHtml(live.map(([g]) => g))}${kits.join('')}${story.join('')}${await oldHtml(reg)}`;
+  root.innerHTML = headHtml() + `${keptHtml()}${kindsHtml(live.map(([g]) => g))}${kits.join('')}${story.join('')}${await oldHtml(reg)}`;
   for (const b of root.querySelectorAll('.arcade-kindchip')) b.onclick = () => filterBy(b.dataset.kind);
 }
 
@@ -213,6 +218,7 @@ async function playPage(id, n) {
     next: (lv) => { location.href = href({ game: id, n: String(n ?? ''), ...(foe ? { foe: String(lv) } : { lv: String(lv) }) }); },
     // 台词预取 off the story only on `?prefetch=1` (a dev check); else the level's own lines.
     prefetch: devPrefetch(mod, { data, lang: lang() }),
+    onKeep: () => keptAdd({ id, n: n ?? null, title: titleOf(row, mod), at: new Date().toISOString() }),
   });
 }
 

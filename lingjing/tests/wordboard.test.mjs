@@ -154,7 +154,7 @@ test('Reveal hands the answer over and the board is told — set aside as a skip
   assert.ok(!r.state.wins?.['laoyin-qi'], 'no win');
   assert.equal(r.state.progress, s.progress, 'no 修为');
   assert.equal(r.state.wealth, s.wealth, 'no 灵石');
-  assert.ok((r.state.skipped ?? []).some((e) => e.task === 'laoyin-qi'), 'offered again another day');
+  assert.ok(!(r.state.skipped ?? []).some((e) => e.task === 'laoyin-qi'), 'put away as a skip: never offered again by itself (Hanli 11-03)');
   // The page's watch sees it told; Look says so now, the answer with it.
   assert.deepEqual(pageWordBoard(content, r.state, { action: 'peek', chat: 'qichangsong' }, now).result.told, { answer: '梅花香自苦寒来', src: '《警世贤文》' });
   assert.equal(wordBoardLook(r.state, now).word_board.told, true);

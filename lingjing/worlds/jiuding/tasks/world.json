@@ -151,7 +151,7 @@
       "id": "yinyue-what", "kind": "board", "game": "jinchat", "needs": "her", "period": "once", "stars": 3,
       "title": { "zh": "讨饼债", "en": "The flatbread debt" },
       "how": { "zh": "她不认饼债，夸口一眼看透你。心里想一种动物，她猜不中，就得认账。", "en": "She won't own the flatbread debt, and boasts she can read you. Think of an animal: if she can't guess it, she owes you." },
-      "marks": { "stumped": "bing-debt", "guessed": null, "skipped": null },
+      "marks": { "stumped": "bing-debt", "guessed": null },
       "deal": { "chat": "yinyue-bing" },
       "grant": { "table": "task" },
       "done_line": { "zh": "「一言为定。本王，欠你一张饼。」", "en": "\"Agreed. This queen owes you one flatbread.\"" },

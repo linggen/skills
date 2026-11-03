@@ -1130,13 +1130,15 @@ the one hook the 得牌 reveal listens on). Every game is listed in `worlds/jiud
 pages, never linked in the game and blank without `?dev=1`: the 游戏厅 `scripts/arcade.html?dev=1`
 (all of them, tap to play, phone and Mac) and the try page above.
 
-**Skip, timing, art** (Hanli, 2026-10-15):
-- **「算了，往下走」 appears only when stuck** — after 75 s, or when the game reports stuck. Page-level
-  only; no module draws its own skip. Why: shown from the start it taught players to skip.
+**Skip, timing, art** (Hanli, 2026-10-15; the way out rewritten 11-03: 「跳过, 我们统一改成右上角的关闭按钮了. 不需要卡住」 · 「还是加一个按钮好一些, 可能用户想丢掉, 可能想以后玩」):
+- **Two ways out, top right, from the first moment**, on every board on every surface (the stage, the 游戏厅, the phone):
+  **留** (留着以后玩) then **✕** (不玩了). No stuck wait, no question asked, mid-fight or mid-clock alike. No module draws its own skip.
+- **✕ puts it away**: a story board goes on as after a win and never comes back; a board he chose is put down (收手);
+  an errand's board takes the errand's cut (「跳过 · 酬减半」); a 游戏厅 board is dealt again.
+- **留 keeps it**: the story goes on exactly as on ✕, and the board waits in 「收着的棋局」 (the 事 book, the tray's
+  「收着 n」, Look's `kept`) — at most 20, each with 丢; never offered by itself. Taken up and won, it pays its grant once.
 - **A skip pays nothing** — no grant, grade or mark. What the story needs lives in the task's
   `gives` (paid even on a skip); rewards live in `grant`. Skipping never blocks progress.
-- **A skipped board comes back by itself** on a later idle day (「再试一回 / 改日」), never from a
-  panel; a win then pays as any.
 - **Timing taps act on pointerdown**; every window ≥250 ms; 回看 opens over a board and pauses it.
 - **Board art never takes the full stage** — only the story view and fights do.
 

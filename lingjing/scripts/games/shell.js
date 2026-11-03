@@ -23,8 +23,8 @@ import { SPEEDS, paceOf, sentencesOf } from '../lines.js';
 import { sound, unlockOn } from './kit/sound.js';
 
 const W = {
-  zh: { pause: '暂停', resume: '继续', paused: '暂停中', won: '成', lost: '未成', again: '再来', next: '下一关', start: '开始', sfx: '音效', music: '音乐', mute: '静音', unmute: '开声', restart: '重来' },
-  en: { pause: 'Pause', resume: 'Resume', paused: 'Paused', won: 'Done', lost: 'Not yet', again: 'Again', next: 'Next', start: 'Start', sfx: 'Sound', music: 'Music', mute: 'Mute', unmute: 'Unmute', restart: 'Start over' },
+  zh: { pause: '暂停', resume: '继续', paused: '暂停中', won: '成', lost: '未成', again: '再来', next: '下一关', start: '开始', sfx: '音效', music: '音乐', mute: '静音', unmute: '开声', restart: '重来', keep: '留着以后玩', close: '不玩了' },
+  en: { pause: 'Pause', resume: 'Resume', paused: 'Paused', won: 'Done', lost: 'Not yet', again: 'Again', next: 'Next', start: 'Start', sfx: 'Sound', music: 'Music', mute: 'Mute', unmute: 'Unmute', restart: 'Start over', keep: 'Keep for later', close: 'Put it away' },
 };
 const words = (lang) => W[lang === 'en' ? 'en' : 'zh'];
 const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -61,7 +61,12 @@ export const tallStyle = (mod) => (tallOf(mod) ? `--ar:${Number(mod.meta.aspect)
 /** The bar's two words as icons (Hanli 10-27: 「收手按钮改成右上的关闭icon button吧」「问询改成右上的icon button也, 全局统一改」):
     `kind` 'ask' (?) or 'close' (✕), its word as title and aria-label, and `attrs` — the host's own route on it
     (the story's `data-board-leave`, `data-ask` …), so the page hears the tap as it heard the text button. */
-export const TOOL_GLYPH = { ask: '?', restart: '↺', close: '✕' };
+export const TOOL_GLYPH = { ask: '?', restart: '↺', keep: '留', close: '✕' };
+/** The two ways out of every board, side by side at the bar's right from the first moment (Hanli 11-03: 「跳过, 我们统一改成右上角
+    的关闭按钮了. 不需要卡住」 · 「还是加一个按钮好一些, 可能用户想丢掉, 可能想以后玩」): 留 (keep it for later) then ✕ (put it
+    away). `keep` and `close` are the host's own routes on them; `closeLabel` an errand's 「跳过 · 酬减半」. */
+export const outHtml = (lang, keep, close, closeLabel = null) =>
+  toolHtml('keep', words(lang).keep, keep) + toolHtml('close', closeLabel ?? words(lang).close, close);
 export const toolHtml = (kind, label, attrs = '') =>
   `<button type="button" class="gshell-btn gshell-${kind}" title="${plain(label)}" aria-label="${plain(label)}" ${attrs}>${TOOL_GLYPH[kind]}</button>`;
 
@@ -81,12 +86,12 @@ export const restartHtml = (id, lang, on = true) =>
     host or a slot) and stays exactly as given. `timed`: the game runs in time, so it can be paused.
     `ask` and `close`: the host's own buttons for the bar (toolHtml, or a slot that fills with one), laid in the one
     order every board keeps — ? · ↺ · 🔊 · Ⅱ · ✕, the way out last at the far right (`restart`: restartHtml). */
-export function frameHtml({ id, title = '', kind = '', how = '', body = '', timed = false, lang = 'zh', tall = false, ask = '', restart = '', close = '' } = {}) {
+export function frameHtml({ id, title = '', kind = '', how = '', body = '', timed = false, lang = 'zh', tall = false, ask = '', restart = '', close = '', out = '' } = {}) {
   const w = words(lang), s = store.get(id);
   const pause = timed ? `<button type="button" class="gshell-btn gshell-pause" data-shell-pause="${plain(id)}" aria-pressed="${s?.paused ? 'true' : 'false'}" aria-label="${plain(s?.paused ? w.resume : w.pause)}">${s?.paused ? '▶' : 'Ⅱ'}</button>` : '';
   return `<section class="gshell${tall ? ' is-tall' : ''}${s?.paused ? ' is-paused' : ''}" data-shell="${plain(id)}">`
     + `<header class="gshell-bar"><div class="gshell-name"><b class="gshell-title">${plain(title)}</b>${kind ? `<em class="gshell-kind">${plain(kind)}</em>` : ''}</div>`
-    + `<div class="gshell-tools">${ask}${restart}${muteHtml(lang)}${pause}${close}</div>${how ? `<p class="gshell-how">${plain(how)}</p>` : ''}</header>`
+    + `<div class="gshell-tools">${ask}${restart}${muteHtml(lang)}${pause}${out || close}</div>${how ? `<p class="gshell-how">${plain(how)}</p>` : ''}</header>`
     + `<div class="gshell-stage">${body}<div class="gshell-layer">${layerHtml(id, lang)}</div></div>`
     + `<div class="gshell-side" data-shell-side></div>`
     + `<footer class="gshell-foot">${footHtml(id, lang)}</footer></section>`;
@@ -279,8 +284,11 @@ export function wireShell(doc = globalThis.document, { onAct = () => {} } = {}) 
 /** Play `mount` in a shell inside `root`; 再来 deals it again. A won game that names its next level (`r.next`, a
     level id or number) gets 下一关, which `next(r.next)` opens. `prefetch({ signal })`, when given (a dev page's
     `?prefetch=1`), is asked once a deal for the mount's 台词预取 options (`{ lines }`, games/prefetch.js). */
-export function playAlone(root, mount, { id, game, title, kind, how, timed, tall, lang = 'zh', opts = {}, leadLine = '', next = null, prefetch = null, restart = false } = {}) {
-  root.innerHTML = frameHtml({ id, title, kind, how, timed, tall, lang, restart: restart ? restartHtml(id, lang, false) : '', body: '<div class="gshell-slot" id="slot"></div>' });
+const outTools = (id, lang) => ({ out: outHtml(lang, `data-shell-act="keep" data-shell-for="${plain(id)}"`, `data-shell-act="close" data-shell-for="${plain(id)}"`) });
+export function playAlone(root, mount, { id, game, title, kind, how, timed, tall, lang = 'zh', opts = {}, leadLine = '', next = null, prefetch = null, restart = false, onKeep = null } = {}) {
+  // Its ✕ deals it again; its 留 keeps it (`onKeep`, the 游戏厅's list) and deals again — both from the first moment.
+  root.innerHTML = frameHtml({ id, title, kind, how, timed, tall, lang, restart: restart ? restartHtml(id, lang, false) : '', body: '<div class="gshell-slot" id="slot"></div>',
+    ...outTools(id, lang) });
   root.querySelector('.gshell').dataset.lang = lang;
   let stop = null, n = 0, last = null;
   const deal = async () => {
@@ -299,7 +307,11 @@ export function playAlone(root, mount, { id, game, title, kind, how, timed, tall
     last = r;
     showResult(id, { ...r, acts: [{ id: 'again', main: !on }, ...(on ? [{ id: 'next', main: true }] : [])] });
   };
-  const off = wireShell(root.ownerDocument, { onAct: (k, act) => { if (k !== id) return; if (act === 'again') deal(); else if (act === 'next') next?.(last?.next); } });
+  const off = wireShell(root.ownerDocument, { onAct: (k, act) => {
+    if (k !== id) return;
+    if (act === 'again' || act === 'close') deal();
+    else if (act === 'keep') { onKeep?.(); deal(); } else if (act === 'next') next?.(last?.next);
+  } });
   deal();
   return () => { off(); stop?.abort(); forget(id); };
 }

@@ -11,7 +11,7 @@ import { createSession, listSkillSessions, pickResumable, fetchCloud, syncCloud,
 import * as sharedApi from '/shared/api.js';
 import { verb, content, SCRATCH, worldPath } from './rules.js';
 import { charsOf, createTracker, trackSender } from './track.js';
-import { arcadeGameOf, arcadeRow, arcadeRowOf, arcadeTitle, isArcadeBoard, withArcade } from './arcade-board.js';
+import { arcadeGameOf, arcadeRow, arcadeRowOf, arcadeTitle, isArcadeBoard, keptAdd, withArcade } from './arcade-board.js';
 /// A test save with no chat at all (`&chat=off`): the crawlers' opt-out (tools/playtest.mjs,
 /// page-crawl.mjs, play-human.mjs) — no Ling, no 银月, a word from the stage only shown. Without it a
 /// test save plays like the real game, its chat bound to that save (SKILL.md session-params).
@@ -3592,7 +3592,7 @@ function leaveGame(id) {
 }
 function skipGame(id) {
   const g = boardFor(id);
-  if (!g?.mod || g.state?.won || g.sent || g.skipped) return true;
+  if (!g || g.state?.won || g.sent || g.skipped) return true;
   g.skipped = true;
   g.state = { ...g.state, live: false };
   render();
@@ -3631,9 +3631,28 @@ function toldGone(id) {
   });
   return true;
 }
-async function onSkip(g) {
+/* ✕ on a board's bar (cards.js outHtml), from its first moment: put away — boardSkipped says how for each kind. */
+function closeBoard(id) {
+  const g = boardFor(id);
+  if (!g || g.state?.won || g.sent || g.skipped) return true;
+  return boardSkipped(g);
+}
+/* 留 beside it: kept for later (收着的棋局, rules/skips.mjs keepBoard) — the story's goes on as on ✕, its `gives` handed over;
+   any other is put down onto the list. A 试玩 board goes on the 游戏厅's own list (arcade-board.js keptAdd) and is dealt again. */
+function keepGame(id) {
+  const g = boardFor(id);
+  if (!g || g.state?.won || g.sent || g.skipped) return true;
+  if (isArcadeBoard(id)) { keptAdd({ id: String(id).replace(/^arcade:/, ''), n: null, title: titleOf(id) ?? null, at: new Date().toISOString() }); return boardSkipped(g); }
+  g.skipped = true;
+  g.state = { ...g.state, live: false };
+  forgetShell(id);
+  render();
+  run(`keep:${id}`, () => onSkip(g, 'keep'));
+  return true;
+}
+async function onSkip(g, action = 'skip') {
   const id = g.taskId;
-  const r = isTale(id) ? await write('tale', { action: 'skip', board: id }).catch(failed) : await write('task', { action: 'skip', id }).catch(failed);
+  const r = isTale(id) ? await write('tale', { action: 'skip', board: id }).catch(failed) : await write('task', { action, id }).catch(failed);
   if (!r.ok) {
     console.warn('[lingjing] skip refused', r);
     g.skipped = false;
@@ -3642,7 +3661,9 @@ async function onSkip(g) {
     await refresh();
     return false;
   }
-  tracker.boardEnd(id, 'skipped');
+  tracker.boardEnd(id, action === 'keep' ? 'left' : 'skipped');
+  // Kept and not the story's (rules/skips.mjs keepBoard `left`): off the stage, onto the list — nothing else happens.
+  if (action === 'keep' && !r.skipped) { beats.leave(id); boards.delete(id); forgetShell(id); keep({ opened: view.opened?.id === id ? null : view.opened }); await refresh(); return true; }
   // An errand's board skipped (跳过 · 酬减半, rules/tasks.mjs errandSkip): counted for the errand at the cut pay — off the
   // stage as a won one leaves it, what it paid as 所得, the errand handed in after it; no word of hers.
   if (r.for === 'errand') return errandSkipped(id, r);
@@ -3693,6 +3714,14 @@ function bringIntoFocus(el) {
    looked for once the redraw that follows the win has landed. */
 function bringWonIntoFocus() {
   requestAnimationFrame(() => bringIntoFocus(document.querySelector('#focus .toasts .spoils, #focus .toasts .donote')));
+}
+/* A kept board taken up (the story's stands offered again; another is opened as from the tray) or dropped. */
+async function keptTap(id, action) {
+  const r = await write('task', { action, id }).catch(failed);
+  if (!r.ok) { keep({ doNote: refusal(r) }); return render(); }
+  show({ bookOpen: false });
+  await refresh();
+  if (action === 'kept-play' && !r.story) openFromTray(id);
 }
 /* A board left on an earlier day, offered again (Look's replay): 再试一回 lays it as it was; 改日 puts it off. */
 async function replayTap(id, play) {
@@ -3831,6 +3860,12 @@ const CLICKS = [
   // The story's quiet controls — 回看, 跳过, 配音, 慢 中 快 — first; then a tap anywhere on the stage (the next sentence).
   // 回看 open, the lines wait under it (proto a: 「回看」 pauses the passage); closed, they go on.
   ['[data-game-skip]', (el) => skipGame(el.dataset.gameSkip)],
+  ['[data-board-close]', (el) => closeBoard(el.dataset.boardClose)],
+  ['[data-board-keep]', (el) => keepGame(el.dataset.boardKeep)],
+  // 收着的棋局 (cards.js keptGroupHtml): the tray's chip opens the 事 book at the list; 玩 takes one up, 丢 lets it go.
+  ['[data-kept-open]', () => { show({ bookOpen: true, ...othersShut('bookOpen') }); requestAnimationFrame(() => document.getElementById('kept-group')?.scrollIntoView?.({ block: 'nearest' })); }],
+  ['[data-kept-play]', (el) => { run(`kept:${el.dataset.keptPlay}`, () => keptTap(el.dataset.keptPlay, 'kept-play')); return true; }],
+  ['[data-kept-drop]', (el) => { run(`kept:${el.dataset.keptDrop}`, () => keptTap(el.dataset.keptDrop, 'kept-drop')); return true; }],
   ['[data-told-on]', (el) => toldGone(el.dataset.toldOn)],
   ['[data-board-leave]', (el) => leaveGame(el.dataset.boardLeave)],
   ['[data-fight-tap]', (el) => fightTap(el.dataset.fightTap)],

@@ -256,7 +256,6 @@ export function makeRopeGame(spec) {
     gust: (s) => (s.phase === 'play' && blowGust(s.swing, s.level) ? { ...moved(s, 'gust'), gustAt: s.clock } : null),
     pop: (s, d) => (s.phase === 'play' && popBubble(s.swing, Number(d.i ?? 0)) ? { ...moved(s, 'pop'), popAt: s.clock } : null),
     retry: (s) => (['play', 'miss'].includes(s.phase) ? lay({ ...s, note: 'lay' }) : null),
-    skip: (s) => (stuck(s) ? { ...s, phase: 'end', live: false, won: true, stars: 0, grade: spec.skipGrade ?? null, skipped: true, note: 'skipped' } : null),
   };
   function act(state, data = {}) {
     if (!state || state.won || !state.live) return { state, won: false };
@@ -348,7 +347,8 @@ export function makeRopeGame(spec) {
       const rests = spec.rests && !s.skipped ? thingAt(s, s.level.mouth[0], s.level.mouth[1] - 6, 0, 0.9) : '';
       return `<div class="g-bread g-ft g-ink is-won ${spec.cls ?? ''}">${head}${scene(W, H, (spec.backdrop?.({ ...s, phase: 'end' }) ?? ground()) + spec.target({ ...s, phase: 'end' }, true, lang) + rests, `g-bread-cave g-ft-cave is-end ${spec.cls ?? ''}`)}<p class="g-line-say">${esc(s.skipped ? t.skipped : t.done)}</p></div>`;
     }
-    const row = stuck(s) && t.skip ? `<div class="g-pair">${btn(t.skip, 'data-g="skip"', 'main')}${btn(t.retry, 'data-g="retry"', 'soft')}</div>`
+    // No skip of its own (Hanli 11-03): the shell's ✕ and 留 are the one way out, from the start.
+    const row = stuck(s) ? `<div class="g-pair">${btn(t.retry, 'data-g="retry"', 'main')}</div>`
       : `<div class="g-bread-row">${btn(t.retry, 'data-g="retry"', 'quiet')}</div>`;
     const teaching = (s.teach || s.level.teach) && s.phase === 'play' && !stuck(s);
     return `<div class="g-bread g-ft g-ink ${spec.cls ?? ''}">${head}${playScene(s, lang)}<p class="g-line-say${teaching ? ' g-teach-say' : ''}">${esc(lineOf(s, t))}</p>${row}</div>`;

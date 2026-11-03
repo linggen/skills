@@ -34,10 +34,8 @@ const HELD = {
 };
 const held = (state, verb) => refuse('aside', pick(HELD, state.lang), { verb });
 
-/* The skipped boards of the line the story stands on (rules/skips.mjs): every one, not only the day's. */
-const lineAt = (content, state) => { const sc = sceneOf(content, state); return sc ? sideLine(content, sc) ?? null : null; };
-export const skippedHere = (content, state) => (state.skipped ?? [])
-  .filter(e => (e.line ?? null) === lineAt(content, state) && taskOf(content, e.task)).map(e => e.task);
+/* The story boards he kept for later (收着的棋局, rules/skips.mjs keepBoard): each may be taken up while the book is set aside. */
+export const skippedHere = (content, state) => (state.kept ?? []).filter(e => e.story && taskOf(content, e.task)).map(e => e.task);
 
 /* ── The one registry: every game played beside the story, what each may do while the book is set aside, and
    what each puts in 手边的棋局 ──
@@ -78,9 +76,9 @@ function boardsAround(content, state, now) {
   }));
 }
 export const PLAY_KINDS = [
-  { kind: 'replay', // a board skipped earlier, offered again at once (not only the day's one)
+  { kind: 'replay', // a story board kept for later (收着的棋局), taken up at once
     open: (content, state) => skippedHere(content, state).map(id => ({ id, title: pick(taskOf(content, id).title, state.lang) })),
-    takes: (verb, args, content, state) => (verb === 'task' && args.action === 'replay' && skippedHere(content, state).includes(String(args.id ?? '')))
+    takes: (verb, args, content, state) => (verb === 'task' && ['kept-play', 'keep', 'kept-drop'].includes(args.action) && (skippedHere(content, state).includes(String(args.id ?? '')) || Boolean(state.tasks?.[String(args.id ?? '')]?.replay)))
       || (['win', 'task'].includes(verb) && ['done', undefined].includes(args.action) && Boolean(state.tasks?.[String(args.id ?? '')]?.replay)) },
   { kind: 'gongke', // 人间功课 (rules/gongke.mjs) — on the goal card, not in the tray
     open: (content, state, view) => (view?.gongke ? [{ id: 'gongke' }] : []),

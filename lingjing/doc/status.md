@@ -12,6 +12,12 @@ None.
 
 ## Done lately
 
+- 11-03 — **Two ways out of every board, from the first frame: 留 and ✕** (Hanli 11-03: 「跳过, 我们统一改成右上角的关闭按钮了. 不需要卡住」 · 「还是加一个按钮好一些, 可能用户想丢掉, 可能想以后玩」; design.md § Skip; tests/way-out.test.mjs, tests/skips.test.mjs).
+  - ✕ (不玩了): a story board goes on (`gives` only) and never comes back; a board he chose is put down; an errand's takes its cut; a 游戏厅 board is dealt again. 留: the same, and it waits in 收着的棋局 (`kept`, ≤20, 丢 each; the 事 book's group, the tray's 「收着 n」; Look `kept`). Taken up (`task kept-play`) and won, it pays its grant once. Old saves' `skipped` list is moved to `kept` on load.
+  - The modules' own 跳过 are gone: the word boards and ropekit's. The stuck slot is gone from the board bar. 讨饼债's `skipped` grade is dropped from its marks, so explore's dead end at 00-yinyue is gone.
+  - Left as they were: a story fight's 「算了，往下走」 after its losses (a rules gate), a panel riddle's pass, and the tale board's word skip (no shell bar).
+  - Phone: the host offers its skip at once (`stuck` posted on mount). The app needs 留 and the kept list (see the deploy request).
+
 - 11-03 — **The phone's 读原著 ships published only** (Hanli 11-03: 「九鼎录带上」, the store build): tools/phone-bundle.mjs cuts every `draft: true` 回 from the packed book — index and text; the phone shows only the 回 the save has reached. None is marked draft today. tests/phone-bundle.test.mjs.
 - 11-03 — **体力卡 gone** (Hanli 11-03: 「体力卡删掉」, for 2.0; tests/tili-ka.test.mjs). Removed: the item, its price, the four shelves, the `stamina`/`reset` effect, and the 重置冷却 hook (events.mjs `resetCooldowns` and its 7 owners; nothing else used them). A held one drops from the bag on load (state.mjs fitWorld `RETIRED_ITEMS`). levels/numbers.json regenerated; arcade saves unchanged.
 - 11-03 — **A board's own 跳过 is a skip; a told word board stays on its card** (Hanli 11-03: 「修一下吧」; tests/own-skip.test.mjs).

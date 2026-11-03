@@ -53,7 +53,7 @@ export const WORDS = {
     elite: '精英',
     // 闭关 (rules/seclusion.mjs) — the chooser, the running card, 出关.
     tamesFor: '收服{names}所需',
-    replayPlay: '再试一回', replayLater: '改日', boardLeave: '收手', boardLeft: '没走完，往下走了。', toldSaid: { couplet: '原句：{a}', riddle: '谜底：{a}', chain: '接得上的：{a}' }, toldBy: '——{src}', toldOn: '往下走',
+    replayPlay: '再试一回', replayLater: '改日', boardLeave: '收手', boardLeft: '没走完，往下走了。', keptGroup: '收着的棋局 · {n}', keptChip: '收着 {n}', keptPlay: '玩', keptDrop: '丢', keptAt: '{where} · {when}', toldSaid: { couplet: '原句：{a}', riddle: '谜底：{a}', chain: '接得上的：{a}' }, toldBy: '——{src}', toldOn: '往下走',
     keptWin: '已胜 · 体力回来即记上', emptyNoPlay: '体力耗尽：这局赢了也记不上。', emptyShut: '体力耗尽', waitShi: '约 {n} 时辰后', waitKe: '约 {n} 刻后',
     // 手边的棋局 (rules/tray.mjs): a game's name where the rules give none, what is left by its unit, the walk there.
     trayName: { duizi: '对对子', seclusion: '闭关', divine: '问签', errands: '执事堂差事', mijing: '秘境', chance: '机缘', fantong: '饭桶', yaoshou: '妖兽出没' },
@@ -121,7 +121,7 @@ export const WORDS = {
     loading: 'Unfolding…', offline: 'Lingjing has not woken yet.', connecting: 'Reaching Lingjing…',
     elite: 'Elite',
     tamesFor: 'Wins over {names}',
-    replayPlay: 'Try again', replayLater: 'Another day', boardLeave: 'Put down', boardLeft: 'Left unfinished — on you go.', toldSaid: { couplet: 'The original: {a}', riddle: 'The answer: {a}', chain: 'One that follows: {a}' }, toldBy: ' — {src}', toldOn: 'Go on',
+    replayPlay: 'Try again', replayLater: 'Another day', boardLeave: 'Put down', boardLeft: 'Left unfinished — on you go.', keptGroup: 'Kept for later · {n}', keptChip: 'Kept {n}', keptPlay: 'Play', keptDrop: 'Drop', keptAt: '{where} · {when}', toldSaid: { couplet: 'The original: {a}', riddle: 'The answer: {a}', chain: 'One that follows: {a}' }, toldBy: ' — {src}', toldOn: 'Go on',
     keptWin: 'Won — counted once stamina is back', emptyNoPlay: 'Stamina spent: a win here would not count yet.', emptyShut: 'Stamina spent', waitShi: 'back in about {n} h', waitKe: 'back in about {n} min',
     trayName: { duizi: 'Couplets', seclusion: 'Seclusion', divine: 'Draw a stick', errands: "Stewards' errands", mijing: 'The hidden realm', chance: 'A chance', fantong: 'Rice Bucket', yaoshou: 'Beasts about' },
     trayLeft: { night: 'tide {n}', batch: 'this batch {n}/{of}', couplets: '{n} today', rounds: '{n} rounds today', errands: '{n} waiting', keys: 'keys ×{n}', ends: '{t} left', today: 'open today', tomorrow: 'up tomorrow' },
@@ -173,7 +173,7 @@ import { TURNED_MS, turnedPays } from './turned.js';
 import { choicesStand } from './queue.js';
 import { AI_WORDS, duizi } from './aigames-cards.js';
 import { mountHostHtml, mountOnly } from './beat-host.js';
-import { frameHtml, restartHtml, restartOf, timedOf, tallOf, tallStyle, toolHtml } from './games/shell.js';
+import { frameHtml, outHtml, restartHtml, restartOf, timedOf, tallOf, tallStyle, toolHtml } from './games/shell.js';
 
 /// A system the story has not reached yet (Look's `locked`, rules/locks.mjs): its chip, bar and buttons are not drawn at all.
 export const isShut = (look, system) => (look?.locked ?? []).includes(system);
@@ -532,10 +532,12 @@ function board(card, ctx) {
   // 收手: a board he opened by choice is put down at any moment (Look's task `leave`, rules/skips.mjs leaveOf); the
   // story's own (and a board offered again, Look's replay) keep 「算了，往下走」 once stuck (skipBoard's slot).
   const leaveBtn = task?.leave && !made && !g?.state?.won && !g?.sent ? { label: ctx.words.boardLeave, leave: id } : null;
-  const skips = (own || task?.replay) && !today && !made && !shut;
-  // A board an errand here needs (Look's task `skip`, rules/tasks.mjs errandSkip): once stuck, 「跳过 · 酬减半」 beside the ✕ —
-  // the errand met, the board's pay cut (Hanli 10-27, 晒经's 华容道: 「让用户能跳过去, 就好了」). The ✕ stays 收手.
-  const cutSkip = task?.skip && !skips && !today && !made && !shut && !g?.sent ? skipBoard(g, id, ctx, { icon: true, cut: task.skip.cut }) : '';
+  // The two ways out, on every board in play from its first moment (Hanli 11-03: 「跳过, 我们统一改成右上角的关闭按钮了. 不需要
+  // 卡住, 直接就给这个关闭按钮」 · 「还是加一个按钮好一些, 可能用户想丢掉, 可能想以后玩」): 留 keeps it for later (收着的棋局,
+  // rules/skips.mjs keepBoard), ✕ puts it away (lingjing.js closeBoard: the story's goes on, its `gives` handed over; one he
+  // chose is put down; an errand's at its cut — the ✕'s title then 「跳过 · 酬减半」). Never two ✕, never a stuck wait.
+  const out = !today && !made && !shut && !g?.state?.won && !g?.sent
+    ? outHtml(ctx.lang, `data-board-keep="${esc(id)}"`, `data-board-close="${esc(id)}"`, task?.skip ? skipCutWord(task.skip.cut, ctx.lang) : null) : '';
   // A board that answers 问询 itself (华容道 `meta.ask`: how to play, then a lit next move) takes it on the board.
   const boardAsk = g?.mod?.meta?.ask?.(g.state);
   const about = own ? null : boardAsk ? { label: ctx.words.about, g: boardAsk, gfor: id } : { label: ctx.words.about, ask: true, say: ask };
@@ -547,7 +549,7 @@ function board(card, ctx) {
     ask: !about ? '' : about.g ? toolHtml('ask', about.label, `data-g="${esc(about.g)}" data-gfor="${esc(about.gfor)}"`) : toolHtml('ask', about.label, askAttr(about.say)),
     // 重来 (↺): a board that can start over (shell.js restartOf); its tap is the board's own, by `data-gfor`.
     restart: restartOf(g?.mod) && !g?.state?.won ? restartHtml(id, ctx.lang, g.mod.meta.restart(g.state)) : '',
-    close: cutSkip + (leaveBtn ? toolHtml('close', leaveBtn.label, `data-board-leave="${esc(id)}"`) : skips ? skipBoard(g, id, ctx, { icon: true }) : ''),
+    out,
   };
   const framed = body == null ? frameHtml({ id, title, lang: ctx.lang, timed: timedOf(g.mod), tall: tallOf(g.mod), ...tools,
     how: forInput(task?.how ?? g.mod.meta?.how?.[ctx.lang] ?? g.mod.meta?.how?.zh ?? ''),
@@ -556,7 +558,7 @@ function board(card, ctx) {
     : body === '' ? frameHtml({ id, title, lang: ctx.lang, ...tools, body: boardHtml(g, ctx.words) }) : null;
   const tall = framed && tallStyle(g.mod) ? ` style="${tallStyle(g.mod)}"` : '';
   // Not in play (loading, done, kept, shut): no shell, so the words stay under the card as before.
-  const under = framed ? '' : `${skips ? skipBoard(g, id, ctx) : ''}${own && !leaveBtn ? '' : acts([leaveBtn, about])}`;
+  const under = framed ? '' : `${own && !leaveBtn ? '' : acts([leaveBtn, about])}`;
   return `<div class="card gamecard${own ? ' scenegame' : ''}"${tall}>${framed ?? `<div class="cardtitle">${esc(title)}</div>${body}`}${under}</div>`;
 }
 
@@ -1268,11 +1270,25 @@ export function bookPopHtml(ctx) {
   const head = g ? `<div class="bookgoal th-main"><span class="lbl">${esc(w.goalTitle)}</span> <span>${esc(goalText(ctx))}</span>${capMark(ctx)}${where ? ` <span class="small dim">→ ${esc(where)}</span>` : ''}${goTo ? ` <button class="act go quiet" data-go="${esc(goTo.id)}">${esc(say(w.goalGo, { name: goTo.name }))}</button>` : ''}
     ${g.gate ? `<div class="small dim">${esc(nowSay(g.gate.now, ctx))} · ${esc(w.goalGrow)}</div>` : ''}</div>` : capHead(ctx);
   const group = (key, rows) => (rows.length ? `<div class="tgroup ${key}"><div class="thead small dim">${esc(say(w[key], { n: rows.length }))}</div>${rows.join('')}</div>` : '');
-  const body = group('groupReady', groups.ready) + group('groupHeld', groups.held) + kaifuGroup(ctx.look?.kaifu, groups.kaifu, ctx) + group('groupOpen', groups.open) + doneFold(groups.done, w);
+  const body = group('groupReady', groups.ready) + group('groupHeld', groups.held) + kaifuGroup(ctx.look?.kaifu, groups.kaifu, ctx) + group('groupOpen', groups.open) + keptGroupHtml(ctx) + doneFold(groups.done, w);
   // 人间功课's marks — the 护山大阵, the week's rows, the day against its cap — over the chores (Look's `gongke`, from 入门 on).
   const marks = gongkeMarksHtml(ctx.look?.gongke, ctx.lang);
   return `<div class="bookpop" role="dialog">${head}${marks}${body || (head ? '' : `<div class="small dim">${esc(w.bookNone)}</div>`)}</div>`;
 }
+
+/* 收着的棋局 (Look's `kept`, rules/skips.mjs keepBoard): each board he kept — its title, where and when — 玩 takes it up,
+   丢 lets it go. Never offered by itself. In the 事 book; the tray's 「收着 n」 opens the book here. */
+const keptWhen = (at, lang) => { const d = at ? new Date(at) : null; return d && !Number.isNaN(+d) ? `${d.getMonth() + 1}${lang === 'en' ? '/' : '月'}${d.getDate()}${lang === 'en' ? '' : '日'}` : ''; };
+export function keptGroupHtml(ctx) {
+  const list = ctx.look?.kept ?? [], w = ctx.words;
+  if (!list.length) return '';
+  const rows = list.map((k) => `<div class="trow kept" data-kept-row="${esc(k.id)}"><span class="ttitle">${esc(k.title)}</span>`
+    + ` <span class="small dim">${esc([k.where, keptWhen(k.at, ctx.lang)].filter(Boolean).join(' · '))}</span>`
+    + ` <button class="act quiet" data-kept-play="${esc(k.id)}">${esc(w.keptPlay)}</button><button class="act quiet" data-kept-drop="${esc(k.id)}">${esc(w.keptDrop)}</button></div>`);
+  return `<div class="tgroup kept" id="kept-group"><div class="thead small dim">${esc(say(w.keptGroup, { n: list.length }))}</div>${rows.join('')}</div>`;
+}
+/* The tray's chip for it: 「收着 n」, a tap opens the 事 book at the list. */
+export const keptChipHtml = (ctx) => ((ctx.look?.kept ?? []).length ? `<button class="bookchip keptchip" data-kept-open>${esc(say(ctx.words.keptChip, { n: ctx.look.kept.length }))}</button>` : '');
 
 /* The 事 book's head at the cap while he stands in the story's scene (no goal line: the stage holds it) — what the top
    bar's 「走剧情破境 ›」 opens to: the story is right here, and where. No road to tap. */
@@ -2140,5 +2156,5 @@ export function trayHtml(ctx) {
   // 体力 spent: one card, the 闭关 that fills it (the story's boards wait on 体力 too).
   if (spent(look) && !aside) return trayRestHtml(ctx);
   const row = [...tasks, ...live, ...(done ? [done] : []), ...cooling];
-  return aside + (row.length ? row.join('') : aside ? '' : `<div class="small dim trayempty">${esc(ctx.words.trayEmpty)}</div>`);
+  return aside + keptChipHtml(ctx) + (row.length ? row.join('') : aside ? '' : `<div class="small dim trayempty">${esc(ctx.words.trayEmpty)}</div>`);
 }

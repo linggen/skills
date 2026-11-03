@@ -387,5 +387,5 @@ test('the story\'s 炼丹 herb board wears the shell: its frame and 🔊, the ti
   assert.match(html, /class="gshell[^"]*" data-shell="alchemy-daily"/);
   assert.match(html, /data-shell-mute/);
   assert.match(html, /data-board="alchemy-daily"[\s\S]*data-tile="0"/);
-  assert.match(html, /data-board-leave="alchemy-daily"/, '收手 under it still');
+  assert.match(html, /data-board-keep="alchemy-daily"[^>]*>留<\/button><button[^>]*data-board-close="alchemy-daily"/, '留 and ✕ in its bar');
 });

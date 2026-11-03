@@ -12,7 +12,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { loadContent } from '../scripts/content.mjs';
 import { look, resolve, task, win, pageOnly } from '../scripts/rules.mjs';
-import { dayKey } from '../scripts/state.mjs';
+import { dayKey, fitWorld } from '../scripts/state.mjs';
 import { stageCards, stageSlots, CARD_KINDS } from '../scripts/stage.mjs';
 import { STUCK_MS, slotNext, stampShown, stuckNow } from '../scripts/stuck.js';
 import { crawlRules } from './crawl.mjs';
@@ -46,7 +46,8 @@ test('a skip pays nothing: no 修为, no 灵石, no grade, no mark — and the w
   assert.equal(left.tasks['zhoutian-sanguan'].status, 'done');
   assert.equal(left.tasks['zhoutian-sanguan'].skipped, true, 'recorded as left, not paid');
   assert.equal(left.wins?.['zhoutian-sanguan'], undefined);
-  assert.deepEqual(left.skipped.map((e) => [e.task, e.scene, e.day]), [['zhoutian-sanguan', 'wm-zhoutian', dayKey(now)]]);
+  assert.deepEqual(left.skipped ?? [], [], 'put away for good: never offered again by itself (Hanli 11-03)');
+  assert.equal(look({ ...left, tell_owed: [] }, content, ctxAt(later(now, 3))).replay, undefined);
   const brief = look(left, content, ctxAt(now)).tasks.find((t) => t.id === 'zhoutian-sanguan');
   assert.deepEqual([brief.paid, brief.skipped], [false, true], 'Look: left, not paid');
   // The story goes on exactly as after the win.
@@ -85,74 +86,58 @@ test('a graded board left writes no grade or mark, owes the rest of the passage,
   assert.equal(resolve(played, content, ctxAt(now), { exit: 'keep' }).result.ok, true);
 });
 
-test('a board left comes back by itself on a later day, the stage idle — won then, it pays in full: grant, grade, mark', async () => {
-  // 喂饼, 00-cave's second board (守火 first since 2026-10-21): 守火 played, then 喂饼 left.
+test('留 keeps a board: the story goes on as on ✕ (its gives, no grant); never offered by itself; taken up and won, it pays in full once', async () => {
+  // 喂饼, 00-cave's second board (守火 first since 2026-10-21): 守火 played, then 喂饼 kept (Hanli 11-03: 「可能想以后玩」).
   const at0 = at('00-prologue/00-cave'), now = at0.now;
   const s = must(task, must(win, at0.s, now, { id: 'cave-fire' }), now, { action: 'done', id: 'cave-fire' });
-  // Left (the stage idle): it is the one that comes back.
-  const left = must(task, s, now, { action: 'skip', id: 'bread-share' });
-  const n = { ...left, tell_owed: [], told_scenes: [...(left.told_scenes ?? []), left.scene] };
-  assert.equal(look(n, content, ctxAt(now)).replay, undefined, 'never the same day');
+  const kept = must(task, s, now, { action: 'keep', id: 'bread-share' });
+  const skipped = must(task, s, now, { action: 'skip', id: 'bread-share' });
+  assert.deepEqual([kept.progress, kept.wealth, kept.tell_owed], [skipped.progress, skipped.wealth, skipped.tell_owed], 'the story goes on exactly as on ✕');
+  assert.equal(kept.tasks['bread-share'].skipped, true);
+  for (const exit of ['share', 'keep']) assert.equal(resolve(kept, content, ctxAt(now), { exit }).result.ok, true, `${exit}: every way a skip opens`);
+  assert.deepEqual(kept.kept.map((e) => [e.task, e.story, e.scene]), [['bread-share', true, '00-cave']]);
+  const n = { ...kept, tell_owed: [], told_scenes: [...(kept.told_scenes ?? []), kept.scene] };
   const tomorrow = later(now);
   const lk = look(n, content, ctxAt(tomorrow));
-  assert.equal(lk.replay?.task, 'bread-share');
-  // On the stage: among the scene card's choices, after its ways on — never a card of its own beside it too
-  // (2026-10-26: 再试一回 twice; tests/solo-stage.test.mjs). With no scene card, its own card.
-  const cards = stageCards(lk);
-  assert.ok(lk.scene?.panel && !cards.some((c) => c.card === 'replay'));
-  assert.ok(stageCards({ ...lk, scene: { ...lk.scene, panel: null } }).some((c) => c.card === 'replay'));
-  assert.ok(lk.tasks.some((t) => t.id === 'bread-share' && t.status === 'done' && t.skipped), 'Look still knows it is over (the stage never deals it fresh)');
-  assert.equal(CARD_KINDS.replay.holds, false);
-  assert.ok(stageSlots(lk, cards), 'it has a slot');
-  // Played: the board stands offered again, as on its first day; its win pays the grant, grade and mark.
-  const open = must(task, n, tomorrow, { action: 'replay', id: 'bread-share' });
+  assert.equal(lk.replay, undefined, 'never offered by itself');
+  assert.deepEqual(lk.kept.map((k) => [k.id, k.at]), [['bread-share', now.toISOString()]], 'Look carries it: id, title, where, when');
+  assert.ok(lk.kept[0].title);
+  // Taken up: off the list, the board stands offered again; its win pays the grant, grade and mark, as on its day.
+  const open = must(task, n, tomorrow, { action: 'kept-play', id: 'bread-share' });
+  assert.deepEqual(open.kept, []);
   assert.equal(open.tasks['bread-share'].status, 'offered');
-  assert.equal(open.tasks['bread-share'].replay, true);
-  assert.equal(look(open, content, ctxAt(tomorrow)).replay, undefined, 'one at a time');
-  const { panelActsHtml, WORDS } = await import('../scripts/cards.js');
-  const inBox = panelActsHtml({ look: lk, words: WORDS.zh }, { inBox: true });
-  assert.match(inBox, /data-replay-play="bread-share"/);
-  assert.match(inBox, /data-replay-later="bread-share"/);
+  const lo = look(open, content, ctxAt(tomorrow));
+  assert.ok(stageCards(lo).some((c) => c.card === 'board' && c.id === 'bread-share'), 'it stands on the stage');
   const paid = task(must(win, open, tomorrow, { id: 'bread-share', grade: 'half', stars: 2 }), content, ctxAt(tomorrow), { action: 'done', id: 'bread-share' });
   assert.equal(paid.result.ok, true, JSON.stringify(paid.result));
   const p = paid.state;
   assert.deepEqual(paid.result.paid, task(must(win, { ...s }, now, { id: 'bread-share', grade: 'half', stars: 2 }), content, ctxAt(now), { action: 'done', id: 'bread-share' }).result.paid, 'the original grant, as on its day');
   assert.equal(p.grades['bread-share'], 'half');
   assert.ok(p.marks.includes('bread-half'), 'its mark');
-  assert.equal(p.tasks['bread-share'].status, 'done');
+  assert.equal(p.stars['bread-share'], 2, 'its stars count then');
   assert.equal(p.tasks['bread-share'].skipped, undefined, 'paid now, not left');
-  assert.deepEqual(p.tell_owed ?? [], [], 'its passage was told the day it was left — never again');
+  assert.deepEqual(p.tell_owed ?? [], [], 'its passage was told the day it was kept — never again');
+  assert.equal(task(p, content, ctxAt(tomorrow), { action: 'done', id: 'bread-share' }).result.ok, false, 'once');
+  assert.equal(task(p, content, ctxAt(tomorrow), { action: 'kept-play', id: 'bread-share' }).result.refused, 'not-kept');
+  // Taken up and put away again (✕): gone for good; 留 again: back on the list.
+  assert.deepEqual(must(task, open, tomorrow, { action: 'skip', id: 'bread-share' }).kept, []);
+  assert.deepEqual(must(task, open, tomorrow, { action: 'keep', id: 'bread-share' }).kept.map((e) => e.task), ['bread-share']);
 });
 
-test('改日 puts it off to another day; left again, it keeps where it was first left', () => {
-  const { s, now } = at('00-zhuji/j07-dark');
-  const left = must(task, s, now, { action: 'skip', id: 'jin-chat-dark' });
-  assert.equal(left.skipped[0].line, 'jin', 'kept on the line it was left on');
-  const idle = { ...left, tell_owed: [], told_scenes: [...(left.told_scenes ?? []), left.scene] };
-  const d1 = later(now);
-  const offered = look(idle, content, ctxAt(d1)).replay;
-  assert.equal(offered?.task, 'jin-chat-dark');
-  assert.equal(offered.line, '那夜黑地里，马小宝喘不上来……再陪他一回？', 'the task\'s own line, in the world\'s words');
-  const put = must(task, idle, d1, { action: 'later', id: 'jin-chat-dark' });
-  assert.equal(look(put, content, ctxAt(d1)).replay, undefined, 'not again today');
-  assert.equal(look(put, content, ctxAt(later(now, 2))).replay?.task, 'jin-chat-dark', 'back another day');
-  const d2 = later(now, 2);
-  const chosen = must(task, put, d2, { action: 'replay', id: 'jin-chat-dark' });
-  // On the 今 line too, the board chosen again stands on the stage (live, j07-guan: the side line's filter dropped it).
-  const g = at('00-zhuji/j07-guan');
-  const guan = must(task, { ...g.s, tell_owed: [], told_scenes: [...(g.s.told_scenes ?? []), 'j07-guan'], tasks: { ...g.s.tasks, 'jin-chat-dark': { status: 'done', skipped: true }, 'jin-pulse': { status: 'done', done_at: d2.toISOString() }, 'jin-shendun': { status: 'done', done_at: d2.toISOString() }, 'jin-daoxing': { status: 'done', done_at: d2.toISOString() }, 'jin-quxian': { status: 'done', done_at: d2.toISOString() } }, skipped: [put.skipped[0]], replay_day: null }, d2, { action: 'replay', id: 'jin-chat-dark' });
-  const lc = look(guan, content, ctxAt(d2));
-  assert.ok(stageSlots(lc, stageCards(lc)).main.some((c) => c.card === 'board' && c.id === 'jin-chat-dark'), 'at the next 今 scene the board chosen again stands');
-  const again = must(task, chosen, d2, { action: 'skip', id: 'jin-chat-dark' });
-  assert.deepEqual(again.skipped.map((e) => [e.task, e.scene, e.line, e.day]), [['jin-chat-dark', 'j07-dark', 'jin', dayKey(d2)]]);
-  assert.equal(again.tasks['jin-chat-dark'].skipped, true);
-  // Not offered while the stage is not idle: a passage owed, a fight open, on another line.
-  assert.equal(look({ ...idle, tell_owed: ['after/x'] }, content, ctxAt(d1)).replay, undefined, 'a passage owed');
-  assert.equal(look({ ...idle, fight: { game: 'x', creature: 'zheng', at: d1.toISOString() } }, content, ctxAt(d1)).replay, undefined, 'a fight open');
-  assert.equal(look({ ...idle, skipped: [{ ...idle.skipped[0], line: null }] }, content, ctxAt(d1)).replay, undefined, 'a 古 board is not offered on the 今 line');
-  // Only the page offers or leaves a board; refused when nothing is due.
-  assert.equal(task(idle, content, ctxAt(now), { action: 'replay', id: 'jin-chat-dark' }).result.refused, 'not-due');
-  assert.equal(task(idle, content, ctxAt(now), { action: 'later', id: 'jin-chat-dark' }).result.refused, 'not-due');
+test('收着的棋局: at most 20 — one more refused in the world\'s words; 丢 lets one go; a board he chose is put down onto it', () => {
+  const { s: s0, now } = at('00-zhuji/j07-dark');
+  const full = { ...s0, kept: Array.from({ length: 20 }, (_, i) => ({ task: `x${i}`, story: false, at: now.toISOString() })) };
+  const r = task(full, content, ctxAt(now), { action: 'keep', id: 'jin-chat-dark' });
+  assert.equal(r.result.refused, 'kept-full');
+  assert.equal(r.result.say, '收着的满了，先玩掉一局或丢一局。');
+  const one = must(task, s0, now, { action: 'keep', id: 'jin-chat-dark' });
+  assert.equal(task(one, content, ctxAt(now), { action: 'keep', id: 'jin-chat-dark' }).result.refused, 'already-kept');
+  assert.deepEqual(must(task, one, now, { action: 'kept-drop', id: 'jin-chat-dark' }).kept, [], '丢');
+  assert.equal(task(one, content, ctxAt(now), { action: 'kept-drop', id: 'nope' }).result.refused, 'not-kept');
+  // An old save's skipped boards (the old rule: back by themselves) are kept now, on load.
+  const old = fitWorld({ ...s0, skipped: [{ task: 'jin-chat-dark', scene: 'j07-dark', line: 'jin', day: '2026-11-01' }] }, content);
+  assert.deepEqual([old.skipped, old.kept.map((e) => e.task)], [[], ['jin-chat-dark']]);
+  for (const action of ['keep', 'kept-play', 'kept-drop']) assert.equal(pageOnly('task', { action }), true, action);
 });
 
 test('a board not on the stage cannot be left; Ling never leaves or offers one (page-only)', () => {
@@ -200,7 +185,7 @@ test('one rule for every board: no game draws a skip of its own; the page lays i
   assert.match(cards, /const btn = always \|\| stuckNow\(g, now\) \? skipButton\(id, ctx\.lang, icon, cut\) : '';/, 'the page\'s skip waits on the gate (a board taken up by choice: from the first moment)');
   assert.match(cards, /data-skip-slot="\$\{esc\(id\)\}" data-skip-icon\$\{cutAttr\}>\$\{btn\}/, 'in a shell\'s bar the slot is the ✕');
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(page, /write\('task', \{ action: 'skip', id \}\)/, 'a skip is the rules\' skip, never a win');
+  assert.match(page, /write\('task', \{ action, id \}\)/, 'a skip is the rules\' skip (or 留), never a win');
   assert.doesNotMatch(page.slice(page.indexOf('function skipGame'), page.indexOf('async function onSkip')), /won: true|onWin/, 'never sent as a win');
   // A board chosen again puts the box away, so it stands (live at j07-guan: the box held 数晨脉 › over it).
   assert.match(page.slice(page.indexOf('function choicesInBox'), page.indexOf('function dialogBoxHtml')), /!replayUp\(look\)/);

@@ -75,23 +75,21 @@ test('refused away from the errand\'s place, and with no errand', () => {
   assert.equal(skip(shai('cangjing', { held: false })).result.ok, false);
 });
 
-test('the bar: once stuck, 「跳过 · 酬减半」 beside the ✕ 收手; before, the slot stands empty', async () => {
+test('the bar: 留 and ✕ from the first moment — the ✕ says its cut, 「跳过 · 酬减半」 (Hanli 11-03: 不需要卡住)', async () => {
   const mod = await import('../scripts/games/huarong.js');
   const state = mod.newGame('t', 1, {});
   const page = (g) => ({ lang: 'zh', words: WORDS.zh, content: {}, reading: null, boardFor: () => g,
     look: { tasks: [{ id: 'huarong', kind: 'board', game: 'huarong', title: '华容道 · 晒经', leave: true, skip: { cut: 0.5 } }], scene: { show: [] } } });
   const bar = (html) => html.slice(html.indexOf('<div class="gshell-tools">'), html.indexOf('</header>'));
   const fresh = bar(cardHtml({ card: 'board', id: 'huarong' }, page({ mod, state })));
-  assert.match(fresh, /<span data-skip-slot="huarong" data-skip-icon data-skip-cut="0.5"><\/span><button[^>]*data-board-leave="huarong">✕<\/button><\/div>/);
-  const stuck = bar(cardHtml({ card: 'board', id: 'huarong' }, page({ mod, state, shownAt: 0 })));
-  assert.match(stuck, /data-skip-cut="0.5"><button type="button" class="gshell-btn gshell-skip" data-game-skip="huarong">跳过 · 酬减半<\/button><\/span><button[^>]*title="收手"[^>]*data-board-leave="huarong">✕<\/button>/);
-  assert.equal(skipButton('x', 'en', true, '0.5').includes('Skip · half pay'), true, 'the page refills it from the slot\'s cut');
+  assert.match(fresh, /<button[^>]*class="gshell-btn gshell-keep"[^>]*data-board-keep="huarong">留<\/button><button[^>]*class="gshell-btn gshell-close" title="跳过 · 酬减半"[^>]*data-board-close="huarong">✕<\/button><\/div>/);
+  assert.equal((fresh.match(/✕/g) ?? []).length, 1, 'one ✕');
+  assert.equal(skipButton('x', 'en', true, '0.5').includes('Skip · half pay'), true);
   assert.equal(skipCutWord(0.3, 'zh'), '跳过 · 酬3成');
 });
 
 test('the page: an errand skip says no word of hers and pays as 所得', () => {
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  const on = page.slice(page.indexOf('async function onSkip(g)'), page.indexOf('async function errandSkipped('));
+  const on = page.slice(page.indexOf('async function onSkip(g'), page.indexOf('async function errandSkipped('));
   assert.ok(on.indexOf("r.for === 'errand'") < on.indexOf("herSay.say('skipped'"));
-  assert.match(page, /if \(cut == null\) herSay\.say\('stuck'/);
 });

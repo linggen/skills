@@ -8,7 +8,7 @@
 //                     solved or skipped, the book's own lines close it (`game.after`; a `me` line waits for his tap).
 //   coupletGame(ctx) — 对对子: the 上联 on a red scroll, the 下联's scroll blank beside it; he types it, the page holds it
 //                     against the classic's accepted 下联 and says what is off in its form (字数 · 平仄 · 同位 · 叠字);
-//                     the hints in tiers, the choices after `tries` misses, 跳过 always.
+//                     the hints in tiers, the choices after `tries` misses; no 跳过 of its own (the shell's ✕ · 留).
 //   chainGame(ctx)  — 成语接龙: the person opens, he follows from the last character; each link of theirs is the page's
 //                     pick from the dictionary (worlds/<id>/chengyu.json); N links of his and he has won.
 //   guessGame(ctx)  — 反着的二十问: he thinks of an animal; 想好了; then 是 · 不是 · 不知道 to each of their questions,
@@ -140,13 +140,12 @@ export async function riddleGame(ctx) {
       const choices = st.choices ? `<div class="g-jc-chips is-game">${r.choices.map((c) => `<button type="button" class="g-jc-chip" data-pick="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : '';
       const el = strip(ctx, `${choices}<form class="g-jc-bar is-game"><input class="g-jc-in" type="text" maxlength="40" autocomplete="off" enterkeyhint="send" placeholder="${esc(w.guessIt)}">`
         + `<button type="submit" class="g-jc-send">${esc(w.guessGo)}</button></form>`
-        + `<div class="g-jc-gacts">${btn('is-hint', w.hint, st.hints >= r.hints.length ? ' disabled' : '')}${btn('is-skip', w.skip)}</div>`);
+        + `<div class="g-jc-gacts">${btn('is-hint', w.hint, st.hints >= r.hints.length ? ' disabled' : '')}</div>`);
       const input = el.querySelector('.g-jc-in');
       input.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter' && e.isComposing) e.preventDefault(); });
       el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); guess(input.value); });
       for (const b of el.querySelectorAll('[data-pick]')) b.addEventListener('click', () => guess(b.dataset.pick));
       el.querySelector('.is-hint').addEventListener('click', () => { showHint(); draw(); });
-      el.querySelector('.is-skip').addEventListener('click', () => finish(false, null));
       input.focus({ preventScroll: true });
     };
     draw();
@@ -199,8 +198,9 @@ export async function guessGame(ctx) {
       else if (o.grade !== 'skipped') await ctx.react(resultLine(chat, summary, lang), { wait: true });
       resolve(o);
     };
-    const skipBtn = () => btn('is-skip', w.skip);
-    const wire = (el) => el.querySelector('.is-skip')?.addEventListener('click', () => end(freeOutcome(st, { skipped: true })));
+    // No 跳过 of its own (Hanli 11-03): the shell's ✕ and 留 are the one way out, from the start.
+    const skipBtn = () => '';
+    const wire = () => {};
     const tell = () => {
       const el = strip(ctx, `<p class="g-jc-gnote">${esc(w.tell)}</p><form class="g-jc-bar is-game"><input class="g-jc-in" type="text" maxlength="12" autocomplete="off" enterkeyhint="send" placeholder="${esc(w.itWas)}">`
         + `<button type="submit" class="g-jc-send">${esc(w.tellGo)}</button></form>`);
@@ -353,13 +353,12 @@ export async function coupletGame(ctx) {
       const choices = st.choices ? `<div class="g-jc-chips is-game is-lines">${c.choices.map((x) => `<button type="button" class="g-jc-chip" data-pick="${esc(x)}">${esc(x)}</button>`).join('')}</div>` : '';
       const el = strip(ctx, `${choices}<form class="g-jc-bar is-game"><input class="g-jc-in" type="text" maxlength="40" autocomplete="off" enterkeyhint="send" placeholder="${esc(w.downIt)}">`
         + `<button type="submit" class="g-jc-send">${esc(w.downGo)}</button></form>`
-        + `<div class="g-jc-gacts">${btn('is-hint', w.hint, st.hints >= c.hints.length ? ' disabled' : '')}${btn('is-skip', w.skip)}</div>`);
+        + `<div class="g-jc-gacts">${btn('is-hint', w.hint, st.hints >= c.hints.length ? ' disabled' : '')}</div>`);
       const input = el.querySelector('.g-jc-in');
       input.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter' && e.isComposing) e.preventDefault(); });
       el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); guess(input.value); });
       for (const b of el.querySelectorAll('[data-pick]')) b.addEventListener('click', () => guess(b.dataset.pick));
       el.querySelector('.is-hint').addEventListener('click', () => { showHint(); draw(); });
-      el.querySelector('.is-skip').addEventListener('click', () => finish(false, null));
       input.focus({ preventScroll: true });
     };
     draw();
@@ -468,13 +467,12 @@ export async function chainGame(ctx) {
       const choices = four.length ? `<div class="g-jc-chips is-game">${four.map((x) => `<button type="button" class="g-jc-chip" data-pick="${esc(x)}">${esc(x)}</button>`).join('')}</div>` : '';
       const el = strip(ctx, `${choices}<form class="g-jc-bar is-game"><span class="g-jc-need" title="${esc(w.chainNeed)}">${esc(needOf(st))}</span><input class="g-jc-in" type="text" maxlength="12" autocomplete="off" enterkeyhint="send" placeholder="${esc(fill(w.linkIt, { ch: needOf(st) }))}">`
         + `<button type="submit" class="g-jc-send">${esc(w.linkGo)}</button></form>`
-        + `<div class="g-jc-gacts">${btn('is-hint', w.hint, at === st.said.length && lh >= 2 ? ' disabled' : '')}${btn('is-skip', w.skip)}</div>`);
+        + `<div class="g-jc-gacts">${btn('is-hint', w.hint, at === st.said.length && lh >= 2 ? ' disabled' : '')}</div>`);
       const input = el.querySelector('.g-jc-in');
       input.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter' && e.isComposing) e.preventDefault(); });
       el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); link(input.value); });
       for (const b of el.querySelectorAll('[data-pick]')) b.addEventListener('click', () => link(b.dataset.pick));
       el.querySelector('.is-hint').addEventListener('click', () => { showHint(); draw(); });
-      el.querySelector('.is-skip').addEventListener('click', () => end(chainOutcome({ done: false }), 'skip'));
       input.focus({ preventScroll: true });
     };
     draw();

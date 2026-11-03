@@ -90,3 +90,12 @@ export function withArcade(look, game, { row = null, title = null } = {}) {
   // save had: 泗水岸's 降妖, the 试玩 left in the tray, 11-02): first of the games here, so it takes the slot.
   return { ...look, tasks: [...(look.tasks ?? []), task], ...(Array.isArray(look.stage) ? { stage: [{ card: 'board', id }, ...look.stage] } : {}) };
 }
+
+/* 收着的棋局 in the 游戏厅 (Hanli 11-03, 留 on its shell): this browser's own, at most 20 — the 游戏厅 keeps no save. */
+const KEPT_KEY = 'lingjing:arcade-kept';
+export const keptRead = (store = globalThis.localStorage) => { try { return JSON.parse(store?.getItem(KEPT_KEY) ?? '[]') ?? []; } catch { return []; } };
+export function keptAdd(entry, store = globalThis.localStorage) {
+  const list = [entry, ...keptRead(store).filter((e) => e.id !== entry.id || e.n !== entry.n)].slice(0, 20);
+  try { store?.setItem(KEPT_KEY, JSON.stringify(list)); } catch { /* storage refused: nothing kept */ }
+  return list;
+}

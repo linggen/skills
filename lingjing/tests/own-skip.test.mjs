@@ -39,7 +39,7 @@ test('every module\'s own 跳过 reads as a skip; a real end never does', () => 
   assert.equal(winIsSkip({ grade: 'stumped' }), false);
 });
 
-test('a skip sent as a win (讨饼债\'s 二十问, an older phone) pays nothing — no stars, grade or card — and comes back another day', () => {
+test('a skip sent as a win (讨饼债\'s 二十问, an older phone) pays nothing — no stars, grade or card — and never comes back by itself', () => {
   const { s, now } = at('00-prologue/00-yinyue');
   const id = 'yinyue-what';
   assert.equal(s.tasks?.[id]?.status ?? 'offered', 'offered', 'the board stands unplayed');
@@ -58,10 +58,9 @@ test('a skip sent as a win (讨饼债\'s 二十问, an older phone) pays nothing
   const done = run(task, left, now, { action: 'done', id });
   assert.equal(done.result.ok, false);
   assert.deepEqual(purse(done.state ?? left), purse(s), 'nothing paid, sent as a win or after it');
-  // Offered again on a later day, by itself.
+  // Put away for good (Hanli 11-03): never offered again by itself — 留 is what keeps a board.
   const idle = { ...left, tell_owed: [], told_scenes: [...(left.told_scenes ?? []), left.scene] };
-  assert.equal(replayDue(content, idle, now), null, 'never the same day');
-  assert.equal(replayDue(content, idle, new Date(now.getTime() + DAY))?.task, id, 'a later day: it comes back');
+  assert.equal(replayDue(content, idle, new Date(now.getTime() + DAY)), null, 'never back by itself');
   // The control: played for real, the same board pays its grade and mark.
   const played = run(win, s, now, { id, grade: 'stumped', stars: 3 }).state;
   assert.equal(played.grades?.[id], 'stumped');
