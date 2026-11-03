@@ -798,7 +798,7 @@ function hud(ctx, s, art, lang, view) {
   ctx.fillStyle = '#f1e6cf'; ctx.textAlign = 'left'; ctx.fillText(tl, 93, 24);
   ctx.textAlign = 'right'; ctx.fillText(tr, W - 93, 24);
   ctx.font = `700 11px ${SERIF}`; ctx.fillStyle = '#e7c06a';
-  const stocks = (q) => Math.floor((q ?? 0) / 100), fullW = say(lv.words?.full, lang) || '绝';
+  const stocks = (q) => Math.floor((q ?? 0) / 100), fullW = say(lv.words?.full, lang) || (lang === 'en' ? 'MAX' : '绝');
   if (s.me.max > s.t) { ctx.textAlign = 'left'; ctx.fillStyle = '#ff9a3c'; ctx.fillText(lang === 'en' ? 'MAX' : '爆气', 86 + BW * 0.62 + 8, 64); ctx.fillStyle = '#e7c06a'; }
   else if (stocks(s.me.qi)) { ctx.textAlign = 'left'; ctx.fillText(`${fullW} ×${stocks(s.me.qi)}`, 86 + BW * 0.62 + 8, 64); }
   if (stocks(s.foe.qi)) { ctx.textAlign = 'right'; ctx.fillText(`${fullW} ×${stocks(s.foe.qi)}`, W - 86 - BW * 0.62 - 8, 64); }
@@ -819,9 +819,9 @@ function hud(ctx, s, art, lang, view) {
     ctx.beginPath(); ctx.moveTo(cx, 82); ctx.arc(cx, 82, 9, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, ready)); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#f6eedc'; ctx.font = `700 10px ${SERIF}`; ctx.textAlign = 'center'; ctx.fillText(label, cx, 83);
   };
-  ring(96, say(lv.words?.palmfire, lang)?.[0] || '掌', 1 - (s.me.cdPf ?? 0) / s.R.me.palmfire.cd); // 掌心火's readiness
-  if (s.R.me.feijian) ring(120, say(lv.words?.feijian, lang)?.[0] || '剑', 1 - (s.me.cdFj ?? 0) / s.R.me.feijian.cd); // 飞剑's
-  if (s.R.me.fuwen) ring(144, say(lv.words?.fuwen, lang)?.[0] || '符', 1 - (s.me.cdFw ?? 0) / s.R.me.fuwen.cd); // 符文's
+  ring(96, say(lv.words?.palmfire, lang)?.[0] || (lang === 'en' ? 'P' : '掌'), 1 - (s.me.cdPf ?? 0) / s.R.me.palmfire.cd); // 掌心火's readiness
+  if (s.R.me.feijian) ring(120, say(lv.words?.feijian, lang)?.[0] || (lang === 'en' ? 'S' : '剑'), 1 - (s.me.cdFj ?? 0) / s.R.me.feijian.cd); // 飞剑's
+  if (s.R.me.fuwen) ring(144, say(lv.words?.fuwen, lang)?.[0] || (lang === 'en' ? 'T' : '符'), 1 - (s.me.cdFw ?? 0) / s.R.me.fuwen.cd); // 符文's
   // the incense (the bout's clock, burning down) and her count of moves, small
   const total = lv.time ?? 120000, left = Math.max(0.06, 1 - s.t / total), ix = W / 2, top = 14, len = 34;
   ctx.fillStyle = '#6b4b2a'; ctx.fillRect(ix - 1.5, top + len * (1 - left), 3, len * left);
@@ -858,7 +858,7 @@ function chain(ctx, view, lang, word) {
 function cueMark(ctx, s, lang) {
   const c = s.cue;
   if (!c) return;
-  const word = say(s.level?.cues?.[c.k], lang) || (c.k === 'ying' ? '迎' : '勾');
+  const word = say(s.level?.cues?.[c.k], lang) || (lang === 'en' ? (c.k === 'ying' ? 'In!' : 'Hook!') : (c.k === 'ying' ? '迎' : '勾'));
   const age = s.t - c.at, k = Math.min(1, age / 140), x = s.me.x, y = FLOOR - 310;
   ctx.save();
   ctx.globalAlpha = 1 - Math.max(0, age - 600) / 300;
@@ -1056,7 +1056,7 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false } = 
     view.t = s.t;
     if (s.combo?.n >= 2 && s.combo.who === 'me') view.chain = { n: s.combo.n, at: view.chain?.n === s.combo.n ? view.chain.at : s.t };
     hud(ctx, s, art, lang, view);
-    chain(ctx, view, lang, say(lv.words?.chain, lang) || '连');
+    chain(ctx, view, lang, say(lv.words?.chain, lang) || (lang === 'en' ? 'hits' : '连'));
     cueMark(ctx, s, lang);
     if (s.end) {
       const g = ctx.createRadialGradient(W / 2, H / 2, 160, W / 2, H / 2, 560);
@@ -1067,7 +1067,7 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false } = 
     if (s.end && s.t - s.end.at < 220 && !still) { ctx.fillStyle = `rgba(255,252,240,${0.75 * (1 - (s.t - s.end.at) / 220)})`; ctx.fillRect(0, 0, W, H); }
     if (s.intro && s.t < s.intro + 500) intro(ctx, s, lang, lv);
     lineBand(ctx, text);
-    if (s.end) seal(ctx, say(won(s.end) ? lv.seal?.won : lv.seal?.lost, lang) || (won(s.end) ? '胜' : '负'), s.t - s.end.at - 300);
+    if (s.end) seal(ctx, say(won(s.end) ? lv.seal?.won : lv.seal?.lost, lang) || (lang === 'en' ? (won(s.end) ? 'Won' : 'Out') : (won(s.end) ? '胜' : '负')), s.t - s.end.at - 300);
     // the 绝: its cut-in plays on the page's clock (the bout's is held through it)
     if (s.cutin && s.cutin !== view.cut) { view.cut = s.cutin; view.cutAt = now; }
     if (view.cut && now - view.cutAt < 900) cutIn(ctx, view.cut, view.cut.who === 'me' ? art.me : art.foe, lang, now - view.cutAt);

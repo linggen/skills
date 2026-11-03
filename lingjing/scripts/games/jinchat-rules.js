@@ -119,7 +119,8 @@ export function turnLine(chat, { k = 1, text = '', cast = [], shown = [], lang =
   // (马小宝 「手没那么麻了」, no tag) — the goal was met and the chat ran out instead.
   if (k > 1) return `${fill(w.again, { title: pick(chat.title, lang) })}${tail}${w.tag}`;
   const names = cast.map((c) => c.name).join(lang === 'en' ? ' and ' : '和');
-  const lines = shown.map((s) => `${cast.find((c) => c.id === s.who)?.name ?? (lang === 'en' ? 'he' : '他')}：「${s.text}」`).join(' ');
+  const quote = (who, text) => (lang === 'en' ? `${who}: "${text}"` : `${who}：「${text}」`);
+  const lines = shown.map((s) => quote(cast.find((c) => c.id === s.who)?.name ?? (lang === 'en' ? 'he' : '他'), s.text)).join(' ');
   return [
     fill(w.head, { title: pick(chat.title, lang), when: pick(chat.when, lang) }),
     fill(w.you, { names }),
@@ -140,7 +141,8 @@ export const HOST_SYSTEM = {
 };
 
 /** A 测试存档's stub (`&her=stub`): a marked line from the first in the chat, the goal met on his second line. */
-export function stubReply(cast, k) {
+export function stubReply(cast, k, lang = 'zh') {
   const who = cast[0]?.name ?? '';
+  if (lang === 'en') return k >= 2 ? `${who}: [stub] Fine, as you say.\n${TAG}` : `${who}: [stub] Hm?`;
   return k >= 2 ? `${who}：[stub] 行，听你的。\n${TAG}` : `${who}：[stub] 嗯？`;
 }

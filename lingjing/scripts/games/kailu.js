@@ -58,7 +58,7 @@ async function tableOf(lang) {
     leans: Object.fromEntries(Object.entries(t.families ?? {}).filter(([k]) => k !== '_about').map(([k, v]) => [k, pick(v.lean)])),
     inputs,
   });
-  const out = (id, grade) => (id === 'lingshi' ? { id, name: words.lingshi ?? '灵石', grade, wealth: true }
+  const out = (id, grade) => (id === 'lingshi' ? { id, name: words.lingshi ?? (lang === 'en' ? 'Spirit stones' : '灵石'), grade, wealth: true }
     : { id, name: pick(byId.get(id)?.name) ?? id, hint: pick(byId.get(id)?.hint), art: byId.get(id)?.art ?? null, grade });
   return { t, byId, pick, words, input, brief, out, ...fr };
 }

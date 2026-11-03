@@ -192,7 +192,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   };
 
   const ask = async (text) => {
-    if (data.seam === 'stub') { await wait(900); return { text: stubReply(g.cast, g.sent) }; }
+    if (data.seam === 'stub') { await wait(900); return { text: stubReply(g.cast, g.sent, lang) }; }
     const line = turnLine(g.chat, { k: g.sent, text, cast: g.cast, shown: g.shown.slice(0, g.chat.open?.length ?? 0), lang });
     log({ kind: 'sent', chat: data.chat, k: g.sent });
     return send(line);

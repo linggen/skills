@@ -595,7 +595,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     try {
       if (data.seam === 'stub') {
         await new Promise((r) => setTimeout(r, 800));
-        say(won ? `[stub] 哼，本王一眼就看出是${g.word.zh}。` : `[stub] 这是${g.word.zh}？……你画得也太随意了。`, '');
+        say(lang === 'en' ? (won ? `[stub] Hmph, I saw it was a ${g.word.en} at a glance.` : `[stub] A ${g.word.en}? …That was a careless drawing.`) : won ? `[stub] 哼，本王一眼就看出是${g.word.zh}。` : `[stub] 这是${g.word.zh}？……你画得也太随意了。`, '');
       } else if (sid && g.strokes.length) {
         foot(sub(w.looking));
         const png = paperPng(doc, g.strokes), text = askReveal(g.who, lang === 'en' ? g.word.en : g.word.zh, won, lang);

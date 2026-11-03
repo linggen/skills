@@ -486,7 +486,7 @@ function worldSvg(s, lang, id) {
   }).join('');
   // 礁石: the land's own rock, cut round; 灵珠 · 护体 · 定神: the pearl's glow, each its own mark (data-pick: the page hides a taken one)
   const rocks = (L.rocks ?? []).map((rk) => { const r = rk.r ?? ROCK_R, p = thingAt(ch, rk, r); return `<g class="g-qm-stone"><circle cx="${fmt(p.x)}" cy="${fmt(p.y)}" r="${r}" style="fill:url(#${id}-rock)"/><circle class="g-qm-stone-rim" cx="${fmt(p.x)}" cy="${fmt(p.y)}" r="${r}"/></g>`; }).join('');
-  const MARK = { orbs: '', shields: '护', slows: '定' };
+  const w = T[lang] ?? T.zh, MARK = { orbs: '', shields: [...w.guard][0], slows: [...w.calm][0] }; // one letter in the ring: 护 · 定, G · C
   const picks = PICKS.flatMap((k) => (L[k] ?? []).map((t, i) => {
     const p = thingAt(ch, t), got = s.got?.[k]?.[i] ? ' is-got' : '';
     return `<g class="g-qm-pick is-${KIND[k]}${got}" data-pick="${k}:${i}"><image class="g-qm-pick-glow" href="${art('glow')}" x="${fmt(p.x - 12)}" y="${fmt(p.y - 12)}" width="24" height="24"/>`

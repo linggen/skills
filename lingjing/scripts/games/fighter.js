@@ -35,7 +35,7 @@ export const meta = {
   name: { zh: '格斗', en: 'Fight' },
   how: {
     zh: { desk: 'WASD 走跳蹲，背向她按住是挡；K 轻拳 · L 轻腿 · O 重拳 · ; 重腿 · J 技；I 飞剑 · U 符文。', touch: '左边走跳蹲（背向她按住是挡）；右边拳 腿 重拳 重腿，技，剑 飞剑 · 符 符文。' },
-    en: { desk: 'WASD walk, jump, crouch; hold away from her to guard. K light punch · L light kick · O heavy punch · ; heavy kick · J skill; I flying sword · U talisman.', touch: 'Left: walk, jump, crouch (hold away to guard). Right: punch, kick, heavy punch, heavy kick, skill; 剑 flying sword · 符 talisman.' },
+    en: { desk: 'WASD walk, jump, crouch; hold away from her to guard. K light punch · L light kick · O heavy punch · ; heavy kick · J skill; I flying sword · U talisman.', touch: 'Left: walk, jump, crouch (hold away to guard). Right: LP punch, LK kick, HP heavy punch, HK heavy kick, SP skill; FS flying sword · TL talisman.' },
   },
   pause: true, // its own loop reads the shell's pause
   beat: 'mount', // the story mounts it (its hands are its own)
@@ -76,7 +76,7 @@ export function pickLevel(reg, data = {}, search = '') {
 /** The move list, as lines (the pause veil's note): each move's name, then its keys (desk) or its buttons (touch). */
 export function moveLines(level = {}, lang = 'zh', kind = 'desk') {
   const names = level.moves ?? {};
-  return core.MOVES.map((m) => `${say(names[m.k], lang) || say(m.name, lang) || m.k}　${kind === 'touch' ? m.touch : m.keys}`);
+  return core.MOVES.map((m) => `${say(names[m.k], lang) || say(m.name, lang) || m.k}　${say(kind === 'touch' ? m.touch : m.keys, lang)}`);
 }
 
 /* ── The page's pieces ── */
@@ -147,9 +147,11 @@ function sheet(doc) {
 
 const BUTTONS = {
   jump: { face: '▲', key: 'W' }, left: { face: '◀', key: 'A' }, crouch: { face: '▼', key: 'S' }, right: { face: '▶', key: 'D' },
-  light: { face: '拳', key: 'K' }, lkick: { face: '腿', key: 'L' }, hpunch: { face: '重拳', key: 'O' }, heavy: { face: '重腿', key: ';' },
-  skill: { face: '技', key: 'J' }, feijian: { face: '剑', key: 'I' }, fuwen: { face: '符', key: 'U' },
+  light: { face: { zh: '拳', en: 'LP' }, key: 'K' }, lkick: { face: { zh: '腿', en: 'LK' }, key: 'L' }, hpunch: { face: { zh: '重拳', en: 'HP' }, key: 'O' }, heavy: { face: { zh: '重腿', en: 'HK' }, key: ';' },
+  skill: { face: { zh: '技', en: 'SP' }, key: 'J' }, feijian: { face: { zh: '剑', en: 'FS' }, key: 'I' }, fuwen: { face: { zh: '符', en: 'TL' }, key: 'U' },
 };
+/** The 绝 when a level names none: the skill button's face with its stocks full. */
+const SUPER = { zh: '绝', en: 'MAX' };
 /* Keys by where they sit (event.code): any layout plays alike; `;` is Semicolon wherever it is printed. KOF '97's four:
    K A 轻拳 · L B 轻腿 · O C 重拳 · ; D 重腿. */
 const CODES = {
@@ -174,7 +176,7 @@ const dialWay = (dx, dy) => ((Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) % 8
 function padHtml(level, lang, kind = 'desk') {
   const names = level.me?.buttons ?? {};
   const b = (k) => {
-    const face = say(names[k], lang) || BUTTONS[k].face;
+    const face = say(names[k], lang) || say(BUTTONS[k].face, lang);
     return `<button type="button" data-k="${k}" aria-label="${face}">${face}<small>${BUTTONS[k].key}</small></button>`;
   };
   const dial = `<div class="gf-dial" role="group" aria-label="${lang === 'en' ? 'Move' : '方向'}">${DIAL_FACE.map((f, i) => `<i data-w="${i}" data-f="${f}" style="--a:${i * 45 + 90}deg"></i>`).join('')}<b></b></div>`;
@@ -368,7 +370,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   };
   const skillBtn = root.querySelector('button[data-k=skill]'), skillFace = skillBtn.firstChild;
   const spellBtn = { feijian: root.querySelector('button[data-k=feijian]'), fuwen: root.querySelector('button[data-k=fuwen]') };
-  const skillNames = [say(level.me?.buttons?.skill, lang) || BUTTONS.skill.face, say(level.me?.buttons?.super, lang) || '绝'];
+  const skillNames = [say(level.me?.buttons?.skill, lang) || say(BUTTONS.skill.face, lang), say(level.me?.buttons?.super, lang) || say(SUPER, lang)];
   const frame = (now) => {
     raf = win.requestAnimationFrame(frame);
     let dt = Math.min(50, last ? now - last : 16);

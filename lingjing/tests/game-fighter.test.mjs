@@ -257,6 +257,8 @@ test('the move list names every move with its keys, for the pause veil', () => {
   const lines = F.moveLines(LEVEL, 'zh', 'desk');
   for (const want of ['掌心火', 'S D + K/O', '升勾', 'D S D + K/O', 'S D S D', 'K K L', 'K+L', 'O+;']) assert.ok(lines.some((l) => l.includes(want)), want);
   assert.ok(F.moveLines(LEVEL, 'zh', 'touch').some((l) => l.includes('技')));
+  // In English, every line English: the keys' words and the touch buttons' faces too (Hanli 11-02: 「不少UI上没有英文」).
+  for (const kind of ['desk', 'touch']) for (const l of F.moveLines(LEVEL, 'en', kind)) assert.ok(!/[\u3400-\u9fff]/.test(l), `${kind}: ${l}`);
 });
 
 /* The painted frames (tools/fighter-frames.py; Hanli 10-27: frame by frame, as KOF '97 is made). */

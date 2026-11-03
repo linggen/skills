@@ -309,7 +309,7 @@ export function makeRopeGame(spec) {
     const r = s.level.r ?? BREAD_R;
     return `<g class="g-bing g-ft-item" data-see="thing" transform="translate(${n(x)} ${n(y)}) rotate(${n(spec.upright && !spec.hang ? 0 : (angle * 180) / Math.PI)}) scale(${n(scale, 2)})">${spec.thing(s, r)}</g>`;
   }
-  function playScene(s) {
+  function playScene(s, lang = 'zh') {
     const w = s.swing, live = s.phase === 'play', b = w.bread, L = s.level;
     let thing = '';
     const angle = w.hang ? w.hangA : b.angle;
@@ -327,7 +327,7 @@ export function makeRopeGame(spec) {
     const fx = s.phase === 'miss' && !calmOf(s) ? splash(b.position.x, Math.min(b.position.y, FLOOR - 4), s.t, { r: 11 }) : '';
     return scene(W, H, (spec.backdrop?.(s) ?? ground()) + gustPicture(s) + (L.stones ?? []).map((st) => spec.stone?.(st) ?? stonePicture(st)).join('') + (L.springs ?? []).map((sp) => springPicture(sp)).join('')
       + (L.thorns ?? []).map(thornPicture).join('') + sealsPicture(w, L)
-      + anchors + spec.target(s, calmOf(s)) + starsPicture(s) + w.vines.map((v, i) => vinePicture(v, i, w, live, s.phase)).join('') + crowsPicture(w)
+      + anchors + spec.target(s, calmOf(s), lang) + starsPicture(s) + w.vines.map((v, i) => vinePicture(v, i, w, live, s.phase)).join('') + crowsPicture(w)
       + w.bubbles.map((_, i) => bubblePicture(w, i)).join('') + back + thing + front + flecks(s) + fx + (s.must && s.must !== 'gust' ? teachMark(s) : '')
       // The vines' cut lines lie over everything: a tap on a vine above a bubble cuts the vine, never pops it.
       + w.vines.map((v, i) => vinePicture(v, i, w, live, s.phase, 'hits')).join('') + strapHit(s, live), `g-bread-cave g-ft-cave ${spec.cls ?? ''}`)
@@ -346,12 +346,12 @@ export function makeRopeGame(spec) {
     if (s.won) {
       // A thing that stays where it landed (the meat in the pan, the fox on the moss) is drawn there at the end.
       const rests = spec.rests && !s.skipped ? thingAt(s, s.level.mouth[0], s.level.mouth[1] - 6, 0, 0.9) : '';
-      return `<div class="g-bread g-ft g-ink is-won ${spec.cls ?? ''}">${head}${scene(W, H, (spec.backdrop?.({ ...s, phase: 'end' }) ?? ground()) + spec.target({ ...s, phase: 'end' }, true) + rests, `g-bread-cave g-ft-cave is-end ${spec.cls ?? ''}`)}<p class="g-line-say">${esc(s.skipped ? t.skipped : t.done)}</p></div>`;
+      return `<div class="g-bread g-ft g-ink is-won ${spec.cls ?? ''}">${head}${scene(W, H, (spec.backdrop?.({ ...s, phase: 'end' }) ?? ground()) + spec.target({ ...s, phase: 'end' }, true, lang) + rests, `g-bread-cave g-ft-cave is-end ${spec.cls ?? ''}`)}<p class="g-line-say">${esc(s.skipped ? t.skipped : t.done)}</p></div>`;
     }
     const row = stuck(s) && t.skip ? `<div class="g-pair">${btn(t.skip, 'data-g="skip"', 'main')}${btn(t.retry, 'data-g="retry"', 'soft')}</div>`
       : `<div class="g-bread-row">${btn(t.retry, 'data-g="retry"', 'quiet')}</div>`;
     const teaching = (s.teach || s.level.teach) && s.phase === 'play' && !stuck(s);
-    return `<div class="g-bread g-ft g-ink ${spec.cls ?? ''}">${head}${playScene(s)}<p class="g-line-say${teaching ? ' g-teach-say' : ''}">${esc(lineOf(s, t))}</p>${row}</div>`;
+    return `<div class="g-bread g-ft g-ink ${spec.cls ?? ''}">${head}${playScene(s, lang)}<p class="g-line-say${teaching ? ' g-teach-say' : ''}">${esc(lineOf(s, t))}</p>${row}</div>`;
   }
 
   const game = { meta: { ...meta, sounds: ROPE_SOUNDS }, newGame, act, tick, html, stuck, paceOf, sounds: ropeSounds };

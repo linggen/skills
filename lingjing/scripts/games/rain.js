@@ -341,14 +341,14 @@ function fallOf(leak, t) {
   return ((t - (leak.drops[0] - beat)) % beat) / beat;
 }
 
-function spotScene(s, i, L) {
+function spotScene(s, i, L, lang = 'zh') {
   const b = s.basins[i], leak = s.live ? leakOf(s.sched, i, s.t) : null, CAP = L.cap;
   const k = fallOf(leak, s.t);
   const thatch = beam(L, -((i * 53) % 150), 260);
   const drop = k != null ? `<path class="g-drop" transform="translate(45 ${n(10 + k * (b == null ? 52 : 30))})" d="M0 -5 C2 -1 3 1 3 2.5 A3 3 0 0 1 -3 2.5 C-3 1 -2 -1 0 -5Z"/>` : '';
   const land = k != null && k > 0.82 ? (b == null ? splash(45, 62, (k - 0.82) * 2400, { r: 6 }) : `<ellipse class="g-ripple" cx="45" cy="42" rx="${n(6 + (k - 0.82) * 60)}" ry="2"/>`) : '';
   const basin = b == null ? '' : `<g class="g-rain-basin${b >= CAP ? ' is-full' : ''}">${basinArt(L, 45, 68, 52, b / CAP, b >= CAP)}`
-    + `${b >= CAP ? '<text class="g-fullmark" x="84" y="30" text-anchor="end">满</text>' : ''}</g>`;
+    + `${b >= CAP ? `<text class="g-fullmark" x="84" y="30" text-anchor="end">${lang === 'en' ? 'Full' : '满'}</text>` : ''}</g>`;
   const stain = s.t < 0 ? '<ellipse class="g-stain" cx="45" cy="63" rx="40" ry="5"/>' // the flood, while 娘's line stands
     : b == null && leak ? '<ellipse class="g-stain" cx="45" cy="63" rx="13" ry="3"/>' : '';
   return scene(90, 70, ground(L, 90, 70) + thatch + stain + basin + drop + land, 'g-painted');
@@ -357,7 +357,7 @@ function spotHtml(s, i, t, lang, L) {
   const b = s.basins[i], drip = s.live && leakingAt(s.sched, i, s.t);
   const nope = s.nope?.i === i && s.t >= s.nope.at && s.t - s.nope.at < NOPE_MS;
   return `<button type="button" class="g-rain-spot${drip ? ' is-drip' : ''}${b == null ? '' : ' has-basin'}${b != null && b >= L.cap ? ' is-full' : ''}${nope ? ' is-nope' : ''}" data-g="spot" data-i="${i}">`
-    + `${spotScene(s, i, L)}<span class="g-rain-name">${L.spots[i][lang] ?? L.spots[i].zh}</span>`
+    + `${spotScene(s, i, L, lang)}<span class="g-rain-name">${L.spots[i][lang] ?? L.spots[i].zh}</span>`
     + `${drip ? `<span class="g-sr">${t.drip}</span>` : ''}</button>`;
 }
 

@@ -119,14 +119,14 @@ const POT = `${ART}games/fantong-pot.webp`;
 // About a third of the board wide, its rim on the mouth (rope-gen's MOUTH_Y).
 const POT_W = 132, POT_H = POT_W * 490 / 440, RIM = 0.306;
 const CHAIFANG = new URL('./boards/chaifang.webp', import.meta.url).href;
-export function potTarget(s, calm) {
+export function potTarget(s, calm, lang = 'zh') {
   const [mx, my] = s.level.mouth, x = mx - POT_W / 2, y = my - RIM * POT_H, eating = s.phase === 'eat' && !calm;
   const t = s.t ?? 0;
   const gulp = eating ? (t < 260 ? -Math.sin((t / 260) * Math.PI) * 0.5 : Math.sin(Math.min(1, (t - 260) / 360) * Math.PI)) : 0;
   const shake = eating && t > 300 ? Math.sin(t / 38) * 6 * Math.max(0, 1 - (t - 300) / 700) : 0;
   const pot = `<g class="g-ft-pot${s.phase === 'eat' ? ' is-eating' : ''}" transform="translate(${n(x)} ${n(y - gulp * 12)}) rotate(${n(shake)} ${n(POT_W / 2)} ${n(POT_H)}) scale(1 ${n(1 - gulp * 0.07, 3)})">`
     + `<image href="${POT}" width="${POT_W}" height="${n(POT_H)}"/></g>`;
-  return pot + (s.phase === 'eat' ? potSteam(s, mx, my, eating) + burpSeal(mx, my) : '');
+  return pot + (s.phase === 'eat' ? potSteam(s, mx, my, eating) + burpSeal(mx, my, lang) : '');
 }
 function potSteam(s, mx, my, moving) {
   if (!moving || s.t < 380) return '';
@@ -136,9 +136,9 @@ function potSteam(s, mx, my, moving) {
     return `<path class="g-ft-steam" d="M${n(mx + dx)} ${n(my - 14)} q${n(sway)} ${n(-rise / 2)} ${n(-sway / 2)} ${n(-rise)}" opacity="${n(0.55 * (1 - k), 2)}"/>`;
   }).join('');
 }
-const burpSeal = (mx, my) => {
+const burpSeal = (mx, my, lang = 'zh') => {
   const x = mx + (mx > W / 2 ? -78 : 46), y = my - 74;
-  return `<g class="g-ft-burpseal" transform="translate(${n(x)} ${n(y)})"><g class="g-ft-burpseal-in"><rect x="-17" y="-17" width="34" height="34" rx="5"/><text y="8" text-anchor="middle">嗝</text></g></g>`;
+  return `<g class="g-ft-burpseal" transform="translate(${n(x)} ${n(y)})"><g class="g-ft-burpseal-in"><rect x="-17" y="-17" width="34" height="34" rx="5"/><text y="${lang === 'en' ? 4 : 8}" text-anchor="middle"${lang === 'en' ? ' class="is-en"' : ''}>${lang === 'en' ? 'Burp' : '嗝'}</text></g></g>`;
 };
 export const niugu = beat({
   meta: { id: 'niugurope', name: { zh: '喂饭桶 · 一根牛骨头', en: 'Feeding the Rice Bucket · A soup bone' }, how: { zh: '划断绳，让牛骨头落上柴墩，再点门缝里的风，把它吹进饭桶嘴里。', en: 'Cut the strings so the bone lands on the chopping block, then tap the draught from the door to blow it into the Rice Bucket\'s mouth.' } },
