@@ -221,8 +221,10 @@ const riddleOpen = (state, scene, exit, key, now) => {
    comes back. Null when there is nothing to set aside. */
 function setRiddleAside(content, state, ctx) {
   if (!ctx.said || !atScene(content, state)) return null;
+  // No question at all (askOf is null — in 闭关, live 2026-11-02 on dc4-1102: every Look with the player's words threw
+  // 「null is not an object」 and Ling read the world as silent): nothing to set aside.
   const ask = askOf(content, state, ctx);
-  const back = ask.options.some(o => o.answer != null) && ask.options.find(o => o.look && o.label === String(ctx.said).trim());
+  const back = Boolean(ask?.options?.some(o => o.answer != null)) && ask.options.find(o => o.look && o.label === String(ctx.said).trim());
   if (!back) return null;
   const s = clone(state), prefix = `${sceneOf(content, s).id}/`;
   s.riddles = Object.fromEntries(Object.entries(s.riddles).map(([id, slot]) => [id, id.startsWith(prefix) ? { ...slot, open: undefined } : slot]));

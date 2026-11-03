@@ -186,6 +186,8 @@ const THEN_QUIET = 'No question this time — the stage holds what is before him
 /* The stage plays the book's passage in its dialogue box (rules/tell.mjs):
    Ling never retells it — `staged` is only what it is playing. */
 export const THEN_STAGED = 'The stage is playing the book\'s passage for this beat in its dialogue box (`staged`: what it plays, so you know the story): never retell it, never narrate the scene or its people, never list the choices. Answer only what the player typed, in a line or two in the world; else a line at most. ';
+/* In 闭关 (rules/seclusion.mjs): Look always answers — he is in 闭关, the time left, and the world holds until 出关. */
+export const THEN_SECLUSION = 'He is in 闭关: the world holds still until the player taps 出关 on the stage\'s card. Say so in a line, in the world, with the time left (`seclusion.left_min`: the minutes until his 体力 is whole; 0 — whole now, he may come out when he likes). Never offer 出关, change nothing, and do NOT call AskUser. ';
 export const thenFor = (result, ask = undefined) => (result?.staged?.length ? THEN_STAGED : '') + (result?.place?.meet?.veiled ? (result.place.meet.kind === 'trial' ? THEN_TRIAL : THEN_VEIL) : (result?.quest?.say ? THEN_CALL : '')
   + (ask === null ? THEN_QUIET : entered(result) ? (won(result) ? CHEER : '') + sceneThen(result) : won(result) ? THEN_CHEER : THEN));
 const withAsk = (result, content, state, ctx) => ({ ...onStage(content, state, ctx, result), ...result });

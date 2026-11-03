@@ -164,7 +164,9 @@ export function seclusionBrief(content, state, now) {
   // `full_at`: when the pool is whole at the 闭关 rate (null when it is); `fill_hours` the whole pool's hours, for the card.
   const ms = seclusionMsPerPoint(content), max = staminaMax(content, state);
   const left = Math.max(0, max - told.stamina.now), at = ms && left ? new Date(now.getTime() + left * ms).toISOString() : null;
-  return { ...told, running: true, fill_hours: content.rewards.stamina.refill?.seclusion_hours ?? null, full_at: at, target: targetOf(content, state, now), ...(RULE(content).art ? { art: RULE(content).art } : {}) };
+  // `left_min`: the minutes until the pool is whole (0: whole now — 出关 is his whenever he likes), the time left Ling tells.
+  const leftMin = at ? Math.max(0, Math.ceil((new Date(at) - now) / 60000)) : 0;
+  return { ...told, running: true, fill_hours: content.rewards.stamina.refill?.seclusion_hours ?? null, full_at: at, left_min: leftMin, target: targetOf(content, state, now), ...(RULE(content).art ? { art: RULE(content).art } : {}) };
 }
 
 /* 闭关 — `info` (what may be chosen; what is running), `enter` with `focus`

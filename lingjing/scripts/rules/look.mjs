@@ -8,7 +8,7 @@ import { poolDeal } from './pool.mjs';
 import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, phaseName, realmName, threshold, seedOf, cultivating, layerNo, layerName, stageOf } from '../state.mjs';
 import { duanCooling, duanOdds } from './breakthrough.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
-import { askOf, THEN_BORN, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
+import { askOf, THEN_BORN, THEN_SECLUSION, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
 import { fightSetup, heldMark, pouchBrief, readOf } from './cards.mjs';
 import { doorOffers } from './pouch.mjs';
 
@@ -802,6 +802,8 @@ function onStage(content, state, ctx, result = {}, brief = null) {
   const naming = cards.some(c => c.card === 'value') ? THEN_VALUE : cards.some(c => c.card === 'born') ? THEN_BORN : '';
   // Only a cauldron ready to throw; shut after a failure, the card only waits.
   const throwing = cards.some(c => c.card === 'breakthrough' && view.scene?.exits?.find(e => e.id === c.id)?.breakthrough?.ready) ? THEN_THROW : '';
+  // In 闭关 the world holds (rules/seclusion.mjs): that is the whole answer — he is in it, and the time left.
+  if (view.seclusion?.running) return { then: THEN_SECLUSION, ask: null, stage: cards };
   return { then: thenFor(result, ask) + naming + throwing, ask, stage: cards };
 }
 
