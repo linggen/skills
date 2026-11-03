@@ -82,7 +82,8 @@ test('the layers are ground one at a time (2026-10-16: no story rise): 定风 wa
   // Each rise waits on the 阶段任务 — the realm full at the layer below it. Declared on the exit (`_stage`) until the
   // ladder carries the gate (caps.hui.h11.gates); once it does, every rise is one of its gates.
   const gates = content.ladder.caps?.hui?.h11?.gates;
-  for (const [key, layer] of Object.entries(RISES)) {
+  // 09-year's 伏天 (once 四层 → 七层 in one passage) is no gate since 2026-11-03: 定风 is the 五层 the book tells, two scenes before.
+  for (const [key, layer] of Object.entries(RISES).filter(([k]) => k !== '09-year/futian')) {
     const [sid, eid] = key.split('/');
     if (gates) assert.ok(gates.some((g) => g.scene === sid && g.exits.includes(eid) && g.layer === layer - 1), `${key} gated at ${layer - 1}层圆满`);
     else assert.match(CH.scenes[sid].exits.find((e) => e.id === eid)._stage, new RegExp(`练气${'一二三四五六七'[layer - 2]}层圆满`), key);
@@ -121,17 +122,19 @@ test('walking 古七 by its boards and fights: 修为 rises at each cultivation 
   s = go(s, 'fire');
   assert.ok(s.bag['qi-pill'] > 0, 'the way on: a 聚气丹 (认方 cut 2026-10-19)');
   assert.deepEqual([s.scene, s.step], ['09-danfang', 4], '定风 lifts nothing: 五层 is ground');
-  s = go(play(s, 'danfang-min'), 'smell');
+  s = play(s, 'danfang-min');
+  assert.equal(s.step, 5, '闵丹师\'s board: the 修为 banked past 四层 steps him, 定风 behind him — his own, the book\'s 「他过了五层」');
+  s = go(s, 'smell');
   assert.equal(s.scene, '09-year');
   s = go(play(s, 'year-kanlu'), 'qingming'); // 闻焦 cut 2026-10-19: told; 看炉 (2026-10-26) the nights
   s = go(s, 'futian');
-  assert.deepEqual([s.scene, s.step], ['09-lingcao', 4], '伏天 moves nothing');
+  assert.deepEqual([s.scene, s.step], ['09-lingcao', 5], '伏天 moves nothing (and holds nothing since 2026-11-03)');
   const lc = look(s, content, ctx()).scene.exits.find((e) => e.id === 'fight');
   assert.equal(lc.duel.creature.id, 'qiuyu');
   s = go({ ...s, wins: { ...s.wins, 'lingcao-qiuyu': NOW.toISOString() } }, 'fight');
   assert.equal(s.scene, '09-fangshi');
   s = go(play(play(s, 'fangshi-qian'), 'fangshi-liuyun'), 'autumn');
-  assert.deepEqual([s.scene, s.step], ['09-suifeng', 5], 'the boards\' 修为 banked past 四层 steps him once 伏天 is behind him — his own');
+  assert.deepEqual([s.scene, s.step], ['09-suifeng', 5], '五层 until 沂水');
   s = go(YEARS['09-suifeng'].reduce((x, id) => play(x, id), s), 'on'); // 年四's seven boards (2026-10-27)
   assert.equal(s.scene, '09-yishui');
   s = go(play(s, 'yishui-reed', 'still'), 'night');

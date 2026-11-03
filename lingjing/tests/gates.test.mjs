@@ -11,6 +11,7 @@ import { look, move, playTo, resolve, targetOf } from '../scripts/rules.mjs';
 import { health } from '../scripts/rules/health.mjs';
 import { sealedOf } from '../scripts/rules/world.mjs';
 import { gatesOf, stageGate, stageNow } from '../scripts/rules/gates.mjs';
+import { settleHeld } from '../scripts/rules/cap.mjs';
 import { pay } from '../scripts/rules/core.mjs';
 import { WORDS, bookPopHtml, panelActsHtml } from '../scripts/cards.js';
 
@@ -28,8 +29,11 @@ test('every 回 past 古三 holds one (古九 aside); 古七\'s four as the book
   const by = {};
   for (const g of gatesOf(content)) (by[g.hui] ??= []).push(`${g.scene}@${g.layer}`);
   assert.deepEqual(by, {
-    h05: ['wm-chaifang@1'], h07: ['wm-mijing@2', 'wm-kaikai@3', 'wm-xiqi@4'], h08: ['wm-qianye@4'], // 古五's 石室 on 三层 then 四层圆满, 古六's eve on 四层圆满, since 2026-10-31
-    h11: ['09-furnace@4', '09-year@4', '09-yishui@5', '09-futian@6'], h09: ['09-shenshi@7', '09-dingfeng@8', '09-yanceng@9'],
+    // 古五's 石室 on 三层 then 四层圆满 (2026-10-31); 古六's eve on 三层圆满 again since 2026-11-03 (a save that came through the 石室
+    // short steps into 四层 for 褚先生's 「四层」 and fills it across the 大比, not at the eve)
+    h05: ['wm-chaifang@1'], h07: ['wm-mijing@2', 'wm-kaikai@3', 'wm-xiqi@4'], h08: ['wm-qianye@3'],
+    // 古七: 定风 is the 五层 the book tells (「那天早上……他过了五层」) — 09-year's 伏天 asks nothing since 2026-11-03 (it held 五层 two scenes past it)
+    h11: ['09-furnace@4', '09-yishui@5', '09-futian@6'], h09: ['09-shenshi@7', '09-dingfeng@8', '09-yanceng@9'],
   });
   assert.equal(content.ladder.caps.hui.h11.layer, 6, '古七 grinds to 六层 (its rises come behind its gates)');
   // Nothing in the rules names a 回 or a scene of them.
@@ -104,7 +108,7 @@ test('every gate stands where he can walk away to earn it, and come back: refuse
   for (const id of GATED) {
     const { s: s0, now } = below(id), c = { now, quests: [] };
     const way = gatesOf(content).find(x => x.scene === id).exits[0];
-    // 09-year's is the catch-up for a save that passed the furnace before its rise: one walked here is past it.
+    // A gate whose layer the walk already stands past (a catch-up gate, 古六's eve since 2026-11-03): walked through.
     if (reached.get(id).s.step > s0.step) { assert.equal(stageGate(content, reached.get(id).s, id, way), null, id); continue; }
     // The scene's own board played, its fight won: only the stage quest stands.
     const ex = content.chapters[s0.chapter].scenes[id].exits.find(e => e.id === way);
@@ -136,17 +140,23 @@ test('古七\'s cap follows its stage quests (2026-10-16): grinding stops at the
   // Before 定风: 四层, full, and no further — the furnace's rise still carries him to 五层.
   const snow = grind(at([], 4, 0));
   assert.deepEqual([snow.step, snow.progress], [4, th[4]]);
-  // Past 定风 (and 09-year's catch-up), before 沂水: 五层 full, never 六层.
+  // Past 定风, before 沂水: 五层 full, never 六层.
   const year = grind(at(['09-furnace', '09-year', '09-lingcao'], 5, 0));
   assert.deepEqual([year.step, year.progress], [5, th[5]]);
   // Past 沂水: 六层 — the autumn's 七层 is the story's.
   const xie = grind(at(['09-furnace', '09-year', '09-lingcao', '09-yishui', '09-xie'], 6, 0));
   assert.deepEqual([xie.step, xie.progress], [6, th[6]]);
-  // 定风 lifts nothing (no story rise since 2026-10-16): 四层圆满 still, and 五层 comes of his own work after.
+  // 定风 lifts nothing by itself (no story rise since 2026-10-16: 「不要直接跳层」) — but its gate passed, the 四层 he ground full
+  // steps the moment the next 修为 comes, or on load (rules/cap.mjs settleHeld); 09-year's 伏天 holds nothing (2026-11-03).
   const fire = resolve({ ...snow, scene: '09-furnace', place: content.chapters['00-zhuji'].scenes['09-furnace'].at, tasks: { 'furnace-ding': { status: 'done' } }, stamina: 100, stamina_at: NOW.toISOString() }, content, ctx, { exit: 'fire' });
   assert.equal(fire.result.ok, true, JSON.stringify(fire.result).slice(0, 200));
   assert.equal(fire.state.step, 4, 'the story moved no layer');
-  assert.equal(grind({ ...fire.state, scene: null, place: 'houshan', done_scenes: [...fire.state.done_scenes, '09-year'] }).step, 5, 'ground to 五层 once the year is walked');
+  assert.equal(grind({ ...fire.state, scene: null, place: 'houshan' }).step, 5, 'ground to 五层 right past 定风, the year not walked yet');
+  // A 四层 already full when 定风 is walked steps on load — never a free rise: one short of 圆满 stays 四层.
+  const past = { ...fire.state, scene: '09-danfang', place: content.chapters['00-zhuji'].scenes['09-danfang'].at, progress: th[4] + 80 };
+  const settled = settleHeld(content, past);
+  assert.deepEqual([settled.step, settled.progress > 0], [5, true], '定风 behind him and 四层 full: 五层 on load');
+  assert.equal(settleHeld(content, { ...past, progress: th[4] - 1 }).step, 4, 'short of 圆满: no step');
 });
 
 test('a refusal stands where the eye is: over the choices it answers, in the box and on the scene card (2026-10-16: under them it fell below a phone\'s fold)', () => {

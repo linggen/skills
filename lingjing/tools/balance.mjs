@@ -187,6 +187,8 @@ export function play(content, player, { model = content.balance.model, ladder = 
   const held = () => { if (s.progress < need()) return false; const top = s.step >= tierAt(s.tier).thresholds.length - 1, cap = capAt(); return top || (cap && rank(s.tier, s.step + 1) > cap.grind); };
   const gateMet = g => { const a = rank(s.tier, s.step), b = rank(g.tier, g.step); return a > b || (a === b && s.progress >= need()); };
   let wins = 0;
+  /* Each scene as he leaves it: the layer he stands on and whether he is held there full, the door shut (the pacing walk, tests/pacing.test.mjs). */
+  const trace = [];
   /* 灵石 (2026-10-16, Hanli: 灵石 buys pills): what comes in (a story step's and a board's grants, a
      fight won at a haunt, the day's 功课, an errand) and the pills a fight takes out — `pills` a fight
      at the shelf's mean price, bought only with what he has, so nobody goes broke. */
@@ -370,6 +372,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
           // A story fight on the way takes its pills too.
           if (w.fight) takePills(1 / model.fight_win_rate);
           done.add(w.id);
+          trace.push({ id: w.id, hui: w.hui ?? hui, tier: s.tier, step: s.step, held: !zero() && held(), day: at() });
           r.end = at();
           i += 1;
         }
@@ -420,7 +423,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
   }
   // A 回's days run from the last one's end to its own (time spent waiting on it counts).
   out.forEach((r, k) => { const prev = k ? out[k - 1].end : 0; r.days = r.end == null ? null : r.end - prev; });
-  return { rows: out, gates: [...gates.values()], end: { tier: s.tier, step: s.step, progress: Math.round(s.progress) }, days: day, wealth: { ...W, perDay: day ? W.earned / day : 0, spentPerDay: day ? W.spent / day : 0 }, ledger };
+  return { rows: out, gates: [...gates.values()], trace, end: { tier: s.tier, step: s.step, progress: Math.round(s.progress) }, days: day, wealth: { ...W, perDay: day ? W.earned / day : 0, spentPerDay: day ? W.spent / day : 0 }, ledger };
 }
 
 /* The three players' days per 回. */

@@ -4,7 +4,8 @@
 // third dawn) on 四层圆满 right before 「第三天天快亮」. Through the rooms before it (wm-xirang, wm-tama) the book still
 // has him at 二层: 古五's cap holds there (`holds`) until the story reaches the 石室's scene. Inside the 秘境 the world outside is
 // frozen, so the 修为 is earned in the room: the 石室's own 主力 levels, hosted there as practice. A save that came through the
-// 石室 before this (Hanli's, at 古六's eve on 三层) is never pulled back: it stands at the eve, which asks 四层圆满 now, and earns it.
+// 石室 before this (Hanli's, at 古六's eve on 三层) is never pulled back: it stands at the eve, which asks 三层圆满 (again since
+// 2026-11-03; 四层圆满 10-31 → 11-03 held 四层 full from the eve to 定风), earns it, and steps into 四层 for 褚先生's 「四层」.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
@@ -31,12 +32,12 @@ const atShishi = (step, progress, extra = {}) => base({ scene: 'wm-kaikai', plac
 const atXiqi = (step, progress, extra = {}) => atShishi(step, progress, { scene: 'wm-xiqi', done_scenes: [...BEFORE, ...INSIDE, 'wm-kaikai'], ...extra });
 const rank = step => rankOf(content, 'qi', step);
 
-test('the data: 古五 reaches 四层, held at 二层 until the 石室; wm-kaikai · sit on 三层圆满, wm-xiqi · draw on 四层圆满, with the room\'s own words; 古六\'s eve on 四层圆满', () => {
+test('the data: 古五 reaches 四层, held at 二层 until the 石室; wm-kaikai · sit on 三层圆满, wm-xiqi · draw on 四层圆满, with the room\'s own words; 古六\'s eve on 三层圆满 (2026-11-03)', () => {
   const h07 = content.ladder.caps.hui.h07;
   assert.equal(h07.layer, 4);
   assert.deepEqual(h07.holds, [{ layer: 2, until: 'wm-kaikai' }]);
   const by = gatesOf(content).filter(g => ['h07', 'h08'].includes(g.hui)).map(g => `${g.scene}/${g.exits.join('|')}@${g.layer}`);
-  assert.deepEqual(by, ['wm-mijing/pay|refuse@2', 'wm-kaikai/sit@3', 'wm-xiqi/draw@4', 'wm-qianye/eve@4']);
+  assert.deepEqual(by, ['wm-mijing/pay|refuse@2', 'wm-kaikai/sit@3', 'wm-xiqi/draw@4', 'wm-qianye/eve@3']);
   for (const id of ['wm-kaikai', 'wm-xiqi']) assert.match(gatesOf(content).find(g => g.scene === id).say.zh, /石室/, 'inside, the refusal points at the room, not 功课');
   // The room hosts the work: the 石室's two 主力 levels again, practice boards (hosted, not a stall).
   const room = Object.values(content.places).flatMap(d => d.places).find(p => p.id === 'mijing-shishi');
@@ -104,7 +105,7 @@ test('at wm-kaikai short of 三层圆满, at wm-xiqi short of 四层圆满: refu
   assert.equal(full.state.scene, 'wm-chu');
 });
 
-test('a save already past the 石室 keeps its place: at 古六\'s eve on 三层 168/570 it stays on its layer, the eve asks 四层圆满, and grinding there is open', () => {
+test('a save already past the 石室 keeps its place: at 古六\'s eve on 三层 168/570 it stays on its layer, the eve asks 三层圆满 (2026-11-03), and grinding there is open', () => {
   const eve = base({ scene: 'wm-qianye', place: 'waimen', tier: 'qi', step: 3, progress: 168,
     done_scenes: [...BEFORE, ...INSIDE, 'wm-kaikai', 'wm-chu', 'wm-hetan', 'wm-luobo', 'wm-yaban'], stages: ['wm-chaifang/count', 'wm-mijing/pay'], tasks: { 'qianye-qiajue': { status: 'done', done_at: NOW.toISOString() } } });
   const loaded = fitWorld(migrate(structuredClone(eve), content), content);
@@ -112,12 +113,15 @@ test('a save already past the 石室 keeps its place: at 古六\'s eve on 三层
   assert.equal(settleHeld(content, eve), eve, 'nothing to step');
   assert.equal(settleStages(content, eve, NOW), eve, 'the 石室\'s quest is behind him, short: nothing paid yet');
   const q = stageNow(content, eve);
-  assert.equal(q.step, '练气四层圆满');
+  assert.equal(q.step, '练气三层圆满');
   assert.equal(q.met, false);
   assert.equal(resolve(eve, content, ctx, { exit: 'eve' }).result.refused, 'stage');
-  assert.equal(underCap(content, eve, 'qi', 4), true, '古六 may grind to 四层');
+  assert.equal(underCap(content, eve, 'qi', 4), false, 'before the eve, 三层 fills (the gate ahead holds it, rules/cap.mjs heldBy)');
+  assert.equal(underCap(content, { ...eve, done_scenes: [...eve.done_scenes, 'wm-qianye'] }, 'qi', 4), true, '古六 grinds 四层 past the eve');
   assert.ok(look(eve, content, ctx).stage_quest?.work?.place, 'and the 事 row points to where 修为 is earned');
   // Earned at the eve: the 石室's quest, behind him, is paid once on the next load (补发) — the eve's is handed in there.
+  // (四层圆满 here pays the 石室's 四层 too; 三层圆满 alone opens the eve.)
+  assert.equal(resolve(earnedFor(content, { ...eve, progress: th[3] }, 'eve'), content, ctx, { exit: 'eve' }).result.ok, true, '三层圆满 opens the eve');
   const done = { ...eve, step: 4, progress: th[4] };
   const back = settleStages(content, done, NOW).stages;
   assert.ok(back.includes('wm-kaikai/sit') && back.includes('wm-xiqi/draw'), 'both 石室 quests, behind him, paid once');
