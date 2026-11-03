@@ -142,6 +142,8 @@ const toFuzhu = (s = start()) => {
   // gains only the first three (cards.md § 4), and these tests fight a 卷 boss with what a player holds later.
   return { ...at, scene: '00-fuzhu', place: 'sibei', bag: { ...at.bag, lingzhi: 1 }, cards: [...new Set([...(at.cards ?? []), ...ROAD_HAND])] };
 };
+/* …and the sword 09-snow gave, worn: its strike fights as the card 火柴 did (cards.mjs strikeOf, Hanli 11-03). */
+const SWORD = (s) => ({ wear: { ...s.wear, weapon: 'huochai-jian' }, bag: { ...s.bag, 'huochai-jian': 1 } });
 const ROAD_HAND = ['mucao', 'huiqi', 'huoya', 'huodan', 'bingzhui', 'jinren', 'tuqiang', 'mutang', 'yangzhen', 'houtu', 'luying', 'zhennu', 'ruxi'];
 /* A save read under the retired root rule, born without 金 (v1 — his own
    save's 木 水 火 土): what a root it lacks, lent by the arms, does. */
@@ -1772,7 +1774,7 @@ test('chapter 1: the shaman sent first, then the dragons\' trial — fought out 
   // won on some day's hand: then 站着，不跪 walks on to the fallen tower (古九's 老胡), then the deep
   let won = null;
   // (the hand the road gives by 古九 — the walk here gains only the first cards; cards.md § 4)
-  for (let k = 0; k < 6 && won?.result.outcome !== 'won'; k += 1) won = fightOut({ ...s, seed: `trial-${k}`, cards: [...new Set([...(s.cards ?? []), ...ROAD_HAND])] }, 'shuanglong-trial', { c: octx() });
+  for (let k = 0; k < 6 && won?.result.outcome !== 'won'; k += 1) won = fightOut({ ...s, seed: `trial-${k}`, cards: [...new Set([...(s.cards ?? []), ...ROAD_HAND])], ...SWORD(s) }, 'shuanglong-trial', { c: octx() });
   assert.equal(won.result.outcome, 'won', JSON.stringify(won.result.log?.slice(-3)));
   const r = answer(resolve, won.state, { exit: 'stand' });
   assert.equal(r.state.scene, '01-tower'); assert.equal(r.result.paid.progress, 0); // no story 修为 (2026-10-16)

@@ -54,7 +54,7 @@ function picksFor(setup, pass = false) {
 
 // The hand the road gives by 古九 (tools/story-fights.mjs STOPS.h10): the open world's save moved there holds it.
 const ROAD_HAND = ['niangbing', 'yijian', 'tuna', 'mucao', 'zheng', 'huiqi', 'huoya', 'huodan', 'bingzhui', 'jinren', 'tuqiang', 'mutang', 'yangzhen', 'houtu', 'luying', 'suijin', 'zhennu', 'ruxi'];
-const atHaunt = () => ({ ...openWorld(), chapter: '01-ji', scene: null, place: 'fuli', tier: 'core', step: 0, progress: 0, stamina: 50, cards: ROAD_HAND, updated: NOW.toISOString() });
+const atHaunt = () => ({ ...openWorld(), chapter: '01-ji', scene: null, place: 'fuli', tier: 'core', step: 0, progress: 0, stamina: 50, cards: ROAD_HAND, wear: { weapon: 'huochai-jian' }, bag: { 'huochai-jian': 1 }, updated: NOW.toISOString() }); // the sword worn: its strike (Hanli 11-03)
 
 test('说说雷神 away from 雷泽: Look carries the creature from its heritage, and the 问询 then', () => {
   const w = world(atHaunt());
