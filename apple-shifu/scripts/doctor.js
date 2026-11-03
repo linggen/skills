@@ -516,13 +516,13 @@ async function startHardwareProbe() {
     // agent's LastScan tool all read from it.
     const summary = buildScanSummary(results);
     markScanComplete(summary);
-    persistScanSnapshot(summary, sessionId).catch(() => {});
+    persistScanSnapshot(summary, sessionId).catch((e) => console.error('Shifu:', e));
 
     // And the whole readout, from the same results this page was built from,
     // so a question three turns later is answered from the scan the user is
     // looking at rather than from nine summary numbers.
     persistReadout(buildReadout(results, score, breakdown), sessionId)
-      .catch(() => {});
+      .catch((e) => console.error('Shifu:', e));
 
     // The page draws the scan itself — every figure as it was measured — and
     // the agent only comments on it (SKILL.md "After a scan").

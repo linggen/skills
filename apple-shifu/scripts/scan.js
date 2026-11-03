@@ -9,20 +9,40 @@ function shellEsc(s) {
   return "'" + s.replace(/'/g, "'\\''") + "'";
 }
 
+/** The fetch header that tells the data channel how long this call may wait
+    for its reply (shared/channel.js). Without it a call waits 30 s. */
+const BUDGET_HEADER = 'X-Linggen-Budget-Ms';
+/** Time for the reply on top of the command's own budget. */
+const REPLY_MARGIN_MS = 15_000;
+
 /** One command through the daemon. `timeoutMs` raises the daemon's own 30 s
     ceiling — a `du` over a big folder runs well past it, and a command that
     hits the ceiling comes back `exit_code: -1` with "Command timed out" and
-    nothing on stdout, which is how a whole breakdown used to vanish. */
+    nothing on stdout, which is how a whole breakdown used to vanish. The
+    same budget, plus a margin, is how long the channel waits for the reply.
+
+    Never throws: a call that got no answer (the channel down, the reply
+    late) comes back `{ failed: true, exit_code: -1, stderr: <why> }` with
+    empty stdout, so one command that failed costs its own reading, never
+    the whole scan (2026-11-03: one slow folder aborted every full rescan). */
 export async function bash(command, sessionId, timeoutMs) {
   const body = { project_root: '/tmp', command };
   if (timeoutMs) body.timeout_ms = timeoutMs;
   if (sessionId) body.session_id = sessionId;
-  const resp = await fetch('/api/bash', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  return resp.json();
+  const headers = { 'Content-Type': 'application/json' };
+  if (timeoutMs) headers[BUDGET_HEADER] = String(timeoutMs + REPLY_MARGIN_MS);
+  try {
+    const resp = await fetch('/api/bash', { method: 'POST', headers, body: JSON.stringify(body) });
+    return await resp.json();
+  } catch (e) {
+    console.warn(`Shifu: no answer for \`${command.slice(0, 60)}\`:`, e);
+    return { failed: true, exit_code: -1, stdout: '', stderr: e?.message || String(e) };
+  }
+}
+
+/** A write that did not land is an error its caller can report. */
+function mustLand(res, what) {
+  if (res?.failed || res?.exit_code) throw new Error(`${what} not saved: ${res?.stderr || `exit ${res?.exit_code}`}`);
 }
 
 // Persist a compact scan summary for the agent's LastScan tool and delta-led
@@ -35,7 +55,7 @@ export async function persistScanSnapshot(summary, sessionId) {
   const stamp = `${summary.date || 'scan'}-${Date.now()}`;
   const cmd = `mkdir -p "${dir}/scans" && printf '%s\\n' ${shellEsc(json)} > "${dir}/scans/${stamp}.json" && printf '%s\\n' ${shellEsc(json)} > "${dir}/latest.json"`
     + ' && "$HOME/.linggen/skills/apple-shifu/scripts/quest.sh" shifu-scan';
-  await bash(cmd, sessionId);
+  mustLand(await bash(cmd, sessionId), 'scan snapshot');
 }
 
 // The full readout the agent pulls with SystemReadout — every row of the scan
@@ -48,10 +68,11 @@ export async function persistScanSnapshot(summary, sessionId) {
 export async function persistReadout(readout, sessionId) {
   const dir = '$HOME/.linggen/skills/apple-shifu/data';
   const json = JSON.stringify(readout, null, 1);
-  await bash(
+  const res = await bash(
     `mkdir -p "${dir}" && printf '%s\\n' ${shellEsc(json)} > "${dir}/readout.json"`,
     sessionId,
   );
+  mustLand(res, 'readout');
 }
 
 // ---------------------------------------------------------------------------
@@ -209,28 +230,40 @@ async function homeFolderSizes(sessionId, onCount) {
   const lane = async () => {
     while (next < names.length) {
       const name = names[next++];
-      // "$HOME"/'name' — never quote a path that still holds $HOME, or the
-      // shell writes to a literal '$HOME' directory instead of expanding it.
-      const path = `"$HOME"/${shellEsc(name)}`;
-      if (Date.now() > deadline) {
-        unmeasured.push({ path: `~/${name}`, why: 'the scan ran out of time' });
-        continue;
-      }
-      const res = await bash(`du -sk ${path}`, sessionId, DIR_BUDGET_MS);
-      const parsed = parseDirSizes(res.stdout || '');
-      if (parsed.length) dirs.push({ ...parsed[0], path: `~/${name}` });
-      else if (timedOut(res)) unmeasured.push({ path: `~/${name}`, why: 'still going after four minutes' });
-      // macOS guards ~/.Trash and a few others until the app is given Full
-      // Disk Access — a different answer from "this folder is empty".
-      else if (/not permitted|permission denied/i.test(res.stderr || '')) {
-        unmeasured.push({ path: `~/${name}`, why: 'macOS will not let this app read it' });
-      } else unmeasured.push({ path: `~/${name}`, why: 'could not be read' });
+      const why = Date.now() > deadline
+        ? 'the scan ran out of time'
+        : await measureFolder(name, sessionId, dirs);
+      if (why) unmeasured.push({ path: `~/${name}`, why });
       onCount?.(++done, names.length);
     }
   };
   await Promise.all(Array.from({ length: Math.min(DIR_LANES, names.length) }, lane));
   dirs.sort((a, b) => b.size_gb - a.size_gb);
   return { dirs, unmeasured };
+}
+
+/** Why a folder that measured nothing went unmeasured, first match wins. */
+const UNMEASURED_WHY = [
+  [(res) => res.failed, (res) => `no answer from Linggen (${res.stderr})`],
+  [timedOut, () => 'still going after four minutes'],
+  // macOS guards ~/.Trash and a few others until the app is given Full Disk
+  // Access — a different answer from "this folder is empty".
+  [(res) => /not permitted|permission denied/i.test(res.stderr || ''), () => 'macOS will not let this app read it'],
+];
+
+/** Measure one home folder into `dirs`; '' when it was measured, else why
+    not. Its failure is its own row, never the whole breakdown's. */
+async function measureFolder(name, sessionId, dirs) {
+  // "$HOME"/'name' — never quote a path that still holds $HOME, or the
+  // shell writes to a literal '$HOME' directory instead of expanding it.
+  const res = await bash(`du -sk "$HOME"/${shellEsc(name)}`, sessionId, DIR_BUDGET_MS);
+  const parsed = parseDirSizes(res.stdout || '');
+  if (parsed.length) {
+    dirs.push({ ...parsed[0], path: `~/${name}` });
+    return '';
+  }
+  const hit = UNMEASURED_WHY.find(([matches]) => matches(res));
+  return hit ? hit[1](res) : 'could not be read';
 }
 
 function parseDirSizes(duOut) {
