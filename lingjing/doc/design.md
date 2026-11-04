@@ -1138,10 +1138,16 @@ pages, never linked in the game and blank without `?dev=1`: the 游戏厅 `scrip
 - **Two ways out, top right, from the first moment**, on every board on every surface (the stage, the 游戏厅, the phone):
   **留** (留着以后玩) then **✕** (不玩了). No stuck wait, no question asked, mid-fight or mid-clock alike. No module draws its own skip.
   A story fight's card, a scene's riddle and a 传闻 step board carry the same pair; on a fight or a riddle both pass it.
-- **✕ puts it away**: a story board goes on as after a win and never comes back; a board he chose is put down (收手);
-  an errand's board takes the errand's cut (「跳过 · 酬减半」); a 游戏厅 board is dealt again.
+- **✕ puts it away, and never pays** (2026-11-04, Hanli at 执事堂's 象棋残局: 「点关闭, 结果给奖励了」): a story board goes on
+  as after a win and never comes back; a board he chose, an errand's too, is put down (收手) — no pay, no 体力, the errand
+  still open to play later; a 游戏厅 board is dealt again.
+- **跳过 · 酬减半** (2026-10-27) is an errand board's own words button under the board ("Skip · half pay"), never the ✕,
+  and only once he is stuck: a loss on that board counted (`task lost`, `board_losses`; Look's task `skip`). It meets the
+  errand at the board's cut pay (rules/tasks.mjs errandSkip); `skip` sent before that is the ✕ (put down).
 - **留 keeps it**: the story goes on exactly as on ✕, and the board waits in 「收着的棋局」 (the 事 book, the tray's
-  「收着 n」, Look's `kept`) — at most 20, each with 丢; never offered by itself. Taken up and won, it pays its grant once.
+  「收着 n」, Look's `kept`) — at most 20, each with 丢; never offered by itself: a kept board never stands on the stage
+  again until he takes it up (Look's task `kept`, stage.mjs — 2026-11-04 「点留没有用」, an errand's board was dealt again at
+  once). Taken up and won, it pays its grant once; an errand met by it takes it off the list.
 - **A skip pays nothing** — no grant, grade or mark. What the story needs lives in the task's
   `gives` (paid even on a skip); rewards live in `grant`. Skipping never blocks progress.
 - **Timing taps act on pointerdown**; every window ≥250 ms; 回看 opens over a board and pauses it.

@@ -121,15 +121,17 @@ function log(row) {
   console.info('[jinchat]', JSON.stringify(row));
 }
 
-export function mount(container, { data = {}, lang = 'zh', signal, shell } = {}) {
+export function mount(container, { data = {}, lang: dealt = 'zh', signal, shell, onLang } = {}) {
   const doc = container.ownerDocument;
-  const w = T[lang] ?? T.zh;
+  // The host's language switch (beat-host.js relang, Hanli 11-04: 周衡's 灯谜 stayed English under a 中 bar): `relang`
+  // below draws the chat again in the new tongue, its play kept.
+  let lang = dealt, w = T[lang] ?? T.zh;
   styleOnce(doc);
   const root = doc.createElement('div');
   root.className = 'g-jc';
   container.replaceChildren(root);
   const sessionOf = () => (typeof data.session === 'function' ? data.session() : data.session ?? null);
-  const g = { chat: null, cast: [], sent: 0, shown: [], busy: false, over: false, mode: 'model', t0: Date.now() };
+  const g = { chat: null, cast: [], sent: 0, shown: [], els: [], langs: [], people: {}, busy: false, over: false, mode: 'model', t0: Date.now() };
   let finish = () => {};
 
   // The list, its bubbles, the typing dots and the newest kept in view: the one talk component's (npc-talk.js).
@@ -137,7 +139,8 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   const sound = (name) => { try { shell?.sound?.(name); } catch { /* no sound: the chat goes on */ } };
   const list = createTalk(root, { base: WORLD, sound });
   const typing = list.typing;
-  const add = (line) => { g.shown.push(line); list.add(line); focus(); };
+  // A line may name its source (`src`): the book's words in both tongues, or (lang) → the line — laid again on a switch.
+  const add = (line) => { g.shown.push(line); g.els.push(list.add(line)); focus(); };
   const foot = (t) => { const f = $('.g-jc-foot'); if (f) f.textContent = t; };
   const lefts = () => { if (!g.chat?.game) foot(g.over ? w.done : fill(w.left, { n: Math.max(0, turns() - g.sent) })); }; // a word game keeps its own count
   const turns = () => Math.max(1, Number(g.chat?.turns) || 5);
@@ -198,7 +201,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     g.mode = 'book';
     inputOn(false);
     $('.g-jc-chips')?.replaceChildren();
-    await typeOut((g.chat.book ?? []).map((l) => ({ who: l.who, text: pick(l.text, lang) })));
+    await typeOut((g.chat.book ?? []).map((l) => ({ who: l.who, text: pick(l.text, lang), src: l.text })));
     foot(why);
     const b = $('.g-jc-end');
     if (b) b.hidden = false;
@@ -301,12 +304,13 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   const playGame = async () => {
     const helper = helperOf();
     const ctx = {
-      root, chat: g.chat, cast: g.cast, lang, w, id: data.chat, add, typeOut, typing, react, settle, sound, foot, log, board, watchTold, focus,
+      root, chat: g.chat, cast: g.cast, lang, w, words: (l) => T[l] ?? T.zh, id: data.chat, onLang: (fn) => { g.langs.push(fn); }, add, typeOut, typing, react, settle, sound, foot, log, board, watchTold, focus,
       ...(helper ? { helper, help: help(helper) } : {}),
       table: twentyOf, tones: tonesOf, dict: chengyuOf,
       ask: (text) => (g.live && data.seam !== 'stub' ? send(text, 60000) : Promise.resolve({ text: '' })),
     };
     // Which game plays is the chat's, in this tongue (对对子 and 成语接龙 play in Chinese; in English, the riddle beside them).
+    g.ctx = ctx;
     const r = await (PLAY[kindOf(g.chat.game, lang)] ?? riddleGame)(ctx);
     end(r);
   };
@@ -353,6 +357,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     // A deal that plays the chat's riddle pool (`data.pool`, 周衡 · 一个灯谜): the story's by his wins so far (`data.n`,
     // Look's; none or 0 → the chat's own riddle, 人参), the 游戏厅's (`data.walk`) the next of it in this browser.
     if (data.pool && g.chat.game?.pool) g.chat = { ...g.chat, game: poolPick(g.chat.game, await poolOf(g.chat.game.pool), poolPlay(data, lang, () => poolTurn(data.chat))) };
+    g.people = people;
     g.cast = castOf(g.chat, people, lang);
     list.setCast(g.cast);
     draw();
@@ -363,8 +368,8 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     inputOn(false);
     lefts();
     // A word game's context first (`game.setup`, the book's own narration: 最后一颗 — what the 饭桶 just did).
-    for (const l of g.chat.game?.setup ?? []) add({ who: 'note', text: pick(l, lang) });
-    await typeOut((g.chat.open ?? []).map((l) => ({ who: l.who, card: l.card, text: pick(l.text, lang) })));
+    for (const l of g.chat.game?.setup ?? []) add({ who: 'note', text: pick(l, lang), src: l });
+    await typeOut((g.chat.open ?? []).map((l) => ({ who: l.who, card: l.card, text: pick(l.text, lang), src: l.text })));
     if (g.chat.game) {
       if (g.chat.agent && typeof data.wake === 'function') await Promise.resolve(data.wake()).catch(() => null);
       // Every game plays with no one to ask (chat off, no engine): the page judges, the book closes it.
@@ -375,6 +380,36 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     if (data.seam !== 'stub' && typeof data.ask !== 'function' && (!(await reachable()) || !sessionOf())) return cannot(w.far);
     inputOn(true);
   };
+
+  /* The language switched mid-chat: the frame's words, every line the book wrote (its `src`), the names; the word game
+     draws itself again (its `ctx.onLang`). What a model said stays as it was said — there is no other tongue of it. */
+  const relang = (to) => {
+    if (!T[to] || to === lang || !g.chat) return;
+    lang = to; w = T[to];
+    g.cast = castOf(g.chat, g.people, lang);
+    list.setCast(g.cast);
+    const c = g.chat;
+    const head = $('.g-jc-head b'); if (head) head.textContent = pick(c.title, lang);
+    const when = $('.g-jc-when'); if (when) when.innerHTML = c.look === 'call' ? `<i class="g-jc-rec"></i>${esc(w.calling)}` : esc(pick(c.when, lang));
+    const dark = $('.g-jc-dhead'); if (dark) dark.textContent = pick(c.when, lang);
+    const dots = $('.g-jc-typing em'); if (dots) dots.textContent = w.typing;
+    const box = $('.g-jc-bar:not(.is-game) .g-jc-in'); if (box) box.placeholder = w.type;
+    const go = $('.g-jc-bar:not(.is-game) .g-jc-send'); if (go) go.textContent = w.send;
+    const endB = $('.g-jc-end'); if (endB) endB.textContent = w.end;
+    for (const b of root.querySelectorAll('.g-jc-chips:not(.is-game) .g-jc-chip[data-chip]')) b.textContent = pick(c.chips?.[Number(b.dataset.chip)], lang);
+    // The game first (its riddle in the new tongue), then every line laid again — its card drawn from the game's state.
+    if (g.ctx) { g.ctx.lang = lang; g.ctx.w = w; g.ctx.cast = g.cast; }
+    for (const fn of g.langs) fn(lang);
+    g.shown = g.shown.map((l, i) => {
+      if (l.src == null) { g.els[i] = list.relay(g.els[i], l); return l; } // a name may have changed
+      const again = typeof l.src === 'function' ? { ...l, ...l.src(lang) } : { ...l, text: pick(l.src, lang) };
+      g.els[i] = list.relay(g.els[i], again);
+      return again;
+    });
+    if (!g.chat.game) lefts();
+    list.keepDown();
+  };
+  onLang?.(relang);
 
   return new Promise((resolve) => {
     let settled = false;

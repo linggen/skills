@@ -234,7 +234,7 @@ test('the open 二十问 (any animal, 10-28): their line is held to yes-or-no; a
 test('the module: the page judges (no tag, no model verdict); no game draws its own skip, sounds through the shell', () => {
   const play = read('../scripts/games/jinchat-play.js');
   assert.ok(!/<!--成-->|TAG|\.met\b/.test(play), 'a game never reads a model tag');
-  assert.match(play, /checkRiddle\(r, text, lang\)/, 'the riddle\'s verdict is the data\'s');
+  assert.match(play, /checkRiddle\(r, text, r\.lang\)/, 'the riddle\'s verdict is the data\'s');
   assert.equal((play.match(/is-skip|w\.skip\b/g) ?? []).length, 0, 'no 跳过 of its own: the shell\'s 留 and ✕ (Hanli 11-03)');
   const src = read('../scripts/games/jinchat.js');
   const sounds = JSON.parse(read('../scripts/games/kit/audio/sounds.json')).games.jinchat.events;

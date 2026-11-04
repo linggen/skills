@@ -48,7 +48,9 @@ export function mountPure(mod) {
   return (container, opts = {}) => run(mod, container, opts);
 }
 
-function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now()), level = 1, signal, winHold = WIN_HOLD, shell, peek } = {}) {
+function run(mod, container, { data = {}, lang: dealt = 'zh', seed = String(Date.now()), level = 1, signal, winHold = WIN_HOLD, shell, peek, onLang } = {}) {
+  // The host's language switch (beat-host.js relang, 2026-11-04): drawn again in the new tongue, the state as it is.
+  let lang = dealt;
   const paused = () => Boolean(shell?.paused?.());
   const doc = container.ownerDocument;
   const host = doc.createElement('div');
@@ -64,6 +66,7 @@ function run(mod, container, { data = {}, lang = 'zh', seed = String(Date.now())
     const re = mod.meta?.restart && frame()?.querySelector(':scope > .gshell-bar [data-g="restart"]');
     if (re) re.disabled = !mod.meta.restart(g.state);
   };
+  onLang?.((to) => { lang = to; paint(); });
   return new Promise((resolve) => {
     let last = performance.now(), done = false;
     const gate = tapGate();

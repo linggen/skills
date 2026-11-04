@@ -131,7 +131,7 @@ test('the tag never reaches the player: an HTML comment the chat panel drops, ne
 
 test('the module: mount() on the contract, ai (no bot), one way to the model (drawguess-ling.js), the book when no one answers', () => {
   const src = read('../scripts/games/jinchat.js');
-  assert.match(src, /export function mount\(container, \{ data = \{\}, lang = 'zh', signal, shell \} = \{\}\)/);
+  assert.match(src, /export function mount\(container, \{ data = \{\}, lang: dealt = 'zh', signal, shell, onLang \} = \{\}\)/);
   assert.match(src, /ai: true/);
   assert.match(src, /import \{ askInChat, reachable \} from '\.\/drawguess-ling\.js'/, 'never a second transport');
   assert.match(src, /agent: 'ling'/, 'Ling writes their words (今 is never 银月\'s)');

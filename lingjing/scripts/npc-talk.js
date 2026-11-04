@@ -72,6 +72,15 @@ export function createTalk(root, { cast = [], base = null, sound = () => {}, slo
     if (line.who !== 'card' && line.who !== 'note') { try { sound(line.who === 'me' ? 'send' : 'recv'); } catch { /* no sound: the talk goes on */ } }
     list()?.insertAdjacentHTML('beforeend', bubbleHtml(line, st.cast, base));
     scroll();
+    return list()?.lastElementChild ?? null;
+  };
+  // A bubble laid again in place (the host's language switch, games/jinchat.js relang): the same row, the line as now given.
+  const relay = (el, line) => {
+    if (!el?.isConnected) return el;
+    el.insertAdjacentHTML('afterend', bubbleHtml(line, st.cast, base));
+    const next = el.nextElementSibling;
+    el.remove();
+    return next;
   };
   // Each bubble after a typing beat as long as the line; `slow` types, stops and types again.
   const typeOut = async (lines) => {
@@ -96,7 +105,7 @@ export function createTalk(root, { cast = [], base = null, sound = () => {}, slo
     for (const ev of ['wheel', 'touchmove', 'pointerdown']) l.addEventListener(ev, hand, { passive: true });
     l.addEventListener('scroll', () => { if (Date.now() - st.handAt < 800) st.stick = atBottom(l); }, { passive: true });
   };
-  return { add, typeOut, typing, scroll, keepDown, watch, setCast: (c) => { st.cast = c; }, setSlow: (on) => { st.slow = Boolean(on); } };
+  return { add, relay, typeOut, typing, scroll, keepDown, watch, setCast: (c) => { st.cast = c; }, setSlow: (on) => { st.slow = Boolean(on); } };
 }
 
 /** A declared talk in `host` (see the head of this file). */

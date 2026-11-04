@@ -316,7 +316,9 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
     // Every board open here: the story's, an errand's, and the games this place hosts.
     // A place's game open only as practice (Look's `practice`) waits in the tray for his 开局 — never dealt by itself;
     // so does 兽潮's night when its time comes (Look's `tide`; Hanli 10-27: 「兽潮时间到了不要自动开始, 让玩家点击开始」).
-    for (const board of (look.tasks ?? []).filter(t => t.kind === 'board' && t.status !== 'done' && !t.won && !t.light && !t.practice && !t.tide)) {
+    // …and a board he kept (留, Look's task `kept`) waits on 收着 for his 玩 (live 2026-11-04: 留 on an errand's 象棋残局
+    // closed the card, and the stage dealt it fresh at once — 「点留没有用」).
+    for (const board of (look.tasks ?? []).filter(t => t.kind === 'board' && t.status !== 'done' && !t.won && !t.light && !t.practice && !t.tide && !t.kept)) {
       if (!has('board', board.id)) cards.push({ card: 'board', id: board.id });
     }
     // A fight the scene offers, and a creature at its haunt with no scene

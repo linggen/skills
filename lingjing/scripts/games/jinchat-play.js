@@ -27,7 +27,7 @@
 import {
   answerFree, answerGuess, chainChoices, chainHint, chainLine, chainOf, chainOutcome, checkDown, checkLink, checkRiddle,
   coupletLine, coupletOf, freeEndFallback, freeEndLine, freeLine, GUESS_FROM, GUESSES, guessHeld, saidAnimal, freeOutcome, freeSummary, freshChain, freshFree, freshGuess, judgeGuess, needOf, nearOf, nextMove,
-  helpLine, helpOf, nearLink, playLink, replyOf, riddleLine, riddleOf, riddleOutcome, shapeOf, wayOn, yesNoOf,
+  helpLine, helpOf, kindOf, nearLink, playLink, replyOf, riddleLine, riddleOf, riddleOutcome, shapeOf, wayOn, yesNoOf,
 } from './jinchat-games.js';
 
 const pick = (v, lang) => (v == null ? '' : typeof v === 'string' ? v : v[lang] ?? v.zh ?? '');
@@ -55,7 +55,7 @@ export const END_MS = 25000;
 export async function playAfter(ctx, lines) {
   for (const l of lines ?? []) {
     const text = pick(l.text, ctx.lang);
-    if (l.who !== 'me') { await ctx.typeOut([{ who: l.who, text }]); continue; }
+    if (l.who !== 'me') { await ctx.typeOut([{ who: l.who, text, src: l.text }]); continue; }
     await new Promise((resolve) => {
       const el = strip(ctx, `<div class="g-jc-chips is-game"><button type="button" class="g-jc-chip">${esc(text)}</button></div>`);
       const chip = el.querySelector('.g-jc-chip');
@@ -65,8 +65,22 @@ export async function playAfter(ctx, lines) {
       for (const type of ['click', 'pointerup']) chip.addEventListener(type, go, { once: true });
     });
     strip(ctx, '');
-    ctx.add({ who: 'me', text });
+    ctx.add({ who: 'me', text, src: l.text });
   }
+}
+
+/** The host's language switch mid-game (games/jinchat.js relang, 2026-11-04): `fn(to)` draws the game again in `to`. */
+const onLang = (ctx, fn) => ctx.onLang?.(fn);
+/** What he had typed in the game's box, carried across a redraw of its strip. */
+const typedIn = (ctx) => ctx.root.querySelector('.g-jc-game .g-jc-in')?.value ?? '';
+const wordsIn = (ctx, lang) => ctx.words?.(lang) ?? ctx.w;
+/** The riddle as the other tongue has it — the chat's own riddle, written in both (its `zh` · `en`); a pool's riddle is
+    one tongue's only (dengmi.json: the 中 and English pools are different riddles), so it stays as dealt. */
+export function riddleIn(game, to, was) {
+  if (game?.riddle && game.riddle !== 'own') return was;
+  if (kindOf(game, to) !== 'riddle') return was;
+  const r = riddleOf(game, to);
+  return r.q ? { ...r, lang: to } : was;
 }
 
 /* The open game on the save (rules/wordboard.mjs), and its watch: told in the chat, the board shows the answer and ends as
@@ -110,13 +124,20 @@ const toldEnd = (kind, answer, src) => ({ won: false, left: true, told: true, ki
 /* ════════ 猜谜 ════════ */
 
 export async function riddleGame(ctx) {
-  const { chat, lang, w } = ctx;
-  const game = chat.game, r = riddleOf(game, lang);
-  const st = { misses: 0, hints: 0, shown: [], choices: false, done: false };
-  const label = pick(game.label, lang) || w.riddle;
+  const { chat } = ctx;
+  let { lang, w } = ctx;
+  const game = chat.game;
+  let r = { ...riddleOf(game, lang), lang };
+  const st = { misses: 0, hints: 0, shown: [], choices: false, done: false, ans: null };
   // A 灯谜 as it is hung at a lantern fair: the red lantern, the riddle on the paper slip beneath it (Hanli 10-27: the
-  // boards in the house style, 「画面不精致」 never again).
-  ctx.add({ who: 'card', html: `<div class="g-jc-riddle is-lantern">${lanternOf(ctx)(w.mi)}<div class="g-jc-strip"><i>${esc(label)}</i><p class="g-jc-q">${esc(r.q)}</p><ol class="g-jc-hints"></ol><p class="g-jc-ans" hidden></p></div></div>` });
+  // boards in the house style, 「画面不精致」 never again). Drawn from its state, so a language switch lays it again.
+  const cardHtml = () => {
+    const label = pick(game.label, lang) || w.riddle;
+    const hints = st.shown.map((h, i) => `<li><b>${esc(fill(w.hintAt, { n: i + 1 }))}</b>${esc(h)}</li>`).join('');
+    const ans = st.ans == null ? '<p class="g-jc-ans" hidden></p>' : `<p class="g-jc-ans">${esc(fill(w.answer, { a: st.ans }))}</p>`;
+    return `<div class="g-jc-riddle is-lantern">${lanternOf(ctx)(w.mi)}<div class="g-jc-strip"><i>${esc(label)}</i><p class="g-jc-q">${esc(r.q)}</p><ol class="g-jc-hints">${hints}</ol>${ans}</div></div>`;
+  };
+  ctx.add({ who: 'card', html: cardHtml(), src: () => ({ html: cardHtml() }) });
   // A quiet game (`quiet`: 黑地里, the ambulance) asks no one: the moment is no game of theirs, only his answer and the book.
   const react = game.quiet ? () => Promise.resolve() : ctx.react;
   react(riddleLine(chat, { event: 'open', riddle: r, cast: ctx.cast, lang }));
@@ -139,8 +160,9 @@ export async function riddleGame(ctx) {
       if (st.done) return;
       st.done = true;
       strip(ctx, '');
+      st.ans = told.answer || (r.answers[0] ?? '');
       const ans = card()?.querySelector('.g-jc-ans');
-      if (ans) { ans.hidden = false; ans.textContent = fill(w.answer, { a: told.answer || (r.answers[0] ?? '') }); }
+      if (ans) { ans.hidden = false; ans.textContent = fill(w.answer, { a: st.ans }); }
       ctx.sound('skip');
       ctx.log({ kind: 'riddle', chat: ctx.id, told: true, misses: st.misses, hints: st.hints });
       keep(ctx, 'close');
@@ -152,8 +174,9 @@ export async function riddleGame(ctx) {
       stop();
       keep(ctx, 'close');
       strip(ctx, '');
+      st.ans = r.answers[0] ?? '';
       const ans = card()?.querySelector('.g-jc-ans');
-      if (ans) { ans.hidden = false; ans.textContent = fill(w.answer, { a: r.answers[0] ?? '' }); }
+      if (ans) { ans.hidden = false; ans.textContent = fill(w.answer, { a: st.ans }); }
       ctx.sound(solved ? 'right' : 'skip');
       const o = riddleOutcome({ solved, hints: st.hints, choices: st.choices });
       ctx.log({ kind: 'riddle', chat: ctx.id, solved, misses: st.misses, hints: st.hints, choices: st.choices, guess: guess ?? null });
@@ -166,7 +189,7 @@ export async function riddleGame(ctx) {
       const text = String(raw ?? '').trim();
       if (!text || st.done) return;
       ctx.add({ who: 'me', text });
-      const v = checkRiddle(r, text, lang);
+      const v = checkRiddle(r, text, r.lang);
       if (v === 'right') return finish(true, text);
       st.misses += 1;
       ctx.sound('wrong');
@@ -180,16 +203,27 @@ export async function riddleGame(ctx) {
     const draw = () => {
       status();
       const choices = st.choices ? `<div class="g-jc-chips is-game">${r.choices.map((c) => `<button type="button" class="g-jc-chip" data-pick="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : '';
+      const typed = typedIn(ctx);
       const el = strip(ctx, `${choices}<form class="g-jc-bar is-game"><input class="g-jc-in" data-jc-in="" type="text" maxlength="40" autocomplete="off" enterkeyhint="send" placeholder="${esc(w.guessIt)}">`
         + `<button type="submit" class="g-jc-send">${esc(w.guessGo)}</button></form>`
         + `<div class="g-jc-gacts">${btn('is-hint', w.hint, st.hints >= r.hints.length ? ' disabled' : '')}</div>`);
       const input = el.querySelector('.g-jc-in');
+      input.value = typed;
       input.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter' && e.isComposing) e.preventDefault(); });
       el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); guess(input.value); });
       for (const b of el.querySelectorAll('[data-pick]')) b.addEventListener('click', () => guess(b.dataset.pick));
       el.querySelector('.is-hint').addEventListener('click', () => { showHint(); draw(); });
       focusIn(ctx, input);
     };
+    // The language switched: the riddle in the new tongue where the chat has it (riddleIn), its hints as shown so far,
+    // the strip and the count — the misses and hints used kept. (The card itself is laid again by the chat: its `src`.)
+    onLang(ctx, (to) => {
+      lang = to; w = ctx.w;
+      const was = r;
+      r = riddleIn(game, to, r);
+      if (r !== was) { st.shown = r.hints.slice(0, st.hints); st.hints = st.shown.length; if (st.ans != null) st.ans = r.answers[0] ?? st.ans; }
+      if (!st.done) draw(); else status();
+    });
     draw();
   });
 }
@@ -200,12 +234,14 @@ export async function riddleGame(ctx) {
    only verdict, the page the count. The table (aigames.json `twenty.reverse`) is never shown: it only asks a turn the
    model could not give (offline, a stub, a line that is no yes-or-no twice). */
 export async function guessGame(ctx) {
-  const { chat, lang, w, cast } = ctx;
+  const { chat, cast } = ctx;
+  let { lang, w } = ctx;
   const table = await ctx.table();
   const max = Number(chat.game.max) || 15;
   // At most `guesses` guesses, none before question `from`; the last question may always guess (jinchat-games.js guessHeld).
   const guesses = Number(chat.game.guesses) || GUESSES, from = Number(chat.game.guess_from) || GUESS_FROM;
-  ctx.add({ who: 'card', html: `<div class="g-jc-riddle is-lantern">${lanternOf(ctx)(w.wen)}<div class="g-jc-strip"><i>${esc(pick(chat.game.label, lang) || w.twenty)}</i><p class="g-jc-q is-small">${esc(fill(w.think, { max }))}</p></div></div>` });
+  const cardHtml = () => `<div class="g-jc-riddle is-lantern">${lanternOf(ctx)(w.wen)}<div class="g-jc-strip"><i>${esc(pick(chat.game.label, lang) || w.twenty)}</i><p class="g-jc-q is-small">${esc(fill(w.think, { max }))}</p></div></div>`;
+  ctx.add({ who: 'card', html: cardHtml(), src: () => ({ html: cardHtml() }) });
   let st = freshFree();
   let tst = freshGuess(); // the table's own state, for a turn the model could not give
   let turn = 0;
@@ -290,8 +326,8 @@ export async function guessGame(ctx) {
       for (const b of el.querySelectorAll('[data-a]')) b.addEventListener('click', () => {
         if (done) return;
         ctx.sound('tap');
-        ctx.add({ who: 'me', text: b.textContent });
         const a = b.dataset.a;
+        ctx.add({ who: 'me', text: b.textContent, src: (to) => ({ text: wordsIn(ctx, to)[a] ?? b.textContent }) });
         st = answerFree(st, t, a);
         if (t.tq) tst = answerGuess(tst, t.tq, a);
         if (t.tid && a === 'wrong') tst = judgeGuess(tst, t.tid, false);
@@ -302,7 +338,17 @@ export async function guessGame(ctx) {
     };
     const el = strip(ctx, `<div class="g-jc-gacts">${btn('is-main', w.ready)}${skipBtn()}</div>`);
     wire(el);
-    el.querySelector('.is-main').addEventListener('click', () => { ctx.sound('tap'); ctx.add({ who: 'me', text: w.ready }); step(); }, { once: true });
+    el.querySelector('.is-main').addEventListener('click', () => { ctx.sound('tap'); ctx.add({ who: 'me', text: w.ready, src: (to) => ({ text: wordsIn(ctx, to).ready }) }); step(); }, { once: true });
+    // The language switched: the buttons standing now say their word in the new tongue (their questions stay as asked).
+    onLang(ctx, (to) => {
+      lang = to; w = ctx.w;
+      for (const b of ctx.root.querySelectorAll('.g-jc-game [data-a]')) b.textContent = w[b.dataset.a] ?? b.textContent;
+      const main = ctx.root.querySelector('.g-jc-game .is-main'); if (main) main.textContent = w.ready;
+      const note = ctx.root.querySelector('.g-jc-game .g-jc-gnote'); if (note) note.textContent = w.tell;
+      const box = ctx.root.querySelector('.g-jc-game .g-jc-in'); if (box) box.placeholder = w.itWas;
+      const go = ctx.root.querySelector('.g-jc-game .g-jc-send'); if (go) go.textContent = w.tellGo;
+      if (!done) status();
+    });
   });
 }
 
@@ -316,11 +362,13 @@ const cells = (up, chars = null) => {
 const scroll = (side, label, body) => `<div class="g-jc-dl-scroll is-${side}"><span class="g-jc-dl-rod"></span><div class="g-jc-dl-text">${body}</div><span class="g-jc-dl-rod is-low"></span><em>${esc(label)}</em></div>`;
 
 export async function coupletGame(ctx) {
-  const { chat, lang, w } = ctx;
+  const { chat } = ctx;
+  let { lang, w } = ctx;
+  // Its 上联 and hints are the Chinese classic's, whatever the tongue switched to after (an English chat plays its riddle).
   const game = chat.game, c = coupletOf(game, lang);
   const tones = await ctx.tones().catch(() => null);
   const st = { misses: 0, hints: 0, shown: [], choices: false, done: false };
-  const label = pick(game.label, lang) || w.duilian;
+  let label = pick(game.label, lang) || w.duilian;
   // A pair of red scrolls as they hang by a door: the 上联 on the right, the 下联's blank on the left (Hanli 10-27: the
   // boards in the house style). Solved, his characters fill it; skipped, the classic's.
   ctx.add({ who: 'card', html: `<div class="g-jc-duilian"><i class="g-jc-dl-label">${esc(label)}</i><div class="g-jc-dl-pair">`
@@ -398,6 +446,7 @@ export async function coupletGame(ctx) {
       // What is off is the page's fact, shown under the scrolls and handed to their voice — a line a character or two off
       // with its key image lost says so (「只差一两个字……」), never which.
       const why = v === 'close' ? w.why.close : whyOf(text);
+      st.why = { close: v === 'close', text };
       const el = card()?.querySelector('.g-jc-dl-why');
       if (el) { el.hidden = false; el.textContent = why; }
       const hint = st.misses >= 2 ? showHint() : '';
@@ -408,16 +457,34 @@ export async function coupletGame(ctx) {
     const draw = () => {
       status();
       const choices = st.choices ? `<div class="g-jc-chips is-game is-lines">${c.choices.map((x) => `<button type="button" class="g-jc-chip" data-pick="${esc(x)}">${esc(x)}</button>`).join('')}</div>` : '';
+      const typed = typedIn(ctx);
       const el = strip(ctx, `${choices}<form class="g-jc-bar is-game"><input class="g-jc-in" data-jc-in="" type="text" maxlength="40" autocomplete="off" enterkeyhint="send" placeholder="${esc(w.downIt)}">`
         + `<button type="submit" class="g-jc-send">${esc(w.downGo)}</button></form>`
         + `<div class="g-jc-gacts">${btn('is-hint', w.hint, st.hints >= c.hints.length ? ' disabled' : '')}</div>`);
       const input = el.querySelector('.g-jc-in');
+      input.value = typed;
       input.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter' && e.isComposing) e.preventDefault(); });
       el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); guess(input.value); });
       for (const b of el.querySelectorAll('[data-pick]')) b.addEventListener('click', () => guess(b.dataset.pick));
       el.querySelector('.is-hint').addEventListener('click', () => { showHint(); draw(); });
       focusIn(ctx, input);
     };
+    // The language switched: the scrolls' words, the hint marks, the why and the count in the new tongue; the 上联 and its
+    // hints stay the classic's (Chinese only).
+    onLang(ctx, (to) => {
+      lang = to; w = ctx.w;
+      label = pick(game.label, lang) || w.duilian;
+      const k = card();
+      if (k) {
+        const lab = k.querySelector('.g-jc-dl-label'); if (lab) lab.textContent = label;
+        const down = k.querySelector('.g-jc-dl-scroll.is-down em'); if (down) down.textContent = w.downLabel;
+        const up = k.querySelector('.g-jc-dl-scroll.is-up em'); if (up) up.textContent = w.upLabel;
+        k.querySelectorAll('.g-jc-hints li > b').forEach((b, i) => { b.textContent = fill(w.hintAt, { n: i + 1 }); });
+        const why = k.querySelector('.g-jc-dl-why');
+        if (why && !why.hidden && st.why) why.textContent = st.why.close ? w.why.close : whyOf(st.why.text);
+      }
+      if (!st.done) draw(); else status();
+    });
     draw();
   });
 }
@@ -428,14 +495,16 @@ export async function coupletGame(ctx) {
 export const tilesOf = (word, { head = false } = {}) => `<span class="g-jc-tiles">${[...word].map((c, i, a) => `<b class="g-jc-tile${i === 0 && head ? ' is-head' : ''}${i === a.length - 1 ? ' is-tail' : ''}">${esc(c)}</b>`).join('')}</span>`;
 
 export async function chainGame(ctx) {
-  const { chat, lang, w, cast } = ctx;
+  const { chat, cast } = ctx;
+  let { lang, w } = ctx;
+  // Its idioms are Chinese whatever the tongue switched to after (an English chat plays its riddle instead).
   const game = chat.game, ch = chainOf(game, lang);
   const dict = await ctx.dict();
   let st = freshChain(ch);
   let done = false;
-  const label = pick(game.label, lang) || w.jielong;
+  const label = () => pick(game.label, lang) || w.jielong;
   const beads = () => Array.from({ length: ch.links }, (_, i) => `<b class="${i < st.links ? 'is-on' : ''}"></b>`).join('');
-  ctx.add({ who: 'card', html: `<div class="g-jc-jl"><i class="g-jc-dl-label">${esc(label)}</i><p class="g-jc-jl-rule">${esc(fill(w.chainRule, { links: ch.links }))}</p><p class="g-jc-jl-beads">${beads()}</p></div>` });
+  ctx.add({ who: 'card', html: `<div class="g-jc-jl"><i class="g-jc-dl-label">${esc(label())}</i><p class="g-jc-jl-rule">${esc(fill(w.chainRule, { links: ch.links }))}</p><p class="g-jc-jl-beads">${beads()}</p></div>` });
   const react = game.quiet ? () => Promise.resolve() : ctx.react;
   const card = () => [...ctx.root.querySelectorAll('.g-jc-jl')].at(-1);
   const who = cast[0]?.id;
@@ -530,7 +599,8 @@ export async function chainGame(ctx) {
       }
       ctx.add({ who: 'me', text });
       const why = fill(w.chainWhy[r.v], { w: r.word, ch: needOf(st) });
-      ctx.add({ who: 'note', text: why });
+      const said = { w: r.word, ch: needOf(st) }, v = r.v;
+      ctx.add({ who: 'note', text: why, src: (to) => ({ text: fill(wordsIn(ctx, to).chainWhy[v], said) }) });
       tries += 1;
       if (r.v === 'unknown') {
         // Not in the list: no miss, no star lost — but it counts toward the way past this link.
@@ -578,10 +648,12 @@ export async function chainGame(ctx) {
       const choices = four.length ? `<div class="g-jc-chips is-game">${four.map((x) => `<button type="button" class="g-jc-chip" data-pick="${esc(x)}">${esc(x)}</button>`).join('')}</div>` : '';
       const passBtn = tries >= ch.tries ? btn('is-pass', fill(w.chainPass, { name: cast[0]?.name ?? '' }), helping ? ' disabled' : '') : '';
       const helpBtn = helper && typeof ctx.help === 'function' ? btn('is-help', fill(w.helpAsk, { name: helper.name }), helping ? ' disabled' : '') : '';
+      const typed = typedIn(ctx);
       const el = strip(ctx, `${choices}<form class="g-jc-bar is-game"><span class="g-jc-need" title="${esc(w.chainNeed)}">${esc(needOf(st))}</span><input class="g-jc-in" data-jc-in="" type="text" maxlength="12" autocomplete="off" enterkeyhint="send" placeholder="${esc(fill(w.linkIt, { ch: needOf(st) }))}">`
         + `<button type="submit" class="g-jc-send">${esc(w.linkGo)}</button></form>`
         + `<div class="g-jc-gacts">${btn('is-hint', w.hint, at === st.said.length && lh >= 2 ? ' disabled' : '')}${helpBtn}${passBtn}</div>`);
       const input = el.querySelector('.g-jc-in');
+      input.value = typed;
       input.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter' && e.isComposing) e.preventDefault(); });
       el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); link(input.value); });
       for (const b of el.querySelectorAll('[data-pick]')) b.addEventListener('click', () => { st.choices = true; link(b.dataset.pick); });
@@ -590,6 +662,16 @@ export async function chainGame(ctx) {
       el.querySelector('.is-pass')?.addEventListener('click', () => { pass(); });
       focusIn(ctx, input);
     };
+    // The language switched: the card's words, the strip and the count in the new tongue; the idioms stay as they are.
+    onLang(ctx, (to) => {
+      lang = to; w = ctx.w;
+      const k = card();
+      if (k) {
+        const lab = k.querySelector('.g-jc-dl-label'); if (lab) lab.textContent = label();
+        const rule = k.querySelector('.g-jc-jl-rule'); if (rule) rule.textContent = fill(w.chainRule, { links: ch.links });
+      }
+      if (!done) draw(); else status();
+    });
     draw();
   });
 }

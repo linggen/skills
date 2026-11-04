@@ -9,6 +9,8 @@
 //      and the scene's passage after the game is owed as after a win);
 //   3. 「还是加一个按钮好一些, 可能用户想丢掉, 可能想以后玩」 (11-03) — ✕ puts it away for good; 留 keeps it on
 //      收着的棋局 (below), never offered by itself; taken up and won, it pays its grant once;
+//      ✕ never pays (manager for Hanli, 2026-11-04: 「点关闭, 结果给奖励了」): an errand's board is put down by it, the
+//      errand still open; its 跳过 · 酬减半 is a words button of its own, once stuck (rules/tasks.mjs errandSkip);
 //   4. 「对游戏进展要确保没有影响」 — skipping never hurts progress: a way on that waits on the
 //      board's grade (`needs.grade`) opens for a skipped board whatever the grade (core.mjs
 //      meets — his to choose), and what the story needs from a board is its `gives` (a thing,
@@ -93,8 +95,9 @@ export function leaveBoard(state, content, ctx, id) {
 }
 
 /* ── 收着的棋局 (Hanli 11-03: 「还是加一个按钮好一些, 可能用户想丢掉, 可能想以后玩」) ──
-   Two ways out of every board, side by side from the first moment: ✕ puts it away (above: skipBoard · leaveBoard, an
-   errand's at its cut), 留 keeps it for later. Kept, a story board goes on exactly as on ✕ — its `gives` handed over, no
+   Two ways out of every board, side by side from the first moment: ✕ puts it away (above: skipBoard · leaveBoard — an
+   errand's put down, unpaid, since 2026-11-04), 留 keeps it for later; kept, Look marks the task `kept` and the stage
+   never deals it by itself (stage.mjs). Kept, a story board goes on exactly as on ✕ — its `gives` handed over, no
    grant — and waits on `kept`; any other board is put down and waits there too. Never offered by itself: he takes one
    up from the 事 book or the tray's 「收着 n」. Taken up, it stands as on its first day; won, it pays its grant once and
    is off the list. At most KEPT_MAX; each may be dropped (丢). */

@@ -192,7 +192,7 @@ const words = () => {
    html, act), loaded the first time a place shows one. */
 const GAMES = {};
 /* The beats on the mount() contract, laid into their hosts after every draw (beat-host.js). */
-const beats = beatHost({ boardFor: (id) => boardFor(id), lang: () => lang(), onSettled: (g, r) => beatSettled(g, r), prefetch: (id, g) => prefetchFor(id, g) });
+const beats = beatHost({ boardFor: (id) => boardFor(id), lang: () => lang(), onSettled: (g, r) => beatSettled(g, r), onLost: (g) => boardLostNow(g), prefetch: (id, g) => prefetchFor(id, g) });
 /* 数据埋点 (track.js): the play log, local only — ids, times, outcomes; never what is typed. */
 const tracker = createTracker({ send: trackSender(SCRATCH), scratch: SCRATCH });
 /* Where a board on the stage came from, for the log: the story's own, the tray, an errand's, the day's, 传闻, the 游戏厅. */
@@ -1302,6 +1302,10 @@ async function switchLang(to) {
     console.warn('[lingjing] lang', e);
   }
   await refresh();
+  // A board in play follows (Hanli 11-04: 周衡's 灯谜 stayed English under a 中 bar): drawn again in the new tongue, its
+  // play kept (beat-host.js relang); a pure board redraws with the page (cards.js `g.mod.html(state, lang)`).
+  beats.relang(lang());
+  render();
 }
 
 /// The stage in its FIXED SECTIONS (Hanli, 2026-09-29): 此地 (the header —
@@ -3795,11 +3799,25 @@ function toldGone(id) {
   });
   return true;
 }
-/* ✕ on a board's bar (cards.js outHtml), from its first moment: put away — boardSkipped says how for each kind. */
+/* ✕ on a board's bar (cards.js outHtml), from its first moment: put away, never a pay (manager for Hanli, 2026-11-04:
+   「点关闭, 结果给奖励了」 — an errand's ✕ went in as 跳过 · 酬减半). A board he may put down (Look's `leave`: an errand's,
+   one he chose) is put down — nothing paid, no 体力, the errand still open; the story's is set aside (skipGame). The paid
+   skip is its own words under the board, once stuck (skipHalf). */
 function closeBoard(id) {
   const g = boardFor(id);
   if (!g || g.state?.won || g.sent || g.skipped) return true;
-  return boardSkipped(g);
+  const task = look?.tasks?.find((t) => t.id === g.taskId);
+  if (isArcadeBoard(id) || !task?.leave || task.replay) return boardSkipped(g);
+  g.state = { ...g.state, live: false };
+  forgetShell(id);
+  return leaveGame(id);
+}
+/* 「跳过 · 酬减半」 under an errand's board once he is stuck there (cards.js errandSkipHtml): the rules' errandSkip. */
+function skipHalf(id) {
+  const g = boardFor(id), task = look?.tasks?.find((t) => t.id === id);
+  if (!g || !task?.skip || g.state?.won || g.sent || g.skipped) return true;
+  forgetShell(id);
+  return skipGame(id);
 }
 /* 留 beside it: kept for later (收着的棋局, rules/skips.mjs keepBoard) — the story's goes on as on ✕, its `gives` handed over;
    any other is put down onto the list. A 试玩 board goes on the 游戏厅's own list (arcade-board.js keptAdd) and is dealt again. */
@@ -3902,6 +3920,7 @@ function gameAct(ghost, action, at) {
   if (before != null && !answered(before, g.mod.html(g.state, lang()), r)) { tapNope(document, at); press = 'nope'; } // never a silent tap
   sounded(shellFor(g.taskId, g.mod.meta?.id), g.mod, was, g.state, press); // its sound, as off the story (games/kit/heard.js)
   render();
+  if (turnedLost(was, g.state)) boardLostNow(g);
   if (r.won && !g.sent && ownSkip(g.state)) return boardSkipped(g);
   if (r.won && !g.sent) { g.sent = true; settleShell(g.taskId, { won: true, stars: g.state?.stars ?? null }); forgetShell(g.taskId); run(`win:${g.taskId}`, () => onWin(g.taskId)); }
   if (r.state.wait && g.mod.think) rivalTurn(g);
@@ -3932,7 +3951,7 @@ const think = thinker(() => new Worker(new URL('./think-worker.js', import.meta.
 function rivalTurn(g) {
   const asked = g.state;
   think(g.mod, asked)
-    .then((m) => { if (stillAsked(boards, g, asked)) { g.state = g.mod.answer(asked, m); sounded(shellFor(g.taskId, g.mod.meta?.id), g.mod, asked, g.state); render(); } })
+    .then((m) => { if (stillAsked(boards, g, asked)) { g.state = g.mod.answer(asked, m); sounded(shellFor(g.taskId, g.mod.meta?.id), g.mod, asked, g.state); if (turnedLost(asked, g.state)) boardLostNow(g); render(); } })
     .catch((e) => console.warn('[lingjing] rival', g.taskId, e));
 }
 function tileTap(tile) {
@@ -4008,6 +4027,7 @@ const CLICKS = [
   // 回看 open, the lines wait under it (proto a: 「回看」 pauses the passage); closed, they go on.
   ['[data-board-close]', (el) => closeBoard(el.dataset.boardClose)],
   ['[data-board-keep]', (el) => keepGame(el.dataset.boardKeep)],
+  ['[data-board-skiphalf]', (el) => skipHalf(el.dataset.boardSkiphalf)],
   // 收着的棋局 (cards.js keptGroupHtml): the tray's chip opens the 事 book at the list; 玩 takes one up, 丢 lets it go.
   ['[data-kept-open]', () => openBook('kept:kept')],
   ['[data-kept-play]', (el) => { run(`kept:${el.dataset.keptPlay}`, () => keptTap(el.dataset.keptPlay, 'kept-play')); return true; }],
@@ -4198,6 +4218,15 @@ function beatSettled(g, result) {
  
   run(`win:${g.taskId}`, () => onWin(g.taskId));
 }
+/* A board lost and dealt again (a pure board's own `outcome: 'lost'` — 象棋残局, 五子棋 — or a mount board's loss dealt again
+   in place): the rules take it (rules/tasks.mjs boardLost: its 体力; an errand's board then counts as stuck, and Look's
+   `skip` puts 「跳过 · 酬减半」 under it). */
+function boardLostNow(g) {
+  if (!g || g.sent || g.skipped || g.left || isArcadeBoard(g.taskId)) return;
+  tracker.boardLost(g.taskId);
+  write('task', { action: 'lost', id: g.taskId }).then(() => refreshSoon()).catch(() => {});
+}
+const turnedLost = (was, now) => now?.outcome === 'lost' && was?.outcome !== 'lost';
 /* A bout lost that is played once (切磋): the rules take the loss, the board leaves the stage, the page reads again. */
 async function onOnceLost(g) {
   const r = await write('task', { action: 'lost', id: g.taskId }).catch(failed);

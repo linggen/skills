@@ -12,6 +12,10 @@ None.
 
 ## Done lately
 
+- 11-04 — **留 closes an errand's board; ✕ never pays; an open board follows a language switch** (Hanli at 执事堂's 象棋残局: 「点留没有用」 · 「点关闭, 结果给奖励了」; then 周衡's 灯谜 after En → 中; tests/errand-skip.test.mjs, tests/board-lang.test.mjs).
+  - 留: the rules kept it, but the stage dealt the errand's board again at once (stage.mjs dealt every board an errand wants). Look marks a kept task `kept`; the stage never deals one; an errand met by a win or the paid skip takes it off 收着.
+  - ✕ on an errand's board is 收手 now (no pay, no 体力, the errand open). 跳过 · 酬减半 is its own words button first in the bar, only once stuck: a loss on the board counted (`task lost` → `board_losses`; Look's task `skip` only then; errandSkip refuses before, and `skip` there puts it down). A pure board's own loss (象棋残局, 五子棋) and a mount board's loss dealt again in place now reach the rules — so they cost their 体力 too (0dbd42d2's rule, which they had missed).
+  - Language: the page tells the boards in play after a switch (beat-host relang → each mount's `onLang`): mountPure redraws in the new tongue, its state kept; jinchat lays its frame, the book's lines (`src`), names and the game's strip and count again, the chat's own riddle in the other tongue. A pool riddle (dengmi.json: 中 and English are different pools) and a model's lines stay as dealt. Story fights (battle.js) and Phaser kits not done.
 - 11-03 — **火柴 is the sword, not a card** (Hanli 11-03: 「给武器就不要给牌了吧」 · 「火柴是一把剑, 重复的牌就不用了」; option a, agent's pick, delegated; tests/card-retire.test.mjs). The only card that doubled a piece of gear. 09-snow and 腊八's `extra` deal it no more; saves drop it from cards and deck on load (state.mjs `RETIRED_CARDS`, 剑影 renamed onto it too). Worn, the sword puts its strike in the fight deck as the card was (items.json `strike`, cards.json `gear`, cards.mjs `strikeOf`) — the card keeps its catalog place, which the deck's seeded shuffle reads. The 7 pool fights of 古七–古九 are back in their band.
 
 - 11-03 — **所得 after the 大场面, gear first** (Hanli 11-03 at 09-snow: 「是在饭桶动画场面前给的, 应该是在饭桶大场面动画后给」 · 「以为只拿到一张牌, 没看到剑」; tests/spoils-after-piece.test.mjs).
