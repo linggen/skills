@@ -75,7 +75,7 @@ const keep = (ctx, action, o = {}) => ctx.board?.(action, o);
 /** The answer box keeps the keys (Hanli 11-04: 「输入框会失去焦点，当AI说话后」): after a line lands, a step is drawn,
     or the stage's redraw lays the card into a new host (which blurs it), `focus()` gives the box the focus back —
     unless he put it somewhere else on purpose (a tap, or a Tab, outside the chat). On a touch screen (`touch`: the
-    phone) never by itself, which pops the keyboard: only once he has tapped into the box. Every word game's box. */
+    phone) never by itself, which would pop up its typing pad: only once he has tapped into the box. Every word game's box. */
 export function focusKeeper({ root, doc, touch = false, signal = null }) {
   let want = !touch;
   const boxOf = () => [...root.querySelectorAll('.g-jc-in')].find((el) => !el.closest?.('[hidden]')) ?? null;
@@ -100,7 +100,7 @@ export function focusKeeper({ root, doc, touch = false, signal = null }) {
   return { focus, wants: () => want };
 }
 /* The answer box takes the keys back after each step (Hanli 11-04: 「输入框会失去焦点，当AI说话后」): the chat's own
-   keeper (games/jinchat.js `focus`, which never pops a phone's keyboard by itself); a test's ctx, the box at once. */
+   keeper (games/jinchat.js `focus`, which never opens a phone's typing pad by itself); a test's ctx, the box at once. */
 const focusIn = (ctx, input) => (ctx.focus ? ctx.focus() : input.focus({ preventScroll: true }));
 const hintsOf = (list) => JSON.stringify(list);
 const watch = (ctx, fn) => ctx.watchTold?.(fn) ?? (() => {});

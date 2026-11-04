@@ -284,7 +284,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     typing(true);
     let r = null;
     try {
-      r = data.seam === 'stub' ? (await wait(700), { text: `${helper.name}：（桩）帮你一把。\n<!--whisper-->` })
+      r = data.seam === 'stub' ? (await wait(700), { text: `${stubLine([helper], 'help')}\n<!--whisper-->` })
         : typeof data.ask === 'function' ? await data.ask({ agent: helper.id, text: line, ...(helper.id === 'ling' ? { system: HOST_SYSTEM[lang] ?? HOST_SYSTEM.zh } : {}) })
           : await send(line, TIMEOUT_MS, helper.id);
     } catch (e) { r = { err: String(e?.message ?? e) }; }
