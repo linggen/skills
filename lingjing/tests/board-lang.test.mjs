@@ -84,3 +84,21 @@ test('the wiring: the page tells the boards after a switch; mountPure redraws; j
   const play = read('../scripts/games/jinchat-play.js');
   assert.equal((play.match(/onLang\(ctx, \(to\) => \{/g) ?? []).length, 4, 'riddle · guess · couplet · chain');
 });
+
+test('the page follows Linggen\'s one language when it comes back into view; a scratch save keeps its own (ling-mem qABzJJYjv5)', async () => {
+  const page = read('../scripts/lingjing.js');
+  const fn = page.slice(page.indexOf('async function followGlobalLang()'), page.indexOf("window.addEventListener('focus', () => followGlobalLang());"));
+  assert.match(fn, /if \(SCRATCH \|\| !look\) return;/);
+  assert.match(fn, /fetch\('\/api\/user\/language'/);
+  assert.match(fn, /await refresh\(\);\s*beats\.relang\(lang\(\)\);\s*render\(\);/);
+  assert.match(page, /document\.addEventListener\('visibilitychange', \(\) => \{ if \(!document\.hidden\) followGlobalLang\(\); \}\);/);
+  // The toggle is the rules' Lang, which writes the global on the real save (rules/language.mjs chooseLang).
+  const { chooseLang, langNow } = await import('../scripts/rules/language.mjs');
+  const posted = [];
+  const fetchFn = async (url, init = {}) => { posted.push([init.method ?? 'GET', String(url), init.body ?? null]); return { ok: true, json: async () => ({ language: 'zh-Hans', pet: {} }) }; };
+  const env = { LINGGEN_LANGUAGE: 'zh-Hans', LINGGEN_PORT: '1' };
+  assert.equal((await chooseLang('en', { env, fetchFn })).ok, true);
+  assert.deepEqual(posted.map(([m, u]) => [m, u]), [['GET', 'http://127.0.0.1:1/api/config'], ['POST', 'http://127.0.0.1:1/api/config']]);
+  assert.equal(JSON.parse(posted[1][2]).language, 'en');
+  assert.equal(langNow(env), 'en');
+});

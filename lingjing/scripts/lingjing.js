@@ -591,6 +591,22 @@ function lookAgainSoon() {
 window.addEventListener('linggen-channel', (e) => { if (lookMisses && e.detail?.state === 'open') refreshSoon(0); });
 document.addEventListener('visibilitychange', () => { if (lookMisses && !document.hidden) refreshSoon(0); });
 
+/* The game's language is Linggen's one setting (Hanli 2026-10-15, ling-mem qABzJJYjv5): changed elsewhere — Settings,
+   the phone, another tab's 中/En — the page follows it when it comes back into view, not on its next Look only. A
+   scratch save (?save=) keeps its own Lang and follows nothing. */
+async function followGlobalLang() {
+  if (SCRATCH || !look) return;
+  const tag = await fetch('/api/user/language', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((d) => d?.language).catch(() => null);
+  if (!tag) return;
+  pageLang = tagLang(tag);
+  if (pageLang === lang()) return;
+  await refresh();
+  beats.relang(lang());
+  render();
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) followGlobalLang(); });
+window.addEventListener('focus', () => followGlobalLang());
+
 /* 遇 in the mist (Hanli, 2026-09-24; was his 2026-09-22 veil card): an
    arrival with something veiled on the road plays a short ink mist over the
    stage, then the page reveals it itself — Meet `reveal`, a fact of the
