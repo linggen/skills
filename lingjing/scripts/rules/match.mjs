@@ -10,7 +10,7 @@
 // for free: it is made again only when the hand changes, a fight is fought there, a day turns, or he asks for
 // another (「换一只」, `reroll`: free once a visit, then a little 体力).
 import { dayKey, pick, staminaCost } from '../state.mjs';
-import { fightOdds, oddsKey, oddsWithin } from '../fightodds.js';
+import { oddsKey, oddsWithin } from '../fightodds.js';
 import { cardCatalog, fightSetup } from './cards.mjs';
 import { clone, refuse, spendStamina } from './core.mjs';
 import { atScene, creatureOf, foeOf, huntKey, placeOf, poolOf, poolResting, poolUp, standsAtScene } from './world.mjs';
@@ -40,23 +40,50 @@ export function standOf(content, state, place, now) {
 }
 
 /* Each candidate weighed: { cid, win, met }. A beast sure to fall outside the band stops early (fightodds.js
-   oddsWithin: only the in-band ones are picked among); only when none lands in it are the rest played out in full, for
-   the nearest and its growth — the same pick as weighing all of them in full, at a part of the cost (a Look at 后山
-   after a scene's exit weighed 14 beasts × 8 deals: ~6 s on the Mac, longer on the phone's JavaScriptCore). */
-function weigh(content, state, place, now, exclude = []) {
-  const n = nOf(state, place, now), recent = new Set((recOf(state, place, now)?.last ?? []).slice(-3));
+   oddsWithin: only the in-band ones are picked among). When none lands in it, the nearest is wanted: the beast whose
+   share could still lie nearest the target is played on, one at a time, until the nearest found is nearer than any
+   other could still be — the same pick, and the same growth, as weighing all of them in full, at a part of the cost (a
+   Look at 后山 after a scene's exit weighed 14 beasts × 8 deals: ~6 s on the Mac, ~20 s in the phone's JavaScriptCore,
+   no JIT, when none fell in the band).
+   Weighed on the day's first deal (n 0), whatever the count fought: a beast's odds against this hand are then the same
+   all day, and are kept (the save's `weighed`: the day, the hand's key, each place|beast's deals won of those played) —
+   after a fight there the stand is chosen again from what was weighed, little or nothing played out (Hanli 11-04: 6.5 s
+   on the phone after every 后山 fight). A new hand or a new day weighs again. */
+export const MEMO_FIELD = 'weighed';
+const memoOf = (state, now, key) => {
+  const m = state[MEMO_FIELD];
+  return m?.day === dayKey(now) && m.key === key ? m : { day: dayKey(now), key, of: {} };
+};
+const D = MATCH.deals;
+/* What a part-weighed share is reported as: its end of the range nearest the band (never in it — it stopped outside). */
+const shareOf = e => (e.out === 'below' ? (e.won + D - e.k) / D : e.won / D);
+/* How near the target a part-weighed share could still end. */
+const nearest = e => { const lo = e.won / D, hi = (e.won + D - e.k) / D; return MATCH.target < lo ? lo - MATCH.target : MATCH.target > hi ? MATCH.target - hi : 0; };
+function weigh(content, state, place, now, exclude = [], key = null) {
+  const recent = new Set((recOf(state, place, now)?.last ?? []).slice(-3));
   const up = poolUp(content, state, place, now).map(b => b.creature).filter(cid => !exclude.includes(cid));
   const fresh = up.filter(cid => !recent.has(cid));
   const pool = fresh.length ? fresh : up;
   const catalog = cardCatalog(content);
-  const first = pool.map(cid => {
-    const game = poolGame(place, cid, n);
-    const setup = fightSetup(content, state, foeOf(content, game), now, game.id, game.deal);
-    const { win, out } = oddsWithin(setup, catalog, MATCH.deals, MATCH.low, MATCH.high);
-    return { cid, win, out, met: Boolean(state.beasts?.[cid]), setup };
-  });
-  const full = first.some(w => !w.out) ? first : first.map(w => ({ ...w, win: fightOdds(w.setup, catalog, MATCH.deals).win, out: null }));
-  return full.map(({ out, ...w }) => w);
+  const memo = memoOf(state, now, key), of = { ...memo.of };
+  const setupOf = cid => { const game = poolGame(place, cid, 0); return fightSetup(content, state, foeOf(content, game), now, game.id, game.deal); };
+  const at = cid => `${place.id}|${cid}`;
+  const keep = (cid, r) => { of[at(cid)] = { won: r.won, k: r.k, out: r.out }; };
+  for (const cid of pool) {
+    const e = of[at(cid)];
+    if (!e || typeof e.k !== 'number') keep(cid, oddsWithin(setupOf(cid), catalog, D, MATCH.low, MATCH.high));
+  }
+  const inBand = pool.some(cid => of[at(cid)].k === D && !of[at(cid)].out && shareOf(of[at(cid)]) >= MATCH.low && shareOf(of[at(cid)]) <= MATCH.high);
+  // None in the band: the nearest, found by playing on only the beasts that could still be nearer.
+  while (!inBand) {
+    const far = cid => Math.abs(shareOf(of[at(cid)]) - MATCH.target);
+    const done = pool.filter(cid => of[at(cid)].k === D).sort((a, b) => far(a) - far(b) || a.localeCompare(b))[0];
+    const open = pool.filter(cid => of[at(cid)].k < D).sort((a, b) => nearest(of[at(a)]) - nearest(of[at(b)]) || a.localeCompare(b));
+    if (!open.length || (done && far(done) < nearest(of[at(open[0])]))) break;
+    keep(open[0], oddsWithin(setupOf(open[0]), catalog, D, -Infinity, Infinity, of[at(open[0])]));
+  }
+  const weighed = pool.map(cid => ({ cid, win: shareOf(of[at(cid)]), met: Boolean(state.beasts?.[cid]) }));
+  return { weighed, memo: { ...memo, of } };
 }
 
 /* The pick: in the band, one not met first, then the nearest the target; none in the band, the nearest — and when even
@@ -84,10 +111,12 @@ export function standFit(content, state, now = new Date(), { exclude = [], force
   if (!anyUp) return state;
   const key = handKey(fightSetup(content, state, foeOf(content, poolGame(place, anyUp.creature, 0)), now));
   if (kept && kept.key === key) return state;
-  const pick1 = pickStand(weigh(content, state, place, now, exclude));
+  const { weighed, memo } = weigh(content, state, place, now, exclude, key);
+  const pick1 = pickStand(weighed);
   if (!pick1) return state;
   const s = clone(state), k = huntKey(place.id), rec = recOf(state, place, now) ?? { day: dayKey(now), outcome: null, n: 0 };
   s.duels = { ...s.duels, [k]: { ...rec, stand: { cid: pick1.cid, n: nOf(state, place, now), key, win: pick1.win, ...(pick1.scale ? { scale: pick1.scale } : {}) } } };
+  s[MEMO_FIELD] = memo;
   return s;
 }
 

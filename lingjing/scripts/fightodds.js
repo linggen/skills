@@ -37,17 +37,18 @@ export function fightOdds(setup, catalog, deals = ODDS_DEALS) {
 }
 
 /* The same deals, stopped as soon as the share is sure to fall outside [low, high] (rules/match.mjs weighs a pool's
-   every beast and keeps only the ones in its band, or, when none is, the nearest — which it then plays out in full).
-   `out`: 'above' or 'below' when it stopped (`win` is then the share so far, not the answer); null when every deal was
-   played and `win` is fightOdds's own. */
-export function oddsWithin(setup, catalog, deals, low, high) {
-  let won = 0;
-  for (let k = 0; k < deals; k += 1) {
+   every beast and keeps only the ones in its band, or, when none is, the nearest). Resumable: `from` is where an earlier
+   weighing stopped ({ won, k }: deals won of the first k played), and low -Infinity, high Infinity plays to the end.
+   Answers { won, k, out, win }: `out` 'above' or 'below' when it stopped (`win` the share so far), null when every
+   deal was played (`win` is fightOdds's own). */
+export function oddsWithin(setup, catalog, deals, low, high, from = { won: 0, k: 0 }) {
+  let { won, k } = from;
+  const outOf = () => (won > high * deals ? 'above' : won + (deals - k) < low * deals ? 'below' : null);
+  while (k < deals && !outOf()) {
     if (played(setup, catalog, `odds|${setup.seed ?? ''}|${k}`) === 'won') won += 1;
-    if (won > high * deals) return { win: won / deals, out: 'above' };
-    if (won + (deals - k - 1) < low * deals) return { win: won / deals, out: 'below' };
+    k += 1;
   }
-  return { win: won / deals, out: null };
+  return { won, k, out: k < deals ? outOf() : null, win: won / deals };
 }
 
 /* A setup's key for the page's keeping: what decides the fight, not the deal. */

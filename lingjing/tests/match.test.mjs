@@ -151,3 +151,42 @@ test('at a scene 后山 stands at, the beast is matched; taking the way out keep
   assert.equal(r.state.scene, '09-yishui');
   assert.equal(standFit(content, r.state, out.now), r.state, 'the stand holds past the exit: the Look weighs nothing');
 });
+
+/* Hanli 11-04: 6.5 s on the phone after every 后山 fight — the stand was chosen again by playing every beast out anew. Odds
+   are weighed on the day's first deal and kept for the day and the hand (`weighed`): after a fight the pick is made from
+   what was kept; a new hand weighs again. */
+test('after a fight at the pool the stand is chosen from the day\'s kept odds; a new hand weighs again', () => {
+  const s = standFit(content, at('mid'), NOW), stand = standAt(s), memo = s.weighed;
+  assert.ok(memo && Object.keys(memo.of).length >= 2, JSON.stringify(memo));
+  assert.equal(memo.key, stand.key);
+  // The kept shares are what the pick reads: one beast set in the band, every other far above it.
+  const other = Object.keys(memo.of).map(k => k.split('|')[1]).find(cid => cid !== stand.cid);
+  const of = Object.fromEntries(Object.keys(memo.of).map(k => [k, k.endsWith(`|${other}`) ? { won: 4, k: MATCH.deals, out: null } : { won: MATCH.deals, k: MATCH.deals, out: null }]));
+  const rec = s.duels['hunt:houshan'];
+  const fought = { ...s, weighed: { ...memo, of }, duels: { ...s.duels, 'hunt:houshan': { day: rec.day, outcome: 'won', n: 1, at: NOW.toISOString(), streak: 1, last: [stand.cid] } } };
+  const again = standFit(content, fought, NOW);
+  assert.equal(standAt(again).cid, other, 'chosen from the kept odds, nothing played out');
+  assert.equal(standAt(again).n, 1);
+  // A new card is a new hand: the kept odds are let go and weighed again.
+  const more = standFit(content, { ...fought, cards: [...fought.cards, 'sanhuo'] }, NOW);
+  assert.notEqual(more.weighed.key, memo.key);
+  assert.notDeepEqual(more.weighed.of, of);
+});
+
+/* The early stop and the nearest's search pick what weighing every beast in full picks (its growth too). */
+test('the stand weighed in part is the stand weighed in full: weak, mid and strong hands, in band or not', async () => {
+  const { fightOdds } = await import('../scripts/fightodds.js');
+  const { fightSetup, cardCatalog } = await import('../scripts/rules/cards.mjs');
+  const { foeOf, placeOf, poolUp } = await import('../scripts/rules/world.mjs');
+  const { poolGame } = await import('../scripts/rules/match.mjs');
+  const cat = cardCatalog(content), place = placeOf(content, 'houshan');
+  for (const hand of Object.keys(HANDS)) {
+    const s = at(hand);
+    const full = pickStand(poolUp(content, s, place, NOW).map(b => {
+      const g = poolGame(place, b.creature, 0);
+      return { cid: b.creature, win: fightOdds(fightSetup(content, s, foeOf(content, g), NOW, g.id, g.deal), cat, MATCH.deals).win, met: Boolean(s.beasts?.[b.creature]) };
+    }));
+    const st = standAt(standFit(content, s, NOW));
+    assert.deepEqual({ cid: st.cid, win: st.win, scale: st.scale ?? null }, { cid: full.cid, win: full.win, scale: full.scale ?? null }, hand);
+  }
+});
