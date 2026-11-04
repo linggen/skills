@@ -44,11 +44,6 @@ function boardLost(state, content, ctx, id) {
   const bout = isBout(content, id) ? qiecuoOver(state, content, ctx, id, 'lost') : null;
   if (bout && !bout.state) return bout;
   const s = bout?.state ?? clone(state);
-  // A loss on a board an errand here asks for is counted: from the first, he is stuck there and may take 跳过 · 酬减半
-  // (errandSkip, Look's task `skip`). A win or the skip clears it (boardSettled).
-  // Counted for that errand (`quest`): the next errand on the same board starts unstuck.
-  const asking = !bout && taskOpen(content, state, id, ctx.now) ? errandAsking(content, state, id, state.place) : null;
-  if (asking) { const was = s.board_losses?.[id]; s.board_losses = { ...s.board_losses, [id]: { quest: asking.id, n: (was?.quest === asking.id ? was.n : 0) + 1 } }; }
   let cost = 0;
   if (bout) cost = staminaCost(content, t.qiecuo?.cost ?? 'game');
   else if (shouchaoHere(content, state, id, ctx.now)) {
@@ -77,10 +72,9 @@ export function task(state, content, ctx, args) {
   if (args.action === 'done') return taskDone(state, content, ctx, args.id);
   if (args.action === 'check') return questCheck(state, content, ctx, args.id);
   // A story board left (「算了，往下走」, paid nothing), and offered again later (rules/skips.mjs).
-  // …and an errand's board, once stuck: 跳过 · 酬减半 (errandSkip below) — the errand met, the board's pay cut.
-  // ✕ is never a pay (manager for Hanli, 2026-11-04: 「点关闭, 结果给奖励了」): `skip` on a board he may put down that is
-  // not the paid skip (errandSkip: an errand's board once stuck) is put down — 收手, nothing paid, the errand still open.
-  if (args.action === 'skip') return errandSkip(state, content, ctx, String(args.id ?? '')) ?? (errandAsking(content, state, String(args.id ?? ''), state.place) ? skipOrLeave : skipBoard)(state, content, ctx, String(args.id ?? ''));
+  // A skip never pays (Hanli 11-03; 2026-11-04: 「点关闭, 结果给奖励了」): `skip` on an errand's board puts it down — 收手,
+  // nothing paid, the errand still open.
+  if (args.action === 'skip') return (errandAsking(content, state, String(args.id ?? ''), state.place) ? skipOrLeave : skipBoard)(state, content, ctx, String(args.id ?? ''));
   // 留: kept for later (收着的棋局, rules/skips.mjs keepBoard) — taken up again, or dropped (丢).
   if (args.action === 'keep') return keepOrPut(state, content, ctx, String(args.id ?? ''));
   if (args.action === 'kept-play') return playKept(state, content, ctx, String(args.id ?? ''), taskOpen(content, state, String(args.id ?? ''), ctx.now) || hostedHere(content, state, String(args.id ?? ''), ctx.now));
@@ -278,39 +272,11 @@ function taskDone(state, content, ctx, id) {
   return { state: s, result: { ok: true, done: id, paid, gives: t.gives ?? null, line: pick(t.done_line, s.lang), ...(wrote.length ? { ledger: wrote } : {}), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}) } };
 }
 
-/* 跳过 · 酬减半 — a board an errand needs, left once stuck (Hanli 2026-10-27, at 晒经's 华容道: 「华容道yinyue提示也不太好用,
-   就是有点难, 让用户能跳过去, 就好了」). It counts for the errand as a win would — the errand met, handed in, paid in full —
-   but the board's own pay is cut (balance.json `play_pay.skip`, half at full ★), and it is kept as skipped, not won: the
-   held errand names the need (`skipped`), the result says `skipped`. The same as an errand's win otherwise (taskDone above):
-   its 体力 where hosted, a play counted, nothing written to the task — so practice and the story stay as they were.
-   Null where no errand here asks for it (the story's own board: skips.mjs skipBoard).
-   Only once stuck (manager for Hanli, 2026-11-04: 「点关闭, 结果给奖励了」 — ✕ on 象棋残局 went in as this skip and paid half):
-   a loss on the board counted (boardLost `board_losses`, errandStuck). Before that, `skip` here is ✕ — put down, unpaid,
-   the errand still open (skipOrLeave). The page and the phone show it as its own words 「跳过 · 酬减半」, never as ✕. */
-export const skipCut = content => content.balance?.play_pay?.skip ?? null;
-export const errandStuck = (state, id, quest) => Boolean(quest) && state.board_losses?.[id]?.quest === quest && state.board_losses[id].n > 0;
-function errandSkip(state, content, ctx, id) {
-  const t = taskOf(content, id), cut = skipCut(content);
-  if (!t || t.kind !== 'board' || cut == null || storyBoard(content, state, id)) return null;
-  const q = errandAsking(content, state, id, state.place);
-  if (!q || !taskOpen(content, state, id, ctx.now) || !errandStuck(state, id, q.id)) return null;
-  const s = clone(state);
-  delete s.wins?.[id];
-  boardSettled(s, id);
-  if (t.hosted) {
-    const empty = spendStamina(content, s, ctx, 'game', 1, playedCost(content, s, id, t));
-    if (empty) return empty;
-  }
-  const full = boardGrant(content, s, id, t, ctx.now, null);
-  const play = full ? { ...full, progress: Math.round(full.progress * cut), wealth: Math.round(full.wealth * cut) } : null;
-  const paid = play && (play.progress || play.wealth) ? payBoard(content, s, ctx, play) : null;
-  if (full) playCounted(s, id, ctx.now);
-  const held = s.quests[q.id];
-  const at = q.need.findIndex(n => n.kind === 'board' && n.task === id);
-  s.quests[q.id] = { ...held, skipped: [...new Set([...(held.skipped ?? []), at])] };
-  const handed = advance(content, s, { kind: 'board', task: id }, ctx);
-  return { state: s, result: { ok: true, skipped: id, for: 'errand', quest: q.id, cut, paid, gives: null, ...(handed.length ? { handed } : {}) } };
-}
+/* No paid skip (Hanli's rule of 2026-11-03: every board has only ✕ and 留, and 「跳过没有奖励」 — a skip never pays stars or a
+   grant). The 10-27 跳过 · 酬减半 for an errand's board (errandSkip, balance.json `play_pay.skip`) is gone (2026-11-04,
+   Hanli at 执事堂's 象棋残局: 「点关闭, 结果给奖励了」 — its ✕ went in as that skip and paid half): `skip` or `leave` on an
+   errand's board puts it down, nothing paid, the errand still open (he may drop the errand on the wall as ever). An older
+   save's `board_losses` (the stuck count of 11-04's first cut) is read by nothing and loads as it is. */
 
 /* A real-life chore handed in: today's pick, a fixed one, or a 开府
    milestone (chores.mjs). A pool chore that is not today's pick pays nothing,
@@ -427,23 +393,22 @@ function keepOrPut(state, content, ctx, id) {
   return keepBoard(state, content, ctx, id);
 }
 
-/* `skip` that is no paid skip: the story's board set aside (skipBoard), any board he may put down put down (leaveBoard). */
+/* `skip`: the story's board set aside (skipBoard), any board he may put down put down (leaveBoard). */
 function skipOrLeave(state, content, ctx, id) {
   const story = skipBoard(state, content, ctx, id);
   return story.result.ok || !leaveOf(content, state, id) ? story : leaveBoard(state, content, ctx, id);
 }
-/* A board over for its errand (won, or 跳过 · 酬减半): its losses forgotten, and off 收着 if he kept it (rules/skips.mjs). */
+/* A board won for its errand: off 收着 if he kept it (rules/skips.mjs). */
 function boardSettled(s, id) {
-  if (s.board_losses?.[id] != null) { const { [id]: _, ...rest } = s.board_losses; if (Object.keys(rest).length) s.board_losses = rest; else delete s.board_losses; }
   if ((s.kept ?? []).some(e => e.task === id && !e.story)) s.kept = s.kept.filter(e => e.task !== id);
 }
 
 /* The lock (Hanli 11-03: 「跳过 still pays」 — a board's own 跳过 went in as a 1-star win, so a 古 board paid on a skip). */
 export const winIsSkip = args => args?.grade === 'skipped' || args?.skipped === true || args?.skipped === 'true';
-/* A board's own 跳过, wherever it was played: an errand's board at its cut (errandSkip), the story's (or one offered
-   again) set aside for a later day (skips.mjs skipBoard: its `gives` only), any other put down as 收手 (leaveBoard). */
+/* A board's own 跳过, wherever it was played: the story's (or one offered again) set aside for a later day (skips.mjs
+   skipBoard: its `gives` only), any other — an errand's too — put down as 收手 (leaveBoard). Never a pay. */
 export function ownSkip(state, content, ctx, id) {
-  return errandSkip(state, content, ctx, id) ?? skipOrLeave(state, content, ctx, id);
+  return skipOrLeave(state, content, ctx, id);
 }
 
 /* A board's stars, clamped to the most its task declares (`stars`); none for a task without. */

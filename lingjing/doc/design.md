@@ -1141,9 +1141,10 @@ pages, never linked in the game and blank without `?dev=1`: the 游戏厅 `scrip
 - **✕ puts it away, and never pays** (2026-11-04, Hanli at 执事堂's 象棋残局: 「点关闭, 结果给奖励了」): a story board goes on
   as after a win and never comes back; a board he chose, an errand's too, is put down (收手) — no pay, no 体力, the errand
   still open to play later; a 游戏厅 board is dealt again.
-- **跳过 · 酬减半** (2026-10-27) is an errand board's own words button under the board ("Skip · half pay"), never the ✕,
-  and only once he is stuck: a loss on that board counted (`task lost`, `board_losses`; Look's task `skip`). It meets the
-  errand at the board's cut pay (rules/tasks.mjs errandSkip); `skip` sent before that is the ✕ (put down).
+- **No paid skip anywhere** (2026-11-04, under the 11-03 rule): the 10-27 跳过 · 酬减半 for an errand's board is gone
+  (rules/tasks.mjs; `play_pay.skip` dropped). `skip` or `leave` on an errand's board puts it down, unpaid; he may drop
+  the errand on the wall as ever. A lost board costs its 体力 in full, practice included (`task lost`, which the page now
+  sends for a pure board's own loss and a mount board's loss dealt again in place too).
 - **留 keeps it**: the story goes on exactly as on ✕, and the board waits in 「收着的棋局」 (the 事 book, the tray's
   「收着 n」, Look's `kept`) — at most 20, each with 丢; never offered by itself: a kept board never stands on the stage
   again until he takes it up (Look's task `kept`, stage.mjs — 2026-11-04 「点留没有用」, an errand's board was dealt again at

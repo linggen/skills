@@ -95,7 +95,7 @@ test('the page sends a board\'s own 跳过 as a skip, before any win; the phone\
   assert.match(page, /if \(ownSkip\(result\)\) return boardSkipped\(g\);\n\s*\/\/ A game that gives stars but no grade/, 'a mounted board');
   const fn = page.slice(page.indexOf('function boardSkipped('), page.indexOf('const toldUp ='));
   assert.doesNotMatch(fn, /onWin|write\('win'/, 'never a win');
-  assert.match(fn, /if \(task\?\.leave && !task\.skip && !task\.replay\) return leaveGame\(id\);\n\s*return skipGame\(id\);/);
+  assert.match(fn, /if \(task\?\.leave && !task\.replay\) return leaveGame\(id\);\n\s*return skipGame\(id\);/);
   assert.match(read('../scripts/games/phone/host.js'), /grade: skip \? 'skipped' : r\?\.grade \?\? null, left: Boolean\(r\?\.left\), skipped: skip,/);
   assert.match(read('../scripts/games/mount.js'), /ownSkip\(s\) \? \{ won: true, grade: 'skipped', skipped: true \}/);
 });

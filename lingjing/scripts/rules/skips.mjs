@@ -9,8 +9,8 @@
 //      and the scene's passage after the game is owed as after a win);
 //   3. 「还是加一个按钮好一些, 可能用户想丢掉, 可能想以后玩」 (11-03) — ✕ puts it away for good; 留 keeps it on
 //      收着的棋局 (below), never offered by itself; taken up and won, it pays its grant once;
-//      ✕ never pays (manager for Hanli, 2026-11-04: 「点关闭, 结果给奖励了」): an errand's board is put down by it, the
-//      errand still open; its 跳过 · 酬减半 is a words button of its own, once stuck (rules/tasks.mjs errandSkip);
+//      ✕ never pays, on any board (2026-11-04, Hanli at 执事堂: 「点关闭, 结果给奖励了」 — under rule 2 here): an errand's
+//      board is put down by it, the errand still open; the 10-27 跳过 · 酬减半 is gone (rules/tasks.mjs);
 //   4. 「对游戏进展要确保没有影响」 — skipping never hurts progress: a way on that waits on the
 //      board's grade (`needs.grade`) opens for a skipped board whatever the grade (core.mjs
 //      meets — his to choose), and what the story needs from a board is its `gives` (a thing,

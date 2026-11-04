@@ -30,7 +30,7 @@ import { chapterLook, nodeLook, recapLook } from './story.mjs';
 import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { choreGrant, choreHow, isOnce, kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
 import { gongkeBoard, meaningOf } from './gongke.mjs';
-import { catchHere, errandAsking, errandStuck, errandWants, gameLevel, hostedHere, lundaoBrief, reopened, skipCut, stallHere } from './tasks.mjs';
+import { catchHere, errandAsking, errandWants, gameLevel, hostedHere, lundaoBrief, reopened, stallHere } from './tasks.mjs';
 import { haggleBrief } from './aigames.mjs';
 import { duiziBrief } from './duizi.mjs';
 import { hashOf } from './travel.mjs';
@@ -526,9 +526,6 @@ function tasksBrief(content, state, ctx) {
         ...(hosted[id] ? { hosted: true, ...(hosted[id].practice ? { practice: true } : {}) } : {}),
         // A board he opened by choice may be put down at any moment (收手, rules/skips.mjs leaveOf); the story's own may not.
         ...(task.kind === 'board' && leaveOf(content, state, id) ? { leave: true } : {}),
-        // …and one an errand here needs may be skipped once stuck, its pay cut (跳过 · 酬减半, rules/tasks.mjs errandSkip):
-        // only after a loss on it (2026-11-04: before that the page showed it as the ✕ itself, and a close paid half).
-        ...(task.kind === 'board' && skipCut(content) != null && !storyBoard(content, state, id) && errandStuck(state, id, errandAsking(content, state, id, state.place)?.id) ? { skip: { cut: skipCut(content) } } : {}),
         // 留'd (收着的棋局, rules/skips.mjs keepBoard): waits on the list, never standing on the stage by itself (stage.mjs).
         ...((state.kept ?? []).some(e => e.task === id) ? { kept: true } : {}),
         // A light offer (本王考考你): stands only on an empty stage, or while a round is under way (stage.mjs).

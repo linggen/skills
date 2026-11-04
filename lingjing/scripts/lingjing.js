@@ -3784,15 +3784,15 @@ function skipGame(id) {
   return true;
 }
 /* A board's own 跳过 (the word boards', ropekit's; stuck.js ownSkip — Hanli 11-03: 「跳过 still pays」, it went in as a
-   1-star win): a skip, never a win — at once, no win line. A board he opened by choice (Look's `leave`, no errand's cut)
-   is put down (收手); every other is the rules' skip — the story's set aside for a later day, its `gives` only; an
-   errand's at its cut. A 试玩 board is dealt again. */
+   1-star win): a skip, never a win — at once, no win line. A board he may put down (Look's `leave`: one he chose, an
+   errand's) is put down (收手), unpaid; every other is the rules' skip — the story's set aside for a later day, its
+   `gives` only. A 试玩 board is dealt again. */
 function boardSkipped(g) {
   const id = g.taskId, task = look?.tasks?.find((t) => t.id === id);
   g.state = { ...g.state, won: false, live: false };
   forgetShell(id);
   if (isArcadeBoard(id)) { tracker.boardEnd(id, 'skipped'); boards.delete(id); render(); return true; }
-  if (task?.leave && !task.skip && !task.replay) return leaveGame(id);
+  if (task?.leave && !task.replay) return leaveGame(id);
   return skipGame(id);
 }
 /* The told boards held on the stage now (board-deal.js toldHeld). */
@@ -3815,10 +3815,10 @@ function toldGone(id) {
   });
   return true;
 }
-/* ✕ on a board's bar (cards.js outHtml), from its first moment: put away, never a pay (manager for Hanli, 2026-11-04:
-   「点关闭, 结果给奖励了」 — an errand's ✕ went in as 跳过 · 酬减半). A board he may put down (Look's `leave`: an errand's,
-   one he chose) is put down — nothing paid, no 体力, the errand still open; the story's is set aside (skipGame). The paid
-   skip is its own words under the board, once stuck (skipHalf). */
+/* ✕ on a board's bar (cards.js outHtml), from its first moment: put away, never a pay (Hanli's rule of 11-03, only ✕ and
+   留 and no skip pays; 2026-11-04: 「点关闭, 结果给奖励了」 — an errand's ✕ went in as the old 跳过 · 酬减半). A board he
+   may put down (Look's `leave`: an errand's, one he chose) is put down — nothing paid, no 体力, the errand still open; the
+   story's is set aside (skipGame). */
 function closeBoard(id) {
   const g = boardFor(id);
   if (!g || g.state?.won || g.sent || g.skipped) return true;
@@ -3827,13 +3827,6 @@ function closeBoard(id) {
   g.state = { ...g.state, live: false };
   forgetShell(id);
   return leaveGame(id);
-}
-/* 「跳过 · 酬减半」 under an errand's board once he is stuck there (cards.js errandSkipHtml): the rules' errandSkip. */
-function skipHalf(id) {
-  const g = boardFor(id), task = look?.tasks?.find((t) => t.id === id);
-  if (!g || !task?.skip || g.state?.won || g.sent || g.skipped) return true;
-  forgetShell(id);
-  return skipGame(id);
 }
 /* 留 beside it: kept for later (收着的棋局, rules/skips.mjs keepBoard) — the story's goes on as on ✕, its `gives` handed over;
    any other is put down onto the list. A 试玩 board goes on the 游戏厅's own list (arcade-board.js keptAdd) and is dealt again. */
@@ -3862,22 +3855,12 @@ async function onSkip(g, action = 'skip') {
   tracker.boardEnd(id, action === 'keep' ? 'left' : 'skipped');
   // Kept and not the story's (rules/skips.mjs keepBoard `left`): off the stage, onto the list — nothing else happens.
   if (action === 'keep' && !r.skipped) { beats.leave(id); boards.delete(id); forgetShell(id); keep({ opened: view.opened?.id === id ? null : view.opened, doNote: r.say ?? null }); await refresh(); return true; }
-  // An errand's board skipped (跳过 · 酬减半, rules/tasks.mjs errandSkip): counted for the errand at the cut pay — off the
-  // stage as a won one leaves it, what it paid as 所得, the errand handed in after it; no word of hers.
-  if (r.for === 'errand') return errandSkipped(id, r);
   // Left, not won: a gentle word from her, never guilt (hersay.js skipped, once in 30 min).
   herSay.say('skipped', '');
   if (isTale(id)) return taleDone(r);
   await refresh();
   const on = winExit(id, null, true);
   if (on && !look?.tell_owed) await panelTap(on.id, look?.scene?.panel?.taps?.find((t) => t.id === on.id)?.label ?? on.id);
-  return true;
-}
-async function errandSkipped(id, r) {
-  keep({ doNote: null, ...(boardPaid(r) ? { spoils: { place: look?.place?.id ?? null, cards: [], items: [], paid: r.paid, spent: [], line: null } } : {}) });
-  leaveWonBoard(id);
-  await refresh();
-  bringWonIntoFocus();
   return true;
 }
 /* The way out shows where he is looking (live 2026-10-19, 喂饼 at 390: 「算了，往下走」 came under the
@@ -4043,7 +4026,6 @@ const CLICKS = [
   // 回看 open, the lines wait under it (proto a: 「回看」 pauses the passage); closed, they go on.
   ['[data-board-close]', (el) => closeBoard(el.dataset.boardClose)],
   ['[data-board-keep]', (el) => keepGame(el.dataset.boardKeep)],
-  ['[data-board-skiphalf]', (el) => skipHalf(el.dataset.boardSkiphalf)],
   // 收着的棋局 (cards.js keptGroupHtml): the tray's chip opens the 事 book at the list; 玩 takes one up, 丢 lets it go.
   ['[data-kept-open]', () => openBook('kept:kept')],
   ['[data-kept-play]', (el) => { run(`kept:${el.dataset.keptPlay}`, () => keptTap(el.dataset.keptPlay, 'kept-play')); return true; }],
@@ -4236,8 +4218,7 @@ function beatSettled(g, result) {
   run(`win:${g.taskId}`, () => onWin(g.taskId));
 }
 /* A board lost and dealt again (a pure board's own `outcome: 'lost'` — 象棋残局, 五子棋 — or a mount board's loss dealt again
-   in place): the rules take it (rules/tasks.mjs boardLost: its 体力; an errand's board then counts as stuck, and Look's
-   `skip` puts 「跳过 · 酬减半」 under it). */
+   in place): the rules take it (rules/tasks.mjs boardLost: a lost board costs its 体力 in full, practice included). */
 function boardLostNow(g) {
   if (!g || g.sent || g.skipped || g.left || isArcadeBoard(g.taskId)) return;
   tracker.boardLost(g.taskId);

@@ -23,7 +23,7 @@ export const mountHostHtml = (id, esc) => `<div class="game g-mounthost" data-mo
 /* `prefetch(id, board)`: the page's 台词预取 for a game with moments (games/prefetch.js) — `{ lines, onEvent }` for
    the mount, asked once as the game is mounted; null when there is nothing to ask. */
 /* `onLost(board, result)`: a loss dealt again in place is still a loss (2026-11-04) — the page tells the rules (`task lost`:
-   its 体力, and an errand's board counted stuck, so 「跳过 · 酬减半」 shows under it). */
+   its 体力, a lost board's in full, practice too). */
 export function beatHost({ boardFor, lang, onSettled, onLost = () => {}, prefetch = () => null, doc = globalThis.document, againMs = AGAIN_MS }) {
   const hosted = new Map(); // task id → { node, board, stop, round }
   const lay = (id, entry) => {

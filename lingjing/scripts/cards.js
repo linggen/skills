@@ -539,8 +539,6 @@ function board(card, ctx) {
   // chose, an errand's too, is put down — never a pay: 2026-11-04, 「点关闭, 结果给奖励了」). Never two ✕, never a stuck wait.
   const out = !today && !made && !shut && !g?.state?.won && !g?.sent
     ? outHtml(ctx.lang, `data-board-keep="${esc(id)}"`, `data-board-close="${esc(id)}"`) : '';
-  // 跳过 · 酬减半 (rules/tasks.mjs errandSkip) is its own words in the bar of an errand's board, once he lost there (Look's `skip`).
-  const half = out && task?.skip ? errandSkipHtml(id, task.skip.cut, ctx.lang) : '';
   // A board that answers 问询 itself (华容道 `meta.ask`: how to play, then a lit next move) takes it on the board.
   const boardAsk = g?.mod?.meta?.ask?.(g.state);
   const about = own ? null : boardAsk ? { label: ctx.words.about, g: boardAsk, gfor: id } : { label: ctx.words.about, ask: true, say: ask };
@@ -553,7 +551,6 @@ function board(card, ctx) {
     // 重来 (↺): a board that can start over (shell.js restartOf); its tap is the board's own, by `data-gfor`.
     restart: restartOf(g?.mod) && !g?.state?.won ? restartHtml(id, ctx.lang, g.mod.meta.restart(g.state)) : '',
     out,
-    skip: half,
   };
   const framed = body == null ? frameHtml({ id, title, lang: ctx.lang, timed: timedOf(g.mod), tall: tallOf(g.mod), ...tools,
     how: forInput(task?.how ?? g.mod.meta?.how?.[ctx.lang] ?? g.mod.meta?.how?.zh ?? ''),
@@ -988,14 +985,6 @@ function taleBody(st, ctx) {
     how: forInput(g.mod.meta.how?.[ctx.lang] ?? g.mod.meta.how?.zh ?? ''), body: mountOnly(g.mod) ? mountHostHtml(id, esc) : `<div class="game" data-game="${esc(id)}">${g.mod.html(g.state, ctx.lang)}</div>` })
     : g ? frameHtml({ id, title: st.board?.title ?? '', lang: ctx.lang, out, body: boardHtml(g, ctx.words) }) : `<div class="dim small">…</div>`;
 }
-
-/* The paid skip's own button, in words (never an icon: 2026-11-04, a bare ✕ that paid read as a close that paid). */
-export const errandSkipHtml = (id, cut, lang) => `<button type="button" class="gshell-btn gshell-skiphalf" data-board-skiphalf="${esc(id)}">${esc(skipCutWord(cut, lang))}</button>`;
-/* 「跳过 · 酬减半」: the pay's cut said plainly, from the world's number (balance.json `play_pay.skip`). */
-export const skipCutWord = (cut, lang) => {
-  const half = Math.abs(cut - 0.5) < 1e-9;
-  return lang === 'en' ? (half ? 'Skip · half pay' : `Skip · ${Math.round(cut * 100)}% pay`) : half ? '跳过 · 酬减半' : `跳过 · 酬${Math.round(cut * 10)}成`;
-};
 
 /// 所得 — the errands met here, each with what it paid and the next step.
 export const HANDED_MS = 2600;
