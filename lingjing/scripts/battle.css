@@ -447,6 +447,10 @@
   .bleaf .batk, .bleaf .bhp { --gem: 20px; bottom: -5px; }
   .bleaf .batk { left: 2px; } .bleaf .bhp { right: 2px; }
   .bcard:hover { transform: translateY(var(--y, 0)) rotate(var(--r, 0deg)); }
+  /* The hand inside the room's width (Hanli 11-04: the cards ran off the right edge): each leaf is wider than its slot once
+     the hand overlaps, so the last one is laid from its slot's right edge, and the fan's tilt and the cost gems keep room. */
+  .bhand { padding: 0 12px; }
+  .bcard:last-child:not(:first-child) .bleaf { left: auto; right: 0; }
   .bcard.held { transform: translateY(calc(var(--ch) * -.42)) rotate(0deg) scale(1.22); }
   .blast .blab { display: none; }
   /* A phone's seam holds the last two moves (live, 2026-10-15: four long lines wrapped onto the minions);

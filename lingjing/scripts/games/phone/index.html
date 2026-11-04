@@ -55,7 +55,10 @@
   html[data-board=fighter][data-input=touch] body #stage .g-fighter.is-touch { --gf-h: min(calc(100dvh - var(--safe-b)), calc(100vw * 9 / 16)); width: min(100%, calc(var(--gf-h) * 2.4)); }
   /* 斗法 (kapai): the room fills the page as in the 游戏厅 (arcade.css .is-fill): its own phone rules answer the
      `scene` container (battle.css @container scene), which the Mac's story page gives it. */
-  html[data-board=kapai] #stage { padding: 0 0 var(--safe-b); overflow: hidden; }
+  /* The room's paper reaches the screen's foot and its own foot padding keeps the hand above the band (Hanli 11-04: a
+     black band under the hand, the cards cut where it began — the stage's padding held the band off the paper). */
+  html[data-board=kapai] #stage { padding: 0; overflow: hidden; }
+  html[data-board=kapai] .g-kapai > .battle { padding-bottom: calc(4px + var(--safe-b)); }
   html[data-board=kapai] .g-kapai { height: 100%; width: 100%; align-self: stretch; margin-top: 0; overflow: hidden; container: scene / inline-size; }
   /* 聊天 (jinchat): the card is the page, as a chat app's — from under the bar to the thumb, the list filling what is
      between. Its own size (min(520px, 64dvh), a card in the Mac's story column) stood at the foot of the page with an

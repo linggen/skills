@@ -26,6 +26,10 @@
 .dn-whom { align-self: center; max-width: 120px; font: 11px var(--ui); color: #B03A2B; }
 @media (max-width: 560px) {
   .dn-tray { position: static; margin: 0 auto 2px; width: max-content; }
+  /* The tray above the hand, the hand its own height under it: at `height: 100%` the hand was the whole dock again, pushed
+     down by the tray and cut off at the room's foot (Hanli 11-04 on the phone: a third of each card showing). */
+  .bdock { display: flex; flex-direction: column; justify-content: flex-end; }
+  .bdock > .bhand { height: auto; flex: none; }
   .dn-pill { width: 40px; }
   .dn-pill img { width: 26px; height: 26px; }
 }
