@@ -4,6 +4,7 @@
 // paid. Pure: Look in, HTML out. Every tap is a `data-mijing` button the page sends as the rules' `mijing` verb
 // (lingjing.js mijingTap); a fight room's beast stands as the stage's own duel card, a board room's game as its board.
 
+import { closeX } from './card-close.js';
 import { esc } from './esc.js';
 import { worldPath } from './rules.js';
 
@@ -147,7 +148,8 @@ export function mijingCardHtml(card, ctx) {
   if (m.last) {
     const l = m.last, how = t.end[l.how] ?? l.how;
     const items = l.items?.length ? `<div class="small">${esc(fill(t.got, { what: itemsLine(l.items, t) }))}${l.card ? ` · ${esc(l.card.name ?? '')}` : ''}</div>` : '';
-    return `<div class="card mijing last" data-card-kind="mijing"><div class="cardtitle">${esc(fill(t.endLine, { name: l.name, how, reached: l.reached, of: l.of }))}</div>
+    // Its ✕ is the rules' close, as 合上 is (card-close.js: the run's pay, cleared — what it paid is on the strip and in 物品).
+    return `<div class="card mijing last" data-card-kind="mijing">${closeX(ctx.lang, 'data-mijing="close"', t.close)}<div class="cardtitle">${esc(fill(t.endLine, { name: l.name, how, reached: l.reached, of: l.of }))}</div>
       <div class="say">${esc(fill(t.paid, { p: l.paid?.progress ?? 0, w: l.paid?.wealth ?? 0 }))}</div>${items}
       <div class="acts"><button class="act quiet" data-mijing="close">${esc(t.close)}</button></div></div>`;
   }

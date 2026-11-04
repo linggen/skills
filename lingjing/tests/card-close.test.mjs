@@ -14,9 +14,12 @@ const DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'scrip
 const read = (f) => fs.readFileSync(path.join(DIR, f), 'utf8');
 const pageFiles = [...fs.readdirSync(DIR).filter((f) => f.endsWith('.js')), ...fs.readdirSync(path.join(DIR, 'games')).filter((f) => f.endsWith('.js')).map((f) => `games/${f}`)];
 const ALL = pageFiles.map((f) => [f, read(f)]);
-const SRC = ALL.map(([, s]) => s).join('\n');
+// The page's source, without the tables themselves (card-close.js names every attribute — it would vouch for itself)
+// and without comments (a word in a comment draws nothing).
+const untabled = (f, s) => (f === 'card-close.js' ? s.replace(/export const (STAGE|OVERLAYS|TOASTS) = \{[\s\S]*?\n\};/g, '') : s);
+const SRC = ALL.map(([f, s]) => untabled(f, s).replace(/\/\*[\s\S]*?\*\//g, '')).join('\n');
 // A control the page draws: the attribute written into markup (`data-x=`, `data-x>`, `data-x `, `data-x"`) or set by code.
-const drawn = (attr) => new RegExp(`${attr}(?=[=\\s>"'\`$])`).test(SRC.replace(/\/\/.*$/gm, ''));
+const drawn = (attr) => new RegExp(`${attr}(?=[=\\s>"'\`$])`).test(SRC.replace(/^\s*\/\/.*$/gm, ''));
 // …and one the page listens for (a CLICKS row, a closest(), a dataset read).
 const heard = (attr) => SRC.includes(`'[${attr}]'`) || SRC.includes(`"[${attr}]"`) || SRC.includes(`[${attr}]`) || SRC.includes(`[${attr}=`);
 
@@ -42,7 +45,8 @@ test('a card that closes names its close and at least one visible way back; one 
     assert.ok(['away', 'own', 'none'].includes(row.close), `${k}: close is away | own | none`);
     if (row.close === 'none') { assert.ok(row.why?.length > 10, `${k}: no ✕ needs its why`); continue; }
     assert.ok(row.reopen?.length, `${k}: a card that closes needs a way back (reopen)`);
-    assert.equal(row.visible, true, `${k}: its way back must stand in sight, no trick to know`);
+    // In sight right after the close, or the gap named (reported: tests below print them).
+    assert.ok(row.visible === true || row.gap?.length > 20, `${k}: its way back stands in sight, or its gap is named`);
     if (row.close === 'own') assert.ok(drawn(row.attr) && heard(row.attr), `${k}: its own close ${row.attr} is drawn and heard`);
     if (row.close === 'away') assert.ok(['told', 'place'].includes(row.scope), `${k}: a put-away card says how long it stays away`);
     for (const a of row.reopen) assert.ok(drawn(a) && heard(a), `${k}: its way back ${a} is a control the page draws and hears`);
@@ -138,4 +142,23 @@ test('every note over the stage wears the ✕ (toastX) and says where what it to
   }
   // every note toastsHtml draws has a row
   for (const fn of ['emergedHtml', 'trialToldHtml', 'spoilsHtml', 'handinHtml', 'fullOfferHtml']) assert.ok(body.includes(fn), `toastsHtml draws ${fn}`);
+});
+
+test('a card that closes by its own control draws that control as the one ✕ (closeX · the shell\'s close · 留 · ✕)', () => {
+  const X = /(closeX\(|toolHtml\('close'|outHtml\()[\s\S]{0,220}$/;
+  const xed = (attr) => {
+    for (const m of SRC.matchAll(new RegExp(attr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'))) if (X.test(SRC.slice(Math.max(0, m.index - 220), m.index))) return true;
+    return false;
+  };
+  for (const [k, row] of Object.entries(STAGE)) {
+    if (row.close === 'own') assert.ok(xed(row.attr), `${k}: its own close ${row.attr} is drawn as the ✕`);
+    if (row.ownAttr) assert.ok(xed(row.ownAttr), `${k}: its rules' close ${row.ownAttr} is drawn as the ✕`);
+  }
+});
+
+test('the ways back that take knowing where to look are few and named', () => {
+  const gaps = Object.entries(STAGE).filter(([, r]) => r.close !== 'none' && r.visible !== true).map(([k]) => k);
+  assert.deepEqual(gaps.sort(), ['closed', 'seclude'], `known gaps changed: ${gaps.join(', ')} — name each in the report`);
+  // a told card's one-tap way back is the ↩ chip: it must be drawn even when 体力 is spent (outside trayHtml's early return)
+  assert.match(read('lingjing.js'), /awayChipsHtml\(view\.awayNow[^)]*\) \+ trayHtml\(/);
 });

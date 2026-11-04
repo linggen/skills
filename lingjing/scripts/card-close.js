@@ -29,7 +29,8 @@ export function withCloseX(html, btn) {
    scope:  'told' — put away until Ling shows anew (what she Showed follows him from place to place);
            'place' — put away here; walking on brings it back as Look has it.
    reopen: the controls that bring it back (attributes the page draws); `chip` — the tray's 收起 chip (data-card-back)
-           is one of them. `visible`: false when the only way back takes knowing where to look. */
+           is one of them. `visible`: judged from the screen right after the close — false (with its `gap`) when the way
+           back takes knowing where to look; the lint lists those, it never lets the table vouch for itself. */
 export const STAGE = {
   creature: { close: 'away', scope: 'told', chip: true, reopen: ['data-card-back', 'data-codex-open'], visible: true,
     what: 'a beast\'s card (Ling\'s Show, or 先降后收\'s 收服 once beaten)', also: '书 › 九鼎录 › 图鉴' },
@@ -46,19 +47,19 @@ export const STAGE = {
   // 秘境令 away from the door: the tray's own 秘境 row stands again once the card is down (rules/aside.mjs `stage: 'mijing'`),
   // with the same 去石门 ›; at the door and after a run, the 收起 chip. Inside a run it is the run.
   mijing: { close: 'away', scope: 'place', chip: (look) => !look?.mijing?.away, reopen: ['data-card-back', 'data-go', 'data-gear'], visible: true,
-    none: (look) => Boolean(look?.mijing?.inside), what: '秘境探险: 秘境令 · 石门 (away), the door\'s 重, a run\'s pay', also: 'away: the tray\'s 秘境令 row; 物品 holds the 令' },
+    none: (look) => Boolean(look?.mijing?.inside), own: (look) => Boolean(look?.mijing?.last), ownAttr: 'data-mijing="close"', what: '秘境探险: 秘境令 · 石门 (away), the door\'s 重, a run\'s pay', also: 'away: the tray\'s 秘境令 row; 物品 holds the 令' },
   handed: { close: 'away', scope: 'place', chip: true, reopen: ['data-card-back', 'data-book'], visible: true, what: '所得 of an errand met', also: '事 (the done fold)' },
   offer: { close: 'away', scope: 'place', chip: true, reopen: ['data-card-back', 'data-book'], visible: true, what: 'errands held out here', also: '事 › 可接' },
   duel: { close: 'own', attr: 'data-panel-exit', reopen: ['data-card-back', 'data-duel-start'], visible: true,
     what: 'a fight: a story fight\'s 留 · ✕ (cards.js passOut); a haunt\'s beast puts away with the page\'s ✕', away: (c, look) => look?.place?.encounter?.game?.id === c.id },
-  board: { close: 'own', attr: 'data-board-leave', reopen: ['data-play', 'data-kept-open'], visible: true, what: 'every board: the shell\'s 留 · ✕ (games/shell.js outHtml)' },
-  tale: { close: 'own', attr: 'data-board-leave', reopen: ['data-book'], visible: true, what: '传闻\'s step: its board\'s shell ✕, a riddle\'s 留 · ✕', also: '事 › 传闻' },
+  board: { close: 'own', attr: 'data-board-close', reopen: ['data-play', 'data-kept-open'], visible: true, what: 'every board: the shell\'s 留 · ✕ (games/shell.js outHtml)' },
+  tale: { close: 'own', attr: 'data-board-close', reopen: ['data-book'], visible: true, what: '传闻\'s step: its board\'s shell ✕, a riddle\'s 留 · ✕', also: '事 › 传闻' },
   lundao: { close: 'away', scope: 'place', chip: true, reopen: ['data-card-back'], visible: true, what: '论道 offered or under way' },
   duizi: { close: 'away', scope: 'place', chip: true, reopen: ['data-card-back', 'data-duizi-open'], visible: true, what: '对对子', also: 'the tray\'s 对对子 row' },
   quest: { close: 'none', why: 'the search\'s step on this very spot: the line under his feet, its own answer on the card' },
   road: { close: 'none', why: '路上: mist, then 收下 or 不取, or a 抉择\'s ways — the rules wait on the answer, and 不取 is its way past' },
-  closed: { close: 'own', attr: 'data-close-chapter', reopen: ['data-lu'], visible: true, what: 'a chapter\'s ending card: 合上 and ✕', also: '书 › 九鼎录' },
-  seclude: { close: 'own', attr: 'data-seclude-close', reopen: ['data-seclude-open'], visible: true, what: '闭关\'s chooser', also: 'the tray\'s 闭关 · 体力' },
+  closed: { close: 'own', attr: 'data-close-chapter', reopen: ['data-lu'], visible: false, gap: '书 › 九鼎录 holds the chapter\'s row (its 回目 and what was done), not the ending card itself — two taps, and a different view', what: 'a chapter\'s ending card: 合上 and ✕', also: '书 › 九鼎录' },
+  seclude: { close: 'own', attr: 'data-seclude-close', reopen: ['data-seclude-open'], visible: false, gap: 'with 体力 spent the tray\'s rest card holds 闭关 (one tap); with 体力 left the way back is a tap on the strip\'s 体力, which does not look like a button', what: '闭关\'s chooser', also: 'the tray\'s 闭关 · 体力' },
   seclusion: { close: 'none', why: '闭关 running: 出关 is the one way on, the world holds still till it is taken' },
   panel: { close: 'none', why: 'the scene card: its choices are the story\'s way on — put away, the stage would stand blank' },
   value: { close: 'none', why: 'a scene\'s value exit (the 名字): the rules wait on the name' },
@@ -69,7 +70,7 @@ export const STAGE = {
   building: { close: 'none', why: 'a notice while the place is painted; it goes by itself' },
   empty: { close: 'none', why: '体力 spent: the notice and its 闭关 — the tray\'s rest card says the same' },
   next: { close: 'none', why: '下一步: the way on when nothing else stands — never a blank stage' },
-  fight: { close: 'own', attr: 'data-fight-tap', reopen: ['data-duel-start'], visible: true, what: 'the fight room: the bar\'s ✕ (认输)' },
+  fight: { close: 'own', attr: 'data-fight-tap', reopen: ['data-duel-start'], visible: true, what: 'the fight room: the bar\'s ✕ (认输). A fight the save holds open that the page is not in stands as one card with its 回去 (fightLeftHtml) — the way back into it; no ✕, or the rules would wait on a fight nobody sees' },
   memory: { close: 'none', why: '银月\'s memory: a moment, a tap skips it; kept in 书 › 九鼎录 › 记忆' },
   homing: { close: 'none', why: '鼎归: a moment, a tap skips it' },
   doors: { close: 'none', why: '息壤\'s doors: a moment, a tap goes on' },
@@ -100,6 +101,8 @@ export function closeOf(card, look) {
   const row = STAGE[card?.card];
   if (!row) return 'none';
   if (row.none?.(look)) return 'none';
+  // A state whose close is the rules' own (a 秘境 run's pay: 合上 clears it): its ✕ is the card's, never the page's.
+  if (row.own?.(look)) return 'own';
   if (row.close === 'own' && row.away?.(card, look)) return 'away';
   return row.close;
 }

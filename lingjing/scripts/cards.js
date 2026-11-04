@@ -809,7 +809,7 @@ function seclude(card, ctx) {
   const chosen = pickd.focus === 'card' ? ch.spells.find((s) => s.id === pickd.id) : null;
   const next = chosen ? say(w.secludeNext, { name: chosen.name, from: chosen.star, to: chosen.star + 1, h: chosen.left, what: chosen.next === 'cost' ? say(w.secludeNextCost, { was: chosen.cost, cost: chosen.cost - 1 }) : w.secludeNextPower }) : w.secludeStarRule;
   const pills = (ch.pills ?? []).map((p) => `<button class="act quiet${ctx.secludePill === p.id ? ' on' : ''}" data-seclude-pill="${esc(p.id)}">${esc(say(w.secludePill, { name: p.name, m: p.mult }))} · ×${esc(p.n)}</button>`).join('');
-  return `<div class="card seclude"><div class="cardtitle">${esc(w.secludeTitle)}</div>
+  return `<div class="card seclude">${closeX(ctx.lang, 'data-seclude-close', w.secludeLater)}<div class="cardtitle">${esc(w.secludeTitle)}</div>
     <div class="small dim">${esc(w.secludeHint)}</div>
     ${spells ? `<div class="small">${esc(say(w.secludeSpells, { h: r.star_hours }))}</div><div class="gcards">${spells}</div><div class="small dim secludenext">${esc(next)}</div>` : ''}
     <div class="acts"><button class="act${on('progress')}" data-seclude-focus="progress">${esc(say(w.secludeProgress, { n: ch.per_hour ?? 0 }))}</button>
