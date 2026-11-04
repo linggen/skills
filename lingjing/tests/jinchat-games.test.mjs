@@ -299,7 +299,11 @@ test('each 成语接龙: the person opens with an idiom of the list that leaves 
   assert.ok(DICT.words.length > 7000 && DICT.words.every((w) => /^\p{Script=Han}{4}$/u.test(w)), 'four characters each');
   const doc = JSON.parse(read('../worlds/jiuding/chengyu.json'));
   assert.match(doc._license, /^MIT License\. Copyright \(c\) 2018 THUNLP/, 'the license travels with the list');
+  assert.match(doc._license, /Copyright \(c\) 2021 码谱/);
+  assert.match(doc._license, /Copyright \(c\) 2018 PWXCOO/);
   assert.match(doc._source, /thunlp\/THUOCL/);
+  assert.match(doc._source, /mapull\/chinese-dictionary\/blob\/[0-9a-f]{40}\//);
+  assert.match(doc._source, /pwxcoo\/chinese-xinhua\/blob\/[0-9a-f]{40}\//);
   for (const [id, c] of OF('chain')) {
     const ch = chainOf(c.game, 'zh');
     assert.ok(DICT.set.has(ch.start), `${id}: 「${ch.start}」 in the list`);
@@ -320,7 +324,8 @@ test('成语接龙 is judged by the list alone: the head must be the last one\'s
   assert.equal(checkLink(DICT, st, '').v, 'empty');
   assert.deepEqual(checkLink(DICT, st, '欺人太甚！'), { v: 'right', word: '欺人太甚' });
   assert.equal(checkLink(DICT, st, '自欺欺人').v, 'mismatch');
-  assert.equal(checkLink(DICT, st, '欺天诳地').v, 'unknown', 'a head that fits, but not in the list: no miss');
+  assert.equal(checkLink(DICT, st, '欺天瞒月').v, 'unknown', 'a head that fits, but not in the list: no miss');
+  assert.equal(checkLink(DICT, st, '欺天诳地').v, 'right', 'the fuller list (11-04): a dictionary idiom, though not a common one');
   assert.equal(checkLink(DICT, st, '童叟无欺').v, 'mismatch');
   st = playLink(st, '欺人太甚', 'me');
   const mine = replyOf(DICT, st.said);

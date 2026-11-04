@@ -11,7 +11,11 @@
 //     hint reworded; Reveal only on an outright ask. Never the answer, never the choices (the answer is among them);
 //   · Reveal (Ling's, and 银月's Whisper) hands the answer over and the board is TOLD: over for the story as a skip is
 //     (rules/skips.mjs — its `gives` only, no grant, no grade, no stars; offered again on a later day), and the page,
-//     watching the save, closes the board with the original shown.
+//     watching the save, closes the board with the original shown. A chain's is only the way on from the idiom before
+//     him, and the chain goes on (11-04);
+//   · stuck (two refusals on what is before him) or asking for help, he is helped; a word asked about is answered
+//     truthfully — real or not — and nothing that fits a shown hint is called wrong (Hanli 11-04: 「问ling或者yinyue应该
+//     提供帮助, 不能不管玩家」, after Ling's 「我不能替钱掌柜判定」 on 定国安民).
 // 二十问 has no hidden answer (the animal is in his head): never kept here. Agent's pick (Hanli delegated 11-03).
 import { dayKey } from '../state.mjs';
 import { clone } from './core.mjs';
@@ -71,14 +75,22 @@ export function pageWordBoard(content, state, args, now) {
   if (action === 'step') {
     if (!b || b.told || (args.chat && b.chat !== String(args.chat))) return { result: { ok: false, refused: 'no-word-board' } };
     const s = clone(state);
+    // How it stands for him (Hanli 11-04, stuck on 定国安□): his refusals on this link (`tries`), the words refused
+    // (`rejected`) — what Look hands Ling and 银月 so they help, and never call wrong what fits the hint.
     s.word_board = { ...b, ...(args.hints != null && args.hints !== '' ? { hints: listOf(args.hints) } : {}),
-      ...(args.face ? { face: String(args.face) } : {}), ...(args.answer ? { answer: String(args.answer) } : {}) };
+      ...(args.face ? { face: String(args.face) } : {}), ...(args.answer ? { answer: String(args.answer) } : {}),
+      ...(args.tries != null && args.tries !== '' ? { tries: Math.max(0, Number(args.tries) || 0) } : {}),
+      ...(args.rejected != null && args.rejected !== '' ? { rejected: listOf(args.rejected) } : {}) };
+    // A new link (a chain's face anew): a way on told for the last one is no longer this one's.
+    if (args.face && String(args.face) !== b.face) delete s.word_board.whispered;
     return { keep: s, result: { ok: true } };
   }
   return { result: { ok: false, refused: 'unknown-action' } };
 }
 
-const RULE = 'A word game is open on the stage (`face`); its answer is hidden and you do not know it — never say what it is, nor what it is not. Asked for a hint, reword one of `hints` (the page has shown them) and nudge. Only when the player asks outright for the answer, call {tool} and say it in your own words.';
+const RULE = 'A word game is open on the stage (`face`); its answer is hidden: never volunteer it. Asked whether a word is a real idiom, phrase or line, answer truthfully — the page\'s list lacks some real ones: say so (「X是成语，谱里没收」); never call wrong what fits a shown hint. Asked for a hint, reword one of `hints` (the page has shown them) and nudge. Stuck (`stuck`) or asking for help: help — offer to whisper it; on his yes, or his outright ask, call {tool} and say it in your own words.';
+/** Refusals on one link (one riddle, one 下联) from which Look calls him stuck. */
+export const STUCK_TRIES = 2;
 const TOLD = 'Told: the answer was given (`answer`); the board is over, as a skip. Say it once if not yet said; never a reward.';
 
 /** Look's `word_board` (and 银月's Progress, `tool` Whisper): the open game as they may know it — its kind, face, the hints shown, the rule; never the answer
@@ -86,7 +98,9 @@ const TOLD = 'Told: the answer was given (`answer`); the board is over, as a ski
 export function wordBoardLook(state, now, tool = 'Reveal') {
   const b = openBoard(state, now);
   if (!b) return {};
-  return { word_board: { kind: b.kind, face: b.face, hints: b.hints ?? [], ...(b.told ? { told: true, answer: b.answer, ...(b.src ? { src: b.src } : {}), ...(b.task ? { task: b.task } : {}), rule: TOLD } : { rule: RULE.replace('{tool}', tool) }) } };
+  // Two refusals or more on what is before him: stuck — the facts to help him by (his tries, the words refused).
+  const stuck = !b.told && (b.tries ?? 0) >= STUCK_TRIES ? { stuck: true, tries: b.tries, rejected: b.rejected ?? [] } : {};
+  return { word_board: { kind: b.kind, face: b.face, hints: b.hints ?? [], ...stuck, ...(b.told ? { told: true, answer: b.answer, ...(b.src ? { src: b.src } : {}), ...(b.task ? { task: b.task } : {}), rule: TOLD } : { rule: RULE.replace('{tool}', tool) }) } };
 }
 
 /** Reveal (Ling's; 银月's Whisper): the open word game's answer, on his outright ask. The board is told — over for the
@@ -97,6 +111,13 @@ export function reveal(state, content, ctx) {
   if (!b) return refuse('no-word-board');
   const fact = { kind: b.kind, face: b.face, answer: b.answer, ...(b.src ? { src: b.src } : {}) };
   if (b.told) return { state: null, result: { ok: true, ...fact, told: b.task ?? true, again: true } };
+  // A chain's answer is only the way on from the idiom before him (Hanli 11-04: help must not end his chain): told,
+  // the chain goes on — he links it himself; nothing is skipped.
+  if (b.kind === 'chain') {
+    const s = clone(state);
+    s.word_board = { ...b, whispered: b.answer };
+    return { state: s, result: { ok: true, ...fact, told: false, link: true } };
+  }
   let s = clone(state), gives = null, skipped = false;
   if (b.task && state.tasks?.[b.task]?.status !== 'done') {
     const r = skipBoard(state, content, ctx, b.task);

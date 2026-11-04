@@ -271,12 +271,19 @@ export function chainOf(game, lang = 'zh') {
   return { start: String(g.start ?? ''), links: Number(g.links) || 3, tries: Number(game?.tries) || 3, kind: pick(g.label ?? game?.label, lang) };
 }
 
-/** The dictionary (worlds/<id>/chengyu.json `words`, the commonest first) as a lookup. */
+/** The dictionary (worlds/<id>/chengyu.json) as a lookup: `words` (the commonest first) are the ones the page plays,
+    hints and deals from (`byFirst`); `set` is every idiom he may say — those and `more` (grouped by first character:
+    the head, then three characters for each idiom of it). Hanli 11-04: 定国安民 refused, the chain stuck. */
 export function dictOf(doc) {
   const words = String(doc?.words ?? '').split(/\s+/).filter(Boolean);
   const byFirst = new Map();
   for (const w of words) { const k = [...w][0]; if (!byFirst.has(k)) byFirst.set(k, []); byFirst.get(k).push(w); }
-  return { words, set: new Set(words), byFirst };
+  const set = new Set(words);
+  for (const g of String(doc?.more ?? '').split(/\s+/).filter(Boolean)) {
+    const [head, ...rest] = [...g];
+    for (let i = 0; i + 3 <= rest.length; i += 3) set.add(head + rest.slice(i, i + 3).join(''));
+  }
+  return { words, set, byFirst };
 }
 
 const lastOf = (w) => [...w].at(-1);
@@ -328,6 +335,38 @@ export function chainChoices(dict, st) {
   return [...four.slice(4 - k), ...four.slice(0, 4 - k)];
 }
 
+/** Hint 2 (three characters showing, 「定国安□」) and his idiom keeps all three, only the last character his own: a near
+    link, taken (Hanli 11-04: 定国安民 refused twice under 定国安□ — the hint must never contradict the page). */
+export function nearLink(st, word, hint) {
+  const h = [...String(hint ?? '')], w = [...String(word ?? '')];
+  if (h.length !== 4 || w.length !== 4 || h[3] !== '□' || h.slice(0, 3).some((c) => c === '□')) return false;
+  return h.slice(0, 3).every((c, i) => c === w[i]) && /\p{Script=Han}/u.test(w[3]) && w[3] !== '□' && !st.said.includes(word);
+}
+
+/** How many refusals on one link before the way past it is offered (请{name}接, the choices). */
+export const CHAIN_TRIES = 3;
+
+/* 求助 (Hanli 11-04: 「可以加一个按钮求助yinyue, 让银月帮忙」): his tap asks 银月 (or Ling) once, with the facts. She
+   writes the words; what the board does is one of two marks at the end of her reply, held by the page: `accept` takes a
+   word of HIS that this link refused as not in the list (she vouches it is a real idiom), only if it heads right;
+   `whisper` lays out the page's own way on. Nothing else she writes changes the board. */
+const HELP_ACCEPT = /<!--\s*accept\s*[:：]\s*([^>]*?)\s*-->/i;
+const HELP_WHISPER = /<!--\s*whisper\s*-->/i;
+const HELP_MARKS = /<!--[^>]*-->/g;
+/** Her reply's choice, held: `{ accept: word }` · `{ whisper: way }` · null. */
+export function helpOf(text, { rejected = [], need = '', way = null } = {}) {
+  const raw = String(text ?? '');
+  const a = raw.match(HELP_ACCEPT);
+  if (a) {
+    const w = hanJoin(a[1]);
+    if (rejected.includes(w) && [...w].length === 4 && [...w][0] === need) return { accept: w };
+  }
+  if (HELP_WHISPER.test(raw) && way) return { whisper: way };
+  return null;
+}
+/** Her reply as words, the marks gone. */
+export const helpWords = (text) => String(text ?? '').replace(HELP_MARKS, '').trim();
+
 /** How a chain came out: his links all in, no hint and no choices → 3; with them → 2; skipped → 1. Always `won`. */
 export const chainOutcome = ({ done = false, hints = 0, choices = false } = {}) => riddleOutcome({ solved: done, hints, choices });
 
@@ -343,7 +382,7 @@ const W = {
     miss: '他猜：「{guess}」。页面判了：不对。（谜底别说破，也别替他猜。）回他一句——损他也行，激他也行。{hint}',
     hint: '页面这会儿亮出了提示：「{hint}」。',
     shown: '页面已经亮出的提示：{hints}。',
-    rule: '（这一局开着，他在哪儿问都一样：答案藏着，你也不知道——别说它是什么，也别说它不是什么；要提示，只把页面亮出的提示换个说法，推他一把。）',
+    rule: '（这一局开着，他在哪儿问都一样：答案藏着，你也不知道——别主动说破；合页面提示的，别说成错。他问某个词是不是成语、是不是真有这句，照实答——成语谱没收的真成语也有，就说「X是成语，谱里没收」。要提示，把页面亮出的提示换个说法，推他一把。）',
     choices: '页面给了他四个选项挑。',
     solved: '他猜中了：「{guess}」（页面判的）。用一句话认了。',
     skip: '他不猜了，跳过；页面亮出了谜底：「{answer}」。回他一句，收个尾。',
@@ -377,6 +416,8 @@ const W = {
     lDone: '他接满了{links}条（页面判的），最后一条是「{guess}」。用一句话认了。',
     lStuck: '他接「{guess}」，你接不上了（页面翻遍了成语谱）。认个输，一句话。',
     lSkip: '他不接了，跳过。回他一句，收个尾。',
+    help: '[HIDDEN] [jinchat] {title}·他在成语接龙里接不下去，点了求助，问你。不 Look，不调用任何工具。要接的是「{need}」字开头的成语；接龙到现在：{said}。{hint}{rejected}一条接得上的（页面的）：「{way}」。用你自己的口吻回他一两句，可以逗他，但要帮上忙：给个提示、推他一把，或者悄悄告诉他。你若确知他被拒的哪一条是真成语（只是成语谱没收），说给他听，并在末尾单独一行写 <!--accept:那条成语-->，页面就收下它；你若把那条接得上的告诉了他，末尾写 <!--whisper-->。标记聊天里不显示。',
+    helpHint: '页面亮出的提示：「{hint}」。', helpRejected: '这一条他试过、页面没收的：{list}。',
   },
   en: {
     head: '[HIDDEN] [jinchat] {title}, {when}. Not words to you: no Look, no tool at all. Write only what {names} say, in English, one or two lines, each under twenty words{multi}; no narration, never the page.',
@@ -387,7 +428,7 @@ const W = {
     miss: 'He guesses: "{guess}". The page judged it: wrong. (Never give the answer away; never guess for him.) Answer him in a line — a jab or a dare. {hint}',
     hint: 'The page now shows a hint: "{hint}".',
     shown: 'Hints the page has shown so far: {hints}.',
-    rule: '(While this round is open, wherever he asks: the answer is hidden, and you do not know it — never say what it is, nor what it is not; asked for help, only reword a hint the page has shown, and nudge.)',
+    rule: '(While this round is open, wherever he asks: the answer is hidden, and you do not know it — never volunteer it; never call wrong what fits a hint the page shows. Asked whether a word is a real idiom or phrase, answer truthfully — the page\'s list lacks some real ones: say so. Asked for help, reword a hint the page has shown, and nudge.)',
     choices: 'The page has given him four choices.',
     solved: 'He has it: "{guess}" (the page judged it). Own it in a line.',
     skip: 'He gives up and skips; the page shows the answer: "{answer}". Answer him in a line and close it.',
@@ -421,6 +462,8 @@ const W = {
     lDone: 'He has made all {links} links (the page judged it), the last "{guess}". Own it in a line.',
     lStuck: 'He follows with "{guess}", and you cannot go on (the page searched the whole list). Concede in a line.',
     lSkip: 'He gives up and skips. Answer in a line and close it.',
+    help: '[HIDDEN] [jinchat] {title}·He is stuck in the idiom chain and tapped for help: he asks you. No Look, no tool at all. He needs an idiom starting with 「{need}」; the chain so far: {said}. {hint}{rejected}One that links (the page\'s): 「{way}」. Answer him in your own voice, a line or two — tease him if you like, but help: a hint, a nudge, or whisper it. If you know one of his refused tries is a real idiom (only missing from the list), tell him, and end with a line of its own: <!--accept:that idiom--> — the page takes it. If you told him the one that links, end with <!--whisper-->. The chat never shows the marks.',
+    helpHint: 'The hint the page shows: 「{hint}」. ', helpRejected: 'His tries the page refused on this link: {list}. ',
   },
 };
 
@@ -476,6 +519,16 @@ export function chainLine(chat, { event, guess = '', mine = '', why = '', n = 0,
     link: () => fill(w.lLink, o), miss: () => fill(w.lMiss, o), done: () => fill(w.lDone, o), stuck: () => fill(w.lStuck, o), skip: () => w.lSkip,
   }[event]?.() ?? '';
   return event === 'open' ? `${headOf(chat, cast, lang)}${body}` : `[HIDDEN] [jinchat] ${pick(chat.title, lang)}·${body}`;
+}
+
+/** The one hidden line of a 求助 tap: the board as it stands, his refused tries, the page's way on, the two marks. */
+export function helpLine(chat, { need, said = [], hint = '', rejected = [], way = '', lang = 'zh' }) {
+  const w = W[lang] ?? W.zh, q = (x) => `「${x}」`;
+  return fill(w.help, {
+    title: pick(chat.title, lang), need, said: said.join(' → '), way,
+    hint: hint ? fill(w.helpHint, { hint }) : '',
+    rejected: rejected.length ? fill(w.helpRejected, { list: rejected.map(q).join(lang === 'en' ? ', ' : '、') }) : '',
+  });
 }
 
 export const resultLine = (chat, summary, lang = 'zh') => `[HIDDEN] [jinchat] ${pick(chat.title, lang)}·${fill((W[lang] ?? W.zh).result, { summary })}`;

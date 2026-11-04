@@ -92,11 +92,11 @@ test('each word game\'s open line carries the rule; a miss carries the hints sho
       secret = [];
     }
     assert.ok(!lines.some((l) => l.includes('四个选项') && /「[^」]*」、「/.test(l)), `${id}: the choices never listed`);
-    assert.match(lines[0], /答案藏着，你也不知道——别说它是什么，也别说它不是什么/, `${id}: the rule`);
+    assert.match(lines[0], /答案藏着，你也不知道——别主动说破；合页面提示的，别说成错。他问某个词是不是成语、是不是真有这句，照实答/, `${id}: the rule`);
     for (const l of lines) for (const a of secret.filter((a) => [...a].length >= 2)) assert.ok(!l.includes(a), `${id}: 「${a}」 never in the line`);
   }
   const en = riddleLine(CHATS.masan, { event: 'open', riddle: riddleOf(CHATS.masan.game, 'en'), cast: [], lang: 'en' });
-  assert.match(en, /never say what it is, nor what it is not/);
+  assert.match(en, /never volunteer it; never call wrong what fits a hint the page shows\. Asked whether a word is a real idiom or phrase, answer truthfully/);
 });
 
 /* ════════ the board on the save: Look, Reveal ════════ */
@@ -122,7 +122,8 @@ test('the page keeps the open game; Look and 银月\'s Progress hand its face, t
   const wb = wordBoardLook(s, now).word_board;
   assert.deepEqual(wb.hints, ['上联说一样兵器，下联说一样花。']);
   assert.equal(wb.face, '宝剑锋从磨砺出');
-  assert.match(wb.rule, /never say what it is, nor what it is not/);
+  assert.match(wb.rule, /never volunteer it\. Asked whether a word is a real idiom, phrase or line, answer truthfully/);
+  assert.match(wb.rule, /never call wrong what fits a shown hint/);
   assert.match(wb.rule, /Reveal/);
   const seen = JSON.stringify(look(s, content, { now, quests: [] }));
   assert.match(seen, /"word_board"/);
@@ -178,7 +179,7 @@ test('the page keeps the board through the rules, the Mac\'s alone, and watches 
   assert.match(skill, /- name: Reveal\n/);
   assert.match(skill, /- name: Whisper\n/);
   assert.match(skill, /\*\*A `\[jinchat\]` word game asked about\*\*: Look; `word_board` says what to do\./);
-  assert.match(skill, /- name: Reveal\n    description: >-\n      The open word game's answer: only on an outright ask, never a hint\./);
+  assert.match(skill, /- name: Reveal\n    description: >-\n      The open word game's answer: only on an outright ask, never a hint —\n      or his yes to your offer of help\./);
   // 银月's half is a pet tool: the engine runs only `tier: read` ones for her (skill/tools.rs pet_gate).
   assert.match(skill, /- name: Whisper\n[\s\S]*?--for=yinyue"\n    tier: read\n    pet: true/);
   // Her place text is at its budget: Whisper's own description and Progress's `word_board` rule say when.

@@ -26,8 +26,8 @@
 
 import { askInChat, reachable } from './drawguess-ling.js';
 import { HOST_SYSTEM, castOf, outcome, parseChat, stubReply, turnLine } from './jinchat-rules.js';
-import { dictOf, kindOf, poolPick, poolPlay, stubLine } from './jinchat-games.js';
-import { chainGame, coupletGame, guessGame, riddleGame, tableOf } from './jinchat-play.js';
+import { dictOf, helpWords, kindOf, poolPick, poolPlay, stubLine } from './jinchat-games.js';
+import { chainGame, coupletGame, focusKeeper, guessGame, riddleGame, tableOf } from './jinchat-play.js';
 import { createTalk, talkStyle } from '../npc-talk.js';
 import { verb } from '../rules.js';
 
@@ -61,6 +61,8 @@ const T = {
     jielong: '成语接龙', chainRule: '首字接末字 · 接满 {links} 条', chainAt: '已接 {n}/{links}', chainNeed: '下一条的头一个字',
     linkIt: '「{ch}」字开头的成语……', linkGo: '接', chainStuck: '{name}接不上了。',
     chainWhy: { unknown: '「{w}」不在成语谱里，换一个（不算错）', mismatch: '得以「{ch}」字开头', used: '「{w}」用过了' },
+    yinyue: '银月', chainNear: '谱里记的是「{t}」，这条也算你接上', chainPass: '请{name}接', chainPassed: '{name}替你接了「{w}」', chainVouched: '{name}说「{w}」是成语，算你接上',
+    helpAsk: '求助{name}', helpFar: '{name}这会儿没回话',
   },
   en: {
     type: 'Say something…', send: 'Send', typing: 'typing…', left: '{n} lines left', done: 'Chat over', end: 'Leave it there',
@@ -78,6 +80,8 @@ const T = {
     jielong: 'Idiom chain', chainRule: 'Start from the last character · {links} links', chainAt: 'Linked {n}/{links}', chainNeed: 'the next idiom starts with',
     linkIt: 'An idiom starting with 「{ch}」…', linkGo: 'Link', chainStuck: '{name} cannot go on.',
     chainWhy: { unknown: '「{w}」 is not in the idiom list; try another (no miss)', mismatch: 'it must start with 「{ch}」', used: '「{w}」 is used already' },
+    yinyue: 'Yinyue', chainNear: 'The list has 「{t}」; yours counts too', chainPass: 'Let {name} link', chainPassed: '{name} linked 「{w}」 for you', chainVouched: '{name} vouches 「{w}」 is an idiom: it counts',
+    helpAsk: 'Ask {name}', helpFar: '{name} did not answer just now',
   },
 };
 const fill = (t, o) => t.replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');
@@ -133,13 +137,16 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   const sound = (name) => { try { shell?.sound?.(name); } catch { /* no sound: the chat goes on */ } };
   const list = createTalk(root, { base: WORLD, sound });
   const typing = list.typing;
-  const add = (line) => { g.shown.push(line); list.add(line); };
+  const add = (line) => { g.shown.push(line); list.add(line); focus(); };
   const foot = (t) => { const f = $('.g-jc-foot'); if (f) f.textContent = t; };
   const lefts = () => { if (!g.chat?.game) foot(g.over ? w.done : fill(w.left, { n: Math.max(0, turns() - g.sent) })); }; // a word game keeps its own count
   const turns = () => Math.max(1, Number(g.chat?.turns) || 5);
+  // The answer box keeps the keys (jinchat-play.js focusKeeper): after each line, each step, and on the tick below.
+  const touch = typeof data.ask === 'function' || Boolean(doc.defaultView?.matchMedia?.('(pointer: coarse)')?.matches);
+  const { focus } = focusKeeper({ root, doc, touch, signal });
   const inputOn = (on) => {
     for (const el of root.querySelectorAll('.g-jc-in, .g-jc-send, .g-jc-chip')) el.disabled = !on;
-    if (on) $('.g-jc-in')?.focus({ preventScroll: true });
+    if (on) focus();
   };
   // Her typing shows a beat for each bubble; 阿禾 (`typing: slow`) types, stops and types again.
   const typeOut = async (lines) => {
@@ -164,7 +171,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     root.innerHTML = `${head}${darkHead}<div class="g-jc-list"></div>`
       + `<div class="g-jc-typing"><span></span><span></span><span></span><em>${esc(w.typing)}</em></div>${game}`
       + `<div class="g-jc-chips"${c.game ? ' hidden' : ''}>${chips}</div>`
-      + `<form class="g-jc-bar"${c.game ? ' hidden' : ''}><input class="g-jc-in" type="text" maxlength="120" autocomplete="off" enterkeyhint="send" placeholder="${esc(w.type)}">`
+      + `<form class="g-jc-bar"${c.game ? ' hidden' : ''}><input class="g-jc-in" data-jc-in="" type="text" maxlength="120" autocomplete="off" enterkeyhint="send" placeholder="${esc(w.type)}">`
       + `<button type="submit" class="g-jc-send">${esc(w.send)}</button></form>`
       + `<div class="g-jc-footrow"><span class="g-jc-foot"></span><button type="button" class="g-jc-end" hidden>${esc(w.end)}</button></div>`;
     // A key in the box is the chat's, never the page's or a game's (Enter sends; an IME's Enter composes).
@@ -206,16 +213,16 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   // One hidden line to whoever writes their words: Ling, or the person's own agent (`chat.agent`: 银月 writes her own
   // lines, the standing rule — her guest turn, as 讨饼债's; she refuses when not awake, and Ling, who wrote her
   // before, answers instead).
-  const send = async (line, timeoutMs = TIMEOUT_MS) => {
+  const send = async (line, timeoutMs = TIMEOUT_MS, agent = g.chat.agent ?? 'ling') => {
     if (typeof data.ask === 'function') return data.ask({ agent: 'ling', text: line, system: HOST_SYSTEM[lang] ?? HOST_SYSTEM.zh });
-    const agent = g.chat.agent ?? 'ling';
     if (agent !== 'ling') {
       const at = lang === 'en' ? '@Yinyue ' : '@银月 ';
       const r = await askInChat({ sid: sessionOf(), agent, text: line.replace(/^\[HIDDEN\] /, `[HIDDEN] ${at}`), signal, timeoutMs }).catch((e) => ({ err: String(e?.message ?? e) }));
       if (r?.text) return r;
       log({ kind: 'refused', chat: data.chat, agent, why: r?.refused ?? r?.err ?? null });
     }
-    return askInChat({ sid: sessionOf(), agent: 'ling', text: line, signal, timeoutMs });
+    const r = await askInChat({ sid: sessionOf(), agent: 'ling', text: line, signal, timeoutMs });
+    return agent !== 'ling' && r ? { ...r, by: 'ling' } : r; // she refused: Ling wrote it
   };
 
   /* ── A word game (`chat.game`): the page plays it; their bubbles come when they come. ── */
@@ -264,9 +271,38 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   };
   // The board taken off the stage (its task done in the chat, 收手): the record goes with it.
   signal?.addEventListener('abort', () => { if (kept) verb('wordboard', { action: 'close', chat: data.chat }).catch(() => null); }, { once: true });
+  // 求助 (Hanli 11-04: 「可以加一个按钮求助yinyue, 让银月帮忙」), a chain's: one model turn, only on his tap. Who helps is
+  // the host's (`data.helper`: 银月 when she walks awake with him, else Ling; the phone's own model is 银月); her
+  // reply lands as her bubbles, the marks gone — what it does to the board, the page holds (jinchat-play.js helpOf).
+  const helperOf = () => {
+    if (!g.live || g.chat.game?.kind !== 'chain') return null;
+    const h = typeof data.helper === 'function' ? data.helper() : data.helper;
+    if (h?.id) return { id: String(h.id), name: String(h.name ?? h.id) };
+    return typeof data.ask === 'function' ? { id: 'yinyue', name: w.yinyue } : { id: 'ling', name: 'Ling' };
+  };
+  const help = (helper) => async (line) => {
+    typing(true);
+    let r = null;
+    try {
+      r = data.seam === 'stub' ? (await wait(700), { text: `${helper.name}：（桩）帮你一把。\n<!--whisper-->` })
+        : typeof data.ask === 'function' ? await data.ask({ agent: helper.id, text: line, ...(helper.id === 'ling' ? { system: HOST_SYSTEM[lang] ?? HOST_SYSTEM.zh } : {}) })
+          : await send(line, TIMEOUT_MS, helper.id);
+    } catch (e) { r = { err: String(e?.message ?? e) }; }
+    typing(false);
+    if (signal?.aborted || g.over) return r;
+    const said = helpWords(r?.text);
+    if (said) {
+      const me = r?.by === 'ling' ? { id: 'ling', name: 'Ling', art: null } : { id: helper.id, name: helper.name, art: null };
+      if (!g.cast.some((c) => c.id === me.id)) list.setCast([...g.cast, me]);
+      await typeOut(parseChat(said, [me]).lines.map((l) => ({ ...l, who: me.id })));
+    }
+    return r;
+  };
   const playGame = async () => {
+    const helper = helperOf();
     const ctx = {
-      root, chat: g.chat, cast: g.cast, lang, w, id: data.chat, add, typeOut, typing, react, settle, sound, foot, log, board, watchTold,
+      root, chat: g.chat, cast: g.cast, lang, w, id: data.chat, add, typeOut, typing, react, settle, sound, foot, log, board, watchTold, focus,
+      ...(helper ? { helper, help: help(helper) } : {}),
       table: twentyOf, tones: tonesOf, dict: chengyuOf,
       ask: (text) => (g.live && data.seam !== 'stub' ? send(text, 60000) : Promise.resolve({ text: '' })),
     };
@@ -323,7 +359,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     // The card is redrawn around the chat (the stuck gate's 「算了，往下走」 slot, live 10-22): the node is laid into a
     // new host and its list comes back scrolled to the top — keep the last bubble in view whenever it is laid out again.
     list.watch();
-    g.keep = setInterval(list.keepDown, 300);
+    g.keep = setInterval(() => { list.keepDown(); focus(); }, 300);
     inputOn(false);
     lefts();
     // A word game's context first (`game.setup`, the book's own narration: 最后一颗 — what the 饭桶 just did).

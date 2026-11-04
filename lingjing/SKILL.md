@@ -522,7 +522,8 @@ tools:
 
   - name: Reveal
     description: >-
-      The open word game's answer: only on an outright ask, never a hint.
+      The open word game's answer: only on an outright ask, never a hint —
+      or his yes to your offer of help. A chain's: its next link; it goes on.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs reveal --save={{session.save}} --for=ling"
     tier: edit
     timeout_ms: 8000
@@ -530,7 +531,8 @@ tools:
   - name: Whisper
     # The word game's answer, 银月's half (AppTool → this tool, `--for=yinyue`): Reveal for her. Never Ling's (page_only).
     description: >-
-      Reveal, yours: only on an outright ask, never a hint. Tease, then say it.
+      Reveal, yours: only on an outright ask, never a hint — or his yes to
+      your help. Tease, then say it.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs reveal --save={{session.save}} --for=yinyue"
     tier: read
     pet: true

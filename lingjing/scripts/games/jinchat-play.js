@@ -27,7 +27,7 @@
 import {
   answerFree, answerGuess, chainChoices, chainHint, chainLine, chainOf, chainOutcome, checkDown, checkLink, checkRiddle,
   coupletLine, coupletOf, freeEndFallback, freeEndLine, freeLine, GUESS_FROM, GUESSES, guessHeld, saidAnimal, freeOutcome, freeSummary, freshChain, freshFree, freshGuess, judgeGuess, needOf, nearOf, nextMove,
-  playLink, replyOf, riddleLine, riddleOf, riddleOutcome, shapeOf, wayOn, yesNoOf,
+  helpLine, helpOf, nearLink, playLink, replyOf, riddleLine, riddleOf, riddleOutcome, shapeOf, wayOn, yesNoOf,
 } from './jinchat-games.js';
 
 const pick = (v, lang) => (v == null ? '' : typeof v === 'string' ? v : v[lang] ?? v.zh ?? '');
@@ -72,6 +72,36 @@ export async function playAfter(ctx, lines) {
 /* The open game on the save (rules/wordboard.mjs), and its watch: told in the chat, the board shows the answer and ends as
    left — the rules set it down as a skip already. Absent (a test's ctx, the phone's host), nothing is kept. */
 const keep = (ctx, action, o = {}) => ctx.board?.(action, o);
+/** The answer box keeps the keys (Hanli 11-04: 「输入框会失去焦点，当AI说话后」): after a line lands, a step is drawn,
+    or the stage's redraw lays the card into a new host (which blurs it), `focus()` gives the box the focus back —
+    unless he put it somewhere else on purpose (a tap, or a Tab, outside the chat). On a touch screen (`touch`: the
+    phone) never by itself, which pops the keyboard: only once he has tapped into the box. Every word game's box. */
+export function focusKeeper({ root, doc, touch = false, signal = null }) {
+  let want = !touch;
+  const boxOf = () => [...root.querySelectorAll('.g-jc-in')].find((el) => !el.closest?.('[hidden]')) ?? null;
+  root.addEventListener('focusin', (e) => { if (e.target?.classList?.contains('g-jc-in')) want = true; });
+  root.addEventListener('focusout', (e) => { if (e.relatedTarget && !root.contains(e.relatedTarget)) want = false; });
+  const away = (e) => {
+    if (!e.target) return;
+    if (!root.contains(e.target)) want = false;
+    else if (!touch && e.target.closest?.('.g-jc-game, .g-jc-bar')) want = true; // back on the board's own controls
+  };
+  doc.addEventListener('pointerdown', away, true);
+  signal?.addEventListener?.('abort', () => doc.removeEventListener('pointerdown', away, true), { once: true });
+  const focus = () => {
+    const el = boxOf();
+    if (!el || el.disabled || !want || !root.isConnected) return false;
+    const a = doc.activeElement;
+    if (a === el) return true;
+    if (a && a !== doc.body && !root.contains(a)) return false;
+    el.focus({ preventScroll: true });
+    return true;
+  };
+  return { focus, wants: () => want };
+}
+/* The answer box takes the keys back after each step (Hanli 11-04: 「输入框会失去焦点，当AI说话后」): the chat's own
+   keeper (games/jinchat.js `focus`, which never pops a phone's keyboard by itself); a test's ctx, the box at once. */
+const focusIn = (ctx, input) => (ctx.focus ? ctx.focus() : input.focus({ preventScroll: true }));
 const hintsOf = (list) => JSON.stringify(list);
 const watch = (ctx, fn) => ctx.watchTold?.(fn) ?? (() => {});
 /* Told, the end says what was told, for the page to hold on the card (board-deal.js catchTold). */
@@ -149,7 +179,7 @@ export async function riddleGame(ctx) {
     const draw = () => {
       status();
       const choices = st.choices ? `<div class="g-jc-chips is-game">${r.choices.map((c) => `<button type="button" class="g-jc-chip" data-pick="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : '';
-      const el = strip(ctx, `${choices}<form class="g-jc-bar is-game"><input class="g-jc-in" type="text" maxlength="40" autocomplete="off" enterkeyhint="send" placeholder="${esc(w.guessIt)}">`
+      const el = strip(ctx, `${choices}<form class="g-jc-bar is-game"><input class="g-jc-in" data-jc-in="" type="text" maxlength="40" autocomplete="off" enterkeyhint="send" placeholder="${esc(w.guessIt)}">`
         + `<button type="submit" class="g-jc-send">${esc(w.guessGo)}</button></form>`
         + `<div class="g-jc-gacts">${btn('is-hint', w.hint, st.hints >= r.hints.length ? ' disabled' : '')}</div>`);
       const input = el.querySelector('.g-jc-in');
@@ -157,7 +187,7 @@ export async function riddleGame(ctx) {
       el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); guess(input.value); });
       for (const b of el.querySelectorAll('[data-pick]')) b.addEventListener('click', () => guess(b.dataset.pick));
       el.querySelector('.is-hint').addEventListener('click', () => { showHint(); draw(); });
-      input.focus({ preventScroll: true });
+      focusIn(ctx, input);
     };
     draw();
   });
@@ -227,7 +257,7 @@ export async function guessGame(ctx) {
     const skipBtn = () => '';
     const wire = () => {};
     const tell = () => {
-      const el = strip(ctx, `<p class="g-jc-gnote">${esc(w.tell)}</p><form class="g-jc-bar is-game"><input class="g-jc-in" type="text" maxlength="12" autocomplete="off" enterkeyhint="send" placeholder="${esc(w.itWas)}">`
+      const el = strip(ctx, `<p class="g-jc-gnote">${esc(w.tell)}</p><form class="g-jc-bar is-game"><input class="g-jc-in" data-jc-in="" type="text" maxlength="12" autocomplete="off" enterkeyhint="send" placeholder="${esc(w.itWas)}">`
         + `<button type="submit" class="g-jc-send">${esc(w.tellGo)}</button></form>`);
       const input = el.querySelector('.g-jc-in');
       input.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter' && e.isComposing) e.preventDefault(); });
@@ -238,7 +268,7 @@ export async function guessGame(ctx) {
         ctx.add({ who: 'me', text: said });
         end(freeOutcome(st), said);
       });
-      input.focus({ preventScroll: true });
+      focusIn(ctx, input);
     };
     const step = async () => {
       status();
@@ -376,7 +406,7 @@ export async function coupletGame(ctx) {
     const draw = () => {
       status();
       const choices = st.choices ? `<div class="g-jc-chips is-game is-lines">${c.choices.map((x) => `<button type="button" class="g-jc-chip" data-pick="${esc(x)}">${esc(x)}</button>`).join('')}</div>` : '';
-      const el = strip(ctx, `${choices}<form class="g-jc-bar is-game"><input class="g-jc-in" type="text" maxlength="40" autocomplete="off" enterkeyhint="send" placeholder="${esc(w.downIt)}">`
+      const el = strip(ctx, `${choices}<form class="g-jc-bar is-game"><input class="g-jc-in" data-jc-in="" type="text" maxlength="40" autocomplete="off" enterkeyhint="send" placeholder="${esc(w.downIt)}">`
         + `<button type="submit" class="g-jc-send">${esc(w.downGo)}</button></form>`
         + `<div class="g-jc-gacts">${btn('is-hint', w.hint, st.hints >= c.hints.length ? ' disabled' : '')}</div>`);
       const input = el.querySelector('.g-jc-in');
@@ -384,7 +414,7 @@ export async function coupletGame(ctx) {
       el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); guess(input.value); });
       for (const b of el.querySelectorAll('[data-pick]')) b.addEventListener('click', () => guess(b.dataset.pick));
       el.querySelector('.is-hint').addEventListener('click', () => { showHint(); draw(); });
-      input.focus({ preventScroll: true });
+      focusIn(ctx, input);
     };
     draw();
   });
@@ -411,10 +441,16 @@ export async function chainGame(ctx) {
   // The person's opening idiom is on the table before anyone speaks; their voice comes when it comes.
   theirs(ch.start, false);
   react(chainLine(chat, { event: 'open', ch, cast, lang }));
-  // Kept for Ling's Look: the idiom he follows, and one way on — what a Reveal tells (rules/wordboard.mjs).
+  // This link's refusals (Hanli 11-04, 定国安民 refused twice under 定国安□ and no way past): every refusal counts —
+  // a word not in the list too, though it costs no star — and after `tries` the ways past it open (the choices,
+  // 请{name}接). `rejected`: his words refused as not in the list, the ones a helper may vouch for.
+  let tries = 0, rejected = [];
+  // Kept for Ling's Look: the idiom he follows, and one way on — what a Reveal tells (rules/wordboard.mjs) — and how
+  // the link stands for him.
   const kept = () => ({ face: st.said.at(-1), answer: wayOn(dict, st) ?? '' });
   keep(ctx, 'open', { kind: 'chain', ...kept() });
-  const status = () => ctx.foot(fill(w.chainAt, { n: st.links, links: ch.links }) + (st.misses ? ` · ${fill(w.tried, { n: st.misses })}` : ''));
+  const status = () => ctx.foot(fill(w.chainAt, { n: st.links, links: ch.links }) + (tries ? ` · ${fill(w.tried, { n: tries })}` : ''));
+  const helper = ctx.helper ?? null;
 
   return new Promise((resolve) => {
     // Told in the chat on his ask: their way on laid out as theirs, and over — as a skip.
@@ -443,62 +479,114 @@ export async function chainGame(ctx) {
     };
     const hintRow = (text) => ctx.add({ who: 'note', text: `${fill(w.hintAt, { n: lh })}${text}` });
     // Hints are per link (two each: 「欺人□□」, then 「欺人太□」); the count for the stars is the whole game's.
-    let lh = 0, at = 0;
+    let lh = 0, at = 0, helping = false;
     const shown = [];
+    const stepped = () => keep(ctx, 'step', { hints: hintsOf(shown), tries, rejected: hintsOf(rejected) });
     const showHint = () => {
       if (at !== st.said.length) { at = st.said.length; lh = 0; }
       if (lh >= 2) return '';
       lh += 1;
       st.hints += 1;
       const h = chainHint(dict, st, lh);
-      if (h) { hintRow(h); ctx.sound('hint'); shown.push(h); keep(ctx, 'step', { hints: hintsOf(shown) }); }
+      if (h) { hintRow(h); ctx.sound('hint'); shown.push(h); stepped(); }
       return h;
     };
+    // The hint before him on this link, if any (hint 2's 「定国安□」 once shown).
+    const hintNow = () => (at === st.said.length ? shown.at(-1) ?? '' : '');
+    // His link taken — judged right, near the hint, vouched for by his helper, or handed by the person — and theirs after.
+    const take = (word, note = '') => {
+      ctx.add({ who: 'me', html: tilesOf(word, { head: true }), text: word });
+      if (note) ctx.add({ who: 'note', text: note });
+      st = playLink(st, word, 'me');
+      tries = 0;
+      rejected = [];
+      ctx.sound('right');
+      const b = card()?.querySelector('.g-jc-jl-beads');
+      if (b) b.innerHTML = beads();
+      if (st.links >= ch.links) return end(chainOutcome({ done: true, hints: st.hints, choices: st.choices }), 'done', word);
+      const mine = replyOf(dict, st.said);
+      if (!mine) return end(chainOutcome({ done: true, hints: st.hints, choices: st.choices }), 'stuck', word);
+      st = playLink(st, mine, 'them');
+      theirs(mine, true);
+      shown.length = 0; // a link's hints are its own
+      keep(ctx, 'step', { ...kept(), hints: hintsOf(shown), tries, rejected: hintsOf(rejected) });
+      react(chainLine(chat, { event: 'link', guess: word, mine, n: st.links, ch, cast, lang }));
+      return draw();
+    };
     const link = (raw) => {
-      if (done) return;
+      if (done || helping) return;
       const text = String(raw ?? '').trim();
       if (!text) return;
       const r = checkLink(dict, st, text);
       if (r.v === 'empty') return;
-      ctx.add({ who: 'me', ...(r.v === 'right' ? { html: tilesOf(r.word, { head: true }) } : {}), text });
-      if (r.v === 'right') {
-        st = playLink(st, r.word, 'me');
-        ctx.sound('right');
-        const b = card()?.querySelector('.g-jc-jl-beads');
-        if (b) b.innerHTML = beads();
-        if (st.links >= ch.links) return end(chainOutcome({ done: true, hints: st.hints, choices: st.choices }), 'done', r.word);
-        const mine = replyOf(dict, st.said);
-        if (!mine) return end(chainOutcome({ done: true, hints: st.hints, choices: st.choices }), 'stuck', r.word);
-        st = playLink(st, mine, 'them');
-        theirs(mine, true);
-        shown.length = 0; // a link's hints are its own
-        keep(ctx, 'step', { ...kept(), hints: hintsOf(shown) });
-        react(chainLine(chat, { event: 'link', guess: r.word, mine, n: st.links, ch, cast, lang }));
-        return draw();
+      if (r.v === 'right') return take(r.word);
+      // Hint 2 shows three characters and his keeps them all: taken, near — the hint never contradicts the page.
+      const hint = hintNow();
+      if (r.v === 'unknown' && lh >= 2 && nearLink(st, r.word, hint)) {
+        const way = wayOn(dict, st);
+        return take(r.word, fill(w.chainNear, { t: way ?? hint }));
       }
+      ctx.add({ who: 'me', text });
       const why = fill(w.chainWhy[r.v], { w: r.word, ch: needOf(st) });
       ctx.add({ who: 'note', text: why });
-      if (r.v === 'unknown') return draw(); // not in the list: no miss
-      st = { ...st, misses: st.misses + 1 };
-      ctx.sound('wrong');
-      if (st.misses >= 2) showHint();
-      if (st.misses >= ch.tries) st.choices = true;
-      react(chainLine(chat, { event: 'miss', guess: r.word, why, ch, cast, lang }));
+      tries += 1;
+      if (r.v === 'unknown') {
+        // Not in the list: no miss, no star lost — but it counts toward the way past this link.
+        if ([...r.word].length === 4 && [...r.word][0] === needOf(st) && !rejected.includes(r.word)) rejected.push(r.word);
+      } else {
+        st = { ...st, misses: st.misses + 1 };
+        ctx.sound('wrong');
+        if (st.misses >= 2) showHint();
+        react(chainLine(chat, { event: 'miss', guess: r.word, why, ch, cast, lang }));
+      }
+      if (tries >= ch.tries) st.choices = true;
+      stepped();
+      draw();
+    };
+    // 请{name}接: past `tries` refusals on one link, the person links it for him (the commonest way on) and the chain
+    // goes on — counted his, as the choices are (a star less).
+    const pass = () => {
+      if (done || helping) return;
+      const way = wayOn(dict, st);
+      if (!way) return end(chainOutcome({ done: true, hints: st.hints, choices: st.choices }), 'stuck', st.said.at(-1));
+      st.choices = true;
+      take(way, fill(w.chainPassed, { name: cast[0]?.name ?? '', w: way }));
+    };
+    // 求助 (one model turn, only on his tap): his helper is asked with the board's facts; her words are hers, and what
+    // the board does is the page's — a refused word of his she vouches for, or the page's own way on whispered.
+    const help = async () => {
+      if (done || helping || !helper || typeof ctx.help !== 'function') return;
+      helping = true;
+      draw();
+      const way = wayOn(dict, st), need = needOf(st), tried = [...rejected];
+      const r = await ctx.help(helpLine(chat, { need, said: st.said, hint: hintNow(), rejected: tried, way: way ?? '', lang })).catch(() => null);
+      helping = false;
+      ctx.log({ kind: 'chain-help', chat: ctx.id, helper: helper.id, ok: Boolean(r?.text), err: r?.err ?? r?.refused ?? null });
+      if (done) return;
+      const h = helpOf(r?.text, { rejected: tried, need, way });
+      if (h?.whisper) { st.choices = true; ctx.add({ who: 'note', text: fill(w.chainTold, { w: h.whisper }) }); }
+      const by = r?.by === 'ling' ? 'Ling' : helper.name;
+      if (h?.accept && needOf(st) === need) return take(h.accept, fill(w.chainVouched, { name: by, w: h.accept }));
+      if (!r?.text) ctx.add({ who: 'note', text: fill(w.helpFar, { name: by }) });
       draw();
     };
     const draw = () => {
       status();
-      const four = st.choices && st.misses >= ch.tries ? chainChoices(dict, st) : [];
+      const four = st.choices && tries >= ch.tries ? chainChoices(dict, st) : [];
       const choices = four.length ? `<div class="g-jc-chips is-game">${four.map((x) => `<button type="button" class="g-jc-chip" data-pick="${esc(x)}">${esc(x)}</button>`).join('')}</div>` : '';
-      const el = strip(ctx, `${choices}<form class="g-jc-bar is-game"><span class="g-jc-need" title="${esc(w.chainNeed)}">${esc(needOf(st))}</span><input class="g-jc-in" type="text" maxlength="12" autocomplete="off" enterkeyhint="send" placeholder="${esc(fill(w.linkIt, { ch: needOf(st) }))}">`
+      const passBtn = tries >= ch.tries ? btn('is-pass', fill(w.chainPass, { name: cast[0]?.name ?? '' }), helping ? ' disabled' : '') : '';
+      const helpBtn = helper && typeof ctx.help === 'function' ? btn('is-help', fill(w.helpAsk, { name: helper.name }), helping ? ' disabled' : '') : '';
+      const el = strip(ctx, `${choices}<form class="g-jc-bar is-game"><span class="g-jc-need" title="${esc(w.chainNeed)}">${esc(needOf(st))}</span><input class="g-jc-in" data-jc-in="" type="text" maxlength="12" autocomplete="off" enterkeyhint="send" placeholder="${esc(fill(w.linkIt, { ch: needOf(st) }))}">`
         + `<button type="submit" class="g-jc-send">${esc(w.linkGo)}</button></form>`
-        + `<div class="g-jc-gacts">${btn('is-hint', w.hint, at === st.said.length && lh >= 2 ? ' disabled' : '')}</div>`);
+        + `<div class="g-jc-gacts">${btn('is-hint', w.hint, at === st.said.length && lh >= 2 ? ' disabled' : '')}${helpBtn}${passBtn}</div>`);
       const input = el.querySelector('.g-jc-in');
       input.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter' && e.isComposing) e.preventDefault(); });
       el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); link(input.value); });
       for (const b of el.querySelectorAll('[data-pick]')) b.addEventListener('click', () => link(b.dataset.pick));
       el.querySelector('.is-hint').addEventListener('click', () => { showHint(); draw(); });
-      input.focus({ preventScroll: true });
+      el.querySelector('.is-help')?.addEventListener('click', () => { help(); });
+      el.querySelector('.is-pass')?.addEventListener('click', () => { pass(); });
+      focusIn(ctx, input);
     };
     draw();
   });

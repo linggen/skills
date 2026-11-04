@@ -231,6 +231,9 @@ function mountData(task) {
   const deal = { ...(task?.deal ?? {}) };
   if (HER_SEAM === 'stub' || CHATLESS) deal.seam = HER_SEAM === 'stub' ? 'stub' : 'off';
   deal.session = () => chat?.getSessionId?.() ?? null;
+  // A word board's 求助 (games/jinchat.js, Hanli 11-04): 银月 when she walks awake with him, else Ling (asleep in the
+  // 木牌 the engine keeps her model away; not met, she is not there to ask).
+  deal.helper = () => (herNow() === 'awake' ? { id: 'yinyue', name: look?.companion?.name ?? words().yinyue } : { id: 'ling', name: 'Ling' });
   // What the save has learned, for a game whose moves are gated by it (守墙关's 结印: shouqiang.json `jieyin.moves` `from`).
   deal.marks ??= [...(look?.marks ?? [])];
   // A board that needs her (Look's `her`: the task or 传闻 game declares `needs: "her"`) wakes her out
