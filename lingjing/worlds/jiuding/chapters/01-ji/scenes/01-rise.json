@@ -56,6 +56,12 @@
     "kind": "duel",
     "creature": "foe-shuanglong",
     "retry": true,
+    "weighed_with": {
+     "wear": {
+      "weapon": "huochai-jian"
+     }
+    },
+    "_weighed_with": "Weighed at h10 with 火柴 worn (tools/story-fights.mjs STOPS.h10): ~68% outlasted with it, ~52% with the bronze sword, ~27% bare-handed (lookahead line, 200 seeds, 2026-11-04). rules/gearhint.mjs `gear_hint`.",
     "foe": {
      "party": []
     }

@@ -12,6 +12,7 @@
 //                                            JSON text { mode, facts, pool } (null when she is absent or the moment
 //                                            has nothing to say); `short` builds its facts from the Look's shelf
 //                                            and `mijing` from the rules' answer (opts.result: hersay.js mijingWhat);
+//                                            and `gear` from the door's gear_hint (hersay.js gearFacts; `key`: game|losses);
 //                                            `qian` / `qian_friend` (问签 v2): the 签 card's one line, qian-facts.js
 //   Lingjing.quests({app: doc})             the apps' menus (/quests/<app>.json) the host hands in; null drops one
 //   Lingjing.drainTrack()                    the play log's lines since the last drain (rules/analytics.mjs), as JSON
@@ -21,7 +22,7 @@
 import { parseArgs } from '../../scripts/rules/files.mjs';
 import { forLing, run } from '../../scripts/rules.mjs';
 import { drainSink } from '../../scripts/rules/analytics.mjs';
-import { MOMENTS, REGISTER, REGISTER_ASLEEP, herMode, mijingWhat, momentFacts, poolOf, shortFacts } from '../../scripts/hersay.js';
+import { MOMENTS, REGISTER, REGISTER_ASLEEP, gearFacts, herMode, mijingWhat, momentFacts, poolOf, shortFacts } from '../../scripts/hersay.js';
 import { friendFacts, qianFacts } from '../../scripts/qian-facts.js';
 import fs, { dump, restore, seed, stats } from './shims/fs.mjs';
 import { process } from './shims/process.mjs';
@@ -85,12 +86,16 @@ function her(kind, look = {}, { lang = 'zh', weight = 'full', what = null, resul
   if (mode === 'absent' || !MOMENTS[kind]) return JSON.stringify(null);
   const short = kind === 'short' ? shortFacts(l, zh) : null;
   if (kind === 'short' && !short) return JSON.stringify(null);
+  // A story fight weighed with a thing he owns and does not wear (the door's gear_hint): its facts from the Look; `key` is
+  // the once-limit's (once a fight a day, again after each loss — hersay.js gearKey, with the host's day).
+  const gear = kind === 'gear' ? gearFacts(l, zh) : null;
+  if (kind === 'gear' && !gear) return JSON.stringify(null);
   // A 秘境 answer (`result`, the rules' own): its facts as the Mac's page gives them (hersay.js mijingWhat); none, no word.
   const fromResult = kind === 'mijing' && result ? mijingWhat(typeof result === 'string' ? JSON.parse(result) : result, zh) : null;
   if (kind === 'mijing' && result && !fromResult) return JSON.stringify(null);
-  const said = short?.what ?? fromResult ?? what ?? '';
+  const said = short?.what ?? gear?.what ?? fromResult ?? what ?? '';
   const variant = short?.far ? 'far' : null;
-  return JSON.stringify({ mode, id: short?.id ?? null, facts: momentFacts(kind, said, zh ? 'zh' : 'en', { weight, mode }), pool: poolOf(kind, { mode, lang: zh ? 'zh' : 'en', weight, variant }) });
+  return JSON.stringify({ mode, id: short?.id ?? gear?.item ?? null, ...(gear ? { key: `${gear.game}|${gear.lost}` } : {}), facts: momentFacts(kind, said, zh ? 'zh' : 'en', { weight, mode }), pool: poolOf(kind, { mode, lang: zh ? 'zh' : 'en', weight, variant }) });
 }
 
 let ENV_NOW = false;

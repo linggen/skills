@@ -1,5 +1,6 @@
 // rules/look.mjs — The reading: the shelf, the briefs, Look, and what is on the stage.
 // Part of the rules engine; rules.mjs is its one door.
+import { gearHint } from './gearhint.mjs';
 import { linesLook, linesOf } from './lines.mjs';
 import { playGrant } from './playpay.mjs';
 import { CAST, gameOf } from '../content.mjs';
@@ -384,6 +385,8 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
     // The card says so (battle-card.js `againSay`), and Ling reads it here: it did not get away, the beat is still his.
     ...(game.retry && today?.day === dayKey(now) && ['lost', 'withdrew'].includes(today.outcome) ? { again: { outcome: today.outcome, story_open: true } } : {}),
     stake: stakeOf(content, state, game),
+    // A story fight weighed with a thing worn that he lacks but owns (rules/gearhint.mjs): where it is, for the card and 银月.
+    ...(gearHint(content, state, game) ? { gear_hint: gearHint(content, state, game) } : {}),
     // 丹囊 at the door: the pills he may carry in, and his last pick.
     ...(pouchBrief(content, state) ? { pouch: pouchBrief(content, state) } : {}),
     // The lines only at the door, where the page opens the fight — Look stays lean.

@@ -54,6 +54,7 @@ export const MOMENTS = {
   gongke: { group: 'cheer', once: 'key' }, //              a real-life chore handed in (rules/gongke.mjs): once a chore a day
   mijing: { group: 'advise' }, //                         秘境探险 (rules/mijing.mjs): a 奇遇's way taken, a run over — the facts, her word
   why_strong: { group: 'advise' }, //                      his ? on the 主页's way to grow stronger: why that step (his tap — always)
+  gear: { group: 'advise', once: 'key' }, //               a story fight weighed with a thing he owns and does not wear (Look's gear_hint): once a fight a day, again after a loss
   short: { group: 'advise', once: 'key' }, //              灵石 short of a thing on the shelf, the first time ever: try 砍价 — or earn more (`far`)
 };
 export const MOOD = { cheer: 'happy', comfort: 'sad', advise: 'neutral' };
@@ -115,6 +116,7 @@ const ASKS = {
   // Hanli 2026-10-28: 「玩家灵石只有80, 要买一颗100的丹…yinyue主动提示玩家, 你钱不够, 试试砍价」 — the facts say whether
   // 砍价 could close it; she says it her way: try the 砍价 by the 买, or plainly that it will not go that low.
   short: { zh: '玩家看中的东西灵石不够。照上面的事实说一句：砍得下来，就叫他试试铺子里的砍价；砍不到那么低，就直说砍不下来，先去挣灵石。', en: 'Short of stones. Haggling can close it: tell him to haggle. It cannot: say so; earn more first.' },
+  gear: { zh: '下一场斗法前：上面是这一仗按戴着什么调的、那件现在在哪、那妖兽怕什么。照事实提醒他一句先戴上，点出为什么。不说教，不念数据。', en: 'Before the fight: tell him to put it on, and why. No lecture.' },
   why_strong: { zh: '玩家点了问你：为什么要做上面这一步？用你的话说它能补他哪里、打那只妖兽时会怎样（胜算有变化就说出来）。不说教，不念数据表。', en: 'He asked why the step above: what it fixes, how that fight changes (odds if given). No lecture.' },
 };
 
@@ -178,6 +180,8 @@ export const POOLS = {
       skipped: ['不解也罢，这种题配不上本王的人。走。', '放下就放下，往前看。'],
       grind: ['打了一天了，手不酸？歇一歇，本王也乏了。', '天天打这几只，它们都认得你了。歇会儿。'],
       poor: ['灵石见底了？本王的储物袋……哼，自己想办法。', '穷成这样，出门别说是本王的人。'],
+      gear: ['凡人，这一仗该带的家伙不在你手上。先戴上，再去。', '空着手去碰它？把那件戴上，本王才懒得替你挨打。'],
+      lost_gear: ['可惜了，凡人。该戴的那件没戴——戴上再来。', '输得不冤。那件家伙戴上，再去。'],
       short: ['钱不够？凡人，跟他砍砍价。', '差那么几块灵石，嘴皮子磨一磨——砍价去。'],
       short_far: ['差得太多，砍价也砍不下来。先去挣灵石。', '凡人，这个价砍不到你手里那点。挣够了再来。'],
       gongke: ['人间的功课也做了？……哼，修行本就不分山上山下。', '这点事做得踏实，本王看见了。'],
@@ -209,6 +213,8 @@ export const POOLS = {
       skipped: ['Leave it — a riddle like that is beneath one of mine. On.', 'Set it down and look ahead.'],
       grind: ['A whole day of this — your arms not sore? Rest. Even this king is tired.', 'The same few beasts every day; they know your face by now. Rest a while.'],
       poor: ['Out of stones? This king’s pouch is… hmph. Find your own way.', 'This poor — do not tell anyone you are mine.'],
+      gear: ['Mortal, the thing this fight wants is not on you. Put it on first.', 'Going at it without it? Wear it — this king will not take your blows.'],
+      lost_gear: ['A pity, mortal. The thing you should wear was not on you. Put it on, then again.', 'No shame in that loss. Wear it, then go back.'],
       short: ['Short, mortal? Haggle him down.', 'A few stones shy — work your tongue. Haggle.'],
       short_far: ['Too far short; no haggling closes that. Earn more first.', 'Mortal, that price will not come down to your purse. Come back richer.'],
       gongke: ['The mortal chores done too? …Hmph. Cultivation knows no mountain from valley.', 'Done steadily. This king saw.'],
@@ -243,6 +249,8 @@ export const POOLS = {
       skipped: ['……不解就不解。走。', '……放下吧。'],
       grind: ['……还打？……歇会儿。', '……手不酸？……睡了。'],
       poor: ['……又没灵石了？……哼。', '……穷。'],
+      gear: ['……那件……戴上再去……', '……家伙不在你身上……凡人……'],
+      lost_gear: ['……可惜……那件……戴上再来。', '……戴上……再去。'],
       short: ['……钱不够……砍价……', '……差几块……跟他……砍砍。'],
       short_far: ['……差太多……砍不下来……先去挣。', '……这价……砍不动……'],
       gongke: ['……人间的事，也做完了？……嗯。', '……踏实。睡了。'],
@@ -274,6 +282,8 @@ export const POOLS = {
       skipped: ['…Leave it then. On.', '…Set it down.'],
       grind: ['…Still fighting? …Rest.', '…Arms not sore? …Sleeping.'],
       poor: ['…Out of stones again? …Hmph.', '…Poor.'],
+      gear: ['…That thing… wear it first…', '…It is not on you… mortal…'],
+      lost_gear: ['…A pity… wear it… then again.', '…Put it on… go back.'],
       short: ['…Short… haggle…', '…A few stones… talk him down.'],
       short_far: ['…Too far… no haggling… earn more.', '…That price… will not come down.'],
       gongke: ['…The mortal work, done too? …Mm.', '…Steady. Sleeping.'],
@@ -403,6 +413,8 @@ export function createHerSay({ ask, onLine = () => {}, mode = () => 'awake', lan
     st,
     get mem() { return dayMem(); },
     say,
+    /* A once-moment counted as said without a word (its facts went with another moment: a loss's word named the gear). */
+    mark(kind, key = null) { allowed(kind, key); save(); },
     /* A fight settled. f: { outcome, story, strong, close, newBeast, repeat,
        what, saidInFight }. Every win and every loss gets her — weighed. */
     fight(f) {
@@ -488,4 +500,31 @@ export function shortFacts(look, zh) {
   const what = zh ? `他想买${it.name}（${it.buy}灵石），手上只有${look.wealth ?? 0}，差${m.short}。${far ? '砍价也砍不到那么低。' : '砍价能砍下来：买旁边就有砍价。'}`
     : `He wants ${it.name} (${it.buy} stones) and has ${look.wealth ?? 0}: ${m.short} short. ${far ? 'No haggling brings it that low.' : 'Haggling can close it: 砍价 is by the Buy.'}`;
   return { id: it.id, what, far };
+}
+
+/* A story fight weighed with a thing he owns and does not wear (Look's door `gear_hint`, rules/gearhint.mjs), as facts for
+   her: the fight, the thing and where it is, what he wears in its place, what the beast lets through. The page and the
+   phone (tools/phone/entry.mjs `her`) both say it from here. Null when no door holds one. */
+export function gearHintOf(look) {
+  for (const e of look?.scene?.exits ?? []) if (e.duel?.gear_hint) return { game: e.game?.id ?? e.duel.id, beast: e.duel.creature?.name ?? '', hint: e.duel.gear_hint };
+  return null;
+}
+/* The key that keeps her gear word to once a fight a day, and once more after each loss (`lost` counts them). */
+export const gearKey = (g, day) => `${g.game}|${day}|${g.lost ?? 0}`;
+/* The facts of one hint: the fight's beast, the thing and where it is, what he wears in its place, what the beast lets through. */
+export function gearWhat(h, beast, zh) {
+  const who = h.lead ?? '';
+  const where = h.on === 'bag' ? (zh ? '在储物袋里' : 'in the pouch') : (zh ? `在${h.on_name ?? h.on}身上` : `on ${h.on_name ?? h.on}`);
+  const now = h.now ? (zh ? `他戴的是${h.now.name}。` : ` He wears the ${h.now.name}.`) : '';
+  const lets = h.resists?.lets?.length ? (zh ? `${beast}${h.resists.name}，只有${h.resists.lets.join('、')}打得进去。` : ` ${beast}: only ${h.resists.lets.join(', ')} goes in.`) : '';
+  const strike = h.strike ? (zh ? `戴着它牌里才有「${h.strike}」。` : ` Worn, it adds the ${h.strike} strike.`) : '';
+  const lost = h.lost ? (zh ? `已输${h.lost}回。` : ` Lost ${h.lost}x.`) : '';
+  // Cut from the end under the cap (momentFacts): the thing and where it is lead, English being the tighter.
+  return zh ? `${beast}这一仗按${who}戴着${h.name}调的，${h.name}却${where}。${now}${lets}${strike}${lost}`
+    : `The ${h.name} is ${where}, not on ${who}; the ${beast} fight was weighed with it worn.${now}${lets}${strike}${lost}`;
+}
+export function gearFacts(look, zh) {
+  const g = gearHintOf(look);
+  if (!g) return null;
+  return { game: g.game, item: g.hint.item, on: g.hint.on, lost: g.hint.lost ?? 0, what: gearWhat(g.hint, g.beast, zh) };
 }

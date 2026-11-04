@@ -134,6 +134,8 @@ export const WORDS = {
     // A story fight lost or run dry (Look's duel `again`): not over — the story waits on the win.
     againSay: '还没打完 —— 再出手', beginAgain: '再出手',
     stale: '牌面没读全 —— 刷新页面再出手。',
+    // A story fight weighed with a thing he owns and does not wear (Look's door `gear_hint`, rules/gearhint.mjs).
+    gearHint: '这一场按戴着{name}调的。', gearHintWear: '给{who}戴上 · {name}',
     lean: { hide: '厚皮', ward: '避法', quick: '迅捷', fierce: '凶猛' },
     ready: '可出手', nothing: '这一回合没别的可做了 —— 点「结束回合」', how: '怎么玩', close: '知道了',
     armor: '护体', ward: '抗{el} {n}', absorbed: '护体挡 {n}',
@@ -177,6 +179,7 @@ export const WORDS = {
     begin: 'Begin', wonToday: 'subdued today', lostToday: 'it withdrew — come back tomorrow', spentToday: 'it walked away spent today',
     againSay: 'Not over yet — go again', beginAgain: 'Go again',
     stale: 'The cards did not load — refresh, then begin.',
+    gearHint: 'This fight was weighed with the {name} worn.', gearHintWear: 'Put the {name} on {who}',
     lean: { hide: 'thick-hided', ward: 'warded', quick: 'quick', fierce: 'fierce' },
     ready: 'ready', nothing: 'nothing else this turn — press End turn', how: 'How to play', close: 'Got it',
     armor: 'Shield', ward: '{el} −{n}', absorbed: 'shield took {n}',
@@ -733,11 +736,20 @@ export function challengeHtml(brief, ctx) {
         ${(c.hints ?? []).map((h) => `<p class="cgoal chint">${esc(h)}</p>`).join('')}
       </div>
     </div>
+    ${done ? '' : gearHintHtml(brief.gear_hint, ctx)}
     ${done ? '' : pouchPickHtml(brief, ctx)}
     ${!done && brief.again ? `<div class="cdone cagain">${esc(w.againSay)}</div>` : ''}
     ${done ? `<div class="cdone">${esc(done)}</div>${ctx.feed ? `<div class="cacts">${ctx.feed}</div>` : ''}` : `<div class="cacts"><button class="bact end" data-duel-start="${esc(brief.id)}">${esc(brief.again ? w.beginAgain ?? w.begin : w.begin)}</button>${ctx.feed ?? ''}</div>`}
     ${!done && ctx.say ? `<div class="cdone">${esc(ctx.say)}</div>` : ''}
   </div>`;
+}
+
+/* The door's one line when the fight was weighed with a thing he owns and does not wear, and the one tap that puts it on
+   him (lingjing.js gearHintWear: off 银月 first when she wears it, then the pouch's own `trade use`). `h.lead`: his name, the rules'. */
+export function gearHintHtml(h, ctx) {
+  if (!h?.item) return '';
+  const w = ctx.words, f = (t) => t.replace(/\{(\w+)\}/g, (_, k) => ({ name: h.name, who: h.lead ?? '' })[k] ?? '');
+  return `<div class="cgear"><p class="cgoal chint">${esc(f(w.gearHint ?? ''))}</p><button class="act quiet" data-gear-hint="${esc(h.item)}" data-on="${esc(h.on)}" data-slot="${esc(h.slot)}">${esc(f(w.gearHintWear ?? ''))}</button></div>`;
 }
 
 /* 护体 and 抗 on a hero (the worn 法衣 and 佩, locked at the door): what is

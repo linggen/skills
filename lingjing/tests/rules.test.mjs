@@ -1660,7 +1660,10 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
   const rise = look(s, content, octx()).scene;
   const trial = rise.exits.find(e => e.id === 'stand');
   // alone on the bank (第九回: he only dodges the dragons) — the scene says its 小队: none
-  assert.deepEqual(trial.game, { id: 'shuanglong-trial', kind: 'duel', creature: 'foe-shuanglong', retry: true, foe: { party: [] } });
+  // …weighed with 火柴 worn (rules/gearhint.mjs: the door says so when he owns it and does not wear it)
+  const { weighed_with: weighed, _weighed_with: _, ...plain } = trial.game;
+  assert.deepEqual(plain, { id: 'shuanglong-trial', kind: 'duel', creature: 'foe-shuanglong', retry: true, foe: { party: [] } });
+  assert.deepEqual(weighed, { wear: { weapon: 'huochai-jian' } });
   assert.equal(trial.duel.creature.root, 'water');
   refused(resolve, s, { exit: 'stand' }, 'game-not-won', octx());
   s = { ...s, wins: { ...s.wins, 'shuanglong-trial': OCT.toISOString() } };

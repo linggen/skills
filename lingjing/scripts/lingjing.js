@@ -48,7 +48,7 @@ import { thinker, stillAsked } from './think.js';
 import { DUIZI_WORDS, duiziChecksHtml, duiziFormOf, duiziTableOf } from './aigames-cards.js';
 import { createVoice, nodeMoment } from './voice.js';
 import { bigPlay, createFightSay, cuesOf, fightFacts, strongFoe } from './fightsay.js';
-import { CLOSE_AT, POOR_AT, createHerSay, herMode, mijingEndWhat, mijingWayWhat, shortFacts, wayFacts, whyFacts } from './hersay.js';
+import { CLOSE_AT, POOR_AT, createHerSay, gearFacts, gearKey, gearWhat, herMode, mijingEndWhat, mijingWayWhat, shortFacts, wayFacts, whyFacts } from './hersay.js';
 import { factsFor, prefetchLines } from './games/prefetch.js';
 import { PREFETCH_TITLE, askHer as askHerLines } from './games/prefetch-ling.js';
 import { NPC_TITLE, npcAsk, SPENT } from './npc-ask.js';
@@ -1004,6 +1004,7 @@ function riseStats() {
     if (Number.isFinite(before.wealth) && before.wealth >= POOR_AT && now.wealth < POOR_AT) herSay.say('poor', lang() === 'en' ? `${now.wealth} spirit stones left.` : `只剩${now.wealth}块灵石。`);
   }
   shortNudge();
+  gearNudge();
   kanjiaOnLanding();
   if (before && before.world === now.world) {
     const gained = {};
@@ -3291,6 +3292,26 @@ function kanjiaOnLanding() {
   kanjiaOpened = true;
   kanjia(KANJIA_OPEN);
 }
+/* A story fight up whose difficulty was weighed with a thing he owns and does not wear (Look's door `gear_hint`,
+   rules/gearhint.mjs; Hanli 2026-11-04: 「要加」): 银月 says it from the facts — once a fight a day, and once more after
+   each loss while it is still not on him (hersay.js gearKey). Never while a fight is on the stage. */
+const gearDay = () => new Date().toDateString();
+function gearNudge() {
+  if (bout || starting) return;
+  const f = gearFacts(look, lang() !== 'en');
+  if (f) herSay.say('gear', f.what, { key: gearKey(f, gearDay()) });
+}
+/* 「给小满戴上 · 火柴」 on the door's card: off 银月 first when she wears it (one copy is worn in one place: trade use refuses
+   `worn-elsewhere`), then the pouch's own `trade use`; a refusal is said on the stage. */
+async function gearHintWear(id, on, slot) {
+  if (on && on !== 'bag') {
+    const off = await write('trade', { action: 'remove', id, on: 'her', ...(slot ? { slot } : {}) }).catch(failed);
+    if (!off.ok) { keep({ doNote: refusal(off) }); return refresh(); }
+  }
+  const r = await write('trade', { action: 'use', id }).catch(failed);
+  if (!r.ok) keep({ doNote: refusal(r) });
+  await refresh();
+}
 function shortNudge() {
   const f = shortFacts(look, lang() !== 'en');
   if (f) herSay.say('short', f.what, { key: 'first', ...(f.far ? { variant: 'far' } : {}) });
@@ -4037,6 +4058,8 @@ const CLICKS = [
     // 银月's slots (Hanli 11-03): `data-on="her"` and the slot, carried to Trade as they are.
     run(`item:${action}:${id}:${el.dataset.on ?? ''}`, () => useItem(id, action, { ...(el.dataset.on ? { on: el.dataset.on } : {}), ...(el.dataset.slot ? { slot: el.dataset.slot } : {}) }));
   }],
+  // 「给小满戴上 · 火柴」 on a story fight's door (battle-card.js gearHintHtml): off 银月 first, then `trade use`.
+  ['[data-gear-hint]', (el) => run(`gearhint:${el.dataset.gearHint}`, () => gearHintWear(el.dataset.gearHint, el.dataset.on ?? null, el.dataset.slot ?? null))],
   // 戴上 from 所得 (pouch.js spoilGearHtml): the 储物袋's own `trade use`, the card read again with where it is worn now.
   ['[data-spoil-wear]', (el) => { run(`spoilwear:${el.dataset.spoilWear}`, () => spoilWear(el.dataset.spoilWear, el.dataset.on ?? null)); return true; }],
   ['[data-spoils-close]', () => show({ spoils: null })],
@@ -4421,11 +4444,15 @@ function herFightOver(b, r) {
   const repeat = Boolean(r.tally) || String(b.id).startsWith('haunt:');
   const close = r.outcome === 'won' && v.you.hp < v.you.hpMax * CLOSE_AT;
   const hp = zh ? `气血剩${v.you.hp}/${v.you.hpMax}` : `${v.you.hp}/${v.you.hpMax} Life left`;
-  const what = r.outcome === 'won'
+  // Lost without the thing it was weighed with (the door's gear_hint): that first, and her gear word counted as said for
+  // this loss — the next Look at the door would say it again on top of her comfort.
+  const gear = r.outcome !== 'won' && b.gearHint ? { ...b.gearHint, lost: (b.gearHint.lost ?? 0) + 1 } : null;
+  if (gear) herSay.mark('gear', gearKey({ game: b.id, lost: gear.lost }, gearDay()));
+  const what = gear ? `${gearWhat(gear, c.name ?? '', zh)}${zh ? `输给了${c.name ?? ''}，撑了${v.turn}回合。` : ` Lost to ${c.name ?? ''} after ${v.turn} turns.`}` : r.outcome === 'won'
     ? (zh ? `胜了${c.name ?? ''}，${v.turn}回合，${hp}${close ? '，险胜' : ''}${r.first_win ? '，头一回赢它' : ''}。` : `Beat ${c.name ?? ''} in ${v.turn} turns, ${hp}${close ? ', a close one' : ''}${r.first_win ? ', the first win over it' : ''}.`)
     // The step first: her facts are cut from the end under the cap (hersay.js momentFacts).
     : wayFacts(r.way, zh) + (zh ? `输给了${c.name ?? ''}，撑了${v.turn}回合；它还剩气血${v.foe.hp}/${v.foe.hpMax}${r.beat?.guards ? `，叫出${r.beat.guards}个护主` : ''}。` : ` Lost to ${c.name ?? ''} after ${v.turn} turns; it had ${v.foe.hp}/${v.foe.hpMax} Life left${r.beat?.guards ? `, ${r.beat.guards} guards called` : ''}.`);
-  const out = herSay.fight({ outcome: r.outcome, way: r.outcome === 'won' ? null : r.way?.[0]?.kind ?? null, story: Boolean(c.goal || c.person || c.elite || c.title), strong: strongFoe(b.brief), close, newBeast: Boolean(r.first_win), repeat, what, saidInFight: Boolean(b.say?.st.told.has(r.outcome)) });
+  const out = herSay.fight({ outcome: r.outcome, way: r.outcome === 'won' ? null : gear ? 'gear' : r.way?.[0]?.kind ?? null, story: Boolean(c.goal || c.person || c.elite || c.title), strong: strongFoe(b.brief), close, newBeast: Boolean(r.first_win), repeat, what, saidInFight: Boolean(b.say?.st.told.has(r.outcome)) });
   // A 稀有 arm out of the fight: a rare find (hersay.js rare).
   const rare = (r.dropped ?? []).find((d) => d.rarity === 'rare');
   if (r.outcome === 'won' && rare) herSay.say('rare', zh ? `${c.name ?? ''}掉了一件稀有的${rare.name ?? ''}。` : `${c.name ?? ''} dropped a rare ${rare.name ?? ''}.`, { key: `drop|${b.id}|${Date.now()}` });
@@ -4444,7 +4471,7 @@ async function onDuelStart(id) {
   starting = true;
   try {
     // 丹囊: the pick made at this door, else his last (the rules remember it).
-    const b = doorBrief(id), pills = b?.pouch ? pickNow(b, ctx()) : null;
+    const b = doorBrief(id), pills = b?.pouch ? pickNow(b, ctx()) : null, gearHint = b?.gear_hint ?? null;
     const r = await write('duel', { id, ...(pills ? { pills: pills.join(',') } : {}) });
     if (!r.ok) {
       // Its own words, never the refusal's id: 「no-qi」 on the stage is the page
@@ -4472,7 +4499,7 @@ async function onDuelStart(id) {
     }
     keep({ duelSay: { id: null, text: null }, walkedOut: null });
     // The story's record of the fight; the room itself is mounted on the next draw (paintFight).
-    bout = { id, brief, setup: brief.setup, st: begin(brief.setup, cardCatalog()), actions: [], her: null };
+    bout = { id, brief, setup: brief.setup, st: begin(brief.setup, cardCatalog()), actions: [], her: null, gearHint };
     const odds = oddsKept.get(oddsKey(brief.setup));
     tracker.fightOpen(id, { beast: brief.creature?.id ?? null, place: look?.place?.id ?? null, hand: brief.setup?.you?.deck?.length ?? brief.setup?.you?.hand?.length ?? null, source: look?.scene?.id ?? null, ...(odds ? { chip: odds.grade, odds: odds.win } : {}) });
     bout.say = fightSayFor(bout);
