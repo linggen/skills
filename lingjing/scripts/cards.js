@@ -1047,7 +1047,7 @@ function next(card, ctx) {
   const go = to ? `<button class="act go primary" data-go="${esc(to.id)}">${esc(say(t.go, { name: to.name }))}</button>${to.via?.length ? `<div class="small dim">${esc(say(t.via, { names: to.via.join(' · ') }))}</div>` : ''}`
     : work ? `<button class="act go primary" data-go="${esc(work.id)}">${esc(say(t.work, { name: work.name }))}</button>` : '';
   const ready = (look.book ?? []).filter((q) => q.ready && !q.away).length + (look.kaifu?.ready ?? 0);
-  const book = ready ? `<button class="act quiet" data-book>${esc(say(t.ready, { n: ready }))}</button>` : '';
+  const book = ready ? `<button class="act quiet" data-book${bookAt(firstReady(look))}>${esc(say(t.ready, { n: ready }))}</button>` : '';
   // A room that holds the way on (Look's place.guard): what it still asks, under the goal.
   const guard = look.place?.guard ? `<div class="small dim guardnote">${esc(look.place.guard)}</div>` : '';
   return `<div class="card next"><div class="cardtitle">${esc(t.title)}</div><div class="say">${esc(goalText(ctx) || t.idle)}${goalText(ctx) ? capMark(ctx) : ''}</div>${guard}${visitorsLine(look)}<div class="acts">${go}${book}${visitorGo(look)}</div></div>`;
@@ -1092,8 +1092,8 @@ const HOME_ACTS = {
   turnin: (n, h) => `<button class="act primary do" data-do="turn" data-id="${esc(n.stage ? 'stage' : n.id)}">${esc(say(h.turnin, { title: n.title }))}</button>`,
   strengthen: (n, h, ctx) => homeWay(n.way, 'next', ctx),
   // A 功课 whose pay covers what the gate is short (rules/home.mjs): it opens the book, where the chore is done.
-  gongke: (n, h) => `<button class="act primary" data-book>${esc(say(h.enough, { what: say(h.gongke, { name: n.means ?? n.title, n: n.progress }) }))}</button>`,
-  errand: (n, h) => `<button class="act primary" data-book>${esc(say(h.errand, { title: n.title }))}</button>`,
+  gongke: (n, h) => `<button class="act primary" data-book${bookAt(`chore:${n.id}`)}>${esc(say(h.enough, { what: say(h.gongke, { name: n.means ?? n.title, n: n.progress }) }))}</button>`,
+  errand: (n, h) => `<button class="act primary" data-book${bookAt(`errand:${n.id}`)}>${esc(say(h.errand, { title: n.title }))}</button>`,
   fight: (n, h) => `<button class="act primary" data-duel-start="${esc(n.id)}">${esc(say(h.fight, { title: n.title ?? '' }))}</button>`,
   board: (n, h) => { const t = n.progress ? say(h.boardPays, { title: n.title, n: n.progress }) : say(h.board, { title: n.title }); return `<button class="act primary" data-play="${esc(n.id)}">${esc(n.enough ? say(h.enough, { what: t }) : t)}</button>`; },
   take: (n, h) => `<button class="act primary do" data-do="take" data-id="${esc(n.id)}">${esc(say(h.take, { title: n.title }))}</button>`,
@@ -1103,16 +1103,16 @@ const HOME_ACTS = {
 };
 /* What waits, one quiet row each. */
 const HOME_TODO = {
-  ready: (r, h) => `<button class="act quiet hometodo" data-book>${esc(say(h.ready, { n: r.n, title: r.title }))}</button>`,
+  ready: (r, h, ctx) => `<button class="act quiet hometodo" data-book${bookAt(firstReady(ctx?.look))}>${esc(say(h.ready, { n: r.n, title: r.title }))}</button>`,
   // An errand in hand: named by its next place, and the tap is its row's own next act (rules/errand-line.mjs `go`) —
   // where that is here and nothing but the book acts (a fight on the stage, 交差), the book (Hanli 10-28: 「点dashboard的待办
   // "彭城的药钱 · 执事堂" 也没反应」 — a walk to where he stood).
   held: (r, h, ctx) => {
     const label = r.place ? say(h.held, { title: r.title, place: bareName(r.place.name) }) : say(h.heldBare, { title: r.title });
     const go = r.go && r.go.does !== 'turn' ? errandGo({ ...r.go, label }, ctx, 'quiet hometodo') : '';
-    return go || `<button class="act quiet hometodo" data-book>${esc(label)}</button>`;
+    return go || `<button class="act quiet hometodo" data-book${bookAt(r.id ? `errand:${r.id}` : null)}>${esc(label)}</button>`;
   },
-  gongke: (r, h) => `<button class="act quiet hometodo" data-book>${esc(say(h.gongke, { name: r.means ?? r.title, n: r.progress }))}</button>`,
+  gongke: (r, h) => `<button class="act quiet hometodo" data-book${bookAt(`chore:${r.id}`)}>${esc(say(h.gongke, { name: r.means ?? r.title, n: r.progress }))}</button>`,
   tide: (r, h) => `<button class="act quiet hometodo" data-play="${esc(r.id)}">${esc(r.qiecuo ? say(h.board, { title: r.title }) : h.tide)}</button>`,
   // 妖兽出没 (rules/yaoshou.mjs): a batch up — the tap walks there.
   yaoshou: (r, h) => (r.place ? `<button class="act quiet hometodo" data-go="${esc(r.place.id)}">${esc(say(h.yaoshou, { title: r.title, place: bareName(r.place.name), n: r.left }))}</button>` : ''),
@@ -1233,6 +1233,11 @@ export function allChipHtml(ctx) {
   const due = ready ? `<b class="due">${esc(say(w.bookDue, { n: ready }))}</b>` : lucky ? '<i class="dot" aria-hidden="true"></i>' : '';
   return `<button class="bookchip allchip${ready ? ' ready' : ''}${lucky ? ' lucky' : ''}${ctx.bookFresh ? ' fresh' : ''}" data-book aria-expanded="${ctx.bookOpen ? 'true' : 'false'}" title="${esc(title)}">${esc(w.agendaAll)}${due}</button>`;
 }
+
+/* Where an opener of 事 lands (lingjing.js openBook): an item's key, or a group (`group:other`). */
+const bookAt = (key) => (key ? ` data-book-at="${esc(key)}"` : '');
+/* The first item that can be handed in, else the group it would stand in. */
+const firstReady = (look) => agendaOf(look).find((i) => i.ready)?.key ?? 'group:other';
 
 /* Look's `agenda` (rules/agenda.mjs): ONE ordered list, 主线 · 目标 · 其他, each item a reference to where its facts are. */
 /* A Look without it (one drawn by hand, a test's): the same rule read off what it does carry. */
@@ -1863,7 +1868,7 @@ export function gateCardHtml(g, look, w, ctx = { lang: 'zh', words: w, look }) {
   // The stage quest's own `work` first: at the gated scene Look's `work` is null by design (errands.mjs workOf).
   const w0 = look?.stage_quest?.work ?? look?.work, work = w0?.place && !w0.here ? w0.place : null;
   const go = work ? `<button class="act go primary" data-go="${esc(work.id)}">${esc(say(w.gateGoAt, { name: work.name }))}</button>`
-    : cultivateActs(look, { ...ctx, look }) || `<button class="act go primary" data-book>${esc(w.gateGo)}</button>`;
+    : cultivateActs(look, { ...ctx, look }) || `<button class="act go primary" data-book data-book-at="stage:stage">${esc(w.gateGo)}</button>`;
   return `<div class="gatecard"><div class="cardtitle">${esc(say(w.goalStage, { step: g.step }))}</div>`
     + `<div class="gatebar" role="progressbar" aria-valuemin="0" aria-valuemax="${of}" aria-valuenow="${at}"><i style="width:${Math.round((100 * at) / of)}%"></i></div>`
     + `<div class="small dim">${esc(`${at}/${of}`)} · ${esc(say(w.gateShort, { n: Math.max(0, of - at) }))}</div><div class="acts">${go}</div></div>`;
@@ -2108,7 +2113,7 @@ export function asideHtml(ctx) {
 /* 手边的棋局's own openers (Look's `tray`, rules/tray.mjs: each entry names its `opens`): the page's verb for each, one table. */
 const TRAY_OPEN = {
   play: (e) => `data-play="${esc(e.arg)}"`, duel: (e) => `data-duel-start="${esc(e.arg)}"`, gear: () => 'data-gear', seclude: () => 'data-seclude-open',
-  duizi: () => 'data-duizi-open', divine: () => 'data-divine', book: () => 'data-book', shop: () => 'data-shop-open',
+  duizi: () => 'data-duizi-open', divine: () => 'data-divine', book: () => 'data-book data-book-at="work:work"', shop: () => 'data-shop-open',
 };
 /// About how long a thing still stands, in the page's tongue (刻 · 时辰; min · h).
 const spanWords = (min, w, zh) => (zh ? (min >= 120 ? say(w.trayShi, { n: Math.floor(min / 120) }) : say(w.trayKe, { n: Math.max(1, Math.floor(min / 15)) }))

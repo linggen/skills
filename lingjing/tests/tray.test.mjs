@@ -151,7 +151,8 @@ test('a tray 开局 opens what it names, whatever the stage holds: each opener h
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   const cards = fs.readFileSync(new URL('../scripts/cards.js', import.meta.url), 'utf8');
   const table = cards.slice(cards.indexOf('const TRAY_OPEN = {'), cards.indexOf('};', cards.indexOf('const TRAY_OPEN = {')));
-  const attrs = [...table.matchAll(/'?(data-[a-z-]+)/g)].map((m) => m[1]);
+  // (`data-book-at` is where 事 opens, the argument of data-book — not an opener of its own.)
+  const attrs = [...table.matchAll(/'?(data-[a-z-]+)/g)].map((m) => m[1]).filter((a) => a !== 'data-book-at');
   assert.ok(attrs.length >= 8, attrs.join());
   for (const a of new Set(attrs)) assert.ok(src.includes(`['[${a}]'`), `${a}: the page handles it`);
   // A board from the tray (data-play → openFromTray) is held before him (view.opened) and added to the stage's cards

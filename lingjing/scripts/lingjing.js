@@ -1507,7 +1507,7 @@ const roadsFree = () => !view.asked?.size && !look?.seclusion && !look?.director
 /// 恩仇簿 is written no more (2026-10-03): its chip is off the footer; the
 /// ledger itself stays in the save and in Look (ledgerChipHtml, cards.js).
 /// A scene on another line (a 今 interlude) keeps the 书; the rest is the 古's (stage.mjs FURNITURE).
-/// In a fight only 事 and 物品 stand.
+/// In a fight only 物品 stands (and the queue's 还有 N 件); 事 comes back with the tray once the fight ends.
 const FOOT_CHIPS = {
   her: () => herTokenHtml(),
   festival: () => festChipHtml(),
@@ -4230,14 +4230,16 @@ function openBook(at = null, toggle = false) {
   if (!open) return;
   loadKaifu();
   if (!at) return;
-  requestAnimationFrame(() => {
-    const [kind, id] = at.split(':');
-    const el = kind === 'group' ? document.querySelector(`.bookpop [data-agenda-group="${CSS.escape(id)}"]`) : document.querySelector(`.bookpop [data-agenda="${CSS.escape(at)}"]`);
+  const [kind, id] = at.split(':');
+  const find = () => (kind === 'group' ? document.querySelector(`.bookpop [data-agenda-group="${CSS.escape(id)}"]`) : document.querySelector(`.bookpop [data-agenda="${CSS.escape(at)}"]`));
+  // The list may paint a frame later than the tap: look again once before giving up.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const el = find();
     if (!el) return;
     el.scrollIntoView?.({ block: 'nearest' });
     el.classList.add('lit');
     setTimeout(() => el.classList.remove('lit'), 1600);
-  });
+  }));
 }
 
 /* The engine's `allowance_spent` (or a side session's refused line, npc-ask.js SPENT): the turn is over, and the card
@@ -4700,7 +4702,7 @@ const WAYS_TAKEN = {
   pills: (o) => goTo(o.place),
   another: () => { const id = look?.place?.encounter?.game?.id; return id ? onDuelStart(id) : null; },
   seclude: () => openSeclude(),
-  gongke: () => show({ bookOpen: true, ...othersShut('bookOpen') }),
+  gongke: () => openBook((look?.agenda ?? []).find((i) => i.kind === 'chore')?.key ?? 'group:other'),
 };
 async function takeWay(o) {
   await WAYS_TAKEN[o?.kind]?.(o);

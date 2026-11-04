@@ -180,7 +180,7 @@ test('short by what one thing pays: that thing is the button, named as enough �
   const l = look(s, content, ctx([LEDGER]));
   assert.equal(l.home.gate.short, wk);
   assert.deepEqual(l.home.next, { kind: 'gongke', id: 'cfo-import', title: '导入账单', means: '算账', progress: wk, enough: true });
-  assert.match(html(l), new RegExp(`data-book>算账 · 修为 \\+${wk} · 够了<`));
+  assert.match(html(l), new RegExp(`data-book[^>]*>算账 · 修为 \\+${wk} · 够了<`));
   // No 功课 that covers it: the best board here today, when it does (a board's +6 for 4 short).
   const near = look({ ...s, progress: 466 }, content, ctx()), b = bestHere({ ...s, progress: 466 }, near);
   assert.deepEqual([near.home.next.kind, near.home.next.id, near.home.next.enough], ['board', b.id, true]);

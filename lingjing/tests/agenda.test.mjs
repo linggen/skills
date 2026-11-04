@@ -131,4 +131,10 @@ test('the footer has no 「事」 chip: 去往 · 木牌 · 天气 · 时辰 · 
   assert.match(src, /\['\[data-kept-open\]', \(\) => openBook\('kept:kept'\)\]/);
   const cards = fs.readFileSync(new URL('../scripts/cards.js', import.meta.url), 'utf8');
   assert.doesNotMatch(cards, /export function bookChipHtml/);
+  // Every other opener names where 事 opens (an item, or a group): only 「全部 ›」 opens it at the top.
+  for (const [name, code] of [['cards.js', cards], ['lingjing.js', src]]) {
+    for (const line of code.split('\n').filter((l) => /data-book(?![-\w])/.test(l) && !/^\s*(\/\/|\/\*|\*)/.test(l))) {
+      assert.ok(/data-book-at|bookAt\(|allchip|\['\[data-book\]'/.test(line), `${name}: an opener of 事 with nowhere to land: ${line.trim().slice(0, 160)}`);
+    }
+  }
 });
