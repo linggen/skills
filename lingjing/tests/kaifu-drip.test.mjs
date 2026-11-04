@@ -141,7 +141,7 @@ test('the 事 book: 「开府 n/N」 on its own line, each row its 怎么做, wh
   const s = { ...start(), kaifu: { shown: ['linggen-chat', 'linggen-ask-news', 'cfo-open'], shown_on: '2026-11-02' } };
   const done = withDone(['dj-play', 'linggen-image']);
   const html = page(look(s, content, ctx(NOW, done)));
-  assert.match(html, /<div class="tgroup kaifu"><div class="thead small dim">开府 0\/7 <button class="act do" data-do="turn" data-id="kaifu">全部交差 · 2<\/button><\/div>/);
+  assert.match(html, /<div class="tgroup kaifu"[^>]*><div class="thead small dim">开府 0\/7 <button class="act do" data-do="turn" data-id="kaifu">全部交差 · 2<\/button><\/div>/);
   assert.equal((html.match(/tmeta">\d+\/\d+/g) ?? []).length, 0, 'never a count beside one row');
   assert.match(html, /linggen-chat.*怎么做linggen-chat.*灵石 \+50.*data-ask-her/s);
   assert.doesNotMatch(html, /体力 \+\d/, 'no 体力 on a 开府 row');

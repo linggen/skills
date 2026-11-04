@@ -91,7 +91,7 @@ test('a stage quest met is 可交: 交差 pays 灵石 once and moves it to 已�
   assert.equal(row.met, true);
   assert.deepEqual(row.pays, { wealth: PAY });
   const before = bookPopHtml({ look: look(full, content, ctx), lang: 'zh', words });
-  assert.match(before, /可交[\s\S]*阶段任务 · 练气九层圆满[\s\S]*已圆满 · 交差领赏[\s\S]*data-do="turn" data-id="stage"/);
+  assert.match(before, /data-agenda-group="goal"[\s\S]*class="bookrow trow ready[^"]*" data-agenda="stage:stage"[\s\S]*阶段任务 · 练气九层圆满[\s\S]*已圆满 · 交差领赏[\s\S]*data-do="turn" data-id="stage"/);
   const turned = quest(full, content, ctx, { id: 'stage', action: 'turn' });
   assert.equal(turned.result.ok, true);
   assert.equal(turned.result.paid.wealth, PAY);

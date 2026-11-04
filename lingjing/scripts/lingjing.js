@@ -4225,9 +4225,8 @@ function noOne() {
 /* 事 opened (Hanli 2026-11-04: the tray and the book are one list): `at` an item's key (`kind:id`) or a group
    (`group:main`), scrolled into view and lit a moment; `toggle` — 全部 tapped again shuts it. */
 function openBook(at = null, toggle = false) {
-  const open = toggle ? !view.bookOpen : true;
-  show({ bookOpen: open, ...othersShut('bookOpen') });
-  if (!open) return;
+  if (toggle && view.bookOpen) { show({ bookOpen: false }); return; }
+  show({ bookOpen: true, ...othersShut('bookOpen') });
   loadKaifu();
   if (!at) return;
   const [kind, id] = at.split(':');

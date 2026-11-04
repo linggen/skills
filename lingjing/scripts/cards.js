@@ -2204,6 +2204,8 @@ export function trayHtml(ctx) {
   const all = allChipHtml(ctx), aside = asideHtml(ctx);
   // 体力 spent: one card, the 闭关 that fills it (the story's boards wait on 体力 too) — and the whole list after it.
   if (spent(look) && !aside) return trayRestHtml(ctx) + all;
-  const cards = [...row, ...(done ? [done] : [])];
+  // …standing before the cooldowns the tray still shows.
+  const firstCool = row.findIndex((h) => h.includes('data-wait='));
+  const cards = done ? (firstCool < 0 ? [...row, done] : [...row.slice(0, firstCool), done, ...row.slice(firstCool)]) : row;
   return aside + (cards.length ? cards.join('') : aside ? '' : `<div class="small dim trayempty">${esc(ctx.words.trayEmpty)}</div>`) + all;
 }
