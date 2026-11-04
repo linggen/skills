@@ -53,6 +53,14 @@ export function formPut(host, birth) {
   if (fresh && fresh !== birth) fresh.replaceWith(birth);
 }
 
+/* The 签 modal closed (its ✕, Esc, the veil): 替人求签's draft stays — the fields as they stand on screen go into the
+   page's copy first, and the form stays open, so opening the 签 again shows it as he left it (Esc while typing closed
+   the modal and lost the typing, 2026-11-04). The draft goes only with the form's own 回到我的签 or a 签 drawn. */
+export function qianClosed(host, keep, view) {
+  if (view.qianFriendOpen) formTake(host, keep);
+  return { qianOpen: false, qianFriend: null, qianBookOpen: false, qianShown: null };
+}
+
 export function createQianPage({ write, refresh, show, keep, view, herLine, herHere, lang, refusal, failed, tellHer, saveKey = () => '', playerName = () => null }) {
   let motionOn = false, jolts = [];
   const store = {

@@ -9,7 +9,7 @@ import { newState } from '../scripts/state.mjs';
 import { playTo } from '../scripts/rules.mjs';
 import { divine } from '../scripts/rules/fortune.mjs';
 import { friendFacts, qianAsk, qianFacts, FACTS_MAX } from '../scripts/qian-facts.js';
-import { formNow, formPut, formTake, friendAskArgs } from '../scripts/qian-page.js';
+import { formNow, formPut, formTake, friendAskArgs, qianClosed } from '../scripts/qian-page.js';
 
 process.env.LINGJING_STAMINA_LIMIT = '0';
 const content = loadContent();
@@ -106,4 +106,31 @@ test('银月\'s facts carry the rules\' 生肖, or say it is unknown and that sh
   const mine = call(base, {}).result.divination;
   assert.equal(mine.signs, undefined);
   assert.match(qianFacts(mine, true), /他的生肖不知道，不许说或猜/);
+});
+
+test('Esc (or ✕, or the veil) mid-entry closes the 签 but keeps the draft: open again, the form is as he left it', async () => {
+  const view = { qianOpen: true, qianFriendOpen: true, qianFriendName: '九', qianFriendBirth: '', qianFriendNoKeep: false };
+  const keep = (p) => Object.assign(view, p);
+  // Typed on screen, not yet heard by the page: taken before the modal goes.
+  const patch = qianClosed(host([field('qian-friend-name', '九芝'), field('qian-friend-birth', '1983-03-04'), field('qian-friend-nokeep', '', false)]), keep, view);
+  keep(patch);
+  assert.equal(view.qianOpen, false);
+  assert.equal(view.qianFriendOpen, true, 'the form stays open for the next open');
+  assert.equal(view.qianFriendName, '九芝');
+  assert.equal(view.qianFriendBirth, '1983-03-04');
+  // Opened again: the form is drawn from the kept draft.
+  const { friendFormHtml } = await import('../scripts/qian-reading.js');
+  const { qianLook } = await import('../scripts/rules/fortune.mjs');
+  const form = friendFormHtml(qianLook(content, base, NOW), { ...view, lang: 'zh' }, (await import('../scripts/qian-reading.js')).readingWords('zh'));
+  assert.match(form, /value="九芝"/);
+  assert.match(form, /value="1983-03-04"/);
+  // The form closed: nothing is taken.
+  const v2 = { qianFriendOpen: false, qianFriendName: '' };
+  qianClosed(host([field('qian-friend-name', 'x')]), (p) => Object.assign(v2, p), v2);
+  assert.equal(v2.qianFriendName, '');
+  // Every close of the modal goes through it.
+  const fs = await import('node:fs');
+  const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(src, /qianOpen: false, qianFriend: null, qianFriendOpen: false/);
+  assert.equal(src.match(/closeQian\(\)/g).length >= 3, true);
 });

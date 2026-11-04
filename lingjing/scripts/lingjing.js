@@ -77,7 +77,7 @@ import { createLines, keepSpeed, paceOf, SPEEDS, speedNow, voiceOf } from './lin
 import { isSight, artRoom, chatHeard, fitBox, mountChatToggle, paintSight, setAutoFold } from './sight.js';
 import { createPager } from './pager.js';
 import { qianCardHtml } from './qian-card.js';
-import { createQianPage, formPut, formTake } from './qian-page.js';
+import { createQianPage, formPut, formTake, qianClosed } from './qian-page.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { answered, tapNope, wireLiveGames } from './live-games.js';
 import { beatWon, onBeatWon } from './beat-won.js';
@@ -1256,6 +1256,8 @@ function qianModalHtml() {
   return `<div class="qianmodal" data-qian-backdrop><div class="qianbox" role="dialog" aria-modal="true">
     ${closeX(lang(), 'data-qian-close')}${qianCardHtml({ ...ctx(), castFresh: inking })}</div></div>`;
 }
+/* The 签 modal closed — 替人求签's draft kept (qian-page.js qianClosed). */
+function closeQian() { show(qianClosed(document.getElementById('qianModal'), keep, view)); }
 function paintQianModal() {
   let host = document.getElementById('qianModal');
   if (!host) { host = document.createElement('div'); host.id = 'qianModal'; document.body.appendChild(host); }
@@ -3609,7 +3611,7 @@ const ESC_LAYERS = [
   () => { const v = document.querySelector('.spentcard-veil [data-spent-close]'); if (!v) return false; v.click(); return true; },
   () => { const b = document.querySelector('.codexbox'); if (!b) return false; b.remove(); return true; },
   () => { const k = document.querySelector('.kj-veil [data-talk-tool="close"]'); if (!k) return false; k.click(); return true; },
-  () => (view.qianOpen && look?.qian ? (show({ qianOpen: false, qianFriend: null, qianFriendOpen: false, qianBookOpen: false, qianShown: null }), true) : false),
+  () => (view.qianOpen && look?.qian ? (closeQian(), true) : false),
   () => (view.logOpen ? (show({ logOpen: false }), lines.hold(false), true) : false),
   () => (view.ask ? (closeAsk(), true) : false),
   () => (view.pouchToss ? (show({ pouchToss: null }), true) : false),
@@ -4079,8 +4081,8 @@ const CLICKS = [
   ['[data-qian-share]', (el) => { if (!el.matches(':disabled')) qianPage.shareTap(el.dataset.qianShare, el.dataset.qianWho); }],
   ['[data-qian-book]', (el) => run('qian-book', () => qianPage.book(el.dataset.qianBook === 'open'))],
   // The modal closes by its ×, or a tap on the dim around it (问签 v2 placement); the friend's card goes back to his.
-  ['[data-qian-close]', () => show({ qianOpen: false, qianFriend: null, qianFriendOpen: false, qianBookOpen: false, qianShown: null })],
-  ['[data-qian-backdrop]', (el, e) => { if (e?.target !== el) return false; show({ qianOpen: false, qianFriend: null, qianFriendOpen: false, qianBookOpen: false, qianShown: null }); }],
+  ['[data-qian-close]', () => closeQian()],
+  ['[data-qian-backdrop]', (el, e) => { if (e?.target !== el) return false; closeQian(); }],
   ['[data-trial]', (el) => run('trial', () => chooseWay(Number(el.dataset.trial)))],
   ['[data-tale-answer]', (el) => run('tale', () => taleAnswer(el.dataset.taleAnswer))],
   ['[data-drop]', (el) => run(`drop:${el.dataset.drop}`, () => dropErrand(el.dataset.drop))],
