@@ -27,8 +27,11 @@ export function lineHere(look) {
 }
 
 /* What met on the road stands on the stage as the one road card — once it is
-   revealed; veiled, the page's mist plays over the stage as it is (lingjing.js). */
-const ON_ROAD = { chance: m => !m.missed && !m.taken, find: () => true, trial: m => Boolean(m.options) };
+   revealed; veiled, the page's mist plays over the stage as it is (lingjing.js).
+   A traveller's riddle too (Hanli 11-04): asked in the chat as AskUser it held
+   the turn while he walked on — answered at 执事堂 it was `nothing-here`, and
+   the board he opened there queued behind it. On the card it goes when he does. */
+const ON_ROAD = { chance: m => !m.missed && !m.taken, find: () => true, riddle: () => true, trial: m => Boolean(m.options) };
 export const onRoad = m => Boolean(m && !m.veiled && ON_ROAD[m.kind]?.(m));
 
 /* 传闻's step, when it is to be played on this very spot. */
@@ -256,7 +259,7 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
 
   // 路上 (rules/road.mjs): what this arrival met is ONE card until it is
   // answered — mist while veiled, then a find or the day's 机缘 to 收下, or a
-  // 抉择's ways. A traveller's riddle is the chat's question; a road beast is
+  // 抉择's ways, or a traveller's riddle with its answers; a road beast is
   // the duel card below.
   if (onRoad(look.place?.meet)) head.push({ card: 'road' });
 
@@ -575,8 +578,10 @@ export function stageOwns(look, cards) {
    has it all. */
 export function askMinusStage(ask, owns) {
   if (!ask) return null;
+  // A riddle's answer to an exit is that exit's too: a panel holding the exit holds its answers (cards.js
+  // riddleTapHtml) — asked in the chat as well, the AskUser held the turn over chips already on the stage (11-04).
   const key = o => (o.divine ? 'divine' : o.ring && !o.answer ? 'ring' : o.tale ? 'tale'
-    : o.move ? `move:${o.move}` : o.exit && !o.answer ? `exit:${o.exit}` : o.tame ? `tame:${o.tame}` : null);
+    : o.move ? `move:${o.move}` : o.exit ? `exit:${o.exit}` : o.tame ? `tame:${o.tame}` : null);
   const options = ask.options.filter(o => { const k = key(o); return !k || !owns.has(k); });
   // A question needs two ways out of it; fewer than that and the stage is the
   // only place worth looking.

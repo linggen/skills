@@ -56,6 +56,11 @@ test('what the stage owns, the question does not offer — whichever side it cam
   assert.equal(askMinusStage(null, owns), null);
   // an answer to a riddle is not the card's 摇一摇铃 — it stays
   assert.equal(askMinusStage({ ...ask, options: [{ label: '甲', ring: true, answer: '甲' }, { label: '乙', ring: true, answer: '乙' }] }, owns).options.length, 2);
+  // …but a scene riddle's answers are its exit's: a panel holding that exit holds its answer chips (riddleTapHtml),
+  // so the chat asks nothing over them (11-04: an AskUser over chips on the stage held the turn).
+  const riddle = { header: '洞中', question: '什么东西…？', options: [{ label: '甲', exit: 'read-seal', answer: '甲' }, { label: '乙', exit: 'read-seal', answer: '乙' }, { label: '先不答', look: true }] };
+  assert.equal(askMinusStage(riddle, new Set(['exit:read-seal'])), null);
+  assert.equal(askMinusStage(riddle, new Set()).options.length, 3, 'no panel holding it: the chat still asks');
 });
 
 test('the goal is one slim line on the stage; its road is the question\'s to offer', async () => {

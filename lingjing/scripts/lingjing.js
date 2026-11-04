@@ -164,8 +164,12 @@ function postMoment(fact, flags, { mood = null } = {}) {
   const { converse, ...rest } = flags ?? {};
   // In the game the player has a 名字, and she calls them by it (his screen,
   // 2026-09-24: 「今天也辛苦了，Hanli」 inside 灵境). First, so no cap cuts it.
+  // The game's language first, said outright (Hanli 11-04, lang en: her lines came in Chinese). The engine tells her
+  // event turns to answer in Linggen's own language (zh-Hans there), which beat 「the language these notes are written
+  // in」; a word in the note itself is what Ling's `(lang en)` already does for Ling. First, so no cap cuts it.
+  const tongue = lang() === 'en' ? '(Say it in English.) ' : '（用中文说。）';
   const name = look?.name, called = !name ? '' : lang() === 'en' ? `(In the game the player is ${name}.) ` : `（灵境里玩家叫${name}。）`;
-  const body = { app: SKILL, text: called + sleepNote() + (lang() === 'en' ? fact.en : fact.zh), ...rest, ...(mood ? { mood } : {}), ...(sid ? { session: sid, ...(converse ? { converse } : {}) } : {}) };
+  const body = { app: SKILL, text: tongue + called + sleepNote() + (lang() === 'en' ? fact.en : fact.zh), ...rest, ...(mood ? { mood } : {}), ...(sid ? { session: sid, ...(converse ? { converse } : {}) } : {}) };
   return fetch('/api/yinyue/event', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
     .then((res) => res.ok).catch((e) => { console.warn('[lingjing] yinyue', e); return false; });
 }
@@ -2381,14 +2385,18 @@ async function openRow(id) {
   if (info?.ok && view.bookRow === id) show({ bookInfo: info });
 }
 
-/* 路上: a find or the day's 机缘 taken, or a find left — by the rules at
+/* 路上: a find or the day's 机缘 taken, a find left, a traveller's riddle
+   answered or walked past — by the rules at
    once; the bag and the strip show it, and the roads row stands where it
    was. Nothing goes to Ling (his, 2026-09-24): the save's `page_did` tells her
    on her next Look. A 机缘's card stands as spoils, and 银月 hears it (she
    was there for the run to reach it). */
-async function takeMeet(action) {
+async function takeMeet(action, answer = undefined) {
   const where = look?.place?.meet?.kind === 'chance' ? look.place.meet.place?.name ?? look.place?.name ?? '' : null;
-  const r = await write('meet', { action }).catch(failed);
+  const r = await write('meet', answer === undefined ? { action } : { action, answer }).catch(failed);
+  // A traveller's riddle missed: the card itself shows it — that answer gone, the hint up (or, missed out, the
+  // traveller gone). A note on top would say it twice.
+  if (r.refused === 'wrong-answer' || r.refused === 'riddle-closed') { keep({ doNote: null }); await refresh(); return; }
   if (!r.ok) { keep({ doNote: refusal(r) }); await refresh(); return; }
   if (r.chance && r.card) keep({ spoils: { place: look?.place?.id ?? null, cards: [r.card], items: [] } });
   if (r.chance) tellYinyue('chance', `赶上了${where}的机缘，得了${r.card?.name ?? '些东西'}`, `Made it to the chance at ${where} in time — ${r.card?.name ?? 'something'} gained`, { mood: 'happy' });
@@ -4107,7 +4115,7 @@ const CLICKS = [
   ['[data-ask-her]', () => (!herHere() ? noOne() : view.ask && view.askHer ? closeAsk() : openAsk(words().askHer.replace('{name}', look?.companion?.name ?? words().yinyue)))],
   ['[data-ask-send]', () => sendAsk()],
   ['[data-ask-close]', () => closeAsk()],
-  ['[data-meet]', (el) => run(`meet:${el.dataset.meet}`, () => takeMeet(el.dataset.meet))],
+  ['[data-meet]', (el) => run(`meet:${el.dataset.meet}`, () => takeMeet(el.dataset.meet, el.dataset.meetAnswer))],
   // 去X, 喂它X, 炼化: the page's own verbs — no word to Ling.
   ['[data-go]', (el) => { if (!el.matches(':disabled')) run(`go:${el.dataset.go}`, () => goTo(el.dataset.go)); }],
   ['[data-mijing]', (el) => { if (!el.matches(':disabled')) run(`mijing:${el.dataset.mijing}:${el.dataset.room ?? el.dataset.way ?? el.dataset.boon ?? ''}`, () => mijingTap({ ...el.dataset })); }],
@@ -4327,7 +4335,8 @@ function herFightAsk(kind, facts) {
 function herFactsMax() {
   const name = look?.name ?? '';
   const called = !name ? '' : lang() === 'en' ? `(In the game the player is ${name}.) ` : `（灵境里玩家叫${name}。）`;
-  return 296 - [...called].length - [...sleepNote()].length;
+  const tongue = lang() === 'en' ? '(Say it in English.) ' : '（用中文说。）'; // postMoment's, said first
+  return 296 - [...tongue].length - [...called].length - [...sleepNote()].length;
 }
 const herFactsCtx = (b) => ({ ...boutCtx(), tiers: { you: b.setup?.you?.tier, foe: b.setup?.foe?.tier }, max: herFactsMax() });
 function fightSayFor(b) {

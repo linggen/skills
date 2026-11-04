@@ -33,13 +33,10 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
       ],
     };
   }
+  // A traveller's riddle is never the chat's question: it stands on the stage's road card, answers and 不答，赶路
+  // with it, and goes when he walks on (Hanli 11-04 — asked as AskUser it held the chat while he walked to 执事堂,
+  // his answer came back `nothing-here` and the board he opened there queued behind it). stageHeld below sees it.
   const road = meetBrief(content, state, ctx.now);
-  if (road?.kind === 'riddle' && !road.veiled && !atScene(content, state)) {
-    return {
-      header: String(placeBrief(content, state, ctx.now)?.name ?? ''), question: road.riddle,
-      options: [...road.choices.map(c => ({ label: c, meet: 'answer', answer: c })), { label: zh ? '不答，赶路' : 'Walk on', meet: 'pass' }],
-    };
-  }
   const header = s => String(s ?? '');
   const question = zh ? '何去何从？' : 'What now?';
   if (atScene(content, state)) {
@@ -182,6 +179,10 @@ export const THEN_VALUE = ' The stage\'s card asks the player for their name (of
 export const THEN_BORN = ' The stage\'s card asks the player\'s birthday for the root test (or lets the stone read them). A scene just entered that the stage does not tell (no `scene.stage_tells`, nothing `staged`) is told first (Show its `scene.show` cards, its `scene.setup` in one to three sentences, its `scene.lines`); then end on one line inviting them to the card — never AskUser for it, never ask the date in the chat, never Resolve it; the stage goes on by itself when the roots are read (`page_did`).';
 /* 渡劫's card is up (stage.mjs `breakthrough`): the player throws there, seeing the odds. */
 export const THEN_THROW = ' The stage\'s card shows the breakthrough\'s chance and what feeds it; the player throws there. Tell the cauldron; end on one line — never AskUser for it, never promise how it will go, never Resolve it; the page tells you `[scene] breakthrough won|failed`.';
+/* A traveller's riddle just revealed on the road (rules/road.mjs): it is the stage's road card, never AskUser.
+   The traveller asks first (ling-mem HnyYVWum5L: the AI poses, the player never opens the talk) — in Ling's
+   line, as 周衡 dares him at his board (`[jinchat]`); the card holds the riddle and its answers. */
+export const THEN_ROAD_RIDDLE = 'A traveller on this road has a riddle for him (`place.meet` kind riddle): it stands on the stage\'s card with its answers, and the page answers it itself. Set the traveller there and have them dare him to guess, in one or two lines in their own voice — never the riddle\'s words, never its answers, never a guess. Never call Meet, and do NOT call AskUser. ';
 const THEN_QUIET = 'No question this time — the stage holds what is before him, or he has already been asked here. End on your words: name a way on in the line if it is worth naming, and do NOT call AskUser.';
 /* The stage plays the book's passage in its dialogue box (rules/tell.mjs):
    Ling never retells it — `staged` is only what it is playing. */

@@ -72,6 +72,13 @@ test('before she joins, nothing reaches her — rise, chapter, spent and every o
   const body = JSON.parse(fetches[0][1].body);
   assert.equal(body.session, 's1');
   assert.equal(body.converse, true);
+  // The game's language is said first, outright: the engine's own line for her event turns names Linggen's
+  // language, and under lang en she answered in Chinese (Hanli 11-04).
+  assert.ok(body.text.startsWith('（用中文说。）'), body.text);
+  scope.lang = () => 'en';
+  f.postMoment({ zh: '输了', en: 'Lost.' }, {});
+  const en = JSON.parse(fetches[1][1].body).text;
+  assert.ok(en.startsWith('(Say it in English.) ') && en.endsWith('Lost.'), en);
 });
 
 test('every call to her in the page goes through askHer/tellYinyue/postMoment, each gated', () => {

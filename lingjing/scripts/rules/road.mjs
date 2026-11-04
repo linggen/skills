@@ -14,7 +14,7 @@
 //   kind     what it is                           answered by
 //   chance   机缘 — the day's one, where it lies   take (while it lasts)
 //   find     拾遗 — a thing or stones by the road  take · pass
-//   riddle   路人问 — a traveller's riddle          answer · pass (the chat's question)
+//   riddle   路人问 — a traveller's riddle          answer · pass (the road card's, never AskUser)
 //   trial    抉择 — Ling writes the ways            offer · choose · pass
 //   beast    拦路 — a beast of the province         the duel card (tasks.mjs duel) · pass
 //

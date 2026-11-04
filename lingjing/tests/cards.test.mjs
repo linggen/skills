@@ -195,6 +195,31 @@ test('抉择 on the stage: each way a button with how hard, the odds and the sta
   assert.match(told, /体力 −12/);
 });
 
+test('路人问 on the stage: the traveller\'s riddle is the road card — answers and 不答，赶路 the page\'s own Meet; a miss shows the hint (Hanli 11-04)', async () => {
+  const { cardHtml, WORDS } = await import('../scripts/cards.js');
+  const { stageCards } = await import('../scripts/stage.mjs');
+  const look = { place: { id: 'yaoyuan', meet: { kind: 'riddle', riddle: '千条线，万条线，掉到水里看不见。', choices: ['雪', '雨', '丝'] } } };
+  assert.ok(stageCards(look, []).some(c => c.card === 'road'), 'it stands on the stage');
+  assert.ok(!stageCards({ place: { meet: { ...look.place.meet, veiled: true } } }, []).some(c => c.card === 'road'), 'not in the mist');
+  const html = cardHtml({ card: 'road' }, { look, lang: 'zh', words: WORDS.zh });
+  assert.match(html, /路上 · 路人问/);
+  assert.match(html, /千条线，万条线/);
+  assert.match(html, /data-meet="answer" data-meet-answer="雨">雨</);
+  assert.match(html, /data-meet="pass">不答，赶路</);
+  assert.doesNotMatch(html, /riddlehint/);
+  const missed = { place: { meet: { kind: 'riddle', riddle: 'A thousand threads…', choices: ['rain', 'silk'], hint: 'It falls from the sky.' } } };
+  const en = cardHtml({ card: 'road' }, { look: missed, lang: 'en', words: WORDS.en });
+  assert.match(en, /On the road · A traveller asks/);
+  assert.match(en, /riddlehint">It falls from the sky\.</);
+  assert.match(en, /data-meet="pass">Walk on</);
+  // The page sends the tapped answer with it (lingjing.js takeMeet), and a miss is the card's to show, not a note.
+  const { readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /takeMeet\(el\.dataset\.meet, el\.dataset\.meetAnswer\)/);
+  assert.match(page, /write\('meet', answer === undefined \? \{ action \} : \{ action, answer \}\)/);
+  assert.match(page, /r\.refused === 'wrong-answer' \|\| r\.refused === 'riddle-closed'/);
+});
+
 test('望气 on the page: 上卷 reads the shape, 下卷 every move with the number — and nothing without it', async () => {
   const { battleHtml, WORDS } = await import('../scripts/battle-card.js');
   const { begin, offers, view } = await import('../scripts/battle.js');

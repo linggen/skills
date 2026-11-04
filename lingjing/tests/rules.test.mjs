@@ -2488,11 +2488,23 @@ test('遇: no arrival is empty — a find, a traveller\'s riddle or a beast on t
   const asked = must(meet, veiled.state, { action: 'reveal' }, rd);
   assert.equal(asked.result.revealed, 'riddle');
   refused(meet, asked.state, { action: 'reveal' }, 'not-veiled', rd);
-  assert.ok(!look(asked.state, content, rd).stage.some(c => c.card === 'road'), 'a riddle told is the chat\'s question');
-  const q = askOf(content, asked.state, rd, asked.result);
-  assert.equal(q.question, asked.result.meet.riddle);
-  assert.deepEqual(q.options.at(-1), { label: '不答，赶路', meet: 'pass' });
-  assert.match(tapThen(q, q.options[0].label), /Meet \{action: answer, answer: /);
+  // Revealed, it is the stage's road card — never the chat's AskUser (Hanli 11-04: asked there it held the turn
+  // while he walked on; his answer at 执事堂 came back nothing-here and a board's [jinchat] queued behind it).
+  const told = look(asked.state, content, rd);
+  assert.ok(told.stage.some(c => c.card === 'road'), 'a riddle told stands on the road card');
+  assert.equal(told.place.meet.riddle, asked.result.meet.riddle);
+  assert.equal(told.ask, null, 'nothing asked in the chat');
+  assert.equal(askOf(content, asked.state, rd, asked.result), null);
+  // The page's [scene] arrived: the traveller dares him in Ling's line, no AskUser, no Meet.
+  const arrived = look(asked.state, content, { ...rd, said: '[scene] arrived huaidu (lang zh)' });
+  assert.equal(arrived.ask, null);
+  assert.match(arrived.then, /^A traveller on this road has a riddle/);
+  assert.match(arrived.then, /do NOT call AskUser/);
+  assert.match(arrived.then, /never the riddle's words, never its answers/);
+  assert.doesNotMatch(look(asked.state, content, { ...rd, said: '说说这里' }).then, /A traveller on this road/, 'said once, on the arrival');
+  // Asked where to go in words, the question is the roads — never the riddle.
+  const typed = look(asked.state, content, { ...rd, said: '去哪' });
+  assert.ok(!typed.ask || typed.ask.options.every(o => !o.meet), JSON.stringify(typed.ask));
   const key = asked.state.meets.places.huaidu.key, right = content.riddles.zh.riddles[key].a[0];
   const wrongChoice = content.riddles.zh.riddles[key].choices.find(c => !content.riddles.zh.riddles[key].a.includes(c));
   const wrong = meet(asked.state, content, rd, { action: 'answer', answer: wrongChoice });

@@ -866,7 +866,7 @@ around), `ring` (Ring) or `answer` (Resolve with that answer).
   offered again in words; say in a line that it is there and let it be tapped.
 - **The question is one short line** — *何去何从？* / *What now?* — never typed
   into the reply as well.
-- A riddle on the table stays the question until answered, shut or set aside.
+- A riddle with a card (road, board, panel) is asked there, never AskUser.
 - An answer returns as its label; typed text in *Other* goes through step 2.
   AskUser back with no answer: stop.
 
