@@ -135,9 +135,9 @@ const WORDS = await (async () => {
 
 test('a word not in the list costs no star but counts: after three refusals on one link, the ways past it open', async () => {
   const b = board();
-  for (let k = 0; k < CHAIN_TRIES - 1; k += 1) await b.type('奇怪怪怪');
+  for (let k = 0; k < CHAIN_TRIES - 1; k += 1) await b.type('居怪怪怪');
   assert.ok(!b.has('is-pass'), 'not yet');
-  await b.type('奇怪怪怪');
+  await b.type('居怪怪怪');
   assert.ok(b.has('is-pass'), '请钱掌柜接 after three');
   assert.match(b.html(), /请钱掌柜接/);
   assert.match(b.html(), /data-pick=/, 'and the four choices');
@@ -150,8 +150,8 @@ test('a word not in the list costs no star but counts: after three refusals on o
 
 test('near after hint 2: a fit to 「X Y Z □」 not in the list is taken with the list\'s own named', async () => {
   const b = board();
-  await b.type('奇怪怪怪');
-  await b.type('奇怪怪怪'); // two refusals (no miss): ask the hints by hand, as he did
+  await b.type('居怪怪怪');
+  await b.type('居怪怪怪'); // two refusals (no miss): ask the hints by hand, as he did
   await b.tap('is-hint');
   await b.tap('is-hint');
   const hint = b.notes().filter((t) => t.startsWith('提示2：')).at(-1).slice(4);
@@ -324,4 +324,30 @@ test('every word game\'s box goes through the keeper, and the free chat\'s too; 
   assert.match(page, /setInterval\(\(\) => \{ list\.keepDown\(\); focus\(\); \}, 300\)/, 'and after the stage re-lays the card');
   assert.match(page, /<input class="g-jc-in" data-jc-in=""/);
   assert.match(page, /const touch = typeof data\.ask === 'function'/, 'the phone host is a touch screen');
+});
+
+test('three 不算错 refusals open the ways past but cost nothing: linked by his own hand after, the chain is still 3 stars', async () => {
+  const b = board({ game: { ...CHATS['qian-dan'].game, after: undefined } });
+  for (let k = 0; k < CHAIN_TRIES; k += 1) await b.type('居怪怪怪');
+  assert.ok(b.has('is-pass'));
+  const words = () => b.said.filter((l) => l.who === 'qian' || (l.who === 'me' && l.html)).map((l) => l.text);
+  for (let n = 0; n < chainOf(CHATS['qian-dan'].game, 'zh').links; n += 1) {
+    const said = words();
+    if (!b.html()) break; // won (or 钱 ran out)
+    await b.type(nextsOf(DICT, [...said.at(-1)].at(-1), said)[0]);
+  }
+  const o = await b.done;
+  assert.equal(o.won, true);
+  assert.equal(o.stars, 3, 'no chip, no 请钱掌柜接, no hint: three stars');
+});
+
+test('Look calls a couplet or a riddle stuck after two misses too', () => {
+  const s0 = { scene: null, tasks: {} };
+  const o = pageWordBoard(content, s0, { action: 'open', chat: 'qichangsong', kind: 'couplet', face: '宝剑锋从磨砺出', answer: '梅花香自苦寒来' }, now).keep;
+  const s = pageWordBoard(content, o, { action: 'step', chat: 'qichangsong', tries: 2 }, now).keep;
+  assert.equal(wordBoardLook(s, now).word_board.stuck, true);
+  assert.equal(wordBoardLook(s, now).word_board.tries, 2);
+  const play = read('../scripts/games/jinchat-play.js');
+  assert.match(play, /if \(!hint\) keep\(ctx, 'step', \{ tries: st\.misses \}\);/, 'the riddle says each miss');
+  assert.match(play, /keep\(ctx, 'step', \{ tries: st\.misses \}\); \/\/ Look hears how many/, 'the couplet too');
 });

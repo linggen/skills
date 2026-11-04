@@ -1841,7 +1841,10 @@ function keptScroll(el) {
 let frame = null;
 function render() {
   if (frame) return;
-  frame = requestAnimationFrame(() => { frame = null; draw(); beats.attach(); if ((revealQueue.length || gearSpoilsOwed) && !revealHeld()) playReveals(); });
+  // A mounted board's node is laid back into its new host only after the draw (beats.attach): what had the keys in it
+  // (a word board's answer box, `data-jc-in`) gets them back in the same frame — no keystroke lost to the repaint
+  // (Hanli 11-04: 「输入框会失去焦点，当AI说话后」).
+  frame = requestAnimationFrame(() => { frame = null; const had = focusKey(document.activeElement); draw(); beats.attach(); restoreFocus(had); if ((revealQueue.length || gearSpoilsOwed) && !revealHeld()) playReveals(); });
 }
 
 

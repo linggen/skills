@@ -126,7 +126,7 @@ export async function riddleGame(ctx) {
     if (st.hints >= r.hints.length) return '';
     const h = r.hints[st.hints++];
     st.shown.push(h);
-    keep(ctx, 'step', { hints: hintsOf(st.shown) });
+    keep(ctx, 'step', { hints: hintsOf(st.shown), tries: st.misses });
     card()?.querySelector('.g-jc-hints')?.insertAdjacentHTML('beforeend', `<li><b>${esc(fill(w.hintAt, { n: st.hints }))}</b>${esc(h)}</li>`);
     ctx.sound('hint');
     return h;
@@ -170,8 +170,9 @@ export async function riddleGame(ctx) {
       if (v === 'right') return finish(true, text);
       st.misses += 1;
       ctx.sound('wrong');
-      // A miss lights the next hint by itself after the first; past `tries`, the choices.
+      // A miss lights the next hint by itself after the first; past `tries`, the choices. Look hears how many (stuck).
       const hint = st.misses >= 2 ? showHint() : '';
+      if (!hint) keep(ctx, 'step', { tries: st.misses });
       if (st.misses >= r.tries && r.choices.length && !st.choices) st.choices = true;
       react(riddleLine(chat, { event: 'miss', guess: text, hint, shown: st.shown, choices: st.choices && st.misses === r.tries, riddle: r, cast: ctx.cast, lang }));
       draw();
@@ -337,7 +338,7 @@ export async function coupletGame(ctx) {
     if (st.hints >= c.hints.length) return '';
     const h = c.hints[st.hints++];
     st.shown.push(h);
-    keep(ctx, 'step', { hints: hintsOf(st.shown) });
+    keep(ctx, 'step', { hints: hintsOf(st.shown), tries: st.misses });
     card()?.querySelector('.g-jc-hints')?.insertAdjacentHTML('beforeend', `<li><b>${esc(fill(w.hintAt, { n: st.hints }))}</b>${esc(h)}</li>`);
     ctx.sound('hint');
     return h;
@@ -393,6 +394,7 @@ export async function coupletGame(ctx) {
       if (v === 'near') return finish(true, text, nearOf(c, text)?.answer ?? c.answers[0] ?? '');
       st.misses += 1;
       ctx.sound('wrong');
+      keep(ctx, 'step', { tries: st.misses }); // Look hears how many (stuck)
       // What is off is the page's fact, shown under the scrolls and handed to their voice — a line a character or two off
       // with its key image lost says so (「只差一两个字……」), never which.
       const why = v === 'close' ? w.why.close : whyOf(text);
@@ -539,7 +541,6 @@ export async function chainGame(ctx) {
         if (st.misses >= 2) showHint();
         react(chainLine(chat, { event: 'miss', guess: r.word, why, ch, cast, lang }));
       }
-      if (tries >= ch.tries) st.choices = true;
       stepped();
       draw();
     };
@@ -572,7 +573,8 @@ export async function chainGame(ctx) {
     };
     const draw = () => {
       status();
-      const four = st.choices && tries >= ch.tries ? chainChoices(dict, st) : [];
+      // The choices and 请{name}接 open past `tries`; only taking one costs the star (a 不算错 refusal never does).
+      const four = tries >= ch.tries ? chainChoices(dict, st) : [];
       const choices = four.length ? `<div class="g-jc-chips is-game">${four.map((x) => `<button type="button" class="g-jc-chip" data-pick="${esc(x)}">${esc(x)}</button>`).join('')}</div>` : '';
       const passBtn = tries >= ch.tries ? btn('is-pass', fill(w.chainPass, { name: cast[0]?.name ?? '' }), helping ? ' disabled' : '') : '';
       const helpBtn = helper && typeof ctx.help === 'function' ? btn('is-help', fill(w.helpAsk, { name: helper.name }), helping ? ' disabled' : '') : '';
@@ -582,7 +584,7 @@ export async function chainGame(ctx) {
       const input = el.querySelector('.g-jc-in');
       input.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter' && e.isComposing) e.preventDefault(); });
       el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); link(input.value); });
-      for (const b of el.querySelectorAll('[data-pick]')) b.addEventListener('click', () => link(b.dataset.pick));
+      for (const b of el.querySelectorAll('[data-pick]')) b.addEventListener('click', () => { st.choices = true; link(b.dataset.pick); });
       el.querySelector('.is-hint').addEventListener('click', () => { showHint(); draw(); });
       el.querySelector('.is-help')?.addEventListener('click', () => { help(); });
       el.querySelector('.is-pass')?.addEventListener('click', () => { pass(); });
