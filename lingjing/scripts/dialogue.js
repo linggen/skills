@@ -15,6 +15,7 @@
 // Pure: the reading is a plain object, kept per save in localStorage so a
 // reload finds its place (lingjing.js holds it; tests read these directly).
 import { esc } from './esc.js';
+import { closeX } from './card-close.js';
 import { headOf } from './book-words.mjs';
 import { joinSentences, linesHtml, paraHtml, screensOf } from './lines.js';
 
@@ -404,7 +405,7 @@ export function logHtml(r, { lang = 'zh' } = {}) {
   const past = (r?.past ?? []).map((g) => (g[lang]?.length ? g[lang] : g[other] ?? [])).filter((g) => g.length)
     .map((g) => `<div class="dlglogscene">${g.map((b) => rowHtml(b, w)).join('')}</div>`).join('');
   const now = toldSoFar(r, lang).map((b) => rowHtml(b, w)).join('');
-  return `<div class="dlglog" role="dialog" aria-label="${esc(w.logTitle)}"><div class="dlgloghead"><span>${esc(w.logTitle)}</span><button class="q dlgclose" data-dlg-logclose>${esc(w.close)}</button></div><div class="dlglogbody">${past}${now ? `<div class="dlglogscene now"><div class="dlglogmark">${esc(w.logNow)}</div>${now}</div>` : ''}</div></div>`;
+  return `<div class="dlglog" role="dialog" aria-label="${esc(w.logTitle)}"><div class="dlgloghead"><span>${esc(w.logTitle)}</span>${closeX(lang, 'data-dlg-logclose', w.close)}</div><div class="dlglogbody">${past}${now ? `<div class="dlglogscene now"><div class="dlglogmark">${esc(w.logNow)}</div>${now}</div>` : ''}</div></div>`;
 }
 
 /* The small 回看 link under a scene card once the box is put away. */

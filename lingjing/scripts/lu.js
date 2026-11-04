@@ -3,6 +3,7 @@
 // word esc()'d. The page opens it from the 录 chip; nothing here costs a
 // model turn, and nothing here writes.
 import { esc } from './esc.js';
+import { closeX } from './card-close.js';
 import { albumHtml } from './memory.js';
 import { codexBookHtml, codexHtml } from './codex.js';
 import { comicArt } from './games/items-comic.js';
@@ -58,7 +59,7 @@ function chapterHtml(ch, w, open, listen) {
 
 export function luHtml(book, { lang = 'zh', her = null, artBase = '', codex = null, codexKinds = null, codexOpen = null, listen = null } = {}) {
   const w = wordsOf(lang);
-  if (!book?.ok) return `<div class="lu"><header class="luhead"><b>${esc(w.title)}</b><button class="act quiet" data-lu-close>${esc(w.close)}</button></header><p class="dim">${esc(w.none)}</p></div>`;
+  if (!book?.ok) return `<div class="lu"><header class="luhead"><b>${esc(w.title)}</b>${closeX(lang, 'data-lu-close', w.close)}</header><p class="dim">${esc(w.none)}</p></div>`;
   const chapters = book.chapters ?? [];
   const last = chapters.length - 1;
   // 人物谱 is the 图鉴's (his, 2026-09-29): who has an entry stands there with a
@@ -71,7 +72,7 @@ export function luHtml(book, { lang = 'zh', her = null, artBase = '', codex = nu
   return `<div class="lu" role="dialog" aria-label="${esc(w.title)}">
     <header class="luhead"><b>${esc(w.title)}</b>${book.cauldrons?.length ? `<span class="dim">${esc(say(w.found, { n: book.found ?? 0 }))}</span>` : ''}
       ${book.ending ? `<span class="luend">${esc(say(w.ending, { title: book.ending.title }))}</span>` : ''}
-      <button class="act quiet" data-lu-close>${esc(w.close)}</button></header>
+      ${closeX(lang, 'data-lu-close', w.close)}</header>
     ${book.cauldrons?.length ? mapHtml(book.cauldrons, w) : ''}
     <section class="lusec">${chapters.length ? chapters.map((c, i) => chapterHtml(c, w, i === last, listen)).join('') : `<p class="dim">${esc(w.none)}</p>`}</section>
     ${!tujian && people ? `<section class="lusec"><h3>${esc(w.people)}</h3>${peopleList}</section>` : ''}

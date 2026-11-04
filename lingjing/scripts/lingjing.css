@@ -1539,7 +1539,6 @@ button.qchip.on { color: var(--ling); border-color: var(--ling); background: var
 .qianmodal { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 16px; background: color-mix(in srgb, var(--ground) 55%, rgba(0,0,0,.35)); }
 .qianbox { position: relative; width: 100%; max-width: 560px; max-height: calc(100vh - 32px); overflow-y: auto; border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,.22); }
 .qianbox > .card.qian { margin: 0; }
-.qclose { position: absolute; top: 6px; right: 8px; z-index: 2; font: inherit; font-size: 20px; line-height: 1; border: none; background: none; color: var(--dim); cursor: pointer; padding: 4px 8px; }
 .qianmodal .qiantong:not(.shaking) { animation: qwobble 2.6s ease-in-out infinite; transform-origin: 50% 90%; }
 @keyframes qwobble { 0%, 70%, 100% { transform: rotate(0); } 76% { transform: rotate(-5deg); } 82% { transform: rotate(4deg); } 88% { transform: rotate(-2deg); } }
 @media (prefers-reduced-motion: reduce) { .qianmodal .qiantong:not(.shaking) { animation: none; } }
@@ -1549,3 +1548,16 @@ button.qchip.on { color: var(--ling); border-color: var(--ling); background: var
    the past 层 full, the one he is in by its share, the next empty. The 段's name stands as the realm, beside the bar. */
 .xw.duan .segs { flex: 1; display: flex; gap: 3px; min-width: 66px; }
 .xw.duan .segs .bar { flex: 1 1 0; min-width: 0; }
+
+/* The one ✕ (card-close.js closeX; Hanli 11-04: 「应该所有卡都有关闭按钮」): the boards' round close (shell.css .gshell-close),
+   pinned to the top right of every card and overlay over the scene. A card under it keeps its words clear of it. */
+.cardx, .card > .cardx.gshell-btn.gshell-close { position: absolute; top: 8px; right: 8px; z-index: 4; background: var(--surface); }
+.card:has(> .cardx), .lu, .spentcard, .dlglog .dlgloghead { position: relative; }
+.card:has(> .cardx) > .cardtitle:first-of-type, .card:has(> .cardx) .crow, .card.mijing:has(> .cardx) > .small:first-of-type,
+.luhead:has(> .cardx) { padding-right: 40px; }
+/* A popover scrolls: its ✕ floats at the top right and stays in sight (sticky); the words wrap round it. */
+.bookpop > .cardx.gshell-btn.gshell-close { position: sticky; top: 0; float: right; margin: -6px -8px 4px 8px; }
+.qianbox > .cardx { top: 10px; right: 10px; }
+.dlglog .dlgloghead > .cardx { position: static; margin-left: auto; }
+/* The tray's 收起 chips: a card put away with its ✕, one tap brings it back (card-close.js awayChipsHtml). */
+.awaychip { align-self: center; flex: none; white-space: nowrap; }

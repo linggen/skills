@@ -6,6 +6,7 @@
 // (bagGridHtml): the 饭桶's 开炉 and the 「储物袋满了」 card draw the same bag.
 // Every tap is the page's own verb (trade, bag, deck); nothing asks Ling.
 import { esc } from './esc.js';
+import { closeX } from './card-close.js';
 import { deckHtml, gearFightHtml, herCardHtml, itemDoes, liftSaid, tamesLine } from './cards.js';
 import { PANGLU_WORDS, pangluHtml } from './panglu.js';
 
@@ -204,7 +205,7 @@ function detailHtml(i, g, ctx, pw, ui) {
 /// (Hanli 10-27: 「回储物袋这个按钮和其他几个关系不合理」). The 牌组 is its own panel, off its own chip.
 export function pouchHtml(ctx, ui = {}) {
   const pw = POUCH_WORDS[ctx.lang] ?? POUCH_WORDS.zh, g = ctx.gear;
-  const close = `<button class="act quiet" data-pouch-close>${esc(pw.close)}</button>`;
+  const close = closeX(ctx.lang, 'data-pouch-close', pw.close); // the one ✕ (card-close.js)
   if (!g) return `<div class="lu pouch"><header class="luhead"><b>${esc(pw.title)}</b>${close}</header><div class="loading">…</div></div>`;
   const p = g.pouch ?? { used: g.bag.length, cap: null };
   // 人间功课 is the 事 book's (cards.js choreRow; Hanli 11-02: 「人间功课也在物品UI里显示, 应该在任务里吧. 任务里已经有了」).

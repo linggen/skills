@@ -4,6 +4,7 @@
 // popover is where the city is set now). Pure markup; the page does the calls — the
 // engine's weather sense (`/api/senses/weather`), never the skill itself.
 import { esc } from './esc.js';
+import { closeX } from './card-close.js';
 
 export const SKY_WORDS = {
   zh: {
@@ -69,7 +70,7 @@ export function wxPopHtml({ lang = 'zh', sense = null, note = null } = {}) {
   const city = sense?.city?.name ?? null;
   const state = sense?.off ? w.isOff : city ? say(w.yours, { city: cityLabel(sense.city, lang) }) : w.note;
   const toggles = city ? `<div class="acts"><button class="act quiet" data-wx-off="${sense?.off ? 'on' : 'off'}">${esc(sense?.off ? w.on : w.off)}</button><button class="act quiet" data-wx-clear>${esc(w.clear)}</button></div>` : '';
-  return `<div class="bookpop wxpop" role="dialog"><div class="cardtitle">${esc(w.title)}</div><div class="small dim">${esc(state)}</div>
+  return `<div class="bookpop wxpop" role="dialog">${closeX(lang, 'data-pop-close')}<div class="cardtitle">${esc(w.title)}</div><div class="small dim">${esc(state)}</div>
     <div class="fateform"><input type="text" id="wx-city" maxlength="40" autocomplete="off" placeholder="${esc(w.placeholder)}" value="${esc(draft.city)}"><button class="act" data-wx-set>${esc(w.set)}</button></div>
     ${toggles}${note ? `<div class="donote">${esc(note)}</div>` : ''}</div>`;
 }

@@ -17,6 +17,7 @@ import { dayKey, fitValue } from './state.mjs';
 import { mijingCardHtml } from './mijing.js';
 import { gongkeBits, gongkeMarksHtml } from './gongke.js';
 import { qianCardHtml } from './qian-card.js';
+import { closeX } from './card-close.js';
 /// 秘境探险 (rules/mijing.mjs, Look's `mijing`): its own module draws it (scripts/mijing.js).
 const mijing = (card, ctx) => mijingCardHtml(card, ctx);
 
@@ -648,9 +649,8 @@ function item(card, ctx) {
   // A shop with its own name (按店进货: 南门药铺, 钱掌柜的摊子 …) heads its shelf, the keeper beside it.
   const shop = ctx.look.place?.shop, own = shop?.name ? `${shop.name}${shop.keeper ? ` · ${shop.keeper}` : ''}` : null;
   const title = ids.length > 1 ? own ?? ctx.look.words?.shop ?? ctx.words.shelf : ctx.look.words?.item ?? ctx.words.shelf;
-  // A shop's shelf may be put away like any card (合上); the header's 「有铺子」 brings it back.
-  const close = ids.length > 1 ? `<button class="act quiet shopclose" data-shop-close>${esc(ctx.words.closeAway)}</button>` : '';
-  return `<div class="card"><div class="cardtitle shelfhead"><span>${esc(title)}</span><span class="acts">${kanjiaHead(ids, known, ctx)}${close}</span></div>${kanjiaPickRow(ids, known, ctx)}<div class="shelf">${cells.join('')}</div></div>`;
+  // A shop's shelf may be put away like any card: the page's ✕ (lingjing.js drawCard, data-shop-close); the header's 「有铺子」 brings it back.
+  return `<div class="card"><div class="cardtitle shelfhead"><span>${esc(title)}</span><span class="acts">${kanjiaHead(ids, known, ctx)}</span></div>${kanjiaPickRow(ids, known, ctx)}<div class="shelf">${cells.join('')}</div></div>`;
 }
 /* 砍价 (Hanli 10-28: 「砍价按钮统一放一个到上面就可以了」): ONE button by the shelf's name; its tap lists the things that
    may be haggled today (Look's haggle marks), a tap on one opens its panel — greyed when none may be. */
@@ -1250,7 +1250,7 @@ export function bookPopHtml(ctx) {
   const body = group('groupReady', groups.ready) + group('groupHeld', groups.held) + kaifuGroup(ctx.look?.kaifu, groups.kaifu, ctx) + group('groupOpen', groups.open) + keptGroupHtml(ctx) + doneFold(groups.done, w);
   // 人间功课's marks — the 护山大阵, the week's rows, the day against its cap — over the chores (Look's `gongke`, from 入门 on).
   const marks = gongkeMarksHtml(ctx.look?.gongke, ctx.lang);
-  return `<div class="bookpop" role="dialog">${head}${marks}${body || (head ? '' : `<div class="small dim">${esc(w.bookNone)}</div>`)}</div>`;
+  return `<div class="bookpop" role="dialog">${popX(ctx.lang)}${head}${marks}${body || (head ? '' : `<div class="small dim">${esc(w.bookNone)}</div>`)}</div>`;
 }
 
 /* 收着的棋局 (Look's `kept`, rules/skips.mjs keepBoard): each board he kept — its title, where and when — 玩 takes it up,
@@ -1903,7 +1903,7 @@ export function ledgerPopHtml(ctx) {
   const w = ctx.words, rows = ctx.look?.ledger ?? [];
   const body = rows.length ? rows.map((e) => ledgerRowHtml(w, e)).join('')
     : `<div class="small dim">${esc(w.ledgerNone)}</div>`;
-  return `<div class="bookpop ledgerpop" role="dialog"><div class="cardtitle">${esc(w.ledgerTitle)}</div><div class="small dim">${esc(w.ledgerNote)}</div>${body}</div>`;
+  return `<div class="bookpop ledgerpop" role="dialog">${popX(ctx.lang)}<div class="cardtitle">${esc(w.ledgerTitle)}</div><div class="small dim">${esc(w.ledgerNote)}</div>${body}</div>`;
 }
 
 /// One entry: the kind, who and what; the player's own words when kept
@@ -1989,10 +1989,13 @@ function closed(card, ctx) {
   if (!c) return '';
   const coming = ctx.look.waypoint?.coming ? ctx.look.waypoint.text : c.next ?? '';
   const huimu = c.huimu?.length ? `<p class="closehuimu">${c.huimu.map((l) => `<span>${esc(l)}</span>`).join('')}</p>` : '';
-  return `<div class="card closecard${c.juan ? ' juanend' : ''}">${c.juan ? `<div class="closejuan">${esc(c.juan)}</div>` : ''}<div class="closetitle">${esc(c.title)}</div>${huimu}${c.did ? `<p class="closedid">${esc(c.did)}</p>` : ''}`
+  return `<div class="card closecard${c.juan ? ' juanend' : ''}">${closeX(ctx.lang, `data-close-chapter="${esc(c.id)}"`)}${c.juan ? `<div class="closejuan">${esc(c.juan)}</div>` : ''}<div class="closetitle">${esc(c.title)}</div>${huimu}${c.did ? `<p class="closedid">${esc(c.did)}</p>` : ''}`
     + `${c.teaser ? `<p class="closetease">${esc(c.teaser)}</p>` : ''}${coming ? `<div class="closecoming">${esc(coming)}</div>` : ''}`
     + `<div class="acts"><button class="act closeshut" data-close-chapter="${esc(c.id)}">${esc(ctx.words.closeAway ?? '合上')}</button></div></div>`;
 }
+
+/* A popover's ✕ (card-close.js): every one over the stage shuts the same way — the ✕, Esc, a tap outside. */
+export const popX = (lang) => closeX(lang, 'data-pop-close');
 
 const RENDER = { mijing, closed, meet, codex, panel, value, born, people, breakthrough, handed, tale, lundao, duizi, creature, traits, map, hexagram, gate, tribulation, board, item, duel, treasure, goal, offer, quest, building, empty, road, seclude, seclusion, next };
 

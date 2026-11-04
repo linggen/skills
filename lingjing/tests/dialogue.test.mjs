@@ -255,7 +255,8 @@ test('回看: what was told so far — the scenes before, then this one to the b
   r = advance(r);
   const log = logHtml(r);
   assert.match(log, /aria-label="回看"/);
-  assert.match(log, /data-dlg-logclose>回到这里</);
+  // its close is the one ✕ (card-close.js closeX), its word 回到这里 as the label
+  assert.match(log, /aria-label="回到这里" data-dlg-logclose>✕</);
   assert.match(log, /甲一[\s\S]*甲二[\s\S]*dlglogscene now[\s\S]*乙一[\s\S]*乙二/, 'the scene before, then this one');
   assert.doesNotMatch(log, /乙三/, 'nothing not yet told');
   assert.match(logHtml(r, { lang: 'en' }), /aria-label="Look back"[\s\S]*Back to it/);

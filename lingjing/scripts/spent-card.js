@@ -5,13 +5,14 @@
 // with the allowance spent no model can speak (Hanli 2026-11-03: 「试用期到期后, 要有消息提示用户订阅或者添加自己的模型」).
 
 import { esc } from './esc.js';
+import { closeX } from './card-close.js';
 
 export const SUBSCRIBE_URL = 'https://linggen.dev/app/billing';
 
 /** The card's HTML. `reason`: 'trial' | 'monthly'. */
 export function spentCardHtml(w, reason) {
   const head = reason === 'monthly' ? w.spentMonthly : w.spentTrial;
-  return `<div class="spentcard" role="dialog" aria-live="polite">`
+  return `<div class="spentcard" role="dialog" aria-live="polite">${closeX(w.spentLang ?? 'zh', 'data-spent-close', w.spentClose)}`
     + `<div class="spentcard-head">${esc(head)}</div>`
     + `<div class="spentcard-how">${esc(w.spentHow)}</div>`
     + `<div class="spentcard-acts">`

@@ -34,7 +34,7 @@ import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml } fro
 import { since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { gameOpen, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, threadsAt, asideOpens, doorLine, trayHourChipHtml } from './cards.js';
+import { gameOpen, popX, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, threadsAt, asideOpens, doorLine, trayHourChipHtml } from './cards.js';
 import { ownSkip } from './stuck.js';
 import { fullOfferHtml, pouchHtml, spoilGearHtml } from './pouch.js';
 import { fantongKailu, kailuDockHtml, potLeft, potOff, potRuns } from './fantong-kailu.js';
@@ -85,6 +85,7 @@ import { beatHost, mountOnly } from './beat-host.js';
 import { fellBack, probeCaps, withCaps } from './caps.js';
 import { anyPaused, forget as forgetShell, frameHtml, isPaused, say as shellSay, setPaused, settle as settleShell, shellFor, timedOf, toolHtml, wireShell } from './games/shell.js';
 import { fenceBoards } from './board-fence.js';
+import { awayChipsHtml, awayKey, closeOf, closeX, STAGE as CLOSE_STAGE, stageMinusAway, withCloseX } from './card-close.js';
 import { devArcade } from './dev-arcade.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
 import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, gameAlone, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
@@ -363,6 +364,8 @@ const view = {
   bookOpen: false, //    the 事 chip's popover
   roadsOpen: false, //   the 去往 chip's list of roads
   shopShut: null, //     the place whose shop shelf he put away (合上)
+  away: [], //           the stage's cards he put away with their ✕ (card-close.js): { key, place } — place null: till Ling's next Show
+  awayNow: [], //        …those the stage would hold now: the tray's 收起 chips bring each back
   shelfOpen: false, //   the 书 chip's popover: 九鼎录 · 读原著
   gearOpen: false, //    the 储物袋 chip's panel over the stage: what he wears and his pouch, together
   gear: null, //         the rules' `gear` read behind it, fetched when it opens
@@ -1249,9 +1252,9 @@ function qianModalHtml() {
   // A 签 new since the last paint inks in for a few seconds — the same HTML each paint meanwhile, so the ink runs once.
   const cast = look?.divination?.poem ? `${look.today?.date ?? ''}|${look.divination.n}` : null;
   if (cast && view.castSeen !== undefined && cast !== view.castSeen) view.qianInkUntil = Date.now() + 6000;
-  const inking = Date.now() < (view.qianInkUntil ?? 0), zh = lang() !== 'en';
+  const inking = Date.now() < (view.qianInkUntil ?? 0);
   return `<div class="qianmodal" data-qian-backdrop><div class="qianbox" role="dialog" aria-modal="true">
-    <button class="qclose" data-qian-close aria-label="${zh ? '合上' : 'Close'}">×</button>${qianCardHtml({ ...ctx(), castFresh: inking })}</div></div>`;
+    ${closeX(lang(), 'data-qian-close')}${qianCardHtml({ ...ctx(), castFresh: inking })}</div></div>`;
 }
 function paintQianModal() {
   let host = document.getElementById('qianModal');
@@ -1357,6 +1360,10 @@ function stageNow() {
   // A shop's shelf he put away (合上, Hanli 10-28: 「商店的卡无法关上. 应该所有卡都能关上」) stays away at this place, till
   // he taps the header's 「有铺子」 again or walks on.
   if (view.shopShut && view.shopShut === look?.place?.id) cards = cards.filter((c) => !isShopShelf(c));
+  // Put away with its ✕ (card-close.js): off the stage, and its 收起 chip in the tray brings it back.
+  awayLoad();
+  awayPrune(look?.place?.id ?? null);
+  { const off = stageMinusAway(cards, view.away, look?.place?.id ?? null, look); cards = off.cards; keep({ awayNow: off.away }); }
   // The book first: a game waits until the passage that leads into it is told (queue.js afterBook).
   cards = afterBook(cards, cardsAhead());
   watchAppear(cards);
@@ -1425,10 +1432,13 @@ function toastsHtml() {
   // 储物袋满了: what came while the pouch was full, at the door until he chooses — nothing else waits on it.
   return titleCard() + (view.doNote ? `<div class="donote">${esc(view.doNote)}</div>` : '')
     + (view.gearOpen ? '' : fullOfferHtml(look?.full_offer, { ...ctx(), gear: view.gear }, { swap: view.offerSwap, tab: view.pouchTab }))
-    + (view.emerged ? emergedHtml({ ...view.emerged, age: performance.now() - view.emerged.at }, ctx()) : '')
-    + (view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '') + (spoilsShown() ? (queueMicrotask(armSpoils), spoilsHtml(view.spoils, spoilsCtx())) : '')
-    + (view.handin ? handinHtml(view.handin, ctx()) : '');
+    + toastX(view.emerged ? emergedHtml({ ...view.emerged, age: performance.now() - view.emerged.at }, ctx()) : '', 'data-emerged-close')
+    + toastX(view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '', 'data-toast-close="trialTold"')
+    + toastX(spoilsShown() ? (queueMicrotask(armSpoils), spoilsHtml(view.spoils, spoilsCtx())) : '', 'data-spoils-close')
+    + toastX(view.handin ? handinHtml(view.handin, ctx()) : '', 'data-handin-close');
 }
+/* The notes over the stage wear the one ✕ too (card-close.js TOASTS): what they tell is already in hand. */
+const toastX = (html, attrs) => (html ? withCloseX(html, closeX(lang(), attrs)) : '');
 
 /* After a won fight, one order, every time (live, 2026-10-15: after 蠪侄 either its death passage or the 所得
    card was lost, by which came first): the passage, then 所得, then the way on. 所得 is kept from the fight's
@@ -1464,7 +1474,7 @@ function footRowHtml(slots) {
 /// pop the beat's title and its own reason (chapter.json beats `say`) — never a road to tap.
 function heldRoadsHtml(lock) {
   const w = words(), open = view.roadsOpen;
-  const pop = open ? `<div class="bookpop roadspop held" role="dialog"><div class="cardtitle">${esc(lock.title ?? '')}</div><div class="small dim">${esc(lock.say ?? '')}</div></div>` : '';
+  const pop = open ? `<div class="bookpop roadspop held" role="dialog">${popX(lang())}<div class="cardtitle">${esc(lock.title ?? '')}</div><div class="small dim">${esc(lock.say ?? '')}</div></div>` : '';
   return `<span class="bookwrap roadswrap"><button class="bookchip roadschip held" data-roads aria-expanded="${open ? 'true' : 'false'}" title="${esc(lock.say ?? '')}">${esc(w.roadsChip)} ▾</button>${pop}</span>`;
 }
 
@@ -1512,7 +1522,7 @@ function shelfChipHtml() {
   const w = words(), open = view.shelfOpen;
   // Today's 签, once drawn: one quiet line here to see it again (问签 v2 placement — nothing of it on the screen otherwise).
   const d = look?.divination, qian = d?.poem ? `<button class="bookchip qianagain" data-divine>${esc(lang() === 'en' ? `Today's stick · ${d.n} · ${d.grade.name}` : `今日签 · 第${d.n}签 ${d.grade.name}`)}</button>` : '';
-  const pop = open ? `<div class="bookpop shelfpop" role="dialog">${luChipHtml(lang(), view.luOpen)}${readChipHtml(ctx())}${qian}</div>` : '';
+  const pop = open ? `<div class="bookpop shelfpop" role="dialog">${popX(lang())}${luChipHtml(lang(), view.luOpen)}${readChipHtml(ctx())}${qian}</div>` : '';
   return `<span class="bookwrap"><button class="bookchip shelfchip" data-shelf aria-expanded="${open ? 'true' : 'false'}">${esc(w.shelfChip)}</button>${pop}</span>`;
 }
 
@@ -1716,7 +1726,13 @@ function fightLeftHtml() {
   return `<div class="card duel"><div class="cardtitle">${esc(look.fight.creature ?? '')}</div><div class="acts"><button class="act" data-duel-start="${esc(id)}">${esc(words().fightBack)}</button></div></div>`;
 }
 const PAGE_CARDS = { fight: () => fightLeftHtml(), unfold: () => cardHtml({ card: 'map' }, { ...ctx(), mapView: 'province', unfold: view.unfold }), memory: () => memoryHtml(), homing: () => homingHtml(), doors: () => doorsHtml(view.doors?.node, { lang: lang(), still: stillMotion(), age: performance.now() - (view.doors?.at ?? performance.now()) }) };
-const drawCard = (c) => (PAGE_CARDS[c.card] ?? (() => cardHtml(c, ctx())))();
+/* Every card the page can put away wears the one ✕ at its top right (card-close.js; Hanli 11-04: 「应该所有卡都有关闭按钮」).
+   A shop's shelf keeps its own put-away (shopShut: the header's 「有铺子」 brings it back). */
+const awayAttr = (c) => (c.card === 'item' && (c.ids?.length ?? 0) > 1 ? 'data-shop-close' : `data-card-away="${esc(awayKey(c))}"`);
+const drawCard = (c) => {
+  const html = (PAGE_CARDS[c.card] ?? (() => cardHtml(c, ctx())))();
+  return html && closeOf(c, look) === 'away' ? withCloseX(html, closeX(lang(), awayAttr(c))) : html;
+};
 const inkNames = () => Object.fromEntries(Object.keys(look?.world?.atlas?.provinces ?? {}).map((id) => [id, authored?.dictionary?.provinces?.[id]?.[lang()] ?? id]));
 const homingHtml = () => (view.homing && atlasPlaces?.ink ? homingCardHtml(inkGeo, atlasPlaces.ink, { province: view.homing.province, frame: view.homing.frame, age: performance.now() - view.homing.at, still: view.homing.still || stillMotion(), lang: lang(), names: inkNames(), labels: look?.world?.atlas?.provinces, paint: inkPaint(), fx: Boolean(view.homing.fx) }) : '');
 
@@ -1771,7 +1787,7 @@ function roadsHtml() {
   const shops = shopsById(look), fights = fightsById(look);
   const chips = off.map((p) => `<button class="act go" data-go="${esc(p.id)}">${esc(p.name)}${shopTagHtml(shops.get(p.id))}${fightMarkHtml(fights.get(p.id), oddsFor, lang())}</button>`).join('');
   const painted = plate && look?.world?.dir ? plateHtml(plate, { src: plate.file ? worldPath(look.world.dir, plate.file) : null, here: w.needHere, threads: threadsAt(look), shops, fights, boards: boardsById(look), odds: oddsFor, lang: lang() }) : '';
-  const pop = open ? `<div class="bookpop roadspop${painted ? ' plated' : ''}" role="dialog"><div class="cardtitle">${esc(painted ? plate.name : w.roads)}</div>${painted}${chips ? `<div class="roadlist">${chips}</div>` : ''}</div>` : '';
+  const pop = open ? `<div class="bookpop roadspop${painted ? ' plated' : ''}" role="dialog">${popX(lang())}<div class="cardtitle">${esc(painted ? plate.name : w.roads)}</div>${painted}${chips ? `<div class="roadlist">${chips}</div>` : ''}</div>` : '';
   return `<span class="bookwrap roadswrap"><button class="bookchip roadschip" data-roads aria-expanded="${open ? 'true' : 'false'}" title="${esc(near.map((p) => p.name).join(' · '))}">${esc(w.roadsChip)} ▾</button>${pop}</span>`;
 }
 
@@ -1962,7 +1978,7 @@ function draw() {
   // What already stands on the stage is not listed again in the tray (Hanli, 2026-10-05: the 九宫格 twice).
   // A scene's own game is not at hand before its passage reaches it (his, 2026-10-14: 接雨 in the tray at load).
   const gamesAhead = storyAhead() ? (look.scene?.show ?? []).filter((c) => c.card === 'board').map((c) => c.id) : [];
-  $('tray').innerHTML = !solo && stands(headLook(), 'tray') ? trayHtml({ ...ctx(), onStage: [...(slots?.main ?? []).map((c) => c.id).filter(Boolean), ...gamesAhead], stageKeys: (slots?.main ?? []).flatMap((c) => [c.card, `${c.card}:${c.id ?? ''}`]), trayQueued: view.opened && trayAhead() ? view.opened.id : null }) : '';
+  $('tray').innerHTML = !solo && stands(headLook(), 'tray') ? awayChipsHtml(view.awayNow, { look, name: awayName }) + trayHtml({ ...ctx(), onStage: [...(slots?.main ?? []).map((c) => c.id).filter(Boolean), ...gamesAhead], stageKeys: (slots?.main ?? []).flatMap((c) => [c.card, `${c.card}:${c.id ?? ''}`]), trayQueued: view.opened && trayAhead() ? view.opened.id : null }) : '';
   $('tray').parentElement.hidden = !$('tray').innerHTML;
   // Redrawn while Ling takes up a tap, the button stays pressed — never
   // offered to be tapped again.
@@ -3585,17 +3601,41 @@ function pageKey(e) {
   if (!e.repeat) pageTurn(d);
   return true;
 }
+/* Esc: ONE resolver, one close a press, topmost first (Hanli 11-04: every card closes — card-close.js). The notices and
+   modals over everything, then the 回看 and the ask bar, the 九鼎录 and 物品, the footer's popovers; last (`stage`), the
+   stage's own card under its ✕ — never while a field holds the key. Answers whether it closed something. */
+const ESC_LAYERS = [
+  () => { const v = document.querySelector('.spentcard-veil [data-spent-close]'); if (!v) return false; v.click(); return true; },
+  () => { const b = document.querySelector('.codexbox'); if (!b) return false; b.remove(); return true; },
+  () => { const k = document.querySelector('.kj-veil [data-talk-tool="close"]'); if (!k) return false; k.click(); return true; },
+  () => (view.qianOpen && look?.qian ? (show({ qianOpen: false, qianFriend: null, qianFriendOpen: false, qianBookOpen: false, qianShown: null }), true) : false),
+  () => (view.logOpen ? (show({ logOpen: false }), lines.hold(false), true) : false),
+  () => (view.ask ? (closeAsk(), true) : false),
+  () => (view.pouchToss ? (show({ pouchToss: null }), true) : false),
+  () => (view.luOpen ? (show({ luOpen: false, codexOpen: null }), true) : false),
+  () => (POPOVERS.some((k) => view[k]) ? (show(Object.fromEntries(POPOVERS.map((k) => [k, false]))), true) : false),
+];
+const STAGE_CLOSERS = '.cardx[data-emerged-close], .cardx[data-toast-close], .cardx[data-spoils-close], .cardx[data-handin-close], [data-card-away], [data-shop-close], .cardx[data-close-chapter], [data-seclude-close]';
+function escTop({ stage = true } = {}) {
+  if (ESC_LAYERS.some((layer) => layer())) return true;
+  if (!stage || document.activeElement?.closest?.('input, textarea, select, [contenteditable]')) return false;
+  const x = $('focus')?.querySelector(STAGE_CLOSERS);
+  if (!x) return false;
+  x.click();
+  return true;
+}
 document.addEventListener('keydown', (e) => {
   if (e.target.id === 'askField' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sendAsk(); }
   if (e.target.id === 'wx-city' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); document.querySelector('[data-wx-set]')?.click(); }
   if (['duizi-down', 'duizi-up'].includes(e.target.id) && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.closest('.card')?.querySelector(e.target.id === 'duizi-down' ? '[data-duizi-submit]:not(:disabled)' : '[data-duizi-reverse]')?.click(); }
   if (e.target.id === 'value-text' && e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.closest('.valuecard')?.querySelector('[data-value-go]:not(:disabled)')?.click(); }
-  if (e.key === 'Escape' && view.logOpen) { show({ logOpen: false }); lines.hold(false); return; }
+  // Esc with an overlay up closes the topmost one, before a game hears the key (escTop).
+  if (e.key === 'Escape' && !e.isComposing && escTop({ stage: false })) { e.preventDefault(); return; }
   if ((e.key === ' ' || e.key === 'Enter') && !e.isComposing && !e.target.closest?.('input, textarea, select, [contenteditable], #chat-panel') && titleAway()) { e.preventDefault(); return; }
   if (gameKey(e)) { e.preventDefault(); return; }
   if (pageKey(e)) { e.preventDefault(); return; }
   if (boxKey(e)) { e.preventDefault(); storyTap(); return; }
-  if (e.key === 'Escape') { if (view.ask) closeAsk(); else if (view.luOpen) show({ luOpen: false }); else if (view.pouchToss) show({ pouchToss: null }); else if (view.bookOpen || view.gearOpen || view.ledgerOpen || view.roadsOpen || view.shelfOpen || view.wxOpen) show({ bookOpen: false, gearOpen: false, ledgerOpen: false, roadsOpen: false, shelfOpen: false, wxOpen: false }); }
+  if (e.key === 'Escape' && !e.isComposing && escTop()) e.preventDefault();
   if (e.key !== 'Enter' && e.key !== ' ') return;
   for (const [sel, open] of KEY_ROWS) {
     const row = e.target.closest?.(sel);
@@ -3868,6 +3908,10 @@ const CLICKS = [
   ['[data-roads]', () => show({ roadsOpen: !view.roadsOpen, ...othersShut('roadsOpen') })],
   ['[data-shop-close]', () => { show({ shopShut: look?.place?.id ?? null, kanjiaPick: false }); return true; }],
   ['[data-shop-open]', () => { show({ shopShut: null }); return true; }],
+  ['[data-pop-close]', () => { show(Object.fromEntries(POPOVERS.map((k) => [k, false]))); return true; }],
+  ['[data-toast-close]', (el) => { show({ [el.dataset.toastClose]: null }); return true; }],
+  ['[data-card-away]', (el) => { putAway(el.dataset.cardAway); return true; }],
+  ['[data-card-back]', (el) => { bringBack(el.dataset.cardBack); return true; }],
   ['[data-shelf]', () => show({ shelfOpen: !view.shelfOpen, ...othersShut('shelfOpen') })],
   ['[data-ledger]', () => show({ ledgerOpen: !view.ledgerOpen, ...othersShut('ledgerOpen') })],
   ['[data-wx]', () => run('wx:open', () => openWx())],
@@ -4640,6 +4684,8 @@ function onContentBlock(payload) {
       const args = typeof payload.args === 'string' ? JSON.parse(payload.args) : payload.args;
       const cards = (args.cards ?? []).filter((c) => c && c.card);
       if (cards.length) {
+        // What she shows anew stands again, though he put away what she showed before (card-close.js `told`).
+        if (view.away.some((e) => e.place == null)) awaySet(view.away.filter((e) => e.place != null));
         // A map Ling shows opens on the player's province.
         show({ focus: cards, ...(cards.some((c) => c.card === 'map') ? { mapView: 'province' } : {}) });
       }
@@ -4860,6 +4906,49 @@ function titleSeen(id, mark = false) {
 }
 // Keyed as the mark is (titleKey): a Restart without a reload is a new seed, and its 第一回 stands again.
 const dismissedTitles = new Set();
+/* The stage's cards put away with their ✕ (card-close.js), kept per save in this browser like the title card: a reload
+   keeps them away, and the tray's 收起 chip still brings each back. */
+let awayRead = null;
+function awayLoad() {
+  const k = titleKey('away');
+  if (awayRead === k) return;
+  awayRead = k;
+  try { const v = JSON.parse(localStorage.getItem(k) ?? '[]'); keep({ away: Array.isArray(v) ? v.filter((e) => e && typeof e.key === 'string') : [] }); } catch { keep({ away: [] }); }
+}
+function awaySet(away) {
+  keep({ away });
+  try { localStorage.setItem(titleKey('away'), JSON.stringify(away)); } catch { /* kept for this page only */ }
+}
+/* ✕ on a stage card: put away — a told card (Ling's Show) till her next Show, any other here, till he walks on. */
+function putAway(key) {
+  const kind = key.split(':')[0];
+  const place = CLOSE_STAGE[kind]?.scope === 'told' ? null : look?.place?.id ?? null;
+  awaySet([...view.away.filter((e) => e.key !== key), { key, place }]);
+  render();
+}
+/* The 收起 chip: back on the stage. */
+function bringBack(key) {
+  awaySet(view.away.filter((e) => e.key !== key));
+  // …and before him now: what stands in main ahead of it waits behind it in the queue (还有 N 件 ›), as 下一件 › does.
+  for (let i = 0; i < 6; i += 1) {
+    const s = stageNow();
+    if (!s?.key || s.key === key || !s.queue.some((q) => q.key === key)) break;
+    keep({ qSkip: [...view.qSkip.filter((k) => k !== s.key), s.key] });
+  }
+  render();
+}
+/* Walked on: what he put away here comes back as Look has it there; what Ling showed stays away till she shows anew. */
+const awayPrune = (here) => { if (view.away.some((e) => e.place != null && e.place !== here)) awaySet(view.away.filter((e) => e.place == null || e.place === here)); };
+/* The 收起 chip's name for a card: the beast's, the shelf's thing, else the kind's word (the queue's own). */
+function awayName(c) {
+  const w = words();
+  if (['creature', 'codex', 'meet'].includes(c.card)) {
+    const b = (authored?.creatures ?? []).find((x) => x.id === c.id);
+    if (b) return b.name?.[lang()] ?? b.name?.zh ?? c.id;
+  }
+  if (c.card === 'item') return (look?.place?.shelf ?? []).find((i) => i.id === c.id)?.name ?? w.queueKinds?.item ?? c.card;
+  return w.queueKinds?.[c.card] ?? c.card;
+}
 /* The chapter's ending card, put away once (合上): remembered like the title card. */
 function closeSeen(id, mark = false) {
   if (!id) return true;
@@ -5172,11 +5261,9 @@ function openCodexBig(id) {
   if (!entry) return;
   const box = document.createElement('div');
   box.className = 'codexbox';
-  box.innerHTML = `<div class="boxcard" role="dialog"><button class="boxclose" aria-label="×">×</button>${codexHtml(entry, { src: (f) => worldPath(look?.world?.made ? `worlds/${look.world.base}` : look?.world?.dir ?? 'worlds/jiuding', f), lang: lang() })}</div>`;
-  const close = () => { box.remove(); removeEventListener('keydown', onKey); };
-  const onKey = (k) => { if (k.key === 'Escape') close(); };
-  box.addEventListener('click', (c) => { if (c.target === box || c.target.closest('.boxclose')) close(); });
-  addEventListener('keydown', onKey);
+  box.innerHTML = `<div class="boxcard" role="dialog">${closeX(lang(), 'data-box-close')}${codexHtml(entry, { src: (f) => worldPath(look?.world?.made ? `worlds/${look.world.base}` : look?.world?.dir ?? 'worlds/jiuding', f), lang: lang() })}</div>`;
+  // Esc is the page's one resolver (escTop): the large card is the topmost, so one press closes it and nothing under it.
+  box.addEventListener('click', (c) => { if (c.target === box || c.target.closest('[data-box-close]')) box.remove(); });
   document.body.append(box);
 }
 
