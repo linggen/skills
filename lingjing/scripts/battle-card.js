@@ -70,13 +70,13 @@ export const PERSON_WORDS = {
   zh: {
     theirs: '{ta}的阵前', withdrew: '{ta}力竭认输', wonSay: '{ta}退了下去。', lostSay: '你认了输，退下台来。', withdrewSay: '{ta}一口气用尽，拱手认输 —— 这一场不算你赢。',
     pickCard: '点一个目标 —— {ta}本人，或{ta}阵前的一个', pickRank: '点{ta}阵前的一个', pickTarget: '再点要打谁 —— {ta}本人，或{ta}阵前的一个',
-    wonToday: '今日已比过', lostToday: '今日已比过，明日再来', spentToday: '今日已比过',
+    wonToday: '今日已比过', lostToday: '今日已比过，明日再来', spentToday: '今日已比过', againSay: '还没比完 —— 再比一场',
     why: { 'no-attack': '{ta}不会出手', 'too-big': '吞不下 —— {ta}攻太高', 'aim-one': '点{ta}阵前一个' },
   },
   en: {
     theirs: '{Its} rank', withdrew: '{It} yields, spent', wonSay: '{It} steps down.', lostSay: 'You yield and step down.', withdrewSay: '{It} runs out of breath and yields — this one is not your win.',
     pickCard: 'choose a target — {itObj}, or one of {its} rank', pickRank: 'choose one of {its} rank', pickTarget: 'now choose what it strikes — {itObj}, or one of {its} rank',
-    wonToday: 'bout fought today', lostToday: 'bout fought today — again tomorrow', spentToday: 'bout fought today',
+    wonToday: 'bout fought today', lostToday: 'bout fought today — again tomorrow', spentToday: 'bout fought today', againSay: 'Not over yet — again',
     why: { 'no-attack': '{It} does not strike', 'too-big': 'too big to swallow — the attack is too high', 'aim-one': 'choose one of {its} rank' },
   },
 };
@@ -131,6 +131,8 @@ export const WORDS = {
     mark: { 'just-arrived': '刚到', 'already-struck': '已出手', 'no-attack': '不出手', 'not-your-turn': '', chained: '' },
     pickCard: '点一个目标 —— 妖，或它阵前的一个', pickRank: '点它阵前的一个', pickTarget: '再点它要打谁 —— 妖，或它阵前的一个',
     begin: '出 手', wonToday: '今日已降', lostToday: '它退入雾中，明日再来', spentToday: '它今日力竭遁走了',
+    // A story fight lost or run dry (Look's duel `again`): not over — the story waits on the win.
+    againSay: '还没打完 —— 再出手', beginAgain: '再出手',
     stale: '牌面没读全 —— 刷新页面再出手。',
     lean: { hide: '厚皮', ward: '避法', quick: '迅捷', fierce: '凶猛' },
     ready: '可出手', nothing: '这一回合没别的可做了 —— 点「结束回合」', how: '怎么玩', close: '知道了',
@@ -173,6 +175,7 @@ export const WORDS = {
     mark: { 'just-arrived': 'new', 'already-struck': 'struck', 'no-attack': 'no attack', 'not-your-turn': '', chained: '' },
     pickCard: 'choose a target — the beast, or one of its rank', pickRank: 'choose one of its rank', pickTarget: 'now choose what it strikes',
     begin: 'Begin', wonToday: 'subdued today', lostToday: 'it withdrew — come back tomorrow', spentToday: 'it walked away spent today',
+    againSay: 'Not over yet — go again', beginAgain: 'Go again',
     stale: 'The cards did not load — refresh, then begin.',
     lean: { hide: 'thick-hided', ward: 'warded', quick: 'quick', fierce: 'fierce' },
     ready: 'ready', nothing: 'nothing else this turn — press End turn', how: 'How to play', close: 'Got it',
@@ -731,7 +734,8 @@ export function challengeHtml(brief, ctx) {
       </div>
     </div>
     ${done ? '' : pouchPickHtml(brief, ctx)}
-    ${done ? `<div class="cdone">${esc(done)}</div>${ctx.feed ? `<div class="cacts">${ctx.feed}</div>` : ''}` : `<div class="cacts"><button class="bact end" data-duel-start="${esc(brief.id)}">${esc(w.begin)}</button>${ctx.feed ?? ''}</div>`}
+    ${!done && brief.again ? `<div class="cdone cagain">${esc(w.againSay)}</div>` : ''}
+    ${done ? `<div class="cdone">${esc(done)}</div>${ctx.feed ? `<div class="cacts">${ctx.feed}</div>` : ''}` : `<div class="cacts"><button class="bact end" data-duel-start="${esc(brief.id)}">${esc(brief.again ? w.beginAgain ?? w.begin : w.begin)}</button>${ctx.feed ?? ''}</div>`}
     ${!done && ctx.say ? `<div class="cdone">${esc(ctx.say)}</div>` : ''}
   </div>`;
 }

@@ -1561,3 +1561,8 @@ button.qchip.on { color: var(--ling); border-color: var(--ling); background: var
 .dlglog .dlgloghead > .cardx { position: static; margin-left: auto; }
 /* The tray's 收起 chips: a card put away with its ✕, one tap brings it back (card-close.js awayChipsHtml). */
 .awaychip { align-self: center; flex: none; white-space: nowrap; }
+/* 留 · ✕ on a way on that is no board (cards.js passOut: a story fight's card, a scene's riddle): inside its card, at the
+   top right, where the boards' own pair stands (Hanli 11-04: 「留和关闭的位置不对」). */
+.card:has(> .passout), .riddletap:has(> .passout) { position: relative; }
+.card > .gshell-tools.passout, .riddletap > .gshell-tools.passout { position: absolute; top: 8px; right: 8px; margin: 0; z-index: 4; }
+.card:has(> .passout) > .cardtitle:first-of-type, .riddletap:has(> .passout) > .riddlehead { padding-right: 84px; }

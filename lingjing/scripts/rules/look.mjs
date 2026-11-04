@@ -379,6 +379,10 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
     setup: fightSetup(content, state, foeOf(content, game), now, game.id, game.deal, readOf(state, game)),
 
     today: open ? { outcome: open.outcome } : null,
+    // A story fight (`retry`) lost or run dry today is not over: the story waits on its win, and 出手 is open again at
+    // once — never shut for the day as a haunt's or a pool's beast (Hanli 11-04: 「力竭遁走了. 主界面还可以再打, 是故意设计的吗?」).
+    // The card says so (battle-card.js `againSay`), and Ling reads it here: it did not get away, the beat is still his.
+    ...(game.retry && today?.day === dayKey(now) && ['lost', 'withdrew'].includes(today.outcome) ? { again: { outcome: today.outcome, story_open: true } } : {}),
     stake: stakeOf(content, state, game),
     // 丹囊 at the door: the pills he may carry in, and his last pick.
     ...(pouchBrief(content, state) ? { pouch: pouchBrief(content, state) } : {}),

@@ -35,6 +35,9 @@ When it ends the page says so:
   Say it plainly from `bout`; no line for Yinyue.
 - `[scene] withdrew <id>` — the beast ran out of cards: neither won nor
   lost, nothing paid; not a victory.
+- A **story fight** not won (Look's exit `duel.again`, `story_open`): it is
+  not over and did not get away — the story waits on the win, and 出手 is open
+  again at once. Say so in your words; never 「明日再来」.
 
 Asked how fights work, tell it in the world, never as formulas — the fight's
 own card shows the hand, the numbers and the beast's intent. What the rules

@@ -17,7 +17,7 @@ import { dayKey, fitValue } from './state.mjs';
 import { mijingCardHtml } from './mijing.js';
 import { gongkeBits, gongkeMarksHtml } from './gongke.js';
 import { qianCardHtml } from './qian-card.js';
-import { closeX } from './card-close.js';
+import { closeX, withCloseX } from './card-close.js';
 /// 秘境探险 (rules/mijing.mjs, Look's `mijing`): its own module draws it (scripts/mijing.js).
 const mijing = (card, ctx) => mijingCardHtml(card, ctx);
 
@@ -722,7 +722,8 @@ function duel(card, ctx) {
   // the card's top right, as on every board — the way on, no reward (core.mjs resolve `pass`). A fight is no board to keep:
   // its 留 goes on as ✕ does and says so (lingjing.js passTap).
   const leave = exit !== e && exit.stuck ? passOut(exit.id, ctx.lang, 'duelpass') : '';
-  return exit === e ? withWayBack(html, ctx) : html + leave;
+  // 留 · ✕ inside the card, at its top right (Hanli 11-04: 「留和关闭的位置不对」 — laid after the card they floated in the scene).
+  return exit === e ? withWayBack(html, ctx) : leave ? withCloseX(html, leave) : html;
 }
 
 /* A place's own beast is never the only way on (古五, 2026-10-15: lost at the 暗河, the next beast stood
@@ -1849,7 +1850,7 @@ function riddleTapHtml(t, ex, busy, w, lang = 'zh') {
   const hint = ex.hint ? `<div class="small dim riddlehint">${esc(ex.hint)}</div>` : '';
   // Its way past, from the first moment (Hanli 11-03): 留 · ✕, as on every board.
   const leave = ex.stuck ? passOut(t.id, lang, 'riddlepass', off) : '';
-  return `<div class="riddletap">${head}<div class="acts">${choices}</div>${hint}${leave}</div>`;
+  return `<div class="riddletap">${leave}${head}<div class="acts">${choices}</div>${hint}</div>`;
 }
 
 /// 看 — the scene's hotspots (rules/examine.mjs): small chips; a tap looks, free,
