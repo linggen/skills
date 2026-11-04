@@ -89,7 +89,7 @@ test('a Mac window: the story\'s game card takes the stage up to 720, a tall fie
   assert.match(mac, /\.g-huarong:not\(\.is-won\) > \.g-huarong-board \{ grid-column: 1; grid-row: 1 \/ span 8; \}/);
   assert.match(read('../scripts/games/kailu.js'), /^const GAP = 22;/m, '开炉\'s table stops short of the card\'s own edge');
   assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\.is-tall\) \{ --game-reserve: 204px;\s+max-width: calc\(200px \+ 18px \+ 34px \+ \(100dvh - var\(--game-reserve\)\) \* var\(--ar, \.5625\) \+ var\(--beside, 0px\)\); \}/);
-  assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\.is-tall \[data-landscape="true"\]\) \{ max-width: min\(96%, calc\(\(100dvh - var\(--game-reserve\)\) \* var\(--ar, 1\.08\) \+ 34px\)\); \}/);
+  assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\.is-tall \[data-landscape="true"\]\) \{ max-width: min\(96%, calc\(\(100dvh - 230px\) \* 1040 \/ 960 \+ 34px\)\); \}/, 'the landscape 药园 by its own field, never the portrait --ar');
   assert.match(mac, /\.gshell\.is-tall:has\(\[data-landscape="true"\]\) \{ display: flex;/);
   assert.match(mac, /@container scene \(max-width: 620px\) \{ \.focus \.card\.gamecard > \.gshell\.is-tall \{ display: flex;/);
   assert.equal(css.slice(0, css.indexOf('@media (min-width: 900px)')).includes('.focus'), false, 'nothing of the story\'s outside the Mac rule');
@@ -395,4 +395,20 @@ test('the story\'s 炼丹 herb board wears the shell: its frame and 🔊, the ti
   assert.match(html, /data-shell-mute/);
   assert.match(html, /data-board="alchemy-daily"[\s\S]*data-tile="0"/);
   assert.match(html, /data-board-keep="alchemy-daily"[^>]*>留<\/button><button[^>]*data-board-close="alchemy-daily"/, '留 and ✕ in its bar');
+});
+
+/* 2026-11-04 (Hanli: 「从收着的游戏打开, 界面大小不对」): a board taken up again from 收着的棋局 stands in the same card, with the
+   same shell, shape and fit as the story's own — the size is the stage's rule's, never the way it was opened. */
+test('a kept board reopened stands in the same card and shell as the story\'s own: one fit for every way in', async () => {
+  const task = { id: 'furnace-ding', game: 'shouqiang', title: '药园巡夜 · 开春', how: '割 · 守' };
+  const mod = await import('../scripts/games/shouqiang.js');
+  const g = { mod, state: {} };
+  const base = { lang: 'zh', words: WORDS.zh, qi: { st: 'full' }, boardFor: () => g };
+  const story = cardHtml({ card: 'board', id: task.id }, { ...base, look: { tasks: [task], lang: 'zh', scene: { show: [{ card: 'board', id: task.id }] } } });
+  const kept = cardHtml({ card: 'board', id: task.id }, { ...base, look: { tasks: [{ ...task, replay: true }], lang: 'zh', scene: { show: [] } } });
+  const shape = (html) => [html.match(/<div class="card gamecard[^"]*"( style="[^"]*")?>/)?.[1] ?? '', html.match(/<section class="gshell[^"]*"/)?.[0], /data-mount="furnace-ding"/.test(html)];
+  assert.deepEqual(shape(kept), shape(story), 'the same style (--ar), the same shell, the same host');
+  // and the Mac's fit for the landscape 药园 reads the field's own shape, not the module's portrait --ar
+  const css = read('../scripts/games/shell.css');
+  assert.doesNotMatch(css, /\[data-landscape="true"\]\) \{ max-width: [^}]*var\(--ar/);
 });

@@ -123,7 +123,10 @@
   .focus .card.gamecard:has(> .gshell .g-fighter.pad-off) { --gf-hm: max(260px, calc(100dvh - 250px)); }
   .focus .card.gamecard:has(> .gshell.is-tall) { --game-reserve: 204px;
     max-width: calc(200px + 18px + 34px + (100dvh - var(--game-reserve)) * var(--ar, .5625) + var(--beside, 0px)); }
-  .focus .card.gamecard:has(> .gshell.is-tall [data-landscape="true"]) { max-width: min(96%, calc((100dvh - var(--game-reserve)) * var(--ar, 1.08) + 34px)); }
+  /* 守墙关's landscape 药园 (shouqiang.js: 1040 : 960, its bar over it at 230 px): the card by the field's own shape — never
+     the module's portrait --ar (9:16), which drew it 650 px wide in a 2000 px window (Hanli 11-04: 「从收着的游戏打开, 界面大小不对」). */
+  .focus .card.gamecard:has(> .gshell.is-tall [data-landscape="true"]) { max-width: min(96%, calc((100dvh - 230px) * 1040 / 960 + 34px)); }
+  .focus .card.gamecard:has(> .gshell.is-tall [data-landscape="true"]):has(> .gshell > .gshell-side:not(:empty)) { max-width: min(96%, calc((100dvh - 394px) * 1040 / 960 + 34px)); } /* …its strip under it (--jy-strip) */
   .focus .card.gamecard > .gshell.is-tall:has([data-landscape="true"]) { display: flex; --game-reserve: 230px; }
   @container scene (max-width: 620px) { .focus .card.gamecard > .gshell.is-tall { display: flex; --game-reserve: 230px; } }
   /* …and those two play the side as the strip under the stage, its room kept (the column's is free). */
