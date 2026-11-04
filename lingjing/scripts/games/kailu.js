@@ -1,4 +1,4 @@
-// kailu.js — 喂饭桶 · 开炉 (Hanli 2026-10-20): the 饭桶's lottery. Up to three things and 0–3 灵石 into its mouth, the lid
+// kailu.js — 喂饭桶 · 开炉 (Hanli 2026-10-20): the 饭桶's lottery. Up to three things and 灵石 (10 a 层 of his realm) into its mouth, the lid
 // pressed on a gold puff (压盖), and out spins one thing in its grade's glow — 凡 grey, 有用 blue, 珍品 purple, 逆天 gold.
 // The play is Phaser (games/kailu/kailu.min.mjs, built from tools/kailu/, loading the one shared
 // scripts/vendor/phaser.min.mjs); the odds are the rules' (rules/fantong.mjs on a save, rules/fantong-roll.mjs bare).
@@ -86,7 +86,7 @@ export async function storyPot(lang, story) {
 
 async function sample(lang, seed, force) {
   const { t, byId, pick, words, input, brief: briefOf, out: brief1, roll, kindOf, familyOfKind, tierOfItem, GRADES } = await tableOf(lang);
-  const brief = briefOf(SAMPLE.filter((id) => byId.has(id)).map((id) => input(id, 9)), { max: t.lingshi?.max ?? 3, have: 9 });
+  const brief = briefOf(SAMPLE.filter((id) => byId.has(id)).map((id) => input(id, 9)), { max: t.lingshi?.max ?? t.lingshi?.min ?? 10, have: 9 });
   let n = 0, dry = 0;
   const seen = new Set();
   const rollOne = async (ids, lingshi, press) => {

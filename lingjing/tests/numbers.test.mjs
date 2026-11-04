@@ -68,3 +68,14 @@ test('a pill\'s card\'s 「抵N日打坐」 holds against N nights of 闭关 the
     for (const d of x.drift) assert.ok(Math.abs(d.ratio - 1) < 0.1, `${x.id} 「${x.said}」 at ${d.layer}: ×${d.ratio}`);
   }
 });
+
+// 开炉 with 灵石 (Hanli 11-04: the cap 10 a 层, 「多放可以提升出品品质」): each sample pot is weighed again with stones, up to
+// the save's own cap and 筑基圆满's 180, and none is a farm.
+test('开炉 with 灵石: weighed up to the cap, and never a farm', async () => {
+  const r = await measure(loadContent());
+  const stoned = r.kailu.filter(x => x.lingshi > 0);
+  assert.ok(stoned.some(x => x.lingshi >= 180), '筑基圆满 with its 180');
+  assert.ok(stoned.every(x => Number.isFinite(x.gain)), 'each with what its stones add');
+  const red = r.red.filter(x => x.src === 'kailu');
+  assert.deepEqual(red.map(x => x.say), []);
+});

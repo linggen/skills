@@ -68,8 +68,10 @@ const potTier = (t, ids) => Math.max(0, ...ids.map(id => tierOfItem(t, id)));
 /* The pot's power: what went in, who feeds it, the 灵石 (fantong.json odds.power). */
 export function powerOf(t, { tier = 0, realm = 0, lingshi = 0 }) {
   const p = t.odds?.power ?? {};
-  return (p.in ?? 1) * tier + (p.realm ?? 0) * realm + (p.lingshi ?? 0) * lingshi;
+  return (p.in ?? 1) * tier + (p.realm ?? 0) * realm + stonePower(p, lingshi);
 }
+/* The 灵石's share of the power: `lingshi` × ln(1 + 灵石) — each stone lifts the pot less than the one before. */
+export const stonePower = (p, n) => (n > 0 ? (p.lingshi ?? 0) * Math.log1p(n) : 0);
 
 /* The grade weights at a power: base × growth^power. */
 export function gradeWeights(t, power, base = t.odds?.grades) {
@@ -114,8 +116,11 @@ export function rowsFor(t, family, target, open = null, info = null) {
   }
   return null;
 }
-/* Nothing within reach anywhere: its worth in 灵石 (a thing as sold where it lay — creatures.json `_loot`'s way). */
-const worthInStones = (t, target) => Math.max(1, Math.round(target / lsWorth(t)));
+/* Nothing within reach anywhere: its worth in 灵石 (a thing as sold where it lay — creatures.json `_loot`'s way), but
+   never more than went in (or the grade's `floor`): a pot that outruns every pool — a pile of 灵石 — gives its stones
+   back, never the grade's multiple of them (no 灵石 farm). */
+const worthInStones = (t, target, worth = Infinity, grade = null) =>
+  Math.max(1, Math.round(Math.min(target, Math.max(worth, t.worth?.grades?.[grade]?.floor ?? 0)) / lsWorth(t)));
 
 /* The roll: what one pot gives. `ids` what went in, `lingshi`, `realm` (his, as a number), `press` (the lid pressed on
    a gold puff), `lift` (a thing that clears the furnace, spent on this pot), `herHere`, `pity` (the 凡 in a row before this), `recipe` (the 方子 row this pot is, or null),
@@ -143,7 +148,7 @@ export function roll(t, { seed, ids, lingshi = 0, realm = 0, press = false, lift
     // A 方子 may give more than one (`n`: 古八's 九节聚气, 「滚出三颗丹来」).
     if (recipe && grade !== 'junk') return { out: grade === 'useful' ? recipe.out : recipe.best, grade, recipe: recipe.id, ...(recipe.n > 1 ? { n: recipe.n } : {}) };
     const target = targetOf(t, grade, worth), got = rowsFor(t, family, target, open, info);
-    if (!got) return stones ? { out: LINGSHI, wealth: worthInStones(t, target), grade, family } : { out: LINGSHI, wealth: 1, grade, family };
+    if (!got) return stones ? { out: LINGSHI, wealth: worthInStones(t, target, worth, grade), grade, family } : { out: LINGSHI, wealth: 1, grade, family };
     const row = weighted(pickU, got.rows);
     const n = row.wealth ? row.wealth[0] + Math.floor(nU * (row.wealth[1] - row.wealth[0] + 1)) : row.n ?? 1;
     return { out: row.item ?? LINGSHI, ...(row.wealth ? { wealth: n } : n > 1 ? { n } : {}), grade, family: got.family,
@@ -176,7 +181,7 @@ export function odds(t, { ids, lingshi = 0, realm = 0, press = false, pity = 0, 
     if (!p) continue;
     grades[g] += p;
     const target = targetOf(t, g, worth), got = rowsFor(t, family, target, open, info);
-    if (!got) { items[LINGSHI] = (items[LINGSHI] ?? 0) + p; value += p * (stones ? worthInStones(t, target) : 1) * lsWorth(t); continue; }
+    if (!got) { items[LINGSHI] = (items[LINGSHI] ?? 0) + p; value += p * (stones ? worthInStones(t, target, worth, g) : 1) * lsWorth(t); continue; }
     const sum = got.rows.reduce((a, [, w]) => a + w, 0);
     for (const [r, w] of got.rows) { const id = r.item ?? LINGSHI; items[id] = (items[id] ?? 0) + p * w / sum; value += p * (w / sum) * rowWorth(t, r, info); }
   }

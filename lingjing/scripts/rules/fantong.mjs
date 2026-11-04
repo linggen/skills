@@ -1,4 +1,4 @@
-// rules/fantong.mjs — 喂饭桶 · 开炉: up to three things and 0–3 灵石 into the 饭桶, a press on the lid, and it
+// rules/fantong.mjs — 喂饭桶 · 开炉: up to three things and 灵石 (up to 10 a 层 of his realm) into the 饭桶, a press on the lid, and it
 // spits something out. Part of the rules engine; rules.mjs is its one door.
 //
 // Everything is the world's table (worlds/<id>/fantong.json): what is needed to play (`needs`), the limit
@@ -12,7 +12,7 @@
 // never the press (the page's timing result), so timing can't re-roll; the press only lifts the grade a
 // notch. The page only shows (games/kailu.js): every output carries its name and one line of small print
 // (`hint`), never its effect.
-import { dayKey, itemName, pick } from '../state.mjs';
+import { dayKey, itemName, layerNo, pick } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
 import { itemOf } from './errands.mjs';
 import { huiNow, huiOrder } from './hui.mjs';
@@ -38,6 +38,20 @@ export function realmOf(content, state, t = tableOf(content)) {
   const at = Math.max(0, tiers.findIndex(x => x.id === state.tier));
   const steps = Math.max(1, tiers[at]?.thresholds?.length ?? 1);
   return per * (at + Math.min(1, (state.step ?? 0) / steps));
+}
+
+/* The 灵石 a pot may take (Hanli 11-04: 「按当前层数*10, 筑基圆满就是(9+9)*10」): `lingshi.per_layer` × his running
+   层 — counted on across the realms (练气一层 1 … 九层 9, 筑基一层 10 … 九层 18) — and never under `lingshi.min`
+   (练气零层 still 10). A table with a plain `max` keeps it. */
+export function layerIndex(content, state) {
+  const tiers = content.ladder?.tiers ?? [], at = Math.max(0, tiers.findIndex(x => x.id === state.tier));
+  const below = tiers.slice(0, at).reduce((n, x) => n + (x.thresholds?.length ?? 0) - (x.zero ? 1 : 0), 0);
+  return below + (tiers[at] ? layerNo(content, tiers[at].id, state.step ?? 0) : 0);
+}
+export function lingshiCap(content, state, t = tableOf(content)) {
+  const L = t?.lingshi ?? {};
+  if (L.per_layer == null) return L.max ?? 0;
+  return Math.max(L.min ?? 0, L.per_layer * layerIndex(content, state));
 }
 
 /* ── What exists for this save: the 回 reached, the beasts beaten, the 卷 open, a once-thing not had ── */
@@ -203,7 +217,7 @@ export function fantongBrief(content, state, now) {
     name: itemName(itemOf(content, t.needs.item), state, lang), ready: !next, ...(next ? { next_at: next.toISOString(), wait: fullSay(t, lang, next, now) } : {}),
     limit: { ...(t.limit?.cooldown_min ? { cooldown_min: t.limit.cooldown_min } : {}), ...(t.limit?.per_day ? { per_day: t.limit.per_day, today: state.fantong?.day === dayKey(now) ? state.fantong.today ?? 0 : 0 } : {}) },
     inputs, held_back: heldBack(content, state, t), leans, max_in: t.max_in ?? 3, tints, grades: wordsOf(t, lang).grades ?? {}, quips: wordsOf(t, lang).quips ?? {},
-    lingshi: locked ? null : { max: t.lingshi?.max ?? 0, have: state.wealth ?? 0 },
+    lingshi: locked ? null : { max: lingshiCap(content, state, t), have: state.wealth ?? 0 },
     recipes: fantongRecipes(content, state), fed: state.fantong?.n ?? 0, seen: (state.fantong?.seen ?? []).length, of: new Set([...fantongAll(t, content, state), ...(state.fantong?.seen ?? []).map(s => s.id)]).size,
   };
 }
@@ -242,7 +256,7 @@ function feed(state, content, ctx, args, t) {
     how[id] = feedable(content, state, t, id);
     if (!how[id] || spareOf(content, t, state, id) < n) return refuse('not-feedable', w.not_feedable ?? null, { id });
   }
-  if (!Number.isInteger(lingshi) || lingshi < 0 || lingshi > (t.lingshi?.max ?? 0)) return refuse('bad-lingshi', null);
+  if (!Number.isInteger(lingshi) || lingshi < 0 || lingshi > lingshiCap(content, state, t)) return refuse('bad-lingshi', null);
   if (lingshi && (isLocked(content, state, 'wealth') || (state.wealth ?? 0) < lingshi)) return refuse('no-lingshi', w.no_lingshi ?? null);
   const next = nextAt(t, state, now);
   if (next) return refuse('full', fullSay(t, lang, next, now), { next_at: next.toISOString() });

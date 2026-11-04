@@ -3472,10 +3472,10 @@ document.addEventListener('drop', (e) => {
   const id = e.dataTransfer?.getData('text/plain');
   if (id) ftAdd(id);
 });
-function ftStones(d) {
+function ftStones(d, to = null) {
   const ls = view.fantong?.lingshi;
   if (!ls || view.ftPhase !== 'fill') return;
-  ftSet(view.ftPot, Math.max(0, Math.min(ls.max ?? 0, ls.have ?? 0, view.ftLingshi + d)));
+  ftSet(view.ftPot, Math.max(0, Math.min(ls.max ?? 0, ls.have ?? 0, to ?? view.ftLingshi + d)));
 }
 
 /* 喂饭桶 · 开炉 (rules/fantong.mjs): the brief, read when the pane opens and again when the bucket may eat; a feed is
@@ -3973,6 +3973,7 @@ const CLICKS = [
   ['[data-ft-put]', (el) => ftAdd(el.dataset.ftPut)],
   ['[data-ft-slot]', (el) => { if (view.ftPhase === 'fill') ftSet(view.ftPot.filter((_, k) => k !== Number(el.dataset.ftSlot)), view.ftLingshi); }],
   ['[data-ft-ls]', (el) => ftStones(Number(el.dataset.ftLs))],
+  ['[data-ft-ls-set]', (el) => ftStones(0, Number(el.dataset.ftLsSet))],
   ['[data-ft-fire]', () => { if (view.ftPot.length && view.ftPhase === 'fill') ftKailu.fire(); }],
   ['[data-offer-swap]', (el) => run(`offer:swap:${el.dataset.offerSwap}`, () => offerSwap(el.dataset.offerSwap || null))],
   ['[data-offer-drop]', (el) => run(`offer:drop:${el.dataset.offerDrop}`, () => offerTap('swap', { id: el.dataset.offerDrop, take: view.offerSwap }))],

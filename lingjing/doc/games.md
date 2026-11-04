@@ -1520,7 +1520,7 @@ after; idle never wins. `n` is story order (古七 before 今三), and the climb
 
 **喂饭桶 · 开炉** (`kailu`, 10-20; Hanli: 「现在可以, 但东西太少, 以后在扩吧. 装备武器饰品都可以出」): the 饭桶's lottery, in
 the 物品 panel once he holds it (古四) and in the 游戏厅 (`daily`, a sample pot, no save; `?force=best`). Up to three things
-and 0–3 灵石 into the mouth (the steam takes the pot's lean colour), 压盖 on a gold puff lifts the grade a notch, 「咔哒」 and
+and 灵石 (10 a 层 of his realm) into the mouth (the steam takes the pot's lean colour), 压盖 on a gold puff lifts the grade a notch, 「咔哒」 and
 out it spins: 凡 grey ~70 · 有用 blue ~25 · 珍品 purple ~4 · 逆天 gold ~1 for a plain pot. No cap (Hanli 10-20: 「饭桶就是
 什么都出的」): the odds of high things rise smoothly with the pot's 品阶 (its best input) and his realm, 灵石 add to it.
 Pity: five 凡 in a row, the next is 有用 or better. Quirks: 3% it spits the pot back, 4% two things. The first of each

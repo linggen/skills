@@ -26,7 +26,7 @@ import { paysOf } from '../scripts/rules/core.mjs';
 import { chorePlay, errandGrant, pillBelow, playGrant, secludeHour, wallGrant, workGrant } from '../scripts/rules/playpay.mjs';
 import { wallOf } from '../scripts/rules/rotation.mjs';
 import { huiOrder, huiLabel, huiOf, chapterHuis } from '../scripts/rules/hui.mjs';
-import { chances, realmOf } from '../scripts/rules/fantong.mjs';
+import { chances, lingshiCap, realmOf } from '../scripts/rules/fantong.mjs';
 import { BALANCE_FILE, balanceText, bookWalk, grindLayers, play, sealedBeat, table as paceTable } from './balance.mjs';
 import { derive, diffOf, fitHours, fitLine, lineWalk, setPath } from './master.mjs';
 import { boardLine, lineGrant, linePay, linesOf, lineWorld } from '../scripts/rules/lines.mjs';
@@ -385,7 +385,13 @@ function creatures(ctx, weighed) {
    其他出符 — 「让玩家可以清空身上不用的物品」). Each family's sample pot, on a save standing at the 饭桶's first 回 and at
    卷一's last, at that 回's layer: its average return (the worth that comes out ÷ the worth that went in, items.json
    `sell` or the 品阶's worth) must sit in `kailu.band` — under it the bucket loses to the shop, over it the bucket is a
-   farm — and a pot of junk must give something. Bought at the shop, a pot must never sell back for more than it cost. ── */
+   farm — and a pot of junk must give something. Bought at the shop, a pot must never sell back for more than it cost.
+   Each pot again with 灵石 (Hanli 11-04: 10 a 层, 「多放可以提升出品品质」): 3, 10 and the save's own cap, and once more at
+   筑基圆满 with its 180. The stones count in what went in. A pot with stones is a farm when it gives back over the band
+   AND its stones come back more than once each (`gain`: what they add, a stone) — a pot of junk with three stones
+   stands over the band on its floors alone, a 九转丹 with three gains its grade's share; neither is a farm. Under the
+   band is said only of a pot with no stones: past what the pools hold the stones are the bucket's price for its luck. ── */
+const KAILU_STONES = [0, 3, 10];
 const KAILU_POTS = [
   { family: 'pill', name: '三味草药', ids: ['huangjing', 'fuling', 'chaihu'] },
   { family: 'gear', name: '三样兽材', ids: ['zhu-ya', 'chai-ya', 'lang-pi'] },
@@ -406,12 +412,24 @@ function kailu(ctx) {
     const at = paying(content, ctx.layerAt(h)), sc = sceneOf(h);
     if (!at || !sc) continue;
     const s = { ...ctx.saveFor(at), chapter: sc.chapter, scene: sc.id, bag: { danlu: 1 } };
-    for (const pot of KAILU_POTS) {
-      const o = chances(t, { ids: pot.ids, realm: realmOf(content, s, t), content, state: s });
-      const buys = pot.ids.map(id => items.get(id)?.buy ?? 0);
-      rows.push({ id: `${pot.family}@${h}`, name: pot.name, family: pot.family, leans: o.family, hui: h, layer: ctx.layer(at)?.name ?? null, ids: pot.ids,
-        worth: round(o.worth, 1), value: round(o.value, 1), ratio: o.worth ? round(o.value / o.worth, 2) : null, buy: buys.every(b => b > 0) ? buys.reduce((a, b) => a + b, 0) : null });
-    }
+    rows.push(...kailuPots(ctx, s, h, ctx.layer(at)?.name ?? null));
+  }
+  // The top of 卷一's next realm: 筑基圆满 (九层), every row open, his whole cap.
+  const tiers = content.ladder?.tiers ?? [], zj = tiers[1];
+  if (zj) {
+    const s = { ...ctx.saveFor(paying(content, ctx.layerAt(huis.at(-1)))), tier: zj.id, step: (zj.thresholds?.length ?? 1) - 1 };
+    rows.push(...kailuPots(ctx, s, null, `${zh(zj.name) ?? zj.id}圆满`, [lingshiCap(content, s, t)], false));
+  }
+  return rows;
+}
+function kailuPots(ctx, s, h, layer, stones = [...KAILU_STONES, lingshiCap(ctx.content, s, ctx.content.fantong)], gated = true) {
+  const { content } = ctx, t = content.fantong, items = new Map(content.items.items.map(i => [i.id, i])), rows = [];
+  for (const pot of KAILU_POTS) for (const ls of [...new Set(stones)]) {
+    const at = n => chances(t, { ids: pot.ids, lingshi: n, realm: realmOf(content, s, t), ...(gated ? { content, state: s } : {}) });
+    const o = at(ls), gain = ls ? round((o.value - at(0).value) / ls, 2) : null;
+    const buys = pot.ids.map(id => items.get(id)?.buy ?? 0);
+    rows.push({ id: `${pot.family}@${h ?? layer}${ls ? `+${ls}灵石` : ''}`, name: ls ? `${pot.name} + ${ls} 灵石` : pot.name, family: pot.family, leans: o.family, hui: h ?? layer, layer, ids: pot.ids, lingshi: ls, gain,
+      worth: round(o.worth, 1), value: round(o.value, 1), ratio: o.worth ? round(o.value / o.worth, 2) : null, buy: buys.every(b => b > 0) ? buys.reduce((a, b) => a + b, 0) + ls : null });
   }
   return rows;
 }
@@ -606,8 +624,8 @@ const RED = {
     [r => r.target_h && r.rule_h && r.rule_h / r.target_h > 1 + LIMITS.hours_off, r => `${r.name}: with no 功课 (a plain install) ${r.rule_h} h of play — ${round(r.rule_h / r.target_h, 1)}× the target ${r.target_h} h`],
   ],
   kailu: [
-    [r => r.ratio != null && r.ratio < KAILU_BAND()[0], r => `开炉 ${r.name} (${r.hui}, ${r.layer}): gives back ${pct(r.ratio)} of what went in (${r.value} of ${r.worth} 灵石) — under ${pct(KAILU_BAND()[0])}, the shop pays better`],
-    [r => r.ratio != null && r.ratio > KAILU_BAND()[1], r => `开炉 ${r.name} (${r.hui}, ${r.layer}): gives back ${pct(r.ratio)} of what went in — over ${pct(KAILU_BAND()[1])}, a farm`],
+    [r => r.ratio != null && !r.lingshi && r.ratio < KAILU_BAND()[0], r => `开炉 ${r.name} (${r.hui}, ${r.layer}): gives back ${pct(r.ratio)} of what went in (${r.value} of ${r.worth} 灵石) — under ${pct(KAILU_BAND()[0])}, the shop pays better`],
+    [r => r.ratio != null && r.ratio > KAILU_BAND()[1] && (!r.lingshi || r.gain > 1), r => `开炉 ${r.name} (${r.hui}, ${r.layer}): gives back ${pct(r.ratio)} of what went in${r.lingshi ? `, each 灵石 ${r.gain}` : ''} — over ${pct(KAILU_BAND()[1])}, a farm`],
     [r => !r.worth && !(r.value > 0), r => `开炉 ${r.name} (${r.hui}): a pot of junk gives nothing`],
     [r => r.buy && r.value >= r.buy, r => `开炉 ${r.name} (${r.hui}): bought for ${r.buy}, it gives back ${r.value} — a farm`],
     [r => r.family !== 'junk' && r.leans !== r.family, r => `开炉 ${r.name}: leans to ${r.leans}, meant for ${r.family}`],

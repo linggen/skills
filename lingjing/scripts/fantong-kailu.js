@@ -29,8 +29,8 @@ const HOW = {
 };
 
 const WORDS = {
-  zh: { title: '饭桶', fire: '开 炉', stones: '灵石', have: '有 {n}', max: '最多三样', place: '空', none: '不能喂', inPot: '在饭桶里', put: '放进饭桶', spare: '可喂 {n}', fold: '收起', unfold: '展开', out: '开出来的' },
-  en: { title: 'Rice Bucket', fire: 'Fire it', stones: 'Stones', have: 'have {n}', max: 'three at most', place: 'empty', none: "won't go in", inPot: 'in the pot', put: 'Into the bucket', spare: '{n} to spare', fold: 'Fold', unfold: 'Open', out: 'Out of the pot' },
+  zh: { title: '饭桶', fire: '开 炉', stones: '灵石', have: '有 {n}', max: '最多三样', place: '空', none: '不能喂', inPot: '在饭桶里', put: '放进饭桶', spare: '可喂 {n}', most: '最多', fold: '收起', unfold: '展开', out: '开出来的' },
+  en: { title: 'Rice Bucket', fire: 'Fire it', stones: 'Stones', have: 'have {n}', max: 'three at most', place: 'empty', none: "won't go in", inPot: 'in the pot', put: 'Into the bucket', spare: '{n} to spare', most: 'Max', fold: 'Fold', unfold: 'Open', out: 'Out of the pot' },
 };
 const say = (t, v) => String(t).replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ''));
 
@@ -51,6 +51,12 @@ export function potOff(brief, pot, id, lang = 'zh', phase = 'fill') {
   if (pot.length >= (brief.max_in ?? 3)) return w.max;
   return phase === 'fill' && brief.ready !== false ? null : '';
 }
+/** The 灵石 quick picks for what he may put in (`most`: the cap, or what he has if less): 0 · 10 · half · all,
+    each once, in order. */
+export function stoneChips(most) {
+  const m = Math.max(0, Math.floor(most ?? 0));
+  return [...new Set([0, 10, Math.round(m / 2), m])].filter((v) => v <= m).sort((a, b) => a - b);
+}
 /** The pot runs (chews, reveals): the 储物袋's grid folds away and the 饭桶 has the page. */
 export const potRuns = (phase) => ['chew', 'wait', 'reveal', 'done'].includes(phase);
 
@@ -70,7 +76,10 @@ export function kailuDockHtml(lang = 'zh', o = {}) {
       : `<span class="ftk-place">${esc(w.place)}</span>`;
   }).join('');
   const ls = b?.lingshi, lsMax = ls ? Math.min(ls.max ?? 0, ls.have ?? 0) : 0, n = o.lingshi ?? 0;
-  const stones = ls && ls.max > 0 ? `<div class="ftk-ls"><span>${esc(w.stones)}</span><button class="act quiet" data-ft-ls="-1"${!filling || n <= 0 ? ' disabled' : ''}>−</button><b>${esc(n)}</b><button class="act quiet" data-ft-ls="1"${!filling || n >= lsMax ? ' disabled' : ''}>＋</button><small class="dim">${esc(say(w.have, { n: ls.have }))}</small></div>` : '';
+  // −/＋ a stone at a time, and quick picks that scale with what he may put in (Hanli 11-04: the cap is 10 a 层).
+  const chips = stoneChips(lsMax).map((v) => `<button class="act quiet ftk-chip" data-ft-ls-set="${v}" aria-pressed="${n === v}"${!filling ? ' disabled' : ''}>${esc(v === lsMax && v > 0 ? w.most : v)}</button>`).join('');
+  const stones = ls && ls.max > 0 ? `<div class="ftk-ls"><span>${esc(w.stones)}</span><button class="act quiet" data-ft-ls="-1"${!filling || n <= 0 ? ' disabled' : ''}>−</button><b>${esc(n)}</b><button class="act quiet" data-ft-ls="1"${!filling || n >= lsMax ? ' disabled' : ''}>＋</button><small class="dim">${esc(say(w.have, { n: ls.have }))}</small></div>`
+    + (lsMax > 1 ? `<div class="ftk-chips">${chips}</div>` : '') : '';
   const why = !b ? o.off ?? '' : b.ready === false && !runs ? b.wait ?? '' : ''; // its own reveal first: the wait after it
   const wait = why ? `<p class="small dim ftk-wait">${esc(why)}</p>` : '';
   // What came out, as the 储物袋's detail says it (Hanli 11-03: 「开出来的物品, 显示一下详细信息」): the bag's own entry once

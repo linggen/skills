@@ -734,6 +734,9 @@ body.fighting .footrow { display: none; }
 .ftk-place span { overflow-wrap: anywhere; text-align: center; line-height: 1.2; }
 .ftk-ls { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13.5px; }
 .ftk-ls .act { min-width: 34px; padding: 2px 8px; }
+.ftk-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.ftk-chip { min-width: 40px; padding: 2px 8px; font-size: 12.5px; }
+.ftk-chip[aria-pressed="true"] { border-color: var(--ling); color: var(--ling); }
 .ftk-wait { text-align: center; margin: 0; }
 .ftdock.run .ftk-ctl, .ftdock.run .ftk-go, .ftdock.run .ftdock-fold { display: none; }
 /* What came out, said as the 储物袋's detail says it (Hanli 11-03: 「开出来的物品, 显示一下详细信息」). */

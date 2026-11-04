@@ -931,7 +931,7 @@ onto the items; items.json carries none). The fights are weighed so the lookahea
 
 ### 饭桶 — free play 【已建】 → superseded by 开炉 (2026-10-20)
 
-Built as 喂饭桶 · 开炉: up to three things and 0–3 灵石 in, the lid pressed, one thing out, 1 h cooldown — games/kailu.js,
+Built as 喂饭桶 · 开炉: up to three things and 灵石 (10 a 层 of his realm) in, the lid pressed, one thing out, 1 h cooldown — games/kailu.js,
 rules/fantong-roll.mjs, fantong.json; doc/games.md § 喂饭桶 · 开炉.
 On one page with the bag (Hanli 2026-11-02; fantong-kailu.js): the 饭桶 (its canvas, three places, 灵石, 开炉) and the
 储物袋's own tabs and grid — side by side on the Mac and a phone held sideways, stacked on a phone held upright (开炉
