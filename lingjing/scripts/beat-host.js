@@ -63,6 +63,8 @@ export function beatHost({ boardFor, lang, onSettled, prefetch = () => null, doc
   return {
     /* 收手: the play taken down now (its canvas, its loop, its listeners), and forgotten — opened again, it is dealt fresh. */
     leave(id) { const entry = hosted.get(id); hosted.delete(id); if (entry && !entry.stop.signal.aborted) entry.stop.abort(); },
+    /** The boards in play now (mounted, not settled, not taken down): the page keeps one alive (lingjing.js oneBoard). */
+    live() { return [...hosted].filter(([, e]) => !e.settled && !e.stop.signal.aborted).map(([id]) => id); },
     attach() {
       const up = new Set();
       for (const host of doc.querySelectorAll('[data-mount]')) {

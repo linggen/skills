@@ -190,3 +190,41 @@ test('beat-host: a board played out and gone off the stage is taken down; one st
   host.attach();
   assert.equal(mounts.length, 2, 'never mounted again');
 });
+
+/* 2026-11-04 (Hanli: 「点了两个小游戏 卡了一个在后台」 · 「我能听见格斗的声音」): one board alive. The second board opened puts the
+   first away — kept or torn down: its play aborted (its loop, its listeners), its shell's sound stopped. */
+import { sound } from '../scripts/games/kit/sound.js';
+test('one board alive: opening a second board leaves one instance; the first is aborted, its sound loop gone; a double tap opens one', async () => {
+  const doc = fakeDoc();
+  const signals = {}, mounts = {};
+  const mod = (id) => ({ meta: { name: { zh: id } }, mount: (node, o) => { mounts[id] = (mounts[id] ?? 0) + 1; signals[id] = o.signal; return new Promise(() => {}); } });
+  const games = { fighter: { taskId: 'fighter', mod: mod('fighter'), state: { won: false } }, shoulu: { taskId: 'shoulu', mod: mod('shoulu'), state: { won: false } } };
+  const host = beatHost({ boardFor: (id) => games[id], lang: () => 'zh', onSettled: () => {}, doc });
+  doc.addHost('fighter');
+  host.attach();
+  assert.deepEqual(host.live(), ['fighter']);
+  // the page's rule (lingjing.js oneBoard): every other live board is put away before the next opens
+  const open = (next) => { for (const id of host.live()) if (id !== next) host.leave(id); doc.hosts.length = 0; doc.addHost(next); host.attach(); };
+  open('shoulu');
+  assert.deepEqual(host.live(), ['shoulu'], 'exactly one board in play');
+  assert.equal(signals.fighter.aborted, true, 'the first taken down: its loop, its listeners (the mount hears the abort)');
+  open('shoulu'); open('shoulu'); // a double tap on 开局
+  assert.equal(mounts.shoulu, 1, 'one instance');
+  // the shell's sound for the board put away: its bed and voices stopped (games/shell.js forget → sound.stop)
+  const src = fs.readFileSync(new URL('../scripts/games/shell.js', import.meta.url), 'utf8');
+  assert.match(src, /export function forget\(id\) \{ store\.delete\(id\); sound\.stop\(id\); \}/);
+  assert.equal(typeof sound.stop, 'function');
+  // the page: every way in goes through it, and the old one is kept (留) or put away and forgotten
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const one = page.slice(page.indexOf('function oneBoard('), page.indexOf('function openFromTray('));
+  assert.match(one, /for \(const id of beats\.live\(\)\)/);
+  assert.match(one, /if \(keepable\) keepGame\(id\);/);
+  assert.match(one, /beats\.leave\(id\);\s+forgetShell\(id\);/);
+  assert.match(page, /function openFromTray\(id\) \{\n  if \(view\.opened\?\.id === id\) return; \/\/ a second tap on 开局: the one already up\n  oneBoard\(id\);/);
+  assert.match(page, /oneBoard\(null\); \/\/ a fight takes the stage: no board plays on under it/);
+  assert.match(page, /if \(beats\.live\(\)\.includes\(view\.opened\.id\)\) oneBoard\(null\);/, 'the scene moving on puts the opened board away');
+  // the fighter hears the abort: its listeners off, its frame loop stopped
+  const fighter = fs.readFileSync(new URL('../scripts/games/fighter.js', import.meta.url), 'utf8');
+  assert.match(fighter, /signal\.addEventListener\('abort', \(\) => finish\(\{ won: false, left: true \}\), \{ once: true \}\)/);
+  assert.match(fighter, /off\.forEach\(\(f\) => f\(\)\);[\s\S]{0,80}win\.cancelAnimationFrame\(raf\);/);
+});

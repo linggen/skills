@@ -775,7 +775,7 @@ async function readOnce() {
   // purpose; a board he opened himself stays until he walks on.
   const here = look.place?.id ?? null;
   // …or until the scene moves on: a board left queued must not come up after another scene's play (a tame).
-  if (view.opened && (view.opened.place !== here || (view.opened.scene ?? null) !== (look.scene?.id ?? null))) keep({ opened: null });
+  if (view.opened && (view.opened.place !== here || (view.opened.scene ?? null) !== (look.scene?.id ?? null))) { if (beats.live().includes(view.opened.id)) oneBoard(null); keep({ opened: null }); }
   if (view.left.length) keep({ left: view.left.filter((l) => l.place === here && (l.scene ?? null) === (look.scene?.id ?? null)) });
   queueMicrotask(payKeptWins);
   if (view.qPlace !== here) keep({ qSkip: [], qPlace: here });
@@ -2820,7 +2820,25 @@ function logAtEnd() {
    and the board came up later, out of nowhere, after a tame). The passage read to its last beat, its choices in
    the box: the box is put away, the board stands now and the choices on the scene card beside it. Mid-passage:
    it waits for the passage, and its tray button says so (cards.js trayHtml trayQueued). */
+/* One board alive (Hanli 11-04: 「点了两个小游戏 卡了一个在后台」 · 「我能听见格斗的声音」): a board that leaves the stage for
+   another (the tray, 收着的, a fight, the scene moving on) is put away first — its loop, its sound, its listeners taken down
+   (beat-host leave, shell forget). One he chose that may be kept is 留'd (keepGame: the list, its note); the scene's own,
+   or one the rules will not keep, is simply put away (「这一局留不住，收起来了。」), dealt fresh when it comes back. */
+function oneBoard(next = null) {
+  for (const id of beats.live()) {
+    if (id === next) continue;
+    const g = boardFor(id), own = (look?.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id);
+    const keepable = g && !own && !g.state?.won && !g.sent && !g.skipped && !isTale(id);
+    if (keepable) keepGame(id);
+    else keep({ doNote: words().unkept });
+    beats.leave(id);
+    forgetShell(id);
+    if (!keepable) boards.delete(id);
+  }
+}
 function openFromTray(id) {
+  if (view.opened?.id === id) return; // a second tap on 开局: the one already up
+  oneBoard(id);
   const inBox = choicesInBox();
   show({ opened: { id, place: look?.place?.id ?? null, scene: look?.scene?.id ?? null }, left: view.left.filter((l) => l.id !== id), qSkip: view.qSkip.filter((k) => k !== `board:${id}`) });
   if (inBox) nextBeat();
@@ -4469,6 +4487,7 @@ const doorBrief = (id) => (look?.scene?.exits ?? []).find((x) => x.game?.id === 
 async function onDuelStart(id) {
   if (bout || starting) return;
   starting = true;
+  oneBoard(null); // a fight takes the stage: no board plays on under it
   try {
     // 丹囊: the pick made at this door, else his last (the rules remember it).
     const b = doorBrief(id), pills = b?.pouch ? pickNow(b, ctx()) : null, gearHint = b?.gear_hint ?? null;
