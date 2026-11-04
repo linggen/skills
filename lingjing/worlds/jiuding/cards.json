@@ -1486,11 +1486,11 @@
         "en": "Matchstick"
       },
       "cost": 4,
-      "element": "metal",
-      "atk": 5,
-      "hp": 3,
+      "element": "fire",
+      "atk": 6,
+      "hp": 5,
       "gear": "huochai-jian",
-      "_gear": "The sword 火柴's strike (Hanli 11-03: 「火柴是一把剑, 重复的牌就不用了」; agent's pick, delegated): never a card he holds or is given — while the sword is worn it is in his fight deck as the card was (items.json huochai-jian `strike`, cards.mjs strikeOf). Its element is metal (2026-11-04): the strike is the book's 「镀了金的火柴」 — 小满 coats the fire sword in his metal (第七回, 灵草谷), so it goes into the 犰狳's 装睡 whole; as a fire 5/3 it was worse than the 落石 it displaced on a real 22-card save (火柴 89% vs 青铜剑 94% at 灵草谷).",
+      "_gear": "The sword 火柴's strike (Hanli 11-03: 「火柴是一把剑, 重复的牌就不用了」; agent's pick, delegated): never a card he holds or is given — while the sword is worn it is in his fight deck as the card was (items.json huochai-jian `strike`, cards.mjs strikeOf). It stays fire (Hanli 11-04: 「火柴是火葫芦炼的, 火属性是对的, 都叫火柴了」 — the book's 镀金 is 小满's own 金 灵力 poured in, his root, not the card's). 6/5 since 2026-11-04 (was 5/3): dealt in the place of the cheapest card it must beat the 青铜剑's ten, and as a 5/3 it barely beat it (灵草谷 on a 22-card save: 61% vs 53%; the road's 灵草谷 53% vs 37%, 双龙 57% vs 51%); as a 6/5, 83 vs 53, 73 vs 37 and 61 vs 51 (09-lingcao `_weighed`).",
       "art": "art/cards/huochai.webp",
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-27, from the description (tools/paint-cards.py). Seed 9279."
     },
