@@ -127,3 +127,27 @@ test('the same beast beaten again the same day pays the play rules\' falling sha
   assert.equal(fightReplay(content, twice, 'yezhu', NOW), 0.1);
   assert.equal(fightReplay(content, twice, 'lang', NOW), 1, 'another beast pays whole');
 });
+
+/* Hanli 11-04, 09-suifeng's 「那年入秋」 at 后山: seconds before the page answered. The beast that stands at a scene a
+   standing pool shares (dd784358) is matched there, as off the story — so the way out, onto the same hand, weighs nothing:
+   the stand holds and the first Look after the exit reads it for free. */
+test('at a scene 后山 stands at, the beast is matched; taking the way out keeps the stand — no weighing on the exit', async () => {
+  const { playTo, resolve, task, win } = await import('../scripts/rules.mjs');
+  const { newState } = await import('../scripts/state.mjs');
+  const { atScene } = await import('../scripts/rules/world.mjs');
+  const out = playTo(content, newState(content, 'zh', NOW), '09-suifeng', { now: NOW });
+  let s = { ...out.state, place: 'houshan', stamina: 100, stamina_at: out.now.toISOString() };
+  const ctx = { now: out.now, quests: [] };
+  for (const id of ['suifeng-yading', 'suifeng-yezi', 'suifeng-xunwei', 'suifeng-shanmen']) {
+    s = win(s, content, ctx, { id, stars: 3 }).state ?? s;
+    s = task(s, content, ctx, { action: 'done', id }).state ?? s;
+  }
+  assert.ok(atScene(content, s), 'in 09-suifeng, at 后山');
+  const fitted = standFit(content, s, out.now), stand = standAt(fitted);
+  assert.ok(stand?.cid, 'matched at the scene');
+  assert.equal(encounterOf(content, fitted, out.now).creature.id, stand.cid, 'the scene\'s beast is the matched one');
+  const r = resolve(fitted, content, ctx, { exit: 'on', said: '那年入秋' });
+  assert.equal(r.result.ok, true, JSON.stringify(r.result));
+  assert.equal(r.state.scene, '09-yishui');
+  assert.equal(standFit(content, r.state, out.now), r.state, 'the stand holds past the exit: the Look weighs nothing');
+});

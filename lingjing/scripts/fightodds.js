@@ -36,5 +36,19 @@ export function fightOdds(setup, catalog, deals = ODDS_DEALS) {
   return { win, grade: gradeOf(win) };
 }
 
+/* The same deals, stopped as soon as the share is sure to fall outside [low, high] (rules/match.mjs weighs a pool's
+   every beast and keeps only the ones in its band, or, when none is, the nearest — which it then plays out in full).
+   `out`: 'above' or 'below' when it stopped (`win` is then the share so far, not the answer); null when every deal was
+   played and `win` is fightOdds's own. */
+export function oddsWithin(setup, catalog, deals, low, high) {
+  let won = 0;
+  for (let k = 0; k < deals; k += 1) {
+    if (played(setup, catalog, `odds|${setup.seed ?? ''}|${k}`) === 'won') won += 1;
+    if (won > high * deals) return { win: won / deals, out: 'above' };
+    if (won + (deals - k - 1) < low * deals) return { win: won / deals, out: 'below' };
+  }
+  return { win: won / deals, out: null };
+}
+
 /* A setup's key for the page's keeping: what decides the fight, not the deal. */
 export const oddsKey = setup => JSON.stringify({ you: { ...setup.you, fresh: undefined }, foe: setup.foe });

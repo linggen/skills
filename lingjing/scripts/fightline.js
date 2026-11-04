@@ -2,7 +2,7 @@
 // the page's scratch-only seam: of everything the rules let through now, the move that does the
 // most — read off a copy of the fight, never an opinion (the same measure as tools/battle-sim.mjs).
 // Pure; it never touches the fight it reads. The crawler then makes that move with real taps.
-import { act, foeTurn, offers } from './battle.js';
+import { act, foeTurn, offers, simCopy } from './battle.js';
 
 const sum = (board, f) => board.reduce((n, m) => n + f(m), 0);
 const snap = (st) => ({
@@ -43,7 +43,7 @@ const pillNow = (st, os) => os.find(o => o.ok && o.action.kind === 'pill' && !o.
   (o.pill.heal && st.you.hp <= st.you.hpMax - o.pill.heal)
   || (o.pill.mana && st.you.hand.some(id => { const c = st.catalog?.[id]; return c && c.cost > st.you.mana && c.cost <= st.you.mana + o.pill.mana; }))));
 const plain = st => { const os = offers(st); return pillNow(st, os) ?? os.find(o => o.ok && o.action.kind === 'play') ?? os.find(o => o.ok && o.action.kind === 'attack') ?? os.find(o => o.ok && o.action.kind === 'power'); };
-const copyOf = st => { const c = structuredClone({ ...st, catalog: undefined }); c.catalog = st.catalog; return c; };
+const copyOf = simCopy; // battle.js: the fight copied to think on (its log left behind)
 function playOut(st, line) {
   for (let g = 0; g < 300 && st.outcome === 'open'; g += 1) {
     if (st.whose === 'foe') { foeTurn(st); continue; }

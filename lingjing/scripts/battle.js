@@ -303,6 +303,22 @@ function startTurn(st) {
   if (st.whose === 'you') plan(st);
 }
 
+/* A copy of a fight to think on (the beast's plan, the careful line's tries): plain data copied by hand, the catalog
+   shared, the log begun empty — nothing reads a fight's log back (it is the page's story), and copying the whole of it
+   at every turn of every try was most of a Look's time at a pool (structuredClone, and the phone's slower shim of it:
+   a Look at 后山 after a scene's exit, ~6 s on the Mac, longer on the phone). `origin` and `history` stay behind. */
+const plainCopy = v => {
+  if (v === null || typeof v !== 'object') return v;
+  if (Array.isArray(v)) return v.map(plainCopy);
+  const out = {};
+  for (const k in v) out[k] = plainCopy(v[k]);
+  return out;
+};
+export function simCopy(st) {
+  const { catalog, origin, history, log, ...rest } = st;
+  return Object.assign(plainCopy(rest), { catalog, log: [] });
+}
+
 /* ── 意图 — what the beast will do, decided at the start of your turn ──
    His call, 2026-09-23: the beast commits to its next turn before you move
    (Slay the Spire's intent), and 望气术 is what lets a player SEE it — the
@@ -313,8 +329,7 @@ function startTurn(st) {
    replaced by another). Its rank still strikes as it always did. */
 function plan(st) {
   if (st.planning || st.outcome !== 'open') return;
-  const { catalog, origin, history, ...rest } = st;
-  const sim = Object.assign(structuredClone(rest), { catalog, planning: true });
+  const sim = Object.assign(simCopy(st), { planning: true });
   sim.foe.intent = null;
   endTurn(sim);
   const cards = [];

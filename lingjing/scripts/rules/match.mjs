@@ -10,10 +10,10 @@
 // for free: it is made again only when the hand changes, a fight is fought there, a day turns, or he asks for
 // another (「换一只」, `reroll`: free once a visit, then a little 体力).
 import { dayKey, pick, staminaCost } from '../state.mjs';
-import { fightOdds, oddsKey } from '../fightodds.js';
+import { fightOdds, oddsKey, oddsWithin } from '../fightodds.js';
 import { cardCatalog, fightSetup } from './cards.mjs';
 import { clone, refuse, spendStamina } from './core.mjs';
-import { atScene, creatureOf, foeOf, huntKey, placeOf, poolOf, poolResting, poolUp } from './world.mjs';
+import { atScene, creatureOf, foeOf, huntKey, placeOf, poolOf, poolResting, poolUp, standsAtScene } from './world.mjs';
 
 /* The band a stand aims at: a careful player wins about half (tests/fight-band-pools.test.mjs holds ~45%). */
 export const MATCH = { target: 0.52, low: 0.4, high: 0.65, deals: 8, grow_max: 1.3 };
@@ -39,18 +39,24 @@ export function standOf(content, state, place, now) {
   return poolUp(content, state, place, now).some(b => b.creature === stand.cid) ? stand : null;
 }
 
-/* Each candidate weighed: { cid, win, met }. */
+/* Each candidate weighed: { cid, win, met }. A beast sure to fall outside the band stops early (fightodds.js
+   oddsWithin: only the in-band ones are picked among); only when none lands in it are the rest played out in full, for
+   the nearest and its growth — the same pick as weighing all of them in full, at a part of the cost (a Look at 后山
+   after a scene's exit weighed 14 beasts × 8 deals: ~6 s on the Mac, longer on the phone's JavaScriptCore). */
 function weigh(content, state, place, now, exclude = []) {
   const n = nOf(state, place, now), recent = new Set((recOf(state, place, now)?.last ?? []).slice(-3));
   const up = poolUp(content, state, place, now).map(b => b.creature).filter(cid => !exclude.includes(cid));
   const fresh = up.filter(cid => !recent.has(cid));
   const pool = fresh.length ? fresh : up;
   const catalog = cardCatalog(content);
-  return pool.map(cid => {
+  const first = pool.map(cid => {
     const game = poolGame(place, cid, n);
     const setup = fightSetup(content, state, foeOf(content, game), now, game.id, game.deal);
-    return { cid, win: fightOdds(setup, catalog, MATCH.deals).win, met: Boolean(state.beasts?.[cid]), setup };
+    const { win, out } = oddsWithin(setup, catalog, MATCH.deals, MATCH.low, MATCH.high);
+    return { cid, win, out, met: Boolean(state.beasts?.[cid]), setup };
   });
+  const full = first.some(w => !w.out) ? first : first.map(w => ({ ...w, win: fightOdds(w.setup, catalog, MATCH.deals).win, out: null }));
+  return full.map(({ out, ...w }) => w);
 }
 
 /* The pick: in the band, one not met first, then the nearest the target; none in the band, the nearest — and when even
@@ -68,7 +74,10 @@ export function pickStand(weighed) {
    when nothing changes. `exclude`: beasts not to stand (a reroll's current one). */
 export function standFit(content, state, now = new Date(), { exclude = [], force = false } = {}) {
   const place = placeOf(content, state?.place);
-  if (!place || place.has?.creature || !poolOf(content, place) || atScene(content, state) || state.fight) return state;
+  // Where the pool deals (world.mjs encounterOf): off the story, or at a scene a standing pool shares (后山, 11-04). Matched
+  // there too — else the scene's beast was a blind draw, and the first Look after its exit weighed the whole pool while
+  // the tap waited (Hanli 11-04, 09-suifeng's 「那年入秋」: seconds before the page answered).
+  if (!place || place.has?.creature || !poolOf(content, place) || (atScene(content, state) && !standsAtScene(content, state, place)) || state.fight) return state;
   if (poolResting(content, state, place, now)) return state;
   const kept = force ? null : standOf(content, state, place, now);
   const anyUp = poolUp(content, state, place, now)[0];
