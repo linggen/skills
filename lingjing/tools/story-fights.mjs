@@ -88,7 +88,7 @@ export const FIGHTS = [
   // 邹青松 (试 · 追) at wm-xirang/swallow: 格斗 since 2026-10-31 (the board mijing-zou, games/fighter.js) — no card fight to weigh.
   // 卢方 · 秦雁 (试 · 三十招) · 马小宝 at the 大比 (wm-fushi/flip · wm-lun2/dodge · wm-juesai/face): 格斗 since 2026-10-31 (the boards
   // dabi-lu · dabi-shijie · dabi-ma, games/fighter.js) — no card fight to weigh.
-  { id: 'qiuyu', name: '犰狳 (灵草谷)', at: 'h11', scene: '09-lingcao/fight', band: [0.5, 0.72], pilled: [0.55, 1], note: 'Hanli 10-16: 55–65 won, really lost ≥20%' },
+  { id: 'qiuyu', name: '犰狳 (灵草谷)', at: 'h11', scene: '09-lingcao/fight', band: [0.6, 0.85], pilled: [0.6, 1], note: 'Hanli 11-04 (带了火柴还是遁走了): about 72% won with 火柴 worn, 遁走 under 10%, still lost ~20%' },
   // 秦雁 (崖顶 · 试) at 09-futian/spar: 格斗 since 2026-10-28 (the board futian-spar, games/fighter.js) — no card fight to weigh.
   // 九层师兄 (大比决赛) at 09-laba/dabi: 格斗 since 2026-10-31 (the board dabi-final) — no card fight to weigh.
   { id: 'foe-shuanglong', name: '冰夷双龙 (试)', at: 'h10', scene: '01-rise/stand', trial: true, band: [0.35, 0.7], note: 'a 试 outlasted: its 气血 does not weigh it' },

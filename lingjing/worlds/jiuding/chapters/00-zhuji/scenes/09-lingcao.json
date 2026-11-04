@@ -60,9 +60,12 @@
     "creature": "qiuyu",
     "retry": true,
     "foe": {
-     "hp": 2.8
+     "hp": 2.8,
+     "feint": {
+      "turns": 1
+     }
     },
-    "_weighed": "The 秘境's 犰狳 met again at 灵草谷 at 五层 with 火柴 worn: two turns of 装睡 (plain blows glance, metal goes in), then 鸱目一睁, 3 harder per glance (creatures.json `feint`). Its row's hp (3.45) is for the 秘境 at 二层; weighed here to 2.05 — a player who thinks a turn ahead wins about 60% and loses about 30% (time-outs ~5%); the careless one-ply line loses about 60% (2026-10-16, 200 seeds; tools/story-fights.mjs `qiuyu@09-lingcao/fight`, tests/fight-band.test.mjs)."
+    "_weighed": "Re-weighed 2026-11-04 (Hanli: 「带了火柴还是遁走了」), 300 seeds, tools/story-fights.mjs `qiuyu@09-lingcao/fight`, 五层 with 阿禾 + 孙二狗 (party.json h11) and 火柴 worn (its strike in the deck since 11-03): at hp 2.8 with the creature's two turns of 装睡 a player who thinks a turn ahead won 63% · 遁走 10% · lost 26%, the careless one-ply line 38 · 13 · 49. Now ONE turn of 装睡 (`feint.turns` 1 here; the 秘境's keeps two) — the book's beast is up at once (「它没有起身，是翻了个身…一下便蹿到了孙二狗跟前」), so its clock runs a turn sooner and the fight is fought, not waited out: thinking 74 · 5 · 21, careless 45 · 5 · 50. With 青铜剑 in place of 火柴, 68 · 6 · 26 (careless 43). Alone it stays a party fight: 35% (careless 13%). His own save of 11-04 (合窳袄, armor 8, a hand of 22) is never in danger, so every try not won is a 遁走: on its deck with the strike dealt, thinking 86 · 13 · 2 (was 74 · 26 · 1)."
    },
    "withdrawn": {
     "zh": "「小满，撑住！」阿禾喊。",
