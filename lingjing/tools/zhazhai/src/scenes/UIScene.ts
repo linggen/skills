@@ -6,11 +6,8 @@ import { LEVELS } from "../data/levels";
 import { HUDManager } from "../ui/hud/HUDManager";
 import { ResultsDialog } from "../ui/dialogs/ResultsDialog";
 import { PauseDialog } from "../ui/dialogs/PauseDialog";
-import { SettingsDialog } from "../ui/dialogs/SettingsDialog";
 import { HelpDialog } from "../ui/dialogs/HelpDialog";
 import type { IAudioSystem } from "../interfaces/audio";
-import type { ITimeEffectsSettingsProvider } from "../interfaces/ITimeEffectsSettings";
-import type { IMobileSettingsProvider } from "../interfaces/IMobileSettings";
 import { ServiceTokens } from "../config/registries/ServiceContainer";
 import { getServiceContainer } from "../config/bootstrap";
 import { gameEvents, SubscriptionGroup } from "../events/EventBus";
@@ -18,7 +15,6 @@ import type { ScoreBreakdown } from "../systems/scoring/IScoringSystem";
 import type { Position } from "../types/Vector2";
 import { SceneNavigator } from "../utils/SceneNavigator";
 import { getLevelById } from "../data/levels";
-import { PerformanceManager } from "../systems/PerformanceManager";
 
 interface UIState {
   score: number;
@@ -40,8 +36,6 @@ interface ResultsData {
 
 export class UIScene extends BaseScene {
   private audioSystem!: IAudioSystem;
-  private timeEffectsSettings!: ITimeEffectsSettingsProvider;
-  private mobileSettings!: IMobileSettingsProvider;
   private hudManager!: HUDManager;
   private pauseDialog: PauseDialog | null = null;
   private helpDialog: HelpDialog | null = null;
@@ -68,8 +62,6 @@ export class UIScene extends BaseScene {
   create(): void {
     const container = getServiceContainer();
     this.audioSystem = container.resolve(ServiceTokens.AUDIO_SYSTEM);
-    this.timeEffectsSettings = container.resolve(ServiceTokens.TIME_EFFECTS_SETTINGS);
-    this.mobileSettings = container.resolve(ServiceTokens.MOBILE_SETTINGS);
 
     this.setupOrientationOverlay();
     this.createHUD();
@@ -178,10 +170,6 @@ export class UIScene extends BaseScene {
         this.hidePauseDialog();
         this.transitionToGameScene(this.currentLevel);
       },
-      onSettings: () => {
-        this.audioSystem.ui.playClick();
-        this.openSettingsDialog();
-      },
       onMenu: () => {
         this.audioSystem.ui.playClick();
         this.hidePauseDialog();
@@ -245,54 +233,6 @@ export class UIScene extends BaseScene {
       onHome: () => {
         this.audioSystem.ui.playClick();
         this.transitionToMenu();
-      },
-    });
-
-    this.add.existing(dialog);
-  }
-
-  private openSettingsDialog(): void {
-    const currentSettings = this.audioSystem.settings.getSettings();
-    const timeEffectsSettings = this.timeEffectsSettings.getSettings();
-    const mobileSettings = this.mobileSettings.getSettings();
-
-    const dialog = new SettingsDialog(this, {
-      showOverlay: false,
-      musicEnabled: currentSettings.musicEnabled,
-      sfxEnabled: currentSettings.sfxEnabled,
-      musicVolume: currentSettings.musicVolume * 100,
-      sfxVolume: currentSettings.sfxVolume * 100,
-      performanceMode: PerformanceManager.getPerformanceMode(),
-      hitPauseEnabled: timeEffectsSettings.hitPauseEnabled,
-      slowMotionEnabled: timeEffectsSettings.slowMotionEnabled,
-      hapticEnabled: mobileSettings.hapticEnabled,
-      screenFlashEnabled: timeEffectsSettings.screenFlashEnabled,
-      onMusicToggle: (enabled: boolean) => {
-        this.audioSystem.settings.setMusicEnabled(enabled);
-      },
-      onSfxToggle: (enabled: boolean) => {
-        this.audioSystem.settings.setSfxEnabled(enabled);
-      },
-      onMusicVolumeChange: (value: number) => {
-        this.audioSystem.settings.setMusicVolume(value / 100);
-      },
-      onSfxVolumeChange: (value: number) => {
-        this.audioSystem.settings.setSfxVolume(value / 100);
-      },
-      onPerformanceModeChange: (mode) => {
-        PerformanceManager.setPerformanceMode(mode);
-      },
-      onHitPauseToggle: (enabled: boolean) => {
-        this.timeEffectsSettings.setHitPauseEnabled(enabled);
-      },
-      onSlowMotionToggle: (enabled: boolean) => {
-        this.timeEffectsSettings.setSlowMotionEnabled(enabled);
-      },
-      onHapticToggle: (enabled: boolean) => {
-        this.mobileSettings.setHapticEnabled(enabled);
-      },
-      onScreenFlashToggle: (enabled: boolean) => {
-        this.timeEffectsSettings.setScreenFlashEnabled(enabled);
       },
     });
 

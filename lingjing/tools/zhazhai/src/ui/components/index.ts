@@ -10,8 +10,5 @@ export type { ModalConfig } from "./Modal";
 export { ToggleSwitch } from "./ToggleSwitch";
 export type { ToggleSwitchConfig } from "./ToggleSwitch";
 
-export { VolumeSlider } from "./VolumeSlider";
-export type { VolumeSliderConfig, SliderColor } from "./VolumeSlider";
-
 export { VerticalScroll } from "./VerticalScroll";
 export type { VerticalScrollConfig } from "./VerticalScroll";

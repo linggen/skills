@@ -102,8 +102,8 @@ first resident; `scripts/games/kit/` is where the shared assets live).
 - **Settings:** one — the bar's 🔊, effects and music together, for every game (`localStorage lingjing.sound`
   holds only `muted`). No per-part switch or volume (11-04: the pause veil's 音效 · 音乐 rows are gone; the system
   volume rules). The 🔊 is drawn from what sounds (`sound.silent()`): silent 🔇 「取消静音」, sounding 🔊 「静音」; its
-  click resumes the AudioContext inside the gesture and plays the toggle once the bank is in. 砸寨's own audio settings are inert now: its players send
-  every name to the shell (`ShellSoundAdapter.ts`), and its old sprite and its music are gone.
+  click resumes the AudioContext inside the gesture and plays the toggle once the bank is in. 砸寨's own SETTINGS dialog (its volume sliders) is gone (11-04): its
+  players send every name to the shell (`ShellSoundAdapter.ts`), and its old sprite and its music are gone.
 - **Every game names its sounds (10-26, 「有很多小游戏没有声音和退出」).** `meta.sounds` lists what a game names; a
   pure board names it with `sounds(before, after)` — two states in, names out — and every runner of a pure board
   (`games/mount.js` off the story, `live-games.js` and the page's taps on it) sounds each act and tick through

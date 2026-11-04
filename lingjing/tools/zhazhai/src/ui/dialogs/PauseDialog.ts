@@ -8,7 +8,6 @@ import { Button } from "../components/Button";
 export interface PauseDialogConfig {
   onResume: () => void;
   onRestart: () => void;
-  onSettings: () => void;
   onMenu: () => void;
 }
 
@@ -17,7 +16,7 @@ export class PauseDialog extends Phaser.GameObjects.Container {
   private config: PauseDialogConfig;
 
   private readonly DIALOG_WIDTH = 350;
-  private readonly DIALOG_HEIGHT = 444;
+  private readonly DIALOG_HEIGHT = 364;
 
   constructor(scene: Phaser.Scene, config: PauseDialogConfig) {
     super(scene, LayoutManager.CENTER_X, LayoutManager.CENTER_Y);
@@ -69,14 +68,8 @@ export class PauseDialog extends Phaser.GameObjects.Container {
     });
     this.add(restartButton);
 
-    const settingsButton = new Button(this.scene, 0, buttonStartY + buttonGap * 2, {
-      label: "SETTINGS",
-      variant: "secondary",
-      onClick: () => this.config.onSettings(),
-    });
-    this.add(settingsButton);
-
-    const menuButton = new Button(this.scene, 0, buttonStartY + buttonGap * 3, {
+    // No SETTINGS (11-04): sound has one control, the shell's 🔊.
+    const menuButton = new Button(this.scene, 0, buttonStartY + buttonGap * 2, {
       label: "MENU",
       variant: "danger",
       onClick: () => this.config.onMenu(),

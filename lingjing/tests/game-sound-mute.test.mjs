@@ -117,3 +117,12 @@ test('one source: the bar, the phone\'s 🔊 and the page all read sound.silent(
   assert.match(host, /muted: sound\.silent\(\)/);
   assert.match(host, /return sound\.silent\(\)/);
 });
+
+test('砸寨 has no sound settings of its own: no SETTINGS button, no volume slider — the shell\'s 🔊 is the one control', () => {
+  const src = (p) => fs.readFileSync(new URL(`../tools/zhazhai/src/${p}`, import.meta.url), 'utf8');
+  assert.equal(fs.existsSync(new URL('../tools/zhazhai/src/ui/dialogs/SettingsDialog.ts', import.meta.url)), false);
+  assert.equal(fs.existsSync(new URL('../tools/zhazhai/src/ui/components/VolumeSlider.ts', import.meta.url)), false);
+  for (const p of ['ui/dialogs/PauseDialog.ts', 'scenes/UIScene.ts', 'scenes/MenuScene.ts']) assert.doesNotMatch(src(p), /SETTINGS"|SettingsDialog|onSettings|openSettings/, p);
+  const bundle = fs.readFileSync(new URL('../scripts/games/zhazhai/zhazhai.min.mjs', import.meta.url), 'utf8');
+  assert.doesNotMatch(bundle, /label:"SETTINGS"|SETTINGS:\{zh|\\u97F3\\u6548|\\u97F3\\u4E50/, 'the built bundle carries no settings button or 音效 · 音乐 labels');
+});
