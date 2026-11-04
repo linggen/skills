@@ -44,7 +44,7 @@ test('a save from before the cut migrates: what is held stays, what only the cut
   const old = oldSave();
   const m = migrate(old, content);
   assert.equal(m.version, STATE_VERSION);
-  assert.equal(STATE_VERSION, 16);
+  assert.equal(STATE_VERSION, 17); // v17 (2026-11-04): read_whole, the 年 pools read through their boards
   // Kept: the bag (an old 回春丹 and 妖丹 are goods now), the cards, the cast,
   // the treasure and its 重, her joining, the realm.
   assert.deepEqual(m.bag, old.bag);

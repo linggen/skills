@@ -1,5 +1,6 @@
 // rules/look.mjs — The reading: the shelf, the briefs, Look, and what is on the stage.
 // Part of the rules engine; rules.mjs is its one door.
+import { afterParts, boardStaged, readThrough, sceneBoards } from './parts.mjs';
 import { gearHint } from './gearhint.mjs';
 import { linesLook, linesOf } from './lines.mjs';
 import { playGrant } from './playpay.mjs';
@@ -126,7 +127,7 @@ function sceneWords(content, sc, lang, own = false) {
   if (!byKey.has(key)) {
     const said = (v) => (v == null ? '' : typeof v === 'string' ? v : pick(v, lang) ?? '');
     const opening = [sc.story, ...(sc.lines ?? []).map(l => l.text)];
-    const later = [sc.story_after, ...(sc.exits ?? []).flatMap(e => [e.story, ...(e.beat ?? []).map(l => l.text)])];
+    const later = [...afterParts(sc), ...(sc.exits ?? []).flatMap(e => [e.story, ...(e.beat ?? []).map(l => l.text)])];
     byKey.set(key, (own ? opening : [...opening, ...later]).map(said).join('\n'));
   }
   return byKey.get(key);
@@ -293,6 +294,8 @@ function sceneBrief(content, state, now = new Date()) {
     setup: say(scene.setup),
     cast: castShown(state, scene).filter(id => id !== companionOf(content)?.id || hasCompanion(state)).map(id => ({ id, name: nameOf(content, id, lang) })),
     show: withMap(content, scene.show ?? []),
+    // Read through its boards (rules/parts.mjs): the boards the reading has not reached yet — the stage's boardWaits holds them.
+    ...(readThrough(scene) ? { held: sceneBoards(scene).filter(id => !boardStaged(state, scene, id)) } : {}),
     lines: spoken(content, state, scene.lines),
     ...(people.length ? { people } : {}),
     ...(panel ? { panel } : {}),
@@ -484,13 +487,19 @@ function tasksBrief(content, state, ctx) {
   Object.assign(hosted, qiecuoHosted(content, state, ctx.now));
   const again = new Set([...(content.tasks?.tasks ?? []).map(t => t.id).filter(id => reopened(content, state, id, ctx.now)), ...Object.keys(hosted)]);
   const held = Object.fromEntries([...again].map(id => [id, { status: 'offered' }]));
-  const hereShows = new Set((sceneOf(content, state)?.show ?? []).filter(c => c.card === 'board').map(c => c.id));
+  const hereScene = sceneOf(content, state);
+  const hereShows = new Set((hereScene?.show ?? []).filter(c => c.card === 'board').map(c => c.id));
   const tasks = Object.entries({ ...state.tasks, ...held, ...hosted })
     // …and a board the scene he stands in shows, done (won or left) on an earlier day: still the
     // scene's, so the stage knows it is over and never deals it fresh (a skip, then a night at the scene).
     .filter(([id, t]) => t.status !== 'done' || (t.done_at ? dayKey(new Date(t.done_at)) === today : false) || hereShows.has(id) || shouchaoWaiting(content, state, id, ctx.now) || qiecuoWaiting(content, state, id, ctx.now))
     // A board whose row is gone (told again: the 调息 cut, 2026-10-20) stays in the save, done, for the record — never drawn.
     .filter(([id]) => taskOf(content, id))
+    // …nor a board cut from the story since (`cut`) and only offered: let go (state.mjs fitWorld) — never drawn meanwhile.
+    .filter(([id, t]) => !(taskOf(content, id).cut && t.status !== 'done' && !hosted[id] && !held[id]))
+    // One board at a time, at its line (rules/parts.mjs boardStaged, Hanli 11-04): in a scene read through its boards, a
+    // board waits for the one before it and for the reading to reach it — hidden till then, on every reader.
+    .filter(([id]) => hosted[id] || held[id] || boardStaged(state, hereScene, id))
     .map(([id, t]) => {
       const task = taskOf(content, id);
       // The deal: the task's own (and its game's levels) 兽潮's night (or 切磋's bout) and a 秘境探险 room's level laid over it — one deal.

@@ -1,6 +1,7 @@
 // Loads a world's authored content and checks it. Pure reads — nothing here
 // writes. `node content.mjs lint [world]` prints every problem and exits 1 on
 // any; with no world named it lints every world in `worlds/`.
+import { afterParts, readThrough, sceneBoards } from './rules/parts.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -1566,9 +1567,12 @@ function lintScene(scene, chapter, content, ids, bad) {
   lintStory(where, scene.story, bad);
   for (const k of RETIRED) if (scene[k] != null) bad(where, `${k} is retired: the box plays the book's full text in \`story\``);
   // The rest of a passage a game stands inside: played after it, the scene's own (tasks.mjs, tell.mjs).
+  // A list: read through its boards, part k after board k (rules/parts.mjs) — never more parts than boards to stand before them.
   if (scene.story_after != null) {
-    lintStory(`${where}.story_after`, scene.story_after, bad);
+    afterParts(scene).forEach((part, k) => lintStory(`${where}.story_after${readThrough(scene) ? `[${k}]` : ''}`, part, bad));
     if (!scene.story || !(scene.show ?? []).some(c => c.card === 'board')) bad(where, 'story_after needs a story and a board the passage leads into');
+    if (readThrough(scene) && afterParts(scene).length > sceneBoards(scene).length) bad(where, `story_after has ${afterParts(scene).length} parts for ${sceneBoards(scene).length} boards: each part follows a board`);
+    if (readThrough(scene) && !afterParts(scene).length) bad(where, 'story_after is an empty list');
   }
   if (scene.panel) {
     // A story moment is never illustrated (his, 2026-09-29): the scene card is its words; pictures are the 图鉴's.

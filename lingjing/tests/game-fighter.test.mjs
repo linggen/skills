@@ -367,9 +367,10 @@ test('撑过她的剑 · 你又跑: 09-futian\'s bout is a 格斗 board, a longe
 
 /* 秦雁 in the gate pools (主力 spread, second pass, 2026-10-31): 秦雁 · 崖顶 (09-suifeng) and 秦雁 · 后山崖顶 (09-shenshi), each
    the cliff's outlast bout re-weighed on her painted sheet — 崖顶 between 流云剑's twenty and 撑过她的剑's twenty-four, 后山崖顶
-   past both. Ids, pay and done lines kept; a human-like hand stands each, the rest go down. */
+   past both. Ids, pay and done lines kept; a human-like hand stands each, the rest go down. Off the story since 2026-11-04
+   (the 年 pools read through their boards: her bout is 09-fangshi's, and 「那一下午没比剑」) — the 游戏厅's 旧版 keeps both. */
 test('秦雁 in the pools: 崖顶 and 后山崖顶 are 格斗 outlast bouts on the climb; a human-like hand stands each, the rest go down', () => {
-  const lv = (t) => REG.games.find((g) => g.task === t && !g.replaced);
+  const lv = (t) => REG.games.find((g) => g.task === t && (!g.replaced || g.replaced === 'cut'));
   const liu = lv('fangshi-liuyun').levels[0], fu = lv('futian-spar').levels[0];
   const H09 = read('../worlds/jiuding/tasks/h09.json').tasks, H11 = read('../worlds/jiuding/tasks/h11.json').tasks;
   for (const [task, tasks, lo, hi] of [['suifeng-qinyan', H11, liu, fu], ['shenshi-qinyan', H09, fu, null]]) {

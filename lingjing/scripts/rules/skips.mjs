@@ -18,6 +18,7 @@ import { clone, pay, refuse } from './core.mjs';
 import { taskOf } from './errands.mjs';
 import { stow, fullLine } from './pouch.mjs';
 import { sceneOf } from './world.mjs';
+import { afterKey, afterParts, partAfterBoard, sceneBoards } from './parts.mjs';
 
 /* A story fight may be left from the first moment (Hanli 11-03: 「统一改成右上角的关闭按钮了. 不需要卡住, 直接就给这个关闭
    按钮」; every story fight since 2026-10-27: 「确保都能跳过去, 不会卡住游戏进程」): its card's 留 · ✕ walk the way on a win
@@ -26,8 +27,19 @@ export function fightStuck(content, state, game) {
   return game?.kind === 'duel' && !state.wins?.[game.id];
 }
 
-/* A scene's boards, in the order they are played (its `show`). */
-export const sceneBoards = scene => (scene?.show ?? []).filter(c => c.card === 'board').map(c => c.id);
+export { sceneBoards };
+/* The part of the scene's passage a board leads into (rules/parts.mjs), owed the moment the board is over — won
+   or left. A save that read the scene's passage whole before it was cut through its boards (`read_whole`, state.mjs
+   v17) owes none: it has read them. */
+export function owePart(s, scene, id) {
+  if (partAfterBoard(scene, id) < 0 || s.read_whole === scene.id) return;
+  // …and the parts after the boards already over beyond it (a save from before the cut played them in the old order): read on.
+  const order = sceneBoards(scene);
+  for (let k = partAfterBoard(scene, id); k >= 0 && k < afterParts(scene).length && (k === order.indexOf(id) || boardOver(s, order[k])); k += 1) {
+    const key = afterKey(scene.id, k);
+    if (!(s.tell_owed ?? []).includes(key)) s.tell_owed = [...(s.tell_owed ?? []), key];
+  }
+}
 /* A board over for the story — won and counted, or skipped. */
 export const boardOver = (state, id) => state.tasks?.[id]?.status === 'done';
 export const skippedBoard = (state, id) => Boolean(state.tasks?.[id]?.skipped);
@@ -45,8 +57,8 @@ export function skipBoard(state, content, ctx, id) {
   const s = clone(state);
   delete s.wins?.[id];
   s.tasks[id] = { status: 'done', skipped: true, period: periodKey(t.period, ctx.now), done_at: ctx.now.toISOString() };
-  // The rest of the scene's passage, owed after its first board — as after a win (tasks.mjs taskDone).
-  if (!again && scene?.story_after && order[0] === id) s.tell_owed = [...(s.tell_owed ?? []), `after/${scene.id}`];
+  // The part of the scene's passage after this board, owed — as after a win (tasks.mjs taskDone).
+  if (!again) owePart(s, scene, id);
   // Put away for good (Hanli 11-03: 「可能用户想丢掉, 可能想以后玩」): it never comes back by itself — 留 keeps it (keepBoard).
   // A thing the story needs from the board (`gives`) is handed over all the same; the reward is not.
   const full = t.gives?.bag ? fullLine(s, [stow(content, s, t.gives.bag, 1, 'task')]) : null;

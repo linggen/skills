@@ -1,7 +1,7 @@
 {
  "_about": "游戏厅 stage save for duizi (tools/arcade-saves.mjs, from its games.json row)",
  "state": {
-  "version": 16,
+  "version": 17,
   "world": "jiuding",
   "lang": "zh",
   "name": "沈小满",
@@ -16,7 +16,7 @@
   "tier": "qi",
   "step": 5,
   "progress": 11,
-  "wealth": 580,
+  "wealth": 565,
   "lines": {
    "jin": {
     "tier": "xinsheng",
@@ -370,12 +370,7 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
-   "dianmao-sunergou": {
-    "status": "done",
-    "period": "once",
-    "done_at": "2026-10-01T01:00:00.000Z"
-   },
-   "dianmao-jingtai": {
+   "dianmao-jiangtang": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -385,17 +380,7 @@
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
    },
-   "dianmao-jiangtang": {
-    "status": "done",
-    "period": "once",
-    "done_at": "2026-10-01T01:00:00.000Z"
-   },
-   "dianmao-maxiaobao": {
-    "status": "done",
-    "period": "once",
-    "done_at": "2026-10-01T01:00:00.000Z"
-   },
-   "dianmao-yaoyuan": {
+   "dianmao-sunergou": {
     "status": "done",
     "period": "once",
     "done_at": "2026-10-01T01:00:00.000Z"
@@ -702,8 +687,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 1671,
-   "wealth": 583
+   "progress": 1629,
+   "wealth": 568
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -1136,12 +1121,9 @@
     "jin-chat-ge": 1,
     "jin-chat-617": 1,
     "qingshi-yiquan": 1,
-    "dianmao-sunergou": 1,
-    "dianmao-jingtai": 1,
-    "dianmao-canju": 1,
     "dianmao-jiangtang": 1,
-    "dianmao-maxiaobao": 1,
-    "dianmao-yaoyuan": 1,
+    "dianmao-canju": 1,
+    "dianmao-sunergou": 1,
     "dianmao-ahe": 1,
     "zhishi-zhouheng": 1,
     "yaoyuan-xunye": 1,
@@ -1206,12 +1188,9 @@
   "boards_paid": [
    "zhoutian-sanguan",
    "qingshi-yiquan",
-   "dianmao-sunergou",
-   "dianmao-jingtai",
-   "dianmao-canju",
    "dianmao-jiangtang",
-   "dianmao-maxiaobao",
-   "dianmao-yaoyuan",
+   "dianmao-canju",
+   "dianmao-sunergou",
    "dianmao-ahe",
    "zhishi-zhouheng",
    "yaoyuan-xunye",

@@ -19,6 +19,7 @@ import { fill, pick } from '../state.mjs';
 import { companionOf } from './companion.mjs';
 import { portraitOf } from './codex.mjs';
 import { atScene, inMade, sceneOf } from './world.mjs';
+import { afterId, afterKey, afterParts, parseAfter, partOfId, readThrough, sceneBoards } from './parts.mjs';
 
 const SPAN = /⟪([\s\S]*?)⟫/g;
 // The book's reader marks (read-md.js): `[词]{注=id}` / `[句]{典=id}` → the words, a bare
@@ -108,16 +109,23 @@ export function tellOf(content, state) {
     seen.add(`scene/${sid}`); told.add(sid);
     const passage = toldOf(content, state, sc.story);
     if (passage) items.push({ of: 'scene', id: sid, ...passage, ...(sc.hui ? { hui: sc.hui } : {}) });
+    // Read through its boards (rules/parts.mjs): the parts after the boards already over come with it, in order — a
+    // save that played a board before the scene's passage was told (one placed under it) reads on to the next one.
+    if (readThrough(sc)) for (const [k, b] of sceneBoards(sc).entries()) {
+      if (k >= afterParts(sc).length || state.tasks?.[b]?.status !== 'done' || state.read_whole === sid) break;
+      addAfter(sid, k);
+    }
+  };
+  // The rest of a scene's passage, after the game inside it (`story_after`, part k after board k): the scene's own.
+  const addAfter = (eid, k) => {
+    const key = afterKey(eid, k), sc = findScene(content, eid), part = afterParts(sc)[k];
+    const passage = part && !seen.has(key) ? toldOf(content, state, part) : null;
+    if (passage) { seen.add(key); items.push({ of: 'after', id: afterId(eid, k), ...passage, ...(sc.hui ? { hui: sc.hui } : {}) }); }
   };
   for (const key of state.tell_owed ?? []) {
     const [sid, eid] = key.split('/');
     if (sid === 'scene') { addScene(eid); continue; }
-    // The rest of a scene's passage, after the game inside it (`story_after`): the scene's own.
-    if (sid === 'after') {
-      const sc = findScene(content, eid), passage = sc?.story_after && !seen.has(key) ? toldOf(content, state, sc.story_after) : null;
-      if (passage) { seen.add(key); items.push({ of: 'after', id: `${eid}/after`, ...passage, ...(sc.hui ? { hui: sc.hui } : {}) }); }
-      continue;
-    }
+    if (sid === 'after') { addAfter(eid, parseAfter(key).k); continue; }
     const from = findScene(content, sid), exit = from?.exits?.find(e => e.id === eid);
     const passage = exit?.story && !seen.has(key) ? toldOf(content, state, exit.story) : null;
     // Each passage carries its 回: the page plays an ending 回's last passage before its 「完」 card.
@@ -225,11 +233,11 @@ function speakerOf(content, state, name, sid) {
 }
 
 /* One passage by its key, as the page plays it — both languages — or null when the book has none
-   there: a scene's own (`scene`), its rest after a board (`after`, `<scene>/after`), a choice's
+   there: a scene's own (`scene`), its rest after a board (`after`, `<scene>/after[/<k>]`), a choice's
    (`choice`, `<scene>/<exit>`). The book set aside is taken up again from these (rules/aside.mjs). */
 export function aside(content, state, { of, id }) {
   const sid = of === 'scene' ? id : id.split('/')[0], sc = findScene(content, sid);
-  const pair = of === 'scene' ? sc?.story : of === 'after' ? sc?.story_after : sc?.exits?.find(e => e.id === id.split('/')[1])?.story;
+  const pair = of === 'scene' ? sc?.story : of === 'after' ? afterParts(sc)[partOfId(id)] : sc?.exits?.find(e => e.id === id.split('/')[1])?.story;
   if (!pair?.zh) return null;
   const beats = {};
   for (const lang of ['zh', 'en']) {

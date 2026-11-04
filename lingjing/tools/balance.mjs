@@ -49,7 +49,7 @@ const sideHui = (content, id) => { const h = huiOf(content, id); return Boolean(
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const BALANCE_FILE = path.join(HERE, '../worlds/jiuding/balance.json');
 
-const chars = x => (typeof x === 'string' ? x.length : x?.zh?.length ?? 0);
+const chars = x => (typeof x === 'string' ? x.length : Array.isArray(x) ? x.reduce((n, y) => n + chars(y), 0) : x?.zh?.length ?? 0);
 const tableCap = (content, grant) => Math.min(grant?.progress ?? 0, content.rewards.tables[grant?.table]?.progress ?? 0);
 /* What a grant pays in 灵石, capped by its table as the rules cap it. */
 const wealthCap = (content, grant) => Math.min(grant?.wealth ?? 0, content.rewards.tables[grant?.table]?.wealth ?? 0);

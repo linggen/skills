@@ -21,6 +21,8 @@
 // under a paragraph of a passage (`{景=id}`, rules/tell.mjs) is a beat too: the
 // box stops on that paragraph while it plays, so the count resets after it.
 
+import { afterParts } from './rules/parts.mjs';
+
 export const RHYTHM_CAP = 2200; // zh characters between two play beats — about five minutes at 450 字/min (2026-10-26, was 1500)
 
 const strip = t => String(t ?? '')
@@ -88,8 +90,13 @@ export function timelineOf(chapter) {
     if (duelAt(scene) && !boards.length) beat('fight', duelId(scene), id, id);
     read(scene.story, id, id);
     if (boards.length) beat('board', boards[0], id, id);
-    read(scene.story_after, id, id);
-    for (const b of boards.slice(1)) beat('board', b, id, `${id}:${b}`);
+    // Read through its boards (rules/parts.mjs): part k after board k, the next board after it.
+    const parts = afterParts(scene);
+    parts.forEach((part, k) => {
+      read(part, id, id);
+      if (boards[k + 1]) beat('board', boards[k + 1], id, `${id}:${boards[k + 1]}`);
+    });
+    for (const b of boards.slice(Math.max(1, parts.length + 1))) beat('board', b, id, `${id}:${b}`);
     const exit = mainExit(scene);
     if (!exit) break;
     const at = `${id}/${exit.id}`, kind = exitKind(exit);

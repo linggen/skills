@@ -34,8 +34,8 @@ const liveUntil = (mod, s, step, done = (x) => x.won) => { let x = s; for (let i
 
 const H11 = ['09-snow', '09-jiuge', '09-furnace', '09-danfang', '09-year', '09-lingcao', '09-fangshi', '09-suifeng', '09-yishui', '09-xie', '09-nianyao', '09-futian'];
 // 古七's years (doc/gates-2026-10-27.md 古七 (c), 2026-10-27): 09-suifeng (年四, 随风) off 09-yishui's head, 09-nianyao (年五, 碾药 and
-// 阿禾's 筑基) off 09-futian's way on — each with seven classic boards before its gate.
-const YEARS = { '09-suifeng': ['suifeng-yading', 'suifeng-yezi', 'suifeng-qinyan', 'suifeng-canju', 'suifeng-xunwei', 'suifeng-qulao', 'suifeng-shanmen'], '09-nianyao': ['nianyao-yaoyuan', 'nianyao-mindanshi', 'nianyao-niannian', 'nianyao-shuangma', 'nianyao-jingshi', 'nianyao-ahe'] };
+// 阿禾's 筑基) off 09-futian's way on — each read through four boards since 2026-11-04 (Hanli: 「可以, 按你说的做」: a board at its line).
+const YEARS = { '09-suifeng': ['suifeng-yading', 'suifeng-yezi', 'suifeng-xunwei', 'suifeng-shanmen'], '09-nianyao': ['nianyao-niannian', 'nianyao-mindanshi', 'nianyao-yaoyuan', 'nianyao-ahe'] };
 // The years' first, 碾船 · 丹房, stands at 09-xie since 2026-10-31 (the reading gaps: 09-yishui → 09-nianyao read 4,224 字 without play).
 // 全文后的小游戏 第二批 (2026-10-26): 09-danfang (闵丹师's pill) split off 09-year's head, 09-fangshi (钱掌柜 · 秦雁's 流云剑) off 09-yishui's.
 // 09-snow has no board since 2026-10-19: its feeding is the 大场面 扔了干净 (tests/setpiece-huochai.test.mjs).
@@ -61,7 +61,7 @@ test('each scene\'s boards are its own (two at most, the years\' seven aside), t
     const sc = CH.scenes[scene];
     assert.deepEqual(sc.show.filter((c) => c.card === 'board').map((c) => c.id), ids, scene);
     assert.deepEqual(sc.offers.tasks, ids);
-    assert.ok(ids.length <= (YEARS[scene] ? 7 : 2), scene);
+    assert.ok(ids.length <= (YEARS[scene] ? 4 : 2), scene);
     for (const e of sc.exits.filter((x) => !x.stay)) assert.equal(e.needs?.task, ids.at(-1), `${scene}/${e.id} waits on its last board`);
     for (const id of ids) assert.ok(content.tasks.tasks.some((t) => t.id === id), `${id} in tasks/h11.json`);
   }
@@ -135,14 +135,14 @@ test('walking 古七 by its boards and fights: 修为 rises at each cultivation 
   assert.equal(s.scene, '09-fangshi');
   s = go(play(play(s, 'fangshi-qian'), 'fangshi-liuyun'), 'autumn');
   assert.deepEqual([s.scene, s.step], ['09-suifeng', 5], '五层 until 沂水');
-  s = go(YEARS['09-suifeng'].reduce((x, id) => play(x, id), s), 'on'); // 年四's seven boards (2026-10-27)
+  s = go(YEARS['09-suifeng'].reduce((x, id) => play(x, id), s), 'on'); // 年四's four boards (2026-11-04; seven 2026-10-27)
   assert.equal(s.scene, '09-yishui');
   s = go(play(s, 'yishui-reed', 'still'), 'night');
   assert.deepEqual([s.scene, s.step], ['09-xie', 5], '沂水 waited on 五层圆满, earned; it lifts nothing');
   s = go(play(s, 'nianyao-canju'), 'go'); // 顺风溜 told (the 调息 cut): the boots with the way on; 碾船 · 丹房 first (2026-10-31)
   assert.equal(s.bag['shunfeng-liu'], 1);
   assert.equal(s.scene, '09-nianyao');
-  s = go(YEARS['09-nianyao'].reduce((x, id) => play(x, id), s), 'on'); // 年五's boards (2026-10-27; six since the first went to 09-xie, 2026-10-31)
+  s = go(YEARS['09-nianyao'].reduce((x, id) => play(x, id), s), 'on'); // 年五's four boards (2026-11-04; six after the first went to 09-xie, 2026-10-31)
   assert.equal(s.scene, '09-futian');
   // 秦雁's monthly bout: 格斗 since 2026-10-28 (Hanli: 「故事里的战斗可以用格斗」) — the board futian-spar, the cliff's own level.
   assert.equal(resolve(s, content, ctx(), { exit: 'spar' }).result.ok, false, 'the autumn waits on her bout');

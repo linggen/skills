@@ -48,7 +48,7 @@ for (const h of BOOK.volumes.flatMap((v) => v.hui)) book[h.id] = norm(fs.readFil
 
 function* stories(scene) {
   if (scene.story?.zh) yield [scene.id, scene.story];
-  if (scene.story_after?.zh) yield [`${scene.id}/after`, scene.story_after];
+  for (const [k, part] of [].concat(scene.story_after ?? []).entries()) if (part?.zh) yield [k ? `${scene.id}/after/${k}` : `${scene.id}/after`, part];
   for (const x of scene.exits ?? []) if (x.story?.zh) yield [`${scene.id}/${x.id}`, x.story];
 }
 const allScenes = () => CHAPTERS.flatMap((ch) => {

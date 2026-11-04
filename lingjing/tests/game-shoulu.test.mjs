@@ -472,6 +472,7 @@ test('each story level is a board its scene shows, its task names it, its 游戏
   for (const l of stories) {
     const t = tasks.find((x) => x.game === 'shoulu' && x.deal?.lv === l.id);
     assert.ok(t, `${l.id}: a story task deals it`);
+    if (t.cut) continue; // let go from its scene (the 年 pools read through their boards, 2026-11-04): the 游戏厅's 旧版 keeps the level
     assert.equal(t.kind, 'board');
     const sc = sceneOf(l.story);
     assert.ok(sc, `${l.id}: its scene ${l.story}`);

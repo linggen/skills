@@ -17,7 +17,7 @@ import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf } from './travel.mjs';
 import { gamesToday } from './rotation.mjs';
 import { stow, fullLine } from './pouch.mjs';
-import { dropKept, keepBoard, leaveBoard, leaveOf, playKept, sceneBoards, skipBoard, storyBoard } from './skips.mjs';
+import { dropKept, keepBoard, leaveBoard, leaveOf, owePart, playKept, sceneBoards, skipBoard, storyBoard } from './skips.mjs';
 import { sideLine } from './hui.mjs';
 import { boardLine, lineGrant, linePay } from './lines.mjs';
 import { writeLedger } from './ledger.mjs';
@@ -217,7 +217,8 @@ function taskDone(state, content, ctx, id) {
   // scene's, owed the moment the game is counted — told right after it, before the choices.
   const here = sceneOf(content, s);
   // With two boards (batch two: 00-cave, 00-halfyear) the split belongs to the first in `show`; the second comes after the rest.
-  if (!replayed && here?.story_after && sceneBoards(here)[0] === id) s.tell_owed = [...(s.tell_owed ?? []), `after/${here.id}`];
+  // Read through its boards (rules/parts.mjs): each board owes the part after it.
+  if (!replayed && here) owePart(s, here, id);
   const full = t.gives?.bag ? fullLine(s, [stow(content, s, t.gives.bag, 1, 'task')]) : null;
   const paid = pay(content, s, ctx, t.grant);
   boardPay(content, s, t, id, paid);

@@ -3,6 +3,7 @@
 // Ids only: the page and the book draw the cards (scripts/codex.js), from the
 // same codex.json. Nothing here is kept in the save — what was met is read
 // off the scenes done, the bag and the fights, so an old save has its 图鉴 too.
+import { afterParts } from './parts.mjs';
 import { codexFiles } from '../content.mjs';
 import { codexRaw, resolveEntry } from '../codex.js';
 import { fill, genderOf, personOf } from '../state.mjs';
@@ -52,7 +53,7 @@ const afterTold = (state, scene) => (state.done_scenes ?? []).includes(scene.id)
 export function waitsTheBook(state, scene) {
   if (!scene?.story_after || afterTold(state, scene)) return new Set();
   const before = notesIn(scene.story);
-  return new Set([...notesIn(scene.story_after)].filter(id => !before.has(id)));
+  return new Set([...notesIn(...afterParts(scene))].filter(id => !before.has(id)));
 }
 /* A scene's cast as it may be named yet: the ones still waiting for the book stand aside — from its card, and as
    much from Look's cast, 人物谱 and the place's beast (review 2026-10-21: 狰 was named by all three at wm-yaoyuan). */

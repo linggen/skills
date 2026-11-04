@@ -15,6 +15,7 @@
 //
 // contentHealth(content, chapters) → the same shape for the world itself: a need
 // (mark, item, grade, errand) that nothing in those chapters provides.
+import { afterParts, parseAfter, sceneBoards } from './parts.mjs';
 import { pick, dayKey, stepOfLayer, tierOf } from '../state.mjs';
 import { capOf, rankOf } from './cap.mjs';
 import { owesTell } from './tell.mjs';
@@ -182,9 +183,10 @@ function tellChecks(content, state) {
     const [sid, eid] = key.split('/');
     // `after/<scene>` is owed only once the scene's first board is over (tasks.mjs taskDone): a passage
     // re-cut under an old save (the board moved, a new one placed) is let go, never told ahead of its board.
-    const first = sid === 'after' ? (find(eid)?.show ?? []).find(c => c.card === 'board')?.id : null;
+    // Part k (`after/<scene>/<k>`, rules/parts.mjs) by board k.
+    const part = sid === 'after' ? parseAfter(key) : null, board = part ? sceneBoards(find(part.sid))[part.k] : null;
     const ok = sid === 'scene' ? Boolean(find(eid))
-      : sid === 'after' ? Boolean(find(eid)?.story_after) && (!first || state.tasks?.[first]?.status === 'done')
+      : sid === 'after' ? part.k < afterParts(find(part.sid)).length && (!board || state.tasks?.[board]?.status === 'done')
       : Boolean(find(sid)?.exits?.some(e => e.id === eid));
     if (!ok) out.push(problem('owed-missing', 'error', `an owed passage ${key} that the book no longer has`, { kind: 'drop-owed', key }));
   }

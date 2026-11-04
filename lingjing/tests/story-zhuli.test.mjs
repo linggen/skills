@@ -37,7 +37,6 @@ const KEPT = {
   'gate-luoshu': '第三回: 洛书 — 娘\'s nine chestnuts, the riddle the second trial turns on',
   'diyilu-niugu': '第四回: 一根牛骨头 — 饭桶剧情固定局: the book\'s first feed on the real 开炉, the 牛骨头 in, the 牛脂甘露 out (Hanli 10-28: 「喂饭桶的小游戏, 做一个固定的喂饭桶的, 别用塔防」)',
   'diyilu-tama': '第四回: 一根银毛 — the 饭桶\'s own pot, the book\'s fixed 开炉 (Hanli 10-28: 「应该安排一个饭桶的剧情固定游戏」)',
-  'dianmao-jingtai': '第四回: 井台 — the 回\'s one 华容道 (the water carriers at the well)',
   'luobo-rope': '第五回: 一根萝卜 — 饭桶剧情固定局: the 秘境\'s spoils swallowed with a burp, the 萝卜 in, the 九转筑基丹 out (Hanli 10-28: 「喂饭桶的小游戏, 做一个固定的喂饭桶的, 别用塔防」)',
   'mijing-zhenyan': '第五回: 困阵 — 「前人留下的一盘棋」, a game of the passage itself',
   'kouzi-crowd': '第五回: 七八个口子 — the crowd on the riverbank; the 回\'s one 华容道',
@@ -46,7 +45,6 @@ const KEPT = {
   'jiuge-yubu': '第七回: 禹步 — 瞿老: 「照着我的脚，走一遍」',
   'futian-suifeng': '第七回: 随风那一式 — walked on the clifftop over and over, as the passage says',
   'yishui-reed': '第七回: 芦苇里那一等 — the throw on 浮木, its stars mark the reed (reed-still · reed-hasty)',
-  'dingfeng-kunzhen': '第八回: 七块碎灵石 — the 回\'s one 华容道',
   'dingfeng-songzhi': '第八回: 一剑出去 — 瞿老\'s cliff, the steps the sword goes by',
   'shijie-tiandan': '第八回: 恬惔虚无 — the second 调息 Hanli kept; 「真气从之」 is the passage',
 };
@@ -80,7 +78,8 @@ const JIN_ZHULI = {
   'jin-lastshot': '今四: 最后一罚 — the run to the line (几何冲刺)',
 };
 // 第四回 and 第五回 sit lower since the 饭桶's two feeds are fixed 开炉 pots, not 塔防 (饭桶剧情固定局, Hanli 10-28).
-const FLOOR = { '第一回': 0.5, '第二回': 0.5, '第三回': 0.5, '第四回': 0.66, '第五回': 0.46, '第六回': 0.46, '第七回': 0.7, '第八回': 0.65, '第九回': 0.5 };
+// 第七回 from 0.7 (2026-11-04): its two 年 pools, all 主力, read through four boards each now (Hanli 「可以, 按你说的做」) — 13 of 20.
+const FLOOR = { '第一回': 0.5, '第二回': 0.5, '第三回': 0.5, '第四回': 0.66, '第五回': 0.46, '第六回': 0.46, '第七回': 0.65, '第八回': 0.65, '第九回': 0.5 };
 
 const huis = rhythm.chapters.flatMap((c) => c.huis).filter((h) => /^第.回$/.test(h.label.zh));
 const jinHuis = rhythm.chapters.flatMap((c) => c.huis).filter((h) => /^今/.test(h.label.zh));
@@ -166,12 +165,13 @@ test('灵根\'s 格斗: 秦雁 on the phone is a sparring bout a human-like hand
 
 /* The levels the swap added. */
 // (A hosted practice board — the 石室's, 2026-10-31 — deals its scene's own level again: not a swap.)
-const swapped = [...tasks.values()].filter((t) => t.deal?.lv?.startsWith?.('zl-') && !t.hosted);
+// A board the story let go since (`cut`: the 年 pools read through their boards, 2026-11-04) keeps its level for the 游戏厅's 旧版.
+const swapped = [...tasks.values()].filter((t) => t.deal?.lv?.startsWith?.('zl-') && !t.hosted && !t.cut);
 const rowOf = (t) => (t.game === 'shoulu' ? kits.shoulu.levels : kits[t.game].levels).find((l) => l.id === t.deal.lv);
 const SEEDS = 10;
 
 test('each swapped board deals a level of its own: in its scene, a games.json row opens it, one layout apiece', () => {
-  assert.ok(swapped.length >= 43, `${swapped.length} swapped boards`); // 63 on 10-28; less the 格斗 bouts (10-31), the five runs of the 主力 spread (10-31: 几何冲刺) and its second pass (10-31: twelve more to 几何冲刺 · 节奏 · 格斗)
+  assert.ok(swapped.length >= 37, `${swapped.length} swapped boards`); // 63 on 10-28; less the 格斗 bouts (10-31), the five runs of the 主力 spread (10-31: 几何冲刺) and its second pass (10-31: twelve more to 几何冲刺 · 节奏 · 格斗); less the 年 pools' cut (11-04)
   const seen = new Set();
   for (const t of swapped) {
     const row = rowOf(t);

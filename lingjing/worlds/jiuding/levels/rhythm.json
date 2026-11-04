@@ -1016,8 +1016,50 @@
       },
       {
        "kind": "read",
-       "chars": 960,
-       "run": 960,
+       "chars": 813,
+       "run": 813,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "dianmao-jiangtang",
+       "scene": "wm-dianmao",
+       "title": {
+        "zh": "挑水 · 矮石墙外头",
+        "en": "Carrying water · Outside the low wall"
+       },
+       "mechanic": "节奏",
+       "variety": "节奏",
+       "game": "taiko",
+       "n": 311,
+       "level": "tiaoshui-gu",
+       "zhuli": true
+      },
+      {
+       "kind": "read",
+       "chars": 95,
+       "run": 95,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "dianmao-canju",
+       "scene": "wm-dianmao",
+       "title": {
+        "zh": "讲堂后排",
+        "en": "The back row of the lecture hall"
+       },
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 218,
+       "level": "zl-dianmao-canju",
+       "zhuli": true
+      },
+      {
+       "kind": "read",
+       "chars": 52,
+       "run": 52,
        "over": false
       },
       {
@@ -1037,83 +1079,9 @@
       },
       {
        "kind": "read",
-       "chars": 381,
-       "run": 381,
+       "chars": 344,
+       "run": 344,
        "over": false
-      },
-      {
-       "kind": "board",
-       "id": "dianmao-jingtai",
-       "scene": "wm-dianmao",
-       "title": {
-        "zh": "井台 · 挑水回来",
-        "en": "The well · Back with the water"
-       },
-       "mechanic": "解谜",
-       "variety": "解谜",
-       "game": "huarong",
-       "n": 208,
-       "level": "jingtai"
-      },
-      {
-       "kind": "board",
-       "id": "dianmao-canju",
-       "scene": "wm-dianmao",
-       "title": {
-        "zh": "讲堂后排",
-        "en": "The back row of the lecture hall"
-       },
-       "mechanic": "塔防",
-       "variety": "塔防·sadoushou",
-       "game": "sadoushou",
-       "n": 218,
-       "level": "zl-dianmao-canju",
-       "zhuli": true
-      },
-      {
-       "kind": "board",
-       "id": "dianmao-jiangtang",
-       "scene": "wm-dianmao",
-       "title": {
-        "zh": "挑水 · 矮石墙外头",
-        "en": "Carrying water · Outside the low wall"
-       },
-       "mechanic": "节奏",
-       "variety": "节奏",
-       "game": "taiko",
-       "n": 311,
-       "level": "tiaoshui-gu",
-       "zhuli": true
-      },
-      {
-       "kind": "board",
-       "id": "dianmao-maxiaobao",
-       "scene": "wm-dianmao",
-       "title": {
-        "zh": "马小宝 · 讲堂",
-        "en": "Ma Xiaobao · The lecture hall"
-       },
-       "mechanic": "塔防",
-       "variety": "塔防·shouqiang",
-       "game": "shouqiang",
-       "n": 216,
-       "level": "zl-dianmao-maxiaobao",
-       "zhuli": true
-      },
-      {
-       "kind": "board",
-       "id": "dianmao-yaoyuan",
-       "scene": "wm-dianmao",
-       "title": {
-        "zh": "矮石墙 · 墙里的药园",
-        "en": "The low wall · The garden behind it"
-       },
-       "mechanic": "几何冲刺",
-       "variety": "几何冲刺",
-       "game": "dash",
-       "n": 312,
-       "level": "qiangwai-dash",
-       "zhuli": true
       },
       {
        "kind": "board",
@@ -1132,8 +1100,8 @@
       },
       {
        "kind": "read",
-       "chars": 783,
-       "run": 783,
+       "chars": 820,
+       "run": 820,
        "over": false
       },
       {
@@ -1337,14 +1305,14 @@
       }
      ],
      "counts": {
-      "board": 18,
+      "board": 15,
       "fight": 0,
       "riddle": 0,
       "seen": 2,
       "breakthrough": 0,
       "piece": 0
      },
-     "zhuli": 12,
+     "zhuli": 10,
      "longest": 3186,
      "roaming": 15,
      "side": []
@@ -2608,8 +2576,8 @@
       },
       {
        "kind": "read",
-       "chars": 378,
-       "run": 378,
+       "chars": 36,
+       "run": 36,
        "over": false
       },
       {
@@ -2628,6 +2596,12 @@
        "zhuli": true
       },
       {
+       "kind": "read",
+       "chars": 102,
+       "run": 102,
+       "over": false
+      },
+      {
        "kind": "board",
        "id": "suifeng-yezi",
        "scene": "09-suifeng",
@@ -2643,34 +2617,10 @@
        "zhuli": true
       },
       {
-       "kind": "board",
-       "id": "suifeng-qinyan",
-       "scene": "09-suifeng",
-       "title": {
-        "zh": "秦雁 · 崖顶",
-        "en": "Qin Yan · The clifftop"
-       },
-       "mechanic": "格斗",
-       "variety": "格斗",
-       "game": "fighter",
-       "n": 301,
-       "level": "suifeng-qinyan-ge",
-       "zhuli": true
-      },
-      {
-       "kind": "board",
-       "id": "suifeng-canju",
-       "scene": "09-suifeng",
-       "title": {
-        "zh": "顶是艮 · 崖顶",
-        "en": "The top is Gen · The clifftop"
-       },
-       "mechanic": "塔防",
-       "variety": "塔防·sadoushou",
-       "game": "sadoushou",
-       "n": 22,
-       "level": "zl-suifeng-canju",
-       "zhuli": true
+       "kind": "read",
+       "chars": 130,
+       "run": 130,
+       "over": false
       },
       {
        "kind": "board",
@@ -2688,19 +2638,10 @@
        "zhuli": true
       },
       {
-       "kind": "board",
-       "id": "suifeng-qulao",
-       "scene": "09-suifeng",
-       "title": {
-        "zh": "瞿老 · 崖顶",
-        "en": "Old Qu · The clifftop"
-       },
-       "mechanic": "塔防",
-       "variety": "塔防·shouqiang",
-       "game": "shouqiang",
-       "n": 26,
-       "level": "zl-suifeng-qulao",
-       "zhuli": true
+       "kind": "read",
+       "chars": 80,
+       "run": 80,
+       "over": false
       },
       {
        "kind": "board",
@@ -2719,8 +2660,8 @@
       },
       {
        "kind": "read",
-       "chars": 1071,
-       "run": 1071,
+       "chars": 1101,
+       "run": 1101,
        "over": false
       },
       {
@@ -2760,8 +2701,50 @@
       },
       {
        "kind": "read",
-       "chars": 770,
-       "run": 770,
+       "chars": 138,
+       "run": 138,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "nianyao-niannian",
+       "scene": "09-nianyao",
+       "title": {
+        "zh": "闭着眼睛 · 药园",
+        "en": "Eyes closed · The herb garden"
+       },
+       "mechanic": "节奏",
+       "variety": "节奏",
+       "game": "taiko",
+       "n": 303,
+       "level": "niannian-gu",
+       "zhuli": true
+      },
+      {
+       "kind": "read",
+       "chars": 58,
+       "run": 58,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "nianyao-mindanshi",
+       "scene": "09-nianyao",
+       "title": {
+        "zh": "闵丹师 · 丹房",
+        "en": "Pill-master Min · The pill house"
+       },
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 34,
+       "level": "zl-nianyao-mindanshi",
+       "zhuli": true
+      },
+      {
+       "kind": "read",
+       "chars": 457,
+       "run": 457,
        "over": false
       },
       {
@@ -2781,69 +2764,9 @@
       },
       {
        "kind": "read",
-       "chars": 598,
-       "run": 598,
+       "chars": 655,
+       "run": 655,
        "over": false
-      },
-      {
-       "kind": "board",
-       "id": "nianyao-mindanshi",
-       "scene": "09-nianyao",
-       "title": {
-        "zh": "闵丹师 · 丹房",
-        "en": "Pill-master Min · The pill house"
-       },
-       "mechanic": "塔防",
-       "variety": "塔防·sadoushou",
-       "game": "sadoushou",
-       "n": 34,
-       "level": "zl-nianyao-mindanshi",
-       "zhuli": true
-      },
-      {
-       "kind": "board",
-       "id": "nianyao-niannian",
-       "scene": "09-nianyao",
-       "title": {
-        "zh": "闭着眼睛 · 药园",
-        "en": "Eyes closed · The herb garden"
-       },
-       "mechanic": "节奏",
-       "variety": "节奏",
-       "game": "taiko",
-       "n": 303,
-       "level": "niannian-gu",
-       "zhuli": true
-      },
-      {
-       "kind": "board",
-       "id": "nianyao-shuangma",
-       "scene": "09-nianyao",
-       "title": {
-        "zh": "双马饮泉 · 药园",
-        "en": "Two horses at the spring · The garden"
-       },
-       "mechanic": "几何冲刺",
-       "variety": "几何冲刺",
-       "game": "dash",
-       "n": 304,
-       "level": "shuangma-dash",
-       "zhuli": true
-      },
-      {
-       "kind": "board",
-       "id": "nianyao-jingshi",
-       "scene": "09-nianyao",
-       "title": {
-        "zh": "正殿 · 屋脊的瓦缝",
-        "en": "The main hall · The seams of the ridge"
-       },
-       "mechanic": "塔防",
-       "variety": "塔防·sadoushou",
-       "game": "sadoushou",
-       "n": 40,
-       "level": "zl-nianyao-jingshi",
-       "zhuli": true
       },
       {
        "kind": "board",
@@ -2862,8 +2785,8 @@
       },
       {
        "kind": "read",
-       "chars": 124,
-       "run": 124,
+       "chars": 184,
+       "run": 184,
        "over": false
       },
       {
@@ -2903,14 +2826,14 @@
       }
      ],
      "counts": {
-      "board": 25,
+      "board": 20,
       "fight": 1,
       "riddle": 0,
       "seen": 0,
       "breakthrough": 0,
       "piece": 1
      },
-     "zhuli": 18,
+     "zhuli": 13,
      "longest": 3454,
      "roaming": 3,
      "side": []
@@ -2965,23 +2888,9 @@
       },
       {
        "kind": "read",
-       "chars": 1210,
-       "run": 1210,
+       "chars": 493,
+       "run": 493,
        "over": false
-      },
-      {
-       "kind": "board",
-       "id": "shenshi-chu",
-       "scene": "09-shenshi",
-       "title": {
-        "zh": "褚先生 · 神识",
-        "en": "Master Chu · Spirit sense"
-       },
-       "mechanic": "对话",
-       "variety": "对话",
-       "game": "jinchat",
-       "n": 43,
-       "level": "chu-shenshi"
       },
       {
        "kind": "board",
@@ -2999,6 +2908,12 @@
        "zhuli": true
       },
       {
+       "kind": "read",
+       "chars": 272,
+       "run": 272,
+       "over": false
+      },
+      {
        "kind": "board",
        "id": "shenshi-canju",
        "scene": "09-shenshi",
@@ -3012,6 +2927,12 @@
        "n": 47,
        "level": "zl-shenshi-canju",
        "zhuli": true
+      },
+      {
+       "kind": "read",
+       "chars": 49,
+       "run": 49,
+       "over": false
       },
       {
        "kind": "board",
@@ -3029,19 +2950,10 @@
        "zhuli": true
       },
       {
-       "kind": "board",
-       "id": "shenshi-qinyan",
-       "scene": "09-shenshi",
-       "title": {
-        "zh": "秦雁 · 后山崖顶",
-        "en": "Qin Yan · The back-hill clifftop"
-       },
-       "mechanic": "格斗",
-       "variety": "格斗",
-       "game": "fighter",
-       "n": 306,
-       "level": "shenshi-qinyan-ge",
-       "zhuli": true
+       "kind": "read",
+       "chars": 396,
+       "run": 396,
+       "over": false
       },
       {
        "kind": "board",
@@ -3060,8 +2972,8 @@
       },
       {
        "kind": "read",
-       "chars": 1929,
-       "run": 1929,
+       "chars": 743,
+       "run": 743,
        "over": false
       },
       {
@@ -3080,19 +2992,10 @@
        "zhuli": true
       },
       {
-       "kind": "board",
-       "id": "dingfeng-yading",
-       "scene": "09-dingfeng",
-       "title": {
-        "zh": "崖顶的蜡烛 · 等它吹完",
-        "en": "The candle on the clifftop · Wait till it's blown out"
-       },
-       "mechanic": "几何冲刺",
-       "variety": "几何冲刺",
-       "game": "dash",
-       "n": 307,
-       "level": "lazhu-dash",
-       "zhuli": true
+       "kind": "read",
+       "chars": 636,
+       "run": 636,
+       "over": false
       },
       {
        "kind": "board",
@@ -3110,47 +3013,10 @@
        "zhuli": true
       },
       {
-       "kind": "board",
-       "id": "dingfeng-kunzhen",
-       "scene": "09-dingfeng",
-       "title": {
-        "zh": "困阵 · 七块碎灵石",
-        "en": "The trapping formation · Seven broken stones"
-       },
-       "mechanic": "解谜",
-       "variety": "解谜",
-       "game": "huarong",
-       "n": 58,
-       "level": "kunzhen"
-      },
-      {
-       "kind": "board",
-       "id": "dingfeng-jintui",
-       "scene": "09-dingfeng",
-       "title": {
-        "zh": "瞿老 · 进退",
-        "en": "Elder Qu · Advancing, retreating"
-       },
-       "mechanic": "对话",
-       "variety": "对话",
-       "game": "jinchat",
-       "n": 59,
-       "level": "qulao-jintui"
-      },
-      {
-       "kind": "board",
-       "id": "dingfeng-canju",
-       "scene": "09-dingfeng",
-       "title": {
-        "zh": "你给自己留了一口 · 崖顶",
-        "en": "You left yourself a breath · The clifftop"
-       },
-       "mechanic": "塔防",
-       "variety": "塔防·shoulu",
-       "game": "shoulu",
-       "n": 61,
-       "level": "zl-dingfeng-canju",
-       "zhuli": true
+       "kind": "read",
+       "chars": 304,
+       "run": 304,
+       "over": false
       },
       {
        "kind": "board",
@@ -3168,8 +3034,8 @@
       },
       {
        "kind": "read",
-       "chars": 1038,
-       "run": 1038,
+       "chars": 1284,
+       "run": 1284,
        "over": false
       },
       {
@@ -3189,98 +3055,9 @@
       },
       {
        "kind": "read",
-       "chars": 1554,
-       "run": 1554,
+       "chars": 1481,
+       "run": 1481,
        "over": false
-      },
-      {
-       "kind": "board",
-       "id": "yanceng-sunergou",
-       "scene": "09-yanceng",
-       "title": {
-        "zh": "孙二狗 · 执事堂",
-        "en": "Sun Ergou · The stewards' hall"
-       },
-       "mechanic": "塔防",
-       "variety": "塔防·shouqiang",
-       "game": "shouqiang",
-       "n": 63,
-       "level": "zl-yanceng-sunergou",
-       "zhuli": true
-      },
-      {
-       "kind": "board",
-       "id": "yanceng-mingce",
-       "scene": "09-yanceng",
-       "title": {
-        "zh": "执事堂 · 内门的名册",
-        "en": "The stewards' hall · The inner-gate roll"
-       },
-       "mechanic": "塔防",
-       "variety": "塔防·sadoushou",
-       "game": "sadoushou",
-       "n": 65,
-       "level": "zl-yanceng-mingce",
-       "zhuli": true
-      },
-      {
-       "kind": "board",
-       "id": "yanceng-ergou",
-       "scene": "09-yanceng",
-       "title": {
-        "zh": "孙二狗 · 四层",
-        "en": "Sun Ergou · The fourth layer"
-       },
-       "mechanic": "对话",
-       "variety": "对话",
-       "game": "jinchat",
-       "n": 66,
-       "level": "ergou-siceng"
-      },
-      {
-       "kind": "board",
-       "id": "yanceng-canju",
-       "scene": "09-yanceng",
-       "title": {
-        "zh": "一颗也没糟蹋 · 执事堂",
-        "en": "Not one wasted · The stewards' hall"
-       },
-       "mechanic": "塔防",
-       "variety": "塔防·shoulu",
-       "game": "shoulu",
-       "n": 68,
-       "level": "zl-yanceng-canju",
-       "zhuli": true
-      },
-      {
-       "kind": "board",
-       "id": "yanceng-zhuochong",
-       "scene": "09-yanceng",
-       "title": {
-        "zh": "捉虫 · 阿禾那一小条地",
-        "en": "Catching bugs · Ahe's little strip"
-       },
-       "mechanic": "节奏",
-       "variety": "节奏",
-       "game": "taiko",
-       "n": 308,
-       "level": "zhuochong-gu",
-       "zhuli": true
-      },
-      {
-       "kind": "board",
-       "id": "yanceng-xilang",
-       "scene": "09-yanceng",
-       "title": {
-        "zh": "西廊 · 搬铺",
-        "en": "The West Gallery · Moving in"
-       },
-       "mechanic": "几何冲刺",
-       "variety": "几何冲刺",
-       "game": "dash",
-       "n": 309,
-       "level": "xilang-dash",
-       "zhuli": true
       },
       {
        "kind": "board",
@@ -3299,8 +3076,50 @@
       },
       {
        "kind": "read",
-       "chars": 1414,
-       "run": 1414,
+       "chars": 22,
+       "run": 22,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "yanceng-mingce",
+       "scene": "09-yanceng",
+       "title": {
+        "zh": "执事堂 · 内门的名册",
+        "en": "The stewards' hall · The inner-gate roll"
+       },
+       "mechanic": "塔防",
+       "variety": "塔防·sadoushou",
+       "game": "sadoushou",
+       "n": 65,
+       "level": "zl-yanceng-mingce",
+       "zhuli": true
+      },
+      {
+       "kind": "read",
+       "chars": 42,
+       "run": 42,
+       "over": false
+      },
+      {
+       "kind": "board",
+       "id": "yanceng-sunergou",
+       "scene": "09-yanceng",
+       "title": {
+        "zh": "孙二狗 · 执事堂",
+        "en": "Sun Ergou · The stewards' hall"
+       },
+       "mechanic": "塔防",
+       "variety": "塔防·shouqiang",
+       "game": "shouqiang",
+       "n": 63,
+       "level": "zl-yanceng-sunergou",
+       "zhuli": true
+      },
+      {
+       "kind": "read",
+       "chars": 1423,
+       "run": 1423,
        "over": false
       },
       {
@@ -3382,14 +3201,14 @@
       }
      ],
      "counts": {
-      "board": 25,
+      "board": 15,
       "fight": 0,
       "riddle": 0,
       "seen": 0,
       "breakthrough": 1,
       "piece": 2
      },
-     "zhuli": 17,
+     "zhuli": 11,
      "longest": 3596,
      "roaming": 2,
      "side": []

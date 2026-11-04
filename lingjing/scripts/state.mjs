@@ -1,8 +1,9 @@
 // The player's state and the arithmetic over it. Pure: no files, no clock —
 // the caller passes `now`.
+import { afterParts, parseAfter, readThrough, sceneBoards } from './rules/parts.mjs';
 import { herSlotsCarry } from './rules/wear.mjs';
 
-export const STATE_VERSION = 16;
+export const STATE_VERSION = 17;
 export const FIRST_WORLD = 'jiuding'; // the world every save before worlds was playing
 
 export function firstChapter(content) {
@@ -645,7 +646,22 @@ const MIGRATIONS = [
   // `wear["<her id>.<slot>"]`. Marked, carried by fitWorld (rules/wear.mjs herSlotsCarry): what she wore moves to the slot
   // its kind goes in (her bells a 佩, 齐纨 a 法衣), never dropped.
   [16, m => { m.her_slots = true; }],
+  // v17 (2026-11-04, Hanli: 「可以, 按你说的做」): a scene's passage read through its boards (rules/parts.mjs), part k after
+  // board k. A save standing in a scene so cut whose passage it already read whole is marked (`read_whole`, carried by
+  // fitWorld): it owes none of the parts again — no replay. Fitted where the world is known (readWhole).
+  [17, m => { m.read_whole_check = true; }],
 ];
+
+/* v17: had a save in a scene now read through its boards read its passage whole? Told, and either the scene was one
+   passage before the cut (null below), or its one rest after its first board then (named below) was told too. */
+const BEFORE_17 = { '09-suifeng': null, '09-shenshi': null, '09-dingfeng': null, '09-yanceng': null, '09-nianyao': 'nianyao-yaoyuan', 'wm-dianmao': 'dianmao-sunergou' };
+function readWhole(state, sc) {
+  if (!readThrough(sc) || !(sc.id in BEFORE_17) || !(state.told_scenes ?? []).includes(sc.id)) return false;
+  const owed = state.tell_owed ?? [];
+  if (owed.includes(`scene/${sc.id}`)) return false;
+  const first = BEFORE_17[sc.id];
+  return !first || (state.tasks?.[first]?.status === 'done' && !owed.includes(`after/${sc.id}`));
+}
 
 export function migrate(state, content = null) {
   if (!state) return state;
@@ -901,6 +917,8 @@ export function fitWorld(saved, content) {
     // rules/skips.mjs keepBoard, Hanli 11-03): his to take up, never offered by itself. At most 20.
     ...(state.skipped?.length ? { skipped: [], kept: keptFrom(state) } : {}),
   };
+  // v17's mark (MIGRATIONS): the scene he stands in, read whole before it was cut through its boards, owes no part again.
+  if (state.read_whole_check) { const sc = chapter?.scenes?.[state.scene]; if (readWhole(state, sc)) fix.read_whole = sc.id; }
   // Cards retired since (RETIRED_CARDS) go — after their old names were carried onto the new (renamedCards above).
   Object.assign(fix, retiredCards({ ...state, ...fix }));
   // A scene given a board after the save walked into it (the opening's beats, 2026-10-14):
@@ -914,8 +932,15 @@ export function fitWorld(saved, content) {
   const held = Object.fromEntries(Object.entries(raw).filter(([id, t]) => !known || t?.status === 'done' || known.has(id)));
   const unoffered = (here?.offers?.tasks ?? []).filter(id => !held[id]);
   if (unoffered.length || Object.keys(held).length !== Object.keys(raw).length) fix.tasks = { ...held, ...Object.fromEntries(unoffered.map(id => [id, { status: 'offered' }])) };
+  // A kept board cut from the story since (the 年 pools read through their boards, Hanli 11-04): let go quietly — off
+  // 收着的棋局, and a win it held with it. A board cut and done stays done (above).
+  const cutIds = new Set((content.tasks?.tasks ?? []).filter(t => t.cut).map(t => t.id));
+  const keptNow = fix.kept ?? state.kept ?? [];
+  if (keptNow.some(e => cutIds.has(e.task))) fix.kept = keptNow.filter(e => !cutIds.has(e.task));
+  if (Object.keys(state.wins ?? {}).some(id => cutIds.has(id))) fix.wins = Object.fromEntries(Object.entries(state.wins).filter(([id]) => !cutIds.has(id)));
   // 银月 held out of the 木牌 for a board cut since: back in.
   const drop = known && state.her_game?.task && !known.has(state.her_game.task) ? ['her_game'] : [];
+  if (state.read_whole_check) drop.push('read_whole_check');
   // A system cut whole leaves its state behind (密室 2026-10-27: the room open, a rerun's 暗室, the day's count): gone.
   // A card duel open (state.fight) whose id is a board now (the 大比's three rounds, 格斗 since 2026-10-31): let go, unplayed —
   // the board stands in the scene (offered above), and no verb is held for a fight that no longer exists.
@@ -935,9 +960,10 @@ export function fitWorld(saved, content) {
   // again when that board is (tasks.mjs taskDone), never told ahead of it.
   const sceneById = sid => Object.values(content.chapters).find(ch => ch.scenes?.[sid])?.scenes[sid];
   const tasksNow = fix.tasks ?? state.tasks ?? {};
-  const afterOwed = sc => Boolean(sc?.story_after) && ((b) => !b || tasksNow[b]?.status === 'done')((sc.show ?? []).find(c => c.card === 'board')?.id);
+  // Part k (`after/<scene>/<k>`, rules/parts.mjs) the same, by board k.
+  const afterOwed = ({ sid, k }) => { const sc = sceneById(sid), b = sceneBoards(sc)[k]; return k < afterParts(sc).length && (!b || tasksNow[b]?.status === 'done'); };
   const owed = state.tell_owed ?? [];
-  const owing = owed.filter(k => !k.startsWith('after/') || afterOwed(sceneById(k.slice(6))));
+  const owing = owed.filter(k => !k.startsWith('after/') || afterOwed(parseAfter(k)));
   if (owing.length !== owed.length) fix.tell_owed = owing;
   // Before a story gate, nothing the gate keeps (lockReset): read where the save now stands.
   Object.assign(fix, lockReset(content, { ...state, ...fix }));

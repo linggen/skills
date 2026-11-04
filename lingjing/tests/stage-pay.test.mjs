@@ -31,8 +31,8 @@ const scenesOf = id => Object.keys(content.chapters[id].scenes);
 const his = (extra = {}) => ({ ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: '09-yanceng', place: 'jiangtang', ended: ['00-prologue', '00-waimen'],
   done_scenes: [...scenesOf('00-prologue'), ...scenesOf('00-waimen'), '09-snow', '09-furnace', '09-year', '09-dabi', '09-shenshi', '09-dingfeng', '09-laba'], marks: ['y-futian', 'y-dabi'],
   tier: 'qi', step: 9, progress: 0, wealth: 112, traits: ['metal', 'wood', 'water', 'fire', 'earth'], stamina: 100, stamina_at: NOW.toISOString(),
-  // 守炉 · 丹房看炉 played (2026-10-21); 年八's last board played (入秋 waits on it since 2026-10-28).
-  tasks: { 'danfang-kanlu': { status: 'done' }, 'yanceng-chu': { status: 'done' } }, ...extra });
+  // 守炉 · 丹房看炉 played (2026-10-21); 年八's last board played (入秋 waits on it since 2026-10-28; 孙二狗's since 2026-11-04).
+  tasks: { 'danfang-kanlu': { status: 'done' }, 'yanceng-chu': { status: 'done' }, 'yanceng-mingce': { status: 'done' }, 'yanceng-sunergou': { status: 'done' } }, ...extra });
 /* …and on at 瞿老's door (09-qulao), where 入秋's 九层圆满 waits since 2026-11-03 (圆满 near the cliff), 瞿老's 丹 board played. */
 const atQulao = (extra = {}) => his({ scene: '09-qulao', place: content.chapters['00-zhuji'].scenes['09-qulao'].at, done_scenes: [...his().done_scenes, '09-yanceng'],
   tasks: { ...his().tasks, 'qulao-dan': { status: 'done' } }, ...extra });

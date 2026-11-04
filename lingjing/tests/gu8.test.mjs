@@ -31,14 +31,21 @@ const at = (scene, extra = {}) => ({
 const play = (s, id) => must(task, must(win, { ...s, tasks: { [id]: { status: 'offered' }, ...s.tasks } }, { id }), { action: 'done', id });
 const go = (s, exit) => { const n = must(resolve, s, { exit }); return { ...n, place: CH.scenes[n.scene]?.at ?? n.place, stamina: 100 }; };
 const H09 = ['09-dabi', '09-shenshi', '09-dingfeng', '09-laba', '09-yanceng', '09-qulao', '09-shijie', '09-cliff']; // 09-shijie (the 160th step) split off 09-cliff's head, 2026-10-26; the years 2026-10-28
+// Read through their boards since 2026-11-04 (Hanli: 「可以, 按你说的做」, rules/parts.mjs): ten of the years' twenty, each at its line.
 const YEARS = {
-  '09-shenshi': ['shenshi-chu', 'shenshi-jiangtang', 'shenshi-canju', 'shenshi-zhique', 'shenshi-qinyan', 'shenshi-qingshen'],
-  '09-dingfeng': ['dingfeng-qulao', 'dingfeng-yading', 'dingfeng-zhenyan', 'dingfeng-kunzhen', 'dingfeng-jintui', 'dingfeng-canju', 'dingfeng-songzhi'],
-  '09-yanceng': ['yanceng-sunergou', 'yanceng-mingce', 'yanceng-ergou', 'yanceng-canju', 'yanceng-zhuochong', 'yanceng-xilang', 'yanceng-chu'],
+  '09-shenshi': ['shenshi-jiangtang', 'shenshi-canju', 'shenshi-zhique', 'shenshi-qingshen'],
+  '09-dingfeng': ['dingfeng-qulao', 'dingfeng-zhenyan', 'dingfeng-songzhi'],
+  '09-yanceng': ['yanceng-chu', 'yanceng-mingce', 'yanceng-sunergou'],
 };
 const book = (n) => fs.readFileSync(new URL(`../story/jiuding-lu/${n}`, import.meta.url), 'utf8').split('\n');
 const ZH = book('08-第八回.md'), EN = book('en/h09.md');
 const paras = (field, ...lines) => assert.deepEqual([field.zh, field.en], [lines.map((n) => ZH[n - 1]).join('\n\n'), lines.map((n) => EN[n - 1]).join('\n\n')]);
+/* A scene's passage read through its boards (story, then each part): the words in order are the book's, nothing joined. */
+const whole = (sc, ...lines) => {
+  const flat = (t) => t.replace(/\s+/g, '');
+  const parts = [sc.story, ...[].concat(sc.story_after ?? [])];
+  assert.deepEqual(parts.map((p) => [flat(p.zh), flat(p.en)]).reduce((a, b) => [a[0] + b[0], a[1] + b[1]]), [flat(lines.map((n) => ZH[n - 1]).join('')), flat(lines.map((n) => EN[n - 1]).join(''))], sc.id);
+};
 
 test('古八 runs in the book\'s order — eight scenes, every one h09 — and the lint is clean', () => {
   const chain = [];
@@ -49,17 +56,17 @@ test('古八 runs in the book\'s order — eight scenes, every one h09 — and t
 
 test('the years\' passages are the book\'s, cut at its paragraph breaks; one reorder, 「那年冬天」 after the 讲堂 (¶41: 「七层的神识」)', () => {
   const sc = (id) => CH.scenes[id], ex = (id, e) => sc(id).exits.find((x) => x.id === e);
-  paras(sc('09-shenshi').story, 29, 31, 33, 35, 37, 39, 41, 43, 45);
+  whole(sc('09-shenshi'), 29, 31, 33, 35, 37, 39, 41, 43, 45);
   paras(ex('09-shenshi', 'winter').story, 21, 25, 27);
-  paras(sc('09-dingfeng').story, 49, 51, 53, 55, 57, 59, 61, 63);
+  whole(sc('09-dingfeng'), 49, 51, 53, 55, 57, 59, 61, 63);
   paras(ex('09-dingfeng', 'laba').story, 65);
   paras(sc('09-laba').story, 67, 69, 73, 75, 77);
   paras(ex('09-laba', 'dabi').story, 79, 81, 83, 85, 87, 89, 91, 93, 95);
-  paras(sc('09-yanceng').story, 99);
+  whole(sc('09-yanceng'), 99);
   paras(ex('09-yanceng', 'ruqiu').story, 101, 103, 105, 107, 109, 111, 113, 115, 117, 119, 121, 177);
 });
 
-test('the boards: 考书 and 看炉 in 09-dabi, the years\' twenty in theirs — each way on waits on its last; the 大比 final is 09-laba\'s card fight', () => {
+test('the boards: 考书 and 看炉 in 09-dabi, the years\' ten in theirs — each way on waits on its last; the 大比 final is 09-laba\'s card fight', () => {
   const sc = CH.scenes['09-dabi'];
   assert.deepEqual(sc.show.filter((c) => c.card === 'board').map((c) => c.id), ['dabi-kaoshu', 'danfang-kanlu']);
   assert.deepEqual(sc.exits.map((e) => [e.id, e.next, e.needs]), [['on', '09-shenshi', { task: 'danfang-kanlu' }]]);
@@ -70,7 +77,7 @@ test('the boards: 考书 and 看炉 in 09-dabi, the years\' twenty in theirs —
     assert.deepEqual(y.exits.map((e) => e.needs), [{ task: ids.at(-1) }], `${id} waits on its last board`);
     for (const t of ids) assert.ok(content.tasks.tasks.some((x) => x.id === t), t);
   }
-  assert.equal(Object.values(YEARS).flat().length, 20); // the years' 拼图 became 华容道, 2026-10-28 (Hanli: 「拼图也少一点」)
+  assert.equal(Object.values(YEARS).flat().length, 10); // twenty 2026-10-28; ten since they stand at their lines (2026-11-04)
   const dabi = CH.scenes['09-laba'].exits.find((e) => e.id === 'dabi');
   // the final is 格斗 since 2026-10-31: its board alone before the way on (the year's boards are 09-dingfeng's)
   assert.deepEqual(dabi.needs, { task: 'dabi-final' });

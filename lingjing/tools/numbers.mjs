@@ -513,7 +513,7 @@ function texts(content) {
   for (const t of content.tasks.tasks) put('board', t.id, 'done_line', t.done_line);
   for (const [k, g] of Object.entries(content.gongke?.kinds ?? content.gongke ?? {})) if (g && typeof g === 'object') put('gongke', k, 'name', g.name);
   for (const ch of Object.values(content.chapters)) for (const sc of Object.values(ch.scenes)) {
-    put('scene', sc.id, 'story', sc.story); put('scene', sc.id, 'story_after', sc.story_after);
+    put('scene', sc.id, 'story', sc.story); [].concat(sc.story_after ?? []).forEach((part, k) => put('scene', sc.id, k ? `story_after[${k}]` : 'story_after', part));
     for (const e of sc.exits ?? []) put('scene', `${sc.id}/${e.id}`, 'exit', e.story, e.grant?.item);
   }
   return out;

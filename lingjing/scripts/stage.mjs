@@ -378,7 +378,10 @@ function duplicate(look, c, cards) {
 export function boardWaits(look, id) {
   const order = (look?.scene?.show ?? []).filter(c => c.card === 'board').map(c => c.id);
   const at = order.indexOf(id);
-  if (at <= 0) return false;
+  if (at < 0) return false;
+  // Look holds a scene's board back until the reading reaches its line (rules/parts.mjs boardStaged, Look's `scene.held`).
+  if ((look.scene?.held ?? []).includes(id)) return true;
+  if (at === 0) return false;
   const open = bid => (look.tasks ?? []).some(t => t.id === bid && t.status !== 'done');
   return order.slice(0, at).some(open);
 }

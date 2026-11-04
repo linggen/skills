@@ -13,6 +13,7 @@
 // shown, or when a scene quotes the words in a way that cannot follow.
 // English can't follow by rule: each scene passage changed is listed in
 // data/reader/en-pending.json for a translator.
+import { afterParts } from './parts.mjs';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -88,7 +89,7 @@ function followScenes(entry, before, after, plan) {
       changed = true;
     };
     fix(scene.id, scene.story);
-    fix(`${scene.id}/after`, scene.story_after);
+    afterParts(scene).forEach((part, k) => fix(k ? `${scene.id}/after/${k}` : `${scene.id}/after`, part));
     for (const x of scene.exits ?? []) fix(`${scene.id}/${x.id}`, x.story);
     if (!changed) continue;
     const indent = [1, 2].find((k) => `${JSON.stringify(JSON.parse(text), null, k)}\n` === text);
