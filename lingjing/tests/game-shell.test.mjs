@@ -321,25 +321,24 @@ test('sound: every registry game has a sound map, every map names only sounds in
 
 test('sound: the shell sounds its own moments and owns the bed; games only name what happened', async () => {
   const src = read('../scripts/games/shell.js');
-  assert.match(src, /import \{ sound, unlockOn \} from '\.\/kit\/sound\.js'/);
+  assert.match(src, /import \{[^}]*\bsound, unlockOn \} from '\.\/kit\/sound\.js'/);
   assert.match(src, /unlockOn\(doc\)/, 'the first touch wakes the one context');
   assert.match(src, /sound: \(event, o\) => sound\.play\(gameOf\(id\), event, o\)/, 'a game names an event through its shell');
   assert.match(src, /export function forget\(id\) \{ store\.delete\(id\); sound\.stop\(id\); \}/, 'a board gone: its bed stops');
   assert.match(src, /sound\.duck\(id, s\.paused\)/, 'the bed goes quiet under the pause');
   assert.match(read('../scripts/beat-host.js'), /settle\(id, result\)/, 'the story\'s settle sounds the end');
-  // The pause veil holds 音效 · 音乐.
+  // The pause veil is 暂停中 and 继续 only (Hanli 11-04: 「暂停界面还有音乐, 音效调整? 可以去掉吗」): the 🔊 is the one control.
   forget('snd1');
   setPaused('snd1', true);
   const f = frameHtml({ id: 'snd1', title: 'x', timed: true });
-  assert.match(f, /data-shell-snd="sfx" checked/);
-  assert.match(f, /data-shell-vol="music"/);
-  assert.match(f, /<span>音效<\/span>/);
-  assert.match(f, /<span>音乐<\/span>/);
+  assert.match(f, /<div class="gshell-veil"><b>暂停中<\/b><button[^>]*data-shell-pause="snd1">继续<\/button><\/div>/);
+  assert.doesNotMatch(f, /data-shell-snd|data-shell-vol|type="range"|type="checkbox"|音效|音乐/);
+  assert.doesNotMatch(src, /data-shell-snd|data-shell-vol|soundHtml|sound\.set\(/, 'no part switch left anywhere in the shell');
   forget('snd1');
   // The bar's one mute: on every game, in time or not, beside the pause.
   assert.match(frameHtml({ id: 'snd2', title: 'x', timed: true }), /gshell-tools"><button type="button" class="gshell-btn gshell-mute" data-shell-mute aria-pressed="false" aria-label="静音"[^>]*>🔊<\/button><button[^>]*data-shell-pause/);
   assert.match(frameHtml({ id: 'snd3', title: 'x', timed: false, lang: 'en' }), /data-shell-mute[^>]*aria-label="Mute"/, 'a board not in time has the mute too');
-  assert.match(src, /if \(!on\) \{ sound\.mute\(false\);/);
+  assert.match(src, /toggleMute\(m\.closest\('\.gshell'\)\?\.dataset\.shell\)/, 'the bar\'s click goes through the one toggle (tests/game-sound-mute.test.mjs)');
   // No game opens an AudioContext of its own any more: the TD three and 撒豆成兵 send names to the shell.
   for (const f2 of ['../scripts/games/shoulu.js', '../tools/sadou/src/sfx.js', '../tools/sadoushou/src/sfx.js', '../tools/shouqiang/src/play.js']) {
     assert.doesNotMatch(read(f2), /new \(?(win\.|globalThis\.)?(webkit)?AudioContext|createOscillator/, f2);

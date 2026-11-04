@@ -9,7 +9,7 @@
 //
 // One AudioContext for the page, made on the first touch, click or key (iOS will not start one otherwise). A storm of
 // events stays a texture: each event has a least gap (`min` ms), and at most VOICES sounds play at once; everything
-// goes through a compressor, so 300 hits a second never clip. Settings (音效 · 音乐, on/off and volume) are one for
+// goes through a compressor, so 300 hits a second never clip. The one setting is the bar's 🔊 (muted or not), one for
 // every game, kept in this browser (localStorage, never the save). Muted is silent: no source is started at all.
 //
 // Nothing runs at import: Node tests import the shell. `createSound({ AC, fetchJson, fetchBuf, storage, now })` is the
@@ -22,6 +22,10 @@ export const DEFAULTS = Object.freeze({ sfx: { on: true, vol: 0.8 }, music: { on
 /** What actually sounds: a part on, above zero, and the one mute (the shell's bar button) off. The mute leaves the
     parts' own settings alone, so unmuting brings back exactly what was set. */
 export const audible = (st, k) => Boolean(!st.muted && st[k].on && st[k].vol > 0);
+/** The bar's one state: silent is whatever sounds nothing. The parts no longer have a switch or a volume of their own
+    (Hanli 11-04: 「暂停界面还有音乐, 音效调整? 可以去掉吗, 直接用系统默认的?」): effects and music play at the app's
+    default level, follow the one 🔊 together, and the system volume rules the rest. */
+export const silent = (st) => !audible(st, 'sfx') && !audible(st, 'music');
 const KEY = 'lingjing.sound';
 const DUCK = 0.25; // the bed under the pause veil
 const RATE = 44100;
@@ -57,16 +61,18 @@ export function namedSounds(maps) {
   return new Set(rows.flatMap((r) => Object.values(r ?? {}).flatMap((v) => ruleOf(v)?.sounds ?? [])));
 }
 
-/* ── Settings: one for every game ── */
+/* ── Settings: the one mute, for every game ── */
 
-const clamp01 = (x, d) => (Number.isFinite(Number(x)) ? Math.min(1, Math.max(0, Number(x))) : d);
+/** What this browser keeps: only `muted`. A part's old on/off or volume (the pause veil's 音效 · 音乐, gone 11-04) is
+    not read: the root of 「取消静音后还是没有声音」 was { sfx: off·0, music: off·0, muted: false } — the 🔊 showed
+    unmuted, its click only flipped `muted`, and the veil's rows held the page silent. Such a store reads as the parts
+    on at their default, and is written back as { muted } on the next toggle. */
 export function readSettings(storage) {
   let got = null;
   try { got = JSON.parse(storage?.getItem(KEY) ?? 'null'); } catch { got = null; }
-  const part = (k) => ({ on: typeof got?.[k]?.on === 'boolean' ? got[k].on : DEFAULTS[k].on, vol: clamp01(got?.[k]?.vol, DEFAULTS[k].vol) });
-  return { sfx: part('sfx'), music: part('music'), muted: got?.muted === true };
+  return { sfx: { ...DEFAULTS.sfx }, music: { ...DEFAULTS.music }, muted: got?.muted === true };
 }
-export function writeSettings(storage, s) { try { storage?.setItem(KEY, JSON.stringify(s)); } catch { /* private mode: this visit only */ } }
+export function writeSettings(storage, s) { try { storage?.setItem(KEY, JSON.stringify({ muted: Boolean(s?.muted) })); } catch { /* private mode: this visit only */ } }
 
 /* ── ZzFX recipes → samples (made once, at load) ── */
 
@@ -137,9 +143,11 @@ export function createSound({ AC = null, fetchJson = null, fetchBuf = null, stor
     if (!ctx) {
       try { ctx = new AC(); } catch (e) { console.warn('[sound]', e); AC = null; return Promise.resolve(false); }
       graph();
-      ready = load().then(() => true, (e) => { console.warn('[sound] bank', e); return false; });
     }
-    if (ctx.state === 'suspended') ctx.resume?.().catch?.(() => {});
+    // A bank that failed to come in (a blip mid-deploy) is fetched again on the next touch, not silent for the visit.
+    ready ??= load().then(() => true, (e) => { console.warn('[sound] bank', e); ready = null; return false; });
+    // Chrome's autoplay rule: a context made or left suspended runs only once resumed inside a gesture.
+    if (ctx.state !== 'running' && ctx.state !== 'closed') ctx.resume?.()?.catch?.(() => {});
     return ready;
   }
 
@@ -231,12 +239,12 @@ export function createSound({ AC = null, fetchJson = null, fetchBuf = null, stor
     /** The board is done (its result, or it left): its bed stops. */
     stop(board) { if (board != null && bed?.board !== board) return; endBed(bed); bed = null; },
     settings: () => structuredClone(settings),
-    /** A part's own setting (the pause veil). Turning a part on also lifts the mute: the player asked to hear it. */
-    set(part, patch) {
-      settings = { ...settings, [part]: { ...settings[part], ...patch }, ...(patch.on ? { muted: false } : {}) };
-      return apply();
-    },
-    /** The one mute (the shell's bar): both parts silent at once, their own settings kept for unmute. */
+    /** Nothing sounds: what the bar's 🔊 shows. */
+    silent: () => silent(settings),
+    /** Another tab of this browser changed the setting (the `storage` event): this page takes it, so the bar and
+        what sounds never come from two different copies. */
+    reload() { settings = readSettings(storage); levels(); if (!audible(settings, 'music')) endBed(bed); else if (bed && !bed.src) startBed(); return structuredClone(settings); },
+    /** The one mute (the shell's bar, the phone's 🔊): effects and music silent together, and back together. */
     mute(on) { settings = { ...settings, muted: Boolean(on) }; return apply(); },
     /** The tab hidden: nothing plays; back: it goes on. */
     hidden(on) { if (!ctx) return; if (on) ctx.suspend?.(); else ctx.resume?.(); },
@@ -259,11 +267,15 @@ export const sound = createSound(win ? {
 
 let unlocked = false;
 /** The page's first touch, click or key wakes the one context; a hidden tab holds it. Once per page. */
+let onReload = null;
+/** The shell repaints its bar when another tab changed the setting. */
+export function onSoundReload(fn) { onReload = fn; }
 export function unlockOn(doc = globalThis.document) {
   if (unlocked || !doc?.addEventListener) return;
   unlocked = true;
   const go = () => { sound.wake(); };
   for (const t of ['pointerdown', 'touchend', 'keydown', 'click']) doc.addEventListener(t, go, { capture: true, passive: true });
   doc.addEventListener('visibilitychange', () => sound.hidden(doc.visibilityState === 'hidden'));
+  win?.addEventListener?.('storage', (e) => { if (e.key === KEY || e.key === null) { sound.reload(); onReload?.(); } });
   if (win) win.__lingjingSound = { state: () => sound.state(), log: sound.log, play: (game, event, o) => sound.play(game, event, o) };
 }

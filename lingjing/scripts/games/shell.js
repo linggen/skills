@@ -14,17 +14,17 @@
 // A game hears the shell through its mount options: `shell: { paused(), onPause(fn), say(who, text), lead(text, o), sound(event, o), note(lines) }`.
 // Sound (Hanli 10-22: 「开吧. 统一做进外壳」): the shell owns it (games/kit/sound.js). A game only names what happened
 // (`sound('hit')`); data says what it sounds like. The shell sounds its own moments — a button, the 3-2-1, the result —
-// plays its kit's bed while the board is up (quiet under the pause veil, gone at the result), and its pause veil holds
-// 音效 · 音乐, one setting for every game.
+// plays its kit's bed while the board is up (quiet under the pause veil, gone at the result); its one control is the
+// bar's 🔊, one setting for every game (the volume is the system's).
 // mountPure (games/mount.js) stops a pure board's clock and hands while paused; a kit that runs its own loop
 // (Phaser) reads `paused()` or listens with `onPause`. Nothing here knows a game.
 
 import { SPEEDS, paceOf, sentencesOf } from '../lines.js';
-import { sound, unlockOn } from './kit/sound.js';
+import { onSoundReload, sound, unlockOn } from './kit/sound.js';
 
 const W = {
-  zh: { pause: '暂停', resume: '继续', paused: '暂停中', won: '成', lost: '未成', again: '再来', next: '下一关', start: '开始', sfx: '音效', music: '音乐', mute: '静音', unmute: '开声', restart: '重来', keep: '留着以后玩', close: '不玩了' },
-  en: { pause: 'Pause', resume: 'Resume', paused: 'Paused', won: 'Done', lost: 'Not yet', again: 'Again', next: 'Next', start: 'Start', sfx: 'Sound', music: 'Music', mute: 'Mute', unmute: 'Unmute', restart: 'Start over', keep: 'Keep for later', close: 'Put it away' },
+  zh: { pause: '暂停', resume: '继续', paused: '暂停中', won: '成', lost: '未成', again: '再来', next: '下一关', start: '开始', mute: '静音', unmute: '取消静音', restart: '重来', keep: '留着以后玩', close: '不玩了' },
+  en: { pause: 'Pause', resume: 'Resume', paused: 'Paused', won: 'Done', lost: 'Not yet', again: 'Again', next: 'Next', start: 'Start', mute: 'Mute', unmute: 'Unmute', restart: 'Start over', keep: 'Keep for later', close: 'Put it away' },
 };
 const words = (lang) => W[lang === 'en' ? 'en' : 'zh'];
 const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -102,34 +102,31 @@ function layerHtml(id, lang) {
   const bubble = s?.bubble ? `<div class="gshell-bubble" data-who="${plain(s.bubble.who)}">${plain(s.bubble.text)}</div>` : '';
   // A game's own note under the pause (its move list: 格斗), lines as it gave them.
   const note = s?.note?.length ? `<div class="gshell-note">${s.note.map((l) => `<p>${plain(l)}</p>`).join('')}</div>` : '';
-  const pause = s?.paused ? `<div class="gshell-veil"><b>${plain(w.paused)}</b><button type="button" class="gshell-btn is-main" data-shell-pause="${plain(id)}">${plain(w.resume)}</button>${note}${soundHtml(lang)}</div>` : '';
+  const pause = s?.paused ? `<div class="gshell-veil"><b>${plain(w.paused)}</b><button type="button" class="gshell-btn is-main" data-shell-pause="${plain(id)}">${plain(w.resume)}</button>${note}</div>` : '';
   const lead = s?.lead ? `<div class="gshell-veil gshell-lead">${leadParas(s.lead.text)}${s.lead.count != null ? `<b class="gshell-count">${s.lead.count || plain(w.start)}</b>` : `<button type="button" class="gshell-btn is-main" data-shell-go="${plain(id)}">${plain(w.start)}</button>`}</div>` : '';
   return lead + pause + bubble;
 }
 
-/** The bar's one mute (Hanli 10-22: 「加了声效和音乐, 添加一个静音按钮吧」): every game, Mac and phone, both parts at once;
-    the same shared setting as the pause veil's, and unmuting brings back what was set there. */
+/** The bar's one mute (Hanli 10-22: 「加了声效和音乐, 添加一个静音按钮吧」): every game, Mac and phone, effects and music at
+    once — the only sound control there is (11-04: the veil's 音效 · 音乐 rows are gone). */
+/** The button as the page sounds (sound.silent()): silent shows 🔇 「取消静音」,
+    sounding shows 🔊 「静音」 — the tooltip names what a click does. */
+export function muteFace(lang, quiet = sound.silent()) {
+  const w = words(lang);
+  return { pressed: String(quiet), icon: quiet ? '🔇' : '🔊', label: quiet ? w.unmute : w.mute };
+}
 const muteHtml = (lang) => {
-  const w = words(lang), on = sound.settings().muted;
-  return `<button type="button" class="gshell-btn gshell-mute" data-shell-mute aria-pressed="${on}" aria-label="${plain(on ? w.unmute : w.mute)}" title="${plain(on ? w.unmute : w.mute)}">${on ? '🔇' : '🔊'}</button>`;
+  const f = muteFace(lang);
+  return `<button type="button" class="gshell-btn gshell-mute" data-shell-mute aria-pressed="${f.pressed}" aria-label="${plain(f.label)}" title="${plain(f.label)}">${f.icon}</button>`;
 };
 /** Every frame's mute button, after the setting changed (another game's frame on the page hears it too). */
 function paintMute(doc = globalThis.document) {
-  const on = sound.settings().muted;
+  const quiet = sound.silent();
   for (const b of doc?.querySelectorAll?.('[data-shell-mute]') ?? []) {
-    const w = words(b.closest('.gshell')?.dataset.lang === 'en' || b.closest('[lang]')?.getAttribute('lang') === 'en' ? 'en' : 'zh');
-    b.setAttribute('aria-pressed', String(on)); b.textContent = on ? '🔇' : '🔊';
-    b.setAttribute('aria-label', on ? w.unmute : w.mute); b.title = on ? w.unmute : w.mute;
+    const f = muteFace(b.closest('.gshell')?.dataset.lang === 'en' || b.closest('[lang]')?.getAttribute('lang') === 'en' ? 'en' : 'zh', quiet);
+    b.setAttribute('aria-pressed', f.pressed); b.textContent = f.icon;
+    b.setAttribute('aria-label', f.label); b.title = f.label;
   }
-}
-
-/** 音效 · 音乐 under the pause: on/off and a volume each, one setting for every game (games/kit/sound.js). */
-export function soundHtml(lang) {
-  const w = words(lang), st = sound.settings();
-  // A part shows as it sounds: under the bar's mute both are off, and turning one on lifts the mute (sound.set).
-  const row = (k) => `<div class="gshell-snd"><label><input type="checkbox" data-shell-snd="${k}"${st[k].on && !st.muted ? ' checked' : ''}><span>${plain(w[k])}</span></label>`
-    + `<input type="range" min="0" max="100" step="5" value="${Math.round(st[k].vol * 100)}" data-shell-vol="${k}" aria-label="${plain(w[k])}"${st[k].on && !st.muted ? '' : ' disabled'}></div>`;
-  return `<div class="gshell-sound">${row('sfx')}${row('music')}</div>`;
 }
 
 function footHtml(id, lang) {
@@ -242,16 +239,26 @@ export function shellFor(id, game) {
 
 /** The page's one listener for every frame's buttons (pause, resume, start, 再来 …). `onAct(id, act)` hears
     the result's buttons. Answers the function that stops listening. */
+/** The bar's speaker, one click: silent → sounding (sound.mute(false)), with
+    the context woken inside this click (Chrome resumes a suspended AudioContext only in a gesture) and the toggle
+    played once the bank is in — so the click itself is heard; sounding → muted. Answers silent after. */
+export function toggleMute(id, snd = sound) {
+  if (!snd.silent()) { snd.mute(true); return true; }
+  snd.mute(false);
+  const woke = snd.wake();
+  Promise.resolve(woke).then((ok) => { if (ok !== false) snd.play(gameOf(id), 'toggle'); });
+  return snd.silent();
+}
+
 export function wireShell(doc = globalThis.document, { onAct = () => {} } = {}) {
   unlockOn(doc); // the page's first touch wakes the one AudioContext (iOS)
+  onSoundReload(() => paintMute(doc)); // another tab toggled: this page's bar follows
   const click = (e) => {
     const m = e.target.closest?.('[data-shell-mute]');
     if (m) {
       e.preventDefault();
-      const id = m.closest('.gshell')?.dataset.shell, on = !sound.settings().muted;
-      if (!on) { sound.mute(false); sound.play(gameOf(id), 'toggle'); } else sound.mute(true);
+      toggleMute(m.closest('.gshell')?.dataset.shell);
       paintMute(doc);
-      for (const f of doc.querySelectorAll('.gshell.is-paused')) paint(f.dataset.shell, doc); // the veil's rows follow
       return;
     }
     const p = e.target.closest?.('[data-shell-pause]');
@@ -261,22 +268,8 @@ export function wireShell(doc = globalThis.document, { onAct = () => {} } = {}) 
     const a = e.target.closest?.('[data-shell-act]');
     if (a) { e.preventDefault(); const id = a.closest('.gshell')?.dataset.shell; sound.play(gameOf(id), 'button'); onAct(id, a.dataset.shellAct); }
   };
-  // 音效 · 音乐 (the pause veil): a toggle or a volume is the one setting for every game, kept at once.
-  const set = (e) => {
-    const t = e.target, on = t?.dataset?.shellSnd, vol = t?.dataset?.shellVol;
-    if (on && e.type === 'change') {
-      // Under the mute both rows show off: ticking one lifts the mute for that one only, as the rows showed it.
-      if (t.checked && sound.settings().muted) sound.set(on === 'sfx' ? 'music' : 'sfx', { on: false });
-      sound.set(on, { on: t.checked });
-      paintMute(doc);
-      for (const f of doc.querySelectorAll('.gshell.is-paused')) paint(f.dataset.shell, doc); // both rows, as they now sound
-      sound.play(gameOf(t.closest('.gshell')?.dataset.shell), 'toggle');
-    } else if (vol && e.type === 'input') sound.set(vol, { vol: Number(t.value) / 100 });
-  };
   doc.addEventListener('click', click);
-  doc.addEventListener('change', set);
-  doc.addEventListener('input', set);
-  return () => { doc.removeEventListener('click', click); doc.removeEventListener('change', set); doc.removeEventListener('input', set); };
+  return () => { doc.removeEventListener('click', click); };
 }
 
 /* ── Off the story: one game alone in its shell (游戏厅, the try page) ── */

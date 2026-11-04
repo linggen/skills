@@ -57,15 +57,19 @@ test('data: a game\'s own row, then its kit\'s, then the shell\'s base; a kind f
   assert.equal(ruleOf(null), null);
 });
 
-test('settings: one for every game, defaults on with the music quiet; a broken or missing store is the defaults', () => {
+test('settings: the one mute, for every game; the parts always at their default; a broken or missing store is the defaults', () => {
   assert.deepEqual(readSettings(null), DEFAULTS);
   assert.ok(DEFAULTS.music.vol < DEFAULTS.sfx.vol, 'music quiet');
   const bad = { getItem: () => '{nope', setItem() { throw new Error('quota'); } };
   assert.deepEqual(readSettings(bad), DEFAULTS);
   assert.doesNotThrow(() => writeSettings(bad, DEFAULTS), 'private mode: kept for this visit only');
   const st = memory();
-  writeSettings(st, { sfx: { on: false, vol: 0.4 }, music: { on: true, vol: 7 } });
-  assert.deepEqual(readSettings(st), { sfx: { on: false, vol: 0.4 }, music: { on: true, vol: 1 }, muted: false });
+  writeSettings(st, { sfx: { on: false, vol: 0.4 }, music: { on: true, vol: 7 }, muted: true });
+  assert.equal(st.m.get('lingjing.sound'), '{"muted":true}', 'only the mute is kept');
+  assert.deepEqual(readSettings(st), { ...DEFAULTS, muted: true });
+  // An old store (the veil's rows, gone 11-04) reads as the parts on at their default: his { off·0, off·0 } plays again.
+  st.setItem('lingjing.sound', JSON.stringify({ sfx: { on: false, vol: 0 }, music: { on: false, vol: 0 }, muted: false }));
+  assert.deepEqual(readSettings(st), DEFAULTS);
 });
 
 test('ZzFX recipes become samples (no context needed); notes are mixed in one buffer', () => {
@@ -106,15 +110,14 @@ test('muted is silent: no source starts at all; the setting is kept and every ga
   const storage = memory();
   const { s, made } = engine({ storage });
   await s.wake();
-  s.set('sfx', { on: false });
+  s.mute(true);
   const n0 = made.started.length;
   for (const ev of ['hit', 'boss', 'kill', 'result.win', 'button']) assert.equal(s.play('shouqiang', ev), false);
   assert.equal(s.play('zhazhai', 'impactWoodHeavy'), false);
   assert.equal(made.started.length, n0, 'not one start()');
   const again = engine({ storage }).s; // another game, another page: the same setting
-  assert.equal(again.settings().sfx.on, false);
-  s.set('sfx', { on: true, vol: 0 });
-  assert.equal(s.play('shouqiang', 'boss'), false, 'volume 0 is muted too');
+  assert.equal(again.settings().muted, true);
+  assert.equal(again.silent(), true);
 });
 
 test('the bed: one per board, its kit\'s, looped; quiet under the pause; gone at the result; off when music is off', async () => {
@@ -134,21 +137,19 @@ test('the bed: one per board, its kit\'s, looped; quiet under the pause; gone at
   s.music('b2', 'wuziqi');
   await new Promise((r) => setTimeout(r, 0));
   assert.equal(s.state().bed.playing, false, 'a plain board has no bed');
-  s.set('music', { on: false });
+  s.mute(true);
   s.music('b3', 'zhazhai');
   await new Promise((r) => setTimeout(r, 0));
-  assert.equal(s.state().bed.playing, false, 'music off: no bed');
-  s.set('music', { on: true });
+  assert.equal(s.state().bed.playing, false, 'muted: no bed');
+  s.mute(false);
   await new Promise((r) => setTimeout(r, 0));
-  assert.deepEqual(s.state().bed, { board: 'b3', id: 'throw', playing: true, ducked: false }, 'on again: it plays');
+  assert.deepEqual(s.state().bed, { board: 'b3', id: 'throw', playing: true, ducked: false }, 'unmuted: it plays');
 });
 
-test('the one mute (the shell\'s bar, Hanli 10-22: 「添加一个静音按钮吧」): both parts silent at once, kept across games, unmute brings back what was set', async () => {
+test('the one mute (the shell\'s bar, Hanli 10-22: 「添加一个静音按钮吧」): effects and music silent together, kept across games, back together', async () => {
   const storage = memory();
   const { s, made } = engine({ storage });
   await s.wake();
-  s.set('sfx', { vol: 0.5 });
-  s.set('music', { vol: 0.2 });
   s.music('m1', 'shouqiang');
   await new Promise((r) => setTimeout(r, 0));
   assert.equal(s.state().bed.playing, true);
@@ -160,12 +161,10 @@ test('the one mute (the shell\'s bar, Hanli 10-22: 「添加一个静音按钮�
   assert.equal(engine({ storage }).s.settings().muted, true, 'another game, another page: still muted');
   s.mute(false);
   await new Promise((r) => setTimeout(r, 0));
-  assert.deepEqual(s.settings(), { sfx: { on: true, vol: 0.5 }, music: { on: true, vol: 0.2 }, muted: false }, 'what was set, back');
+  assert.deepEqual(s.settings(), DEFAULTS, 'both parts back, at the default level');
   assert.equal(s.state().bed.playing, true, 'the bed comes back');
   assert.equal(s.play('shouqiang', 'boss'), true);
-  s.mute(true);
-  s.set('music', { on: true });
-  assert.equal(s.settings().muted, false, 'turning a part on lifts the mute');
+  assert.equal('set' in s, false, 'no part has a switch of its own any more (11-04)');
 });
 
 /* ── Every board sounds (Hanli 10-26: 「查一下, 有很多小游戏没有声音和退出」) ──

@@ -202,7 +202,7 @@ async function mountBoard(spec) {
   // The phone's first tap is often native (the lead card's 开始, the app's own buttons), never a touch in this page, so
   // the context is woken here: the app's webview plays audio with no gesture asked (mediaTypesRequiringUserAction: none).
   sound.wake();
-  post({ t: 'mounted', game, muted: sound.settings().muted });
+  post({ t: 'mounted', game, muted: sound.silent() }); // the 🔊 as the page sounds (the mute, or both parts off)
   // The board's state for the bar's tools (a pure board's through mount.js `peek`).
   state = () => undefined;
   toolBar(mod, () => state());
@@ -262,7 +262,7 @@ globalThis.LingjingHost = {
   /// The native ↺ or ?: a click on the hidden bar's button (toolBar), which the board hears as its own.
   tool: (kind) => { const b = document.querySelector(`body > .gshell-bar [data-tool="${kind}"]`); if (b && !b.disabled) b.click(); return Boolean(b && !b.disabled); },
   /// The bar's 🔊 (Hanli 10-26: every board, Mac and phone): both parts at once, as the Mac's shell button.
-  mute: (on) => { sound.mute(Boolean(on)); return sound.settings().muted; },
+  mute: (on) => { sound.mute(Boolean(on)); if (!on) sound.wake(); return sound.silent(); },
   /// The board's state as its mount shows it (the builder's drive and the stuck rule; undefined for a board that does not).
   state: () => state(),
   heard: (id, json) => {

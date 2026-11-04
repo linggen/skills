@@ -99,8 +99,10 @@ first resident; `scripts/games/kit/` is where the shared assets live).
 - **One AudioContext,** made on the page's first touch, click or key (iOS), suspended while the tab is hidden. A
   storm stays a texture: a least gap per event (`min` ms), at most 14 voices, a compressor before the speakers.
   The Phaser kits run with `noAudio`.
-- **Settings:** 音效 and 音乐 under the pause veil, on/off and a volume each, one for every game
-  (`localStorage lingjing.sound`), music quiet by default. 砸寨's own audio settings are inert now: its players send
+- **Settings:** one — the bar's 🔊, effects and music together, for every game (`localStorage lingjing.sound`
+  holds only `muted`). No per-part switch or volume (11-04: the pause veil's 音效 · 音乐 rows are gone; the system
+  volume rules). The 🔊 is drawn from what sounds (`sound.silent()`): silent 🔇 「取消静音」, sounding 🔊 「静音」; its
+  click resumes the AudioContext inside the gesture and plays the toggle once the bank is in. 砸寨's own audio settings are inert now: its players send
   every name to the shell (`ShellSoundAdapter.ts`), and its old sprite and its music are gone.
 - **Every game names its sounds (10-26, 「有很多小游戏没有声音和退出」).** `meta.sounds` lists what a game names; a
   pure board names it with `sounds(before, after)` — two states in, names out — and every runner of a pure board
