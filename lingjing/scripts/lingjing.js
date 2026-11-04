@@ -169,7 +169,7 @@ function postMoment(fact, flags, { mood = null } = {}) {
   // in」; a word in the note itself is what Ling's `(lang en)` already does for Ling. First, so no cap cuts it.
   const tongue = lang() === 'en' ? '(Say it in English.) ' : '（用中文说。）';
   const name = look?.name, called = !name ? '' : lang() === 'en' ? `(In the game the player is ${name}.) ` : `（灵境里玩家叫${name}。）`;
-  const body = { app: SKILL, text: tongue + called + sleepNote() + (lang() === 'en' ? fact.en : fact.zh), ...rest, ...(mood ? { mood } : {}), ...(sid ? { session: sid, ...(converse ? { converse } : {}) } : {}) };
+  const body = { app: SKILL, lang: lang() === 'en' ? 'en' : 'zh-Hans', text: tongue + called + sleepNote() + (lang() === 'en' ? fact.en : fact.zh), ...rest, ...(mood ? { mood } : {}), ...(sid ? { session: sid, ...(converse ? { converse } : {}) } : {}) };
   return fetch('/api/yinyue/event', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
     .then((res) => res.ok).catch((e) => { console.warn('[lingjing] yinyue', e); return false; });
 }
@@ -181,6 +181,8 @@ const tagLang = (tag) => (/^zh/i.test(String(tag ?? '')) ? 'zh' : 'en');
 let pageLang = tagLang(navigator.language);
 fetch('/api/user/language').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d?.language) pageLang = tagLang(d.language); }).catch(() => {});
 const lang = () => ((look?.lang ?? pageLang) === 'en' ? 'en' : 'zh');
+/// The game's language as the engine's tag, for the chat and for 银月's moments (an engine that knows `lang`).
+const chatLanguage = () => (lang() === 'en' ? 'en' : 'zh-Hans');
 /// The page's own labels, with the stat names from the world's dictionary
 /// on top — the harness names nothing.
 const words = () => {
@@ -1906,6 +1908,9 @@ function draw() {
   // (his, 2026-10-14: 「天快亮」 and 阿禾 over 马小宝's taunt at dusk).
   // The box's reading is the real scene's: read it before the header stands on the held one
   // (live 2026-10-14: read under the held 00-notice it was none, and the 回 line turned to 今 · 一).
+  // The chat's own words (an AskUser card's header, its buttons) in the game's language (shared/chat-bridge.js
+  // `language`; Hanli 11-04: 「智能体需要你的输入」 · 跳过 · 提交 over an English game). An older bridge has no setLanguage.
+  chat?.setLanguage?.(chatLanguage());
   const realLook = look, told = readingHere();
   look = headLook();
   try {
@@ -2405,6 +2410,17 @@ async function takeMeet(action, answer = undefined) {
   if (r.chance && r.card) keep({ spoils: { place: look?.place?.id ?? null, cards: [r.card], items: [] } });
   if (r.chance) tellYinyue('chance', `赶上了${where}的机缘，得了${r.card?.name ?? '些东西'}`, `Made it to the chance at ${where} in time — ${r.card?.name ?? 'something'} gained`, { mood: 'happy' });
   await refresh();
+}
+
+/* 月下之约: her riddle answered on the quest card — the rules judge it at once (Ring). A miss is the card's to show
+   (that answer gone, her hint up; missed out, shut till tomorrow). Found, she joins: Ling is told once, unseen
+   (`[scene] found`), to tell the moment — her first words are her own (her_beat, on the node). */
+async function ringWith(answer) {
+  const r = await write('ring', { answer }).catch(failed);
+  if (r.refused === 'wrong-answer' || r.refused === 'riddle-closed') { keep({ doNote: null }); await refresh(); return; }
+  if (!r.ok) { keep({ doNote: refusal(r) }); await refresh(); return; }
+  await refresh();
+  if (r.joined) report(`[scene] found ${r.joined.id}`);
 }
 
 /* 去X — the page walks him itself (his, 2026-09-24): Move, then the walk
@@ -4136,6 +4152,7 @@ const CLICKS = [
   ['[data-ask-send]', () => sendAsk()],
   ['[data-ask-close]', () => closeAsk()],
   ['[data-meet]', (el) => run(`meet:${el.dataset.meet}`, () => takeMeet(el.dataset.meet, el.dataset.meetAnswer))],
+  ['[data-ring-answer]', (el) => run('ring', () => ringWith(el.dataset.ringAnswer))],
   // 去X, 喂它X, 炼化: the page's own verbs — no word to Ling.
   ['[data-go]', (el) => { if (!el.matches(':disabled')) run(`go:${el.dataset.go}`, () => goTo(el.dataset.go)); }],
   ['[data-mijing]', (el) => { if (!el.matches(':disabled')) run(`mijing:${el.dataset.mijing}:${el.dataset.room ?? el.dataset.way ?? el.dataset.boon ?? ''}`, () => mijingTap({ ...el.dataset })); }],
@@ -4887,6 +4904,7 @@ async function mountChat() {
     skillName: SKILL,
     agentId: 'ling',
     title: 'Lingjing',
+    language: chatLanguage(),
     // 「你想怎么做？」 — every scene can be answered in words (invite.js).
     placeholder: words().chatHint,
     sessionId: resume || undefined,

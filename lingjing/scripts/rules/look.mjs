@@ -835,9 +835,15 @@ function onStage(content, state, ctx, result = {}, brief = null) {
   if (view.seclusion?.running) return { then: THEN_SECLUSION, ask: null, stage: cards };
   // A traveller's riddle the page just revealed (`[scene] arrived`): the traveller asks, in Ling's line; the card answers.
   const m = view.place?.meet, riddling = m?.kind === 'riddle' && !m.veiled && ARRIVED.test(String(ctx.said ?? '')) ? THEN_ROAD_RIDDLE : '';
-  return { then: riddling + thenFor(result, ask) + naming + throwing, ask, stage: cards };
+  // 月下之约 answered on the quest card (the page's Ring): she was found just now — the moment is Ling's to tell, once.
+  const her = companionOf(content), found = her && FOUND.test(String(ctx.said ?? '')) && state.companion?.joined === dayKey(ctx.now)
+    ? { found: { id: her.id, name: nameOf(content, her.id, state.lang), beat: spoken(content, state, her.join) } } : {};
+  return { then: (found.found ? THEN_FOUND : '') + riddling + thenFor(result, ask) + naming + throwing, ask, stage: cards, ...found };
 }
 const ARRIVED = /^\[scene\] arrived\b/;
+const FOUND = /^\[scene\] found\b/;
+/* Her riddle answered on the card: the page rang, the rules joined her (rules/worlds.mjs ring). */
+const THEN_FOUND = 'She was found just now — the player answered her riddle on the quest card, by the water, and the page rang the bell (`found`). Show nothing; narrate `found.beat` in the world. Her first words are hers and arrive by themselves — never write a line for her. Never call Ring. ';
 
 /* What Ling last showed, while she is still in the place she showed it — else
    the cards this scene or place was authored with, so a creature is pictured

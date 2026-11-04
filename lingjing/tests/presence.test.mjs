@@ -79,6 +79,9 @@ test('before she joins, nothing reaches her — rise, chapter, spent and every o
   f.postMoment({ zh: '输了', en: 'Lost.' }, {});
   const en = JSON.parse(fetches[1][1].body).text;
   assert.ok(en.startsWith('(Say it in English.) ') && en.endsWith('Lost.'), en);
+  // …and named to the engine, whose line for her event turn then follows it (EventRequest `lang`).
+  assert.equal(JSON.parse(fetches[1][1].body).lang, 'en');
+  assert.equal(body.lang, 'zh-Hans');
 });
 
 test('every call to her in the page goes through askHer/tellYinyue/postMoment, each gated', () => {

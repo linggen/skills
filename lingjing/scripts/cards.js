@@ -1673,15 +1673,20 @@ function quest(card, ctx) {
   // already carries 买银月铃, and a second line naming another town is the card
   // arguing with the shelf beside it (2026-09-18).
   const where = q.step === 'bell' && q.market && !q.shop_here ? say(w.questAt, { name: q.market.name })
-    : q.step === 'water' && q.water && !q.at_water ? say(w.questWater, { name: q.water.name }) : '';
+    : (q.step === 'water' || q.step === 'riddle') && q.water && !q.at_water ? say(w.questWater, { name: q.water.name }) : '';
   const acts = [{ label: w.about, ask: true, say: w.sayQuest }];
   // The step, as a word to Ling: buy it here, walk to where it can be taken, ring it.
   if (q.step === 'ring') acts.unshift({ label: w.ringBell, say: w.sayRing });
   else if (q.step === 'bell' && q.shop_here) acts.unshift({ label: say(w.sayBuy, { name: q.bell.name }), do: 'buy', id: q.bell.id });
   else if (q.step === 'bell' && q.market) acts.unshift({ label: q.market.name, go: q.market.id });
-  else if (q.step === 'water' && q.water) acts.unshift({ label: q.water.name, go: q.water.id });
+  else if ((q.step === 'water' || (q.step === 'riddle' && !q.at_water)) && q.water) acts.unshift({ label: q.water.name, go: q.water.id });
+  // Her riddle is answered here, at the water: each answer a tap — the page's own Ring (lingjing.js ringWith), never
+  // the chat's AskUser (Hanli 11-04). A miss takes that answer off and her hint stands.
+  const r = q.step === 'riddle' && q.at_water ? q.riddle : null;
+  const riddle = r ? `<div class="say">${esc(r.q)}</div>${r.hint ? `<div class="small dim riddlehint">${esc(r.hint)}</div>` : ''}
+    <div class="acts">${(r.choices ?? []).map((c) => `<button class="act" data-ring-answer="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : '';
   return `<div class="card quest"><div class="cardtitle">${esc(w.questTitle)}</div>
-    <div>${esc(q.line)}</div><div class="small dim">${esc(w.questSteps?.[q.step] ?? '')}${where ? ` · ${esc(where)}` : ''}</div>
+    <div>${esc(q.line)}</div><div class="small dim">${esc(w.questSteps?.[q.step] ?? '')}${where ? ` · ${esc(where)}` : ''}</div>${riddle}
     <div class="acts">${acts.map((a) => (a.do ? doBtn(a.label, a.do, a.id) : a.go ? goBtn(a.label, a.go) : (a.ask ? askBtn : sayBtn)(a.label, a.say))).join('')}</div></div>`;
 }
 

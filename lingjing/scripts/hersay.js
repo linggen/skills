@@ -128,9 +128,33 @@ export function momentFacts(kind, what, lang = 'zh', { weight = 'full', max = 26
   const zh = lang !== 'en', L = zh ? 'zh' : 'en', sep = zh ? '' : ' ';
   const tail = [ASKS[kind]?.[L] ?? '', (mode === 'asleep' ? REGISTER_ASLEEP : REGISTER)[L], (LENGTH[weight] ?? LENGTH.full)[L]].filter(Boolean).join(sep);
   const room = max - [...tail].length - (what ? [...sep].length : 0);
-  let w = String(what ?? '').trim();
-  if ([...w].length > room) w = room > 1 ? `${[...w].slice(0, room - 1).join('')}…` : '';
+  const w = cutWhole(String(what ?? '').trim(), room);
   return w ? `${w}${sep}${tail}` : tail;
+}
+
+/* `what` under `room` characters, cut where a fact ends — never mid-word (11-04: 「Best next st… Lost.」 reached her):
+   the last whole sentence, when it keeps at least half the room; else the last whole word or clause, with 「…」
+   (the step's place comes late in its fact, and must not go for a sentence end far back). Only a run with no break in
+   it at all (Chinese, unpunctuated) is cut at a character. */
+const SENTENCE_END = /[。！？.!?]/, BREAK = /[\s；，、：;,:]/; // a ';' joins the parts of one fact (wayFacts): a clause
+export function cutWhole(text, room) {
+  const ch = [...text];
+  if (ch.length <= room) return text;
+  if (room < 2) return '';
+  const fits = ch.slice(0, room);
+  // A sentence end that is the end of one: a '.' of 3.5 is not.
+  for (let i = fits.length - 1; i >= room / 2; i -= 1) {
+    if (SENTENCE_END.test(fits[i]) && (i + 1 >= ch.length || /\s/.test(ch[i + 1]) || !/[.!?]/.test(fits[i]))) return fits.slice(0, i + 1).join('').trim();
+  }
+  // The last break, where the word or clause before it is whole: the char after the cut starts a new one.
+  const short = ch.slice(0, room - 1);
+  for (let i = short.length; i > 0; i -= 1) {
+    if (BREAK.test(ch[i] ?? '') || BREAK.test(short[i - 1])) {
+      const head = short.slice(0, i).join('').replace(/[\s；，、：;,:]+$/, '');
+      if (head) return `${head}…`;
+    }
+  }
+  return `${short.join('')}…`;
 }
 
 /* 秘境探险's facts (rules/mijing.mjs answers), one place for the Mac's page and the phone's: a 奇遇's way taken (the

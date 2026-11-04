@@ -1,6 +1,6 @@
 // rules/companion.mjs — The companion: found, not given — her call, her past, what she brings to a fight.
 // Part of the rules engine; rules.mjs is its one door.
-import { dayKey, pick, seedOf } from '../state.mjs';
+import { dayKey, normalizeAnswer, pick, seedOf } from '../state.mjs';
 import { wornOf } from './arms.mjs';
 import { GEAR_SLOTS, herKey } from './wear.mjs';
 import { itemOf } from './errands.mjs';
@@ -154,6 +154,12 @@ function nearestPlace(content, state, now, test) {
   return test(here) ? { ...placeName(content, state, here), steps: 0 } : null;
 }
 
+const herRiddle = (content, state) => {
+  const slot = state.companion.riddle, r = content.riddles[state.lang].riddles[slot.key];
+  const tried = new Set((slot.tried ?? []).map(normalizeAnswer));
+  return { q: r.q, choices: r.choices.filter(a => !tried.has(normalizeAnswer(a))), ...(tried.size ? { hint: r.hint } : {}) };
+};
+
 /* The quest as Look tells it: the step, what it asks, and the line for it. */
 function questBrief(content, state, now) {
   const c = companionOf(content);
@@ -171,7 +177,11 @@ function questBrief(content, state, now) {
     // that holds a moon — the nearest by road (his "not clickable", and no
     // way to know where, 2026-09-17).
     market: step === 'bell' ? nearestPlace(content, state, now, p => p.has?.shop) : null,
-    water: step === 'water' ? nearestPlace(content, state, now, p => p.water) : null,
+    // Her riddle waiting is answered at water too (Ring): away from it, the card names the nearest.
+    water: step === 'water' || (step === 'riddle' && !here?.water) ? nearestPlace(content, state, now, p => p.water) : null,
+    // Her riddle, while it waits, is the quest card's — the question, its answers not yet tried, the hint after a
+    // miss; tapped, the page Rings with it (Hanli 11-04: never the chat's AskUser, which held the turn wherever he stood).
+    ...(step === 'riddle' ? { riddle: herRiddle(content, state) } : {}),
     shop_here: Boolean(here?.has?.shop),
     // The call is heard once: until it has been said, every answer asks for it.
     ...(state.companion.told ? {} : { say: true }),

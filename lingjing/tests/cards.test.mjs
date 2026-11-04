@@ -220,6 +220,24 @@ test('路人问 on the stage: the traveller\'s riddle is the road card — answe
   assert.match(page, /r\.refused === 'wrong-answer' \|\| r\.refused === 'riddle-closed'/);
 });
 
+test('月下之约 on the quest card: her riddle answered by a tap — the page\'s own Ring, never AskUser; away from water, the way back to it (Hanli 11-04)', async () => {
+  const { cardHtml, WORDS } = await import('../scripts/cards.js');
+  const quest = { id: 'yinyue', step: 'riddle', line: '水面起了一圈涟漪。', at_water: true, bell: { id: 'moon-bell', name: '银月铃' },
+    riddle: { q: '千条线，万条线，落到水里看不见。', choices: ['雨', '丝'], hint: '抬头看看天。' } };
+  const html = cardHtml({ card: 'quest' }, { look: { quest }, lang: 'zh', words: WORDS.zh });
+  assert.match(html, /千条线，万条线/);
+  assert.match(html, /riddlehint">抬头看看天。</);
+  assert.match(html, /data-ring-answer="雨">雨</);
+  const away = cardHtml({ card: 'quest' }, { look: { quest: { ...quest, at_water: false, water: { id: 'sishui', name: '泗水岸' } } }, lang: 'zh', words: WORDS.zh });
+  assert.doesNotMatch(away, /data-ring-answer/, 'answered only at the water');
+  assert.match(away, /data-go="sishui"/);
+  const { readFileSync } = await import('node:fs');
+  const page = readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /\['\[data-ring-answer\]', \(el\) => run\('ring', \(\) => ringWith\(el\.dataset\.ringAnswer\)\)\]/);
+  assert.match(page, /write\('ring', \{ answer \}\)/);
+  assert.match(page, /if \(r\.joined\) report\(`\[scene\] found \$\{r\.joined\.id\}`\)/);
+});
+
 test('望气 on the page: 上卷 reads the shape, 下卷 every move with the number — and nothing without it', async () => {
   const { battleHtml, WORDS } = await import('../scripts/battle-card.js');
   const { begin, offers, view } = await import('../scripts/battle.js');

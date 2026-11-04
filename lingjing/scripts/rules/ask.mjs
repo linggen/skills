@@ -2,7 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { stageCards, stageHolds } from '../stage.mjs';
 import { normalizeAnswer, pick } from '../state.mjs';
-import { companionOf, questBrief, riddleWaiting } from './companion.mjs';
+import { questBrief } from './companion.mjs';
 import { directorBrief, filler, FILLERS, offersOf, waypointOf, wayBack, workOf } from './errands.mjs';
 import { onStage, sceneBrief, shownHere, stageAt } from './look.mjs';
 import { meetBrief } from './road.mjs';
@@ -19,20 +19,8 @@ export function askOf(content, state, ctx, result = {}, ungated = false) {
   // In 闭关 the world holds still: the one way on is 出关, on the stage's card.
   if (state.seclusion) return null;
   const second = filler(content, state, ctx.said);
-  // Her riddle, while it waits, is the question — wherever the player stands.
-  const her = companionOf(content);
-  if (her && riddleWaiting(state, ctx.now)) {
-    const key = state.companion.riddle.key, riddle = content.riddles[state.lang].riddles[key];
-    const tried = new Set((state.companion.riddle.tried ?? []).map(normalizeAnswer));
-    const where = atScene(content, state) ? sceneBrief(content, state, ctx.now)?.place : placeBrief(content, state, ctx.now)?.name;
-    return {
-      header: String(where ?? ''), question: riddle.q,
-      options: [
-        ...riddle.choices.filter(a => !tried.has(normalizeAnswer(a))).map(a => ({ label: a, ring: true, answer: a })),
-        { label: zh ? '先不答' : 'Not yet', look: true },
-      ],
-    };
-  }
+  // Her riddle (月下之约), while it waits, is the quest card's — its answers tapped there, the page's own Ring — never
+  // the chat's question: as AskUser it held the turn wherever he stood (Hanli 11-04, as the traveller's riddle did).
   // A traveller's riddle is never the chat's question: it stands on the stage's road card, answers and 不答，赶路
   // with it, and goes when he walks on (Hanli 11-04 — asked as AskUser it held the chat while he walked to 执事堂,
   // his answer came back `nothing-here` and the board he opened there queued behind it). stageHeld below sees it.

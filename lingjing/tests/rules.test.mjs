@@ -2406,10 +2406,22 @@ test('银月 is found, not given: the call at 结丹, the bell, water, her riddl
   assert.ok(rung.result.say && rung.result.choices.length);
   const key = rung.state.companion.riddle.key;
   const riddle = content.riddles.zh.riddles[key];
-  assert.equal(askOf(content, rung.state, ctx()).question, riddle.q);
+  // …on the quest card, never the chat's AskUser (Hanli 11-04): the riddle and its answers, tapped there.
+  const waits = look(rung.state, content, ctx());
+  assert.equal(waits.quest.step, 'riddle');
+  assert.deepEqual(waits.quest.riddle, { q: riddle.q, choices: riddle.choices });
+  assert.ok(waits.stage.some(c => c.card === 'quest'), JSON.stringify(waits.stage));
+  assert.ok(!waits.ask || waits.ask.question !== riddle.q, 'not asked in the chat');
+  assert.equal(askOf(content, rung.state, ctx())?.question === riddle.q, false);
+  // Walked away from the water, the card names the nearest one; the riddle is answered there.
+  const away = look({ ...rung.state, place: 'yunlong' }, content, ctx());
+  assert.equal(away.quest.step, 'riddle');
+  assert.ok(away.quest.water?.id, 'the nearest water is named');
   const wrong = riddle.choices.find(c => !riddle.a.includes(c));
   const missed = VERBS.ring(rung.state, content, ctx(), { answer: wrong });
   assert.equal(missed.result.refused, 'wrong-answer'); assert.ok(missed.result.hint);
+  const hinted = look(missed.state, content, ctx()).quest.riddle;
+  assert.ok(hinted.hint && !hinted.choices.includes(wrong), 'a miss: that answer gone, her hint up');
   // Answered, she joins: the bell is hers to wear, and her lines are her own again.
   const joined = VERBS.ring(missed.state, content, ctx(), { answer: riddle.a[0] });
   assert.equal(joined.result.ok, true);
@@ -2420,6 +2432,13 @@ test('银月 is found, not given: the call at 结丹, the bell, water, her riddl
   assert.ok(!joined.result.beat.some(b => b.who === 'yinyue'));
   assert.ok(joined.result.her_beat.facts.line.includes('铃是我的'));
   assert.equal(joined.state.node.her_beat.id, 'join/yinyue');
+  // Answered on the card, the page tells Ling once (`[scene] found`): she narrates the join, never Rings.
+  const told = look(joined.state, content, ctx({ said: '[scene] found yinyue (lang zh)' }));
+  assert.equal(told.found.id, 'yinyue');
+  assert.match(told.then, /^She was found just now/);
+  assert.match(told.then, /Never call Ring/);
+  assert.ok(!told.found.beat.some(b => b.who === 'yinyue'), 'her words are hers');
+  assert.equal(look(joined.state, content, ctx()).found, undefined, 'only on the report');
   const after = look(joined.state, content, ctx());
   assert.equal(after.companion.id, 'yinyue');
   assert.equal(after.quest, null);

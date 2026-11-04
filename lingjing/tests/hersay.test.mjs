@@ -57,6 +57,24 @@ test('the facts she is given carry the moment, the 妖王 register and fit the e
   assert.match(momentFacts('won', '', 'zh', { weight: 'short' }), /十字内/);
 });
 
+test('the facts are cut where a fact ends, never mid-word (11-04: 「Best next st… Lost.」 reached her)', async () => {
+  const { cutWhole } = await import('../scripts/hersay.js');
+  const en = 'Best next step: fight again, another comes here. Or: seclusion, up to 12 hours for 85 cultivation. Lost to Bibi after 14 rounds.';
+  assert.equal(cutWhole(en, 60), 'Best next step: fight again, another comes here.', 'the last whole sentence');
+  assert.equal(cutWhole('Fight again, here or there and more words', 20), 'Fight again, here…', 'else the last whole word');
+  assert.equal(cutWhole('Best next step fight again and again', 20), 'Best next step…');
+  assert.equal(cutWhole('Best next step fight again and again', 21), 'Best next step fight…');
+  assert.equal(cutWhole('最好的一步：再打一场，这里会换一只；也可以：闭关。', 19), '最好的一步：再打一场，这里会换一只…', 'a ；joins parts of one fact');
+  assert.equal(cutWhole('最好的一步：再打一场，这里会换一只；也可以：闭关。', 12), '最好的一步：再打一场…', 'Chinese: the last whole clause');
+  assert.equal(cutWhole('Life 3.5 left, then more words here', 12), 'Life 3.5…', 'a decimal point is no sentence end');
+  assert.equal(cutWhole('short', 60), 'short');
+  // The moment's facts never end on half a word.
+  const t = momentFacts('lost', en + ' ' + en, 'en', { max: 260 });
+  assert.ok([...t].length <= 260);
+  assert.ok(t.startsWith('Best next step: fight again, another comes here.'), t);
+  assert.doesNotMatch(t, /\b[a-z]+…/i, t);
+});
+
 test('a repeatable win is weighed: full when it means something, else short once in SHORT_GAP_MS, else a reaction', () => {
   for (const k of ['story', 'strong', 'close', 'firstToday', 'newBeast']) assert.equal(weighWin({ [k]: true }).weight, 'full', k);
   assert.equal(weighWin({ streak: STREAKS[0] }).weight, 'full');
