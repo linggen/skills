@@ -4,8 +4,10 @@
 // One item id is one slot, however many are stacked in it. A key the story
 // still needs (kind `key`, an exit of the open chapter or a taken errand's
 // `carry`, her bell) takes no slot. The room grows with the realm
-// (rewards.json `pouch.by_tier`) and by a bigger 储物袋 bought at a 坊市
-// (items.json `effect.pouch`, used once each, for good). When the pouch is
+// (rewards.json `pouch.by_tier`) and by the one bigger 储物袋 he wears
+// (items.json `effect.pouch`; `state.pouch`, a list of at most one — Hanli 2026-11-04:
+// 「储物袋不要叠加了…只能有一个储物袋吧」): 换上 another swaps it, the old one back in
+// the bag as a thing to sell or drop, like gear. When the pouch is
 // full, the choice is made on the spot (Hanli 2026-11-02: 「待取感觉应该删掉」 —
 // the 洞府's 待取 made the pouch's size mean nothing; the shape is the agent's
 // pick, Hanli delegated 11-02): a drop, a reward or a grant waits at the door
@@ -24,8 +26,8 @@ import { tierIndex } from './world.mjs';
 
 const RULE = content => content.rewards.pouch ?? { by_tier: {} };
 
-/* The room: the highest realm row at or below his, plus every bigger pouch
-   he has put to use. A world without the table has no cap. */
+/* The room: the highest realm row at or below his, plus the one bigger pouch
+   he wears. A world without the table has no cap. */
 function baseCap(content, state) {
   const rows = Object.entries(RULE(content).by_tier ?? {});
   if (!rows.length) return Infinity;
@@ -33,7 +35,11 @@ function baseCap(content, state) {
   const fits = rows.filter(([tier]) => tierRank(content, tier) <= rank).sort((a, b) => tierRank(content, b[0]) - tierRank(content, a[0]));
   return (fits[0] ?? rows.sort((a, b) => tierRank(content, a[0]) - tierRank(content, b[0]))[0])[1];
 }
-const pouchCap = (content, state) => baseCap(content, state) + (state.pouch ?? []).reduce((n, id) => n + (itemOf(content, id)?.effect?.pouch ?? 0), 0);
+const addsOf = (content, id) => (id ? itemOf(content, id)?.effect?.pouch ?? 0 : 0);
+/* The bigger pouch he wears, or null (the realm's plain one). One at a time; a save from before 11-04 that still
+   lists several (fitPouch moves the rest to the bag on load) counts only its biggest, the first of a tie. */
+const wornPouch = (content, state) => (state.pouch ?? []).reduce((best, id) => (best == null || addsOf(content, id) > addsOf(content, best) ? id : best), null);
+const pouchCap = (content, state) => baseCap(content, state) + addsOf(content, wornPouch(content, state));
 
 /* A thing that takes no slot: a key, a story thing (items.json `story`: kept,
    never sold — 紫须芝 he carries back to 阿禾), one the chapter or a taken
@@ -104,6 +110,42 @@ function fitHeld(content, state) {
   return s;
 }
 
+/* A save from before 11-04 (Hanli: 「只能有一个储物袋吧」), several pouches put to use: the biggest is worn (the first
+   of a tie — the one he put on first), each other goes back into the bag as a thing, or — no room — to the door's
+   queue (`from: 'pouch'`). Never dropped. The state itself when there is at most one. */
+function fitPouch(content, state) {
+  if (!state || (state.pouch?.length ?? 0) <= 1) return state;
+  const keep = wornPouch(content, state);
+  const s = { ...state, bag: { ...(state.bag ?? {}) }, pouch: [keep] };
+  const rest = [...state.pouch];
+  rest.splice(rest.indexOf(keep), 1);
+  for (const id of rest) {
+    if (roomFor(content, s, id)) s.bag[id] = (s.bag[id] ?? 0) + 1;
+    else offerAdd(s, id, 1, 'pouch');
+  }
+  return s;
+}
+
+/* 换上 a bigger pouch (travel.mjs trade use): the one he wears comes off, back into the bag as a thing; this one leaves
+   the bag for his waist. Refused when it is the one he wears (`pouch-used`), or when it would leave him with fewer slots
+   than he uses (`pouch-short`, the shortfall named) — unless it is the bigger one: an old save already over its room
+   may always trade up. Mutates `s`; answers the old pouch (named) or null, or a refusal. */
+function wearPouch(content, s, item) {
+  const lang = s.lang, old = wornPouch(content, s);
+  if (old === item.id) return refuse('pouch-used', pick({ zh: '这样的储物袋你已经换上了。', en: 'You already carry a pouch like that.' }, lang));
+  const t = { ...s, bag: { ...s.bag }, pouch: [item.id] };
+  t.bag[item.id] = (t.bag[item.id] ?? 0) - 1;
+  if (t.bag[item.id] <= 0) delete t.bag[item.id];
+  if (old) t.bag[old] = (t.bag[old] ?? 0) + 1;
+  const short = slotsUsed(content, t) - pouchCap(content, t);
+  if (short > 0 && addsOf(content, item.id) <= addsOf(content, old)) {
+    return refuse('pouch-short', pick({ zh: `换上它还差 ${short} 格，先卖或丢 ${short} 样。`, en: `That pouch is ${short} ${short > 1 ? 'slots' : 'slot'} short — sell or drop ${short} first.` }, lang), { short });
+  }
+  s.bag = t.bag;
+  s.pouch = t.pouch;
+  return { swapped: old ? { id: old, name: pick(itemOf(content, old)?.name, lang) ?? old } : null };
+}
+
 const fullSay = lang => pick({ zh: '储物袋已满，先卖或丢一样。', en: 'The storage pouch is full — sell or drop something first.' }, lang);
 const bagFull = (content, state, extra = {}) => refuse('bag-full', fullSay(state.lang), { used: slotsUsed(content, state), cap: pouchCap(content, state), ...extra });
 
@@ -113,17 +155,15 @@ const doorOffers = (content, state) => (state.full_offer ?? []).filter(o => o.n 
   return { id: o.id, name: pick(item?.name, state.lang) ?? o.id, kind: item?.kind ?? null, art: item?.art ?? null, n: o.n, ...(o.from ? { from: o.from } : {}), room: roomFor(content, state, o.id) };
 });
 
-/* The pouch as the panel reads it: used / cap, the realm's room (`base`), each bigger pouch he
-   carries (`carried`, biggest first: what it adds), and what waits at the door (`offers`). */
+/* The pouch as the panel reads it: used / cap, the realm's room (`base`), the one bigger pouch he
+   wears (`carried`, a list of one — the shape kept for older readers: what it adds), and what waits at the door (`offers`). */
 function pouchBrief(content, state) {
   const cap = pouchCap(content, state), base = baseCap(content, state), lang = state.lang;
-  const carried = (state.pouch ?? []).map(id => {
-    const item = itemOf(content, id);
-    return { id, name: pick(item?.name, lang) ?? id, art: item?.art ?? null, adds: item?.effect?.pouch ?? 0 };
-  }).sort((a, b) => b.adds - a.adds);
+  const id = wornPouch(content, state), item = id ? itemOf(content, id) : null;
+  const carried = id ? [{ id, name: pick(item?.name, lang) ?? id, art: item?.art ?? null, adds: addsOf(content, id) }] : [];
   const offers = doorOffers(content, state);
   return { used: slotsUsed(content, state), cap: Number.isFinite(cap) ? cap : null, base: Number.isFinite(base) ? base : null,
-    ...(offers.length ? { offers } : {}), ...(carried.length ? { carried, grown: carried.map(c => c.name) } : {}) };
+    ...(offers.length ? { offers } : {}), ...(carried.length ? { carried } : {}) };
 }
 
 /* Bag — the panel's own verb. `toss` throws one slot away (the whole stack), never a thing the story still needs
@@ -190,4 +230,4 @@ export function bag(state, content, ctx, args) {
   return { state: s, result: { ...r, pouch: pouchBrief(content, s) } };
 }
 
-export { hasFound, bagFull, fitHeld, freeSlot, storyKeep, fullLine, doorOffers, pouchBrief, pouchCap, roomFor, slotsUsed, stow };
+export { hasFound, bagFull, fitHeld, fitPouch, freeSlot, storyKeep, fullLine, doorOffers, pouchBrief, pouchCap, roomFor, slotsUsed, stow, wearPouch, wornPouch };

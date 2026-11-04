@@ -1,6 +1,6 @@
 // 储物袋 (Hanli, 2026-09-25; rules/pouch.mjs): the bag has room, counted in
 // slots — one id one slot, stacks unlimited, the story's keys free; room by
-// realm plus a bigger pouch bought once each. Full: drops, rewards and grants
+// realm plus the one bigger pouch he wears (Hanli 11-04: one at a time, swapped). Full: drops, rewards and grants
 // wait at the door for his choice (`full_offer`: swap · take · let go — Hanli
 // 11-02 「待取感觉应该删掉」); a find and a purchase are refused.
 import test from 'node:test';
@@ -145,17 +145,106 @@ test('a save\'s old 待取 moves into the pouch while there is room, the rest to
   assert.equal('full_offer' in look(roomy, content, ctx()), false);
 });
 
-test('a bigger 储物袋 raises the room for good, once each', () => {
+test('one 储物袋 worn: its room on top of the realm\'s, and the one worn is not used or bought again (Hanli 11-04)', () => {
   const s = at({ 'pouch-mid': 2 }, { place: 'ye' });
   const r = trade(s, content, ctx(), { action: 'use', id: 'pouch-mid' });
   assert.equal(r.result.ok, true);
   assert.deepEqual(r.state.pouch, ['pouch-mid']);
+  assert.equal(r.state.bag['pouch-mid'], 1, 'the spare stays a thing in the bag');
   assert.equal(pouchCap(content, r.state), 36);
   assert.equal(r.result.pouch.cap, 36);
+  assert.equal(r.result.swapped, undefined, 'nothing worn before: nothing comes off');
   assert.equal(trade(r.state, content, ctx(), { action: 'use', id: 'pouch-mid' }).result.refused, 'pouch-used');
   assert.equal(trade(r.state, content, ctx(), { action: 'buy', id: 'pouch-mid' }).result.refused, 'pouch-used');
-  const high = { ...r.state, pouch: ['pouch-mid', 'pouch-high'], tier: 'core' };
-  assert.equal(pouchCap(content, high), 48 + 12 + 24);
+});
+
+test('no stacking in the cap: only the biggest of a list counts, never the sum', () => {
+  const two = at({}, { pouch: ['pouch-mid', 'pouch-high'], tier: 'core' });
+  assert.equal(pouchCap(content, two), 48 + 24);
+  assert.equal(pouchCap(content, at({}, { pouch: ['pouch-low', 'baina-dai'], tier: 'qi' })), 24 + 6, 'a tie: one of them, not both');
+});
+
+test('换上 another swaps it: the old one comes back into the bag as a thing, to sell or drop', () => {
+  const s = at({ 'pouch-high': 1, 'qi-pill': 2 }, { tier: 'qi', place: 'ye', pouch: ['pouch-mid'] });
+  const r = trade(s, content, ctx(), { action: 'use', id: 'pouch-high' });
+  assert.equal(r.result.ok, true);
+  assert.deepEqual(r.state.pouch, ['pouch-high']);
+  assert.equal(r.state.bag['pouch-high'], undefined, 'the one worn left the bag');
+  assert.equal(r.state.bag['pouch-mid'], 1, 'the old one is back in the bag');
+  assert.deepEqual(r.result.swapped, { id: 'pouch-mid', name: '中品储物袋' });
+  assert.deepEqual([r.result.pouch.cap, r.result.pouch.used], [48, 2]);
+  assert.deepEqual(r.result.pouch.carried.map(c => c.id), ['pouch-high'], 'one bag, not two');
+  // A thing like gear: dropped (or sold) as any.
+  const tossed = VERBS.bag(r.state, content, ctx(), { action: 'toss', id: 'pouch-mid' });
+  assert.equal(tossed.result.ok, true);
+  assert.equal(tossed.state.bag['pouch-mid'], undefined);
+  const sold = trade({ ...r.state, place: 'pengcheng' }, content, ctx(), { action: 'sell', id: 'pouch-mid' });
+  assert.equal(sold.result.ok, true, 'sold at a market');
+  // Back down: the smaller one goes on, the bigger back in the bag.
+  const back = trade(r.state, content, ctx(), { action: 'use', id: 'pouch-mid' });
+  assert.deepEqual([back.state.pouch, back.state.bag['pouch-high'], back.result.pouch.cap], [['pouch-mid'], 1, 36]);
+});
+
+test('a swap to a smaller pouch that would not hold what he carries is refused, the shortfall named — zh and en', () => {
+  // 中品 on (36): 33 kinds + the 下品 he would put on. 下品 (30) would hold 33 kinds + the 中品 back = 34 → 4 short.
+  const s = at(fill(33, { 'pouch-low': 1 }), { tier: 'qi', pouch: ['pouch-mid'] });
+  assert.equal(slotsUsed(content, s), 34);
+  const r = trade(s, content, ctx(), { action: 'use', id: 'pouch-low' });
+  assert.equal(r.result.refused, 'pouch-short');
+  assert.equal(r.result.short, 4);
+  assert.equal(r.result.say, '换上它还差 4 格，先卖或丢 4 样。');
+  assert.equal(r.state, null, 'nothing written');
+  assert.equal(trade({ ...s, lang: 'en' }, content, ctx(), { action: 'use', id: 'pouch-low' }).result.say, 'That pouch is 4 slots short — sell or drop 4 first.');
+  // Room enough: it goes on.
+  const fits = at(fill(20, { 'pouch-low': 1 }), { tier: 'qi', pouch: ['pouch-mid'] });
+  assert.equal(trade(fits, content, ctx(), { action: 'use', id: 'pouch-low' }).result.ok, true);
+});
+
+test('an old save already over its room may always trade up — never stuck', () => {
+  const s = at(fill(40, { 'pouch-mid': 1 }), { tier: 'qi', pouch: ['pouch-low'] });
+  assert.ok(slotsUsed(content, s) > pouchCap(content, s));
+  const r = trade(s, content, ctx(), { action: 'use', id: 'pouch-mid' });
+  assert.equal(r.result.ok, true);
+  assert.equal(r.result.pouch.cap, 36);
+});
+
+test('a save with two 储物袋 on: the biggest worn on load, the rest back in the bag — or the door; nothing lost', async () => {
+  const { fitPouch } = await import('../scripts/rules/pouch.mjs');
+  const none = at({}, { pouch: ['pouch-mid'] });
+  assert.equal(fitPouch(content, none), none, 'one or none: the state itself');
+  // His shape: 下品 + 百纳 (both +6) — the first of the tie stays on; 百纳袋 is a thing in the bag.
+  const his = at(fill(23), { tier: 'qi', pouch: ['pouch-low', 'baina-dai'] });
+  const fit = fitPouch(content, his);
+  assert.deepEqual(fit.pouch, ['pouch-low']);
+  assert.equal(fit.bag['baina-dai'], 1);
+  assert.deepEqual([pouchCap(content, fit), slotsUsed(content, fit), fit.full_offer], [30, 24, undefined]);
+  assert.deepEqual(his.pouch, ['pouch-low', 'baina-dai'], 'the save in hand untouched');
+  // The biggest wins wherever it stands in the list.
+  const mixed = fitPouch(content, at({}, { tier: 'qi', pouch: ['pouch-low', 'pouch-high', 'pouch-mid'] }));
+  assert.deepEqual(mixed.pouch, ['pouch-high']);
+  assert.deepEqual([mixed.bag['pouch-low'], mixed.bag['pouch-mid']], [1, 1]);
+  // Over-full once the room shrinks: the bag that will not fit waits at the door.
+  const full = fitPouch(content, at(fill(36), { tier: 'qi', pouch: ['pouch-mid', 'pouch-low'] }));
+  assert.deepEqual(full.pouch, ['pouch-mid']);
+  assert.equal(full.bag['pouch-low'], undefined);
+  assert.deepEqual(full.full_offer, [{ id: 'pouch-low', n: 1, from: 'pouch' }]);
+  assert.equal(Object.keys(full.bag).length, 36, 'nothing taken out of the bag');
+  // Through the rules' door: the fitted save is what Look reads.
+  const { look } = await import('../scripts/rules/look.mjs');
+  assert.deepEqual(look(full, content, ctx()).full_offer.map(o => [o.id, o.from]), [['pouch-low', 'pouch']]);
+});
+
+test('the shop: a 储物袋 bought is a thing in the bag (a slot), worn only by 换上', () => {
+  const s = at({}, { tier: 'qi', place: 'ye', pouch: ['pouch-low'] });
+  const bought = trade(s, content, ctx(), { action: 'buy', id: 'pouch-mid' });
+  assert.equal(bought.result.ok, true);
+  assert.equal(bought.state.bag['pouch-mid'], 1);
+  assert.deepEqual(bought.state.pouch, ['pouch-low'], 'buying adds no room');
+  assert.deepEqual([pouchCap(content, bought.state), slotsUsed(content, bought.state)], [30, 1]);
+  const worn = trade(bought.state, content, ctx(), { action: 'use', id: 'pouch-mid' });
+  assert.deepEqual([worn.state.pouch, worn.state.bag['pouch-low'], worn.result.pouch.cap], [['pouch-mid'], 1, 36]);
+  // A full pouch buys no bag either.
+  assert.equal(trade(at(fill(30), { tier: 'qi', place: 'ye', pouch: ['pouch-low'] }), content, ctx(), { action: 'buy', id: 'pouch-mid' }).result.refused, 'bag-full');
 });
 
 test('an old save over its room keeps everything; new things wait at the door', () => {
@@ -262,43 +351,48 @@ test('a pill from 银月\'s furnace is its own 九转 item — more 修为 than 
   assert.match(pop, /class="pzhuan"><span class="zhuan gold"/);
 });
 
-test('the pouch he carries is named: the brief holds the realm\'s room and each bigger pouch put to use (Hanli 11-02: 「看不出来在身上」)', () => {
+test('the pouch he carries is named: the brief holds the realm\'s room and the one bigger pouch he wears (Hanli 11-02: 「看不出来在身上」)', () => {
   const before = VERBS.gear(at({ 'pouch-low': 1 }, { tier: 'qi' }), content, ctx()).result.gear.pouch;
   assert.deepEqual([before.cap, before.base, before.carried], [24, 24, undefined]);
   const s = at({ 'pouch-low': 1, 'pouch-mid': 2 }, { tier: 'qi', place: 'ye' });
   const r = trade(s, content, ctx(), { action: 'use', id: 'pouch-low' });
-  assert.equal(r.state.bag['pouch-low'], undefined, 'used for good: it leaves the bag');
+  assert.equal(r.state.bag['pouch-low'], undefined, 'worn: it leaves the bag');
   const p = r.result.pouch;
   assert.deepEqual([p.cap, p.base], [30, 24]);
   assert.deepEqual(p.carried, [{ id: 'pouch-low', name: '下品储物袋', art: itemOf(content, 'pouch-low').art, adds: 6 }]);
-  const both = trade(r.state, content, ctx(), { action: 'use', id: 'pouch-mid' }).result.pouch;
-  assert.deepEqual(both.carried.map(c => [c.id, c.adds]), [['pouch-mid', 12], ['pouch-low', 6]], 'biggest first');
-  assert.equal(both.cap, 42);
+  const swapped = trade(r.state, content, ctx(), { action: 'use', id: 'pouch-mid' }).result.pouch;
+  assert.deepEqual(swapped.carried.map(c => [c.id, c.adds]), [['pouch-mid', 12]], 'one bag');
+  assert.equal(swapped.cap, 36);
+  assert.equal('grown' in swapped, false);
 });
 
-test('the panel: a 储物袋 cell in the worn row, the header 24/30, 换上 says what it adds, a carried kind shows as on him — zh and en', async () => {
+test('the panel: a 储物袋 cell in the worn row names one bag, the header counts its room, 换上 says the room it gives — zh and en', async () => {
   const { WORDS } = await import('../scripts/cards.js');
   const { pouchHtml } = await import('../scripts/pouch.js');
   const unused = at({ 'pouch-low': 1, 'pouch-mid': 2, 'qi-pill': 1 }, { tier: 'qi', place: 'ye' });
-  const used = trade(trade(unused, content, ctx(), { action: 'use', id: 'pouch-low' }).state, content, ctx(), { action: 'use', id: 'pouch-mid' }).state;
+  const low = trade(unused, content, ctx(), { action: 'use', id: 'pouch-low' }).state;
+  const used = trade(low, content, ctx(), { action: 'use', id: 'pouch-mid' }).state;
   const ctxOf = (s, lang) => ({ look: { lang, words: content.dictionary.words?.[lang] ?? {} }, gear: VERBS.gear({ ...s, lang }, content, ctx()).result.gear, lang, words: WORDS[lang] });
   for (const lang of ['zh', 'en']) {
     const zh = lang === 'zh';
     const cell = (h) => h.match(/<div class="pworn ppouch">([\s\S]*?)<\/div>/)?.[1] ?? '';
     const before = pouchHtml(ctxOf(unused, lang), { sel: 'pouch-low' });
     assert.match(cell(before), zh ? /储物袋<\/span><b>随身储物袋 · 24 格<\/b>/ : /Pouch<\/span><b>Plain pouch · 24 slots<\/b>/);
-    assert.match(before, zh ? /data-use="pouch-low">换上 · 多 6 格</ : /data-use="pouch-low">Carry it · \+6 slots</);
-    assert.doesNotMatch(cell(before), /data-remove/, 'used for good: no 卸下');
+    assert.match(before, zh ? /data-use="pouch-low">换上 · 30 格</ : /data-use="pouch-low">Carry it · 30 slots</);
+    assert.doesNotMatch(cell(before), /data-remove/, 'no 卸下: another 换上 swaps it');
+    const one = pouchHtml(ctxOf(low, lang), { sel: 'pouch-mid' });
+    assert.match(cell(one), zh ? /<b>下品储物袋 · 30 格<\/b>/ : /<b>Low-grade storage pouch · 30 slots<\/b>/);
+    assert.match(one, zh ? /data-use="pouch-mid">换上 · 36 格</ : /data-use="pouch-mid">Carry it · 36 slots</, 'the room it gives, not added to the one worn');
     const after = pouchHtml(ctxOf(used, lang), { sel: 'pouch-mid' });
-    assert.match(after, zh ? /2\/42 格/ : /2\/42 slots/, 'the header counts the room he carries');
-    assert.match(cell(after), zh ? /<b>中品储物袋、下品储物袋 · 42 格<\/b>/ : /<b>Middle-grade storage pouch \+ Low-grade storage pouch · 42 slots<\/b>/);
-    assert.doesNotMatch(after, /data-pouch-item="pouch-low"/, 'the one used left the bag');
-    // A second 中品储物袋 adds nothing: marked as on him, no 换上, said so.
-    assert.match(after, new RegExp(`class="ptile sel worn"[^>]*data-pouch-item="pouch-mid"[\\s\\S]*?<span class="pmark">${WORDS[lang].worn}</span>`));
+    assert.match(after, zh ? /3\/36 格/ : /3\/36 slots/, 'the header counts the one bag: the spare 中品 and the 下品 back are things');
+    assert.match(cell(after), zh ? /<b>中品储物袋 · 36 格<\/b>/ : /<b>Middle-grade storage pouch · 36 slots<\/b>/);
+    assert.match(after, /data-pouch-item="pouch-low"/, 'the old one is back in the bag');
+    // The spare 中品储物袋: no 换上, said so, and not marked as on him — it takes a slot.
+    assert.doesNotMatch(after, /class="ptile sel worn"[^>]*data-pouch-item="pouch-mid"/);
     assert.doesNotMatch(after, /data-use="pouch-mid"/);
     assert.match(after, zh ? /这样的储物袋已在身上/ : /You carry one like it already/);
-    assert.doesNotMatch(after, /已换上|Carried:/, 'the worn row names it, not a line under the head');
-    assert.doesNotMatch(before + after, /undefined|\{[a-z]+\}|\[object/);
+    assert.match(pouchHtml(ctxOf(used, lang), { sel: 'pouch-low' }), zh ? /data-use="pouch-low">换上 · 30 格</ : /data-use="pouch-low">Carry it · 30 slots</, 'back down: the room it gives');
+    assert.doesNotMatch(before + one + after, /undefined|\{[a-z]+\}|\[object|、|\+ Low/);
   }
 });
 

@@ -69,7 +69,7 @@ export { yaoshou, yaoshouBatch, yaoshouBrief, yaoshouWait, YAOSHOU } from './rul
 export { panglu, pangluBrief, pangluOpen } from './rules/panglu.mjs';
 export { eventDone, eventShare, eventUp, eventWait } from './rules/events.mjs';
 import { fitPresence } from './rules/companion.mjs';
-import { fitHeld } from './rules/pouch.mjs';
+import { fitHeld, fitPouch } from './rules/pouch.mjs';
 import { pageHerGame } from './rules/hergame.mjs';
 import { pageWordBoard } from './rules/wordboard.mjs';
 export { judge, pageNames, pageThrows, resolve, riddleOf } from './rules/core.mjs';
@@ -231,7 +231,8 @@ function runLocked(verb, args, stateFile, reader) {
   // …and a full layer whose door has opened since steps up (rules/cap.mjs settleHeld).
   // …and a wall's tag of an earlier day gone with its day (rules/rotation.mjs lapseWall).
   // …and what waited at the 洞府 (待取, retired 11-02) into the pouch, or to the door's 「储物袋满了」 (rules/pouch.mjs fitHeld).
-  const fitted = raw && raw.world === worldId ? fitHeld(content, settleHeld(content, settleStages(content, fitPresence(content, lapseWall(closeStaleFight(migrate(raw, content), now), now), now), now))) : raw;
+  // …and a save from before 11-04 with several 储物袋 put to use: the biggest worn, the rest back in the bag (rules/pouch.mjs fitPouch).
+  const fitted = raw && raw.world === worldId ? fitPouch(content, fitHeld(content, settleHeld(content, settleStages(content, fitPresence(content, lapseWall(closeStaleFight(migrate(raw, content), now), now), now), now)))) : raw;
   // …and the day's 开府 hint revealed (rules/chores.mjs kaifuFit: one more undone row a day), written like the stand.
   // …and time away counted as 闭关 for 体力 (state.mjs awayFit) — the player's own calls only (the page's, Ling's).
   const player = !reader || reader === 'ling';

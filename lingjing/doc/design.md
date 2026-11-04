@@ -831,9 +831,13 @@ locks the two apart.
   `opens.done` (a scene ahead / behind): the innkeeper and the old drummer before
   the 漳水; 刘船匠's boat that does not leak and 老胡's bowl for 柳湾 after.
 - **储物袋** (2026-09-25): room in slots by realm (`pouch.by_tier`: 24/36/48/60),
-  bigger pouches used once (gone from the bag, named in the worn row's 储物袋
-  cell with its 格数 — 「下品储物袋 · 30 格」; 换上 says what it adds, Hanli
-  11-02); story things take no slot. **Full** (Hanli 2026-11-02: 「待取感觉应该
+  plus the one bigger pouch he wears (Hanli 2026-11-04: 「储物袋不要叠加了…只能有一个
+  储物袋吧」): 换上 takes it from the bag and swaps out the one he wore, which goes
+  back in the bag as a thing to sell or drop; refused `pouch-short` when the
+  smaller one would not hold what he carries. Named in the worn row's 储物袋 cell
+  with its 格数 — 「下品储物袋 · 30 格」; 换上 says the room it gives, Hanli
+  11-02. An old save with several on it wears the biggest on load (the first of a
+  tie); the rest go into the bag, or to the door's queue. Story things take no slot. **Full** (Hanli 2026-11-02: 「待取感觉应该
   删掉」 — 待取 at the 洞府 made the pouch's size mean nothing; the shape is the
   agent's pick, Hanli delegated 11-02): what a fight, an errand, a grant, a
   秘境 or the 饭桶 gives waits at the door (`state.full_offer`, a short queue

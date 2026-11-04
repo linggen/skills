@@ -15,7 +15,7 @@ import { roadsOf, guardOf, atScene, beatOf, chapterOpen, fittingPlace, inCorrido
 import { enteredBeat, refusalBeat } from './story.mjs';
 import { comingOf } from './hui.mjs';
 import { enter } from './worlds.mjs';
-import { bagFull, pouchBrief, roomFor, storyKeep } from './pouch.mjs';
+import { bagFull, pouchBrief, roomFor, storyKeep, wearPouch, wornPouch } from './pouch.mjs';
 import { GEAR_SLOTS, armSlot, fitWear, herKey, herSlot, wornCount } from './wear.mjs';
 import { findFragment } from './memories.mjs';
 import { danduBrief, eatPill } from './dandu.mjs';
@@ -196,8 +196,8 @@ export function buyAt(content, s, ctx, item, price, qty = 1) {
   const lang = s.lang, w = wordsOf(content, lang);
   const total = price * qty;
   if (s.wealth < total) return refuse('no-stones', pick({ zh: `${w.wealth}不够。`, en: `Not enough ${w.wealth}.` }, lang), { price: total, wealth: s.wealth });
-  // A bigger 储物袋 already put to use is not bought twice.
-  if (item.effect?.pouch && (s.pouch ?? []).includes(item.id)) return refuse('pouch-used', pick({ zh: '这样的储物袋你已经换上了。', en: 'You already carry a pouch like that.' }, lang));
+  // The 储物袋 he wears is not bought again; another is a thing for the bag, to 换上 after.
+  if (item.effect?.pouch && wornPouch(content, s) === item.id) return refuse('pouch-used', pick({ zh: '这样的储物袋你已经换上了。', en: 'You already carry a pouch like that.' }, lang));
   if (qty > 1 && !buysMany(item)) return refuse('one-only', null);
   const dealt = r => {
     if (!r.result?.ok) return r;
@@ -291,13 +291,11 @@ export function trade(state, content, ctx, args) {
       s.insight = e.level;
       return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), learned: { id: e.learn, level: e.level } } };
     }
-    // A bigger 储物袋: its room joins his for good, once for each kind.
+    // A bigger 储物袋: one worn at a time (Hanli 11-04) — 换上 swaps it, the old one back into the bag (rules/pouch.mjs wearPouch).
     if (e.pouch) {
-      if ((s.pouch ?? []).includes(item.id)) return refuse('pouch-used', pick({ zh: '这样的储物袋你已经换上了。', en: 'You already carry a pouch like that.' }, lang));
-      s.bag[item.id] = held - 1;
-      if (s.bag[item.id] <= 0) delete s.bag[item.id];
-      s.pouch = [...(s.pouch ?? []), item.id];
-      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), pouch: pouchBrief(content, s) } };
+      const worn = wearPouch(content, s, item);
+      if (worn.result) return worn;
+      return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), ...(worn.swapped ? { swapped: worn.swapped } : {}), pouch: pouchBrief(content, s) } };
     }
     if (e.progress) {
       // 圆满 (Hanli 11-03: 「修为圆满, 聚气丹无法起作用」): a pill would pay nothing and still owe 丹毒 — kept in the bag,

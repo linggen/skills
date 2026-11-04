@@ -15,20 +15,20 @@ export const POUCH_WORDS = {
     fullTitle: '储物袋满了', fullSwap: '丢一样换它', fullTake: '收下', fullLet: '不要了', fullPick: '点一样丢掉，换{name}', fullBack: '先不换',
     tabs: { all: '全部', pill: '丹药', arms: '法器', material: '材料', charm: '符', story: '剧情' },
     deck: '牌组', deckNew: '新 {n}', empty: '储物袋是空的。', tabEmpty: '这里还没有东西。', pick: '点一样东西看看。',
-    take: '服用', wear: '佩戴', study: '参悟', carry: '换上 · 多 {n} 格', use: '使用', sell: '卖 {n}', toss: '丢',
+    take: '服用', wear: '佩戴', study: '参悟', carry: '换上 · {n} 格', use: '使用', sell: '卖 {n}', toss: '丢',
     tossAsk: '丢掉{name} ×{n}？丢了就找不回了。', tossYes: '丢掉', tossNo: '留着',
     free: '剧情要用 · 不占格', fantong: '饭桶', ftPut: '放进饭桶',
-    pouchSlot: '储物袋', pouchPlain: '随身储物袋', pouchCap: '{name} · {n} 格', pouchDup: '这样的储物袋已在身上，再用无益。',
+    pouchSlot: '储物袋', pouchPlain: '随身储物袋', pouchCap: '{name} · {n} 格', pouchDup: '这样的储物袋已在身上，换上无益。',
   },
   en: {
     title: 'Storage Pouch', close: 'Close', used: '{used}/{cap} slots', over: '{n} over: new things wait on your choice.',
     fullTitle: 'The pouch is full', fullSwap: 'Drop one for it', fullTake: 'Take it', fullLet: 'Let it go', fullPick: 'Tap a thing to drop for {name}', fullBack: 'Not now',
     tabs: { all: 'All', pill: 'Pills', arms: 'Arms', material: 'Materials', charm: 'Talismans', story: 'Story' },
     deck: 'Deck', deckNew: '{n} new', empty: 'The pouch is empty.', tabEmpty: 'Nothing here yet.', pick: 'Tap a thing to look at it.',
-    take: 'Take', wear: 'Wear', study: 'Study', carry: 'Carry it · +{n} slots', use: 'Use', sell: 'Sell {n}', toss: 'Drop',
+    take: 'Take', wear: 'Wear', study: 'Study', carry: 'Carry it · {n} slots', use: 'Use', sell: 'Sell {n}', toss: 'Drop',
     tossAsk: 'Throw away {name} ×{n}? It is gone for good.', tossYes: 'Throw away', tossNo: 'Keep it',
     free: 'The story needs it · takes no slot', fantong: 'Rice Bucket', ftPut: 'Into the bucket',
-    pouchSlot: 'Pouch', pouchPlain: 'Plain pouch', pouchCap: '{name} · {n} slots', pouchDup: 'You carry one like it already; another adds nothing.',
+    pouchSlot: 'Pouch', pouchPlain: 'Plain pouch', pouchCap: '{name} · {n} slots', pouchDup: 'You carry one like it already; swapping gains nothing.',
   },
 };
 const say = (t, vars) => String(t).replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
@@ -62,15 +62,17 @@ function wornHtml(g, ctx) {
   return `${me}${her}`;
 }
 
-/* 储物袋 — the pouch he carries, a cell of the worn row: the bigger ones put to use (rules/pouch.mjs `carried`,
-   biggest first), or the realm's plain one, and the room it gives (Hanli 11-02: 「看不出来在身上」). Used for good: no 卸下. */
+/* 储物袋 — the pouch he carries, a cell of the worn row: the one bigger pouch he wears (rules/pouch.mjs `carried`, a list
+   of one — Hanli 11-04: 「只能有一个储物袋吧」), or the realm's plain one, and the room it gives (Hanli 11-02: 「看不出来在身上」).
+   No 卸下: another 换上 swaps it. */
 function pouchCellHtml(p, ctx) {
   if (p?.cap == null) return '';
   const pw = POUCH_WORDS[ctx.lang] ?? POUCH_WORDS.zh;
-  const name = p.carried?.length ? p.carried.map((c) => c.name).join(ctx.lang === 'en' ? ' + ' : '、') : pw.pouchPlain;
+  const name = p.carried?.[0]?.name ?? pw.pouchPlain;
   return `<div class="pworn ppouch"><span class="lbl">${esc(pw.pouchSlot)}</span><b>${esc(say(pw.pouchCap, { name, n: p.cap }))}</b></div>`;
 }
-/* A bigger pouch of a kind he already carries: another adds nothing (travel.mjs `pouch-used`), so it shows as on him. */
+/* A spare of the pouch he wears: 换上 gains nothing (rules/pouch.mjs `pouch-used`) — no 换上, said so. It is a thing in the
+   bag (it takes a slot), so its tile is not marked as on him. */
 const carriedKind = (i, g) => Boolean(i.effect?.pouch && g?.pouch?.carried?.some((c) => c.id === i.id));
 
 const artOf = (i, ctx) => (i.art ? `<img src="${esc((ctx.artBase ?? '') + i.art)}" alt="" loading="lazy">` : '<i class="noart" aria-hidden="true"></i>');
@@ -80,7 +82,7 @@ const artOf = (i, ctx) => (i.art ? `<img src="${esc((ctx.artBase ?? '') + i.art)
 export function tileHtml(i, ctx, o = {}) {
   // `off` '' : resting (a cooldown) — no tap, no chip.
   // `o.look`: a tap still opens its detail when it cannot be had here (the 饭桶's, to say why) — dimmed, not disabled.
-  const on = i.worn || carriedKind(i, o.g), attr = o.attr ?? 'data-pouch-item', off = o.off ?? null, dead = off != null, tap = !dead || o.look;
+  const on = i.worn, attr = o.attr ?? 'data-pouch-item', off = o.off ?? null, dead = off != null, tap = !dead || o.look;
   // A story thing's dashed tile says why on hover (the detail's own line, POUCH_WORDS.free).
   const free = i.free ? ` title="${esc((POUCH_WORDS[ctx.lang] ?? POUCH_WORDS.zh).free)}"` : '';
   return `<button${o.drag ? ' draggable="true"' : ''} class="ptile${o.sel === i.id ? ' sel' : ''}${on ? ' worn' : ''}${i.free ? ' free' : ''}${i.glow ? ' glow' : ''}${dead ? ' off' : ''}"${free}${tap ? ` ${attr}="${esc(i.id)}"` : ' aria-disabled="true"'} aria-pressed="${o.sel === i.id}">
@@ -165,7 +167,8 @@ function detailHtml(i, g, ctx, pw, ui) {
   const acts = [];
   if (e.progress != null) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.take)}</button>`);
   else if (e.learn) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.study)}</button>`);
-  else if (e.pouch && !carriedKind(i, g)) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(say(pw.carry, { n: e.pouch }))}</button>`);
+  // 换上 · N 格: the room he would have with it (the realm's plus this one's) — a swap, never added to the one he wears.
+  else if (e.pouch && !carriedKind(i, g)) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(say(pw.carry, { n: (g.pouch?.base ?? 0) + e.pouch }))}</button>`);
   // 戴上 · 佩 and 给银月 · 佩: each place a 戴上 lands now (the rules' `wear_on`); 卸下 for each slot that wears it (`worn_on`).
   for (const o of i.wear_on ?? []) {
     const slot = w.gearSlots[o.slot] ?? o.slot;
