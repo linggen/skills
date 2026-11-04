@@ -77,7 +77,7 @@ import { createLines, keepSpeed, paceOf, SPEEDS, speedNow, voiceOf } from './lin
 import { isSight, artRoom, chatHeard, fitBox, mountChatToggle, paintSight, setAutoFold } from './sight.js';
 import { createPager } from './pager.js';
 import { qianCardHtml } from './qian-card.js';
-import { createQianPage } from './qian-page.js';
+import { createQianPage, formPut, formTake } from './qian-page.js';
 import { EMPTY as NO_AUDIO, clipOf, createListener, createNarrator, hasAudio, listenHtml, loadManifest, setVoice as setDub, voiceOn as dubOn } from './pingshu.js';
 import { answered, tapNope, wireLiveGames } from './live-games.js';
 import { beatWon, onBeatWon } from './beat-won.js';
@@ -1256,11 +1256,16 @@ function qianModalHtml() {
 function paintQianModal() {
   let host = document.getElementById('qianModal');
   if (!host) { host = document.createElement('div'); host.id = 'qianModal'; document.body.appendChild(host); }
+  // 替人求签's fields as they stand on screen go into the page's copy first, so the new HTML carries them (qian-page.js
+  // formTake: live 2026-11-04, her line landing mid-entry wiped a half-typed birthday and the 签 was asked without it).
+  const birthField = view.qianFriendOpen ? formTake(host, keep) : null;
   const html = qianModalHtml();
   if (html === qianDrawn) return;
   // Typing in 替人求签's form survives a repaint: the field and its caret are put back.
   const a = document.activeElement, id = a && host.contains(a) ? a.id : null, at = id && 'selectionStart' in a ? [a.selectionStart, a.selectionEnd] : null;
   host.innerHTML = html; qianDrawn = html;
+  // The birthday field itself is carried over: a date half typed reads '' and could not be written back.
+  formPut(host, birthField);
   if (id) { const el = document.getElementById(id); el?.focus({ preventScroll: true }); if (at && el?.setSelectionRange) try { el.setSelectionRange(...at); } catch { /* a date field has no caret */ } }
 }
 /// The first open of a day not yet drawn: the card pops up once (this browser's, per save and day).
@@ -3613,13 +3618,16 @@ async function setFate(kind) {
   askHer('fate', `玩家刚在问签的卡上留了生辰：属${f.zodiac.name}${sign}，日主${f.stem.name}${f.element.name}。生辰的日子只在本机算过、没留下；生肖和星座留着给你解签用。斗法时他主灵根一击属${f.element.name}。用你自己的话说一两句。`,
     `The player has just given their birthday on the fortune-stick card: year of the ${f.zodiac.name}${signEn}, day master ${f.stem.name} (${f.element.name}). The date itself was read on this machine and not kept; the animal and sign are kept for your readings. Their root strike in a fight is ${f.element.name}. A line or two, in your own words.`, 'happy');
 }
-document.addEventListener('input', (e) => {
+/* A form field as typed. A date field is heard on `change` too: a picker may set it without an `input`. */
+function onField(e) {
   if (e.target.id === 'fate-birth') keep({ fateDraft: e.target.value, fateError: false });
   // 替人求签's form: kept as typed; 求一签 lights once a 称呼 is there.
   if (e.target.id === 'qian-friend-name') { const had = Boolean(view.qianFriendName?.trim()); keep({ qianFriendName: e.target.value }); if (had !== Boolean(e.target.value.trim())) { const b = document.querySelector('[data-qian-friend-go]'); if (b) b.disabled = !e.target.value.trim() || !(look?.qian?.friend_left > 0); } }
   if (e.target.id === 'qian-friend-birth') keep({ qianFriendBirth: e.target.value });
   if (e.target.id === 'qian-friend-nokeep') keep({ qianFriendNoKeep: e.target.checked });
-});
+}
+document.addEventListener('input', onField);
+document.addEventListener('change', (e) => { if (['fate-birth', 'qian-friend-birth', 'qian-friend-nokeep'].includes(e.target?.id)) onField(e); });
 
 function toggleOffer(id) { show({ offerRow: view.offerRow === id ? null : id }); }
 

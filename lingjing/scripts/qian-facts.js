@@ -22,10 +22,12 @@ export function almanacFact(al, zh) {
 /* The 五项 as the card shows them. */
 export const aspectsFact = (d, zh) => (d.aspects?.length ? (zh ? `五项：${d.aspects.map((a) => `${a.name}${a.line}`).join('；')}。` : `The five: ${d.aspects.map((a) => `${a.name}: ${a.line}`).join('; ')}.`) : '');
 
-/* Whose signs, against today. */
+/* Whose signs, against today — only what the rules computed. None given: said plainly unknown, so she never fills one
+   in (live, Hanli 2026-11-04: a friend drawn without a birthday, and her line said 属牛 — the ask's own example). */
 function signsFact(d, zh, friend) {
+  // Unknown: the ask says so, first and whole (qianAsk); nothing more here.
+  if (!d.signs?.zodiac?.name) return '';
   const who = friend ? (zh ? '那位朋友' : 'The friend') : zh ? '他' : 'He';
-  if (!d.signs) return friend ? (zh ? '那位朋友没给生辰。' : 'No birthday given for the friend.') : zh ? '他没留生辰。' : 'He gave no birthday.';
   const s = d.signs;
   return zh
     ? `${who}属${s.zodiac.name}${s.sign ? `，${s.sign.name}` : ''}${d.clash ? `，今日正冲${s.zodiac.name}` : '，今日不冲'}。`
@@ -34,22 +36,25 @@ function signsFact(d, zh, friend) {
 
 const qianFact = (d, zh) => (zh ? `第${d.n}签，${d.grade.name}。` : `Stick ${d.n}, ${d.grade.name}.`);
 
-/* What she is asked to write: ONE line, the signs against today (guide/qian.md § 银月 · 解签, in short). */
+/* What she is asked to write: ONE line, the signs against today (guide/qian.md § 银月 · 解签, in short). The ask names
+   the 生肖 the rules gave, or says there is none and she must not guess — first in the facts, so the cut never drops it;
+   its example names no animal (she copied 「属牛」 from it once). */
 export function qianAsk(d, zh, { friend = false } = {}) {
+  const z = d.signs?.zodiac?.name ?? null;
   if (friend) {
     return zh
-      ? '他替一位朋友求了签。替那位朋友解一句（「你那位朋友属牛……」）：朋友的生肖对今日黄历，落到下面五项的一件小事；只说宜忌，钱病讼只说宜谨慎；不过四十字，不提名字。'
-      : 'He drew a stick for a friend. One line about the friend ("your friend, an Ox…"): their animal against today, landing on one of the five below; 宜/忌 only; ~20 words, no name.';
+      ? `他替一位朋友求了签。替那位朋友解一句（「你那位朋友……」）：${z ? `朋友属${z}，拿这个生肖对今日黄历` : '朋友的生肖不知道，不许说或猜任何生肖、星座，只拿今日黄历说'}，落到下面五项的一件小事；只说宜忌，钱病讼只说宜谨慎；不过四十字，不提名字。`
+      : `A stick drawn for a friend${z ? ` (a ${z}). One line: that animal against today` : ' whose animal is unknown: name no animal or sign, never guess. One line on today\'s almanac'}, landing on one of the five below; 宜/忌 only; ~20 words; no name.`;
   }
   return zh
-    ? '他刚摇了今日的签。给他解一句：拿他的生肖对今日黄历，落到下面五项的一件小事；下签也落到今天做得到的事；只说宜忌，钱病讼只说宜谨慎；不过四十字，不提名字。'
-    : 'He just drew today\'s stick. One line: his animal against today\'s almanac, landing on one of the five below; a bad stick lands on something doable; 宜/忌 only; ~20 words, no name.';
+    ? `他刚摇了今日的签。给他解一句：${z ? `他属${z}，拿这个生肖对今日黄历` : '他的生肖不知道，不许说或猜任何生肖、星座，只拿今日黄历说'}，落到下面五项的一件小事；下签也落到今天做得到的事；只说宜忌，钱病讼只说宜谨慎；不过四十字，不提名字。`
+    : `He drew today's stick${z ? ` (a ${z}). One line: his animal against today` : '; his animal is unknown: name no animal or sign, never guess. One line on today\'s almanac'}, landing on one of the five below; a bad stick lands on something doable; 宜/忌 only; ~20 words; no name.`;
 }
 
 /* His own reading, as she is handed it. */
-export const qianFacts = (d, zh) => cut([qianAsk(d, zh), qianFact(d, zh), signsFact(d, zh, false), almanacFact(d.almanac, zh), aspectsFact(d, zh)].join(zh ? '' : ' '));
+export const qianFacts = (d, zh) => cut([qianAsk(d, zh), qianFact(d, zh), signsFact(d, zh, false), almanacFact(d.almanac, zh), aspectsFact(d, zh)].filter(Boolean).join(zh ? '' : ' '));
 /* A friend's (替人求签): the friend's signs; the 称呼 never — the card says it itself. */
-export const friendFacts = (f, zh) => cut([qianAsk(f, zh, { friend: true }), qianFact(f, zh), signsFact(f, zh, true), almanacFact(f.almanac, zh), aspectsFact(f, zh)].join(zh ? '' : ' '));
+export const friendFacts = (f, zh) => cut([qianAsk(f, zh, { friend: true }), qianFact(f, zh), signsFact(f, zh, true), almanacFact(f.almanac, zh), aspectsFact(f, zh)].filter(Boolean).join(zh ? '' : ' '));
 
 /* Her line as the card and the picture keep it: his 名字 never stands in it (the moment's text names him to her —
    rules of the chat — and the picture may go to others), put as 「你」/"you". */

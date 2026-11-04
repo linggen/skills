@@ -12,7 +12,7 @@ export const READING_WORDS = {
     copied: '已拷贝，可以粘贴到微信', saved: '已保存图片', saveBlocked: '这里存不下文件：右键下面的图片另存', shared: '已分享', shareFail: '没分享出去，可以先保存图片',
     friendOpen: '替人求签', friendTitle: '替人求签', friendName: '称呼（必填）', friendBirth: '生日（可不填，只在本机推算生肖星座，不保存）',
     friendNoKeep: '不保存', friendGo: '求一签', friendLeft: '今日还可替 {n} 人', friendNone: '今日已替三人求过签了', friendBack: '回到我的签',
-    friendOf: '替 {name} 求签', friendForget: '删去 {name}', friendKept: '记下的朋友', friendSigns: '属{zodiac}', yiLabel: '宜', jiLabel: '忌',
+    friendOf: '替 {name} 求签', friendForget: '删去 {name}', friendKept: '记下的朋友 · 填了生日再点，补上生肖', friendSigns: '属{zodiac}', yiLabel: '宜', jiLabel: '忌',
     source: '签文出自观音灵签（据新加坡宝聚寺所传本）', clash: '今日冲{zodiac}',
   },
   en: {
@@ -20,7 +20,7 @@ export const READING_WORDS = {
     copied: 'Copied — paste it anywhere', saved: 'Image saved', saveBlocked: 'Saving is blocked here — right-click the picture below to save it', shared: 'Shared', shareFail: 'Not shared — save the image instead',
     friendOpen: 'Draw for someone', friendTitle: 'A stick for someone else', friendName: 'Name (required)', friendBirth: 'Birthday (optional, read here for their animal and sign, never kept)',
     friendNoKeep: "Don't keep", friendGo: 'Draw', friendLeft: '{n} more today', friendNone: 'Three drawn for others today', friendBack: 'Back to mine',
-    friendOf: 'Drawn for {name}', friendForget: 'Forget {name}', friendKept: 'Kept', friendSigns: '{zodiac}', yiLabel: 'Good for', jiLabel: 'Avoid',
+    friendOf: 'Drawn for {name}', friendForget: 'Forget {name}', friendKept: 'Kept · fill a birthday, then tap to add their sign', friendSigns: '{zodiac}', yiLabel: 'Good for', jiLabel: 'Avoid',
     source: 'Verses from the Guanyin oracle, as kept by BW Monastery (宝聚寺), Singapore', clash: 'today clashes with the {zodiac}',
   },
 };

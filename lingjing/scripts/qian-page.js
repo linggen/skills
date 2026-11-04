@@ -17,6 +17,42 @@ export { qianFacts };
 /* 银月's line on a card, this browser's, by save · day · whose — her words are never written into the save. */
 const lineKey = (who, d) => `lingjing:qian-her:${who}:${d?.day ?? ''}:${d?.n ?? ''}`;
 
+/* 替人求签's form as it stands: the fields on screen first — what he sees is what is asked (live, Hanli 2026-11-04:
+   「1983-03-04 属猪, yinyue说属牛」 — the birthday on screen never reached the rules: the page asked with its copy of
+   the form, and a repaint mid-entry had wiped the half-typed date field) — the page's copy where a field is not there. */
+export function formNow(view, doc = typeof document === 'undefined' ? null : document) {
+  const el = (id) => doc?.getElementById?.(id) ?? null;
+  const name = el('qian-friend-name'), birth = el('qian-friend-birth'), noKeep = el('qian-friend-nokeep');
+  return {
+    name: name ? name.value : view.qianFriendName ?? '',
+    birth: birth ? birth.value || view.qianFriendBirth || '' : view.qianFriendBirth ?? '',
+    noKeep: noKeep ? Boolean(noKeep.checked) : Boolean(view.qianFriendNoKeep),
+  };
+}
+
+/* The Divine args of an ask: the form's, or a kept friend's chip — which takes the birthday in the form too, so a
+   friend kept without one (or with another) gets it by typing it once and tapping the chip. Null: no 称呼. */
+export function friendAskArgs(form, chip) {
+  const who = String(chip ?? form.name ?? '').trim(), birth = String(form.birth ?? '').trim();
+  if (!who) return null;
+  return { action: 'friend', name: who, ...(birth ? { birth } : {}), keep: !form.noKeep };
+}
+
+/* A repaint of the modal keeps 替人求签's fields as they are on screen: their values into the page's copy before the
+   HTML is made, and the birthday field itself carried into the new form (a half-typed date reads '' and cannot be
+   written back). `from`: the host before the repaint, read by `take` → put back by `put` after it. */
+export function formTake(host, keep) {
+  const q = (id) => host?.querySelector?.(`#${id}`) ?? null;
+  const name = q('qian-friend-name'), birth = q('qian-friend-birth'), noKeep = q('qian-friend-nokeep');
+  if (!name && !birth && !noKeep) return null;
+  keep({ ...(name ? { qianFriendName: name.value } : {}), ...(birth?.value ? { qianFriendBirth: birth.value } : {}), ...(noKeep ? { qianFriendNoKeep: Boolean(noKeep.checked) } : {}) });
+  return birth;
+}
+export function formPut(host, birth) {
+  const fresh = birth && host?.querySelector?.('#qian-friend-birth');
+  if (fresh && fresh !== birth) fresh.replaceWith(birth);
+}
+
 export function createQianPage({ write, refresh, show, keep, view, herLine, herHere, lang, refusal, failed, tellHer, saveKey = () => '', playerName = () => null }) {
   let motionOn = false, jolts = [];
   const store = {
@@ -105,9 +141,9 @@ export function createQianPage({ write, refresh, show, keep, view, herLine, herH
   function friendOpen(open) { show({ qianFriendOpen: open, qianFriendNote: null, ...(open ? {} : { qianFriendName: '', qianFriendBirth: '' }) }); }
   function friendBack() { show({ qianFriend: null, qianFriendHer: null, qianFriendOpen: false }); }
   async function friendAsk(name) {
-    const birth = name ? '' : view.qianFriendBirth ?? '', who = (name ?? view.qianFriendName ?? '').trim();
-    if (!who) return;
-    const r = await write('divine', { action: 'friend', name: who, ...(birth ? { birth } : {}), keep: !view.qianFriendNoKeep }).catch(failed);
+    const args = friendAskArgs(formNow(view), name);
+    if (!args) return;
+    const r = await write('divine', args).catch(failed);
     if (!r.ok) { show({ qianFriendNote: refusal(r) }); return; }
     const f = r.friend, had = store.get(lineKey(`friend:${f.name}`, f));
     // The birthday typed is let go at once: it lives in the form only until the 签 is drawn.
