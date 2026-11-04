@@ -15,13 +15,13 @@
   ],
   "tier": "qi",
   "step": 5,
-  "progress": 11,
+  "progress": 4,
   "wealth": 565,
   "lines": {
    "jin": {
     "tier": "xinsheng",
     "step": 1,
-    "progress": 82,
+    "progress": 46,
     "stretch": {
      "xinsheng:1": 1
     }
@@ -687,7 +687,7 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 1629,
+   "progress": 1473,
    "wealth": 568
   },
   "stamina": 100,
@@ -1247,7 +1247,7 @@
   "furnace_name": "饭桶",
   "stretch": {
    "qi:2": 105,
-   "qi:3": 291
+   "qi:3": 275
   },
   "hunted": {
    "mijing-xiongya": 1

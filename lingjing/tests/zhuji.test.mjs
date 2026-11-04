@@ -67,7 +67,7 @@ test('古九 is its own chapter at 沉鼎观: between 外门 and 冀, the Founda
   assert.deepEqual(huiOfScene, { '09-snow': 'h11', '09-jiuge': 'h11', '09-furnace': 'h11', '09-danfang': 'h11', '09-year': 'h11', '09-lingcao': 'h11', '09-fangshi': 'h11', '09-suifeng': 'h11', '09-yishui': 'h11', '09-xie': 'h11', '09-nianyao': 'h11', '09-futian': 'h11', '09-dabi': 'h09', '09-shenshi': 'h09', '09-dingfeng': 'h09', '09-laba': 'h09', '09-yanceng': 'h09', '09-qulao': 'h09', '09-shijie': 'h09', '09-cliff': 'h09' }); // 古八's years, a scene each since 2026-10-28
 });
 
-test('the winter and the years: 火柴 at the move, the furnace\'s culls, the seasons and the five years — the story\'s own, free of 体力 but a story step (Hanli, 2026-10-01), in order, once; the layers one at a time (2026-10-15)', () => {
+test('the winter and the years: 火柴 at the move, the furnace\'s culls, the seasons and the five years — the story\'s own, free of 体力, a story step too since 2026-11-04 (Hanli, 2026-10-01 · 11-04), in order, once; the layers one at a time (2026-10-15)', () => {
   // Every 古七 board counted and its two fights won (tests/gu7.test.mjs plays them): the ways on are the story's.
   const H11 = ['jiuge-xunsi', 'jiuge-yubu', 'furnace-recipe', 'furnace-deng', 'furnace-ding', 'danfang-min', 'year-smell', 'year-kanlu', 'fangshi-qian', 'fangshi-liuyun', 'yishui-reed', 'futian-suifeng', 'futian-spar', ...CH.scenes['09-suifeng'].offers.tasks, ...CH.scenes['09-xie'].offers.tasks, ...CH.scenes['09-nianyao'].offers.tasks]; // + 第二批 (2026-10-26); + 年四 · 年五's (2026-10-27)
   const placed = (s) => full({ ...s, place: CH.scenes[s.scene]?.at ?? s.place });
@@ -98,7 +98,7 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
   s = go({ ...s, stamina: 0, resting: true }, 'qingming').state;
   assert.equal(s.stamina, 0, '清明 costs no 体力');
   assert.ok(!buttons(s).includes('qingming'), '清明 is not offered again');
-  assert.equal(resolve(s, content, ctx, { exit: 'futian' }).result.refused, 'no-stamina', '伏天 moves the story on: a spent pool waits on the step');
+  assert.equal(resolve(s, content, ctx, { exit: 'futian' }).result.refused, undefined, '伏天 moves the story on: a spent pool never holds a story step (「剧情保持不扣」, 2026-11-04)');
   const layers = [];
   for (const [exit, at] of [['futian', '09-lingcao'], ['fight', '09-fangshi'], ['autumn', '09-suifeng'], ['on', '09-yishui'], ['night', '09-xie'], ['go', '09-nianyao'], ['on', '09-futian'], ['spar', '09-dabi']]) {
     const r = go(placed(s), exit);
@@ -131,11 +131,12 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
   assert.equal(s.scene, '09-yanceng', '年八 after the 大比');
   s = { ...s, place: CH.scenes[s.scene].at, stamina: 0, resting: true };
   assert.equal(s.bag['foundation-pill'], 1, 'the year-five 大比: the sect\'s 一转 is his, resealed into 饭桶');
-  // 入秋 moves the story on (`next`): a story step's 3, like every scene's step.
+  // 入秋 moves the story on (`next`): a story step, free like every scene's step since 2026-11-04 (「剧情保持不扣」).
   // 入秋 asks no layer since 2026-11-03: 九层圆满 waits at 瞿老's door (09-qulao), near the cliff.
-  assert.equal(resolve(s, content, ctx, { exit: 'ruqiu' }).result.refused, 'no-stamina', 'a spent pool still waits on the step');
+  assert.notEqual(resolve(s, content, ctx, { exit: 'ruqiu' }).result.refused, 'no-stamina', 'a spent pool never holds the step');
   const step = stepAt(s.scene, 'ruqiu'), autumn = go(full(s), 'ruqiu').state;
-  assert.equal(content.rewards.stamina.max - autumn.stamina, step, '入秋: one story step, its reading minutes');
+  assert.equal(content.rewards.stamina.max - autumn.stamina, step, '入秋: one story step, its cost (0)');
+  assert.equal(step, 0);
   assert.equal(autumn.step, 9, '九层');
   assert.equal(autumn.scene, '09-qulao');
   // The lump on 入秋 (the gate table) lands under 九层's share hold, the rest banked; standing at 瞿老's door it comes back: full.

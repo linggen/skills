@@ -1,10 +1,11 @@
 // Every play pays a fixed 修为 (rules/playpay.mjs; Hanli 2026-11-02: 「不要按照百分比给.... 给太多了」 · 「我是说参考百分比的数值.
 // 不能直接给百分比」, and the formula 「这套公式基本可以」): R(content level) × its 体力 × difficulty × ★ × the gap × the replay.
-// A board costs 3 体力: at 练气一层 R is 2, so 6 a board, whatever its kind; ★ and the same board again the same day scale it.
+// A board costs its own minutes in 体力 (state.mjs boardCost; Hanli 2026-11-04: 「小游戏有一些时间比较长的, 你看一下体力扣的是否对」):
+// at 练气一层 R is 2, so a 3-minute 解谜 pays 6 and a 1-minute 打地鼠 2; ★ and the same board again the same day scale it.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
-import { newState, staminaCost } from '../scripts/state.mjs';
+import { boardCost, newState, staminaCost } from '../scripts/state.mjs';
 import { playTo } from '../scripts/rules/progress.mjs';
 import { look, move, task, win } from '../scripts/rules.mjs';
 import { gapOf, levelOf, playGrant, rateAt, sittingsAt, xiuweiOf } from '../scripts/rules/playpay.mjs';
@@ -20,7 +21,7 @@ const R = (L, realm = 0) => X.rate.base * X.rate.growth ** (L - 1) * X.rate.real
 
 test('the formula\'s knobs: R and S by level, a 层 one level (筑基 in nine 层 since 2026-11-02), the gap both ways', () => {
   assert.equal(X.rate.base, 2, 'xw_per_stamina: 2 修为 a 体力 at level 1');
-  assert.deepEqual([BOARD, staminaCost(content, 'duel'), staminaCost(content, 'shouchao')], [3, 4, 5]);
+  assert.deepEqual([BOARD, staminaCost(content, 'duel'), staminaCost(content, 'shouchao')], [3, 2, 3], 'the default board, a card fight, a 兽潮 night with no kit named');
   assert.deepEqual(levelOf(content, 'qi', 0), { level: 0, realm: 0 });
   assert.deepEqual(levelOf(content, 'qi', 4), { level: 4, realm: 0 });
   // In 段 (2026-11-02) every 层 is its 段's level, as the step was: 筑基一至三层 L12, 四至六层 15, 七至九层 18.
@@ -40,11 +41,13 @@ test('the formula\'s knobs: R and S by level, a 层 one level (筑基 in nine �
   assert.equal(xiuweiOf(content, s, 3, { first: true }), R(1) * 3 * (1 + X.difficulty.first_clear));
 });
 
-test('a board at 练气一层: its 体力 × R, whatever its kind; ★ and the replay scaling it; 三层 at its own R; 零层 none', () => {
+test('a board at 练气一层: its 体力 × R, by its kind; ★ and the replay scaling it; 三层 at its own R; 零层 none', () => {
   const s = { tier: 'qi', step: 1, plays: null };
   const world = kind => ({ ...content, games: { games: [{ id: 'x', task: 'x', mechanic: kind }] } });
   const grant = (kind, stars, st = s) => playGrant(world(kind), st, 'x', { game: 'x' }, NOW, stars);
-  for (const k of ['打地鼠', '割绳子', '格斗', '解谜', '你画我猜', '棋牌']) assert.equal(grant(k).progress, Math.round(R(1) * BOARD), k);
+  const units = k => boardCost(content, 'game', { mechanic: k });
+  for (const k of ['打地鼠', '割绳子', '格斗', '解谜', '你画我猜', '棋牌']) assert.equal(grant(k).progress, Math.round(R(1) * units(k)), k);
+  assert.deepEqual(['打地鼠', '割绳子', '解谜'].map(units), [1, 2, 3], 'each its own minutes');
   assert.equal(grant('解谜', 1).progress, Math.round(R(1) * BOARD * PP.stars['1']), '★1');
   const again = { ...s, plays: { day: '2026-10-27', ids: { x: 1 } } };
   assert.equal(grant('解谜', null, again).progress, Math.round(R(1) * BOARD * PP.replay[1]), 'the same board again today');
@@ -73,7 +76,8 @@ test('古四 at 146/470: the place games at 沉鼎观 each pay their formula num
       if (!d.result.ok) continue;
       const got = d.state.progress - w.state.progress;
       const n = seen.get(id) ?? 0; seen.set(id, n + 1);
-      const want = Math.round(R(1) * BOARD * PP.replay[Math.min(n, PP.replay.length - 1)]);
+      const cost = boardCost(content, 'game', content.games.games.find(g => g.task === id && !g.cut && !g.replaced));
+      const want = Math.round(R(1) * cost * PP.replay[Math.min(n, PP.replay.length - 1)]);
       if (!d.result.handed?.length) assert.ok(Math.abs(got - want) <= 1, `${id} (play ${n + 1}): +${got}, the formula ${want}`);
       s = d.state; plays += 1;
     }

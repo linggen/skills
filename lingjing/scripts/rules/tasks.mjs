@@ -1,11 +1,11 @@
 // rules/tasks.mjs — Tasks and quests: boards, errands handed in, win, duel, 论道.
 // Part of the rules engine; rules.mjs is its one door.
-import { fightReplay, hauntPlayId, namedRow, playCounted, playGrant } from './playpay.mjs';
+import { fightReplay, hauntPlayId, namedRow, playCounted, playGrant, playedRow } from './playpay.mjs';
 import { festivalDone } from './festival.mjs';
 import { climbWon } from './climb.mjs';
 import { battle } from '../battle.js';
 import { gameOf } from '../content.mjs';
-import { addStamina, dayKey, lockedOf, periodKey, pick, settleStamina, seedOf } from '../state.mjs';
+import { addStamina, boardCost, dayKey, lockedOf, periodKey, pick, settleStamina, seedOf } from '../state.mjs';
 import { drop } from './arms.mjs';
 import { cardCatalog, fightPill, fightSetup, grantFrom, readOf, winCard } from './cards.mjs';
 import { POUCH_MAX } from '../battle.js';
@@ -32,6 +32,8 @@ import { yaoshouFought, yaoshouShare } from './yaoshou.mjs';
 /* Each line its own 修为 (rules/lines.mjs, Hanli 2026-10-27): a board pays the line it belongs to — a 今 board the 今, wherever
    it is replayed; on a 今 scene, the 今 — by the same minutes on that line's ladder, and never 灵石. Null: the 古's own. */
 const lineOfBoard = (content, s, id) => boardLine(content, id) ?? sideLine(content, sceneOf(content, s));
+/* A board's 体力 as he played it: the row the win wrote down (`play_rows`), else the task's own (state.mjs boardCost). */
+const playedCost = (content, s, id, t) => boardCost(content, 'game', playedRow(content, id, t, s.play_rows?.[id] ?? null));
 /* A board's play pay: the grant on its line, and paid there (`linePay`), else the 古's (playGrant, core.mjs pay). */
 const boardGrant = (content, s, id, t, now, stars, opts = {}) => {
   const line = lineOfBoard(content, s, id);
@@ -195,12 +197,11 @@ function taskDone(state, content, ctx, id) {
   const s = clone(state);
   delete s.wins[id];
   // For an errand, the errand pays — not the game or the task a second time.
-  // A hosted game costs a little 体力, as a step does (rewards.json
-  // stamina.cost.game — his, 2026-09-24): taken as it is counted, and a win
-  // kept while the pool is empty is counted once it refills, the same day.
+  // A hosted game costs its minutes in 体力 (rewards.json stamina.cost.game `board`: the board's own, state.mjs boardCost —
+  // Hanli 2026-11-04): taken as it is counted, and a win kept while the pool is empty is counted once it refills, the same day.
   if (again || (t.hosted && !stall)) {
     if (t.hosted) {
-      const empty = spendStamina(content, s, ctx, 'game');
+      const empty = spendStamina(content, s, ctx, 'game', 1, playedCost(content, s, id, t));
       if (empty) return empty;
     }
     // A board pays by its minutes (rules/playpay.mjs, Hanli 2026-10-27) — the errand it was for pays too; a 今 board pays the 今.
@@ -262,7 +263,7 @@ function errandSkip(state, content, ctx, id) {
   const s = clone(state);
   delete s.wins?.[id];
   if (t.hosted) {
-    const empty = spendStamina(content, s, ctx, 'game');
+    const empty = spendStamina(content, s, ctx, 'game', 1, playedCost(content, s, id, t));
     if (empty) return empty;
   }
   const full = boardGrant(content, s, id, t, ctx.now, null);

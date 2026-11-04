@@ -22,7 +22,7 @@
 // first `climb` nights; a 大妖 of his 回 comes on the `boss` nights, in a kit with 结印. A won night moves him on;
 // a lost one comes again exactly (nothing it is made from has moved). The day's first nights pay in full, the rest
 // a replay's falling share (tideShare).
-import { dayKey, lockedOf, pick, seedOf } from '../state.mjs';
+import { boardCost, dayKey, lockedOf, pick, seedOf } from '../state.mjs';
 import { clone, pay, refuse, spendStamina } from './core.mjs';
 import { sideLine } from './hui.mjs';
 import { beastOpen, kitOf } from './reveal.mjs';
@@ -245,7 +245,10 @@ export function shouchaoDone(state, content, ctx, id) {
   const night = tonight(content, state);
   if (!night) return refuse('not-here', null);
   const s = clone(withClock(state, t));
-  const empty = spendStamina(content, s, ctx, c.cost ?? 'game');
+  // The night's 体力 is its kit's minutes (rewards.json stamina.cost.shouchao `board`, state.mjs boardCost: 守墙 5 · 守炉 3 …).
+  const kit = (content.games?.games ?? []).find(g => g.id === night.game && !g.cut && !g.replaced) ?? { id: night.game };
+  const units = boardCost(content, c.cost ?? 'game', kit);
+  const empty = spendStamina(content, s, ctx, c.cost ?? 'game', 1, units);
   if (empty) return empty;
   delete s.wins[id];
   const stars = Math.max(1, Math.min(3, Number(s.stars?.[id] ?? 1) || 1));
@@ -253,7 +256,7 @@ export function shouchaoDone(state, content, ctx, id) {
   const row = c.pay?.[stars] ?? {}, share = tideShare(content, state, ctx.now);
   // 修为: the night's 体力 × the formula × its ★ (playpay.mjs fightPlay; 2026-11-02) — a boss night as a boss.
   const star = content.balance?.play_pay?.stars?.[String(stars)] ?? 1;
-  const paid = pay(content, s, ctx, { table: c.table ?? 'haunt', play: 'tide', progress: row.progress ?? 0, wealth: 0, star, ...(night.boss ? { boss: true } : {}), ...(share < 1 ? { share } : {}) }); // `play`: 问签's 宜 reads it (fortune.mjs)
+  const paid = pay(content, s, ctx, { table: c.table ?? 'haunt', play: 'tide', units, progress: row.progress ?? 0, wealth: 0, star, ...(night.boss ? { boss: true } : {}), ...(share < 1 ? { share } : {}) }); // `play`: 问签's 宜 reads it (fortune.mjs)
   // 灵石 by the small-game ranks (balance.json `boards`): every night, by the day's share.
   if (!lockedOf(content, s).includes('wealth')) {
     const amount = Math.round((content.balance?.boards?.[row.rank] ?? 0) * share);

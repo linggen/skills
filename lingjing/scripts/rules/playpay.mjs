@@ -11,7 +11,7 @@
 // layer survives only as the reference tools/numbers.mjs prints. What the book authors (a scene's, a pill's, a rumor's
 // 修为) is the number written. 灵石 by the kind, on the same ★ and replay. No daily cap; 修为 stops at the gate and turns
 // to 灵石 there (`play` converts, core.mjs pay). Nothing here names a board.
-import { dayKey, staminaCost } from '../state.mjs';
+import { boardCost, boardMinutes, dayKey, staminaCost } from '../state.mjs';
 import { sealedOf } from './world.mjs';
 
 /* The row of games.json actually played for a board, and so its mechanic (its 灵石 and minutes): `row` — the game the page
@@ -30,7 +30,6 @@ export function playedRow(content, id, task, row = null) {
   const rows = (content.games?.games ?? []).filter(g => g.task === id);
   return namedRow(content, id, row) ?? namedRow(content, id, task?.game) ?? rows.find(g => !g.replaced && !g.cut) ?? rows[0] ?? null;
 }
-const kindOf = (content, id, task, row = null) => playedRow(content, id, task, row)?.mechanic ?? null;
 
 /* The 修为 the layer he stands on asks (`need` when a model plays it), else its threshold — the reference's yardstick only. */
 export function needOf(content, state) {
@@ -86,7 +85,8 @@ export function xiuweiOf(content, state, units, { level = null, difficulty = 'no
 /* A fight won (the `haunt` table, a pool's beast; 兽潮's night with `play: 'tide'`): the 体力 it costs × the formula. */
 export function fightPlay(content, state, grant = {}) {
   if (!X(content)) return null;
-  const units = staminaCost(content, grant.play === 'tide' ? 'shouchao' : 'duel');
+  // A night of 兽潮 its kit's minutes (`units`, shouchao.mjs: the 塔防 kits run 1 to 5 minutes), else the kind's.
+  const units = grant.units ?? staminaCost(content, grant.play === 'tide' ? 'shouchao' : 'duel');
   // `star`: the night's ★ as play_pay.stars prices it (兽潮, shouchao.mjs); a pool's beast has none.
   return Math.round(xiuweiOf(content, state, units, { difficulty: grant.boss ? 'boss' : grant.difficulty ?? 'normal' }) * (grant.star ?? 1));
 }
@@ -107,20 +107,21 @@ export function authoredScale(content, state, table) {
 const playsToday = (state, id, now) => (state.plays?.day === dayKey(now) ? state.plays.ids?.[id] ?? 0 : 0);
 
 /* The grant a board's win is worth now, or null where the world declares no play pay. `stars`: the win's; `first`: a story
-   board's first clear (+50%). A board costs its 体力 (`game`); its kind names its 灵石 and the minutes the reference reads. */
+   board's first clear (+50%). A board costs its 体力 (`game`: its own minutes, state.mjs boardCost) and pays by them; its kind
+   names its 灵石. */
 export function playGrant(content, state, id, task, now, stars = null, { first = false, row = null } = {}) {
   const pp = content.balance?.play_pay;
   if (!pp) return null;
   // The row he played it as (`row`, else the one the win wrote down: tasks.mjs win `play_rows`).
-  const kind = kindOf(content, id, task, row ?? state?.play_rows?.[id] ?? null);
-  const minutes = pp.minutes?.[kind] ?? pp.minutes?.default ?? 0;
+  const played = playedRow(content, id, task, row ?? state?.play_rows?.[id] ?? null), kind = played?.mechanic ?? null;
+  const minutes = boardMinutes(content, played);
   const star = stars == null ? 1 : pp.stars?.[String(stars)] ?? 1;
   // Inside a sealed instance (world.mjs sealedOf: the 秘境 of 古五) the room's boards are all there is to play: they replay
   // at `replay_sealed` (Hanli approved 2026-11-02: no falloff there), else the day's falling share.
   const replay = (sealedOf(content, state) ? pp.replay_sealed : null) ?? pp.replay ?? [1];
   const share = replay[Math.min(playsToday(state, id, now), replay.length - 1)];
   const f = star * share;
-  const units = staminaCost(content, 'game');
+  const units = boardCost(content, 'game', played);
   const progress = Math.round(xiuweiOf(content, state, units, { level: task?.level ?? null, difficulty: task?.difficulty ?? 'normal', first }) * f);
   const wealth = Math.round((pp.wealth?.[kind] ?? pp.wealth?.default ?? 0) * f);
   return progress || wealth ? { table: 'play', progress, wealth, kind, minutes, stamina: units } : null;

@@ -12,7 +12,7 @@
 // walks with its `cast` beast, one not yet drawn today, a word never cleared first. The page is the
 // only witness to the picture named (as for every board): its win counted (`task done`) pays a word's
 // FIRST clear only, by the looks it took (balance.json `boards`: 1 look best, 2 good, more plain).
-import { dayKey, pick, seedOf } from '../state.mjs';
+import { boardCost, dayKey, pick, seedOf } from '../state.mjs';
 import { clone, refuse, spendStamina } from './core.mjs';
 import { herNear } from './companion.mjs';
 import { isLocked } from './locks.mjs';
@@ -91,7 +91,8 @@ function open(state, content, ctx, args = {}) {
   const n = (k?.n ?? 0) + 1, word = nextWord(content, state, day, n);
   if (!word) return refuse('no-words', null);
   const s = clone(state);
-  const empty = spendStamina(content, s, ctx, 'game');
+  // A round is a 你画我猜 board: its minutes (state.mjs boardCost, the drawguess row's).
+  const empty = spendStamina(content, s, ctx, 'game', 1, boardCost(content, 'game', (content.games?.games ?? []).find(g => g.id === 'drawguess' && !g.cut && !g.replaced)));
   if (empty) return empty;
   s.kao = { day, n, drawn: [...(k?.drawn ?? []), word.zh], open: { word: word.zh, at: ctx.now.toISOString() } };
   return { state: s, result: { ok: true, opened: n, left: cap - n, word } };

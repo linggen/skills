@@ -11,7 +11,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadContent } from '../scripts/content.mjs';
-import { migrate, newState, STATE_VERSION, staminaCost } from '../scripts/state.mjs';
+import { boardCost, migrate, newState, STATE_VERSION } from '../scripts/state.mjs';
+import { playedRow } from '../scripts/rules/playpay.mjs';
 import { look, resolve } from '../scripts/rules.mjs';
 import { boardLine, lineGrant, lineWorld } from '../scripts/rules/lines.mjs';
 import { barOf, stands } from '../scripts/stage.mjs';
@@ -73,7 +74,7 @@ test('a 今 board pays the 今 by its minutes on the 今 ladder — never the �
   const t = content.tasks.tasks.find(x => x.id === 'jin-chat-dark');
   const g = lineGrant(content, { lang: 'zh', plays: null, lines: { jin: { tier: 'xinsheng', step: 0, progress: 0 } } }, 'jin', t.id, t, NOW, null);
   const X = W.balance.play_pay.xiuwei;
-  assert.equal(g.progress, Math.round(X.rate.base * staminaCost(content, 'game')));
+  assert.equal(g.progress, Math.round(X.rate.base * boardCost(content, 'game', playedRow(content, t.id, t))), 'its own minutes (2026-11-04)');
   assert.equal(g.wealth, 0);
   assert.equal(boardLine(content, 'jin-chat-dark'), 'jin');
   assert.equal(boardLine(content, content.tasks.tasks.find(x => x.id === 'notice-shuitong')?.id ?? 'notice-shuitong'), null, 'a 古 board is the 古\'s');

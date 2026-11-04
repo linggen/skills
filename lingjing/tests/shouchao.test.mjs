@@ -6,7 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
-import { newState, staminaCost } from '../scripts/state.mjs';
+import { boardCost, newState, staminaCost } from '../scripts/state.mjs';
 import { look, playTo, task, win } from '../scripts/rules.mjs';
 import { beastOpen, shouchaoHosted, shouchaoWaiting, tideRows, tonight, wallKit } from '../scripts/rules/shouchao.mjs';
 import { levelDealt } from '../scripts/games/shouqiang.js';
@@ -102,7 +102,8 @@ test('gated on 古四\'s 小周天: never before it, offered from the first nigh
 });
 
 test('it costs 灵气 and pays by stars: 修为, 灵石 by the small-game ranks, an herb from two stars', () => {
-  const s = at('wm-yaoyuan'), cost = staminaCost(content, T.shouchao.cost);
+  // The night's kit's own minutes (state.mjs boardCost, 2026-11-04): the first nights are 守墙关's.
+  const s = at('wm-yaoyuan'), cost = boardCost(content, T.shouchao.cost, content.games.games.find(g => g.id === T.game && !g.cut && !g.replaced));
   const paid = {};
   for (const stars of [1, 2, 3]) {
     const r = night(s, day(20, 17, 30), stars);

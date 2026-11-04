@@ -1,0 +1,38 @@
+{
+  "_about": "Minutes a board takes as he plays it (his main save, analytics 2026-10-27 → 2026-11-04: a board from its first frame to its won · lost · skipped end, wall time, sittings over 30 min dropped; boards left with ✕ not counted). Card fights: rules log `duel` open → settle pairs (n 49, median 2.0, p75 3.1) and analytics (below). `est`: a kind or game he has not played (or n 1 against the design), the design's guess and why. tests/stamina-cost.test.mjs holds the costs within ±50% of these.",
+  "measured_on": "2026-11-04",
+  "kinds": {
+    "打地鼠": {"n": 3, "median": 0.5, "p75": 1.1},
+    "调息": {"n": 0, "est": 1, "why": "one breath-run of 气脉, about a minute"},
+    "几何冲刺": {"n": 2, "median": 3.1, "p75": 3.3},
+    "开炉": {"n": 1, "median": 0.5, "p75": 0.5},
+    "割绳子": {"n": 0, "est": 2, "why": "one rope board, a few cuts and retries"},
+    "投掷": {"n": 1, "median": 2.3, "p75": 2.3},
+    "节奏": {"n": 1, "median": 0.6, "p75": 0.6, "est": 2, "why": "a 太鼓 song ~1.5–2 min (not played); 抚琴 measured, priced on its own"},
+    "记忆": {"n": 1, "median": 2.5, "p75": 2.5},
+    "结印": {"n": 1, "median": 0.7, "p75": 0.7},
+    "格斗": {"n": 12, "median": 1.0, "p75": 1.2},
+    "对话": {"n": 18, "median": 0.5, "p75": 0.9},
+    "配对": {"n": 1, "median": 0.3, "p75": 0.3},
+    "塔防": {"n": 19, "median": 2.6, "p75": 4.2},
+    "斗法": {"n": 25, "median": 2.3, "p75": 2.9, "why": "the card fight's minutes (analytics `fight`)"},
+    "解谜": {"n": 3, "median": 2.7, "p75": 3.0},
+    "你画我猜": {"n": 3, "median": 1.1, "p75": 2.2},
+    "棋牌": {"n": 4, "median": 2.7, "p75": 3.8},
+    "探索": {"n": 0, "est": 12, "why": "the design's own (no live row)"}
+  },
+  "games": {
+    "shouqiang": {"n": 5, "median": 4.6, "p75": 5.7, "tide": {"n": 3, "median": 5.7}},
+    "shoulu": {"n": 8, "median": 2.6, "p75": 3.0, "tide": {"n": 3, "median": 1.9}},
+    "sadoushou": {"n": 5, "median": 1.3, "p75": 1.6},
+    "sadou": {"n": 1, "median": 1.5, "p75": 1.5},
+    "pintu": {"n": 1, "median": 0.7, "p75": 0.7},
+    "fuqin": {"n": 1, "median": 0.6, "p75": 0.6},
+    "yabao": {"n": 0, "est": 1, "why": "one 押宝 throw of the dice"}
+  },
+  "acts": {
+    "duel": {"n": 25, "median": 2.3, "p75": 2.9},
+    "qiecuo": {"n": 1, "median": 9.5, "est": 2, "why": "a 90-second incense bout (games.json qiecuo-* `time` 90000) and its door; the one sample was a lost bout left standing"},
+    "shouchao": {"n": 9, "median": 1.9, "p75": 5.7, "why": "by kit: priced per game above"}
+  }
+}

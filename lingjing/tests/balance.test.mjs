@@ -155,18 +155,18 @@ test('real life: the workout is the day\'s 功课 (修为; a few 灵石 at 零�
 test('no daily thinning (Hanli, 2026-10-16): every pool win pays its share of the layer until the layer is full — then 灵石; 体力 is the day\'s limit', () => {
   assert.equal('pool' in B, false, 'balance.json declares no day\'s fight bands');
   const s = { ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: null, place: 'houshan', ended: ['00-prologue', '00-waimen'], done_scenes: ['09-snow'], tier: 'qi', step: 4, progress: 0, wealth: 0, traits: ROOTS };
-  // Each win its 体力 × R(四层) (2026-11-02): 4 × 2 × 1.05³.
+  // Each win its 体力 × R(四层) (2026-11-02): a card fight's 2 (measured, 2026-11-04) × 2 × 1.05³.
   const X = B.play_pay.xiuwei, each = fightPlay(content, s), want = [], paid = [], wins = Math.min(6, Math.floor(content.ladder.tiers[0].thresholds[4] / each));
   assert.equal(each, Math.round(staminaCost(content, 'duel') * X.rate.base * X.rate.growth ** 3));
   assert.ok(wins >= 3, 'the layer holds a few wins');
   for (let k = 0; k < wins; k += 1) { want.push(each); paid.push(pay(content, s, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth }).progress); }
   assert.deepEqual(paid, want);
   // …until the layer is full: the 修为 past the mark is 灵石 at the convert rate (圆满 → 灵石).
-  const full = { ...structuredClone(s), progress: content.ladder.tiers[0].thresholds[4] - 5 };
+  const room = Math.floor(each / 2), full = { ...structuredClone(s), progress: content.ladder.tiers[0].thresholds[4] - room };
   const last = pay(content, full, ctx, { table: 'haunt', progress: T.haunt.progress, wealth: T.haunt.wealth });
-  assert.equal(last.progress, 5);
+  assert.equal(last.progress, room);
   // 灵石 per 修为 flat (playpay.mjs convertRate, 2026-11-02): 修为 is a fixed number, so no layer rescales it.
-  assert.deepEqual(last.converted, { progress: each - 5, wealth: Math.round((each - 5) * B.convert.rate) });
+  assert.deepEqual(last.converted, { progress: each - room, wealth: Math.round((each - room) * B.convert.rate) });
 });
 
 test('no story jump (2026-10-16): past the mark the 功课 counts on and a fight pays 灵石; 第一路 moves no layer — 二层 is ground', () => {

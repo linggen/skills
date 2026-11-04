@@ -69,10 +69,11 @@ test('a spell: a ★ each 6 h counted, the hours over kept for the next seclusio
 
 test('under an hour nothing grows but 体力: it comes back all through the sitting, the whole pool in refill.seclusion_hours, whatever the focus', () => {
   const Q = content.rewards.stamina, H = Q.refill.seclusion_hours, perHour = Q.max / H;
-  const short = inAndOut(player(), 0.5 * H, { focus: 'card', id: 'wulei' });
+  // Under min_hours (2 h for the pool since 2026-11-04, Hanli: 「可以, 2小时回满」): a quarter of the pool's hours.
+  const short = inAndOut(player(), 0.25 * H, { focus: 'card', id: 'wulei' });
   assert.equal(short.result.emerged.grows, false);
   assert.equal(short.state.card_stars, undefined);
-  assert.equal(short.state.stamina, 5 + Math.floor(0.5 * H * perHour), 'half the hours, half the pool — linear on real minutes');
+  assert.equal(short.state.stamina, 5 + Math.floor(0.25 * H * perHour), 'a quarter of the hours, a quarter of the pool — linear on real minutes');
   assert.equal(short.result.emerged.stamina.gained, short.state.stamina - 5);
   assert.equal(short.result.emerged.rested, undefined, 'not full yet');
   // The whole pool in about an hour of 闭关, ending full — a spent, resting pool wakes.
@@ -81,7 +82,7 @@ test('under an hour nothing grows but 体力: it comes back all through the sitt
   assert.equal(full.result.emerged.rested, true);
   assert.equal(full.state.resting, undefined);
   // A pill multiplies the hours 修为 counts, never 体力's (real minutes).
-  const pilled = inAndOut(player(), 0.5 * H, { focus: 'progress', pill: 'qi-pill' });
+  const pilled = inAndOut(player(), 0.25 * H, { focus: 'progress', pill: 'qi-pill' });
   assert.equal(pilled.state.stamina, short.state.stamina);
   // While it runs Look's pool rises (settled at the 闭关 rate): the chip reads it live.
   const inn = seclude(player({ stamina: 0, resting: true }), T0, { action: 'enter', focus: 'progress' }).state;

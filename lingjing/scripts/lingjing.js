@@ -836,7 +836,7 @@ function qi() {
   if (!q || !q.max || q.off) return null;
   // In 闭关 the word follows the count as it rises (resting or not: the sitting is the rest).
   const { p, st } = qiState(q.now, q.max, Boolean(q.empty) && !look.seclusion);
-  // When the player can go on again: the pool full (rest = max). Only while a 闭关 runs is that an hour on the
+  // When the player can go on again: the pool full (rest = max). Only while a 闭关 runs is that a time on the
   // clock — no clock refills it (Hanli 2026-11-02); spent outside one, the pool shows its count and opens 闭关.
   // The minutes as the rules count them (`fill_min`, the save's own clock), from now on the page's.
   const back = look.seclusion && q.fill_min ? new Date(Date.now() + q.fill_min * 60_000).toISOString() : null;
@@ -981,7 +981,7 @@ function riseStats() {
     // The last point spent: 银月 sends him back to the real world to rest —
     // real life is hers, not Ling's (his rule, 2026-09-23).
     if (before.stamina > 0 && now.stamina === 0 && !before.resting) {
-      // No clock refills it (Hanli 2026-11-02): 闭关, or about an hour away, fills it again.
+      // No clock refills it (Hanli 2026-11-02): 闭关, or time away, fills it again (2 h for a whole pool, 11-04).
       const n = look.stamina?.fill_min;
       askHer('spent', `玩家的体力刚刚耗尽了（闭关或下线歇约 ${n} 分钟便回满）。游戏先放一放：请玩家去闭关，或回到现实里歇一歇，起身走走、喝口水。说一两句。`, `The player's stamina just ran out (seclusion, or about ${n} minutes away, fills it again). The game waits: send them into seclusion, or back to the real world to rest — stand up, walk, drink some water. A line or two.`, 'relaxed');
     }

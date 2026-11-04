@@ -288,7 +288,8 @@ export const questStamina = (content, q) => (refillOf(content.rewards.stamina).q
 
 /* What one act costs (rewards.json stamina.cost): its minutes × `per_minute`. A string names a minute of the
    balance model (balance.json model.minutes; `practice` is the practice board's); `reading` is a scene's own reading
-   minutes (`scene` given) at model.chars_per_min, plus the model's `scene`; a number is the act's minutes; `move`
+   minutes (`scene` given) at model.chars_per_min, plus the model's `scene`; `board` a board's own minutes (boardCost; with
+   no board named, play_pay.minutes.default); a number is the act's minutes; `move`
    a trip by its roads ({base, per_road, max}). Whole points, at least 1 for anything that costs. */
 const textLen = x => (typeof x === 'string' ? x.length : Array.isArray(x) ? x.reduce((n, y) => n + textLen(y), 0) : x?.zh?.length ?? 0);
 export function minutesOf(content, name, scene = null, exit = null) {
@@ -298,13 +299,30 @@ export function minutesOf(content, name, scene = null, exit = null) {
     return text / (model.chars_per_min || 450) + (m.scene ?? 1);
   }
   if (name === 'practice') return model.practice?.minutes ?? m.board ?? 0;
+  if (name === 'board') return boardMinutes(content);
   return m[name] ?? 0;
+}
+/* A board's minutes as he plays it (Hanli 2026-11-04: 「小游戏有一些时间比较长的, 你看一下体力扣的是否对」): its game's own
+   (balance.json play_pay.game_minutes, by games.json row id — the 塔防 kits run 1 to 5 minutes), else its kind's
+   (play_pay.minutes, by mechanic), else `default`. Measured on his save (tests/fixtures/play-minutes.json). `row`: the
+   games.json row played (rules/playpay.mjs playedRow) or {id, mechanic}; none, the default. */
+export function boardMinutes(content, row = null) {
+  const pp = content.balance?.play_pay ?? {};
+  return pp.game_minutes?.[row?.id] ?? pp.minutes?.[row?.mechanic] ?? pp.minutes?.default ?? content.balance?.model?.practice?.minutes ?? 0;
 }
 export function staminaCost(content, kind, n = 1, scene = null, exit = null) {
   const q = content.rewards.stamina, c = q.cost?.[kind] ?? 0, per = q.per_minute ?? 1;
   const minutes = typeof c === 'string' ? minutesOf(content, c, scene, exit)
     : typeof c === 'object' && c ? Math.min(c.max, c.base + Math.max(0, n - 1) * c.per_road) : c * n;
   return minutes > 0 ? Math.max(1, Math.round(minutes * per)) : 0;
+}
+/* What a board costs as played (`row`, the games.json row — rules/playpay.mjs playedRow): a kind priced `board` (rewards.json
+   stamina.cost: `game`, `shouchao`) by the board's own minutes (boardMinutes); any other kind as staminaCost. */
+export function boardCost(content, kind, row = null) {
+  const q = content.rewards.stamina;
+  if (q.cost?.[kind] !== 'board') return staminaCost(content, kind);
+  const minutes = boardMinutes(content, row);
+  return minutes > 0 ? Math.max(1, Math.round(minutes * (q.per_minute ?? 1))) : 0;
 }
 /* Every kind's cost as Look hands it (a scene's step at its own minutes is told on the scene). */
 export const staminaCosts = content => Object.fromEntries(Object.keys(content.rewards.stamina.cost ?? {}).filter(k => !k.startsWith('_')).map(k => [k, staminaCost(content, k)]));

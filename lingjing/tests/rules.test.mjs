@@ -1745,21 +1745,20 @@ test('an old 问卦 cast (retired by 问签 v1) touches neither pay, a step, nor
   assert.equal(plainHit.foe.hp - played.foe.hp, 2, JSON.stringify(played.log.slice(0, 4)));
 });
 
-test('past the prologue a story step costs 灵气; an empty 丹田 refuses with the hour and changes nothing', () => {
+test('a story step costs no 灵气 (Hanli 2026-11-04: 「剧情保持不扣」): an empty 丹田 reads the story on; Look tells the hour', () => {
   let s = answer(resolve, toJi(), { exit: 'town' }).state; // walked to Ye by the exit
-  // the last point buys one more step, and takes him to 0
-  const last = answer(resolve, { ...s, stamina: 1, stamina_at: OCT.toISOString() }, { exit: 'shrine' }, octx());
-  assert.equal(last.state.stamina, 0);
-  s.stamina = 0; s.stamina_at = OCT.toISOString();
-  const r = refused(resolve, s, { exit: 'shrine' }, 'no-stamina', octx());
+  const full = answer(resolve, { ...s, stamina: 7, stamina_at: OCT.toISOString() }, { exit: 'shrine' }, octx());
+  assert.equal(full.state.stamina, 7, 'a step spends nothing');
+  s.stamina = 0; s.stamina_at = OCT.toISOString(); s.resting = true;
+  const on = answer(resolve, s, { exit: 'shrine' }, octx());
+  assert.equal(on.result.ok, true, 'spent, the story still goes on');
+  assert.equal(on.state.stamina, 0);
   const ye = content.chapters['01-ji'].scenes['01-ye'];
-  assert.equal(r.cost, staminaCost(content, 'step', 1, ye, ye.exits.find(e => e.id === 'shrine')), 'its reading minutes');
+  assert.equal(staminaCost(content, 'step', 1, ye, ye.exits.find(e => e.id === 'shrine')), 0);
   // one point back at the 闭关 rate, begun now — no clock refills it
-  assert.equal(new Date(r.returns_at).getTime(), OCT.getTime() + POINT_MS);
-  assert.match(r.say, /体力耗尽了。闭关，或回到现实里歇一歇/);
   const seen = look(s, content, octx());
   assert.equal(seen.stamina.empty, true);
-  assert.equal(seen.stamina.returns_at, r.returns_at);
+  assert.equal(new Date(seen.stamina.returns_at).getTime(), OCT.getTime() + POINT_MS);
 });
 
 test('chapter 1: the shaman sent first, then the dragons\' trial — fought out on the cards, lost and fought again', () => {
@@ -3367,7 +3366,7 @@ test('a made scene grants progress and wealth only, and each of its exits pays o
   assert.ok(!paid.state.cast.includes('longzhi'));
 });
 
-test('Go back into a chapter already ended plays it for the story: nothing pays, and the prologue is not free again', () => {
+test('Go back into a chapter already ended plays it for the story: nothing pays, and a step costs what any step does (nothing since 2026-11-04)', () => {
   let s = toOpenWorld();
   const tokens = s.bag['fox-token'], stamina = s.stamina, ledger = s.ledger.length;
   s = must(go, s, { scene: '00-chushan' }).state;
@@ -3375,7 +3374,7 @@ test('Go back into a chapter already ended plays it for the story: nothing pays,
   const replay = must(resolve, s, { exit: 'lookout' });
   assert.equal(replay.result.paid, null, '吴婆婆\'s token is not handed over twice');
   assert.equal(replay.state.bag['fox-token'], tokens);
-  assert.ok(replay.state.stamina < stamina, 'a step costs, as outside the prologue');
+  assert.equal(replay.state.stamina, stamina, 'a step costs nothing, as outside the prologue (「剧情保持不扣」)');
   assert.equal(replay.state.done_scenes.filter(id => id === '00-chushan').length, 1, 'passed once is kept once');
   assert.deepEqual(replay.state.tell_owed ?? [], s.tell_owed ?? [], 'a passage told is not owed again');
   const masan = must(resolve, must(go, replay.state, { scene: '00-masan' }).state, { exit: 'endure' });

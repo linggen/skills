@@ -110,14 +110,14 @@
       }
     ]
   },
-  "_stamina": "体力是控制单次游戏时长的: 1 体力 ≈ 1 分钟 (Hanli 2026-11-02: 「或者简单点, 给用户100体力, 1体力玩大约1分钟?」 · 「体力不要自动回, 只有闭关才回. 或者体力卡」 · 「完成任务不奖励体力」; design.md § 体力). `max` 100, and a spent pool rests until whole (`rest`). No clock refill (`refill.clock_hours` null): it comes back in 闭关 only — the real one (rules/seclusion.mjs) or time away, `refill.away_min` or more with no player verb counted as 闭关 for 体力 alone (state.mjs awayFit) — the whole pool in `refill.seclusion_hours`, linear on real minutes; and by the 体力卡. `refill.quest` false: no chore, 开府 row or app quest pays 体力, whatever its row says. `cost`: each act its minutes × `per_minute` (state.mjs staminaCost) — a word names balance.json model.minutes (`practice`: the practice board's; `reading`: the scene's own text at model.chars_per_min, plus `scene`), a number is the act's minutes where the model has none, `move` a trip by its roads.",
+  "_stamina": "体力是控制单次游戏时长的: 1 体力 ≈ 1 分钟 (Hanli 2026-11-02: 「或者简单点, 给用户100体力, 1体力玩大约1分钟?」 · 「体力不要自动回, 只有闭关才回. 或者体力卡」 · 「完成任务不奖励体力」; design.md § 体力). `max` 100, and a spent pool rests until whole (`rest`). No clock refill (`refill.clock_hours` null): it comes back in 闭关 only — the real one (rules/seclusion.mjs) or time away, `refill.away_min` or more with no player verb counted as 闭关 for 体力 alone (state.mjs awayFit) — the whole pool in `refill.seclusion_hours`, linear on real minutes (2 h since 2026-11-04, Hanli: 「刚刚闭关12分钟, 体力加20, 这个调整一下吧」 · 「可以, 2小时回满」: 12 minutes +10; was 1 h). `refill.quest` false: no chore, 开府 row or app quest pays 体力, whatever its row says. `cost`: each act its minutes × `per_minute` (state.mjs staminaCost) — a word names balance.json model.minutes (`practice`: the practice board's; `reading`: the scene's own text at model.chars_per_min, plus `scene`; `board`: the board's own minutes as played, balance.json play_pay.game_minutes · minutes by its kind, state.mjs boardCost — Hanli 2026-11-04: 「小游戏有一些时间比较长的, 你看一下体力扣的是否对」), a number is the act's minutes where the model has none, `move` a trip by its roads. `step` 0: reading the story costs nothing (Hanli 2026-11-04: 「剧情保持不扣」; was its text at 450 字/分 + 1) — an exit's own `stamina` (toil) still costs. `qiecuo` 2: a 90-second bout and its door.",
   "stamina": {
     "max": 100,
     "rest": 0,
     "per_minute": 1,
     "refill": {
       "clock_hours": null,
-      "seclusion_hours": 1,
+      "seclusion_hours": 2,
       "away_min": 10,
       "quest": false
     },
@@ -127,11 +127,12 @@
         "per_road": 1,
         "max": 4
       },
-      "step": "reading",
+      "step": 0,
       "duel": "fight",
-      "shouchao": "tide",
+      "shouchao": "board",
       "panglu": "fantong",
-      "game": "practice",
+      "game": "board",
+      "qiecuo": 2,
       "trial": "scene",
       "tame": "scene",
       "shop": 0,
