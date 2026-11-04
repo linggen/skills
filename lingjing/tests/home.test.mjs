@@ -66,8 +66,10 @@ test('「约 N 局」 is the boards\' honest count: best first, each the replay 
   const need = 324, n = playsFor(content, s, l, need, NOW);
   // One board less leaves it short: the count is the least that fills it.
   assert.ok(n > 1);
-  const pintu = playGrant(content, s, 'pintu', content.tasks.tasks.find((t) => t.id === 'pintu'), NOW).progress;
-  assert.ok(n >= Math.ceil(need / pintu), 'never fewer than the best board at its full share could fill');
+  // The best board here at its full share (each pays its own minutes since 2026-11-04).
+  const best = Math.max(...(l.tasks ?? []).filter((t) => t.practice).map((t) => playGrant(content, s, t.id, content.tasks.tasks.find((x) => x.id === t.id), NOW)?.progress ?? 0));
+  assert.ok(best > 0);
+  assert.ok(n >= Math.ceil(need / best), 'never fewer than the best board at its full share could fill');
   assert.equal(playsFor(content, s, l, 0, NOW), 0);
 });
 

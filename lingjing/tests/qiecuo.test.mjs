@@ -154,7 +154,7 @@ test('pay: its 体力 × R × ★, the day\'s first two in full, then the replay
   assert.deepEqual(got.map((g) => g.share), [1, 1, pp.replay[1], pp.replay[2], pp.replay[2]]);
   assert.ok(got[0].paid > 0);
   // A fixed number (2026-11-02): the bout's 体力 × R at his layer (play_pay.xiuwei), not a share of it.
-  const X = pp.xiuwei, R = X.rate.base * X.rate.growth ** (got[0].step - 1), units = staminaCost(content, 'game');
+  const X = pp.xiuwei, R = X.rate.base * X.rate.growth ** (got[0].step - 1), units = staminaCost(content, T.qiecuo.cost);
   assert.ok(Math.abs(got[0].paid - R * units) <= 1, `${got[0].paid} ≈ ${units} 体力 × R ${R}`);
   assert.ok(got[2].paid < got[1].paid && got[3].paid < got[2].paid, 'falling');
   // the next day, in full again

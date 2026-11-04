@@ -138,7 +138,8 @@ test('the story\'s boards: each task plays its own row\'s level, its how first i
     if (t.marks) for (const k of [1, 2, 3]) assert.ok(Object.hasOwn(t.marks, r.levels[0].grades?.[k]), `${r.task}: ★${k}`);
   }
   const pp = content.balance.play_pay;
-  assert.equal(pp.minutes['几何冲刺'], pp.minutes['调息']);
+  // Its own minutes since 2026-11-04 (measured 3.1, tests/fixtures/play-minutes.json) — no longer 调息's 1.
+  assert.ok(pp.minutes['几何冲刺'] >= 1);
   assert.equal(pp.wealth['几何冲刺'], pp.wealth['调息']);
   // the first one met is the easiest: slow, single spikes and low blocks, far apart
   const first = ladder[0];
