@@ -46,7 +46,9 @@ function boardLost(state, content, ctx, id) {
   const s = bout?.state ?? clone(state);
   // A loss on a board an errand here asks for is counted: from the first, he is stuck there and may take 跳过 · 酬减半
   // (errandSkip, Look's task `skip`). A win or the skip clears it (boardSettled).
-  if (!bout && errandAsking(content, state, id, state.place) && taskOpen(content, state, id, ctx.now)) s.board_losses = { ...s.board_losses, [id]: (s.board_losses?.[id] ?? 0) + 1 };
+  // Counted for that errand (`quest`): the next errand on the same board starts unstuck.
+  const asking = !bout && taskOpen(content, state, id, ctx.now) ? errandAsking(content, state, id, state.place) : null;
+  if (asking) { const was = s.board_losses?.[id]; s.board_losses = { ...s.board_losses, [id]: { quest: asking.id, n: (was?.quest === asking.id ? was.n : 0) + 1 } }; }
   let cost = 0;
   if (bout) cost = staminaCost(content, t.qiecuo?.cost ?? 'game');
   else if (shouchaoHere(content, state, id, ctx.now)) {
@@ -286,12 +288,12 @@ function taskDone(state, content, ctx, id) {
    a loss on the board counted (boardLost `board_losses`, errandStuck). Before that, `skip` here is ✕ — put down, unpaid,
    the errand still open (skipOrLeave). The page and the phone show it as its own words 「跳过 · 酬减半」, never as ✕. */
 export const skipCut = content => content.balance?.play_pay?.skip ?? null;
-export const errandStuck = (state, id) => (state.board_losses?.[id] ?? 0) > 0;
+export const errandStuck = (state, id, quest) => Boolean(quest) && state.board_losses?.[id]?.quest === quest && state.board_losses[id].n > 0;
 function errandSkip(state, content, ctx, id) {
   const t = taskOf(content, id), cut = skipCut(content);
   if (!t || t.kind !== 'board' || cut == null || storyBoard(content, state, id)) return null;
   const q = errandAsking(content, state, id, state.place);
-  if (!q || !taskOpen(content, state, id, ctx.now) || !errandStuck(state, id)) return null;
+  if (!q || !taskOpen(content, state, id, ctx.now) || !errandStuck(state, id, q.id)) return null;
   const s = clone(state);
   delete s.wins?.[id];
   boardSettled(s, id);

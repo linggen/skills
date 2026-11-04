@@ -106,7 +106,9 @@ export const KEPT_SAY = { zh: '收着的满了，先玩掉一局或丢一局。'
 export const keptOf = state => state.kept ?? [];
 export function keepBoard(state, content, ctx, id) {
   if (!taskOf(content, id)) return refuse('unknown-task', null);
-  if (keptOf(state).some(e => e.task === id)) return refuse('already-kept', null);
+  // Kept already and taken up again from the tray's 开局 (not 收着's 玩): 留 puts it down again, on the list as it was
+  // (2026-11-04 — a refusal here left the card standing: 「点留没有用」 once more).
+  if (keptOf(state).some(e => e.task === id)) return !storyBoard(content, state, id) && !replayHeld(state, id) ? { state: null, result: { ok: true, left: id, kept: id } } : refuse('already-kept', null);
   if (keptOf(state).length >= KEPT_MAX) return refuse('kept-full', pick(KEPT_SAY, state.lang));
   const story = storyBoard(content, state, id) || replayHeld(state, id);
   const base = story ? skipBoard(state, content, ctx, id) : { state: clone(state), result: { ok: true, left: id } };

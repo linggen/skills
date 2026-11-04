@@ -98,7 +98,7 @@ test('✕ before he is stuck (2026-11-04): `skip` and `leave` put it down — no
 test('a loss counts only where the errand asks; a win clears it', () => {
   assert.equal(lost(shai('cangjing', { held: false })).board_losses?.huarong, undefined, 'practice: not counted');
   const s = stuck();
-  assert.equal(s.board_losses.huarong, 1);
+  assert.deepEqual(s.board_losses.huarong, { quest: Q, n: 1 });
   const w = win(s, content, ctx, { id: 'huarong', stars: 3 });
   const d = task(w.state, content, ctx, { action: 'done', id: 'huarong' });
   assert.equal(d.result.ok, true, JSON.stringify(d.result));
@@ -169,4 +169,24 @@ test('the page: ✕ on a board he may put down is 收手, never the paid skip; t
   assert.match(page, /\['\[data-board-skiphalf\]', \(el\) => skipHalf\(/);
   // A pure board's own loss (象棋残局 「未能将死」) reaches the rules, so he can be stuck there.
   assert.match(page.slice(page.indexOf('function gameAct('), page.indexOf('async function herNewLine(')), /turnedLost\(was, g\.state\)\) boardLostNow\(g\)/);
+});
+
+test('stuck is the errand\'s: a loss under one errand never makes the next errand on the same board skippable', () => {
+  const s = stuck();
+  const row = (st) => look(st, content, ctx).tasks.find((t) => t.id === 'huarong');
+  assert.deepEqual(row(s).skip, { cut: 0.5 });
+  // The same board asked again by another errand (the count left from one that went away unmet).
+  const other = { ...s, board_losses: { huarong: { quest: 'wall-old-errand', n: 2 } } };
+  assert.equal(row(other).skip, undefined);
+  assert.equal(skip(other).result.for, undefined, 'its `skip` is the ✕: put down');
+});
+
+test('留 again on a kept board taken up from the tray: put down again, nothing doubled (not a refusal that leaves it standing)', () => {
+  const k = task(shai(), content, ctx, { action: 'keep', id: 'huarong' });
+  const again = task(k.state, content, ctx, { action: 'keep', id: 'huarong' });
+  assert.equal(again.result.ok, true, JSON.stringify(again.result));
+  assert.equal(again.result.kept, 'huarong');
+  assert.equal(again.result.skipped, undefined);
+  assert.equal(again.state, null, 'nothing written');
+  assert.equal(k.state.kept.filter((e) => e.task === 'huarong').length, 1);
 });

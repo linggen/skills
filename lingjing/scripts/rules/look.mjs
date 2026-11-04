@@ -528,7 +528,7 @@ function tasksBrief(content, state, ctx) {
         ...(task.kind === 'board' && leaveOf(content, state, id) ? { leave: true } : {}),
         // …and one an errand here needs may be skipped once stuck, its pay cut (跳过 · 酬减半, rules/tasks.mjs errandSkip):
         // only after a loss on it (2026-11-04: before that the page showed it as the ✕ itself, and a close paid half).
-        ...(task.kind === 'board' && skipCut(content) != null && !storyBoard(content, state, id) && errandWants(content, state, id, state.place) && errandStuck(state, id) ? { skip: { cut: skipCut(content) } } : {}),
+        ...(task.kind === 'board' && skipCut(content) != null && !storyBoard(content, state, id) && errandStuck(state, id, errandAsking(content, state, id, state.place)?.id) ? { skip: { cut: skipCut(content) } } : {}),
         // 留'd (收着的棋局, rules/skips.mjs keepBoard): waits on the list, never standing on the stage by itself (stage.mjs).
         ...((state.kept ?? []).some(e => e.task === id) ? { kept: true } : {}),
         // A light offer (本王考考你): stands only on an empty stage, or while a round is under way (stage.mjs).
