@@ -79,6 +79,8 @@ test('古四 at 146/470: the place games at 沉鼎观 each pay their formula num
       const cost = boardCost(content, 'game', content.games.games.find(g => g.task === id && !g.cut && !g.replaced));
       const want = Math.round(R(1) * cost * PP.replay[Math.min(n, PP.replay.length - 1)]);
       if (!d.result.handed?.length) assert.ok(Math.abs(got - want) <= 1, `${id} (play ${n + 1}): +${got}, the formula ${want}`);
+      // …and the verb took that board's own 体力 (task done on a hosted board, state.mjs boardCost).
+      if (content.tasks.tasks.find((t) => t.id === id)?.hosted) assert.equal(d.state.stamina, 100 - cost, `${id}: ${cost} 体力`);
       s = d.state; plays += 1;
     }
   }

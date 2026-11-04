@@ -283,7 +283,7 @@ function spendStamina(content, s, ctx, kind, n = 1, fixed = null) {
   // A trip is paid as one (his, 2026-09-23: 几分钟消耗光 — seven roads at 3
   // each emptied a fifth of the pool in one tap): a base, a little per road
   // beyond the first, capped. The pool lasts about an hour of his pace.
-  // Each act costs its minutes (1 体力 ≈ 1 分钟, Hanli 2026-11-02; state.mjs staminaCost); a scene's step its own reading.
+  // Each act costs its minutes (1 体力 ≈ 1 分钟, Hanli 2026-11-02; state.mjs staminaCost); a scene's step nothing (「剧情保持不扣」, 11-04).
   const cost = fixed ?? staminaCost(content, kind, n);
   // The last point still buys any one thing, and takes him to 0 (his rule,
   // 2026-09-23: 最后的体力即使只有1, 也允许…然后提示用户返回现实世界休息);
