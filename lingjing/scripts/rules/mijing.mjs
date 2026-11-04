@@ -17,8 +17,8 @@
 // fought by the page's own 斗法 room through `duel` (tasks.mjs → mijingDuel: no 灵气, no haunt pay, no day's lock —
 // the 令 paid for the run); a board room's task is hosted while he stands in it (look.mjs tasksBrief → mijingHosted,
 // mijingRow; tasks.mjs win/done → mijingBoardHere, mijingBoardDone); a pick room is answered on the run's own card.
-import { dayKey, hpStep, lockedOf, pick, seedOf } from '../state.mjs';
-import { clone, pay, refuse } from './core.mjs';
+import { boardCost, dayKey, hpStep, lockedOf, pick, seedOf } from '../state.mjs';
+import { clone, pay, refuse, spendStamina } from './core.mjs';
 import { battle, POUCH_MAX, REALMS } from '../battle.js';
 import { cardCatalog, deckFor, fightPill, fightSetup, winCard } from './cards.mjs';
 import { hashOf } from './travel.mjs';
@@ -502,8 +502,9 @@ export function mijingEncounter(content, state, now) {
   };
 }
 
-/* `duel` on a run's fight (tasks.mjs duel hands it here): the door, and the settle the rules replay. No 灵气 (the 令
-   paid for the run), no haunt pay, no day's lock: the run pays at its end. */
+/* `duel` on a run's fight (tasks.mjs duel hands it here): the door, and the settle the rules replay. A card fight's 体力 at
+   the door (the coordinator for Hanli, 2026-11-04: a run costs its rooms' minutes — the 令 stays its gate), no haunt pay,
+   no day's lock: the run pays at its end. */
 export function mijingDuel(state, content, ctx, args) {
   const id = String(args.id ?? ''), run = runOf(state), game = gameOf(run);
   if (!run || !game || game.id !== id || run.room.phase !== 'fight') return refuse('not-here', null);
@@ -511,6 +512,10 @@ export function mijingDuel(state, content, ctx, args) {
   if (!args.picks) {
     if (state.fight && state.fight.game !== id) return refuse('in-a-fight', null, { game: state.fight.game });
     const s = clone(state), resuming = s.fight?.game === id;
+    if (!resuming) {
+      const empty = spendStamina(content, s, ctx, 'duel');
+      if (empty) return empty;
+    }
     if (args.pills != null && !resuming) s.pill_pick = String(args.pills).split(',').map(x => x.trim()).filter(p => fightPill(content, p)).slice(0, POUCH_MAX);
     if (!resuming) s.fight = { game: id, creature: creature.id, at: ctx.now.toISOString(), mijing: true, setup: mijingSetup(content, s, game, ctx.now) };
     return { state: s, result: { ok: true, started: id, ...(resuming ? { resumed: true } : {}), duel: { ...duelBrief(content, s, game, ctx.now, { door: true }), today: null, stake: pick(tierRow(content, run.tier)?.name, s.lang) } } };
@@ -603,6 +608,9 @@ function madeDeal(content, run, task, t, made) {
 export function mijingBoardDone(state, content, ctx, id) {
   if (!state.wins?.[id]) return refuse('not-won', null);
   const s = clone(state), r = s.mijing.run, here = r.room, t = tierRow(content, r.tier);
+  // The room's board costs its minutes (state.mjs boardCost, 2026-11-04): the run is play time.
+  const empty = spendStamina(content, s, ctx, 'game', 1, boardCost(content, 'game', (content.games?.games ?? []).find(g => g.task === id && !g.cut && !g.replaced)));
+  if (empty) return empty;
   delete s.wins[id];
   const stars = Math.max(1, Math.min(3, Number(s.play_stars?.[id] ?? s.stars?.[id] ?? 1) || 1));
   if (s.stars) delete s.stars[id]; // the room's, not a best ever

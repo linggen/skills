@@ -90,3 +90,26 @@ test('古四 at 146/470: the place games at 沉鼎观 each pay their formula num
   const l = look(s, content, ctx);
   assert.ok(l.tasks.some((t) => t.practice), 'the place games stay open as practice, in the tray');
 });
+
+test('a board lost costs its 体力 in full (it was played; the coordinator for Hanli, 2026-11-04); the story\'s own board nothing', () => {
+  let s = playTo(content, newState(content, 'zh', NOW), 'wm-chaifang', { now: NOW, policy: 'skip' }).state;
+  s = { ...s, tier: 'qi', step: 1, progress: 146, stamina: 100 };
+  const m = move(s, content, ctx, { place: 'zhishi' });
+  if (m.result.ok) s = { ...m.state, stamina: 100 };
+  const id = gamesToday(content, placeOf(content, s.place), NOW).find((x) => content.tasks.tasks.find((t) => t.id === x)?.hosted);
+  assert.ok(id, 'a hosted board here');
+  const t = content.tasks.tasks.find((x) => x.id === id);
+  const cost = boardCost(content, 'game', content.games.games.find((g) => g.task === id && !g.cut && !g.replaced));
+  const lost = task(s, content, ctx, { action: 'lost', id });
+  assert.equal(lost.result.ok, true, JSON.stringify(lost.result));
+  assert.equal(lost.state.stamina, 100 - cost, `${id}: lost, ${cost} 体力`);
+  assert.equal(lost.result.stamina, cost);
+  // On a spent pool a loss still stands, and takes nothing more.
+  const spent = task({ ...s, stamina: 0 }, content, ctx, { action: 'lost', id });
+  assert.equal(spent.result.ok, true);
+  assert.equal(spent.state.stamina, 0);
+  assert.ok(t.hosted);
+  // A story board (not hosted) lost: nothing.
+  const story = content.tasks.tasks.find((x) => x.kind === 'board' && !x.hosted && !x.shouchao && !x.qiecuo);
+  assert.equal(task(s, content, ctx, { action: 'lost', id: story.id }).state.stamina, 100, `${story.id}: free`);
+});

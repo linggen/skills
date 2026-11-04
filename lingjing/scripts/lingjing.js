@@ -4177,6 +4177,8 @@ function beatSettled(g, result) {
   if (!result?.won && !result?.left) tracker.boardLost(g.taskId);
   // A bout played once (切磋, its deal's `once`): lost, it is over — the rules count it and its cooldown starts.
   if (!result?.won && !result?.left && g.data?.once && !g.sent) { g.sent = true; run(`lost:${g.taskId}`, () => onOnceLost(g)); return; }
+  // Any other board lost was played: the rules take its 体力 (rules/tasks.mjs boardLost — a story board's is nothing), then the chip reads again.
+  if (!result?.won && !result?.left && !g.sent && !g.skipped) write('task', { action: 'lost', id: g.taskId }).then(() => refreshSoon()).catch(() => {});
   if (!result?.won && !g.sent && !g.skipped) fallBackFrom(g, result);
   if (!result?.won || g.sent || g.skipped) return;
   if (ownSkip(result)) return boardSkipped(g);

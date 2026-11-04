@@ -5,7 +5,7 @@ import { festivalDone } from './festival.mjs';
 import { climbWon } from './climb.mjs';
 import { battle } from '../battle.js';
 import { gameOf } from '../content.mjs';
-import { addStamina, boardCost, dayKey, lockedOf, periodKey, pick, settleStamina, seedOf } from '../state.mjs';
+import { addStamina, boardCost, dayKey, staminaCost, lockedOf, periodKey, pick, settleStamina, seedOf } from '../state.mjs';
 import { drop } from './arms.mjs';
 import { cardCatalog, fightPill, fightSetup, grantFrom, readOf, winCard } from './cards.mjs';
 import { POUCH_MAX } from '../battle.js';
@@ -24,7 +24,7 @@ import { writeLedger } from './ledger.mjs';
 import { creatureOf, encounterOf, foeOf, huntKey, meetBeast, placeOf, poolOf, poolTally, rememberAt, restAfter, sceneOf } from './world.mjs';
 import { strengthen } from './strengthen.mjs';
 import { kaoDone, kaoHere } from './kao.mjs';
-import { isTide, shouchaoDone, shouchaoFirst, shouchaoHere, shouchaoShut } from './shouchao.mjs';
+import { isTide, shouchaoDone, shouchaoFirst, shouchaoHere, shouchaoShut, tonight } from './shouchao.mjs';
 import { isMijingFight, keyDrop, mijingBoardDone, mijingBoardHere, mijingDuel } from './mijing.mjs';
 import { isBout, qiecuoDone, qiecuoHere, qiecuoOver, qiecuoShut } from './qiecuo.mjs';
 import { yaoshouFought, yaoshouShare } from './yaoshou.mjs';
@@ -34,6 +34,27 @@ import { yaoshouFought, yaoshouShare } from './yaoshou.mjs';
 const lineOfBoard = (content, s, id) => boardLine(content, id) ?? sideLine(content, sceneOf(content, s));
 /* A board's 体力 as he played it: the row the win wrote down (`play_rows`), else the task's own (state.mjs boardCost). */
 const playedCost = (content, s, id, t) => boardCost(content, 'game', playedRow(content, id, t, s.play_rows?.[id] ?? null));
+/* A board lost costs what a win does (the coordinator for Hanli, 2026-11-04: 「it was played」): a hosted board its own
+   minutes, a 兽潮 night its kit's, 切磋's bout its own (and the bout is over). The story's own boards cost nothing, as
+   ever. An empty pool takes what is left — a loss is never refused. Left (✕ · 留) costs nothing: the rules do not know
+   the minutes played. */
+function boardLost(state, content, ctx, id) {
+  const t = taskOf(content, id);
+  if (!t || t.kind !== 'board') return refuse('unknown-task', null);
+  const bout = isBout(content, id) ? qiecuoOver(state, content, ctx, id, 'lost') : null;
+  if (bout && !bout.state) return bout;
+  const s = bout?.state ?? clone(state);
+  let cost = 0;
+  if (bout) cost = staminaCost(content, t.qiecuo?.cost ?? 'game');
+  else if (shouchaoHere(content, state, id, ctx.now)) {
+    const night = tonight(content, state);
+    cost = boardCost(content, t.shouchao?.cost ?? 'game', (content.games?.games ?? []).find(g => g.id === night?.game && !g.cut && !g.replaced) ?? { id: night?.game });
+  } else if (t.hosted && !storyBoard(content, state, id)) cost = playedCost(content, s, id, t);
+  // Taken down to 0 at most; on a pool already spent the refusal is dropped (a loss stands whatever the pool).
+  const before = s.stamina;
+  if (cost) spendStamina(content, s, ctx, 'lost', 1, cost);
+  return { state: s, result: { ...(bout?.result ?? { ok: true }), lost: id, stamina: Number.isFinite(before) && Number.isFinite(s.stamina) ? before - s.stamina : 0 } };
+}
 /* A board's play pay: the grant on its line, and paid there (`linePay`), else the 古's (playGrant, core.mjs pay). */
 const boardGrant = (content, s, id, t, now, stars, opts = {}) => {
   const line = lineOfBoard(content, s, id);
@@ -61,8 +82,9 @@ export function task(state, content, ctx, args) {
   // …切磋's bout put down is over (rules/qiecuo.mjs): skipped, its cooldown started.
   if (args.action === 'leave' && isBout(content, String(args.id ?? ''))) return qiecuoOver(state, content, ctx, String(args.id), 'skipped');
   if (args.action === 'leave') return leaveBoard(state, content, ctx, String(args.id ?? ''));
-  // 切磋's bout lost (the page, as the board ends unwon): over, unpaid, its cooldown started.
-  if (args.action === 'lost') return isBout(content, String(args.id ?? '')) ? qiecuoOver(state, content, ctx, String(args.id), 'lost') : refuse('not-a-bout', null);
+  // A board lost (the page, as it ends unwon): it was played, so it costs its 体力 in full (boardLost) — 切磋's bout is
+  // over too, unpaid, its cooldown started.
+  if (args.action === 'lost') return boardLost(state, content, ctx, String(args.id ?? ''));
   return refuse('unknown-action', null, { actions: ['list', 'done', 'check', 'skip', 'keep', 'kept-play', 'kept-drop', 'leave', 'lost'] });
 }
 
@@ -464,6 +486,8 @@ export function duel(state, content, ctx, args) {
     // day's 灵气 is not taken twice. The seed is the day's, so the cards deal
     // the same way they did.
     const resuming = s.fight?.game === id && today?.day === day && today.outcome === 'open';
+    // Every attempt costs a card fight's minutes, a story fight's too (Hanli 2026-11-04: 「剧情里的战斗还是扣体力吧」);
+    // spent, the story still walks on past it (its ✕ · 留, rules/skips.mjs).
     if (!resuming) {
       const empty = spendStamina(content, s, ctx, 'duel');
       if (empty) return empty;

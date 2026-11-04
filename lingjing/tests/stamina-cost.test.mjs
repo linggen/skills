@@ -85,3 +85,25 @@ test('闭关 fills the whole pool in two hours, linear: 12 minutes +10, an hour 
   settleStamina(content, s, at(120));
   assert.equal(s.stamina, 0);
 });
+
+test('a story fight costs a card fight\'s 体力 (「剧情里的战斗还是扣体力吧」); spent, the card says so and its ✕ · 留 still walk the story on', async () => {
+  const { playTo } = await import('../scripts/rules/progress.mjs');
+  const { duel, look, resolve } = await import('../scripts/rules.mjs');
+  const NOW = new Date('2026-10-21T11:40:00');
+  const at = playTo(content, newState(content, 'zh', NOW), '01-rise', { now: NOW });
+  const ctx = { now: at.now, quests: [] };
+  const GAME = content.chapters['01-ji'].scenes['01-rise'].exits.find(e => e.id === 'stand').game;
+  const full = { ...structuredClone(at.state), stamina: 100, stamina_at: at.now.toISOString() };
+  const opened = duel(full, content, ctx, { id: GAME.id });
+  assert.equal(opened.result.ok, true, JSON.stringify(opened.result));
+  assert.equal(opened.state.stamina, 100 - staminaCost(content, 'duel'), 'each attempt 2');
+  const spent = { ...structuredClone(at.state), stamina: 0, resting: true, stamina_at: at.now.toISOString() };
+  const shut = duel(spent, content, ctx, { id: GAME.id });
+  assert.equal(shut.result.refused, 'no-stamina');
+  assert.match(shut.result.say, /体力耗尽了。闭关/, 'the card says 体力 is out, never a silent no');
+  assert.equal(look(spent, content, ctx).scene.exits.find(e => e.id === 'stand').stuck, true, 'its ✕ · 留 stand');
+  const on = resolve(spent, content, ctx, { exit: 'stand', pass: 1 });
+  assert.equal(on.result.ok, true, JSON.stringify(on.result));
+  assert.equal(on.state.scene, '01-tower', 'the story walks on with 0 体力');
+  assert.equal(on.state.stamina, 0);
+});

@@ -369,8 +369,8 @@ export function play(content, player, { model = content.balance.model, ladder = 
           if (w.gate && !late && !arrive()) { gated = true; break; }
           if (!w.entered) {
             if (left < w.minutes * (1 - (w.read ?? 0))) { w.read = (w.read ?? 0) + left / w.minutes; left = 0; break; }
-            // A story step and its boards cost 体力 (a step toward the story's place is free, not counted here).
-            if (!w.paid && !spend((content.chapters[w.chapter]?.free ? 0 : w.step_cost) + w.nboards * C.game)) { left = 0; break; }
+            // The story's step (0, 「剧情保持不扣」) and its boards cost no 体力 (2026-11-04); its fights are not modelled here.
+            if (!w.paid && !spend(content.chapters[w.chapter]?.free ? 0 : w.step_cost)) { left = 0; break; }
             w.paid = true;
             left -= w.minutes * (1 - (w.read ?? 0));
             // The sealed rooms, entered here: what holds the way, the boards, the fights.
