@@ -65,12 +65,25 @@ export function deck(state, content, ctx, args) {
 }
 
 /* A worn weapon's strike (`effect.strike`: a card marked `gear` with that weapon — 火柴's, Hanli 11-03: 「火柴是一把剑, 重复的牌就
-   不用了」) is in his deck for a fight while the sword is worn, dealt as the card was: never a card he holds or is given. */
+   不用了」) is in his deck for a fight while the sword is worn (fightDeck): never a card he holds or is given. */
 export function strikeOf(content, state) {
   const w = wornOf(content, state, 'weapon'), id = w?.effect?.strike, c = id ? cardCatalog(content)[id] : null;
   return c && c.gear === w.id ? id : null;
 }
-const armed = (content, state) => { const id = strikeOf(content, state); return id ? { ...state, cards: [...new Set([...ownedCards(content, state), id])] } : state; };
+/* The ten a fight deals: his ten (deckFor), and while a sword with a strike is worn, the strike always in them — in the place of
+   the cheapest card, the last dealt of them (a filled card before one he picked), so no big card gives way to it (taking the
+   place of the nearest cost put 震怒 out before 双龙, and 火柴 lost to the bronze sword there). The rest of the ten stand as they were
+   unworn. (Until 2026-11-04 the strike joined his hand and the ten were dealt again from it: with a big hand the curve could
+   leave the strike out and reshuffle the rest — Hanli's 灵草谷, 「带了火柴还是遁走了」: no 火柴 in the ten, and 金刃 gone.) */
+export function fightDeck(content, state) {
+  const ten = deckFor(content, state), id = strikeOf(content, state);
+  if (!id || ten.includes(id)) return ten;
+  if (ten.length < MODES.pve.deck) return [...ten, id];
+  const catalog = cardCatalog(content), picked = new Set(pickedCards(content, state));
+  const rank = i => (picked.has(ten[i]) ? 100 : 0) + (catalog[ten[i]]?.cost ?? 1);
+  const at = ten.reduce((best, _, i) => (rank(i) <= rank(best) ? i : best), 0);
+  return ten.map((c, i) => (i === at ? id : c));
+}
 function autoDeck(content, state) {
   // Only what has been obtained (his, 2026-09-22) — 得牌 below.
   const owned = new Set(ownedCards(content, state));
@@ -190,7 +203,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   const gear = gearFight(content, state), lifts = withHer ? herLifts(content, state) : null;
   // Before the root test (the 三试 comes first) he fights with what no root claims:
   // the rootless things he holds (deckFor reads no roots, so a 功法 stays out).
-  const deck = deckFor(content, armed(content, state)), stars = starsIn(state, deck);
+  const deck = fightDeck(content, state), stars = starsIn(state, deck);
   // 新: a card gained and not yet played (cards_new), marked in the hand until it is.
   const fresh = (state.cards_new ?? []).filter(id => deck.includes(id));
   // 丹囊: the pills he carries in (his last pick, as the bag still holds them).

@@ -3,7 +3,7 @@
 import { offLadderTier } from '../content.mjs';
 import { costOf } from '../battle.js';
 import { dayKey, fill, itemName, lockedOf, periodKey, pick, peakName, stepName, staminaMax, staminaRest, threshold, tierOf, seedOf } from '../state.mjs';
-import { canPick, cardCatalog, deckFor, gearFight, ownedCards, pickedCards, rootsOf, usable } from './cards.mjs';
+import { canPick, cardCatalog, fightDeck, gearFight, ownedCards, pickedCards, rootsOf, usable } from './cards.mjs';
 import { companionOf, hasCompanion, herCard, nearestPlace } from './companion.mjs';
 import { readingOf } from './scrolls.mjs';
 import { meets, pay, paysOf } from './core.mjs';
@@ -754,9 +754,9 @@ function gearBrief(content, state, now = new Date()) {
     pouch: pouchBrief(content, state),
     ...(shop ? { market: true } : {}),
     // 牌 — every card he holds, cheapest first, and which ten a fight deals
-    // today (deckFor); a party member's held card marked theirs. Roots he lacks are marked, not hid.
+    // today (fightDeck: a worn sword's strike in them); a party member's held card marked theirs. Roots he lacks are marked, not hid.
     cards: (() => {
-      const catalog = cardCatalog(content), ten = new Set(deckFor(content, state)), roots = rootsOf(content, state), picked = new Set(pickedCards(content, state));
+      const catalog = cardCatalog(content), ten = new Set(fightDeck(content, state)), roots = rootsOf(content, state), picked = new Set(pickedCards(content, state));
       return ownedCards(content, state).map(id => catalog[id]).filter(Boolean)
         .sort((a, b) => a.cost - b.cost || String(a.element ?? '').localeCompare(String(b.element ?? '')))
         .map(c => ({ id: c.id, name: pick(c.name, state.lang), cost: c.cost, kind: c.kind, element: c.element ?? null,

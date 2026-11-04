@@ -3017,16 +3017,16 @@
      "step": 5,
      "root": "wood",
      "deck": [
-      "huiqi",
+      "bingzhui",
       "mutang",
-      "niangbing",
-      "houtu",
+      "huochai",
       "jinren",
       "luying",
+      "houtu",
       "yangzhen",
       "huodan",
       "suijin",
-      "huochai"
+      "zheng"
      ],
      "extra": [],
      "party": [
@@ -3098,7 +3098,7 @@
       "zhennu",
       "leipu"
      ],
-     "hp": 2.8,
+     "hp": 3.1,
      "signature": {
       "id": "chimu-yizheng",
       "name": {
@@ -3115,7 +3115,7 @@
        "zh": "见人则眠",
        "en": "It Sleeps at the Sight of Men"
       },
-      "turns": 1,
+      "turns": 2,
       "lands": 1,
       "pierce": [
        "metal"
@@ -3185,16 +3185,16 @@
      "step": 5,
      "root": "wood",
      "deck": [
-      "huiqi",
+      "bingzhui",
       "mutang",
-      "niangbing",
-      "houtu",
+      "huochai",
       "jinren",
       "luying",
+      "houtu",
       "yangzhen",
       "huodan",
       "suijin",
-      "huochai"
+      "zheng"
      ],
      "extra": [],
      "party": [
@@ -3280,7 +3280,7 @@
       "huoya",
       "huoya"
      ],
-     "hp": 4.03,
+     "hp": 4.36,
      "power": 2,
      "signature": {
       "id": "qunchai",
@@ -3357,16 +3357,16 @@
      "step": 5,
      "root": "wood",
      "deck": [
-      "huiqi",
+      "bingzhui",
       "mutang",
-      "niangbing",
-      "houtu",
+      "huochai",
       "jinren",
       "luying",
+      "houtu",
       "yangzhen",
       "huodan",
       "suijin",
-      "huochai"
+      "zheng"
      ],
      "extra": [],
      "party": [
@@ -3452,7 +3452,7 @@
       "huoya",
       "huoya"
      ],
-     "hp": 4.05,
+     "hp": 4.5,
      "power": 2,
      "signature": {
       "id": "dahan",
@@ -3526,16 +3526,16 @@
      "step": 5,
      "root": "wood",
      "deck": [
-      "huiqi",
+      "bingzhui",
       "mutang",
-      "niangbing",
-      "houtu",
+      "huochai",
       "jinren",
       "luying",
+      "houtu",
       "yangzhen",
       "huodan",
       "suijin",
-      "huochai"
+      "zheng"
      ],
      "extra": [],
      "party": [
@@ -3621,7 +3621,7 @@
       "paoxiao",
       "paoxiao"
      ],
-     "hp": 6.38,
+     "hp": 6.93,
      "power": 2,
      "signature": {
       "id": "darang",
@@ -3699,15 +3699,15 @@
      "root": "wood",
      "deck": [
       "mutang",
-      "tuqiang",
-      "huiqi",
-      "luying",
+      "niangbing",
+      "huochai",
       "houtu",
       "zheng",
+      "luying",
       "yangzhen",
       "jinren",
-      "huochai",
-      "zhennu"
+      "ruxi",
+      "suijin"
      ],
      "extra": [],
      "party": [
@@ -3767,7 +3767,7 @@
       "jiushou",
       "jinzhua"
      ],
-     "hp": 3.05,
+     "hp": 2.52,
      "power": 1,
      "signature": {
       "id": "shiren",
@@ -3841,15 +3841,15 @@
      "root": "wood",
      "deck": [
       "mutang",
-      "tuqiang",
-      "huiqi",
-      "luying",
+      "niangbing",
+      "huochai",
       "houtu",
       "zheng",
+      "luying",
       "yangzhen",
       "jinren",
-      "huochai",
-      "zhennu"
+      "ruxi",
+      "suijin"
      ],
      "extra": [],
      "party": [
@@ -3913,7 +3913,7 @@
       "huodan",
       "huodan"
      ],
-     "hp": 4.1,
+     "hp": 3.78,
      "power": 1,
      "signature": {
       "id": "huzhua",
@@ -3992,15 +3992,15 @@
      "root": "wood",
      "deck": [
       "mutang",
-      "tuqiang",
-      "luying",
+      "huochai",
       "houtu",
       "zheng",
+      "luying",
       "yangzhen",
       "jinren",
-      "huochai",
-      "zhennu",
-      "ruxi"
+      "ruxi",
+      "suijin",
+      "zhennu"
      ],
      "extra": [],
      "pouch": [
@@ -4114,15 +4114,15 @@
      "root": "wood",
      "deck": [
       "mutang",
-      "tuqiang",
-      "luying",
+      "huochai",
       "houtu",
       "zheng",
+      "luying",
       "yangzhen",
       "jinren",
-      "huochai",
-      "zhennu",
-      "ruxi"
+      "ruxi",
+      "suijin",
+      "zhennu"
      ],
      "extra": [],
      "party": [
@@ -4264,15 +4264,15 @@
      "root": "wood",
      "deck": [
       "mutang",
-      "tuqiang",
-      "luying",
+      "huochai",
       "houtu",
       "zheng",
+      "luying",
       "yangzhen",
       "jinren",
-      "huochai",
-      "zhennu",
-      "ruxi"
+      "ruxi",
+      "suijin",
+      "zhennu"
      ],
      "extra": [],
      "party": [
@@ -4336,7 +4336,7 @@
       "jinzhua",
       "jinzhua"
      ],
-     "hp": 3.52,
+     "hp": 2.52,
      "power": 1,
      "signature": {
       "id": "feiqi",
@@ -4411,15 +4411,15 @@
      "root": "wood",
      "deck": [
       "mutang",
-      "tuqiang",
-      "luying",
+      "huochai",
       "houtu",
       "zheng",
+      "luying",
       "yangzhen",
       "jinren",
-      "huochai",
-      "zhennu",
-      "ruxi"
+      "ruxi",
+      "suijin",
+      "zhennu"
      ],
      "extra": [],
      "party": [
@@ -4483,7 +4483,7 @@
       "yanxin",
       "yanxin"
      ],
-     "hp": 3.97,
+     "hp": 3.28,
      "power": 1,
      "signature": {
       "id": "chiwei",
@@ -4558,15 +4558,15 @@
      "root": "wood",
      "deck": [
       "mutang",
-      "tuqiang",
-      "luying",
+      "huochai",
       "houtu",
       "zheng",
+      "luying",
       "yangzhen",
       "jinren",
-      "huochai",
-      "zhennu",
-      "ruxi"
+      "ruxi",
+      "suijin",
+      "zhennu"
      ],
      "extra": [],
      "party": [
@@ -4630,7 +4630,7 @@
       "hantan",
       "hantan"
      ],
-     "hp": 3.25,
+     "hp": 2.89,
      "power": 1,
      "signature": {
       "id": "ti",

@@ -66,12 +66,9 @@
     },
     "_weighed_with": "Weighed at h11 with 火柴 worn (tools/story-fights.mjs STOPS.h11): bare-handed the lookahead line wins ~12%, ~74% with it (one turn of 装睡, f6bb6e53). While it is up and he owns 火柴 but does not wear it, Look's door carries `gear_hint` (rules/gearhint.mjs) and 银月 says it (Hanli 2026-11-04: 「要加」). The bronze sword (metal, which 装睡 lets in) measures close (~68%).",
     "foe": {
-     "hp": 2.8,
-     "feint": {
-      "turns": 1
-     }
+     "hp": 3.1
     },
-    "_weighed": "Re-weighed 2026-11-04 (Hanli: 「带了火柴还是遁走了」), 300 seeds, tools/story-fights.mjs `qiuyu@09-lingcao/fight`, 五层 with 阿禾 + 孙二狗 (party.json h11) and 火柴 worn (its strike in the deck since 11-03): at hp 2.8 with the creature's two turns of 装睡 a player who thinks a turn ahead won 63% · 遁走 10% · lost 26%, the careless one-ply line 38 · 13 · 49. Now ONE turn of 装睡 (`feint.turns` 1 here; the 秘境's keeps two) — the book's beast is up at once (「它没有起身，是翻了个身…一下便蹿到了孙二狗跟前」), so its clock runs a turn sooner and the fight is fought, not waited out: thinking 74 · 5 · 21, careless 45 · 5 · 50. With 青铜剑 in place of 火柴, 68 · 6 · 26 (careless 43). Alone it stays a party fight: 35% (careless 13%). His own save of 11-04 (合窳袄, armor 8, a hand of 22) is never in danger, so every try not won is a 遁走: on its deck with the strike dealt, thinking 86 · 13 · 2 (was 74 · 26 · 1)."
+    "_weighed": "Re-weighed 2026-11-04 (Hanli: 「带了火柴还是遁走了」), 300 seeds, tools/story-fights.mjs `qiuyu@09-lingcao/fight`, 五层 with 阿禾 + 孙二狗 (party.json h11). Two fixes under it the same day: a worn sword's strike is always in the ten, in the place of the cheapest card (cards.mjs fightDeck — his 22-card save had been dealt no 火柴 at all, and 金刃 went out with it), and the strike is metal, the book's 「镀了金的火柴」, so it goes into the 装睡 whole. Then hp 2.8 → 3.1, the creature's own two turns of 装睡 (the one-turn override of the morning is gone). With 火柴 worn a player who thinks a turn ahead wins 75 · 遁走 9 · lost 16, the careless line 55 · 8 · 37; with 青铜剑 instead 37 · 23 · 40 (careless 19). His own save of 11-04 (合窳袄, armor 8, 22 cards): 火柴 84 · 16 · 0, 青铜剑 53 · 45 · 2 — he is never in danger there, so a try not won is a 遁走."
    },
    "withdrawn": {
     "zh": "「小满，撑住！」阿禾喊。",

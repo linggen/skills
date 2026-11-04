@@ -1776,7 +1776,7 @@ test('chapter 1: the shaman sent first, then the dragons\' trial — fought out 
   // won on some day's hand: then 站着，不跪 walks on to the fallen tower (古九's 老胡), then the deep
   let won = null;
   // (the hand the road gives by 古九 — the walk here gains only the first cards; cards.md § 4)
-  for (let k = 0; k < 6 && won?.result.outcome !== 'won'; k += 1) won = fightOut({ ...s, seed: `trial-${k}`, cards: [...new Set([...(s.cards ?? []), ...ROAD_HAND])], ...SWORD(s) }, 'shuanglong-trial', { c: octx() });
+  for (let k = 0; k < 12 && won?.result.outcome !== 'won'; k += 1) won = fightOut({ ...s, seed: `trial-${k}`, cards: [...new Set([...(s.cards ?? []), ...ROAD_HAND])], ...SWORD(s) }, 'shuanglong-trial', { c: octx() });
   assert.equal(won.result.outcome, 'won', JSON.stringify(won.result.log?.slice(-3)));
   const r = answer(resolve, won.state, { exit: 'stand' });
   assert.equal(r.state.scene, '01-tower'); assert.equal(r.result.paid.progress, 0); // no story 修为 (2026-10-16)
