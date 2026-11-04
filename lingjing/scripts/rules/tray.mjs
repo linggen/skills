@@ -55,7 +55,9 @@ export function trayLook(content, state, view, ctx, asideOffers = []) {
   // A round under way (`resume`) stands wherever it falls in the order: begun from the stage, it is not lost behind the first.
   const next = drawn.find(d => !d.played);
   const shown = new Set([...(next ? [next.id] : []), ...drawn.filter(d => d.resume && !d.played).map(d => d.id), ...open]);
-  const kept = rows.filter(r => !retired.has(r.id) && (!members.has(r.id) || shown.has(r.id)));
+  // This 时辰's draw is marked (`pool`): 事 lists them together under the 时辰's heading, the tray's card says when they change.
+  const drawnIds = new Set(drawn.map(d => d.id));
+  const kept = rows.filter(r => !retired.has(r.id) && (!members.has(r.id) || shown.has(r.id))).map(r => (drawnIds.has(r.id) ? { ...r, pool: true } : r));
   const sorted = kept.map((r, i) => [r, i]).sort((a, b) => RANK[a[0].seg] - RANK[b[0].seg] || a[1] - b[1]).map(([r]) => r);
   return { rows: sorted, hour: { i: shichen.i, ends_min: Math.max(1, Math.ceil((shichen.end - now) / 60_000)), drawn: drawn.length, played: drawn.filter(d => d.played).length } };
 }

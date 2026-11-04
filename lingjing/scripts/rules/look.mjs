@@ -801,7 +801,7 @@ export function look(state, content, ctx) {
   // 主页 (rules/home.mjs): the gate's bar, the one thing to do next, what waits — from this same reading.
   const home = homeOf(content, state, { ...kept, ...aside }, ctx.now);
   // 事 (rules/agenda.mjs): ONE ordered list — 主线 · 目标 · 其他 — the tray its head, the 事 view all of it.
-  const agenda = agendaLook(content, state, { ...kept, ...aside }, tray.rows);
+  const agenda = agendaLook(content, state, { ...kept, ...aside }, tray.rows, tray.hour);
   return { ...onStage(content, state, ctx, {}, kept), ...kept, ...aside, ...(tray.rows.length ? { tray: tray.rows } : {}), ...(agenda.length ? { agenda } : {}), ...(tray.hour ? { tray_hour: tray.hour } : {}), ...(home ? { home } : {}) };
 }
 

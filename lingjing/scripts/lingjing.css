@@ -1592,3 +1592,6 @@ button.qchip.on { color: var(--ling); border-color: var(--ling); background: var
 #tray .allchip { flex: none; align-self: center; white-space: nowrap; position: sticky; right: 0; z-index: 1; box-shadow: -10px 0 12px -4px var(--surface); }
 #tray .allchip .due { margin-left: 4px; }
 .bookpop.agendapop > .cardx + .tgroup { margin-top: 0; border-top: 0; padding-top: 0; }
+/* 小游戏池 in 事: this 时辰's games under one quiet heading; on a tray card, when they change — the cooldown's chip, dashed. */
+.bookpop .poolhead { margin: 6px 0 0; font-size: 11.5px; letter-spacing: 1px; }
+#tray .poolmark { border-style: dashed; opacity: .8; margin-right: auto; }

@@ -120,7 +120,9 @@ test('the page: the 时辰 chip in the footer; 体力 spent, one 闭关 card; al
   const w = WORDS.zh;
   // No title line over the row (Hanli 11-02: 「手边的棋局 这几个字去掉, 省点空间」): the 时辰 is a footer chip beside the sky.
   const chip = trayHourChipHtml({ words: w, look: { tray_hour: { i: 7, ends_min: 47, drawn: 3, played: 0 } } });
-  assert.match(chip, />未时 · 47 分换一批</);
+  // 「未时」 alone (Hanli 11-04: 「可以, 挪进清单」): the countdown is 事's heading and the tray card's mark now.
+  assert.match(chip, />未时</);
+  assert.doesNotMatch(chip, /\d/, 'no countdown on the footer');
   assert.match(chip, /title="申时换一批"/);
   assert.equal(trayHourChipHtml({ words: w, look: {} }), '');
   const full = new Date(Date.now() + 30 * 60_000).toISOString();
@@ -139,7 +141,7 @@ test('the page: the 时辰 chip in the footer; 体力 spent, one 闭关 card; al
   assert.match(all, /这个时辰的都玩过了 · 申时再来/);
   assert.ok(all.indexOf('allplayed') < all.indexOf('data-wait'), 'before the cooldowns');
   assert.doesNotMatch(trayHtml({ words: w, lang: 'zh', look: { tasks: [], tray_hour: { i: 7, ends_min: 47, drawn: 3, played: 2 } } }), /都玩过了/);
-  assert.match(trayHourChipHtml({ words: WORDS.en, look: { tray_hour: { i: 7, ends_min: 47 } } }), /Monkey hour.*Goat hour · new three in 47 min/);
+  assert.match(trayHourChipHtml({ words: WORDS.en, look: { tray_hour: { i: 7, ends_min: 47 } } }), /title="New three at Monkey hour">Goat hour</);
 });
 
 test('a round under way stays in the row, 继续, through a reload and past its 时辰 — until it ends (本王考考你, 对对子)', () => {

@@ -36,7 +36,7 @@ const SOURCE = {
   task: (l, id) => (l.tasks ?? []).find((t) => t.id === id), tray: (l, id) => (l.tray ?? []).find((e) => e.id === id),
   kept: (l) => (l.kept ?? []).length, errand: (l, id) => (l.book ?? []).find((q) => q.id === id && !q.chore),
   chore: (l, id) => (l.book ?? []).find((q) => q.id === id && q.chore), chance: (l) => l.chance, kaifu: (l) => l.kaifu,
-  offer: (l, id) => (l.offers ?? []).find((o) => o.id === id), work: (l) => l.work, visitor: (l, id) => (l.visitors ?? []).find((v) => v.place?.id === id),
+  hour: (l) => l.tray_hour?.drawn, offer: (l, id) => (l.offers ?? []).find((o) => o.id === id), work: (l) => l.work, visitor: (l, id) => (l.visitors ?? []).find((v) => v.place?.id === id),
 };
 
 test('one list in Look: every item once, in 主线 · 目标 · 其他 order, each pointing at the Look field that holds it', () => {
@@ -137,4 +137,26 @@ test('the footer has no 「事」 chip: 去往 · 木牌 · 天气 · 时辰 · 
       assert.ok(/data-book-at|bookAt\(|allchip|\['\[data-book\]'/.test(line), `${name}: an opener of 事 with nowhere to land: ${line.trim().slice(0, 160)}`);
     }
   }
+});
+
+test('小游戏池 in the list: this 时辰\'s games together under one heading with the minutes; the tray card marks them; all played, the heading says so', () => {
+  const at = (h) => new Date(2026, 9, 20, h, 10);
+  // A 时辰 whose draw stands in the tray (the 观, 体力 full): find one.
+  let l = null;
+  for (let h = 1; h < 24 && !l; h += 2) { const x = look(SAVES[1], content, { now: at(h), quests: [] }); if ((x.tray ?? []).some((e) => e.pool)) l = x; }
+  assert.ok(l, 'a 时辰 with its draw in the tray');
+  const items = l.agenda, head = items.findIndex((i) => i.key === 'hour:pool');
+  assert.ok(head >= 0 && items[head].group === 'other' && items[head].ends_min === l.tray_hour.ends_min);
+  const pooled = items.map((i, n) => [i, n]).filter(([i]) => i.pool).map(([, n]) => n);
+  assert.ok(pooled.length);
+  assert.deepEqual(pooled, pooled.map((_, k) => head + 1 + k), 'grouped, right under the heading');
+  assert.ok(!items[head].tray, 'the heading is the list\'s, never a tray card');
+  const pop = bookPopHtml(page(l));
+  assert.match(pop, new RegExp(`class="thead small dim poolhead"[^>]*>这个时辰的小游戏 · ${l.tray_hour.ends_min} 分后换<`));
+  const tray = trayHtml(page(l));
+  if (items.some((i) => i.pool && i.tray)) assert.match(tray, new RegExp(`class="chip poolmark">${l.tray_hour.ends_min} 分后换<`));
+  // All played: the heading is the all-played line with the next 时辰.
+  const all = { ...l, agenda: undefined, tray_hour: { ...l.tray_hour, played: l.tray_hour.drawn } };
+  assert.match(bookPopHtml(page(all)), /poolhead allplayed[^>]*>这个时辰的都玩过了 · \S+时再来</);
+  assert.match(bookPopHtml({ ...page(l), lang: 'en', words: WORDS.en }), /This hour(?:'|&#39;|&#x27;)s games · new in \d+ min/);
 });

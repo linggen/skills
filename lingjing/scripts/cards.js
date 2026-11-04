@@ -61,7 +61,7 @@ export const WORDS = {
     agendaAll: '全部 ›', agendaAllTip: '事 · 全部 {n} 件', agendaMain: '主线', agendaGoal: '目标 · {step}', agendaGoalBare: '目标', agendaOther: '其他', agendaServes: '{step} ↑', agendaAim: '{what} · {name}',
     trayGo: '去{name} ›', trayOpen: '开局', trayKe: '{n} 刻', trayShi: '{n} 时辰',
     // 小游戏池 (rules/pool.mjs): the 时辰 in the head, when the next three come; all played; 体力 spent.
-    shichen: ['子时', '丑时', '寅时', '卯时', '辰时', '巳时', '午时', '未时', '申时', '酉时', '戌时', '亥时'], trayHour: '{hour} · {n} 分换一批', trayHourTip: '{next}换一批',
+    shichen: ['子时', '丑时', '寅时', '卯时', '辰时', '巳时', '午时', '未时', '申时', '酉时', '戌时', '亥时'], trayHour: '{hour}', trayHourTip: '{next}换一批', agendaPool: '这个时辰的小游戏 · {n} 分后换', trayPoolMark: '{n} 分后换',
     trayAllPlayed: '这个时辰的都玩过了 · {next}再来', trayRest: '闭关中 · 约 {n} 分钟体力回满', trayRestOut: '体力耗尽 · 闭关约 {n} 分钟回满', trayRestUp: '闭关', trayRestFeed: '喂饭桶',
     secludeOpen: '闭关', secludeTitle: '闭关', secludeHint: '选一样专心修：一门法术、修为，或本命法宝。',
     secludeRule: '按真实时间，至多{cap}小时；不足{min}小时不长；体力一路回，约{rest}小时回满。',
@@ -128,7 +128,7 @@ export const WORDS = {
     trayLeft: { night: 'tide {n}', batch: 'this batch {n}/{of}', couplets: '{n} today', rounds: '{n} rounds today', errands: '{n} waiting', keys: 'keys ×{n}', ends: '{t} left', today: 'open today', tomorrow: 'up tomorrow' },
     agendaAll: 'All ›', agendaAllTip: 'Tasks · all {n}', agendaMain: 'Story', agendaGoal: 'Goal · {step}', agendaGoalBare: 'Goal', agendaOther: 'Other', agendaServes: '{step} ↑', agendaAim: '{what} · {name}',
     trayGo: 'Go to {name} ›', trayOpen: 'Play', trayKe: '{n} min', trayShi: '{n} h',
-    shichen: ['Rat hour', 'Ox hour', 'Tiger hour', 'Hare hour', 'Dragon hour', 'Snake hour', 'Horse hour', 'Goat hour', 'Monkey hour', 'Rooster hour', 'Dog hour', 'Boar hour'], trayHour: '{hour} · new three in {n} min', trayHourTip: 'New three at {next}',
+    shichen: ['Rat hour', 'Ox hour', 'Tiger hour', 'Hare hour', 'Dragon hour', 'Snake hour', 'Horse hour', 'Goat hour', 'Monkey hour', 'Rooster hour', 'Dog hour', 'Boar hour'], trayHour: '{hour}', trayHourTip: 'New three at {next}', agendaPool: "This hour's games · new in {n} min", trayPoolMark: 'new in {n} min',
     trayAllPlayed: "All of this hour's played · back at {next}", trayRest: 'In seclusion · stamina full in about {n} min', trayRestOut: 'Stamina spent · seclusion fills it in about {n} min', trayRestUp: 'Seclude', trayRestFeed: 'Feed the Rice Bucket',
     secludeOpen: 'Seclusion', secludeTitle: 'Seclusion', secludeHint: 'Pick one thing to work on: a spell, cultivation, or your treasure.',
     secludeRule: 'Real hours count, up to {cap}; under {min}, nothing grows. Stamina comes back all along, full in about {rest} h.',
@@ -1241,7 +1241,7 @@ const firstReady = (look) => agendaOf(look).find((i) => i.ready)?.key ?? 'group:
 
 /* Look's `agenda` (rules/agenda.mjs): ONE ordered list, 主线 · 目标 · 其他, each item a reference to where its facts are. */
 /* A Look without it (one drawn by hand, a test's): the same rule read off what it does carry. */
-export const agendaOf = (look) => look?.agenda ?? (look ? agendaLook(null, null, look, look.tray ?? []) : []);
+export const agendaOf = (look) => look?.agenda ?? (look ? agendaLook(null, null, look, look.tray ?? [], look.tray_hour ?? null) : []);
 export const AGENDA_GROUPS = ['main', 'goal', 'other'];
 /* The item's key on its first element: the tray card and the 事 row of one item carry the same `data-agenda`. */
 const keyed = (html, key, at = false) => (html ? html.replace(/^(\s*<[a-z]+[^>]*)>/i, `$1 data-agenda="${esc(key)}"${at ? ` data-agenda-at="${esc(key)}"` : ''}>`) : '');
@@ -1271,6 +1271,8 @@ const AGENDA_ROW = {
   stage: (i, ctx) => stageRow(ctx.look, ctx) + (i.way && !ctx.compact ? goalHeadHtml(ctx) : ''),
   task: (i, ctx) => { const t = (ctx.look.tasks ?? []).find((x) => x.id === i.id); return t ? boardRowHtml(t, i, ctx) : ''; },
   tray: (i, ctx) => { const e = (ctx.look.tray ?? []).find((x) => x.id === i.id); return e ? trayRowHtml(e, ctx) : ''; },
+  // 小游戏池's heading over this 时辰's games: when they change — or, all played, the line that says so and when the next come.
+  hour: (i, ctx) => (ctx.compact ? '' : `<div class="thead small dim poolhead${i.all ? ' allplayed' : ''}">${esc(i.all ? say(ctx.words.trayAllPlayed, { next: ctx.words.shichen[((ctx.look.tray_hour?.i ?? 0) + 1) % 12] }) : say(ctx.words.agendaPool, { n: i.ends_min }))}</div>`),
   kept: (i, ctx) => (ctx.compact ? keptChipHtml(ctx) : keptGroupHtml(ctx)),
   errand: (i, ctx) => { const q = bookOf(ctx.look, i.id); return q ? errandRow(q, ctx) : ''; },
   chore: (i, ctx) => { const q = bookOf(ctx.look, i.id); return q?.chore ? choreRow(q, lifeOf(ctx.look, q.id), ctx) : ''; },
@@ -2131,7 +2133,10 @@ function trayGameHtml(e, ctx) {
   const btn = open ? `<button class="act" ${open(e)}>${esc(e.resume ? w.playOn : w.trayOpen)}</button>`
     : e.act === 'go' ? `<button class="act go" data-go="${esc(e.go.id)}">${esc(say(w.trayGo, { name: e.go.name }))}</button>` : '';
   const meta = trayMeta(e, ctx);
-  return `<div class="card task timed${e.seg === 'notice' ? ' notice' : ''}" data-tray="${esc(e.id)}"><div class="tasktitle">${esc(title)}</div>${meta ? `<div class="small dim">${esc(meta)}</div>` : ''}${btn ? `<div class="taskfoot">${btn}</div>` : ''}</div>`;
+  // One of this 时辰's three: when they change, quiet (the cooldown's chip).
+  const mins = e.pool && ctx.look?.tray_hour?.ends_min;
+  const mark = mins ? `<span class="chip poolmark">${esc(say(w.trayPoolMark, { n: mins }))}</span>` : '';
+  return `<div class="card task timed${e.pool ? ' pooled' : ''}${e.seg === 'notice' ? ' notice' : ''}" data-tray="${esc(e.id)}"><div class="tasktitle">${esc(title)}</div>${meta ? `<div class="small dim">${esc(meta)}</div>` : ''}${btn || mark ? `<div class="taskfoot">${mark}${btn}</div>` : ''}</div>`;
 }
 /// A cooldown back within hours (muted, last): one row shape, as Look's `waits` was drawn.
 const trayCoolHtml = (e, ctx) => {
@@ -2140,7 +2145,8 @@ const trayCoolHtml = (e, ctx) => {
 };
 
 /// The 时辰 chip in the footer, beside the sky (小游戏池, rules/pool.mjs; the tray has no title line, Hanli 11-02:
-/// 「手边的棋局 这几个字去掉, 省点空间」): 「未时 · 47 分换一批」. Nothing to tap.
+/// 「手边的棋局 这几个字去掉, 省点空间」): 「未时」 alone — the minutes till the next three live in 事 (its heading over the
+/// 时辰's games) and on each of their tray cards (Hanli 11-04: 「可以, 挪进清单」). Nothing to tap.
 export function trayHourChipHtml(ctx) {
   const w = ctx.words, h = ctx.look?.tray_hour;
   if (!h) return '';
