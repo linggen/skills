@@ -1352,6 +1352,11 @@ function stageNow() {
   const isShopShelf = (c) => c.card === 'item' && (c.ids?.length ?? 0) > 1;
   const ownBoard = (id) => (look?.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id) && !(look?.tasks ?? []).some((t) => t.id === id && t.replay);
   if (storyAhead()) cards = cards.filter((c) => (c.card !== 'board' || c.id === view.opened?.id || (asideOn() && !ownBoard(c.id))) && !(c.card === 'duel' && sceneGame(look, c) && !called.has(c.id)));
+  // Put away with its ✕ (card-close.js): off the stage, and its 收起 chip in the tray brings it back.
+  awayLoad();
+  awayShownAnew();
+  awayPrune(look?.place?.id ?? null);
+  { const off = stageMinusAway(cards, view.away, look?.place?.id ?? null, look); cards = off.cards; keep({ awayNow: off.away }); }
   // A board he opened from the tray's 开局 waits for the whole passage (queue.js trayWaits).
   if (view.opened && trayAhead()) cards = cards.filter((c) => !(c.card === 'board' && c.id === view.opened.id));
   // One text box (Hanli, 2026-10-05): while the book is ahead — or the box holds
@@ -1360,10 +1365,6 @@ function stageNow() {
   // A shop's shelf he put away (合上, Hanli 10-28: 「商店的卡无法关上. 应该所有卡都能关上」) stays away at this place, till
   // he taps the header's 「有铺子」 again or walks on.
   if (view.shopShut && view.shopShut === look?.place?.id) cards = cards.filter((c) => !isShopShelf(c));
-  // Put away with its ✕ (card-close.js): off the stage, and its 收起 chip in the tray brings it back.
-  awayLoad();
-  awayPrune(look?.place?.id ?? null);
-  { const off = stageMinusAway(cards, view.away, look?.place?.id ?? null, look); cards = off.cards; keep({ awayNow: off.away }); }
   // The book first: a game waits until the passage that leads into it is told (queue.js afterBook).
   cards = afterBook(cards, cardsAhead());
   watchAppear(cards);
@@ -4684,8 +4685,6 @@ function onContentBlock(payload) {
       const args = typeof payload.args === 'string' ? JSON.parse(payload.args) : payload.args;
       const cards = (args.cards ?? []).filter((c) => c && c.card);
       if (cards.length) {
-        // What she shows anew stands again, though he put away what she showed before (card-close.js `told`).
-        if (view.away.some((e) => e.place == null)) awaySet(view.away.filter((e) => e.place != null));
         // A map Ling shows opens on the player's province.
         show({ focus: cards, ...(cards.some((c) => c.card === 'map') ? { mapView: 'province' } : {}) });
       }
@@ -4925,6 +4924,15 @@ function putAway(key) {
   const place = CLOSE_STAGE[kind]?.scope === 'told' ? null : look?.place?.id ?? null;
   awaySet([...view.away.filter((e) => e.key !== key), { key, place }]);
   render();
+}
+/* What Ling shows anew stands again, though he put away what she showed before (`told`): her Show is the page's focus
+   until the next Look; a focus not seen before clears the told put-aways. */
+let awayFocusSig = '';
+function awayShownAnew() {
+  const sig = view.focus.length ? JSON.stringify(view.focus) : '';
+  if (sig === awayFocusSig) return;
+  awayFocusSig = sig;
+  if (sig && view.away.some((e) => e.place == null)) awaySet(view.away.filter((e) => e.place != null));
 }
 /* The 收起 chip: back on the stage. */
 function bringBack(key) {
