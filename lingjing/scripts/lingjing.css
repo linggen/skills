@@ -1566,3 +1566,29 @@ button.qchip.on { color: var(--ling); border-color: var(--ling); background: var
 .card:has(> .passout), .riddletap:has(> .passout) { position: relative; }
 .card > .gshell-tools.passout, .riddletap > .gshell-tools.passout { position: absolute; top: 8px; right: 8px; margin: 0; z-index: 4; }
 .card:has(> .passout) > .cardtitle:first-of-type, .riddletap:has(> .passout) > .riddlehead { padding-right: 84px; }
+
+/* 事 — ONE list at two sizes (Hanli 2026-11-04): the tray its head, this its whole. The list stands over the stage (the
+   footer has no 「事」 chip to hang from); on a phone it is the footer's bottom sheet (phone.css). */
+.slotfoot .bookpop.agendapop { position: fixed; top: 56px; bottom: auto; left: 50%; transform: translateX(-50%); z-index: 60;
+  width: min(560px, 92vw); max-height: calc(100vh - 80px); }
+.agroup > .thead { font-family: var(--serif); letter-spacing: 2px; color: var(--ling); }
+.agroup.g-main > .thead { color: var(--th-main); }
+.agroup.g-goal > .thead { color: var(--jade); }
+.bookpop .lit { animation: agendalit 1.6s ease-out 1; }
+@keyframes agendalit { 0%, 40% { background: color-mix(in srgb, var(--ling) 22%, transparent); } 100% { background: transparent; } }
+.bookrow .serves, #tray .serves { font-size: 11px; font-weight: 600; color: var(--jade); border: 1px solid var(--jade); border-radius: 99px; padding: 0 6px; margin-left: 4px; white-space: nowrap; }
+.bookrow.trow.waits { opacity: .62; }
+/* The tray's cards of the list: the row as a small card — the tag and the line above, the one button under. */
+#tray .card.task.agenda { cursor: pointer; }
+#tray .card.task.agenda.g-main { border-color: var(--th-main); }
+#tray .card.task.agenda.g-goal { border-color: var(--jade); }
+#tray .card.task.agenda.ready { border-color: var(--seal); }
+#tray .card.task.agenda .bookrow.trow { grid-template-columns: auto minmax(0, 1fr); margin: 0; padding: 0; }
+#tray .card.task.agenda .bookrow.trow .tact { grid-column: 1 / -1; justify-self: end; }
+#tray .card.task.agenda .bookgoal { margin: 0; font-size: 13px; }
+#tray .card.task.agenda .tsteps, #tray .card.task.agenda .tpay { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+#tray [data-agenda-at] { cursor: pointer; }
+/* 「全部 ›」 always in sight: the row scrolls under it. */
+#tray .allchip { flex: none; align-self: center; white-space: nowrap; position: sticky; right: 0; z-index: 1; box-shadow: -10px 0 12px -4px var(--surface); }
+#tray .allchip .due { margin-left: 4px; }
+.bookpop.agendapop > .cardx + .tgroup { margin-top: 0; border-top: 0; padding-top: 0; }

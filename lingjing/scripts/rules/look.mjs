@@ -45,6 +45,7 @@ import { keptBrief, leaveOf, storyBoard } from './skips.mjs';
 import { armSlot } from './wear.mjs';
 import { asideLook } from './aside.mjs';
 import { trayLook } from './tray.mjs';
+import { agendaLook } from './agenda.mjs';
 import { capLook, capStory, underCap } from './cap.mjs';
 import { entryGate, stageBack, stageBrief, stageGate, stageNow, stagesPaid } from './gates.mjs';
 import { practiceHint } from './scrolls.mjs';
@@ -790,7 +791,9 @@ export function look(state, content, ctx) {
   const tray = trayLook(content, state, kept, ctx, aside?.aside?.offers ?? []);
   // 主页 (rules/home.mjs): the gate's bar, the one thing to do next, what waits — from this same reading.
   const home = homeOf(content, state, { ...kept, ...aside }, ctx.now);
-  return { ...onStage(content, state, ctx, {}, kept), ...kept, ...aside, ...(tray.rows.length ? { tray: tray.rows } : {}), ...(tray.hour ? { tray_hour: tray.hour } : {}), ...(home ? { home } : {}) };
+  // 事 (rules/agenda.mjs): ONE ordered list — 主线 · 目标 · 其他 — the tray its head, the 事 view all of it.
+  const agenda = agendaLook(content, state, { ...kept, ...aside }, tray.rows);
+  return { ...onStage(content, state, ctx, {}, kept), ...kept, ...aside, ...(tray.rows.length ? { tray: tray.rows } : {}), ...(agenda.length ? { agenda } : {}), ...(tray.hour ? { tray_hour: tray.hour } : {}), ...(home ? { home } : {}) };
 }
 
 /* 传闻 as Look carries it: the tale, the people met in finished ones, and a nudge. */

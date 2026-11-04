@@ -214,13 +214,14 @@ test('望气 on the page: 上卷 reads the shape, 下卷 every move with the num
 });
 
 test('机缘 on the page: the book counts it down; met on the road, the one road card holds 收下 — and it is gone once missed', async () => {
-  const { cardHtml, bookChipHtml, chanceLeft, WORDS } = await import('../scripts/cards.js');
+  const { cardHtml, allChipHtml, bookPopHtml, chanceLeft, WORDS } = await import('../scripts/cards.js');
   const { stageCards } = await import('../scripts/stage.mjs');
   const until = new Date(Date.now() + 100 * 60000).toISOString();
   const away = { chance: { place: { id: 'weishan', name: '微山湖' }, until, minutes_left: 100 }, book: [] };
-  const chip = bookChipHtml({ look: away, words: WORDS.zh, lang: 'zh' }, true, false);
-  assert.match(chip, /事 1 · 有机缘/);
-  assert.match(chip, /机缘 · 微山湖[\s\S]*还剩 1 时 40 分/);
+  // The tray's 「全部 ›」 says it in its title and a dot; 事 holds its row (Hanli 11-04: the footer's 「事」 chip is gone).
+  const chip = allChipHtml({ look: away, words: WORDS.zh, lang: 'zh' });
+  assert.match(chip, /title="事 · 全部 1 件 · 有机缘"[^>]*>全部 ›<i class="dot"/);
+  assert.match(bookPopHtml({ look: away, words: WORDS.zh, lang: 'zh' }), /data-agenda="chance:chance"[\s\S]*机缘 · 微山湖[\s\S]*还剩 1 时 40 分/);
   assert.ok(!stageCards(away, []).some(c => c.card === 'road'), 'not on the stage from afar');
   const there = { ...away, place: { id: 'weishan', meet: { kind: 'chance', place: { id: 'weishan', name: '微山湖' }, until, minutes_left: 100, here: true } } };
   assert.deepEqual(stageCards(there, []).filter(c => c.card === 'road'), [{ card: 'road' }]);
@@ -230,7 +231,7 @@ test('机缘 on the page: the book counts it down; met on the road, the one road
   assert.equal(chanceLeft({ ...away.chance, missed: true }), null);
   const missed = { ...there, place: { ...there.place, meet: { ...there.place.meet, missed: true } } };
   assert.ok(!stageCards(missed, []).some(c => c.card === 'road'), 'missed: the card goes');
-  assert.equal(bookChipHtml({ look: { chance: { ...away.chance, until: new Date(Date.now() - 1000).toISOString() }, book: [] }, words: WORDS.zh, lang: 'zh' }, false, false), '', 'run out: gone');
+  assert.equal(allChipHtml({ look: { chance: { ...away.chance, until: new Date(Date.now() - 1000).toISOString(), minutes_left: 0 }, book: [] }, words: WORDS.zh, lang: 'zh' }), '', 'run out: gone');
 });
 
 test('装备 on the page: no 历练, no 羁绊 — her row is what she wears; before 结丹 the ten are dealt, not buttons', async () => {
@@ -677,7 +678,7 @@ test("外门库房's shelf: 回春丹 · 回气丹 say their fight from Look's e
 });
 
 test('at the 回\'s cap (Hanli 11-03): the story goal wears 「破境在此」, the 事 book opens to it even in the scene, the pill card points to the story', async () => {
-  const { WORDS, cardHtml, bookPopHtml, bookChipHtml } = await import('../scripts/cards.js');
+  const { WORDS, cardHtml, bookPopHtml, allChipHtml } = await import('../scripts/cards.js');
   const way = { scene: 'wm-ahe', text: '外门大比 · 腊月初八。路通向沉鼎观 · 外门。', place: { id: 'waimen', name: '沉鼎观 · 外门' }, toward: { id: 'waimen', name: '沉鼎观 · 外门' } };
   const capped = (story) => ({ say: '这一回的修为到顶了。', story });
   const ctx = (look) => ({ look: { place: { id: 'houshan' }, ...look }, lang: 'zh', words: WORDS.zh });
@@ -689,9 +690,9 @@ test('at the 回\'s cap (Hanli 11-03): the story goal wears 「破境在此」, 
   assert.doesNotMatch(bookPopHtml(ctx({ waypoint: way })), /破境在此/, 'not capped: no mark');
   // A cauldron's gate is no story goal: no mark on it.
   assert.doesNotMatch(cardHtml({ card: 'goal' }, ctx({ waypoint: { ...way, gate: { kind: 'stage', step: '四层圆满', now: { step: '四层', progress: 1, of: 2 } } }, capped: capped({ text: way.text }) })), /破境在此/);
-  // In the story's scene (no goal line): the chip still stands, and the book opens to 「剧情就在此处」 with no road to tap.
+  // In the story's scene (no goal line): 「全部 ›」 still stands, and 事 opens to 「剧情就在此处」 at 主线 with no road to tap.
   const here = ctx({ waypoint: null, capped: capped({ here: true, scene: 'wm-ahe', place: { id: 'waimen', name: '沉鼎观 · 外门' } }) });
-  assert.match(bookChipHtml(here, false, false), /data-book/);
+  assert.match(allChipHtml(here), /data-book/);
   const pop = bookPopHtml(here);
   assert.match(pop, /剧情就在此处 · 沉鼎观 · 外门[^]*破境在此/);
   assert.doesNotMatch(pop, /data-go=/);

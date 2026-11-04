@@ -70,7 +70,7 @@
   stands at the layer it names full (`stage.step`, `stage.now`): say its
   `say` once, in the world, and point to where 修为 is earned — the day's
   功课, the pool's beasts (妖兽出没) (Look's `work`). Never fill it, never
-  promise the story will; the 事 book shows its progress.
+  promise the story will; 事 (the tray's 「全部 ›」) shows its progress.
 - **Real life belongs to Yinyue, outside the game** — the weather, reminders,
   files, the body. Say so in one line and turn back to the scene.
 

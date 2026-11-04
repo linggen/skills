@@ -50,7 +50,7 @@
   body.fighting .topbar { flex-wrap: nowrap; }
   /* The footer's popovers (去往 and 观's painting, 事, 书, the sky, 物品) open as bottom sheets: the whole width,
      standing on the footer so its chips stay a tap away, scrolling inside. */
-  .slotfoot .bookpop, .slotfoot .bookpop.roadspop, .slotfoot .bookpop.roadspop.plated, .slotfoot .shelfpop {
+  .slotfoot .bookpop, .slotfoot .bookpop.agendapop, .slotfoot .bookpop.roadspop, .slotfoot .bookpop.roadspop.plated, .slotfoot .shelfpop {
     position: fixed; top: auto; left: 0; right: 0; bottom: calc(var(--chatbar-h) + 46px); width: auto; transform: none;
     max-height: min(72dvh, calc(100dvh - var(--chatbar-h) - 46px - 48px)); overflow-y: auto; overscroll-behavior: contain;
     border-radius: 14px 14px 0 0; border-bottom: 0; box-shadow: 0 -10px 32px rgba(20, 14, 6, .22); }

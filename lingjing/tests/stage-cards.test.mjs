@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { WORDS, bookChipHtml, bookPopHtml, cardHtml, gameOpen } from '../scripts/cards.js';
+import { WORDS, allChipHtml, bookPopHtml, cardHtml, gameOpen } from '../scripts/cards.js';
 import { codexOf } from '../scripts/codex.js';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
@@ -90,18 +90,18 @@ test('the situations cover the stage\'s own cards', () => {
   for (const kind of ['goal', 'offer', 'item', 'creature', 'road', 'tale', 'born', 'people', 'panel']) assert.ok(seen.has(kind), `no situation stages a ${kind} card`);
 });
 
-test('the 事 chip: how many in hand, what can be handed in — and its popover holds the goal and the rows', () => {
+test('「全部 ›」: what can be handed in rides on it — and 事 holds the goal and the rows', () => {
   const at = ctx({ quests: chores });
   const took = quest({ ...open, place: 'zhishi' }, content, at, { action: 'take', id: 'xu-lvliang-look' });
   const l = look(took.state, content, at), page = pageCtx(l);
-  assert.match(bookChipHtml(page, false, false), /class="bookchip ready"[^>]*title="事 3 · 可交 1">事 3<b class="due">交1<\/b><\/button>/, 'a line ready to hand in is never behind a click — a count on the chip, the line its title');
-  assert.doesNotMatch(bookChipHtml(page, false, false), /bookpop/);
-  assert.match(bookChipHtml(page, true, true), /bookchip ready fresh.*bookpop/s);
+  assert.match(allChipHtml(page), /class="bookchip allchip ready"[^>]*title="事 · 全部 \d+ 件 · 可交 1">全部 ›<b class="due">交1<\/b><\/button>/, 'a line ready to hand in is never behind a click — a count on 全部, the line its title');
+  assert.doesNotMatch(allChipHtml(page), /bookpop/, 'the list stands over the stage, never inside the chip');
+  assert.match(allChipHtml({ ...page, bookFresh: true }), /allchip ready fresh/);
   const html = bookPopHtml(page);
   assert.match(html, /吕梁洪的水声/);
   assert.match(html, /class="tstep">到吕梁洪</, 'the step by name and place (rules/errand-line.mjs), never 「到 0/1」');
   assert.match(html, /class="bookrow trow ready".*扫描.*交 差/s, 'the scan its app saw done is handed in from the row');
-  assert.match(html, /可交 · 1.*已接 · 2/s, 'grouped by state: what can be handed in first');
+  assert.match(html, /data-agenda-group="other"[\s\S]*class="bookrow trow ready"[\s\S]*吕梁洪的水声/, '其他: what can be handed in first, then what is in hand');
   assert.match(html, /t-day">每日<\/span>.*炼体.*今日.*去 Health 做/s, 'a chore wears its tag, its period and its app\'s page');
   assert.doesNotMatch(html, /undefined|\{\w+\}/);
   assert.doesNotMatch(html, /说说|bookdetail/, 'closed rows: nothing opened, and no row asks the model for what the page knows');
@@ -118,8 +118,8 @@ test('the 事 chip: how many in hand, what can be handed in — and its popover 
   assert.deepEqual([chore.kind, chore.app, chore.grant.progress], ['chore', 'health', chorePlay(content, took.state, 'day')], 'its day\'s minutes of board play (2026-10-27)');
   assert.doesNotMatch(bookPopHtml({ ...page, bookRow: 'health-workout', bookInfo: chore }), /data-drop/, 'life\'s own cannot be put down');
   assert.equal(quest(took.state, content, at, { action: 'info', id: 'nope' }).result.refused, 'no-such-quest');
-  // nothing in hand and no thread: no chip
-  assert.equal(bookChipHtml(pageCtx({ ...l, book: [], waypoint: null }), false, false), '');
+  // an empty list: no 全部
+  assert.equal(allChipHtml(pageCtx({ ...l, agenda: [] })), '');
   // the stage keeps one slim line of it, with nothing to tap
   const line = cardHtml({ card: 'goal' }, pageCtx(look({ ...open, chapter: '03-qing', scene: '03-cauldron', place: 'penglai' }, content, at)));
   const core = content.ladder.tiers.find(t => t.id === 'core').thresholds;

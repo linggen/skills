@@ -66,7 +66,7 @@ senses: [weather, user_words]
 # and never moves it: her tools here are her own read of it (AppTool →
 # Progress) and the book (Story) — no Resolve, no question widget — and
 # WebSearch, the world outside, when asked for it (开府 问天: 「今天有什么大新闻？」
-# on the 事 card, 2026-11-02); it moves nothing in the game.
+# in 事, 2026-11-02); it moves nothing in the game.
 members: [ling, yinyue]
 # A chat may be bound to a test save (skill-spec § Session parameters): the
 # page's `?save=<name>` binds its session, and every tool below carries

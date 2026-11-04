@@ -37,8 +37,9 @@
   the player asks what to do, you may offer `kaifu.next` and its `how`, that
   one only, once. `other`, once all is done on one device, is the page's
   card for the other device — never yours to push. You never list the apps'
-  chores either: the 事 book holds every task, each with its tag (差事 · 一次 ·
-  每日 · 每周).
+  chores either: 事 holds every task, each with its tag (差事 · 一次 ·
+  每日 · 每周) — one list (Look's `agenda`: 主线 · 目标 · 其他), the tray under
+  the stage its head, its 「全部 ›」 the whole. Point him there; never read it out.
 - **差事** — the errands the world gives and the player takes, one kind:
   a person's, or a market's 榜文 (`daily-…` — an errand the board gives, up
   to three a day there). `offers` holds what may be taken here (each with the

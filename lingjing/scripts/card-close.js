@@ -48,12 +48,12 @@ export const STAGE = {
   // with the same 去石门 ›; at the door and after a run, the 收起 chip. Inside a run it is the run.
   mijing: { close: 'away', scope: 'place', chip: (look) => !look?.mijing?.away, reopen: ['data-card-back', 'data-go', 'data-gear'], visible: true,
     none: (look) => Boolean(look?.mijing?.inside), own: (look) => Boolean(look?.mijing?.last), ownAttr: 'data-mijing="close"', what: '秘境探险: 秘境令 · 石门 (away), the door\'s 重, a run\'s pay', also: 'away: the tray\'s 秘境令 row; 物品 holds the 令' },
-  handed: { close: 'away', scope: 'place', chip: true, reopen: ['data-card-back', 'data-book'], visible: true, what: '所得 of an errand met', also: '事 (the done fold)' },
-  offer: { close: 'away', scope: 'place', chip: true, reopen: ['data-card-back', 'data-book'], visible: true, what: 'errands held out here', also: '事 › 可接' },
+  handed: { close: 'away', scope: 'place', chip: true, reopen: ['data-card-back', 'data-book'], visible: true, what: '所得 of an errand met', also: 'the tray\'s 全部 › — 事, its 已交 fold' },
+  offer: { close: 'away', scope: 'place', chip: true, reopen: ['data-card-back', 'data-book'], visible: true, what: 'errands held out here', also: 'the tray\'s 全部 › — 事 › 其他 (or 目标, when it serves the stage)' },
   duel: { close: 'own', attr: 'data-panel-exit', reopen: ['data-card-back', 'data-duel-start'], visible: true,
     what: 'a fight: a story fight\'s 留 · ✕ (cards.js passOut); a haunt\'s beast puts away with the page\'s ✕', away: (c, look) => look?.place?.encounter?.game?.id === c.id },
   board: { close: 'own', attr: 'data-board-close', reopen: ['data-play', 'data-kept-open'], visible: true, what: 'every board: the shell\'s 留 · ✕ (games/shell.js outHtml)' },
-  tale: { close: 'own', attr: 'data-board-close', reopen: ['data-book'], visible: true, what: '传闻\'s step: its board\'s shell ✕, a riddle\'s 留 · ✕', also: '事 › 传闻' },
+  tale: { close: 'own', attr: 'data-board-close', reopen: ['data-book'], visible: true, what: '传闻\'s step: its board\'s shell ✕, a riddle\'s 留 · ✕', also: 'the tray\'s 全部 › — 事 › 其他 · 传闻' },
   lundao: { close: 'away', scope: 'place', chip: true, reopen: ['data-card-back'], visible: true, what: '论道 offered or under way' },
   duizi: { close: 'away', scope: 'place', chip: true, reopen: ['data-card-back', 'data-duizi-open'], visible: true, what: '对对子', also: 'the tray\'s 对对子 row' },
   quest: { close: 'none', why: 'the search\'s step on this very spot: the line under his feet, its own answer on the card' },
@@ -81,7 +81,7 @@ export const STAGE = {
    chip that opens it again. `file`: where the root is drawn. `transient`: a toast or a moment, with why it needs no
    way back. */
 export const OVERLAYS = {
-  book: { root: 'bookpop', file: 'cards.js', close: 'data-pop-close', reopen: 'data-book', esc: true, outside: true, what: '事' },
+  book: { root: 'bookpop', file: 'cards.js', close: 'data-pop-close', reopen: 'data-book', esc: true, outside: true, what: '事 — the whole list; the tray\'s 「全部 ›」 and every tray card open it (data-agenda-at)' },
   ledger: { root: 'ledgerpop', file: 'cards.js', close: 'data-pop-close', reopen: 'data-ledger', esc: true, outside: true, what: '恩仇录' },
   shelf: { root: 'shelfpop', file: 'lingjing.js', close: 'data-pop-close', reopen: 'data-shelf', esc: true, outside: true, what: '书' },
   roads: { root: 'roadspop', file: 'lingjing.js', close: 'data-pop-close', reopen: 'data-roads', esc: true, outside: true, what: '去往 (and a held road\'s lock)' },

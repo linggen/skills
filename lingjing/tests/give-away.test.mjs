@@ -9,10 +9,10 @@ const row = { id: 'xu-ahe-lixi', title: '阿禾的利息', who: '阿禾', tag: '
   away: { who: '阿禾' }, where: { id: 'fangshi', name: '沉鼎山下 · 坊市' } };
 const pop = (look) => bookPopHtml({ look: { book: [row], place: { id: 'shimen' }, ...look }, words: WORDS.zh, lang: 'zh' });
 
-test('done, its giver elsewhere: under 已接, not 可交, and the tap walks there', () => {
+test('done, its giver elsewhere: in hand, not to hand in (no 交N), and the tap walks there', () => {
   const html = pop({ director: { corridor: false } });
-  assert.doesNotMatch(html, /可交 · /);
-  assert.match(html, /已接 · 1/);
+  assert.doesNotMatch(html, /bookrow trow ready/);
+  assert.match(html, /data-agenda-group="other"[\s\S]*data-agenda="errand:xu-ahe-lixi"/);
   assert.match(html, /<button class="act go" data-go="fangshi">去沉鼎山下 · 坊市<\/button>/);
   assert.doesNotMatch(html, /交给阿禾/, 'no chip dressed as a button');
 });

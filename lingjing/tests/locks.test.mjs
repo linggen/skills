@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { WORDS, bookChipHtml, cardHtml } from '../scripts/cards.js';
+import { WORDS, allChipHtml, cardHtml } from '../scripts/cards.js';
 import { lint, loadContent } from '../scripts/content.mjs';
 import { lockedOf, migrate, newState } from '../scripts/state.mjs';
 import { VERBS, look, progress, resolve } from '../scripts/rules.mjs';
@@ -103,7 +103,7 @@ test('a prologue save: Look carries no realm, 修为, 灵石, coins, chores, 开
 test('the page draws none of it: no 事 chip (闭关 only on an empty pool), no coins filling an empty stage', () => {
   const l = look(masan(), content, ctx());
   const c = { look: l, lang: 'zh', words: WORDS.zh, qi: { st: 'empty' } };
-  assert.equal(bookChipHtml(c, false, false), '');
+  assert.equal(allChipHtml(c), '');
   const empty = cardHtml({ card: 'empty' }, c);
   assert.match(empty, /体力|灵气/);
   // 闭关 on a spent pool stands behind every gate (Hanli 11-02: 体力 comes back only in 闭关) — one tap away.
@@ -161,7 +161,7 @@ test('after the gate every system is there: realm, 灵石, chores, 开府, the �
   assert.ok(l.quests.some(q => q.id === 'health-workout'), 'the workout');
   assert.ok(l.book.some(b => b.chore), 'chores ride the book');
   assert.equal(l.kaifu.of, 2);
-  assert.notEqual(bookChipHtml({ look: l, lang: 'zh', words: WORDS.zh }, false, false), '');
+  assert.notEqual(allChipHtml({ look: l, lang: 'zh', words: WORDS.zh }), '');
   assert.equal(VERBS.divine(s, content, ctx(), {}).result.ok, true);
   assert.equal(VERBS.task(s, content, ctx(), { action: 'check', id: 'health-workout' }).result.ok, true);
   assert.equal(VERBS.quest(s, content, ctx(), { action: 'kaifu' }).result.ok, true);

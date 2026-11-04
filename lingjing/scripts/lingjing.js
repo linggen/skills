@@ -34,7 +34,7 @@ import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml } fro
 import { since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
-import { gameOpen, popX, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookChipHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, threadsAt, asideOpens, doorLine, trayHourChipHtml } from './cards.js';
+import { gameOpen, popX, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookPopHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, threadsAt, asideOpens, doorLine, trayHourChipHtml } from './cards.js';
 import { ownSkip } from './stuck.js';
 import { fullOfferHtml, pouchHtml, spoilGearHtml } from './pouch.js';
 import { fantongKailu, kailuDockHtml, potLeft, potOff, potRuns } from './fantong-kailu.js';
@@ -881,7 +881,7 @@ function capGo(bar, w) {
   // Already in the story scene that goes on (Look's capped.story.here): nothing to send him to — a quiet mark, no tap
   // (Hanli 11-03: 「走剧情的时候…走剧情按钮会怎么处理?」).
   if (c.story?.here) return `<span class="capgo is-here" title="${esc(title)}">${esc(w.capIn)}</span>`;
-  return `<button class="capgo" data-book title="${esc(title)}" aria-label="${esc(title)}">${esc(w.capGo)}</button>`;
+  return `<button class="capgo" data-book data-book-at="group:main" title="${esc(title)}" aria-label="${esc(title)}">${esc(w.capGo)}</button>`;
 }
 
 /// How far past the full mark the 修为 stands, as a share of the bar (0 when it is not; at most the whole bar).
@@ -1515,10 +1515,12 @@ const FOOT_CHIPS = {
   // The 时辰 and when its three change (rules/pool.mjs), beside the sky.
   hour: () => trayHourChipHtml(ctx()),
   books: () => shelfChipHtml(),
-  errands: (slots) => `<span class="errands">${bookChipHtml(ctx(), view.bookOpen, view.bookFresh)}${moreHtml(slots)}</span>`,
+  // No 「事 N」 chip (Hanli 2026-11-04): 事 opens from the tray's 「全部 ›」 and every way that named it; the list itself stands
+  // over the stage from here, and the queue's 「还有 N 件 ›」 keeps its place.
+  more: (slots) => `<span class="errands">${view.bookOpen ? bookPopHtml(ctx()) : ''}${moreHtml(slots)}</span>`,
   bag: () => gearChipHtml(ctx(), view.gearOpen),
 };
-const IN_A_FIGHT = new Set(['errands', 'bag']);
+const IN_A_FIGHT = new Set(['more', 'bag']);
 function footChipsHtml(slots) {
   const head = headLook(), has = (part) => (!bout || IN_A_FIGHT.has(part)) && stands(head, part);
   return FOOTER.filter(has).map((part) => FOOT_CHIPS[part](slots)).join('');
@@ -1988,7 +1990,7 @@ function draw() {
   // What already stands on the stage is not listed again in the tray (Hanli, 2026-10-05: the 九宫格 twice).
   // A scene's own game is not at hand before its passage reaches it (his, 2026-10-14: 接雨 in the tray at load).
   const gamesAhead = storyAhead() ? (look.scene?.show ?? []).filter((c) => c.card === 'board').map((c) => c.id) : [];
-  $('tray').innerHTML = !solo && stands(headLook(), 'tray') ? awayChipsHtml(view.awayNow, { look, name: awayName }) + trayHtml({ ...ctx(), onStage: [...(slots?.main ?? []).map((c) => c.id).filter(Boolean), ...gamesAhead], stageKeys: (slots?.main ?? []).flatMap((c) => [c.card, `${c.card}:${c.id ?? ''}`]), trayQueued: view.opened && trayAhead() ? view.opened.id : null }) : '';
+  $('tray').innerHTML = !solo && stands(headLook(), 'tray') ? awayChipsHtml(view.awayNow, { look, name: awayName }) + trayHtml({ ...ctx(), bookOpen: view.bookOpen, bookFresh: view.bookFresh, onStage: [...(slots?.main ?? []).map((c) => c.id).filter(Boolean), ...gamesAhead], stageKeys: (slots?.main ?? []).flatMap((c) => [c.card, `${c.card}:${c.id ?? ''}`]), trayQueued: view.opened && trayAhead() ? view.opened.id : null }) : '';
   $('tray').parentElement.hidden = !$('tray').innerHTML;
   // Redrawn while Ling takes up a tap, the button stays pressed — never
   // offered to be tapped again.
@@ -3952,7 +3954,8 @@ function sayTap(spoken, e) {
    it was for. */
 const busy = (key, fn) => () => run(key, fn);
 const CLICKS = [
-  ['[data-book]', () => { show({ bookOpen: !view.bookOpen, ...othersShut('bookOpen') }); if (view.bookOpen) loadKaifu(); }],
+  // 事 — the whole list. `data-book-at`: open at that item or group (the cap chip at 主线), never shut by it.
+  ['[data-book]', (el) => openBook(el.dataset.bookAt ?? null, !el.dataset.bookAt)],
   ['[data-roads]', () => show({ roadsOpen: !view.roadsOpen, ...othersShut('roadsOpen') })],
   ['[data-shop-close]', () => { show({ shopShut: look?.place?.id ?? null, kanjiaPick: false }); return true; }],
   ['[data-shop-open]', () => { show({ shopShut: null }); return true; }],
@@ -3998,7 +4001,7 @@ const CLICKS = [
   ['[data-board-close]', (el) => closeBoard(el.dataset.boardClose)],
   ['[data-board-keep]', (el) => keepGame(el.dataset.boardKeep)],
   // 收着的棋局 (cards.js keptGroupHtml): the tray's chip opens the 事 book at the list; 玩 takes one up, 丢 lets it go.
-  ['[data-kept-open]', () => { show({ bookOpen: true, ...othersShut('bookOpen') }); requestAnimationFrame(() => document.getElementById('kept-group')?.scrollIntoView?.({ block: 'nearest' })); }],
+  ['[data-kept-open]', () => openBook('kept:kept')],
   ['[data-kept-play]', (el) => { run(`kept:${el.dataset.keptPlay}`, () => keptTap(el.dataset.keptPlay, 'kept-play')); return true; }],
   ['[data-kept-drop]', (el) => { run(`kept:${el.dataset.keptDrop}`, () => keptTap(el.dataset.keptDrop, 'kept-drop')); return true; }],
   ['[data-told-on]', (el) => toldGone(el.dataset.toldOn)],
@@ -4154,6 +4157,8 @@ const CLICKS = [
   ['[data-reroll]', () => rerollTap()],
   ['[data-g]', (el) => gameMove(el)],
   ['[data-tile]', (el) => tileTap(el)],
+  // A tray card tapped off its buttons (every button above took its own tap first): 事, scrolled to that item.
+  ['[data-agenda-at]', (el) => openBook(el.dataset.agendaAt)],
 ];
 // A game that runs in time (a module with `tick`: 暴雨, 射鹿, 洗髓, 小周天) is
 // stepped and held here; its win goes the way a tapped win does.
@@ -4215,6 +4220,24 @@ document.addEventListener('click', (e) => {
 /// page's own note — no chat message, no turn, nothing sent.
 function noOne() {
   show({ doNote: words().noOne });
+}
+
+/* 事 opened (Hanli 2026-11-04: the tray and the book are one list): `at` an item's key (`kind:id`) or a group
+   (`group:main`), scrolled into view and lit a moment; `toggle` — 全部 tapped again shuts it. */
+function openBook(at = null, toggle = false) {
+  const open = toggle ? !view.bookOpen : true;
+  show({ bookOpen: open, ...othersShut('bookOpen') });
+  if (!open) return;
+  loadKaifu();
+  if (!at) return;
+  requestAnimationFrame(() => {
+    const [kind, id] = at.split(':');
+    const el = kind === 'group' ? document.querySelector(`.bookpop [data-agenda-group="${CSS.escape(id)}"]`) : document.querySelector(`.bookpop [data-agenda="${CSS.escape(at)}"]`);
+    if (!el) return;
+    el.scrollIntoView?.({ block: 'nearest' });
+    el.classList.add('lit');
+    setTimeout(() => el.classList.remove('lit'), 1600);
+  });
 }
 
 /* The engine's `allowance_spent` (or a side session's refused line, npc-ask.js SPENT): the turn is over, and the card

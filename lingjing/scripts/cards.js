@@ -18,6 +18,7 @@ import { mijingCardHtml } from './mijing.js';
 import { gongkeBits, gongkeMarksHtml } from './gongke.js';
 import { qianCardHtml } from './qian-card.js';
 import { closeX, withCloseX } from './card-close.js';
+import { agendaLook, agendaReady } from './rules/agenda.mjs';
 /// 秘境探险 (rules/mijing.mjs, Look's `mijing`): its own module draws it (scripts/mijing.js).
 const mijing = (card, ctx) => mijingCardHtml(card, ctx);
 
@@ -57,6 +58,7 @@ export const WORDS = {
     // 手边的棋局 (rules/tray.mjs): a game's name where the rules give none, what is left by its unit, the walk there.
     trayName: { duizi: '对对子', seclusion: '闭关', divine: '问签', errands: '执事堂差事', mijing: '秘境', chance: '机缘', fantong: '饭桶', yaoshou: '妖兽出没' },
     trayLeft: { night: '第{n}潮', batch: '这一批 {n}/{of}', couplets: '今日 {n} 联', rounds: '今日 {n} 回', errands: '{n} 件', keys: '秘境令 ×{n}', ends: '还剩 {t}', today: '今日可用', tomorrow: '明日上山' },
+    agendaAll: '全部 ›', agendaAllTip: '事 · 全部 {n} 件', agendaMain: '主线', agendaGoal: '目标 · {step}', agendaGoalBare: '目标', agendaOther: '其他', agendaServes: '{step} ↑', agendaAim: '{what} · {name}',
     trayGo: '去{name} ›', trayOpen: '开局', trayKe: '{n} 刻', trayShi: '{n} 时辰',
     // 小游戏池 (rules/pool.mjs): the 时辰 in the head, when the next three come; all played; 体力 spent.
     shichen: ['子时', '丑时', '寅时', '卯时', '辰时', '巳时', '午时', '未时', '申时', '酉时', '戌时', '亥时'], trayHour: '{hour} · {n} 分换一批', trayHourTip: '{next}换一批',
@@ -86,7 +88,7 @@ export const WORDS = {
     scrollLayer: '第{n}层 · {name}', scrollDaily: '今日功课：{what}',
     spentTrial: '免费额度用完了', spentMonthly: '本月额度用完了', spentHow: '订阅，或者用自己的模型，故事就接着走。', spentSubscribe: '订阅', spentOwn: '用自己的模型', spentAt: '订阅请到 linggen.dev', spentPhone: '用自己的模型，故事就接着走。', spentClose: '稍后',
     notDone: '这一下没成，稍后再点。', fightRefused: '这一战没记上，牌还在原处。', fightBack: '回到这一战',
-    needVia: '先去{name}', roadTitle: '路上', refused: { gone: '来迟了，机缘已散', 'nothing-here': '路上已无事', 'already-taken': '已经接下了', 'already-done': '这件已经了结', 'not-posted': '今日的榜文已换', 'not-here': '不在这里', 'not-done': '还没办完', 'not-in-bag': '囊中没有', 'not-for-sale-here': '这里不卖', 'not-bought-here': '这里不收', 'no-companion': '还没有人可以佩戴它', 'in-a-fight': '斗法未完', 'won-already': '已经赢过了', 'subdued-today': '今日已降', 'riddle-closed': '答错两回，这道谜明日再来', 'not-today': '今日的功课不是这件', 'unknown-place': '找不到这个地方', 'wrong-answer': '答得不对', 'not-this-step': '这一步已经过了', busy: '稍等片刻', 'bag-full': '储物袋已满，先卖或丢一样', 'xw-full': '修为圆满，破境之后再服', 'pouch-used': '这样的储物袋你已经换上了', worn: '先卸下再丢', 'story-keep': '剧情要用，先留着', 'worn-elsewhere': '一件只能戴在一处，先卸下', 'not-wearable': '这件戴不上', 'not-held': '洞府里没有这样东西', 'value-invalid': '这个名字用不了', 'not-open': '这一件还没开' }, goalTitle: '眼下要做的', goalGo: '去{name} ›', goalWork: '可做：{name} · {what}', goalBeast: '可做：{name}的{what}今日还未降', offersTitle: '可接的差事 · {place}', gearChip: '物品', deckNew: '新 {n}', deckFresh: '新', gearEmpty: '—', gearSlots: { weapon: '法器', robe: '法衣', pendant: '佩', treasure: '本命法宝', abode: '洞府' }, gearHer: '{name}佩着', gearMe: '你', gearHerSlot: '{name} · {slot}', gearGive: '给{name} · {slot}', gearOffHer: '从{name}身上卸下', herCard: '{name}的牌 {atk}/{hp}', herRealm: '随{realm} +{atk}/+{hp}', herGift: '第{n}鼎 · {name}：{does}', gearFight: '斗法里：{what}', saveConflicts: '云端存档已覆盖此处；这里的改动另存了一份。', noOne: '查无此人。', gearPower: '主灵根一击 +{n}', gearArmor: '护体 {n}', gearWard: '抗{el} {n}', gearCharm: '{name}在手', gearLends: '借{el}', gearTo: '戴上 · {slot}', gearOff: '卸下', cardsTitle: '牌 · {n}', cardsNote: '圆圈里是出牌要的灵力。亮的是出战的十张，点一张换上或取下；小队里别人的牌由他们自己出。', cardsDealt: '圆圈里是出牌要的灵力。亮的是出战的十张，按灵根配好；结丹之后可以自己组牌。', cardsPicked: '十张都是你选的。', cardsShort: '你选了 {mine} 张，还差 {short} 张，出战时按灵根补齐（虚线）。', cardsAuto: '恢复自动', cardsHand: '在手', cardsMember: '{name}的牌，由{name}出', cardsOff: '灵根不合，修不得这门功法', bookChip: '事', mortal: '凡人', roads: '或往', roadsChip: '去往', shelfChip: '书', capSeal: '候', bookDue: '交{n}', workAt: '{name}有差事', chanceTitle: '机缘 · {place}', chanceChip: '有机缘', chanceLeft: '还剩 {t}', chanceHM: '{h} 时 {m} 分', chanceM: '{m} 分', chanceHere: '就在此处', chanceLine: '此地灵机正盛，过时不候。', chanceWhat: '那里灵机正盛，赶到便可收下，过时不候。', chanceTake: '收 下', trialTitle: '抉择', trialWon: '成了', trialLost: '失手', trialChance: '{n}% 把握', trialHard: { easy: '易', fair: '中', hard: '难' }, trialStake: { wound: '失手折体力', coin: '失手破财' }, trialHurt: '体力 −{n}', trialPoorer: '灵石 −{n}', findTitle: '拾遗', findTake: '收下 · {what}', findPass: '不取', bookReady: '可交 {n}', bookNone: '手上无事', kaifuTitle: '开府 · {n}/{of}', kaifuPaid: '已记', kaifuDone: '已圆满', kaifuPaidN: '已记 {n} 件', tags: { stage: '阶段', errand: '差事', once: '一次', day: '每日', week: '每周', month: '每月', ling: '令', tale: '传闻', chance: '机缘', visitor: '摊' }, groupReady: '可交 · {n}', groupHeld: '已接 · {n}', groupOpen: '可接 · {n}', groupDone: '已交 {n}', kaifuHead: '开府 {n}/{of}', kaifuAll: '全部交差 · {n}', kaifuOnPhone: '在手机上做', kaifuOnMac: '在 Mac 上做', kaifuAskHer: '问问她', kaifuTalk: '跟她说', kaifuGo: '去看看', kaifuTomorrow: '还有 {n} 件 · 明日再揭一件，做了随时可交', kaifuCount: '{n}/{of}', turnedDone: '已交 ✓', book: '手上的事', take: '接 下', took: '已接下', takeErrand: '接下差事：{title}', queueMore: '还有 {n} 件', queueNext: '下一件：{what}', queueWhat: '还有：{what}', queueCap: 20, queueKinds: { handed: '所得', quest: '剧情', road: '路上', offer: '差事', duel: '斗法', tale: '传闻', lundao: '论道', board: '功课', creature: '图鉴', codex: '图鉴', meet: '图鉴', item: '货架', map: '地图', hexagram: '签', traits: '灵根', treasure: '法宝', gate: '关隘', tribulation: '天劫', building: '绘制', empty: '丹田', replay: '再试', next: '下一步', mijing: '秘境探险' }, turnIn: '交 差', giveTo: '交给{who}', closeAway: '合上', sayQuestAbout: '说说{title}', needAt: '在{name}', needHere: '就在此处',
+    needVia: '先去{name}', roadTitle: '路上', refused: { gone: '来迟了，机缘已散', 'nothing-here': '路上已无事', 'already-taken': '已经接下了', 'already-done': '这件已经了结', 'not-posted': '今日的榜文已换', 'not-here': '不在这里', 'not-done': '还没办完', 'not-in-bag': '囊中没有', 'not-for-sale-here': '这里不卖', 'not-bought-here': '这里不收', 'no-companion': '还没有人可以佩戴它', 'in-a-fight': '斗法未完', 'won-already': '已经赢过了', 'subdued-today': '今日已降', 'riddle-closed': '答错两回，这道谜明日再来', 'not-today': '今日的功课不是这件', 'unknown-place': '找不到这个地方', 'wrong-answer': '答得不对', 'not-this-step': '这一步已经过了', busy: '稍等片刻', 'bag-full': '储物袋已满，先卖或丢一样', 'xw-full': '修为圆满，破境之后再服', 'pouch-used': '这样的储物袋你已经换上了', worn: '先卸下再丢', 'story-keep': '剧情要用，先留着', 'worn-elsewhere': '一件只能戴在一处，先卸下', 'not-wearable': '这件戴不上', 'not-held': '洞府里没有这样东西', 'value-invalid': '这个名字用不了', 'not-open': '这一件还没开' }, goalTitle: '眼下要做的', goalGo: '去{name} ›', goalWork: '可做：{name} · {what}', goalBeast: '可做：{name}的{what}今日还未降', offersTitle: '可接的差事 · {place}', gearChip: '物品', deckNew: '新 {n}', deckFresh: '新', gearEmpty: '—', gearSlots: { weapon: '法器', robe: '法衣', pendant: '佩', treasure: '本命法宝', abode: '洞府' }, gearHer: '{name}佩着', gearMe: '你', gearHerSlot: '{name} · {slot}', gearGive: '给{name} · {slot}', gearOffHer: '从{name}身上卸下', herCard: '{name}的牌 {atk}/{hp}', herRealm: '随{realm} +{atk}/+{hp}', herGift: '第{n}鼎 · {name}：{does}', gearFight: '斗法里：{what}', saveConflicts: '云端存档已覆盖此处；这里的改动另存了一份。', noOne: '查无此人。', gearPower: '主灵根一击 +{n}', gearArmor: '护体 {n}', gearWard: '抗{el} {n}', gearCharm: '{name}在手', gearLends: '借{el}', gearTo: '戴上 · {slot}', gearOff: '卸下', cardsTitle: '牌 · {n}', cardsNote: '圆圈里是出牌要的灵力。亮的是出战的十张，点一张换上或取下；小队里别人的牌由他们自己出。', cardsDealt: '圆圈里是出牌要的灵力。亮的是出战的十张，按灵根配好；结丹之后可以自己组牌。', cardsPicked: '十张都是你选的。', cardsShort: '你选了 {mine} 张，还差 {short} 张，出战时按灵根补齐（虚线）。', cardsAuto: '恢复自动', cardsHand: '在手', cardsMember: '{name}的牌，由{name}出', cardsOff: '灵根不合，修不得这门功法', bookChip: '事', mortal: '凡人', roads: '或往', roadsChip: '去往', shelfChip: '书', capSeal: '候', bookDue: '交{n}', workAt: '{name}有差事', chanceTitle: '机缘 · {place}', chanceChip: '有机缘', chanceLeft: '还剩 {t}', chanceHM: '{h} 时 {m} 分', chanceM: '{m} 分', chanceHere: '就在此处', chanceLine: '此地灵机正盛，过时不候。', chanceWhat: '那里灵机正盛，赶到便可收下，过时不候。', chanceTake: '收 下', trialTitle: '抉择', trialWon: '成了', trialLost: '失手', trialChance: '{n}% 把握', trialHard: { easy: '易', fair: '中', hard: '难' }, trialStake: { wound: '失手折体力', coin: '失手破财' }, trialHurt: '体力 −{n}', trialPoorer: '灵石 −{n}', findTitle: '拾遗', findTake: '收下 · {what}', findPass: '不取', bookReady: '可交 {n}', bookNone: '手上无事', kaifuTitle: '开府 · {n}/{of}', kaifuPaid: '已记', kaifuDone: '已圆满', kaifuPaidN: '已记 {n} 件', tags: { stage: '阶段', errand: '差事', once: '一次', day: '每日', week: '每周', month: '每月', ling: '令', tale: '传闻', chance: '机缘', visitor: '摊', main: '主线', board: '棋局', play: '日常', aim: '修炼' }, groupReady: '可交 · {n}', groupHeld: '已接 · {n}', groupOpen: '可接 · {n}', groupDone: '已交 {n}', kaifuHead: '开府 {n}/{of}', kaifuAll: '全部交差 · {n}', kaifuOnPhone: '在手机上做', kaifuOnMac: '在 Mac 上做', kaifuAskHer: '问问她', kaifuTalk: '跟她说', kaifuGo: '去看看', kaifuTomorrow: '还有 {n} 件 · 明日再揭一件，做了随时可交', kaifuCount: '{n}/{of}', turnedDone: '已交 ✓', book: '手上的事', take: '接 下', took: '已接下', takeErrand: '接下差事：{title}', queueMore: '还有 {n} 件', queueNext: '下一件：{what}', queueWhat: '还有：{what}', queueCap: 20, queueKinds: { handed: '所得', quest: '剧情', road: '路上', offer: '差事', duel: '斗法', tale: '传闻', lundao: '论道', board: '功课', creature: '图鉴', codex: '图鉴', meet: '图鉴', item: '货架', map: '地图', hexagram: '签', traits: '灵根', treasure: '法宝', gate: '关隘', tribulation: '天劫', building: '绘制', empty: '丹田', replay: '再试', next: '下一步', mijing: '秘境探险' }, turnIn: '交 差', giveTo: '交给{who}', closeAway: '合上', sayQuestAbout: '说说{title}', needAt: '在{name}', needHere: '就在此处',
     taleKept: '已解开 · 体力回来便记上', taleDuel: '降了{name}，此事便了', taleWhere: '{game} · {who}', taleRiddle: '点选作答', handedTitle: '交差 · {title}', handedNext: '接下来 · {title}', handedWait: '下一步 · {title} — 手上已满，了一件再去{at}接', needKinds: { subdue: '降', tame: '驯', carry: '带', visit: '到', board: '成', answer: '答', chore: '做' }, goalWait: '{title} · {opens} 开', goalOpen: '{title} · 未开', goalGate: '鼎气要{step} · {progress} 修为才受得住', goalStage: '阶段任务 · 修炼到{step}', gateShort: '还差 {n} 修为', gateGo: '去修炼', gateGoAt: '去修炼 · {name}', stageTitle: '阶段任务 · {step}', stageMet: '已圆满 · 交差领赏', stageBack: '补发 · 先前过的{n}件阶段任务（{steps}）', stageBackPaid: '灵石 +{n} 已到账', stageDone: '阶段任务 · {step}', stageWork: '{name}长修为', goalNow: '如今 {step} · {progress}/{of}', goalNowDuan: '如今 {step} {progress}/{of}', goalGrow: '功课、传闻、斗法，都长修为',
     // At the 回's cap (Look's `capped`, rules/cap.mjs; Hanli 11-03): the top bar's chip in place of the count, the goal's mark, the pill card.
     capGo: '走剧情破境 ›', capIn: '圆满 · 剧情中', capGoTitle: '{xw} {progress}/{of} · {say}', capMark: '破境在此', capHere: '剧情就在此处 · {place}', effProgressCapped: '{xw}已到这一回的顶，服下不起作用 · 走剧情破了境再服',
@@ -124,6 +126,7 @@ export const WORDS = {
     keptWin: 'Won — counted once stamina is back', emptyNoPlay: 'Stamina spent: a win here would not count yet.', emptyShut: 'Stamina spent', waitShi: 'back in about {n} h', waitKe: 'back in about {n} min',
     trayName: { duizi: 'Couplets', seclusion: 'Seclusion', divine: 'Draw a stick', errands: "Stewards' errands", mijing: 'The hidden realm', chance: 'A chance', fantong: 'Rice Bucket', yaoshou: 'Beasts about' },
     trayLeft: { night: 'tide {n}', batch: 'this batch {n}/{of}', couplets: '{n} today', rounds: '{n} rounds today', errands: '{n} waiting', keys: 'keys ×{n}', ends: '{t} left', today: 'open today', tomorrow: 'up tomorrow' },
+    agendaAll: 'All ›', agendaAllTip: 'Tasks · all {n}', agendaMain: 'Story', agendaGoal: 'Goal · {step}', agendaGoalBare: 'Goal', agendaOther: 'Other', agendaServes: '{step} ↑', agendaAim: '{what} · {name}',
     trayGo: 'Go to {name} ›', trayOpen: 'Play', trayKe: '{n} min', trayShi: '{n} h',
     shichen: ['Rat hour', 'Ox hour', 'Tiger hour', 'Hare hour', 'Dragon hour', 'Snake hour', 'Horse hour', 'Goat hour', 'Monkey hour', 'Rooster hour', 'Dog hour', 'Boar hour'], trayHour: '{hour} · new three in {n} min', trayHourTip: 'New three at {next}',
     trayAllPlayed: "All of this hour's played · back at {next}", trayRest: 'In seclusion · stamina full in about {n} min', trayRestOut: 'Stamina spent · seclusion fills it in about {n} min', trayRestUp: 'Seclude', trayRestFeed: 'Feed the Rice Bucket',
@@ -152,7 +155,7 @@ export const WORDS = {
     scrollLayer: 'Layer {n} · {name}', scrollDaily: "Today's practice: {what}",
     spentTrial: 'Your free tokens are used up', spentMonthly: 'This month\'s tokens are used up', spentHow: 'Subscribe, or use your own model, and the story goes on.', spentSubscribe: 'Subscribe', spentOwn: 'Use your own model', spentAt: 'Subscribe at linggen.dev', spentPhone: 'Use your own model, and the story goes on.', spentClose: 'Later',
     notDone: 'That did not go through — tap again in a moment.', fightRefused: 'This fight was not recorded; its card is still here.', fightBack: 'Back to the fight',
-    needVia: 'by way of {name}', roadTitle: 'On the road', refused: { gone: 'Too late — it is gone', 'nothing-here': 'Nothing on the road now', 'already-taken': 'Already taken', 'already-done': 'Already done', 'not-posted': "Today's notice has changed", 'not-here': 'Not here', 'not-done': 'Not done yet', 'not-in-bag': 'Not in the bag', 'not-for-sale-here': 'Not sold here', 'not-bought-here': 'Not bought here', 'no-companion': 'No one to wear it yet', 'in-a-fight': 'A fight is still open', 'won-already': 'Already won', 'subdued-today': 'Beaten today', 'riddle-closed': 'Missed twice — try it again tomorrow', 'not-today': "Not today's chore", 'unknown-place': 'No such place', 'wrong-answer': 'Not that one', 'not-this-step': 'That step has passed', busy: 'One moment', 'bag-full': 'The pouch is full — sell or drop something first', 'xw-full': 'Cultivation is full — take it after you break through', 'pouch-used': 'You already carry a pouch like that', worn: 'Take it off first', 'story-keep': 'The story needs it — keep it', 'worn-elsewhere': 'One thing is worn in one place — take it off first', 'not-wearable': 'That cannot be worn', 'not-held': 'Nothing like that waits at the abode', 'value-invalid': 'That name will not do', 'not-open': 'Not open yet' }, goalTitle: 'What waits', goalGo: 'Go to {name} ›', goalWork: 'To do: {name} · {what}', goalBeast: 'To do: {what} at {name}, not yet met today', offersTitle: 'Errands to take · {place}', gearChip: 'Items', deckNew: '{n} new', deckFresh: 'new', gearEmpty: '—', gearSlots: { weapon: 'Weapon', robe: 'Robe', pendant: 'Pendant', treasure: 'Treasure', abode: 'the abode' }, gearHer: '{name} wears', gearMe: 'You', gearHerSlot: '{name} · {slot}', gearGive: 'Give {name} · {slot}', gearOffHer: 'Take it off {name}', herCard: "{name}'s card {atk}/{hp}", herRealm: 'grown with {realm} +{atk}/+{hp}', herGift: 'Cauldron {n} · {name}: {does}', gearFight: 'In a fight: {what}', saveConflicts: 'The cloud save replaced this one; changes made here were kept as a copy.', noOne: 'No one answers.', gearPower: 'Root Strike +{n}', gearArmor: 'Shield {n}', gearWard: 'wards {el} {n}', gearCharm: '{name} in hand', gearLends: 'lends {el}', gearTo: 'Wear · {slot}', gearOff: 'Take off', cardsTitle: 'Cards · {n}', cardsNote: 'The circle is the Force a card costs. Lit: the ten you fight with — tap one to put it in or take it out; a party member\'s card is theirs to play.', cardsDealt: 'The circle is the Force a card costs. Lit: the ten you fight with, dealt by your roots; from the Core on you pick your own.', cardsPicked: 'All ten are yours.', cardsShort: '{mine} picked; {short} more are filled by your roots when you fight (dashed).', cardsAuto: 'Let the roots choose', cardsHand: 'in hand', cardsMember: "{name}'s — {name} plays it", cardsOff: 'a spell of a root you lack', bookChip: 'Tasks', mortal: 'Mortal', roads: 'Or on to', roadsChip: 'Go to', shelfChip: 'Books', capSeal: 'wait', bookDue: '{n} due', workAt: 'Work to be had at {name}', chanceTitle: 'A chance · {place}', chanceChip: 'a chance', chanceLeft: '{t} left', chanceHM: '{h}h {m}m', chanceM: '{m}m', chanceHere: 'right here', chanceLine: 'Something is stirring here — it will not wait.', chanceWhat: 'Something stirs there — reach it in time and it is yours.', chanceTake: 'Take it', trialTitle: 'A choice', trialWon: 'done', trialLost: 'it went wrong', trialChance: '{n}% likely', trialHard: { easy: 'easy', fair: 'fair', hard: 'hard' }, trialStake: { wound: 'failing costs stamina', coin: 'failing costs coin' }, trialHurt: 'Stamina −{n}', trialPoorer: 'Stones −{n}', findTitle: 'By the road', findTake: 'Take it · {what}', findPass: 'Leave it', bookReady: '{n} to hand in', bookNone: 'Nothing in hand', kaifuTitle: 'Setting up · {n}/{of}', kaifuPaid: 'counted', kaifuDone: 'complete', kaifuPaidN: '{n} counted', tags: { stage: 'Stage', errand: 'Errand', once: 'Once', day: 'Daily', week: 'Weekly', month: 'Monthly', ling: 'Pass', tale: 'Rumor', chance: 'Chance', visitor: 'Stall' }, groupReady: 'To hand in · {n}', groupHeld: 'In hand · {n}', groupOpen: 'To take · {n}', groupDone: 'Handed in {n}', kaifuHead: 'Setting up {n}/{of}', kaifuAll: 'Hand in all · {n}', kaifuOnPhone: 'Do it on your phone', kaifuOnMac: 'Do it on the Mac', kaifuAskHer: 'Ask her', kaifuTalk: 'Talk to her', kaifuGo: 'Open it', kaifuTomorrow: '{n} more · one more shows tomorrow; hand in any done', kaifuCount: '{n}/{of}', turnedDone: 'Handed in ✓', book: 'In hand', take: 'Take it', took: 'Taken', takeErrand: 'Take the errand: {title}', queueMore: '{n} more', queueNext: 'Next: {what}', queueWhat: 'Next: {what}', queueCap: 28, queueKinds: { handed: 'Spoils', quest: 'The story', road: 'On the road', offer: 'Errand', duel: 'A fight', tale: 'Rumor', lundao: 'Debate', board: 'Practice', creature: 'Codex', codex: 'Codex', meet: 'Codex', item: 'Wares', map: 'Map', hexagram: 'Stick', traits: 'Roots', treasure: 'Treasure', gate: 'Pass', tribulation: 'Tribulation', building: 'Painting', empty: 'Dantian', replay: 'Again', next: 'Next', mijing: 'Realm run' }, turnIn: 'Hand it in', giveTo: 'For {who}', closeAway: 'Close', sayQuestAbout: 'Tell me about {title}', needAt: 'at {name}', needHere: 'right here',
+    needVia: 'by way of {name}', roadTitle: 'On the road', refused: { gone: 'Too late — it is gone', 'nothing-here': 'Nothing on the road now', 'already-taken': 'Already taken', 'already-done': 'Already done', 'not-posted': "Today's notice has changed", 'not-here': 'Not here', 'not-done': 'Not done yet', 'not-in-bag': 'Not in the bag', 'not-for-sale-here': 'Not sold here', 'not-bought-here': 'Not bought here', 'no-companion': 'No one to wear it yet', 'in-a-fight': 'A fight is still open', 'won-already': 'Already won', 'subdued-today': 'Beaten today', 'riddle-closed': 'Missed twice — try it again tomorrow', 'not-today': "Not today's chore", 'unknown-place': 'No such place', 'wrong-answer': 'Not that one', 'not-this-step': 'That step has passed', busy: 'One moment', 'bag-full': 'The pouch is full — sell or drop something first', 'xw-full': 'Cultivation is full — take it after you break through', 'pouch-used': 'You already carry a pouch like that', worn: 'Take it off first', 'story-keep': 'The story needs it — keep it', 'worn-elsewhere': 'One thing is worn in one place — take it off first', 'not-wearable': 'That cannot be worn', 'not-held': 'Nothing like that waits at the abode', 'value-invalid': 'That name will not do', 'not-open': 'Not open yet' }, goalTitle: 'What waits', goalGo: 'Go to {name} ›', goalWork: 'To do: {name} · {what}', goalBeast: 'To do: {what} at {name}, not yet met today', offersTitle: 'Errands to take · {place}', gearChip: 'Items', deckNew: '{n} new', deckFresh: 'new', gearEmpty: '—', gearSlots: { weapon: 'Weapon', robe: 'Robe', pendant: 'Pendant', treasure: 'Treasure', abode: 'the abode' }, gearHer: '{name} wears', gearMe: 'You', gearHerSlot: '{name} · {slot}', gearGive: 'Give {name} · {slot}', gearOffHer: 'Take it off {name}', herCard: "{name}'s card {atk}/{hp}", herRealm: 'grown with {realm} +{atk}/+{hp}', herGift: 'Cauldron {n} · {name}: {does}', gearFight: 'In a fight: {what}', saveConflicts: 'The cloud save replaced this one; changes made here were kept as a copy.', noOne: 'No one answers.', gearPower: 'Root Strike +{n}', gearArmor: 'Shield {n}', gearWard: 'wards {el} {n}', gearCharm: '{name} in hand', gearLends: 'lends {el}', gearTo: 'Wear · {slot}', gearOff: 'Take off', cardsTitle: 'Cards · {n}', cardsNote: 'The circle is the Force a card costs. Lit: the ten you fight with — tap one to put it in or take it out; a party member\'s card is theirs to play.', cardsDealt: 'The circle is the Force a card costs. Lit: the ten you fight with, dealt by your roots; from the Core on you pick your own.', cardsPicked: 'All ten are yours.', cardsShort: '{mine} picked; {short} more are filled by your roots when you fight (dashed).', cardsAuto: 'Let the roots choose', cardsHand: 'in hand', cardsMember: "{name}'s — {name} plays it", cardsOff: 'a spell of a root you lack', bookChip: 'Tasks', mortal: 'Mortal', roads: 'Or on to', roadsChip: 'Go to', shelfChip: 'Books', capSeal: 'wait', bookDue: '{n} due', workAt: 'Work to be had at {name}', chanceTitle: 'A chance · {place}', chanceChip: 'a chance', chanceLeft: '{t} left', chanceHM: '{h}h {m}m', chanceM: '{m}m', chanceHere: 'right here', chanceLine: 'Something is stirring here — it will not wait.', chanceWhat: 'Something stirs there — reach it in time and it is yours.', chanceTake: 'Take it', trialTitle: 'A choice', trialWon: 'done', trialLost: 'it went wrong', trialChance: '{n}% likely', trialHard: { easy: 'easy', fair: 'fair', hard: 'hard' }, trialStake: { wound: 'failing costs stamina', coin: 'failing costs coin' }, trialHurt: 'Stamina −{n}', trialPoorer: 'Stones −{n}', findTitle: 'By the road', findTake: 'Take it · {what}', findPass: 'Leave it', bookReady: '{n} to hand in', bookNone: 'Nothing in hand', kaifuTitle: 'Setting up · {n}/{of}', kaifuPaid: 'counted', kaifuDone: 'complete', kaifuPaidN: '{n} counted', tags: { stage: 'Stage', errand: 'Errand', once: 'Once', day: 'Daily', week: 'Weekly', month: 'Monthly', ling: 'Pass', tale: 'Rumor', chance: 'Chance', visitor: 'Stall', main: 'Story', board: 'Board', play: 'Daily', aim: 'Train' }, groupReady: 'To hand in · {n}', groupHeld: 'In hand · {n}', groupOpen: 'To take · {n}', groupDone: 'Handed in {n}', kaifuHead: 'Setting up {n}/{of}', kaifuAll: 'Hand in all · {n}', kaifuOnPhone: 'Do it on your phone', kaifuOnMac: 'Do it on the Mac', kaifuAskHer: 'Ask her', kaifuTalk: 'Talk to her', kaifuGo: 'Open it', kaifuTomorrow: '{n} more · one more shows tomorrow; hand in any done', kaifuCount: '{n}/{of}', turnedDone: 'Handed in ✓', book: 'In hand', take: 'Take it', took: 'Taken', takeErrand: 'Take the errand: {title}', queueMore: '{n} more', queueNext: 'Next: {what}', queueWhat: 'Next: {what}', queueCap: 28, queueKinds: { handed: 'Spoils', quest: 'The story', road: 'On the road', offer: 'Errand', duel: 'A fight', tale: 'Rumor', lundao: 'Debate', board: 'Practice', creature: 'Codex', codex: 'Codex', meet: 'Codex', item: 'Wares', map: 'Map', hexagram: 'Stick', traits: 'Roots', treasure: 'Treasure', gate: 'Pass', tribulation: 'Tribulation', building: 'Painting', empty: 'Dantian', replay: 'Again', next: 'Next', mijing: 'Realm run' }, turnIn: 'Hand it in', giveTo: 'For {who}', closeAway: 'Close', sayQuestAbout: 'Tell me about {title}', needAt: 'at {name}', needHere: 'right here',
     taleKept: 'Solved · counted once your stamina is back', taleDuel: 'Subdue {name} and it is done', taleWhere: '{game} · {who}', taleRiddle: 'Tap an answer', handedTitle: 'Handed in · {title}', handedNext: 'Next · {title}', handedWait: 'Next · {title} — your hands are full; finish one, then take it at {at}', needKinds: { subdue: 'subdue', tame: 'tame', carry: 'carry', visit: 'reach', board: 'finish', answer: 'answer', chore: 'do' }, goalWait: '{title} · opens {opens}', goalOpen: '{title} · not open yet', goalGate: 'The cauldron asks {step} · {progress} cultivation', goalStage: 'Stage quest · cultivate to {step}', gateShort: '{n} cultivation to go', gateGo: 'Go cultivate', gateGoAt: 'Cultivate · {name}', stageTitle: 'Stage quest · {step}', stageMet: 'Full · hand it in', stageBack: 'Back pay · {n} stage quests passed before ({steps})', stageBackPaid: '+{n} spirit stones, already paid', stageDone: 'Stage quest · {step}', stageWork: 'cultivation at {name}', goalNow: 'Now {step} · {progress}/{of}', goalNowDuan: 'Now {step} {progress}/{of}', goalGrow: 'Practice, rumors and fights all raise it',
     capGo: 'Story next ›', capIn: 'Full · in the story', capGoTitle: '{xw} {progress}/{of} · {say}', capMark: 'your breakthrough is here', capHere: 'The story is right here · {place}', effProgressCapped: "{xw} is at this chapter's top — it does nothing now · follow the story, take it after you break through",
   },
@@ -1217,41 +1220,126 @@ function chanceRow(ctx) {
     pays: c.here ? w.chanceLine : w.chanceWhat, act: go, cls: ` chance${left <= 30 ? ' soon' : ''}`, expand: false }, ctx);
 }
 
-export function bookChipHtml(ctx, open, fresh) {
-  // Before the prologue's gate (Look's `locked`) there is no 事 at all — not a greyed chip (his, 2026-09-28) —
-  // unless 开府 opened at an earlier gate (Hanli, 2026-10-22: on meeting 银月): then the chip holds 一次 alone.
+/// 「全部 ›」 — the tray's last chip (Hanli 2026-11-04: the footer's 「事 N」 is gone, the tray is the head of the one list):
+/// a tap opens 事, the whole list; what can be handed in rides on it as a seal-red 「交N」, never behind a click.
+/// Before the prologue's gate (Look's `locked`) there is no 事 at all — unless 开府 opened at an earlier gate (Hanli,
+/// 2026-10-22: on meeting 银月): then it holds 一次 alone.
+export function allChipHtml(ctx) {
   if (shut(ctx.look, 'errands') && !ctx.look?.kaifu) return '';
-  const book = ctx.look?.book ?? [], w = ctx.words, lucky = chanceLeft(ctx.look?.chance) ? 1 : 0;
-  if (!book.length && !lucky && !ctx.look?.waypoint && !ctx.look?.kaifu && !ctx.look?.stage_quest && !capStoryOf(ctx.look)) return '';
-  // A 开府 milestone done and unpaid is one more to hand in — the chip says so.
-  const ready = book.filter((q) => q.ready && !q.away).length + (ctx.look?.kaifu?.ready ?? 0);
-  const n = book.length + lucky;
-  // Short on the footer (Hanli, 2026-10-15: the chip broke onto two lines): 「事 3」 and what can be
-  // handed in as a seal-red count on it — still never behind a click; the whole line is its title.
-  const title = [`${w.bookChip}${n ? ` ${n}` : ''}`, ready ? say(w.bookReady, { n: ready }) : '', lucky ? w.chanceChip : ''].filter(Boolean).join(' · ');
+  const items = agendaOf(ctx.look), w = ctx.words, lucky = chanceLeft(ctx.look?.chance) ? 1 : 0;
+  if (!items.length) return '';
+  const ready = agendaReady(items);
+  const title = [say(w.agendaAllTip, { n: items.length }), ready ? say(w.bookReady, { n: ready }) : '', lucky ? w.chanceChip : ''].filter(Boolean).join(' · ');
   const due = ready ? `<b class="due">${esc(say(w.bookDue, { n: ready }))}</b>` : lucky ? '<i class="dot" aria-hidden="true"></i>' : '';
-  return `<span class="bookwrap"><button class="bookchip${ready ? ' ready' : ''}${lucky ? ' lucky' : ''}${fresh ? ' fresh' : ''}" data-book aria-expanded="${open ? 'true' : 'false'}" title="${esc(title)}">${esc(`${w.bookChip}${n ? ` ${n}` : ''}`)}${due}</button>${open ? bookPopHtml(ctx) : ''}</span>`;
+  return `<button class="bookchip allchip${ready ? ' ready' : ''}${lucky ? ' lucky' : ''}${ctx.bookFresh ? ' fresh' : ''}" data-book aria-expanded="${ctx.bookOpen ? 'true' : 'false'}" title="${esc(title)}">${esc(w.agendaAll)}${due}</button>`;
 }
 
-/// What the chip opens (Hanli, 2026-10-15: 「给每个差事一个tag, 就不用分section了」):
-/// the goal in one line, then every task — an errand of the world, a 一次 setup step,
-/// a 每日/每周 chore of his apps — one row each with its tag, grouped by state only:
-/// 可交 → 已接 → 可接, and 「▸ 已交 n」 folded. An empty group is not drawn.
+/* Look's `agenda` (rules/agenda.mjs): ONE ordered list, 主线 · 目标 · 其他, each item a reference to where its facts are. */
+/* A Look without it (one drawn by hand, a test's): the same rule read off what it does carry. */
+export const agendaOf = (look) => look?.agenda ?? (look ? agendaLook(null, null, look, look.tray ?? []) : []);
+export const AGENDA_GROUPS = ['main', 'goal', 'other'];
+/* The item's key on its first element: the tray card and the 事 row of one item carry the same `data-agenda`. */
+const keyed = (html, key, at = false) => (html ? html.replace(/^(\s*<[a-z]+[^>]*)>/i, `$1 data-agenda="${esc(key)}"${at ? ` data-agenda-at="${esc(key)}"` : ''}>`) : '');
+/* 「练气五层 ↑」 — a repeatable that serves the stage quest (the item's `serves`, the rules' fact; the words the page's). */
+const servesHtml = (i, w) => (i?.serves ? ` <b class="serves">${esc(say(w.agendaServes, { step: i.serves }))}</b>` : '');
+
+/* The goal line — 「眼下要做的 · …」 and ONE tap toward it (Hanli 10-28: 「显示当下要做的是去秘境, 但是无法点击进入秘境」): the next
+   road, else the place, never where he stands, never while the world is held (a 秘境探险 run) or a cauldron waits on the peak.
+   The province only when it is not the one he stands in (live, 2026-10-15: 「→ 断崖下 · 徐州」 inside the 秘境). */
+function goalHeadHtml(ctx) {
+  const g = ctx.look?.waypoint, w = ctx.words;
+  if (!g) return capHead(ctx);
+  const away = g.province && g.province !== ctx.look?.place?.province?.name ? g.province : '';
+  const where = g.place ? `${g.place.name}${away ? ` · ${away}` : ''}` : away;
+  const here = ctx.look?.place?.id, goTo = !g.held && !g.gate ? (g.toward ?? (g.place?.id && g.place.id !== here ? g.place : null)) : null;
+  return `<div class="bookgoal th-main"><span class="lbl">${esc(w.goalTitle)}</span> <span>${esc(goalText(ctx))}</span>${capMark(ctx)}${where ? ` <span class="small dim">→ ${esc(where)}</span>` : ''}${goTo ? ` <button class="act go quiet" data-go="${esc(goTo.id)}">${esc(say(w.goalGo, { name: goTo.name }))}</button>` : ''}
+    ${g.gate ? `<div class="small dim">${esc(nowSay(g.gate.now, ctx))} · ${esc(w.goalGrow)}</div>` : ''}</div>`;
+}
+
+/* Each kind of item, drawn as a row of the 事 view from Look's own facts; `ctx.compact` — the same row as a tray card. */
+const lifeOf = (look, id) => (look.quests ?? []).find((q) => q.id === id);
+const bookOf = (look, id) => (look.book ?? []).find((q) => q.id === id);
+const AGENDA_ROW = {
+  way: (i, ctx) => goalHeadHtml(ctx),
+  here: (i, ctx) => capHead(ctx),
+  // Leading (the stage quest holds the story): the goal line rides under it, in the 事 view only.
+  stage: (i, ctx) => stageRow(ctx.look, ctx) + (i.way && !ctx.compact ? goalHeadHtml(ctx) : ''),
+  task: (i, ctx) => { const t = (ctx.look.tasks ?? []).find((x) => x.id === i.id); return t ? boardRowHtml(t, i, ctx) : ''; },
+  tray: (i, ctx) => { const e = (ctx.look.tray ?? []).find((x) => x.id === i.id); return e ? trayRowHtml(e, ctx) : ''; },
+  kept: (i, ctx) => (ctx.compact ? keptChipHtml(ctx) : keptGroupHtml(ctx)),
+  errand: (i, ctx) => { const q = bookOf(ctx.look, i.id); return q ? errandRow(q, ctx) : ''; },
+  chore: (i, ctx) => { const q = bookOf(ctx.look, i.id); return q?.chore ? choreRow(q, lifeOf(ctx.look, q.id), ctx) : ''; },
+  chance: (i, ctx) => chanceRow(ctx),
+  kaifu: (i, ctx) => { const k = ctx.look.kaifu; return ctx.compact ? kaifuCardHtml(k, ctx) : kaifuGroup(k, kaifuRows(k, turnedNow(ctx), ctx), ctx); },
+  offer: (i, ctx) => { const o = (ctx.look.offers ?? []).find((x) => x.id === i.id); return o ? offerRow(o, ctx) : ''; },
+  work: (i, ctx) => workRowHtml(ctx),
+  visitor: (i, ctx) => { const v = (ctx.look.visitors ?? []).find((x) => (x.place?.id ?? x.say) === i.id); return v ? visitorRowHtml(v, ctx) : ''; },
+  aim: (i, ctx) => aimRowHtml(ctx),
+};
+const turnedNow = (ctx) => (ctx.turned && Date.now() - ctx.turned.at <= TURNED_MS ? ctx.turned : null);
+/* One item as its 事 row (or, `compact`, its tray card's body), its serving mark on its line. */
+export function agendaRowHtml(i, ctx) {
+  const draw = AGENDA_ROW[i.kind];
+  return draw ? draw(i, { ...ctx, rowMark: servesHtml(i, ctx.words) }) : '';
+}
+
+/* A story board (or an errand's, a hosted one) as a 事 row: its title, and 开局 when it can be played. */
+function boardRowHtml(t, i, ctx) {
+  const w = ctx.words, play = t.kind === 'board' && t.status === 'offered' && !t.won;
+  const act = play ? `<button class="act" data-play="${esc(t.id)}"${boardShut(t, ctx) ? ` disabled title="${esc(w.emptyNoPlay)}"` : ''}>${esc(t.light && t.open ? w.playOn : t.game && t.game !== 'lianliankan' ? w.playGame : w.play)}</button>` : '';
+  return taskRow({ id: `task-${t.id}`, tag: i.group === 'main' ? 'main' : 'board', title: t.title, meta: t.won ? w.keptWin : '', act, expand: false, thread: i.group === 'main' ? 'main' : null }, ctx);
+}
+/* A tray entry (a game beside the story, a cooldown) as a 事 row: what it is, what is left and where, its one button. */
+function trayRowHtml(e, ctx) {
+  const w = ctx.words, title = e.title ?? w.trayName[e.id] ?? w.trayName[e.kind] ?? e.id;
+  const open = e.act === 'open' && TRAY_OPEN[e.opens];
+  const act = open ? `<button class="act" ${open(e)}>${esc(e.resume ? w.playOn : w.trayOpen)}</button>`
+    : e.act === 'go' ? `<button class="act go" data-go="${esc(e.go.id)}">${esc(say(w.trayGo, { name: e.go.name }))}</button>` : '';
+  const cool = e.seg === 'cool', meta = [trayMeta(e, ctx), cool ? waitWords(waitLeft(e), ctx) : ''].filter(Boolean).join(' · ');
+  return taskRow({ id: `tray-${e.id}`, tag: 'play', title, meta, act, expand: false, cls: cool ? ' waits cool' : e.seg === 'notice' ? ' waits' : '' }, ctx);
+}
+/* 执事堂's work a walk away: 「{name}有差事」 and the walk. */
+function workRowHtml(ctx) {
+  const work = ctx.look.work, w = ctx.words;
+  if (!work || work.here) return '';
+  return taskRow({ id: 'work', tag: 'errand', title: say(w.workAt, { name: work.place.name }), meta: (work.titles ?? []).join(' · '), act: bookGo(say(w.go, { name: work.place.name }), work.place.id, ctx), expand: false }, ctx);
+}
+/* A visiting shop: on its day, a row with the walk there; else when it comes, dimmed. */
+function visitorRowHtml(st, ctx) {
+  const w = ctx.words, go = st.today && st.place.id !== ctx.look.place?.id ? bookGo(say(w.go, { name: st.place.name }), st.place.id, ctx) : '';
+  return taskRow({ id: `visitor-${st.place.id}`, tag: 'visitor', title: st.say, act: go, cls: st.today ? '' : ' waits', expand: false }, ctx);
+}
+/* What the stage quest's work points at, when nothing in the tray or the book stands for it: 「赤狐 · 上山路」 and the walk. */
+function aimRowHtml(ctx) {
+  const k = ctx.look.stage_quest?.work, w = ctx.words;
+  if (!k?.place) return '';
+  const act = k.here ? '' : bookGo(say(w.go, { name: k.place.name }), k.place.id, ctx);
+  return taskRow({ id: 'aim', tag: 'aim', title: say(w.agendaAim, { what: (k.titles ?? []).join(' · '), name: k.here ? w.needHere : k.place.name }), act, expand: false }, ctx);
+}
+/* 开府 as a tray card: 「开府 3/7」 and, done rows waiting, its one 交差 for all. */
+function kaifuCardHtml(k, ctx) {
+  if (!k) return '';
+  const w = ctx.words, all = k.ready ? `<button class="act do" data-do="turn" data-id="kaifu">${esc(k.ready > 1 ? say(w.kaifuAll, { n: k.ready }) : w.turnIn)}</button>` : '';
+  return `<div class="bookrow trow${k.ready ? ' ready' : ''}"><span class="tag t-once">${esc(w.tags?.once ?? 'once')}</span><div class="tmain"><div class="tline"><b>${esc(say(w.kaifuHead, { n: k.done, of: k.of }))}</b></div></div><div class="tact">${all}</div></div>`;
+}
+
+/// 事 — the whole list (Hanli 2026-11-04: the tray and the 事 book are ONE list at two sizes): 主线, 目标, 其他, each item
+/// once, in Look's order (rules/agenda.mjs) — the tray shows its head. A row keeps its details and pay as before; a hand-in
+/// just tapped stays a moment at the top of 其他, and 「▸ 已交 n」 is folded at the end. An empty group is not drawn.
 export function bookPopHtml(ctx) {
-  const g = ctx.look?.waypoint, w = ctx.words, groups = taskGroups(ctx);
-  // The province only when it is not the one he stands in (live, 2026-10-15: 「→ 断崖下 · 徐州」 inside the 秘境).
-  const away = g?.province && g.province !== ctx.look?.place?.province?.name ? g.province : '';
-  const where = g?.place ? `${g.place.name}${away ? ` · ${away}` : ''}` : away;
-  // …and ONE tap toward it (Hanli 10-28: 「显示当下要做的是去秘境, 但是无法点击进入秘境」): the next road, else the place, never where he
-  // stands, never while the world is held (a 秘境探险 run) or a cauldron waits on the peak.
-  const here = ctx.look?.place?.id, goTo = g && !g.held && !g.gate ? (g.toward ?? (g.place?.id && g.place.id !== here ? g.place : null)) : null;
-  const head = g ? `<div class="bookgoal th-main"><span class="lbl">${esc(w.goalTitle)}</span> <span>${esc(goalText(ctx))}</span>${capMark(ctx)}${where ? ` <span class="small dim">→ ${esc(where)}</span>` : ''}${goTo ? ` <button class="act go quiet" data-go="${esc(goTo.id)}">${esc(say(w.goalGo, { name: goTo.name }))}</button>` : ''}
-    ${g.gate ? `<div class="small dim">${esc(nowSay(g.gate.now, ctx))} · ${esc(w.goalGrow)}</div>` : ''}</div>` : capHead(ctx);
-  const group = (key, rows) => (rows.length ? `<div class="tgroup ${key}"><div class="thead small dim">${esc(say(w[key], { n: rows.length }))}</div>${rows.join('')}</div>` : '');
-  const body = group('groupReady', groups.ready) + group('groupHeld', groups.held) + kaifuGroup(ctx.look?.kaifu, groups.kaifu, ctx) + group('groupOpen', groups.open) + keptGroupHtml(ctx) + doneFold(groups.done, w);
-  // 人间功课's marks — the 护山大阵, the week's rows, the day against its cap — over the chores (Look's `gongke`, from 入门 on).
-  const marks = gongkeMarksHtml(ctx.look?.gongke, ctx.lang);
-  return `<div class="bookpop" role="dialog">${popX(ctx.lang)}${head}${marks}${body || (head ? '' : `<div class="small dim">${esc(w.bookNone)}</div>`)}</div>`;
+  const w = ctx.words, look = ctx.look ?? {}, items = agendaOf(look), turned = turnedNow(ctx);
+  const sq = look.stage_quest, goalHead = sq?.step ? say(w.agendaGoal, { step: sq.step }) : w.agendaGoalBare;
+  const heads = { main: w.agendaMain, goal: goalHead, other: w.agendaOther };
+  // 人间功课's marks — the 护山大阵, the week's rows, the day against its cap — over the first chore (Look's `gongke`, from 入门 on).
+  const marks = gongkeMarksHtml(look.gongke, ctx.lang), firstChore = items.find((i) => i.kind === 'chore')?.key;
+  const body = AGENDA_GROUPS.map((g) => {
+    const rows = items.filter((i) => i.group === g && !(turned && i.id === turned.id))
+      .map((i) => (i.key === firstChore && marks ? marks : '') + keyed(agendaRowHtml(i, ctx), i.key)).filter(Boolean);
+    if (g === 'other' && turned) rows.unshift(turnedRow(turned, ctx));
+    return rows.length ? `<div class="tgroup agroup g-${g}" data-agenda-group="${g}"><div class="thead small dim">${esc(heads[g])}</div>${rows.join('')}</div>` : '';
+  }).join('');
+  const done = doneFold(doneRows(ctx), w);
+  return `<div class="bookpop agendapop" role="dialog">${popX(ctx.lang)}${body}${done}${body || done ? '' : `<div class="small dim">${esc(w.bookNone)}</div>`}</div>`;
 }
 
 /* 收着的棋局 (Look's `kept`, rules/skips.mjs keepBoard): each board he kept — its title, where and when — 玩 takes it up,
@@ -1276,38 +1364,10 @@ function capHead(ctx) {
   return `<div class="bookgoal th-main"><span class="lbl">${esc(w.goalTitle)}</span> <span>${esc(say(w.capHere, { place: s.place?.name ?? '' }))}</span>${capMark(ctx)}</div>`;
 }
 
-/* The rows by state. Read from Look alone (book, quests, kaifu, offers, work,
-   chance) plus the page's `kaifu` read for the 一次 steps skipped and since done,
-   and `turned` — a hand-in just tapped, which stays in place a moment saying what
-   it paid, then goes to 已交. */
-function taskGroups(ctx) {
-  const look = ctx.look ?? {}, w = ctx.words, quests = look.quests ?? [];
-  const lifeOf = (id) => quests.find((q) => q.id === id);
-  const turned = ctx.turned && Date.now() - ctx.turned.at <= TURNED_MS ? ctx.turned : null;
-  const out = { ready: [], held: [], open: [], done: [], kaifu: [] };
-  if (turned) out.ready.push(turnedRow(turned, ctx));
-  for (const q of look.book ?? []) {
-    if (q.id === turned?.id) continue;
-    // Done but its giver elsewhere is still in hand (已接), never 可交 — nothing to hand in from here.
-    (q.ready && !q.away ? out.ready : out.held).push(q.chore ? choreRow(q, lifeOf(q.id), ctx) : errandRow(q, ctx));
-  }
-  // 开府: its own group (bookPopHtml kaifuGroup) — every done row to hand in, the hints revealed, the count on its own line.
-  out.kaifu = kaifuRows(look.kaifu, turned, ctx);
-  // 阶段任务 (rules/gates.mjs): the layer the 回's next stage waits on, its 修为 toward it, and the walk to where it is earned.
-  const st = stageRow(look, ctx);
-  if (st) (look.stage_quest.met ? out.ready : out.held).push(st);
-  // 补发 is paid as the save loads (rules/gates.mjs settleStages): never a row to claim, it stands with 已交.
-  // 可接: a chance on the road, the errands offered here, and work a walk away.
-  const lucky = chanceRow(ctx);
-  if (lucky) out.open.push(lucky);
-  for (const o of look.offers ?? []) out.open.push(offerRow(o, ctx));
-  const work = look.work;
-  if (work && !work.here) out.open.push(taskRow({ id: 'work', tag: 'errand', title: say(w.workAt, { name: work.place.name }), meta: (work.titles ?? []).join(' · '), act: bookGo(say(w.go, { name: work.place.name }), work.place.id, ctx), expand: false }, ctx));
-  // A visiting shop: on its day, a row with the walk there; else when it comes, dimmed.
-  for (const st of look.visitors ?? []) {
-    const go = st.today && st.place.id !== look.place?.id ? bookGo(say(w.go, { name: st.place.name }), st.place.id, ctx) : '';
-    out.open.push(taskRow({ id: `visitor-${st.place.id}`, tag: 'visitor', title: st.say, act: go, cls: st.today ? '' : ' waits', expand: false }, ctx));
-  }
+/* 「▸ 已交 n」's rows: today's chores counted, the 一次 steps handed in (the page's `kaifu` read), the stages paid, and those
+   settled by themselves on a load (补发 is paid as the save loads, rules/gates.mjs settleStages — never a row to claim). */
+function doneRows(ctx) {
+  const look = ctx.look ?? {}, w = ctx.words, quests = look.quests ?? [], out = {};
   // 已交: today's chores counted and the 一次 steps handed in.
   out.done = [
     ...quests.filter((q) => q.paid && q.period !== 'once').map((q) => ({ tag: periodTag(q.period), title: q.title, device: q.device, stamp: gongkeBits(look.gongke?.rows?.find((r) => r.id === q.id), ctx.lang).stamp })),
@@ -1315,7 +1375,7 @@ function taskGroups(ctx) {
     ...(look.stages_paid ?? []).map((step) => ({ tag: 'stage', title: say(w.stageDone, { step }) })),
     ...(look.stage_back ? [{ tag: 'stage', title: say(w.stageBack, { n: look.stage_back.n, steps: look.stage_back.steps.join(w.listSep) }), stamp: say(w.stageBackPaid, { n: look.stage_back.wealth }) }] : []),
   ];
-  return out;
+  return out.done;
 }
 
 /// 阶段任务: 「阶段任务 · 练气四层圆满」 with where he stands (520/660) and, short of it, one tap to the work
@@ -1339,9 +1399,10 @@ function stageRow(look, ctx) {
 /// `thread` — 主线 · 人物线 · 杂务 (design.md § 剧情 × 开放世界): the row's colour, gold · silver · grey,
 /// a line down its left edge; the tag says what kind of task, the thread whose story it is.
 function taskRow({ id, tag, device, title, who, meta, steps = null, pays, paysHtml = '', act = "", ready = false, cls = "", expand = true, detail = null, attr = "data-bookrow", thread = null }, ctx) {
+  expand = expand && !ctx.compact;
   const w = ctx.words, open = expand && (ctx.bookRow === id || ctx.offerRow === id);
   const tap = expand ? ` ${attr}="${esc(id)}" role="button" tabindex="0" aria-expanded="${open}"` : '';
-  const line = `${device ? `<span class="device">${esc(deviceMark(device))}</span> ` : ''}<b>${esc(title)}</b>${who ? ` <span class="small dim">· ${esc(who)}</span>` : ''}${meta ? ` <span class="small dim tmeta">${esc(meta)}</span>` : ''}`;
+  const line = `${device ? `<span class="device">${esc(deviceMark(device))}</span> ` : ''}<b>${esc(title)}</b>${ctx.rowMark ?? ''}${who ? ` <span class="small dim">· ${esc(who)}</span>` : ''}${meta ? ` <span class="small dim tmeta">${esc(meta)}</span>` : ''}`;
   return `<div class="bookrow trow${ready ? ' ready' : ''}${open ? ' open' : ''}${thread ? ` th-${esc(thread)}` : ''}${cls}"${tap}>
     <span class="tag t-${esc(tag)}">${esc(w.tags?.[tag] ?? tag)}</span>
     <div class="tmain"><div class="tline">${line}</div>${steps ? stepsHtml(steps) : ''}${paysHtml ? `<div class="small tpay">${paysHtml}</div>` : pays ? `<div class="small tpay">${esc(pays)}</div>` : ''}</div>
@@ -2094,9 +2155,10 @@ function trayRestHtml(ctx) {
 }
 const spent = (look) => Boolean(look?.stamina?.empty && !look.stamina.off);
 
-/// 手边的棋局 — one row (Hanli 2026-11-02, the merge 「1,2 可以合并? 用边框颜色区分一下?」): what he can open here first —
-/// the 回's story boards (ink/gold), then the timed and daily games that open here (jade) — then those a walk away, a
-/// notice, and last the cooldowns back within hours, muted. Empty, one line.
+/// The tray — the head of 事's one list (Hanli 2026-11-04: 「托盘：[主线] [目标] [日常…] [全部 › 交6]」): the items Look marks
+/// `tray` (rules/agenda.mjs), in its order — the 主线 card (gold), 目标 (jade, 「练气五层 ↑」), then what can be played or
+/// handed in — and last 「全部 ›」, the whole list, with the 交N it holds. A card's own button does what it did; a tap
+/// elsewhere on it opens 事 at that item. What the stage already shows is not repeated (one place for one thing).
 export function trayHtml(ctx) {
   const look = ctx.look ?? {};
   // A board finished is not at hand: it leaves the tray (2026-10-01: 射鹿, 洗髓 stood there 已完成).
@@ -2104,15 +2166,12 @@ export function trayHtml(ctx) {
   const shown = new Set(ctx.onStage ?? []);
   // The stage's cards by kind and by kind:id (ctx.stageKeys): a tray entry that names the card showing it is not repeated.
   const staged = new Set(ctx.stageKeys ?? []);
-  const games = (look.tray ?? []).filter((e) => !(e.stage && staged.has(e.stage)) && !(e.task && shown.has(e.task)));
-  // A task a tray entry stands for (兽潮, 切磋, 本王考考你) is drawn as that entry, never as a story board too.
-  const theirs = new Set((look.tray ?? []).map((e) => e.task).filter(Boolean));
+  const gameShows = (e) => !(e.stage && staged.has(e.stage)) && !(e.task && shown.has(e.task));
   // …nor a scene's later board while one before it is still to play (stage.mjs boardWaits).
   // …nor, the book set aside, the scene's own board: it waits for its passage (rules/aside.mjs).
   const own = (id) => Boolean(look.aside?.on) && (look.scene?.show ?? []).some((c) => c.card === 'board' && c.id === id) && !(look.tasks ?? []).some((t) => t.id === id && t.replay);
-  // …nor a practice board already played today: it comes round again tomorrow (Look's `played_today`; Hanli 10-28 on
-  // 「周衡 · 一个灯谜 · 今日已玩」: 「玩过一次怎么还有?」 — 10-27's 「今日已玩」 row, kept for a replay, read as a chore not done).
-  const tasks = (look.tasks || []).filter((t) => !theirs.has(t.id) && !t.played_today && t.status !== 'done' && !shown.has(t.id) && !(t.game && shown.has(t.game)) && !boardWaits(look, t.id) && !own(t.id)).map((t) => {
+  const taskShows = (t) => !t.played_today && t.status !== 'done' && !shown.has(t.id) && !(t.game && shown.has(t.game)) && !boardWaits(look, t.id) && !own(t.id);
+  const taskCard = (t) => {
     const state = t.status === 'done' ? 'done' : t.won ? 'won' : 'offered';
     const shut = state === 'offered' && boardShut(t, ctx);
     // 开局 tapped while the passage still plays: the board waits for it (lingjing.js trayAhead) — and says so on
@@ -2124,15 +2183,22 @@ export function trayHtml(ctx) {
     const tell = `<button class="act ask" ${askAttr(say(ctx.words.sayTask, { title: t.title }))}>${esc(ctx.words.about)}</button>`;
     return `<div class="card task plot ${state}"><div class="tasktitle">${esc(t.title)}</div>
       <div class="taskfoot"><span class="chip">${esc(state === 'won' ? ctx.words.keptWin : shut ? ctx.words.emptyShut : ctx.words[state])}</span>${act}${tell}</div></div>`;
-  });
-  // The apps' 功课 ride the book on the goal card now (design.md § 差事 ⑥). The rules ordered the rest (open · go · notice · cool).
-  // This 时辰's three all played (rules/pool.mjs): one line where they stood, before the cooldowns.
+  };
+  const card = (i) => {
+    if (i.kind === 'task') { const t = (look.tasks ?? []).find((x) => x.id === i.id); return t && taskShows(t) ? taskCard(t) : ''; }
+    if (i.kind === 'tray') { const e = (look.tray ?? []).find((x) => x.id === i.id); return e && gameShows(e) ? (e.seg === 'cool' ? trayCoolHtml(e, ctx) : trayGameHtml(e, ctx)) : ''; }
+    if (i.kind === 'kept') return keptChipHtml(ctx);
+    const body = agendaRowHtml(i, { ...ctx, compact: true, bookRow: null, offerRow: null });
+    return body ? `<div class="card task agenda g-${esc(i.group)}${i.ready ? ' ready' : ''}">${body}</div>` : '';
+  };
+  // Each card wears its item's key: a tap off its buttons opens 事 at that row (lingjing.js `data-agenda-at`).
+  const row = agendaOf(look).filter((i) => i.tray).map((i) => keyed(card(i), i.key, i.kind !== 'kept')).filter(Boolean);
+  // This 时辰's three all played (rules/pool.mjs): one line after what is at hand.
   const h = look.tray_hour, done = h?.drawn && h.played >= h.drawn
     ? `<div class="card task timed notice allplayed"><div class="small dim">${esc(say(ctx.words.trayAllPlayed, { next: ctx.words.shichen[(h.i + 1) % 12] }))}</div></div>` : '';
-  const live = games.filter((e) => e.seg !== 'cool').map((e) => trayGameHtml(e, ctx)), cooling = games.filter((e) => e.seg === 'cool').map((e) => trayCoolHtml(e, ctx));
-  const aside = asideHtml(ctx);
-  // 体力 spent: one card, the 闭关 that fills it (the story's boards wait on 体力 too).
-  if (spent(look) && !aside) return trayRestHtml(ctx);
-  const row = [...tasks, ...live, ...(done ? [done] : []), ...cooling];
-  return aside + keptChipHtml(ctx) + (row.length ? row.join('') : aside ? '' : `<div class="small dim trayempty">${esc(ctx.words.trayEmpty)}</div>`);
+  const all = allChipHtml(ctx), aside = asideHtml(ctx);
+  // 体力 spent: one card, the 闭关 that fills it (the story's boards wait on 体力 too) — and the whole list after it.
+  if (spent(look) && !aside) return trayRestHtml(ctx) + all;
+  const cards = [...row, ...(done ? [done] : [])];
+  return aside + (cards.length ? cards.join('') : aside ? '' : `<div class="small dim trayempty">${esc(ctx.words.trayEmpty)}</div>`) + all;
 }
