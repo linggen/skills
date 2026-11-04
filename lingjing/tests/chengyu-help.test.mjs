@@ -320,7 +320,7 @@ test('every word game\'s box goes through the keeper, and the free chat\'s too; 
   assert.equal((play.match(/<input class="g-jc-in" data-jc-in=""/g) ?? []).length, 4);
   const page = read('../scripts/games/jinchat.js');
   assert.match(page, /const \{ focus \} = focusKeeper\(\{ root, doc, touch, signal \}\);/);
-  assert.match(page, /const add = \(line\) => \{ g\.shown\.push\(line\); list\.add\(line\); focus\(\); \};/, 'after every line laid');
+  assert.match(page, /const add = \(line\) => \{ g\.shown\.push\(line\); g\.els\.push\(list\.add\(line\)\); focus\(\); \};/, 'after every line laid');
   assert.match(page, /setInterval\(\(\) => \{ list\.keepDown\(\); focus\(\); \}, 300\)/, 'and after the stage re-lays the card');
   assert.match(page, /<input class="g-jc-in" data-jc-in=""/);
   assert.match(page, /const touch = typeof data\.ask === 'function'/, 'the phone host is a touch screen');
