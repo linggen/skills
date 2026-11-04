@@ -244,8 +244,10 @@ export function play(content, player, { model = content.balance.model, ladder = 
     if (inside()) return false;
     const map = content.chapters[chapterOf()]?.map?.places;
     const ps = EV && map ? map.map(id => places.get(id)?.has?.pool).filter(Boolean) : [];
-    return ps.length > 0 && ps.every(p => evPools.has(p));
+    // A pool that stands (`stands`, world.mjs poolStands, 2026-11-04) is a plain haunt between batches: not batched.
+    return ps.length > 0 && ps.every(p => evPools.has(p) && !standsPool(p));
   };
+  const standsPool = id => Object.values(content.places).some(d => d.pools?.[id]?.stands === true);
   const E = { at: -Infinity, taken: 0, day: -1, n: 0 };
   const evToday = () => (E.day === day ? E.n : 0);
   const evShare = () => { const fall = content.balance.play_pay?.replay ?? [1]; return evToday() < EV.full ? 1 : fall[Math.min(evToday() - EV.full + 1, fall.length - 1)]; };

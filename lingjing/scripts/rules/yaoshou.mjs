@@ -31,7 +31,8 @@ export function yaoshouBatch(content, state, now) {
 }
 /* The share a fight at the event's pools pays now (1 elsewhere): the batch's day share × `fight_scale` (a whole batch pays
    as one play of the haunt table — about one 兽潮 night; tools/master.mjs derives it from `master.events.yaoshou`). */
-export const yaoshouShare = (content, state, place, now) => (yaoshouPlace(content, place) ? eventShare(content, state, YAOSHOU, now) * (ev(content).fight_scale ?? 1) : 1);
+// Between batches a pool that stands (world.mjs poolStands) is a plain haunt: its fight pays as any haunt's (1).
+export const yaoshouShare = (content, state, place, now) => (yaoshouPlace(content, place) && eventUp(content, state, YAOSHOU, now) ? eventShare(content, state, YAOSHOU, now) * (ev(content).fight_scale ?? 1) : 1);
 
 /* A fight settled at one of its pools: one taken; the last completes the batch. Mutates `state`. */
 export function yaoshouFought(content, state, place, now) {

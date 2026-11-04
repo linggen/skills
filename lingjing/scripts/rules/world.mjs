@@ -359,6 +359,11 @@ const caughtBy = (state, creature) => Boolean(creature.catch) && state.tasks?.[c
    不是早就收服了?」 — 药园外's pool kept dealing the 狰 asleep at his feet). */
 const poolOf = (content, place) => (place?.has?.pool ? content.places[place.province]?.pools?.[place.has.pool] ?? null : null);
 const huntKey = id => `hunt:${id}`;
+/* A pool that stands (`stands: true`, Hanli 11-04: 「攒修为可以让玩家去后山打怪吧?」): its beast is up whenever he is there —
+   between an event's batches (its own rest instead, `rest` · `rest_after`) and while a scene stands at the place, never
+   inside a key beat's lock. The batch, when one is up, is the event's (rules/yaoshou.mjs). */
+const poolStands = (content, place) => poolOf(content, place)?.stands === true;
+const standsAtScene = (content, state, place) => poolStands(content, place) && !lockOf(content, state) && !inMade(state);
 /* A beast beaten here does not stand up again at once (Hanli, 2026-10-15: 「野猪这个也是, 击败了
    出来还在」): the stretch is quiet for the pool's `rest` minutes (else balance.json
    `cooldowns.pool_rest_min`) after a win, then the next one comes. A loss or a beast run dry draws
@@ -373,7 +378,8 @@ const eventPool = (content, place) => Object.entries(content.balance?.events ?? 
 /* Milliseconds the stretch here still rests (0: a beast stands). */
 function poolRestLeft(content, state, place, now) {
   const ev = eventPool(content, place);
-  if (ev) return eventWait(content, state, ev, now);
+  if (ev && !poolStands(content, place)) return eventWait(content, state, ev, now);
+  if (ev && !eventWait(content, state, ev, now)) return 0;
   const rec = state.duels?.[huntKey(place.id)];
   if (!rec?.at || rec.outcome !== 'won' || rec.day !== dayKey(now)) return 0;
   if ((rec.streak ?? 1) < restAfter(content, place)) return 0;
@@ -386,7 +392,7 @@ const poolResting = (content, state, place, now) => poolRestLeft(content, state,
 function poolWait(content, state, now) {
   const place = placeOf(content, state.place);
   // An event's pool: its wait is the event's own row (rules/yaoshou.mjs yaoshouWait), never this one.
-  if (!place || place.has?.creature || !poolOf(content, place) || atScene(content, state) || eventPool(content, place)) return null;
+  if (!place || place.has?.creature || !poolOf(content, place) || (atScene(content, state) && !standsAtScene(content, state, place)) || (eventPool(content, place) && !poolStands(content, place))) return null;
   const left = poolRestLeft(content, state, place, now);
   if (!left) return null;
   const pool = poolOf(content, place), lang = state.lang;
@@ -497,9 +503,11 @@ const weighed = (c, o) => ({ ...c, ...(o.hp ? { hp: o.hp } : {}), ...(o.deck ? {
 const hauntsOf = (content, id) => allPlaces(content).filter(p => p.has?.creature === id || (poolOf(content, p)?.beasts ?? []).some(b => b.creature === id));
 
 /* An event pool's batch, on its encounter: `{ batch: { event, left, of } }` (none elsewhere). */
-function eventBatch(content, state, place) {
+function eventBatch(content, state, place, now) {
   const ev = eventPool(content, place), row = ev ? content.balance.events[ev] : null;
   if (!row?.batch) return {};
+  // Between batches a pool that stands deals a plain haunt's beast: no batch on it.
+  if (poolStands(content, place) && eventWait(content, state, ev, now) > 0) return {};
   // Never 0 while up (the last fight completes it): a save mid-batch from a bigger `batch` has its one fight.
   return { batch: { event: ev, left: Math.max(1, row.batch - (eventRec(state, ev)?.taken ?? 0)), of: row.batch } };
 }
@@ -508,7 +516,7 @@ function encounterOf(content, state, now) {
   // Inside a 秘境探险 run the room's beast (rules/mijing.mjs), and nothing else of the place.
   const mj = mijingEncounter(content, state, now);
   if (mj !== undefined) return mj;
-  if (place && !place.has?.creature && poolOf(content, place) && !atScene(content, state)) {
+  if (place && !place.has?.creature && poolOf(content, place) && (!atScene(content, state) || standsAtScene(content, state, place))) {
     if (poolResting(content, state, place, now)) return null;
     const cid = poolBeast(content, state, place, now);
     const creature = cid ? creatureOf(content, cid) : null;
@@ -523,7 +531,7 @@ function encounterOf(content, state, now) {
         ...(state.beasts?.[cid] ? {} : { new: true }),
         duel: duelBrief(content, state, game, now), won: false, withdrawn: false, tamed: false,
         // 妖兽出没 (rules/yaoshou.mjs): the batch this fight is of — how many are left of how many.
-        ...eventBatch(content, state, place),
+        ...eventBatch(content, state, place, now),
         // 「换一只」 (rules/match.mjs reroll): free once a visit, then its 体力.
         reroll: state.duels?.[huntKey(place.id)]?.day === dayKey(now) && state.duels[huntKey(place.id)].rerolled ? { free: false, cost: staminaCost(content, 'reroll') } : { free: true },
         beaten: Boolean(state.wins?.[game.id]), likes: null,
@@ -705,4 +713,4 @@ function fittingPlace(content, state, from) {
    opens when it ends. */
 const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { doorOf, eventPool, restAfter, fitLock, lockOf, roadsOf, meetBeast, poolTally, rememberAt, nightNow, poolUp, huntRules, poolResting, poolWait, guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { doorOf, eventPool, poolStands, restAfter, fitLock, lockOf, roadsOf, meetBeast, poolTally, rememberAt, nightNow, poolUp, huntRules, poolResting, poolWait, guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

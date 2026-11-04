@@ -19,13 +19,13 @@ import { isTide, shouchaoHere, shouchaoTray } from './shouchao.mjs';
 import { isBout, qiecuoHere, qiecuoTray } from './qiecuo.mjs';
 import { kaoHere } from './kao.mjs';
 import { aside as asideItem } from './tell.mjs';
-import { allPlaces, encounterOf, lockOf, placeOf, poolWait, sceneOf } from './world.mjs';
+import { allPlaces, encounterOf, lockOf, placeOf, poolStands, poolWait, sceneOf } from './world.mjs';
 import { gamesToday } from './rotation.mjs';
 import { errandWants, hostedHere } from './tasks.mjs';
 import { boardVaries, wonEver } from './pool.mjs';
 import { duiziBrief } from './duizi.mjs';
 import { visitorsTray } from './visiting.mjs';
-import { yaoshouPlace, yaoshouTray } from './yaoshou.mjs';
+import { yaoshouBatch, yaoshouPlace, yaoshouTray } from './yaoshou.mjs';
 
 /* What he is told when a verb would move the story while the book is set aside. */
 const HELD = {
@@ -100,7 +100,8 @@ export const PLAY_KINDS = [
     takes: (verb, args) => (verb === 'duel' && String(args.id ?? '').startsWith('haunt:')) || verb === 'tame' || verb === 'reroll' || verb === 'yaoshou',
     // A pool other than 妖兽出没's: its beast where he stands, or its rest (world.mjs poolWait).
     tray: (content, state, view, now) => {
-      if (yaoshouPlace(content, placeOf(content, state.place))) return [];
+      // …and between its batches, a pool that stands (world.mjs poolStands) is a plain haunt here.
+      if (yaoshouPlace(content, placeOf(content, state.place)) && (!poolStands(content, placeOf(content, state.place)) || yaoshouBatch(content, state, now)?.up)) return [];
       const e = encounterOf(content, state, now), w = poolWait(content, state, now);
       if (e?.pool) return [{ id: e.game.id, title: e.creature.name, places: [state.place], opens: 'duel', arg: e.game.id, stage: `duel:${e.game.id}` }];
       return w ? [{ ...w, places: [state.place] }] : [];

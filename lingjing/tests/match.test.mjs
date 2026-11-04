@@ -101,7 +101,7 @@ function fightThere(s, now, win) {
 import { lookahead } from '../scripts/fightline.js';
 import { tokenOf } from '../scripts/battle.js';
 
-test('妖兽出没 at the 后山 (2026-10-28): a batch of `events.yaoshou.batch` fights, won or lost, then the stretch rests `every_h`', () => {
+test('妖兽出没 at the 后山 (2026-10-28): a batch of `events.yaoshou.batch` fights, won or lost, then the next batch waits `every_h` — the stretch stands meanwhile, a plain haunt (2026-11-04)', () => {
   const ev = content.balance.events.yaoshou;
   let s = standFit(content, at('strong'), NOW), now = NOW;
   for (let k = 0; k < ev.batch; k += 1) {
@@ -109,9 +109,10 @@ test('妖兽出没 at the 后山 (2026-10-28): a batch of `events.yaoshou.batch`
     now = new Date(now.getTime() + 60_000);
     s = fightThere(standFit(content, s, now), now, true).state;
   }
-  assert.equal(encounterOf(content, s, now), null, 'the batch fought out: the stretch rests ' + JSON.stringify(s.events));
+  const between = encounterOf(content, s, now);
+  assert.ok(between && !between.batch, 'the batch fought out: no batch, the haunt stands (`stands`) ' + JSON.stringify(s.events));
   const later = new Date(now.getTime() + ev.every_h * 3600_000 + 1000);
-  assert.ok(encounterOf(content, standFit(content, s, later), later), 'the next batch');
+  assert.ok(encounterOf(content, standFit(content, s, later), later)?.batch, 'the next batch');
 });
 
 test('the same beast beaten again the same day pays the play rules\' falling share (100 · 50 · 10%)', async () => {
