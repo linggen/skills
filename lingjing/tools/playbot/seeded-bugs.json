@@ -27,12 +27,13 @@
       "id": "yangzhen-on-empty-rank",
       "ref": "48f0b83c",
       "sizes": "430x932",
-      "fights": 3,
+      "fights": 4,
       "expect": {
         "kind": "mana-waste",
         "card": "yangzhen"
       },
-      "note": "Hanli 11-04: 痒痒针 spent 灵力 on an empty rank"
+      "note": "Hanli 11-04: 痒痒针 spent 灵力 on an empty rank — four random hands (no careful one: the attentive line never wastes a card), cards untried on an empty rank played first",
+      "flags": "--no-careful --only=haunt"
     },
     {
       "id": "win-without-spoils",

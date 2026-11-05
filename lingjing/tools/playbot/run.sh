@@ -23,7 +23,7 @@ while [ $# -gt 0 ]; do
     --fights) FIGHTS="$2"; shift 2 ;;
     --out) OUT="$2"; shift 2 ;;
     --run-id) RUN_ID="$2"; shift 2 ;;
-    --update-baselines|--debug|--headed) EXTRA+=("$1"); shift ;;
+    --update-baselines|--debug|--headed|--no-careful) EXTRA+=("$1"); shift ;;
     --only) EXTRA+=("--only=$2"); shift 2 ;;
     --selftest) SELFTEST=1; shift ;;
     -h|--help) sed -n '2,14p' "$0"; exit 0 ;;
@@ -61,7 +61,7 @@ play() { # lingjing-dir out run-id
 if [ "$SELFTEST" = 1 ]; then
   # Each seeded bug: its ref (or main + its patch), played, and the finding it must raise.
   n=0 missed=0
-  while IFS=$'\t' read -r id ref patch expect bsizes bfights absent; do
+  while IFS=$'\t' read -r id ref patch expect bsizes bfights absent bflags; do
     n=$((n + 1))
     [ "$patch" = - ] && patch=""
     [ "$bsizes" = - ] || SIZES="$bsizes"
@@ -69,7 +69,9 @@ if [ "$SELFTEST" = 1 ]; then
     checkout "$ref" "$patch" || { missed=$((missed + 1)); continue; }
     dir="$CHECKOUT"
     out="$OUT/selftest-$id"
+    SAVED=("${EXTRA[@]+"${EXTRA[@]}"}"); [ "$bflags" = - ] || read -ra more <<<"$bflags"; [ "$bflags" = - ] || EXTRA+=("${more[@]}")
     play "$dir" "$out" "$RUN_ID-selftest-$id" >"$out.log" 2>&1
+    EXTRA=("${SAVED[@]+"${SAVED[@]}"}")
     if node -e '
       const [file, expect] = process.argv.slice(1);
       const f = JSON.parse(require("fs").readFileSync(file, "utf8")).findings;
@@ -86,7 +88,7 @@ if [ "$SELFTEST" = 1 ]; then
       echo "MISSED  $id ($ref${patch:+ + $patch}) — expected $expect; see $out"
       missed=$((missed + 1))
     fi
-  done < <(node -e 'for (const b of require(process.argv[1]).bugs) console.log([b.id, b.ref, b.patch ?? "-", JSON.stringify(b.expect), b.sizes ?? "-", b.fights ?? "-", b.absent ? "absent" : "-"].join("\t"))' "${PLAYBOT_SEEDED:-$HERE/seeded-bugs.json}")
+  done < <(node -e 'for (const b of require(process.argv[1]).bugs) console.log([b.id, b.ref, b.patch ?? "-", JSON.stringify(b.expect), b.sizes ?? "-", b.fights ?? "-", b.absent ? "absent" : "-", b.flags ?? "-"].join("\t"))' "${PLAYBOT_SEEDED:-$HERE/seeded-bugs.json}")
   echo "selftest: $((n - missed))/$n seeded bugs and controls right → $OUT"
   [ "$missed" = 0 ] || exit 3
   exit 0

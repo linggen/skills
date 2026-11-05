@@ -5,7 +5,7 @@
 //
 //   node tools/playbot/playbot.mjs --skill=<lingjing dir> [--shared=<linggen/shared>] [--out=<report dir>]
 //        [--sizes=430x932,375x812,1280x820] [--fights=2] [--seed=1] [--update-baselines] [--headed]
-//        [--only=haunt,story,bout,walk,baseline]
+//        [--only=haunt,story,bout,walk,baseline] [--no-careful]
 //   Usually through tools/playbot/run.sh (a git ref or an install dir → a scratch checkout, then this).
 //
 // What it plays, at each size: N 降妖 fights (the 妖兽出没 haunt), a story fight (灵草谷), a 切磋 bout, and a walk
@@ -32,6 +32,7 @@ import { PNG } from 'pngjs';
 import { makeServer, defaultShared, BASELINE_NOW } from './serve.mjs';
 import { LINT } from './lint.mjs';
 import { writePack } from './report.mjs';
+import { openingHand, wastedPlays } from './replay.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const flag = (k, d = null) => process.argv.find((a) => a.startsWith(`--${k}=`))?.split('=').slice(1).join('=') ?? (process.argv.includes(`--${k}`) ? true : d);
@@ -79,7 +80,7 @@ const SIG = () => {
   return `${h}:${document.querySelectorAll('*').length}:${cls}`;
 };
 const VISIBLE = (sel) => [...document.querySelectorAll(sel)].filter((e) => {
-  if (!e.getClientRects().length || e.disabled) return false;
+  if (!e.getClientRects().length || e.disabled || e.getAttribute('aria-disabled') === 'true') return false;
   for (let a = e; a && a !== document.documentElement; a = a.parentElement) { const cs = getComputedStyle(a); if (cs.visibility === 'hidden' || cs.display === 'none') return false; }
   const r = e.getBoundingClientRect();
   return r.width > 2 && r.height > 2 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
@@ -109,6 +110,26 @@ export async function run(opts) {
   const want = (k) => !only || only.has(k);
   let shotN = 0;
 
+  /* A scratch save set up by hand after its seed (its own file, never the player's): `fn(state)` edits it in place. */
+  const patchSave = (name, fn) => {
+    const f = path.join(data, 'saves', name, 'state.json');
+    const st = JSON.parse(fs.readFileSync(f, 'utf8'));
+    fn(st);
+    fs.writeFileSync(f, `${JSON.stringify(st)}\n`);
+  };
+  /* One rules verb on a scratch save, as the Verb door runs it (a baseline's save on the fixed clock). */
+  const rules = (name, verb, flags) => {
+    const fixed = name.startsWith('pb-b-') ? { LINGJING_NOW: BASELINE_NOW } : {};
+    const r = spawnSync(process.execPath, [path.join(skill, 'scripts/rules.mjs'), verb, ...flags, `--save=${name}`], { cwd: skill, env: { ...process.env, LINGJING_DATA: data, LINGJING_TRACK_OFF: '1', ...fixed }, encoding: 'utf8' });
+    try { return JSON.parse((r.stdout || '').trim().split('\n').pop()); } catch { return { ok: false, error: r.stderr }; }
+  };
+  const sceneAt = (id) => {
+    for (const ch of fs.readdirSync(path.join(skill, 'worlds/jiuding/chapters'))) {
+      const f = path.join(skill, 'worlds/jiuding/chapters', ch, 'scenes', `${id}.json`);
+      if (fs.existsSync(f)) return JSON.parse(fs.readFileSync(f, 'utf8')).at ?? null;
+    }
+    return null;
+  };
   const seed = (name, at) => {
     const fixed = name.startsWith('pb-b-') ? { LINGJING_NOW: BASELINE_NOW } : {};
     const r = spawnSync(process.execPath, [path.join(skill, 'scripts/rules.mjs'), 'seed', `--save=${name}`, `--at=${at}`], { cwd: skill, env: { ...process.env, LINGJING_DATA: data, LINGJING_TRACK_OFF: '1', ...fixed }, encoding: 'utf8' });
@@ -132,6 +153,7 @@ export async function run(opts) {
     const page = ctx.pages()[0] ?? (await ctx.newPage());
     let where = `${size}`;
     const errors = [];
+    const setupMisses = [];
     page.on('console', (m) => { if (m.type() === 'error') errors.push({ where, text: m.text().slice(0, 300) }); });
     page.on('pageerror', (e) => errors.push({ where, text: `uncaught: ${String(e).slice(0, 300)}` }));
     const r = rng(Number(opts.seed ?? 1) + w);
@@ -155,7 +177,9 @@ export async function run(opts) {
     };
     const tapAt = async (x, y) => (phone ? page.touchscreen.tap(x, y) : page.mouse.click(x, y));
     /* A tap that must be answered: the page changes within 2 s, or it is a finding. */
-    const tap = async (c, what) => {
+    // `soft`: a tap that only finds the way to a play (a road, 开局, the story's way on) — unanswered, it means the play
+    // could not be reached (played.json `unplayable`), not a dead control; the plays themselves are never soft.
+    const tap = async (c, what, { soft = false } = {}) => {
       const before = await page.evaluate(() => globalThis.__pbMut ?? 0);
       const asked = verbs.length;
       const t0 = Date.now();
@@ -165,6 +189,7 @@ export async function run(opts) {
         await sleep(100);
         if ((await page.evaluate(() => globalThis.__pbMut ?? 0)) !== before || verbs.length !== asked) return true;
       }
+      if (soft) { setupMisses.push({ where, control: what ?? c.text }); return false; }
       await fail('no-response', { control: what ?? c.text, sel: c.sel });
       return false;
     };
@@ -197,7 +222,7 @@ export async function run(opts) {
       if (opts.debug) console.error(`[click] ${sel} → ${c ? `${c.text} @${Math.round(c.x)},${Math.round(c.y)}` : 'none'}`);
       if (!c && opts.debug) console.error('   matches:', JSON.stringify(await page.evaluate((q) => [...document.querySelectorAll(q)].map((e) => { const r = e.getBoundingClientRect(); const up = []; for (let a = e; a && a !== document.body; a = a.parentElement) { const cs = getComputedStyle(a); if (cs.visibility === 'hidden' || cs.display === 'none') up.push(`${a.tagName}.${(a.getAttribute('class') || '').replace(/ /g, '.')}:${cs.visibility}/${cs.display}`); } return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height), e.disabled, up.slice(-3)]; }), sel)));
       if (!c) { if (opts.debug) await shot(`dbg-none-${sel.replace(/[^a-z]/gi, '').slice(0, 20)}`, { lint: false }); return false; }
-      return tap(c, what ?? sel);
+      return tap(c, what ?? sel, { soft: true });
     };
     const noted = new Set();
     const refusedSince = (i) => verbs.slice(i).filter((v) => v.out && v.out.ok === false && !noted.has(v));
@@ -216,10 +241,13 @@ export async function run(opts) {
     };
 
     /* One card fight, played to its end by random legal moves. Returns { outcome, steps }. */
-    const fight = async (label, { maxSteps = 160, stopAfter = null, careful = false } = {}) => {
+    const fight = async (label, { maxSteps = 160, stopAfter = null, careful = false, saveName } = {}) => {
       const startAt = verbs.length;
+      // The fight's setup as the rules handed it at the door (the save's `fight.setup`): what its replay starts from.
+      let setup = null;
+      try { setup = JSON.parse(fs.readFileSync(path.join(data, 'saves', saveName, 'state.json'), 'utf8')).fight?.setup ?? null; } catch { /* no save to read */ }
       const tried = new Set();
-      let steps = 0;
+      let steps = 0, waits = 0;
       await shot(`${label}-open`, { scope: '.battle' });
       for (; steps < maxSteps; steps += 1) {
         if (stopAfter != null && steps >= stopAfter) return { outcome: 'left-open', steps };
@@ -227,10 +255,23 @@ export async function run(opts) {
         const s0 = await page.evaluate(FIGHT);
         if (settled || !s0) {
           const outcome = settled?.out?.outcome ?? settled?.out?.duel?.outcome ?? (settled ? 'settled' : 'gone');
+          // 灵力 spent for nothing: every play of his replayed through the rules' own battle.js (replay.mjs).
+          const picks = settled?.flags.find((f) => f.startsWith('--picks='))?.slice(8);
+          if (picks && setup) {
+            const wasted = await wastedPlays(skill, setup, picks).catch((e) => [{ error: String(e) }]);
+            for (const w of wasted) {
+              if (w.error) { findings.push({ kind: 'replay-error', hard: false, size, where, text: w.error }); continue; }
+              findings.push({ kind: 'mana-waste', hard: true, size, where: `${where} · ${label}`, card: w.card, mana: `${w.mana[0]} → ${w.mana[1]}`, action: w.action, by: 'fight replay (battle.js)', shot: screenshots.filter((x) => x.where === where).at(-1)?.file ?? null });
+            }
+          }
           return { outcome, steps, settled };
         }
+        // Not his turn, or the last move still playing out (the scratch seam says so): a person waits, so does the bot.
+        const bout = await page.evaluate(() => globalThis.__lingjingPlay?.bout?.() ?? null);
+        if (bout && (bout.whose !== 'you' || bout.busy)) { await sleep(500); steps -= 1; waits += 1; if (waits > 120) return { outcome: 'stuck-waiting', steps }; continue; }
         const cans = (await page.evaluate(VISIBLE, '.battle [data-spot].can')).filter((c) => c.spot !== 'stage');
-        const end = (await page.evaluate(VISIBLE, '.battle [data-spot=end]'))[0];
+        // 结束回合 greyed while the beast moves (`.wait`, disabled, aria-disabled) is not a control to press.
+        const end = (await page.evaluate(VISIBLE, '.battle [data-spot=end]:not(.wait):not(.dim):not([aria-disabled=true])'))[0];
         const pool = cans.filter((c) => c.spot !== 'end');
         // A careful hand (the first fight of each size): the page's own attentive line (fightline.js through the
         // scratch seam, as tools/playtest.mjs plays) picks the move; the bot still makes it with real taps. It wins
@@ -238,6 +279,7 @@ export async function run(opts) {
         let planned = null;
         if (careful) {
           for (let w = 0; w < 20 && !planned; w += 1) { planned = await page.evaluate(() => globalThis.__lingjingPlay?.move?.() ?? null); if (!planned) await sleep(300); }
+          if (!planned) { steps -= 1; waits += 1; if (waits > 120) return { outcome: 'stuck-waiting', steps }; continue; }
         }
         // Random among the legal plays, never ending a turn that still has one (a careless hand still plays its
         // cards); while the beast's rank is empty, a card not yet tried on an empty rank goes first — what each card
@@ -248,6 +290,7 @@ export async function run(opts) {
         const strikers = pool.filter((c) => c.spot === 'mine' || c.spot === 'power');
         const weighted = (xs) => { const w = xs.map((c) => 1 + (Number(c.text.match(/^\d+/)?.[0]) || 0)); let t = r() * w.reduce((a, b) => a + b, 0); for (let i = 0; i < xs.length; i += 1) { t -= w[i]; if (t <= 0) return xs[i]; } return xs[xs.length - 1]; };
         const spotOf = (m) => (m.kind === 'play' ? cans.find((c) => c.spot === 'hand' && Number(c.index) === m.index) : m.kind === 'attack' ? cans.find((c) => c.spot === 'mine' && Number(c.index) === m.index) : m.kind === 'power' ? cans.find((c) => c.spot === 'power') : end);
+        if (!pool.length && !end) { await sleep(500); steps -= 1; waits += 1; if (waits > 120) return { outcome: 'stuck-waiting', steps }; continue; }
         const move = planned ? (spotOf(planned) ?? end) : fresh.length && r() < (empty ? 0.9 : 0.4) ? pickOne(r, fresh)
           : strikers.length && r() < 0.6 ? pickOne(r, strikers)
           : pool.length && r() < 0.97 ? weighted(pool) : end;
@@ -269,15 +312,6 @@ export async function run(opts) {
         const s1 = await page.evaluate(FIGHT);
         noteRefusals(at, `${label} · step ${steps}`);
         if (!s1) continue;
-        if (move.spot === 'hand' && s0.mana != null && s1.mana != null && s1.mana < s0.mana && s1.field === s0.field) {
-          const left = [...s0.hand]; left.splice(Number(move.index), 1);
-          // A blow lands after its animation: look again once it has surely played out.
-          await sleep(1600);
-          const s2 = await page.evaluate(FIGHT);
-          if (s2 && s2.field === s0.field && JSON.stringify(left) === JSON.stringify(s2.hand)) {
-            await fail('mana-waste', { card: move.id, mana: `${s0.mana} → ${s1.mana}`, field: s0.field.slice(0, 200) });
-          }
-        }
         if (move.spot !== 'end' && s1.field === s0.field && s1.mana === s0.mana && JSON.stringify(s1.hand) === JSON.stringify(s0.hand)) {
           // A live (`can`) play that, played out, moved nothing and lit no target: the page offered it and it did
           // nothing — no-feedback. (One that lit targets and was put back is a choice, not a fault.)
@@ -312,10 +346,17 @@ export async function run(opts) {
       }
       return false;
     };
-    const startHaunt = async () => {
+    const startHauntOnce = async () => {
       if (!(await click('button.act[data-go=houshan]', 'go 后山'))) return false;
       await sleep(1200);
       return reach('[data-duel-start]', '开局 降妖', 'button.act[data-go=houshan]');
+    };
+    // Twice: the scene's story at 后山 can still be telling itself when the first try gives up; a reload lets it settle.
+    const startHaunt = async (name) => {
+      if (await startHauntOnce()) return true;
+      if (!name) return false;
+      await open(name); await clear();
+      return (await reach('[data-duel-start]', '开局 降妖')) || startHauntOnce();
     };
 
     // ── 降妖 × N
@@ -326,10 +367,11 @@ export async function run(opts) {
       if (!s.ok) { unplayable.push({ where, why: `seed failed: ${s.error ?? JSON.stringify(s)}` }); continue; }
       await open(name); await clear();
       const at = verbs.length;
-      if (!(await startHaunt())) { unplayable.push({ where, why: 'no 降妖 to start (no [data-duel-start] at 后山)' }); noteRefusals(at, where); continue; }
+      if (!(await startHaunt(name))) { unplayable.push({ where, why: 'no 降妖 to start (no [data-duel-start] at 后山)' }); noteRefusals(at, where); continue; }
       await sleep(1500);
-      const res = await fight(`haunt${i}`, { careful: i === 0 });
-      played.push({ where, kind: i === 0 ? '降妖 (careful hand)' : '降妖 (random hand)', ...res, settled: undefined });
+      const careful = i === 0 && !opts.noCareful;
+      const res = await fight(`haunt${i}`, { careful, saveName: name });
+      played.push({ where, kind: careful ? '降妖 (careful hand)' : '降妖 (random hand)', ...res, settled: undefined });
       await afterWin(`haunt${i}`, res);
       noteRefusals(at, where);
     }
@@ -341,6 +383,9 @@ export async function run(opts) {
       const s = seed(name, SEEDS.story);
       if (!s.ok) unplayable.push({ where, why: `seed failed: ${s.error ?? JSON.stringify(s)}` });
       else {
+        // Stood where the scene is told (its `at`): the seed leaves him a walk away, at the place of his last errand.
+        const told = sceneAt(SEEDS.story);
+        if (told) patchSave(name, (st) => { st.place = told; });
         await open(name);
         const at = verbs.length;
         // The scene's fight waits where the story is: the main way there first, then its 斗 (a duel card, or the
@@ -350,7 +395,7 @@ export async function run(opts) {
         await sleep(1500);
         const started = await reach('[data-duel-start], [data-panel-exit="fight"], [data-exit="fight"]', '开局 剧情斗法', '[data-agenda="way:way"] [data-go]');
         if (!started) unplayable.push({ where, why: 'the scene offered no fight to start' });
-        else { await sleep(1500); const res = await fight('story'); played.push({ where, kind: '剧情斗法', ...res, settled: undefined }); await afterWin('story', res); }
+        else { await sleep(1500); const res = await fight('story', { saveName: name }); played.push({ where, kind: '剧情斗法', ...res, settled: undefined }); await afterWin('story', res); }
         noteRefusals(at, where);
       }
     }
@@ -389,9 +434,9 @@ export async function run(opts) {
       if (s.ok) {
         await open(name); await clear();
         const at = verbs.length;
-        if (await startHaunt()) {
+        if (await startHaunt(name)) {
           await sleep(1500);
-          await fight('kept', { stopAfter: 2 });
+          await fight('kept', { stopAfter: 2, saveName: name });
           const before = await page.evaluate(FIGHT);
           // Keep it: the page's own 留着以后玩 when it has one; else walking away (a reload) leaves it open, as on the phone.
           const keep = (await page.evaluate(VISIBLE, '[data-board-keep], [data-fight-tap=keep], [data-keep]'))[0];
@@ -462,46 +507,53 @@ export async function run(opts) {
 
     // ── baselines: a hand of 6, 8 and 10 cards (turns ended until the hand holds n), at the fixed seed
     if (phone && want('baseline')) {
-      const name = `pb-b-${w}`;
-      where = `${size} · 基线`;
-      const s = seed(name, SEEDS.haunt);
-      if (s.ok) {
+      // A hand of 6, 8 and 10 cards, set up in the save: the fixed save (fixtures/baseline-save.json) walks to 后山 and
+      // opens its 降妖 through the rules' own verbs on the fixed clock, then the fight's opening hand is widened by its
+      // setup's `extra` (cards in hand from the first turn, battle.js) — the same deck, the same beast, the same hand
+      // every run and every commit. The page then takes the open fight up as a player coming back to it would.
+      for (const n of [6, 8, 10]) {
+        const name = `pb-b-${w}-${n}`;
+        where = `${size} · 基线 · ${n} 张`;
+        fs.mkdirSync(path.join(data, 'saves', name), { recursive: true });
+        fs.copyFileSync(path.join(HERE, 'fixtures', 'baseline-save.json'), path.join(data, 'saves', name, 'state.json'));
+        rules(name, 'move', ['--place=houshan']);
+        const look = rules(name, 'look', []);
+        const duelId = (look.tray ?? []).find((t) => t.opens === 'duel')?.arg ?? look.place?.encounter?.game?.id ?? null;
+        const started = duelId ? rules(name, 'duel', [`--id=${duelId}`]) : null;
+        if (!started?.ok) { unplayable.push({ where, why: `no 降妖 to open at 后山 for the baseline (${duelId ?? 'none'})` }); continue; }
+        const stNow = JSON.parse(fs.readFileSync(path.join(data, 'saves', name, 'state.json'), 'utf8'));
+        const opening = await openingHand(skill, stNow.fight.setup);
+        patchSave(name, (st) => {
+          const you = st.fight.setup.you;
+          const more = Math.max(0, n - opening);
+          you.extra = [...(you.extra ?? []), ...Array.from({ length: more }, (_, i) => you.deck[i % you.deck.length])];
+        });
         await open(name); await clear();
-        if (await startHaunt()) {
-          await sleep(1500);
-          for (const n of [6, 8, 10]) {
-            for (let k = 0; k < 14; k += 1) {
-              const f = await page.evaluate(FIGHT);
-              if (!f || f.hand.length >= n) break;
-              const end = (await page.evaluate(VISIBLE, '.battle [data-spot=end]'))[0];
-              if (!end) break;
-              await tapAt(end.x, end.y);
-              await sleep(1800);
-            }
-            const f = await page.evaluate(FIGHT);
-            if (!f || f.hand.length < n) { unplayable.push({ where, why: `could not hold ${n} cards (hand ${f?.hand.length ?? 'gone'})` }); break; }
-            const file = await shot(`hand${n}`, { scope: '.battle' });
-            const key = `${size}-hand${n}.png`;
-            const bl = path.join(baselines, key);
-            if (opts.updateBaselines) { fs.mkdirSync(baselines, { recursive: true }); fs.copyFileSync(file, bl); }
-            else if (fs.existsSync(bl)) {
-              const a = PNG.sync.read(fs.readFileSync(bl)), b = PNG.sync.read(fs.readFileSync(file));
-              if (a.width !== b.width || a.height !== b.height) findings.push({ kind: 'layout', hard: true, size, where, why: 'baseline-size', baseline: key, shot: path.relative(out, file) });
-              else {
-                const diff = new PNG({ width: a.width, height: a.height });
-                const n2 = pixelmatch(a.data, b.data, diff.data, a.width, a.height, { threshold: 0.12 });
-                const share = n2 / (a.width * a.height);
-                const dfile = file.replace(/\.png$/, '.diff.png');
-                fs.writeFileSync(dfile, PNG.sync.write(diff));
-                if (share > 0.01) findings.push({ kind: 'layout', hard: true, size, where, why: 'baseline-diff', baseline: key, share: Math.round(share * 1000) / 1000, shot: path.relative(out, file), diff: path.relative(out, dfile) });
-              }
-            } else findings.push({ kind: 'layout-warn', hard: false, size, where, why: 'no-baseline', baseline: key });
+        if (!(await page.evaluate(FIGHT))) await reach('[data-duel-start]', '回到斗法');
+        await sleep(1200);
+        const f = await page.evaluate(FIGHT);
+        if (!f || f.hand.length < n) { unplayable.push({ where, why: `the hand held ${f?.hand.length ?? 'no fight'}, not ${n}` }); continue; }
+        const file = await shot(`hand${n}`, { scope: '.battle' });
+        const key = `${size}-hand${n}.png`;
+        const bl = path.join(baselines, key);
+        if (opts.updateBaselines) { fs.mkdirSync(baselines, { recursive: true }); fs.copyFileSync(file, bl); }
+        else if (fs.existsSync(bl)) {
+          const a = PNG.sync.read(fs.readFileSync(bl)), b = PNG.sync.read(fs.readFileSync(file));
+          if (a.width !== b.width || a.height !== b.height) findings.push({ kind: 'layout', hard: true, size, where, why: 'baseline-size', baseline: key, shot: path.relative(out, file) });
+          else {
+            const diff = new PNG({ width: a.width, height: a.height });
+            const n2 = pixelmatch(a.data, b.data, diff.data, a.width, a.height, { threshold: 0.12 });
+            const share = n2 / (a.width * a.height);
+            const dfile = file.replace(/\.png$/, '.diff.png');
+            fs.writeFileSync(dfile, PNG.sync.write(diff));
+            if (share > 0.02) findings.push({ kind: 'layout', hard: true, size, where, why: 'baseline-diff', baseline: key, share: Math.round(share * 1000) / 1000, shot: path.relative(out, file), diff: path.relative(out, dfile) });
           }
-        }
+        } else findings.push({ kind: 'layout-warn', hard: false, size, where, why: 'no-baseline', baseline: key });
       }
     }
 
     for (const e of errors) findings.push({ kind: 'console-error', hard: true, size, where: e.where, text: e.text });
+    for (const m of setupMisses) unplayable.push({ where: m.where, why: `the way to the play did not answer: ${m.control}` });
     await ctx.close();
   }
   server.close();
@@ -518,7 +570,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const day = new Date().toISOString().slice(0, 10);
   const runId = flag('run-id', `${day}-${Date.now().toString(36)}`);
   const out = flag('out', path.join(HERE, '..', '..', 'report', runId));
-  const res = await run({ skill, shared: flag('shared'), out, runId, sizes: String(flag('sizes', '430x932,375x812,1280x820')).split(','), fights: flag('fights', 2), seed: flag('seed', 1), updateBaselines: Boolean(flag('update-baselines', false)), headed: Boolean(flag('headed', false)), debug: Boolean(flag('debug', false)), only: flag('only', null) });
+  const res = await run({ skill, shared: flag('shared'), out, runId, sizes: String(flag('sizes', '430x932,375x812,1280x820')).split(','), fights: flag('fights', 2), seed: flag('seed', 1), updateBaselines: Boolean(flag('update-baselines', false)), headed: Boolean(flag('headed', false)), debug: Boolean(flag('debug', false)), only: flag('only', null), noCareful: Boolean(flag('no-careful', false)) });
   const hard = res.findings.filter((f) => f.hard);
   console.log(`playbot ${runId}: ${res.played.length} played, ${res.unplayable.length} could not be played, ${hard.length} hard findings, ${res.refusals.length} refusals → ${out}`);
   for (const k of [...new Set(hard.map((f) => f.kind))]) console.log(`  ${k}: ${hard.filter((f) => f.kind === k).length}`);
