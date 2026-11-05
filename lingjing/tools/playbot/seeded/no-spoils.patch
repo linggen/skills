@@ -1,0 +1,27 @@
+diff --git a/lingjing/scripts/battle.js b/lingjing/scripts/battle.js
+index ab8081e8..63ecd0b6 100644
+--- a/lingjing/scripts/battle.js
++++ b/lingjing/scripts/battle.js
+@@ -37,7 +37,8 @@ export const clash = (element, root) => (!element || !root ? 1 : BEATS[element]
+    one formula: the fight settles with it and the page prints it, so the
+    number on the screen is the number that lands (his, 2026-09-22: 五行 is
+    too much to reckon with four roots — 让页面算). `who` is the striker. */
+-export const dealt = (st, who, n, element, target) => Math.max(1, Math.round(n * clash(element, target) * (st.scale?.[who] ?? 1)));
++// SEEDED (playbot selftest): every blow of his lands for 999 — the fight is won at his first hit, so the 所得 is due.
++export const dealt = (st, who, n, element, target) => (who === 'you' ? 999 : Math.max(1, Math.round(n * clash(element, target) * (st.scale?.[who] ?? 1))));
+ 
+ /* ── The realms ── */
+ 
+diff --git a/lingjing/scripts/lingjing.js b/lingjing/scripts/lingjing.js
+index 0fdd286c..df6ea247 100644
+--- a/lingjing/scripts/lingjing.js
++++ b/lingjing/scripts/lingjing.js
+@@ -1469,7 +1469,7 @@ function toastsHtml() {
+     + (view.gearOpen ? '' : fullOfferHtml(look?.full_offer, { ...ctx(), gear: view.gear }, { swap: view.offerSwap, tab: view.pouchTab }))
+     + toastX(view.emerged ? emergedHtml({ ...view.emerged, age: performance.now() - view.emerged.at }, ctx()) : '', 'data-emerged-close')
+     + toastX(view.trialTold ? trialToldHtml(view.trialTold, ctx()) : '', 'data-toast-close="trialTold"')
+-    + toastX(spoilsShown() ? (queueMicrotask(armSpoils), spoilsHtml(view.spoils, spoilsCtx())) : '', 'data-spoils-close')
++    + toastX(false && spoilsShown() ? (queueMicrotask(armSpoils), spoilsHtml(view.spoils, spoilsCtx())) : '', 'data-spoils-close')
+     + toastX(view.handin ? handinHtml(view.handin, ctx()) : '', 'data-handin-close');
+ }
+ /* The notes over the stage wear the one ✕ too (card-close.js TOASTS): what they tell is already in hand. */

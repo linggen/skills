@@ -8,3 +8,6 @@ __pycache__/
 *.pyc
 .DS_Store
 .wrangler/
+
+# The play bot's reports (lingjing/tools/playbot): screenshots and scratch saves, never committed
+lingjing/report/

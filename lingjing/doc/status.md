@@ -10,6 +10,13 @@ Updated 2026-11-03.
 
 None.
 
+## Play bot — how to run (tools/playbot, not in check.sh: minutes)
+
+- `(cd lingjing/tools && npm ci)` once (playwright, pixelmatch, pngjs). From the engine repo: `just playbot [--ref <sha> | --install <lingjing dir>] [--sizes 430x932,375x812,1280x820] [--fights N]`; here: `lingjing/tools/playbot/run.sh …` (needs `../linggen/shared` or `LINGGEN_SHARED`).
+- A scratch install (serve.mjs: the checkout served as the engine serves it, the Verb door as `node rules.mjs` on a scratch data folder) and scratch saves seeded by `rules.mjs seed --at`; headless, muted, its own profile. Never ~/.linggen, never his Chrome.
+- Report: `lingjing/report/<run-id>/` — findings.json (hard checks + layout lint, each with its screenshot), refusals.json, played.json, verbs.jsonl, shots/, contact.png, checklist.md, review.json ("pending" until reviewed for that run id; the release gate waits on it). The reviewer is the `playtest` Claude Code skill (linggen/.claude/skills/playtest).
+- `run.sh --selftest`: the seeded bugs (seeded-bugs.json) must each be caught, else the bot is broken. Baselines: `--update-baselines` on main writes tools/playbot/baselines/.
+
 ## Done lately
 
 - 11-05 — **斗法 on a phone: the hand readable** (Hanli, 狼 at 上山路, 430 pt: an empty band under the foe's row and over his own; six cards fanned to 40% each, the costs on each other; tests/duel-phone-hand.test.mjs). battle.css's phone room (@container scene ≤ 640px): the field as tall as its ranks (an empty rank lower), the dock takes the rest; the hand a grid — one row to five, two from six (3 · 4 · 5 · 6 a row), leaves as wide as their cells, two rows held to the screen's height; no fan, a tap still raises. Headless 430×932 and 375×812, 6 · 8 · 10 cards, empty and full ranks: every leaf whole, inside the room, above the band. A scroll strip was tried and dropped (a raised card's cost cut at the strip's top, half the hand out of sight). Then (the coordinator, 11-05: 100–150 px still stood between the party row and the 丹囊 tray): the tray sits right under the party row and the hand fills all below it, each leaf as tall as its row gives (up to 2.4 its width, the picture taking it); a narrow leaf's line set smaller, never broken (「入阵：抽 1 张」 one line on ten cards at 375).

@@ -1,6 +1,10 @@
 {
   "private": true,
   "type": "module",
-  "_about": "Dev tools only (never installed with the skill). play-human.mjs needs playwright: npm install here; node_modules is not committed.",
-  "devDependencies": { "playwright": "1.63.0" }
+  "_about": "Dev tools only (never installed with the skill). play-human.mjs and playbot.mjs need playwright (playbot also pixelmatch + pngjs): npm install here; node_modules is not committed.",
+  "devDependencies": {
+    "playwright": "1.63.0",
+    "pixelmatch": "7.1.0",
+    "pngjs": "7.0.0"
+  }
 }

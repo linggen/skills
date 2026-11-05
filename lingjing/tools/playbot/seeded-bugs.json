@@ -1,0 +1,61 @@
+{
+  "_about": "The play bot's seeded bugs (run.sh --selftest): each one a ref (or a ref + a patch under seeded/) the bot must catch, by the finding named in `expect` (a field that starts and ends with / is a regex). A bug it misses means the bot is broken, not the game fixed. The first three are the phone bugs of 2026-11-04/05 at the commit before their fixes; the fourth (a win with no 所得 — on the phone it was the native screen) is put back on the page by a patch. An entry with `absent: true` is a control: the same play with the bug not there, which must NOT raise the finding.",
+  "bugs": [
+    {
+      "id": "kept-fight-freezes-fantong",
+      "ref": "48f0b83c",
+      "sizes": "430x932",
+      "fights": 1,
+      "expect": {
+        "kind": "frozen-by-fight"
+      },
+      "note": "Hanli 11-04: 狼 kept at 上山路 — the 饭桶 from the 储物袋 refused a bare 「斗法未完」 (fixed e20846c1)"
+    },
+    {
+      "id": "hand-overlaps-at-six",
+      "ref": "48f0b83c",
+      "sizes": "430x932",
+      "fights": 1,
+      "expect": {
+        "kind": "layout",
+        "why": "covered",
+        "el": "/bcard|bcost/"
+      },
+      "note": "Hanli 11-05: six cards fanned so deep the cost gems sat on each other (fixed 4b14bd09)"
+    },
+    {
+      "id": "yangzhen-on-empty-rank",
+      "ref": "48f0b83c",
+      "sizes": "430x932",
+      "fights": 3,
+      "expect": {
+        "kind": "mana-waste",
+        "card": "yangzhen"
+      },
+      "note": "Hanli 11-04: 痒痒针 spent 灵力 on an empty rank"
+    },
+    {
+      "id": "win-without-spoils",
+      "ref": "4b14bd09",
+      "patch": "seeded/no-spoils.patch",
+      "sizes": "430x932",
+      "fights": 1,
+      "expect": {
+        "kind": "no-spoils"
+      },
+      "note": "Hanli 11-04: a win showed no 所得 (phone native). The patch puts it on the page: the 所得 card never drawn, and his blows land for 999 so the first fight is surely won"
+    },
+    {
+      "id": "win-with-spoils-control",
+      "ref": "4b14bd09",
+      "patch": "seeded/winnable-control.patch",
+      "sizes": "430x932",
+      "fights": 1,
+      "absent": true,
+      "expect": {
+        "kind": "no-spoils"
+      },
+      "note": "The control: the same sure win with the 所得 card as it is — the no-spoils check must stay quiet."
+    }
+  ]
+}

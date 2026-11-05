@@ -1,0 +1,138 @@
+// tools/playbot/lint.mjs — the layout lint the play bot runs at every screenshot (Hanli 2026-11-05: six cards fanned
+// so deep on a 430 pt phone that the cost gems sat on each other, and no test saw it).
+//
+// In the page: every card, button, cost badge and text element that is drawn is sampled on a grid with
+// elementFromPoint — the share of its points where it (or something inside it) is what the eye meets is how much of
+// it shows. A control, a cost or a line of text under something else, cut by its box, or off the screen's sides is a
+// FAIL; a blank band taller than 100 px between blocks is a WARN. Off the bottom is only an error inside a one-screen
+// layer (a fight, a sheet, a fixed bar): the page itself scrolls.
+
+/** The lint, as a function the page runs (page.evaluate(LINT, opts)). Returns { fails: [...], warns: [...] }. */
+export const LINT = ({ minShown = 0.9, band = 100, scope = null } = {}) => {
+  const W = innerWidth, H = innerHeight;
+  // A scratch save's own furniture (the 测试存档 badge, the dev 游戏厅 link): never on a player's page.
+  const DEV_ONLY = '.scratch-badge, .dev-arcade';
+  // A result laid over a finished fight (败 / 胜, the 完 card) or a pause veil: what is under it is meant to be.
+  const OVERLAY = '.bover, .closecard, .gshell-veil, [role=dialog]';
+  const root = (scope && document.querySelector(scope)) || document.body;
+  const vis = (e) => {
+    if (!e.getClientRects().length) return false;
+    for (let a = e; a && a !== document.documentElement; a = a.parentElement) {
+      const cs = getComputedStyle(a);
+      if (cs.visibility === 'hidden' || cs.display === 'none' || Number(cs.opacity) < 0.05) return false;
+    }
+    const r = e.getBoundingClientRect();
+    return r.width >= 4 && r.height >= 4;
+  };
+  const label = (e) => {
+    const id = e.dataset?.id ?? e.dataset?.spot ?? e.dataset?.pouchItem ?? '';
+    const cls = (e.getAttribute('class') || '').split(/\s+/).slice(0, 2).join('.');
+    return `${e.tagName.toLowerCase()}${cls ? '.' + cls : ''}${id ? `[${id}]` : ''} «${(e.innerText || e.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 24)}»`;
+  };
+  // A one-screen layer: what is in it must fit the screen, top to bottom.
+  const oneScreen = (e) => {
+    for (let a = e; a && a !== document.body; a = a.parentElement) {
+      const cs = getComputedStyle(a);
+      if (cs.position === 'fixed' || cs.position === 'sticky') return true;
+      if (a.classList?.contains('battle') || a.classList?.contains('gshell')) return true;
+    }
+    return false;
+  };
+  // What is drawn and must be read or pressed.
+  const kinds = [
+    ['control', 'button, [role=button], [data-spot], a[href], input, select'],
+    ['card', '.bcard, .bminion:not(.empty), .ptile'],
+    ['cost', '.bcost'],
+  ];
+  const seen = new Set();
+  const items = [];
+  for (const [kind, sel] of kinds) {
+    for (const e of root.querySelectorAll(sel)) {
+      if (seen.has(e) || !vis(e) || e.closest(DEV_ONLY)) continue;
+      seen.add(e);
+      items.push({ kind, e });
+    }
+  }
+  // Text: an element with its own words (a direct text node), not already a control.
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+    if (!n.textContent.trim()) continue;
+    const e = n.parentElement;
+    if (!e || seen.has(e) || e.closest(DEV_ONLY) || e.closest('button, [role=button], [data-spot], script, style, noscript, [aria-hidden=true]')) continue;
+    if (!vis(e)) continue;
+    seen.add(e);
+    items.push({ kind: 'text', e, node: n });
+  }
+  const fails = [], warns = [];
+  const rects = [];
+  const fixedish = (e) => { for (let a = e; a && a !== document.body; a = a.parentElement) { const p = getComputedStyle(a).position; if (p === 'fixed' || p === 'sticky') return true; } return false; };
+  // Where an element can be seen: the viewport cut by every ancestor that clips. A scroller's cut is not a fault (it
+  // scrolls to it); an overflow:hidden cut is — the words or the control are cut off for good.
+  const clipOf = (e) => {
+    let l = 0, t = 0, r = W, b = H, scrolls = false, hidden = false;
+    for (let a = e.parentElement; a && a !== document.documentElement; a = a.parentElement) {
+      const cs = getComputedStyle(a);
+      const ox = cs.overflowX, oy = cs.overflowY;
+      if (ox === 'visible' && oy === 'visible') continue;
+      const q = a.getBoundingClientRect();
+      l = Math.max(l, q.left); t = Math.max(t, q.top); r = Math.min(r, q.right); b = Math.min(b, q.bottom);
+      if (/auto|scroll/.test(ox + oy)) scrolls = true; else hidden = true;
+    }
+    return { l, t, r, b, scrolls, hidden };
+  };
+  const boxesOf = (kind, e, node) => {
+    if (kind !== 'text') return [e.getBoundingClientRect()];
+    const range = document.createRange();
+    range.selectNodeContents(node ?? e);
+    return [...range.getClientRects()].filter((q) => q.width > 2 && q.height > 2);
+  };
+  // In motion (a float rising, a card dealt): read when it lands, not mid-flight.
+  const moving = (x) => { for (let a = x; a && a !== document.body; a = a.parentElement) { if (a.getAnimations?.().some((an) => an.playState === 'running')) return true; } return false; };
+  for (const { kind, e, node } of items) {
+    if (moving(e)) continue;
+    const r = e.getBoundingClientRect();
+    rects.push(r);
+    const clip = clipOf(e);
+    const lone = oneScreen(e);
+    // Off the screen's sides with no scroller to bring it back, or off a one-screen layer.
+    const sideOut = !clip.scrolls && (r.left < -1 || r.right > W + 1);
+    const vertOut = lone && !clip.scrolls && (r.top < -1 || r.bottom > H + 1);
+    if (sideOut || vertOut) fails.push({ el_kind: kind, why: 'outside-viewport', el: label(e), rect: [r.left, r.top, r.width, r.height].map(Math.round) });
+    let on = 0, hit = 0, cut = 0, all = 0, by = null;
+    for (const q of boxesOf(kind, e, node)) {
+      for (let i = 0; i < 5; i += 1) {
+        for (let j = 0; j < 3; j += 1) {
+          const x = q.left + q.width * (0.12 + 0.76 * (i / 4)), y = q.top + q.height * (0.25 + 0.5 * (j / 2));
+          all += 1;
+          if (x < clip.l || y < clip.t || x >= clip.r || y >= clip.b) { if (clip.hidden && !clip.scrolls && x >= 0 && y >= 0 && x < W && y < H) cut += 1; continue; }
+          on += 1;
+          const top = document.elementFromPoint(x, y);
+          if (top && (top === e || e.contains(top) || top.contains(e))) hit += 1;
+          // Under a fixed bar while the page itself scrolls: it can be scrolled out from under it.
+          else if (top && fixedish(top) && !lone) hit += 1;
+          else if (top && (moving(top) || top.closest(DEV_ONLY) || (top.closest(OVERLAY) && !e.closest(OVERLAY)))) hit += 1;
+          else if (top && !by) by = top;
+        }
+      }
+    }
+    if (all && cut / all > 1 - minShown) fails.push({ el_kind: kind, why: 'clipped', el: label(e), shown: Math.round((1 - cut / all) * 100) / 100 });
+    if (!on) continue;
+    const shown = hit / on;
+    if (shown < minShown) fails.push({ el_kind: kind, why: 'covered', shown: Math.round(shown * 100) / 100, el: label(e), by: by ? label(by) : null, rect: [r.left, r.top, r.width, r.height].map(Math.round) });
+  }
+  // Blank bands: rows of the screen no drawn thing covers, between two that are covered.
+  const rows = new Array(Math.ceil(H)).fill(false);
+  for (const r of rects) for (let y = Math.max(0, Math.floor(r.top)); y < Math.min(H, Math.ceil(r.bottom)); y += 1) rows[y] = true;
+  for (const img of root.querySelectorAll('img, canvas, svg, video')) {
+    if (!vis(img)) continue;
+    const r = img.getBoundingClientRect();
+    if (r.width * r.height < W * 40) continue; // a full-width backdrop is not content
+    for (let y = Math.max(0, Math.floor(r.top)); y < Math.min(H, Math.ceil(r.bottom)); y += 1) rows[y] = true;
+  }
+  const first = rows.indexOf(true), last = rows.lastIndexOf(true);
+  for (let y = first, start = -1; y <= last && first >= 0; y += 1) {
+    if (!rows[y] && start < 0) start = y;
+    if (rows[y] && start >= 0) { if (y - start > band) warns.push({ why: 'blank-band', top: start, height: y - start }); start = -1; }
+  }
+  return { fails, warns, checked: items.length };
+};
