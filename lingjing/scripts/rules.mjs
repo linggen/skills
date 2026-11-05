@@ -288,7 +288,7 @@ function runLocked(verb, args, stateFile, reader) {
   }
   // While a fight is open, what would change the world waits (tasks.mjs fightHold).
   // While in 闭关, likewise: 出关 first (rules/seclusion.mjs seclusionHold).
-  const held = fightHold(state, verb, args) ?? seclusionHold(state, verb, args) ?? mijingHold(state, verb, args);
+  const held = fightHold(state, verb, args, content) ?? seclusionHold(state, verb, args) ?? mijingHold(state, verb, args);
   if (held) return held.result;
   const reads = reader === 'ling' ? readingHold(state, verb, args, now) : null;
   if (reads) {

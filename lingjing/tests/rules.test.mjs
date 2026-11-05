@@ -3438,7 +3438,7 @@ test('one fight at a time: another will not start, another\'s picks do not settl
   refused(duel, { ...open, fight: { ...open.fight, game: 'haunt:other' } }, { id: 'haunt:jingwei', picks: 'end' }, 'not-started', c);
   refused(duel, { ...open, fight: { ...open.fight, game: 'haunt:other' } }, { id: 'haunt:jingwei' }, 'in-a-fight', c);
   // the guard: what changes the world waits; the fight's own verbs and the readers do not
-  for (const [verb, args] of [['move', {}], ['go', {}], ['resolve', {}], ['trade', { action: 'use' }], ['tale', { action: 'make' }], ['meet', {}], ['quest', { action: 'take' }], ['deck', {}]]) {
+  for (const [verb, args] of [['move', {}], ['go', {}], ['resolve', {}], ['trade', { action: 'buy' }], ['tale', { action: 'make' }], ['meet', {}], ['quest', { action: 'take' }], ['deck', {}]]) {
     assert.equal(fightHold(open, verb, args)?.result.refused, 'in-a-fight', verb);
   }
   for (const [verb, args] of [['look', {}], ['duel', { picks: 'end' }], ['show', {}], ['gear', {}], ['quest', { action: 'info' }], ['task', { action: 'list' }], ['lang', {}]]) {
@@ -3451,6 +3451,33 @@ test('one fight at a time: another will not start, another\'s picks do not settl
   assert.equal(next.fight, undefined);
   assert.equal(next.duels.jingwei.outcome, 'withdrew');
   assert.equal(next.wins?.['haunt:jingwei'], undefined);
+});
+
+test('a fight kept for later never freezes the pouch: only what the fight holds stays put (Hanli 11-04, 狼 kept at 上山路)', async () => {
+  const { fightHold } = await import('../scripts/rules.mjs');
+  const c = ctx({ now: new Date('2026-10-05T10:00:00') });
+  const base = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0,
+    bag: { 'tama-fu': 1, 'mend-pill': 2, lingzhi: 3 }, pill_pick: ['mend-pill'] };
+  const open = must(duel, base, { id: 'haunt:jingwei' }, c).state;
+  assert.ok(open.fight.setup.you.extra.includes('tama-fu'), 'the 符 is in his hand at the door');
+  assert.ok(open.fight.setup.you.pouch.some(p => (p.id ?? p) === 'mend-pill'), 'the pill is in its 丹囊');
+  // the 饭桶, the bag, 穿戴 · 服用 · 卖 go on with anything else
+  for (const [verb, args] of [['fantong', { action: 'feed', ids: 'lingzhi' }], ['bag', { action: 'toss', id: 'lingzhi' }], ['trade', { action: 'use', id: 'lingzhi' }], ['trade', { action: 'sell', id: 'lingzhi' }], ['trade', { action: 'remove', id: 'old-bow' }]]) {
+    assert.equal(fightHold(open, verb, args, content), null, `${verb} ${args.action}`);
+  }
+  // …but never what the fight holds
+  for (const [verb, args] of [['fantong', { action: 'feed', ids: 'lingzhi,tama-fu' }], ['bag', { action: 'toss', id: 'tama-fu' }], ['bag', { action: 'swap', id: 'mend-pill', take: 'x' }], ['trade', { action: 'use', id: 'mend-pill' }], ['trade', { action: 'sell', id: 'tama-fu' }]]) {
+    const r = fightHold(open, verb, args, content)?.result;
+    assert.equal(r?.refused, 'in-the-fight', `${verb} ${args.action} ${args.id ?? args.ids}`);
+    assert.match(r.say, /这件在.+的斗法里用着/);
+  }
+  // the world still holds, and says whose fight it is (never a bare 「斗法未完」)
+  const moved = fightHold(open, 'move', {}, content).result;
+  assert.equal(moved.refused, 'in-a-fight');
+  assert.equal(moved.game, 'haunt:jingwei');
+  assert.match(moved.say, /精卫的斗法还开着/);
+  assert.equal(fightHold(open, 'trade', { action: 'buy', id: 'lingzhi' }, content)?.result.refused, 'in-a-fight', 'buying waits');
+  assert.match(fightHold({ ...open, lang: 'en' }, 'move', {}, content).result.say, /^The fight with .+ is still open$/);
 });
 
 test('the command line holds the world still while a fight is open, and closes one left overnight', () => {

@@ -596,16 +596,36 @@ const spentCharms = (content, setup, played) => {
    readers work. `true` holds the verb; a function holds only the calls it
    says. Anything not named is left alone. */
 const FIGHT_HOLDS = {
-  resolve: true, move: true, go: true, enter: true, leave: true, trade: true, tale: a => !['info', 'seed'].includes(a.action),
+  resolve: true, move: true, go: true, enter: true, leave: true, trade: a => a.action === 'buy', tale: a => !['info', 'seed'].includes(a.action),
   meet: true, tame: true, refine: true, task: a => a.action !== 'list',
   win: true, travel: true, build: true, load: true, make: true, amend: true, lundao: true, haggle: true, duizi: a => ['open', 'reverse'].includes(a.action),
-  divine: true, fate: true, ring: true, greet: true, deck: true, bag: true, fantong: a => a.action === 'feed', yaoshou: a => a.action !== 'info', quest: a => !['info', 'kaifu'].includes(a.action), mijing: a => !['info', 'close'].includes(a.action ?? 'info'),
+  divine: true, fate: true, ring: true, greet: true, deck: true, yaoshou: a => a.action !== 'info', quest: a => !['info', 'kaifu'].includes(a.action), mijing: a => !['info', 'close'].includes(a.action ?? 'info'),
   seclude: a => a.action === 'enter',
 };
-export function fightHold(state, verb, args = {}) {
-  const hold = state?.fight ? FIGHT_HOLDS[verb] : null;
+/* A fight kept for later (留着以后玩) never freezes the pouch (Hanli 11-04: 狼 kept at 上山路, the 饭桶 refused 「斗法未完」):
+   the bag, the 饭桶's feed and 穿戴 · 服用 · 卖 go on. Only what the open fight holds stays put — a 符 the door put in
+   his hand (setup.you.extra) or a pill in its 丹囊 (setup.you.pouch) — refused `in-the-fight`: the settle takes them. */
+const FIGHT_ITEMS = {
+  bag: a => [a.id, a.take], trade: a => [a.id],
+  fantong: a => (a.action === 'feed' ? (Array.isArray(a.ids) ? a.ids : String(a.ids ?? a.id ?? '').split(',')) : []),
+};
+const IN_THE_FIGHT = { zh: '这件在{name}的斗法里用着', en: 'That is in use in the fight with {name}' };
+const FIGHT_OPEN = { zh: '{name}的斗法还开着', en: 'The fight with {name} is still open' };
+const heldByFight = fight => new Set([...(fight?.setup?.you?.extra ?? []), ...(fight?.setup?.you?.pouch ?? []).map(p => p?.id ?? p)].map(String));
+function fightName(content, state) {
+  const f = state.fight, c = content && f?.creature ? creatureOf(content, f.creature) : null;
+  return pick(c?.name, state.lang) ?? f?.creature ?? '';
+}
+export function fightHold(state, verb, args = {}, content = null) {
+  if (!state?.fight) return null;
+  const say = (t) => (fightName(content, state) ? t[state.lang === 'en' ? 'en' : 'zh'].replace('{name}', fightName(content, state)) : null);
+  const items = FIGHT_ITEMS[verb]?.(args) ?? [];
+  const held = heldByFight(state.fight);
+  if (items.some(id => id && held.has(String(id).trim()))) return refuse('in-the-fight', say(IN_THE_FIGHT), { game: state.fight.game });
+  const hold = FIGHT_HOLDS[verb];
   if (!hold || (typeof hold === 'function' && !hold(args))) return null;
-  return refuse('in-a-fight', null, { game: state.fight.game });
+  // Named, so a card that says it is never a bare 「斗法未完」: whose fight, and the page's way back to it is `game`.
+  return refuse('in-a-fight', say(FIGHT_OPEN), { game: state.fight.game });
 }
 
 /* A fight left open on an earlier day is over: the creature went, nobody
