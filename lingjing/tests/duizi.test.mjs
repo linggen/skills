@@ -301,8 +301,10 @@ const upAt = (s, t) => {
   }
   return s;
 };
-const drawnHere = (s, t) => (look(s, content, at(t)).tray ?? []).some(e => e.id === 'duizi' && e.act === 'open');
-const html = (s, t, lang = 'zh') => cardHtml({ card: 'duizi' }, { look: look(s, content, at(t)), words: WORDS[lang], lang });
+/* A save that has played nothing is taken as begun in the 时辰 looked at: its own draw (an unplayed draw waits, rules/pool.mjs). */
+const fresh = (s, t) => (s.pool_played ? s : { ...s, created: t.toISOString() });
+const drawnHere = (s, t) => (look(fresh(s, t), content, at(t)).tray ?? []).some(e => e.id === 'duizi' && e.act === 'open');
+const html = (s, t, lang = 'zh') => cardHtml({ card: 'duizi' }, { look: look(fresh(s, t), content, at(t)), words: WORDS[lang], lang });
 /* One sitting at `t`: open (the gated verb stamps the pool), the classic 下联, Ling's grade. */
 const sitting = (s, t) => {
   let x = must(s, { action: 'open' }, at(t)).s;
@@ -315,7 +317,7 @@ test('one 联 a sitting: graded, the card ends with 收下 — no 再来, in Chi
     const s0 = { ...base, lang }, t = SITTINGS.find(x => drawnHere(s0, x));
     assert.ok(t, `${lang}: some 时辰 draws 对对子`);
     // Drawn: the offer stands on the stage, its rungs and 请先生出上联.
-    assert.ok(stageCards(look(s0, content, at(t))).some(c => c.card === 'duizi'));
+    assert.ok(stageCards(look(fresh(s0, t), content, at(t))).some(c => c.card === 'duizi'));
     assert.match(html(s0, t, lang), /data-duizi-open/);
     const g = sitting(s0, t), t1 = new Date(+t + 5 * 60_000);
     assert.ok(new Date(g.pool_played?.duizi) >= shichenOf(t).start, 'the open stamped the 时辰 pool');
@@ -384,7 +386,7 @@ test('one 联 a sitting: the pool brings 对对子 back the very next 时辰, th
 
 test('the tray reads 今日 n 联 from Look, one less after a sitting', () => {
   const t = SITTINGS.find(x => drawnHere(base, x));
-  const e = look(base, content, at(t)).tray.find(x => x.id === 'duizi');
+  const e = look(fresh(base, t), content, at(t)).tray.find(x => x.id === 'duizi');
   assert.deepEqual(e.left, { unit: 'couplets', n: cfg.rounds });
   assert.equal(WORDS.zh.trayLeft.couplets, '今日 {n} 联');
   const s = must(sitting(base, t), { action: 'close' }, at(t)).s;

@@ -55,7 +55,10 @@ function played(out, content, state, verb, args = {}, ctx = {}) {
   // 「只有之前的玩了才发新的」); and a pool member played so is stamped, so the 时辰's row moves on (pool.mjs drawPool). A
   // put-down writes nothing else, so it writes these alone.
   const key = playsDeal(content, state, verb, args, now);
-  const stamps = PLAY_KINDS.some(k => k.pool?.plays?.(verb, args, content, state));
+  // Only a board put down (✕ · 留 · its own 跳过) writes when the verb wrote nothing: a resumed round (考考你's `open`
+  // again) stays a read.
+  const putDown = (verb === 'task' && ['leave', 'skip', 'keep'].includes(args.action)) || (verb === 'win' && (args.grade === 'skipped' || args.skipped === true || args.skipped === 'true'));
+  const stamps = putDown && PLAY_KINDS.some(k => k.pool?.plays?.(verb, args, content, state));
   let next = out.state && out.state !== state ? out.state : null;
   if (!next && (key || stamps)) next = structuredClone(state);
   if (!next) return out;

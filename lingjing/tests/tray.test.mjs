@@ -23,7 +23,8 @@ const BASE = (() => {
 })();
 const at = (place, extra = {}) => ({ ...structuredClone(BASE), quests: { ...(BASE.quests ?? {}), 'guan-shouchao': { done_at: START.toISOString() } },
   place, stamina: 100, stamina_at: NOW.toISOString(), ...extra });
-const trayOf = (s, now = NOW) => look(s, content, ctx(now)).tray ?? [];
+/* A save that has played nothing is taken as begun in the 时辰 looked at: its own draw (an unplayed draw waits, rules/pool.mjs). */
+const trayOf = (s, now = NOW) => look(s.pool_played ? s : { ...s, created: now.toISOString() }, content, ctx(now)).tray ?? [];
 const draw = (l, extra = {}) => trayHtml({ look: l, lang: 'zh', words: WORDS.zh, qi: { st: 'full' }, ...extra });
 
 test('one registry: 先放一放 is a facet of it (its kinds unchanged); every tray kind declares itself there', () => {
