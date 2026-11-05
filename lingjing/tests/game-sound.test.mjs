@@ -266,3 +266,31 @@ test('a format the page claims but cannot decode falls back to the other file (o
   await new Promise((ok) => setTimeout(ok, 10));
   assert.ok(asked.slice(2).every((u) => u.endsWith('.m4a')), `a bed asks m4a first now: ${asked.slice(2)}`);
 });
+
+test('no crackle: one context, both buses through a master level and a limiter, at most SAME_MAX of one sound, asleep when silent (Hanli 11-05: 「小游戏播放声音时, 会让mac的喇叭有电流声」)', async () => {
+  const { SAME_MAX, MASTER, IDLE_MS } = await import('../scripts/games/kit/sound.js');
+  const { s, made, clock } = engine();
+  await s.wake();
+  await s.wake();
+  assert.equal(made.contexts, 1, 'one AudioContext for the page');
+  const st = s.state();
+  assert.ok(st.master > 0 && st.master < 1, `the master level under 1 (${st.master})`);
+  assert.equal(st.master, MASTER);
+  // A storm of one sound: no more than SAME_MAX of it at once.
+  const before = made.started.length;
+  let played = 0;
+  for (let i = 0; i < 40; i += 1) { clock.t += 1000; if (s.play('shouqiang', 'hit')) played += 1; }
+  assert.ok(played >= 1 && played < 40, `some played, the rest dropped (${played})`);
+  const ids = new Map();
+  for (const e of s.log.slice(-played)) ids.set(e.sound, (ids.get(e.sound) ?? 0) + 1);
+  for (const [, n] of ids) assert.ok(n <= SAME_MAX, `${n} of one sound at once`);
+  assert.ok(made.started.length - before <= SAME_MAX * Math.max(1, ids.size));
+  // …and when they end, the context sleeps after IDLE_MS of silence.
+  for (const x of made.started) x.s.onended?.();
+  await new Promise((r) => setTimeout(r, IDLE_MS + 100));
+  assert.equal(s.state().ctx, 'suspended', 'a context left running on silence hisses on some Macs');
+  // The next sound wakes it.
+  clock.t += 1000;
+  s.play('shouqiang', 'hit');
+  assert.equal(s.state().ctx, 'running');
+});

@@ -3829,6 +3829,7 @@ function skipGame(id) {
   if (!g || g.state?.won || g.sent || g.skipped) return true;
   g.skipped = true;
   g.state = { ...g.state, live: false };
+  beats.leave(id); // put away: its play taken down at once (beat-host.js leave), never left running unseen
   render();
   run(`skip:${g.taskId}`, () => onSkip(g));
   return true;
@@ -3886,6 +3887,9 @@ function keepGame(id) {
   if (isArcadeBoard(id)) { keptAdd({ id: String(id).replace(/^arcade:/, ''), n: null, title: titleOf(id) ?? null, at: new Date().toISOString() }); return boardSkipped(g); }
   g.skipped = true;
   g.state = { ...g.state, live: false };
+  // Taken down now, as ✕'s 收手 does (beats.leave): its loop, its sound and music, its camera, its Pixi app, its listeners —
+  // 留 left it running behind the stage, heard (Hanli 11-05).
+  beats.leave(id);
   forgetShell(id);
   render();
   run(`keep:${id}`, () => onSkip(g, 'keep'));

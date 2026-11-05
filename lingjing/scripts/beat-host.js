@@ -52,6 +52,10 @@ export function beatHost({ boardFor, lang, onSettled, onLost = () => {}, prefetc
           try { onLost(g, result); } catch (e) { console.warn('[lingjing] lost', id, e); }
           setTimeout(() => {
             if (hosted.get(id) !== entry || boardFor(id) !== g) return;
+            // Dealt again only where he sees it: off the stage (or put away) it stops at the loss — a board left running
+            // unseen lost a wave every ~50 s and reported `lost` twelve times (his log, 11-05, 年妖 · 闵丹师).
+            const seen = [...doc.querySelectorAll('[data-mount]')].some((h) => h.dataset.mount === id);
+            if (!seen || g.skipped || g.left || g.sent) { entry.settled = true; if (!entry.stop.signal.aborted) entry.stop.abort(); return; }
             forget(id);
             lay(id, start(id, g, round + 1));
           }, againMs);
@@ -89,7 +93,10 @@ export function beatHost({ boardFor, lang, onSettled, onLost = () => {}, prefetc
       // A board played out and gone off the stage is taken down: a Phaser kit's loop and WebGL context ran on in the
       // detached node for the rest of the session (measured live 10-26: 守白菜 won, its card gone, 120 frames a second
       // on). The entry stays, so the same board never mounts again; one still in play is never touched.
-      for (const [id, entry] of hosted) if (entry.settled && !up.has(id) && !entry.stop.signal.aborted) entry.stop.abort();
+      // …and one put away unsettled (留 · ✕: Hanli 11-05 「点留…小游戏似乎仍在后台跑, 能听见声音」): off the stage and no longer
+      // the board in play — skipped, left, sent, or dealt anew — it is taken down too, its loop, sound and Pixi app with it.
+      const away = (id, entry) => { const g = boardFor(id); return entry.settled || !g || g !== entry.board || g.skipped || g.left || g.sent; };
+      for (const [id, entry] of hosted) if (!up.has(id) && away(id, entry) && !entry.stop.signal.aborted) entry.stop.abort();
     },
   };
 }

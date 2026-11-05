@@ -17,6 +17,12 @@
 import { ZZFX } from '../../vendor/zzfx-1.4.0.mjs';
 
 export const VOICES = 14;
+/** At most this many of one sound at once: a storm of the same hit stacks into a buzz on a Mac's speakers (Hanli 11-05). */
+export const SAME_MAX = 3;
+/** The master level under the limiter: music and effects together never reach 0 dBFS. */
+export const MASTER = 0.7;
+/** Nothing sounding this long, the context is suspended: a running context on silence hisses on some Macs (11-05). */
+export const IDLE_MS = 4000;
 export const MIN_MS = 30; // the least gap of an event that names none
 export const DEFAULTS = Object.freeze({ sfx: { on: true, vol: 0.8 }, music: { on: true, vol: 0.3 }, muted: false });
 /** What actually sounds: a part on, above zero, and the one mute (the shell's bar button) off. The mute leaves the
@@ -91,7 +97,8 @@ export function zzfxSamples({ zzfx, notes = null, step = 0.08 }) {
 
 export function createSound({ AC = null, fetchJson = null, fetchBuf = null, storage = null, now = () => Date.now(), base = null, canPlay = null } = {}) {
   let settings = readSettings(storage);
-  let ctx = null, maps = null, bank = null, ready = null, sprite = null, sfxBus = null, musicBus = null, voices = 0;
+  let ctx = null, maps = null, bank = null, ready = null, sprite = null, sfxBus = null, musicBus = null, voices = 0, master = null, idleTimer = null;
+  const playing = new Map(); // sound id → how many sound now (SAME_MAX)
   const tones = new Map(), beds = new Map(), last = new Map();
   const log = []; // the last plays (dev: window.__lingjingSound.log)
   let bed = null; // { board, game, id, src, gain, ducked }
@@ -124,14 +131,31 @@ export function createSound({ AC = null, fetchJson = null, fetchBuf = null, stor
     startBed();
   }
 
+  /* effects → compressor ─┐
+     music ─────────────────┴→ master (MASTER) → limiter → destination: the two together never clip (Hanli 11-05: the Mac's
+     speakers crackled while a game sounded — the bed went straight to the destination beside the compressed effects). */
   function graph() {
     const comp = ctx.createDynamicsCompressor?.() ?? null;
+    const limit = ctx.createDynamicsCompressor?.() ?? null;
+    const set = (n, k, v) => { if (n?.[k] && 'value' in n[k]) n[k].value = v; };
+    if (limit) { set(limit, 'threshold', -3); set(limit, 'knee', 0); set(limit, 'ratio', 20); set(limit, 'attack', 0.002); set(limit, 'release', 0.1); }
+    master = ctx.createGain();
+    master.gain.value = MASTER;
+    if (limit) { master.connect(limit); limit.connect(ctx.destination); } else master.connect(ctx.destination);
     sfxBus = ctx.createGain();
     musicBus = ctx.createGain();
-    if (comp) { sfxBus.connect(comp); comp.connect(ctx.destination); } else sfxBus.connect(ctx.destination);
-    musicBus.connect(ctx.destination);
+    if (comp) { sfxBus.connect(comp); comp.connect(master); } else sfxBus.connect(master);
+    musicBus.connect(master);
     levels();
   }
+  /* Silence for IDLE_MS (no effect, no bed): the context sleeps; the next sound or touch wakes it. */
+  function idleSoon() {
+    if (!ctx) return;
+    clearTimeout(idleTimer);
+    if (voices > 0 || bed?.src) return;
+    idleTimer = setTimeout(() => { if (ctx && voices === 0 && !bed?.src && ctx.state === 'running') ctx.suspend?.()?.catch?.(() => {}); }, IDLE_MS);
+  }
+  function awake() { clearTimeout(idleTimer); if (ctx && ctx.state === 'suspended') ctx.resume?.()?.catch?.(() => {}); }
   function levels() {
     if (sfxBus) sfxBus.gain.value = audible(settings, 'sfx') ? settings.sfx.vol : 0;
     if (musicBus) musicBus.gain.value = audible(settings, 'music') ? settings.music.vol : 0;
@@ -170,16 +194,19 @@ export function createSound({ AC = null, fetchJson = null, fetchBuf = null, stor
     if (!rule?.sounds.length) return false;
     const key = `${game}|${event}`, t = now();
     if (t - (last.get(key) ?? -Infinity) < rule.min || voices >= VOICES) { heard.dropped += 1; return false; }
-    last.set(key, t);
     const id = rule.sounds[Math.floor(Math.random() * rule.sounds.length)];
+    if ((playing.get(id) ?? 0) >= SAME_MAX) { heard.dropped += 1; return false; }
+    last.set(key, t);
     const def = maps.sounds?.[id];
     const slices = def?.sprite?.map((k) => bank.sprite.map[k]).filter(Boolean) ?? [];
     const slice = slices[Math.floor(Math.random() * slices.length)];
     const buffer = tones.get(id) ?? (slice ? sprite : null);
     if (!buffer) return false;
+    awake();
     const v = voice(buffer, { offset: slice?.[0] ?? 0, dur: slice?.[1], vol: rule.vol * (def.vol ?? 1) });
     voices += 1;
-    v.src.onended = () => { voices -= 1; v.gain.disconnect(); };
+    playing.set(id, (playing.get(id) ?? 0) + 1);
+    v.src.onended = () => { voices -= 1; playing.set(id, Math.max(0, (playing.get(id) ?? 1) - 1)); v.gain.disconnect(); idleSoon(); };
     heard.played += 1;
     log.push({ at: t, game, event, sound: id });
     if (log.length > 60) log.shift();
@@ -196,6 +223,7 @@ export function createSound({ AC = null, fetchJson = null, fetchBuf = null, stor
     if (!beds.has(want.id)) beds.set(want.id, decode(files).catch((e) => { console.warn('[sound] bed', e); return null; }));
     const buf = await beds.get(want.id);
     if (!buf || bed !== want || want.src || !audible(settings, 'music')) return;
+    awake();
     const v = voice(buf, { loop: true, vol: 0, bus: musicBus });
     want.src = v.src;
     want.gain = v.gain;
@@ -213,7 +241,7 @@ export function createSound({ AC = null, fetchJson = null, fetchBuf = null, stor
     if (!b?.src) return;
     fade(b, 0, 0.6);
     const src = b.src;
-    setTimeout(() => { try { src.stop(); } catch { /* already */ } b.gain?.disconnect(); }, 700);
+    setTimeout(() => { try { src.stop(); } catch { /* already */ } b.gain?.disconnect(); idleSoon(); }, 700);
     b.src = null;
   }
 
@@ -248,7 +276,7 @@ export function createSound({ AC = null, fetchJson = null, fetchBuf = null, stor
     mute(on) { settings = { ...settings, muted: Boolean(on) }; return apply(); },
     /** The tab hidden: nothing plays; back: it goes on. */
     hidden(on) { if (!ctx) return; if (on) ctx.suspend?.(); else ctx.resume?.(); },
-    state: () => ({ ctx: ctx?.state ?? 'none', loaded: Boolean(sprite), voices, bed: bed ? { board: bed.board, id: bed.id, playing: Boolean(bed.src), ducked: bed.ducked } : null, ...heard, settings: structuredClone(settings) }),
+    state: () => ({ ctx: ctx?.state ?? 'none', rate: ctx?.sampleRate ?? null, master: master?.gain?.value ?? null, loaded: Boolean(sprite), voices, bed: bed ? { board: bed.board, id: bed.id, playing: Boolean(bed.src), ducked: bed.ducked } : null, ...heard, settings: structuredClone(settings) }),
     log,
   };
 }
