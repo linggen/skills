@@ -830,6 +830,335 @@
       ]
      ]
     }
+   },
+   "jump1": {
+    "lean": 14,
+    "legF": [
+     50,
+     -10
+    ],
+    "legB": [
+     10,
+     -50
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     10,
+     30
+    ],
+    "words": "crouched to spring, about to leap up, the sword drawn low by her side. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+   },
+   "jump2": {
+    "lean": 8,
+    "legF": [
+     100,
+     10
+    ],
+    "legB": [
+     60,
+     -60
+    ],
+    "armF": [
+     70,
+     100
+    ],
+    "armB": [
+     60,
+     150
+    ],
+    "words": "leaping high in the air, her feet far off the ground, knees drawn up, the robe flaring below her, the sword held forward. No ground under her. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "air": true
+   },
+   "jump3": {
+    "lean": 4,
+    "legF": [
+     30,
+     8
+    ],
+    "legB": [
+     -10,
+     -24
+    ],
+    "armF": [
+     60,
+     100
+    ],
+    "armB": [
+     50,
+     130
+    ],
+    "words": "coming down through the air after a leap, legs hanging down together, toes pointed, the robe streaming up, the sword held forward. No ground under her. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "air": true
+   },
+   "knock1": {
+    "lean": -50,
+    "legF": [
+     60,
+     40
+    ],
+    "legB": [
+     30,
+     10
+    ],
+    "armF": [
+     -80,
+     -90
+    ],
+    "armB": [
+     -100,
+     -120
+    ],
+    "words": "knocked off her feet, flying backward through the air to the left, body tilted back nearly flat, arms and legs flung forward, the robe and sleeves flying, the sword in her right hand. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "air": true
+   },
+   "knock2": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -6,
+     0
+    ],
+    "armF": [
+     150,
+     160
+    ],
+    "armB": [
+     -150,
+     -160
+    ],
+    "words": "lying flat on her back on the ground, knocked down, arms spread, legs out, the robe spread around her, the sword still in her right hand. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "rot": -88,
+    "free": true
+   },
+   "getup1": {
+    "lean": 20,
+    "legF": [
+     90,
+     -10
+    ],
+    "legB": [
+     10,
+     -90
+    ],
+    "armF": [
+     40,
+     60
+    ],
+    "armB": [
+     40,
+     30
+    ],
+    "words": "getting up from the ground: kneeling on one knee, her left hand pushing off the knee, the sword in her right hand pointing down to the ground, rising. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+   },
+   "air1": {
+    "lean": 10,
+    "legF": [
+     70,
+     30
+    ],
+    "legB": [
+     20,
+     -40
+    ],
+    "armF": [
+     110,
+     120
+    ],
+    "armB": [
+     -30,
+     20
+    ],
+    "words": "in mid-air after a leap, cutting down and forward to the right with the sword in a wide arc, the robe flaring, knees drawn up. No ground under her. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "air": true
+   },
+   "sweep1": {
+    "lean": 20,
+    "legF": [
+     56,
+     -10
+    ],
+    "legB": [
+     0,
+     -60
+    ],
+    "armF": [
+     20,
+     160
+    ],
+    "armB": [
+     40,
+     140
+    ],
+    "words": "sinking low on bent knees, the sword drawn back high over her right shoulder to cut low. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+   },
+   "sweep2": {
+    "lean": 30,
+    "legF": [
+     70,
+     0
+    ],
+    "legB": [
+     -40,
+     -50
+    ],
+    "armF": [
+     100,
+     100
+    ],
+    "armB": [
+     -30,
+     20
+    ],
+    "words": "a low sweeping cut: dropped into a deep low lunge, the sword swept out level just above the ground toward the right at ankle height, the left arm back for balance. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "width": 1088,
+    "dx": 20
+   },
+   "sweep3": {
+    "lean": 18,
+    "legF": [
+     50,
+     -10
+    ],
+    "legB": [
+     -20,
+     -50
+    ],
+    "armF": [
+     60,
+     80
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "rising out of a low cut, still on bent knees, the sword coming back up to level guard. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+   },
+   "aa1": {
+    "lean": 10,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -14,
+     -30
+    ],
+    "armF": [
+     10,
+     20
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "gathering for a rising cut: the sword held low by her right knee, point down and forward, knees bent. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+   },
+   "aa2": {
+    "lean": -14,
+    "legF": [
+     24,
+     0
+    ],
+    "legB": [
+     -24,
+     -20
+    ],
+    "armF": [
+     150,
+     160
+    ],
+    "armB": [
+     -20,
+     30
+    ],
+    "words": "a rising cut against a leaping foe: the sword swept up high over and in front of her head, blade pointing up and forward, her body stretched up and leaning back, up on the balls of her feet. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+   },
+   "aa3": {
+    "lean": 4,
+    "legF": [
+     28,
+     -4
+    ],
+    "legB": [
+     -12,
+     -28
+    ],
+    "armF": [
+     80,
+     110
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "after a rising cut, the sword coming back down to level guard, knees bent. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+   },
+   "throw1": {
+    "lean": 12,
+    "legF": [
+     34,
+     0
+    ],
+    "legB": [
+     -24,
+     -36
+    ],
+    "armF": [
+     80,
+     80
+    ],
+    "armB": [
+     70,
+     90
+    ],
+    "words": "stepping in close and seizing the opponent: her left hand reaching forward to grab at chest height, the sword held back low in her right hand. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+   },
+   "throw2": {
+    "lean": -12,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -30,
+     -20
+    ],
+    "armF": [
+     -30,
+     10
+    ],
+    "armB": [
+     -60,
+     -20
+    ],
+    "words": "throwing the opponent past her: her body turned back to the left, the left arm swung hard back and down, the sword held out low behind. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+   },
+   "lowblock1": {
+    "lean": 22,
+    "legF": [
+     72,
+     -6
+    ],
+    "legB": [
+     24,
+     -74
+    ],
+    "armF": [
+     30,
+     100
+    ],
+    "armB": [
+     40,
+     130
+    ],
+    "words": "crouching low on bent knees, the sword held level across in front of her shins, blade flat, guarding low, the left hand braced on the flat of the blade. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "head": -4
    }
   },
   "clips": {
@@ -996,6 +1325,87 @@
     ],
     "fps": 1,
     "loop": true
+   },
+   "jump": {
+    "frames": [
+     "jump1",
+     "jump2",
+     "jump3"
+    ],
+    "fps": 6,
+    "calm": [
+     "jump2"
+    ]
+   },
+   "knock": {
+    "frames": [
+     "knock1",
+     "knock2",
+     "getup1"
+    ],
+    "fps": 4,
+    "calm": [
+     "knock2"
+    ]
+   },
+   "air": {
+    "frames": [
+     "jump2",
+     "air1"
+    ],
+    "hit": 1,
+    "fps": 10,
+    "calm": [
+     "air1"
+    ]
+   },
+   "sweep": {
+    "frames": [
+     "sweep1",
+     "sweep2",
+     "sweep3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "sweep2"
+    ]
+   },
+   "aa": {
+    "frames": [
+     "aa1",
+     "aa2",
+     "aa3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "aa2"
+    ]
+   },
+   "throw": {
+    "frames": [
+     "throw1",
+     "throw2"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "throw2"
+    ]
+   },
+   "lowblock": {
+    "frames": [
+     "lowblock1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "getup": {
+    "frames": [
+     "getup1"
+    ],
+    "fps": 1
    }
   }
  },
@@ -2061,6 +2471,126 @@
     "fix": {
      "s": 1.2
     }
+   },
+   "walk4": {
+    "lean": 10,
+    "legF": [
+     -26,
+     -40
+    ],
+    "legB": [
+     36,
+     0
+    ],
+    "armF": [
+     50,
+     120
+    ],
+    "armB": [
+     44,
+     160
+    ],
+    "words": "stepping forward to the right in his kung fu guard, the other foot now reaching forward and the first one behind with its heel lifted, the front open palm held forward at chest height, the rear fist at his chest. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "walk5": {
+    "lean": 8,
+    "legF": [
+     -14,
+     -50
+    ],
+    "legB": [
+     22,
+     6
+    ],
+    "armF": [
+     50,
+     120
+    ],
+    "armB": [
+     44,
+     160
+    ],
+    "words": "walking forward to the right in his kung fu guard, the rear foot lifting to pass, the front open palm held forward at chest height, the rear fist at his chest. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "walk6": {
+    "lean": 8,
+    "legF": [
+     6,
+     -20
+    ],
+    "legB": [
+     4,
+     -6
+    ],
+    "armF": [
+     50,
+     120
+    ],
+    "armB": [
+     44,
+     160
+    ],
+    "words": "walking forward to the right in his kung fu guard, the feet passing each other under him, the front open palm held forward at chest height, the rear fist at his chest. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "lp3": {
+    "lean": 6,
+    "legF": [
+     36,
+     0
+    ],
+    "legB": [
+     -32,
+     -36
+    ],
+    "armF": [
+     40,
+     120
+    ],
+    "armB": [
+     44,
+     160
+    ],
+    "words": "drawing the punching fist back from a straight punch into his guard, still in a short bow stance, the fist coming back past his chest. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "lk3": {
+    "lean": 0,
+    "legF": [
+     70,
+     -40
+    ],
+    "legB": [
+     -8,
+     -8
+    ],
+    "armF": [
+     -30,
+     90
+    ],
+    "armB": [
+     -30,
+     92
+    ],
+    "words": "after a snap kick: the kicking foot drawn back in, knee still raised at the waist, about to set it down, fists at his hips. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "hk3": {
+    "lean": -8,
+    "legF": [
+     60,
+     -30
+    ],
+    "legB": [
+     -10,
+     -10
+    ],
+    "armF": [
+     50,
+     130
+    ],
+    "armB": [
+     -30,
+     40
+    ],
+    "words": "after a side kick: the kicking leg drawn back in with the knee bent, the hips turning back to face right, arms guarding, about to set the foot down. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
    }
   },
   "clips": {
@@ -2082,27 +2612,31 @@
      "walk1",
      "walk2",
      "walk3",
-     "walk2"
+     "walk4",
+     "walk5",
+     "walk6"
     ],
     "fps": 7,
     "loop": true,
     "calm": [
      "walk1",
-     "walk3"
+     "walk4"
     ]
    },
    "back": {
     "frames": [
+     "walk6",
+     "walk5",
+     "walk4",
      "walk3",
      "walk2",
-     "walk1",
-     "walk2"
+     "walk1"
     ],
     "fps": 6,
     "loop": true,
     "calm": [
-     "walk3",
-     "walk1"
+     "walk6",
+     "walk3"
     ]
    },
    "crouch": {
@@ -2140,7 +2674,8 @@
    "light": {
     "frames": [
      "lp1",
-     "lp2"
+     "lp2",
+     "lp3"
     ],
     "hit": 1,
     "fps": 14,
@@ -2151,7 +2686,8 @@
    "lkick": {
     "frames": [
      "lk1",
-     "lk2"
+     "lk2",
+     "lk3"
     ],
     "hit": 1,
     "fps": 12,
@@ -2175,7 +2711,8 @@
    "heavy": {
     "frames": [
      "hk1",
-     "hk2"
+     "hk2",
+     "hk3"
     ],
     "hit": 1,
     "fps": 8,
@@ -2338,6 +2875,12 @@
      "knock2",
      "lose1"
     ]
+   },
+   "getup": {
+    "frames": [
+     "getup1"
+    ],
+    "fps": 1
    }
   },
   "fromRef": true
