@@ -1348,10 +1348,11 @@ function step(s) {
   if (!s.end) sparEnd(s);
   // A bout to stand through whose foe's 血 is emptied anyway (11-05: 秦雁's 二十四招 at 后山, her bar at 0 by her 11th and
   // the bout going on): she sheathes — won early, paid as standing through it. Never an empty bar that does nothing.
-  if (!s.end && s.level.outlast?.moves && s.foe.bal <= 0 && !s.foe.air) {
+  // The level opts in by its `lines.sheathe`; a bout to stand through without one goes on to its last move (11-03).
+  if (!s.end && s.level.outlast?.moves && s.level.lines?.sheathe && s.foe.bal <= 0 && !s.foe.air) {
     s.end = { kind: 'outlast', at: s.t, won: true, early: true };
     s.foe.vx = 0; me.vx = 0; s.foe.act = null; s.edge = null; s.palm = null; s.cue = null;
-    say(s, s.level.lines?.sheathe ? 'sheathe' : 'outlast');
+    say(s, 'sheathe');
     bump(s, 'down');
   }
   if (!s.end && s.level.outlast?.moves && s.foe.moves >= s.level.outlast.moves && !busy(s.foe, s.t) && !s.edge && !s.palm) {
