@@ -632,7 +632,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 293,
+       "n": 296,
        "level": "zl-jin-biedou",
        "zhuli": true
       },
@@ -1031,7 +1031,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "taiko",
-       "n": 311,
+       "n": 314,
        "level": "tiaoshui-gu",
        "zhuli": true
       },
@@ -1383,7 +1383,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 299,
+       "n": 302,
        "level": "zl-jin-lunkong",
        "zhuli": true
       },
@@ -1404,7 +1404,7 @@
        "mechanic": "格斗",
        "variety": "格斗",
        "game": "fighter",
-       "n": 294,
+       "n": 297,
        "level": "jin-qiu-ge",
        "zhuli": true
       },
@@ -1676,7 +1676,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 310,
+       "n": 313,
        "level": "anhe-dash",
        "zhuli": true
       },
@@ -2242,7 +2242,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "fuqin",
-       "n": 295,
+       "n": 298,
        "level": "jin-zhizhen-qin",
        "zhuli": true
       },
@@ -2304,7 +2304,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 300,
+       "n": 303,
        "level": "zl-jin-daoxing",
        "zhuli": true
       },
@@ -2345,7 +2345,7 @@
        "mechanic": "塔防",
        "variety": "塔防·shoulu",
        "game": "shoulu",
-       "n": 291,
+       "n": 294,
        "level": "zl-jin-chenmai",
        "zhuli": true
       },
@@ -2425,11 +2425,12 @@
         "zh": "禹步 · 照着走",
         "en": "The Step of Yu · Follow his feet"
        },
-       "mechanic": "记忆",
-       "variety": "记忆",
-       "game": "simon",
-       "n": 147,
-       "level": "0"
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 277,
+       "level": "yubu-dash",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -2612,7 +2613,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "fuqin",
-       "n": 302,
+       "n": 305,
        "level": "yezi-qin",
        "zhuli": true
       },
@@ -2716,7 +2717,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "taiko",
-       "n": 303,
+       "n": 306,
        "level": "niannian-gu",
        "zhuli": true
       },
@@ -2797,11 +2798,12 @@
         "zh": "照着走 · 随风那一式",
         "en": "Follow me · Going with the wind"
        },
-       "mechanic": "记忆",
-       "variety": "记忆",
-       "game": "simon",
-       "n": 13,
-       "level": "5"
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 278,
+       "level": "futian-dash",
+       "zhuli": true
       },
       {
        "kind": "board",
@@ -2833,7 +2835,7 @@
       "breakthrough": 0,
       "piece": 1
      },
-     "zhuli": 13,
+     "zhuli": 15,
      "longest": 3454,
      "roaming": 3,
      "side": []
@@ -2945,7 +2947,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "fuqin",
-       "n": 305,
+       "n": 308,
        "level": "zhique-qin",
        "zhuli": true
       },
@@ -2966,7 +2968,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 277,
+       "n": 280,
        "level": "qingshen-dash",
        "zhuli": true
       },
@@ -3026,11 +3028,12 @@
         "zh": "照着走 · 一剑出去",
         "en": "Follow me · One cut"
        },
-       "mechanic": "记忆",
-       "variety": "记忆",
-       "game": "simon",
-       "n": 280,
-       "level": "4"
+       "mechanic": "几何冲刺",
+       "variety": "几何冲刺",
+       "game": "dash",
+       "n": 279,
+       "level": "songzhi-dash",
+       "zhuli": true
       },
       {
        "kind": "read",
@@ -3208,7 +3211,7 @@
       "breakthrough": 1,
       "piece": 2
      },
-     "zhuli": 11,
+     "zhuli": 12,
      "longest": 3596,
      "roaming": 2,
      "side": []
@@ -3247,7 +3250,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "taiko",
-       "n": 296,
+       "n": 299,
        "level": "jin-hongshu-gu",
        "zhuli": true
       },
@@ -3268,7 +3271,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 281,
+       "n": 284,
        "level": "shouhuan-dash",
        "zhuli": true
       },
@@ -3309,7 +3312,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 282,
+       "n": 285,
        "level": "lastshot-dash",
        "zhuli": true
       },
@@ -3531,7 +3534,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 283,
+       "n": 286,
        "level": "qianshui-dash",
        "zhuli": true
       },
@@ -3621,7 +3624,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 286,
+       "n": 289,
        "level": "zl-end-sangzi",
        "zhuli": true
       },

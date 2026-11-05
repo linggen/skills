@@ -185,7 +185,7 @@ test('saves from before the split: one past 09-year stays put; one in 09-year mo
 /* ── the boards themselves ── */
 
 test('no 古七 board draws its own skip (the page lays it), each says what it is in both languages, and a skip still draws a line', () => {
-  const deal = content.tasks.tasks.find((x) => x.id === 'jiuge-yubu').deal;
+  const deal = undefined; // 禹步's board is a Dash since 照着走 was retired (11-05); the kit itself is kept and still holds
   for (const mod of [simon]) { // the rest of 古七's old boards deleted 2026-10-19 (「没用在游戏中的, 都删了吧」); 喂饭桶 · 扔了干净 2026-10-20; 禹步 · 九格 (home-made) 2026-10-27
     const s = mod.newGame('t', 1, deal);
     for (const lang of ['zh', 'en']) {
@@ -198,27 +198,16 @@ test('no 古七 board draws its own skip (the page lays it), each says what it i
   }
 });
 
-test('禹步 · 照着走 (Simon, in 禹步 · 九格\'s place 2026-10-27): 瞿老 walks the nine squares each once, ending in 中五; a run grows 4 → 9; a wrong square trips and shows the run again; walked whole → quiet, 「猎户的脚」', () => {
+test('照着走 is retired (Hanli 11-05: 「这个小游戏删了吧, 太难了」): 禹步 is a Dash now, the kit kept in the repo and dealt by no board', () => {
   const t = content.tasks.tasks.find((x) => x.id === 'jiuge-yubu');
-  assert.equal(t.game, 'simon');
+  assert.equal(t.game, 'dash');
+  assert.equal(t.deal, undefined, 'no Simon deal left on it');
+  assert.deepEqual(t.marks, { quiet: 'yubu', loud: 'yubu' }, 'its marks kept');
+  assert.equal(t.done_line.zh, '「猎户的脚。」', 'its line kept');
+  assert.ok(!content.tasks.tasks.some((x) => x.game === 'simon'), 'no board deals it');
+  // The module still loads and plays (to come back later).
   assert.deepEqual(simon.GRID, [4, 9, 2, 3, 5, 7, 8, 1, 6]);
-  const watch = (s) => { while (s.phase === 'show') s = simon.tick(s, 50); return s; };
-  let s = watch(run(simon, simon.newGame('a', 1, t.deal), [{ g: 'start' }]));
-  assert.equal(s.level, 0);
-  assert.deepEqual([...s.run].sort(), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
-  assert.equal(s.run[8], 5, 'ends in 中宫');
-  assert.equal(s.len, 4);
-  const wrong = s.run.find((v) => v !== s.run[0]);
-  s = simon.act(s, { g: 'sq', n: String(wrong) }).state;
-  assert.deepEqual([s.note, s.phase, s.trips], ['trip', 'show', 1]);
-  assert.match(simon.html(s, 'zh'), /自己绊了自己一下/);
-  s = simon.newGame('b', 1, t.deal);
-  s = run(simon, s, [{ g: 'start' }]);
-  while (!s.won) { s = watch(s); s = simon.act(s, { g: 'sq', n: String(s.run[s.i]) }).state; }
-  assert.equal(s.len, 9);
-  assert.equal(s.grade, 'quiet');
-  assert.match(simon.html(s, 'zh'), /猎户的脚/);
-  assert.equal(simon.newGame('c').level, 1, 'the 游戏厅 plays the kit\'s own ladder');
+  assert.equal(simon.newGame('c').level, 1);
 });
 
 test('闻焦 has left 09-year: the passage whole (story_after merged, word for word), 伏天 waits on 清明 alone; an old save holding it offered lets it go', () => {

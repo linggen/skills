@@ -471,20 +471,6 @@
         "worlds/jiuding/games.json"
       ]
     },
-    "simon": {
-      "_about": "照着走 · Simon (games/simon.js, pure; 第七回's 禹步).",
-      "module": "scripts/games/simon.js",
-      "dirs": [],
-      "css": [
-        "scripts/lingjing.css",
-        "scripts/games/live.css"
-      ],
-      "files": [
-        "scripts/games/boards/yubu-ground.webp",
-        "scripts/games/boards/yubu-slab.webp",
-        "scripts/games/boards/yubu-foot.webp"
-      ]
-    },
     "sadou": {
       "_about": "撒豆成兵 (games/sadou.js, Phaser): the 秘境's 拾遗 and the 奇遇's.",
       "module": "scripts/games/sadou.js",

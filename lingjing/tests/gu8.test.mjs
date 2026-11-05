@@ -133,15 +133,13 @@ test('the 九节 pot is the 回\'s own: before 古八 the 十年黄精 is only a
   assert.equal(content.items.items.find((i) => i.id === 'huangjing-10').kind, 'material');
 });
 
-// 一剑出去 (09-dingfeng's last board, the way on waits on it): 照着走 level 4 where 几何冲刺 stood (2026-10-28, Hanli: 「气走经脉也少一点」)
-// — the longest and quickest run yet, past 09-shenshi's level 3; a human-like hand walks it.
-test('一剑出去 is 照着走 level 4, past 纸雀儿\'s 3, and a human-like hand walks it', async () => {
+// 一剑出去 (09-dingfeng's last board, the way on waits on it): 照着走 level 4 until 2026-11-05, a Dash again since
+// (Hanli: 「这个小游戏删了吧, 太难了」) — `songzhi-dash`, 138, as it was before 10-28.
+test('一剑出去 is 几何冲刺 `songzhi-dash` again, 照着走 retired', () => {
   const t = content.tasks.tasks.find((x) => x.id === 'dingfeng-songzhi');
-  assert.deepEqual([t.game, t.deal.lv], ['simon', 4]);
-  // 纸雀儿 (level 3) is 守炉's story level since 2026-10-28 (the 主力 pass); the level stays in the kit
-  const S = await import('../scripts/games/simon.js');
-  const { bot } = await import('../scripts/games/bots/simon.js');
-  const { playModule } = await import('../tools/board-bots.mjs');
-  assert.ok(S.LEVELS[4].to > S.LEVELS[3].to && S.LEVELS[4].on < S.LEVELS[3].on);
-  assert.ok(playModule(S, bot, { tries: 3, deal: t.deal, limit: 600000 }).won);
+  assert.equal(t.game, 'dash');
+  const row = content.games.games.find((g) => g.task === 'dingfeng-songzhi' && !g.cut && !g.replaced);
+  assert.equal(row.id, 'dash');
+  assert.equal(row.levels[0].id, 'songzhi-dash');
+  assert.equal(row.levels[0].bpm, 138);
 });

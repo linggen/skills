@@ -1532,6 +1532,8 @@ function moreHtml(slots) {
   // While the box holds the choices, a pool's beast beside the scene is offered under them instead (besideHtml).
   const w = words(), next = !slots || choicesInBox() ? null : slots.footer.next;
   if (!next) return '';
+  // …and never in the footer while the box is up: it is offered under the box (besideHtml).
+  if (next.cards?.some(besidePool) && playing(readingHere())) return '';
   const what = queueLabel(next.cards[0]);
   return `<button class="act quiet more" data-qnext="${esc(slots.key)}" title="${esc(fill(w.queueNext, { what: [what.name, what.kind].filter(Boolean).join(' · ') }))}">${esc(waitingLine({ ...what, more: slots.footer.waiting - 1 }, w))} ›</button>`;
 }
@@ -2877,7 +2879,9 @@ function dialogBoxHtml(slots) {
   // 黑地十一步 did nothing): the log still opens over the board, and the board's clock waits.
   if (boxYields(slots)) return log;
   const voice = hasAudio(audio) ? dubOn() : null;
-  const acts = choicesInBox() ? panelActsHtml(ctx(), { inBox: true }) + besideHtml(slots) : '';
+  // The beast beside the scene sits under the box at its last beat, with or without the scene's choices there (live at
+  // 430, bf7a5fe2: the box held no choices and the chip fell to the footer strip, clipped).
+  const acts = (choicesInBox() ? panelActsHtml(ctx(), { inBox: true }) : '') + (atLast(r, lang()) ? besideHtml(slots) : '');
   const story = playing(r) ? storyHtml(r, { lang: lang(), voice, acts, herId: look.companion?.id ?? null, speed: modeAt(r, speedNow(), lang()), faces: r.all?.whole ? firstFaces() : [], aside: asideMay(r) }) : '';
   return story + log;
 }

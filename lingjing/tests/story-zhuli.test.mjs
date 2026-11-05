@@ -42,10 +42,7 @@ const KEPT = {
   'kouzi-crowd': '第五回: 七八个口子 — the crowd on the riverbank; the 回\'s one 华容道',
   'qianye-qiajue': '第六回: 讲堂试法 — the 结印 teaching beat; its grades are the marks the dock\'s moves wait on',
   'jiaxin-letter': '第六回: 家信 — the picture drawn for 娘 is the passage',
-  'jiuge-yubu': '第七回: 禹步 — 瞿老: 「照着我的脚，走一遍」',
-  'futian-suifeng': '第七回: 随风那一式 — walked on the clifftop over and over, as the passage says',
   'yishui-reed': '第七回: 芦苇里那一等 — the throw on 浮木, its stars mark the reed (reed-still · reed-hasty)',
-  'dingfeng-songzhi': '第八回: 一剑出去 — 瞿老\'s cliff, the steps the sword goes by',
   'shijie-tiandan': '第八回: 恬惔虚无 — the second 调息 Hanli kept; 「真气从之」 is the passage',
 };
 const CHAT = new Set(['对话']);

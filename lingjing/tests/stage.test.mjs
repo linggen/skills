@@ -418,7 +418,8 @@ test('a pool\'s beast standing beside a story scene stays one tap away, even whi
   const fs = await import('node:fs');
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   // Under the box's own choices at the passage's end, named by its beast (live 11-05: 「还有：斗法 ›」, cut at 430 in the footer).
-  assert.match(page, /const acts = choicesInBox\(\) \? panelActsHtml\(ctx\(\), \{ inBox: true \}\) \+ besideHtml\(slots\) : '';/);
+  assert.match(page, /const acts = \(choicesInBox\(\) \? panelActsHtml\(ctx\(\), \{ inBox: true \}\) : ''\) \+ \(atLast\(r, lang\(\)\) \? besideHtml\(slots\) : ''\);/, 'at the box\'s last beat, choices or none (430, bf7a5fe2)');
+  assert.match(page, /if \(next\.cards\?\.some\(besidePool\) && playing\(readingHere\(\)\)\) return '';/, 'never in the footer strip while the box is up');
   assert.match(page, /if \(c\.card === 'duel'\) return \{ name: \(look\?\.place\?\.encounter\?\.game\?\.id === c\.id \? look\.place\.encounter\.creature\?\.name/);
   // …and called up, the box steps aside for it, so its 出手 is the top thing there (the done passage covered it, 11-05).
   assert.match(page, /\(besidePool\(c\) && slots\.main\[0\] === c\)/);
