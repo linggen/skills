@@ -156,7 +156,7 @@ button:disabled { cursor: default; }
 /* The top bar's 回 line whole or on its own row, never cut under the place's name (the playbot, 11-05, at 1280: 「卷一 ·
    沉…」 ran under 「沉鼎观 · 讲堂」): the title row keeps its words' width, and the bar wraps it to a row of its own. */
 .topbar .titlerow .huiline { min-width: auto; flex: 0 0 auto; }
-.topbar .titlerow { flex-wrap: wrap; row-gap: 2px; }
+.topbar .titlerow { flex-wrap: wrap; row-gap: 2px; min-width: min-content; }
 /* The scene's caption (2026-10-14): a small line under the place — never a beat in the
    box, which plays the book alone (rules/tell.mjs playOf). */
 .placecap { order: 9; flex: 1 1 100%; min-width: 0; margin-top: -2px; font-family: var(--serif); font-size: 13px; line-height: 1.55; color: var(--dim);

@@ -88,8 +88,11 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null } = {}) => {
   };
   // In motion (a float rising, a card dealt): read when it lands, not mid-flight.
   const moving = (x) => { for (let a = x; a && a !== document.body; a = a.parentElement) { if (a.getAnimations?.().some((an) => an.playState === 'running')) return true; } return false; };
+  // A thing that lets taps through (pointer-events: none — a speech bubble over the room) is never what elementFromPoint
+  // meets, so it cannot be measured by it: its place is the page's to choose (2026-11-05: every 银月 line read as covered).
+  const passThrough = (x) => getComputedStyle(x).pointerEvents === 'none';
   for (const { kind, e, node } of items) {
-    if (moving(e)) continue;
+    if (moving(e) || passThrough(e)) continue;
     const r = e.getBoundingClientRect();
     rects.push(r);
     const clip = clipOf(e);
