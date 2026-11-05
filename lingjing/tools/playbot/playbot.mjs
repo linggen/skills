@@ -360,6 +360,8 @@ export async function run(opts) {
       await shot(`${label}-won`);
       const paid = res.settled?.out?.paid ?? res.settled?.out?.spoils ?? null;
       if (!sp || !sp.parts.length) await fail('no-spoils', { fight: label, title: sp?.title ?? null, paid });
+      // Put away, as a player does: since dcab26ad the next play waits behind an open 所得.
+      else await click('.cardx[data-spoils-close], [data-spoils-close]', '所得 · 收起').catch(() => {});
     };
 
     /* Bring a control up and tap it: what stands over the stage cleared, and the scene's story — which hides the
@@ -477,7 +479,16 @@ export async function run(opts) {
         if (await startHaunt(name)) {
           await sleep(1500);
           await fight('kept', { stopAfter: 2, saveName: name });
-          const before = await page.evaluate(FIGHT);
+          // The state to compare after a reload is taken on his turn, the room idle, with a play he could make: a turn
+          // with nothing playable ends itself after a reload (a4338dd, 11-05 — the game is right), so that is no mismatch.
+          let before = null;
+          for (let k = 0; k < 30 && !before; k += 1) {
+            const b = await page.evaluate(() => globalThis.__lingjingPlay?.bout?.() ?? null);
+            const live = (await page.evaluate(VISIBLE, '.battle [data-spot].can')).some((c) => c.spot !== 'end' && c.spot !== 'stage');
+            if (b && b.whose === 'you' && !b.busy && live) before = await page.evaluate(FIGHT);
+            else await sleep(500);
+          }
+          if (!before) unplayable.push({ where, why: 'no idle turn with a play to compare across the reload' });
           // Keep it: the page's own 留着以后玩 when it has one; else walking away (a reload) leaves it open, as on the phone.
           const keep = (await page.evaluate(VISIBLE, '[data-board-keep], [data-fight-tap=keep], [data-keep]'))[0];
           if (keep) await tap(keep, '留着以后玩');
