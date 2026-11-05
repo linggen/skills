@@ -14,17 +14,20 @@ test('the phone\'s room gives its slack to the hand: the field as tall as its ra
   assert.match(phone, /\.battle \{ grid-template-rows: auto auto auto auto auto minmax\(0, 1fr\);/);
   assert.match(phone, /\.bfield \{ grid-template-rows: auto auto auto;/);
   assert.match(phone, /\.brank:not\(:has\(> \.bminion:not\(\.empty\)\)\) \{ height: calc\(var\(--mh\) \* \.62\); \}/, 'an empty rank is lower');
-  assert.match(phone, /\.bdock \{ min-height: 0; display: flex; flex-direction: column; justify-content: flex-end;/);
+  // …the 丹囊 tray right under the party row, the hand filling everything below it (no band between, 11-05).
+  assert.match(phone, /\.battle \.bdock \{ min-height: 0; display: flex; flex-direction: column; justify-content: flex-start;/);
+  assert.match(phone, /\.battle \.bdock > \.bhand \{ flex: 1 1 0; min-height: 0;/);
 });
 
 test('the hand is a grid, never an overlap: one row to five, two rows from six', () => {
-  assert.match(phone, /\.bhand \{ --k: 1;[^}]*display: grid; grid-template-columns: repeat\(var\(--k\), minmax\(0, var\(--cwm\)\)\);/);
+  assert.match(phone, /\.bhand \{ --k: 1;[^}]*display: grid; grid-template-columns: repeat\(var\(--k\), var\(--cell\)\); grid-auto-rows: minmax\(0, 1fr\);/);
   const k = (n) => (phone.match(new RegExp(`\\.bhand:has\\(> \\.bcard:nth-child\\(${n}\\)\\) \\{ --k: (\\d)`)) ?? [])[1];
   // A row's count for a hand of n cards, as the :has rules set it.
   const rowOf = (n) => { let r = 1; for (let i = 2; i <= n; i += 1) r = Number(k(i) ?? r); return r; };
   assert.deepEqual([1, 2, 3, 4, 5].map(rowOf), [1, 2, 3, 4, 5]);
   assert.deepEqual([6, 7, 8, 9, 10, 11, 12].map(rowOf), [3, 4, 4, 5, 5, 6, 6]);
   for (const n of [6, 7, 8, 9, 10, 11, 12]) assert.ok(Math.ceil(n / rowOf(n)) <= 2, `${n} cards in two rows`);
-  assert.match(phone, /\.bhand > \.bcard \{ flex: none; width: auto; height: auto; aspect-ratio: 71 \/ 100; transform: none;/, 'no fan, no overlap');
-  assert.match(phone, /\.bhand > \.bcard\.held \{ transform: translateY\(-14%\) scale\(1\.1\);/, 'a tap still raises it');
+  assert.match(phone, /\.bhand > \.bcard \{ flex: none; width: 100%; height: 100%; max-height: calc\(var\(--cell\) \* 2\.4\);[^}]*transform: none;/, 'no fan, no overlap: as tall as its row gives');
+  assert.match(phone, /\.bhand > \.bcard \.btext \{ font-size: clamp\(7\.5px,/, 'a narrow leaf sets its line smaller, never broken');
+  assert.match(phone, /\.bhand > \.bcard\.held \{ transform: translateY\(-12%\) scale\(1\.08\);/, 'a tap still raises it');
 });
