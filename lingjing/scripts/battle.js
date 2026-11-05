@@ -1031,6 +1031,18 @@ export function actionOf(token) {
 /* `actions` are the player's, in order; the creature's turns are played by the
    policy whenever it is its turn. Give it the same setup and the same actions
    and it lands in the same place, every time, on either side of the wire. */
+/* The moves already made, played into a fight begun from its setup — the same loop as `battle`, on the state itself:
+   a room reopened mid-fight (a cold reload) stands where it stood, turn, hands, piles, boards and the rng's place. */
+export function replayInto(st, actions) {
+  for (const raw of actions ?? []) {
+    const action = typeof raw === 'string' ? actionOf(raw) : raw;
+    while (st.whose === 'foe' && st.outcome === 'open') foeTurn(st);
+    if (st.outcome !== 'open') break;
+    if (!act(st, action, 'you').ok) break;
+  }
+  while (st.whose === 'foe' && st.outcome === 'open') foeTurn(st);
+  return st;
+}
 export function battle(actions, setup, catalog) {
   const st = begin(setup, catalog);
   for (const raw of actions) {

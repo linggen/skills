@@ -3480,6 +3480,54 @@ test('a fight kept for later never freezes the pouch: only what the fight holds 
   assert.match(fightHold({ ...open, lang: 'en' }, 'move', {}, content).result.say, /^The fight with .+ is still open$/);
 });
 
+test('a fight reopened mid-fight stands where it stood: the moves kept with it (duel mark), handed back at the door, replayed on its seed (Hanli 11-05: a cold reload at turn 10 began it over)', async () => {
+  const { replayInto, view, actionOf } = await import('../scripts/battle.js');
+  const { cardCatalog } = await import('../scripts/rules/cards.mjs');
+  const c = ctx({ now: new Date('2026-10-05T10:00:00') });
+  const base = { ...toOpenWorld(), chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0 };
+  const door = must(duel, base, { id: 'haunt:jingwei' }, c);
+  const setup = door.state.fight.setup, catalog = cardCatalog(content);
+  // Played a while, as the room plays: his moves (tokens), the beast's turns in between.
+  const st = begin(setup, catalog), tokens = [];
+  for (let g = 0; g < 400 && st.outcome === 'open' && st.turn < 8; g += 1) {
+    if (st.whose === 'foe') { foeTurn(st); continue; }
+    const a = lookahead(st);
+    tokens.push(tokenOf(a));
+    act(st, a, 'you');
+  }
+  while (st.whose === 'foe' && st.outcome === 'open') foeTurn(st);
+  assert.ok(st.turn >= 4, `played on to turn ${st.turn}`);
+  const marked = must(duel, door.state, { id: 'haunt:jingwei', action: 'mark', picks: tokens.join(',') }, c).state;
+  assert.deepEqual(marked.fight.picks, tokens);
+  // The door again (a reload): the same fight, the moves handed back, no second 体力.
+  const again = must(duel, marked, { id: 'haunt:jingwei' }, c);
+  assert.equal(again.result.resumed, true);
+  assert.deepEqual(again.result.picks, tokens);
+  assert.deepEqual(again.result.duel.picks, tokens, 'the brief carries them for the phone\'s room');
+  assert.equal(again.state.stamina, marked.stamina);
+  const back = replayInto(begin(again.result.duel.setup, catalog), again.result.picks);
+  const strip = (v) => ({ ...v, log: undefined });
+  assert.deepEqual(strip(view(back)), strip(view(st)), 'turn, hands, piles, boards, 气血, 灵力 as they stood');
+  assert.deepEqual(back.you.hand, st.you.hand);
+  assert.deepEqual(back.you.deck, st.you.deck, 'the piles in the same order: the rng where it was');
+  // …and the settle replays the same moves to the same place.
+  assert.equal(battle(tokens, setup, catalog).turn, st.turn);
+  // A mark for a fight not open refuses, and changes nothing.
+  refused(duel, base, { id: 'haunt:jingwei', action: 'mark', picks: 'end' }, 'not-started', c);
+  // The Mac page and the phone's room keep and replay them.
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /st: replayInto\(begin\(brief\.setup, cardCatalog\(\)\), prior\), actions: \[\.\.\.prior\]/);
+  assert.match(page, /onMove: \(token\) => \{ b\.actions\.push\(token\); markBout\(b\); \}/);
+  const host = fs.readFileSync(new URL('../scripts/games/phone/host.js', import.meta.url), 'utf8');
+  assert.match(host, /data\?\.brief\?\.picks/);
+  assert.match(host, /rules\('duel', \{ id: fightId, action: 'mark'/);
+  const room = fs.readFileSync(new URL('../scripts/games/kapai.js', import.meta.url), 'utf8');
+  assert.match(room, /replayInto\(st0, prior\)/);
+  // Settled, the page's Look drops the open fight at once: no 「回到这一战」 card for the second the next Look takes (11-05).
+  assert.match(page, /if \(r\.ok && look\?\.fight\?\.game === id\) look = \{ \.\.\.look, fight: null, stage: \(look\.stage \?\? \[\]\)\.filter\(\(c\) => c\.card !== 'fight'\) \};/);
+  void actionOf;
+});
+
 test('the command line holds the world still while a fight is open, and closes one left overnight', () => {
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lj-fight-'));
   const cli = (iso, ...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'), env: { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: iso }, encoding: 'utf8' }).stdout);

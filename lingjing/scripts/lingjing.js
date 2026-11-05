@@ -27,7 +27,7 @@ import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tapHeard } from './board.js';
 import { sounded } from './games/kit/heard.js';
-import { REALMS, begin, missingCards, view as boutView } from './battle.js';
+import { REALMS, begin, missingCards, replayInto, view as boutView } from './battle.js';
 import { fightOdds, oddsKey } from './fightodds.js';
 import { withNext, FOOTER, barOf, duanOf, duanSegments, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, slotKey, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml } from './battle-card.js';
@@ -3903,17 +3903,13 @@ function bringWonIntoFocus() {
   requestAnimationFrame(() => bringIntoFocus(document.querySelector('#focus .toasts .spoils, #focus .toasts .donote')));
 }
 /* A kept board taken up (the story's stands offered again; another is opened as from the tray) or dropped. */
-async function keptTap(id, action, walked = false) {
-  const r = await write('task', { action, id }).catch(failed);
-  // Kept where it is hosted and he is elsewhere: 玩 walks him there and takes it up (Hanli 11-05: 「我点了玩, 没反应」 — the
-  // refusal's line stood on the stage behind the open 事 book). Any other refusal closes the book so its line is seen.
-  if (!r.ok && action === 'kept-play' && r.refused === 'not-here' && r.place && !walked) {
-    show({ bookOpen: false });
-    await goTo(r.place);
-    if (look?.place?.id === r.place) return keptTap(id, action, true);
-    return;
-  }
-  if (!r.ok) { keep({ doNote: refusal(r) }); show({ bookOpen: false }); return; }
+async function keptTap(id, action) {
+  // Kept where it is hosted and he is elsewhere: 玩 walks him there and takes it up in the one rules call (`walk`; Hanli 11-05:
+  // 「我点了玩, 没反应」, then 5–10 s behind 「…」 when the page walked, looked and took it up). Any refusal closes the book so
+  // its line is seen.
+  show({ bookOpen: false });
+  const r = await write('task', { action, id, ...(action === 'kept-play' ? { walk: 1 } : {}) }).catch(failed);
+  if (!r.ok) { keep({ doNote: refusal(r) }); return render(); }
   show({ bookOpen: false });
   await refresh();
   if (action === 'kept-play' && !r.story) openFromTray(id);
@@ -4611,7 +4607,10 @@ async function onDuelStart(id) {
     }
     keep({ duelSay: { id: null, text: null }, walkedOut: null });
     // The story's record of the fight; the room itself is mounted on the next draw (paintFight).
-    bout = { id, brief, setup: brief.setup, st: begin(brief.setup, cardCatalog()), actions: [], her: null, gearHint };
+    // Reopened mid-fight (a cold reload, Hanli 11-05): the door hands back the moves made, and the fight stands where it
+    // stood — replayed on its seed (battle.js replayInto), the moves kept for the settle.
+    const prior = Array.isArray(r.picks) ? r.picks : [];
+    bout = { id, brief, setup: brief.setup, st: replayInto(begin(brief.setup, cardCatalog()), prior), actions: [...prior], her: null, gearHint };
     const odds = oddsKept.get(oddsKey(brief.setup));
     tracker.fightOpen(id, { beast: brief.creature?.id ?? null, place: look?.place?.id ?? null, hand: brief.setup?.you?.deck?.length ?? brief.setup?.you?.hand?.length ?? null, source: look?.scene?.id ?? null, ...(odds ? { chip: odds.grade, odds: odds.win } : {}) });
     bout.say = fightSayFor(bout);
@@ -4642,7 +4641,8 @@ const boutYielded = (b) => Boolean(boutRoom(b)?.room().yielded);
 function boutHooks(b) {
   return {
     ctx: () => (bout === b ? boutCtx() : {}),
-    onMove: (token) => b.actions.push(token),
+    // Each move kept with the open fight too (rules duel `mark`), so a reload picks up there: one write at a time, the latest wins.
+    onMove: (token) => { b.actions.push(token); markBout(b); },
     onStep: () => { if (bout === b) fightMoments(); },
     onPlayed: ({ before, mark, mine }) => herCues(b, before, mark, mine),
     onAsk: () => askHerInFight(b),
@@ -4697,6 +4697,16 @@ function fightTap(kind) {
    witness to a fight (design.md § 降妖). The whole list of moves goes to the rules, which replay them and
    settle — win, loss, or the beast walking away; the room's closing card waits for this answer. */
 const SEAL_HOLD_MS = 3000, SEAL_SAID_MS = 4200, WAY_HOLD_MS = 20000;
+/* The moves so far, kept in the save as they are made (rules duel `mark`) — never waited on; while one write is out,
+   the next waits for it and sends the newest list. A test save with no chat keeps them too: the rules are local. */
+function markBout(b) {
+  if (b.marking) { b.markAgain = true; return; }
+  b.marking = true;
+  verb('duel', { id: b.id, action: 'mark', picks: b.actions.join(',') }).catch(() => null).finally(() => {
+    b.marking = false;
+    if (b.markAgain && !b.settled) { b.markAgain = false; markBout(b); }
+  });
+}
 async function writeBout(b) {
   const r = await write('duel', { id: b.id, picks: b.actions.join(',') }).catch(failed);
   return r ?? failed('no answer');
@@ -4715,6 +4725,8 @@ async function settleBout(b, out = {}) {
   // back (its match weighs his hand, a second or two) — never the old foe's card with 出手 meanwhile
   // (Hanli, 2026-10-27: 「longzhi打完出来, 中间还显示longzhi的出手」).
   if (look?.place?.encounter?.game?.id === id) look = { ...look, place: { ...look.place, encounter: null } };
+  // …nor 「赤狐 · 回到这一战」 for the second the next Look takes (Hanli 11-05): the rules settled it, so it is not open.
+  if (r.ok && look?.fight?.game === id) look = { ...look, fight: null, stage: (look.stage ?? []).filter((c) => c.card !== 'fight') };
   render();
   queueMicrotask(playReveals); // a card won waits for the room to close, then lands in the bag
   if (!r.ok && engineMoved(r)) return reloadForEngine(r);

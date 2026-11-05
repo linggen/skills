@@ -228,9 +228,14 @@ test('收着的棋局 kept where it is hosted: 玩 away names the place (the pag
   assert.deepEqual(s1.kept, [], 'off the list');
   const t = look(s1, content, ctxAt(now)).tasks.find((x) => x.id === 'xiangqi');
   assert.ok(t && t.status === 'offered', 'the board stands to be opened (openFromTray)');
-  // The page: a not-here 玩 walks there and takes it up, and any other refusal closes 事 so its line is seen.
+  // `walk` (the page's 玩): walked there and taken up in the one call — no walk, look, take, look again (11-05: 5–10 s).
+  const walked = task(kept, content, ctxAt(now), { action: 'kept-play', id: 'xiangqi', walk: 1 });
+  assert.equal(walked.result.ok, true, JSON.stringify(walked.result));
+  assert.equal(walked.result.walked, 'zhishi');
+  assert.equal(walked.state.place, 'zhishi');
+  assert.deepEqual(walked.state.kept, []);
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   const fn = page.slice(page.indexOf('async function keptTap('), page.indexOf('function gameMove('));
-  assert.match(fn, /r\.refused === 'not-here' && r\.place && !walked[^]*await goTo\(r\.place\)[^]*keptTap\(id, action, true\)/);
-  assert.match(fn, /if \(!r\.ok\) \{ keep\(\{ doNote: refusal\(r\) \}\); show\(\{ bookOpen: false \}\); return; \}/);
+  assert.match(fn, /write\('task', \{ action, id, \.\.\.\(action === 'kept-play' \? \{ walk: 1 \} : \{\}\) \}\)/);
+  assert.doesNotMatch(fn, /goTo\(/, 'no second round of calls');
 });

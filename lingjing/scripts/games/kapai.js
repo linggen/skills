@@ -25,7 +25,7 @@
 //   settle(st) → Promise<r> the rules' answer; the closing card waits for it, and a refusal (r.ok false) has none
 //   holdMs(end)             how long the closing card stands (`end`: the foe's last word is in it)
 // A story mount settles { …, r } — what the rules answered; the story's own pay and 所得 follow it.
-import { act, begin, foeStep, foeTurn, idle, idleWhy, playerOffers as offers, tokenOf, view } from '../battle.js';
+import { act, begin, foeStep, foeTurn, idle, idleWhy, playerOffers as offers, replayInto, tokenOf, view } from '../battle.js';
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, cardFaceHtml, dropOf, endOf, pickOf } from '../battle-card.js';
 import { banner, ghostsOf, playLog, since } from '../battle-anim.js';
 import { wireDrag } from '../battle-drag.js';
@@ -124,7 +124,11 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
   const fight = await fightFrom(data, lang);
   // A fight the story's door dealt keeps its seed: the rules replay the picks on it (the 游戏厅's rows carry none).
   const setup = { ...fight.setup, seed: fight.setup.seed ?? `kapai|${seed}` };
-  const room = { ...fight, setup, lang, st: data.st ?? begin(setup, fight.catalog), picked: null, openLog: false, help: false, note: null, busy: false, ended: false, settling: false, yielded: false };
+  // Reopened mid-fight (the door's `picks`): the moves already made are replayed, so it stands where it stood.
+  const prior = Array.isArray(data.picks) ? data.picks : Array.isArray(data.brief?.picks) ? data.brief.picks : [];
+  const st0 = data.st ?? begin(setup, fight.catalog);
+  if (prior.length && st0.turn === 0 && !st0.log.some((e) => e.who === 'you' && e.act === 'played')) replayInto(st0, prior);
+  const room = { ...fight, setup, lang, st: st0, picked: null, openLog: false, help: false, note: null, busy: false, ended: false, settling: false, yielded: false };
   const hook = (name, ...a) => { try { return story[name]?.(...a); } catch (e) { console.warn('[kapai]', name, e); return undefined; } };
   const ctx = () => { const base = ctxOf(room), more = hook('ctx', room) ?? {}; return { ...base, ...more, says: { ...base.says, ...(more.says ?? {}) } }; };
   const paused = () => Boolean(shell?.paused?.());

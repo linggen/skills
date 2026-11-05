@@ -14,7 +14,7 @@ import { choreCounts, choreGrant, isOnce, questDone } from './chores.mjs';
 import { payMeaning } from './gongke.mjs';
 import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
 import { duelBrief, tasksBrief } from './look.mjs';
-import { hashOf } from './travel.mjs';
+import { hashOf, move } from './travel.mjs';
 import { poolToday, standingToday } from './rotation.mjs';
 import { stow, fullLine } from './pouch.mjs';
 import { dropKept, keepBoard, leaveBoard, leaveOf, owePart, playKept, sceneBoards, skipBoard, storyBoard } from './skips.mjs';
@@ -77,7 +77,7 @@ export function task(state, content, ctx, args) {
   if (args.action === 'skip') return (errandAsking(content, state, String(args.id ?? ''), state.place) ? skipOrLeave : skipBoard)(state, content, ctx, String(args.id ?? ''));
   // 留: kept for later (收着的棋局, rules/skips.mjs keepBoard) — taken up again, or dropped (丢).
   if (args.action === 'keep') return keepOrPut(state, content, ctx, String(args.id ?? ''));
-  if (args.action === 'kept-play') return playKept(state, content, ctx, String(args.id ?? ''), taskOpen(content, state, String(args.id ?? ''), ctx.now) || hostedHere(content, state, String(args.id ?? ''), ctx.now));
+  if (args.action === 'kept-play') return keptPlay(state, content, ctx, String(args.id ?? ''), Boolean(args.walk));
   if (args.action === 'kept-drop') return dropKept(state, content, ctx, String(args.id ?? ''));
   // 收手: a board he opened by choice, put down (rules/skips.mjs leaveOf).
   // …切磋's bout put down is over (rules/qiecuo.mjs): skipped, its cooldown started.
@@ -458,6 +458,14 @@ export function duel(state, content, ctx, args) {
   const key = game.hunt ? huntKey(game.hunt) : creature.id, hunt = Boolean(game.hunt);
   const day = dayKey(ctx.now), today = s.duels?.[key];
 
+  // ── 落子记下: the moves so far, kept with the open fight (Hanli 11-05: a cold reload at turn 10 began the fight over at
+  // turn 1) — the door hands them back on resume, and the room replays them to stand where it stood. Nothing is settled.
+  if (args.action === 'mark') {
+    if (s.fight?.game !== id || today?.day !== day || today.outcome !== 'open') return refuse('not-started', null, { game: id });
+    const picks = String(args.picks ?? '').split(',').map(t => t.trim()).filter(Boolean).slice(0, 400);
+    s.fight = { ...s.fight, picks };
+    return { state: s, result: { ok: true, marked: picks.length } };
+  }
   // ── 出手: the door of the instance ──
   if (!args.picks) {
     // A trial fight (`retry`, the prologue's 三试) is fought again at once — a
@@ -492,7 +500,10 @@ export function duel(state, content, ctx, args) {
     // The whole setup is kept with it, so the settle replays what the page
     // is handed now (an older save's open fight takes it on resume).
     if (!s.fight.setup) s.fight.setup = fightSetup(content, s, foeOf(content, game), ctx.now, id, game.deal, readOf(s, game));
-    return { state: s, result: { ok: true, started: id, ...(resuming ? { resumed: true } : {}), duel: duelBrief(content, s, game, ctx.now, { door: true }) } };
+    const brief = duelBrief(content, s, game, ctx.now, { door: true });
+    // Resumed: the moves already made, for the room to replay (games/kapai.js data.picks / brief.picks).
+    const picks = resuming && s.fight.picks?.length ? { picks: [...s.fight.picks] } : {};
+    return { state: s, result: { ok: true, started: id, ...(resuming ? { resumed: true } : {}), ...picks, duel: { ...brief, id, ...picks } } };
   }
 
   // ── 收场: the page hands back what was played, the rules replay it ──
@@ -587,6 +598,18 @@ const spentCharms = (content, setup, played) => {
   const catalog = cardCatalog(content), held = new Set((setup.you?.extra ?? []).filter(id => catalog[id]?.charm));
   return [...new Set(played.log.filter(e => e.act === 'played' && e.who === 'you' && held.has(e.id)).map(e => e.id))];
 };
+
+/* 收着的棋局 taken up: here, or (`walk`, the page's 玩) walked to where it was kept and taken up there — one call, one
+   answer (Hanli 11-05: 5–10 s behind 「…」 when the page walked, looked, took it up and looked again). */
+function keptPlay(state, content, ctx, id, walk) {
+  const open = s => taskOpen(content, s, id, ctx.now) || hostedHere(content, s, id, ctx.now);
+  const here = playKept(state, content, ctx, id, open(state));
+  if (here.result.ok || !walk || here.result.refused !== 'not-here' || !here.result.place) return here;
+  const went = move(state, content, ctx, { place: here.result.place });
+  if (!went.result.ok) return went;
+  const s = went.state ?? state, took = playKept(s, content, ctx, id, open(s));
+  return took.result.ok ? { state: took.state, result: { ...took.result, walked: here.result.place } } : took;
+}
 
 /* ── A fight open: the world holds still ──
    While a fight is open (state.fight) the verbs that change the world are

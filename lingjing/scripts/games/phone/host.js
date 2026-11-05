@@ -196,8 +196,12 @@ async function mountBoard(spec) {
     lead: (text, o) => new Promise((resolve) => { go = resolve; post({ t: 'lead', text, auto: o?.auto ?? null }); }),
   };
   // 斗法: the moves the rules will replay.
-  const picks = [];
-  const story = game === 'kapai' ? { onMove: (token) => picks.push(token) } : undefined;
+  // Reopened mid-fight, the door's moves so far come with the brief (rules duel `picks`): the room replays them, and each move
+  // after is kept with the open fight (rules duel `mark`, the app's rules) — a cold start stands where it stood (11-05).
+  const fightId = data?.brief?.id ?? null;
+  const picks = game === 'kapai' && Array.isArray(data?.brief?.picks) ? [...data.brief.picks] : [];
+  const mark = () => { if (fightId) rules('duel', { id: fightId, action: 'mark', picks: picks.join(',') }).catch(() => null); };
+  const story = game === 'kapai' ? { onMove: (token) => { picks.push(token); mark(); } } : undefined;
   const dealt = dealOf(game, data, task);
   // The phone's first tap is often native (the lead card's 开始, the app's own buttons), never a touch in this page, so
   // the context is woken here: the app's webview plays audio with no gesture asked (mediaTypesRequiringUserAction: none).
