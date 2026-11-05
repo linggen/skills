@@ -394,11 +394,15 @@ function drawFrom(st, side, ally) {
 /* The members draw in turn (the lead, then each one standing beside him),
    skipping a member whose pile is spent; only when every pile is spent does
    反噬 (or the beast's withdrawal) come. A lone side draws as it always did. */
-function draw(st, side) {
+function draw(st, side, { effect = false } = {}) {
   const row = [null, ...side.allies.filter(a => !a.gone)];
   for (let k = 0; k < row.length; k += 1) {
     if (drawFrom(st, side, row[(side.next + k) % row.length])) { side.next = (side.next + k + 1) % row.length; return; }
   }
+  // A beast's 入阵 抽 N 张 on a spent pile draws nothing and costs nothing (Hanli 11-04 — 狰's draw was 反噬 in an
+  // eight-card hand, a curse on the card that promised a card). A spell's draw (吐纳) still pays 反噬: overdrawing is
+  // the 三试's own lesson, and the turn's draw is unchanged.
+  if (effect) return;
   // A fight whose setup says `fatigue: false` (a teaching fight): a dry deck draws nothing and costs nothing.
   if (side.tireless) return;
   side.fatigue += 1;
@@ -540,7 +544,7 @@ function settle(st) {
 
 const other = (st, side) => (side.who === 'you' ? st.foe : st.you);
 
-function resolve(st, side, effect, target) {
+function resolve(st, side, effect, target, { arrival = false } = {}) {
   if (!effect) return;
   const them = other(st, side);
   const hit = (n, element, root) => dealt(st, side.who, n, element, root);
@@ -592,7 +596,7 @@ function resolve(st, side, effect, target) {
     side.mana = Math.min(side.manaCap, side.mana + effect.mana);
     st.log.push({ act: 'mana', who: side.who, amount: effect.mana, mana: side.mana });
   }
-  if (effect.draw != null) for (let i = 0; i < effect.draw; i += 1) draw(st, side);
+  if (effect.draw != null) for (let i = 0; i < effect.draw; i += 1) draw(st, side, { effect: arrival });
   if (effect.summon) {
     const { id, n = 1 } = effect.summon;
     const c = st.catalog[id];
@@ -796,7 +800,7 @@ export function act(st, action, who = 'you') {
       const m = { id, name: c.name, element: c.element, atk, hp, hpMax: hp, taunt: keys.includes('taunt'), sick: true, struck: false, ...(drought ? { drought } : {}) };
       stand(st, side, m);
       st.log.push({ act: 'played', who: side.who, id, uid: m.uid, kind: 'minion' });
-      if (keys.includes('battlecry')) resolve(st, side, { ...effectOf(side, c), element: c.element }, action.target);
+      if (keys.includes('battlecry')) resolve(st, side, { ...effectOf(side, c), element: c.element }, action.target, { arrival: true });
     } else {
       st.log.push({ act: 'played', who: side.who, id, kind: 'spell' });
       resolve(st, side, { ...effectOf(side, c), element: c.element }, action.target);

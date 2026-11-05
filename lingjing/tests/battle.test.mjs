@@ -397,3 +397,31 @@ test('lifts on what a card does: heal and 齐心 added, a blow at the beast it l
   assert.equal(cub.hp, 2, '齐心 +1 on the rank');
   assert.ok(st.foe.hp < foeHp, 'her blow lands on the beast itself');
 });
+
+test('a beast card whose effect is spoken on arrival carries 入阵 — else the effect never fires (狰 drew nothing, Hanli 11-04)', async () => {
+  const { loadWorld } = await import('../scripts/content.mjs');
+  const cards = loadWorld('jiuding').cards;
+  const list = cards.cards ?? cards;
+  // A standing effect on the minion itself (大旱) is read where it stands, not on arrival.
+  const standing = new Set(['drought']);
+  const silent = list.filter(c => c.kind === 'minion' && c.effect
+    && Object.keys(c.effect).some(k => !standing.has(k)) && !(c.keywords ?? []).includes('battlecry'));
+  assert.deepEqual(silent.map(c => c.id), []);
+});
+
+test('a beast\'s 入阵 draw on a spent pile draws nothing and costs nothing; a spell\'s draw still pays 反噬 (Hanli 11-04, 狰)', () => {
+  const CARDS3 = { ...CARDS, zheng: { id: 'zheng', kind: 'minion', name: '狰', cost: 2, element: 'fire', atk: 2, hp: 2, keywords: ['battlecry'], effect: { draw: 1 } } };
+  const dry = () => { const st = begin({ ...setupOf(), you: { ...setupOf().you, deck: ['cub'] } }, CARDS3); st.you.deck = []; st.you.mana = 9; return st; };
+  const beast = dry();
+  beast.you.hand = ['zheng'];
+  const hp = beast.you.hp, fat = beast.you.fatigue;
+  act(beast, { kind: 'play', index: 0 });
+  assert.equal(beast.you.board.at(-1).id, 'zheng', 'it arrived');
+  assert.equal(beast.you.hp, hp, 'no 反噬 for the beast\'s draw');
+  assert.equal(beast.you.fatigue, fat);
+  const spell = dry();
+  spell.you.hand = ['study'];
+  const hp2 = spell.you.hp;
+  act(spell, { kind: 'play', index: 0 });
+  assert.ok(spell.you.hp < hp2, 'a spell\'s 抽 N 张 on a spent pile is 反噬, as it was');
+});

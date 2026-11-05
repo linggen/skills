@@ -1871,7 +1871,7 @@
       "jinzhua",
       "jinzhua",
       "elang",
-      "elang",
+      "huilang",
       "jinzhen",
       "jinzhen",
       "suijin",
@@ -2107,7 +2107,7 @@
       "zhuguang",
       "jixiao"
      ],
-     "hp": 1.4,
+     "hp": 1.3,
      "signature": {
       "id": "yuhuo",
       "name": {
@@ -2470,7 +2470,7 @@
       "leiming",
       "chunsheng"
      ],
-     "hp": 1.25,
+     "hp": 1.2,
      "signature": {
       "id": "chimu-yizheng",
       "name": {
@@ -3621,7 +3621,7 @@
       "paoxiao",
       "paoxiao"
      ],
-     "hp": 7.46,
+     "hp": 7.25,
      "power": 2,
      "signature": {
       "id": "darang",

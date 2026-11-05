@@ -2696,6 +2696,9 @@
       "element": "fire",
       "atk": 2,
       "hp": 2,
+      "keywords": [
+        "battlecry"
+      ],
       "effect": {
         "draw": 1
       },
