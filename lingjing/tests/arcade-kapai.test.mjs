@@ -8,6 +8,10 @@ import fs from 'node:fs';
 import { FIGHTS, keyOf } from '../tools/story-fights.mjs';
 import { OUT, text } from '../tools/arcade-fights.mjs';
 import { bestMove } from '../scripts/fightline.js';
+import { idleWhy } from '../scripts/battle.js';
+/* The careful line's move as the room takes it: a spell that would land on nothing is never played there (Hanli 11-04,
+   痒痒针) — the line ends its turn instead, so the room never loops on a refusal. */
+const roomMove = (st) => { const m = bestMove(st); return !m || (m.kind === 'play' && idleWhy(st, st.you, st.catalog[st.you.hand[m.index]])) ? { kind: 'end' } : m; };
 
 const read = (p) => fs.readFileSync(new URL(p, import.meta.url), 'utf8');
 const TABLE = JSON.parse(fs.readFileSync(OUT, 'utf8'));
@@ -100,7 +104,7 @@ async function botPlays(key, lang = 'zh') {
   done.then((x) => { r = x; });
   for (let guard = 0; guard < 600 && !r; guard++) {
     const st = host.kapai.state();
-    if (st.outcome === 'open' && st.whose === 'you' && !host.kapai.busy()) await host.kapai.move(bestMove(st) ?? { kind: 'end' });
+    if (st.outcome === 'open' && st.whose === 'you' && !host.kapai.busy()) await host.kapai.move(roomMove(st));
     else await new Promise((res) => setTimeout(res, 20));
   }
   await done;
@@ -154,7 +158,7 @@ async function storyPlays(key, { answer = { ok: true, outcome: 'x' }, quit = fal
   done.then((x) => { r = x; });
   if (quit) host.kapai.tap({ kind: 'quit', index: -1 });
   for (let guard = 0; guard < 600 && !r; guard++) {
-    if (st.outcome === 'open' && st.whose === 'you' && !host.kapai.busy()) await host.kapai.move(bestMove(st) ?? { kind: 'end' });
+    if (st.outcome === 'open' && st.whose === 'you' && !host.kapai.busy()) await host.kapai.move(roomMove(st));
     else await new Promise((res) => setTimeout(res, 20));
   }
   return { r: await done, tokens, played, asks, settles, closeSeen, st, setup, catalog, battle, host };

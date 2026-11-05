@@ -125,6 +125,7 @@ export const WORDS = {
       'already-struck': '这一回合出过手了', 'no-attack': '它不会攻击', 'no-target': '没有可指的',
       'no-friendly': '自己阵前没有人', 'fight-over': '打完了',
       'too-big': '吞不下 —— 它攻太高', 'aim-one': '点它阵前一个', chained: '被锁着，这一回合不能动',
+      'rank-empty': '对方阵前无人', 'hp-full': '气血已满', 'pile-empty': '牌堆空了', 'mana-full': '灵力已满', 'none-fits': '没有它拿得住的', 'does-nothing': '现在用了也落空',
     },
     chained: '锁', drought: '大旱', drainNext: '下回合灵力 −{n}',
     // A body's why in a word (its pill is narrow): '' says nothing — the turn itself says it.
@@ -172,6 +173,7 @@ export const WORDS = {
       'already-struck': 'has struck this turn', 'no-attack': 'it does not strike', 'no-target': 'nothing to point at',
       'no-friendly': 'no one of yours stands', 'fight-over': 'the fight is over',
       'too-big': 'too big to swallow — its attack is too high', 'aim-one': 'choose one of its rank', chained: 'chained — cannot strike this turn',
+      'rank-empty': 'nothing on their side', 'hp-full': 'already whole', 'pile-empty': 'your pile is empty', 'mana-full': 'Force is full', 'none-fits': 'nothing it can take', 'does-nothing': 'it would land on nothing now',
     },
     chained: 'Chained', drought: 'Drought', drainNext: 'Force −{n} next turn',
     mark: { 'just-arrived': 'new', 'already-struck': 'struck', 'no-attack': 'no attack', 'not-your-turn': '', chained: '' },

@@ -926,6 +926,23 @@ const VERB_USE = {
   dodge: () => true,
   mana: (st, side) => side.mana < side.manaCap,
 };
+/* Why a spell would land on nothing now, by its first idle verb — null when it does something (worthPlaying). */
+const IDLE_WHY = { sweep: 'rank-empty', heal: 'hp-full', draw: 'pile-empty', mana: 'mana-full', chain: 'none-fits', swallow: 'none-fits', summon: 'board-full', rally: 'no-friendly', buff: 'no-friendly' };
+export function idleWhy(st, side, c) {
+  if (!c || worthPlaying(st, side, c)) return null;
+  const e = effectOf(side, c);
+  return IDLE_WHY[Object.keys(e ?? {}).find(v => VERB_USE[v] && e[v] != null)] ?? 'does-nothing';
+}
+/* The offers as the PLAYER's page shows them (games/kapai.js): a spell that would land on nothing is greyed with
+   its why and not played (Hanli 11-04: 痒痒针 on an empty rank spent 3 灵力 for nothing). The rules' own `offers`
+   and `legal` are unchanged — the bands' lines (fightline.js, trial-sim.mjs) read those. */
+export function playerOffers(st) {
+  return offers(st).map(o => {
+    if (!o.ok || o.action.kind !== 'play') return o;
+    const why = idleWhy(st, st.you, o.card);
+    return why ? { ...o, ok: false, why } : o;
+  });
+}
 export function worthPlaying(st, side, c) {
   if (c.kind === 'minion') return true;
   const e = effectOf(side, c);

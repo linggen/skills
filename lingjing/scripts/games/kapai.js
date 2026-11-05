@@ -25,7 +25,7 @@
 //   settle(st) → Promise<r> the rules' answer; the closing card waits for it, and a refusal (r.ok false) has none
 //   holdMs(end)             how long the closing card stands (`end`: the foe's last word is in it)
 // A story mount settles { …, r } — what the rules answered; the story's own pay and 所得 follow it.
-import { act, begin, foeStep, foeTurn, idle, offers, tokenOf, view } from '../battle.js';
+import { act, begin, foeStep, foeTurn, idle, idleWhy, playerOffers as offers, tokenOf, view } from '../battle.js';
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, cardFaceHtml, dropOf, endOf, pickOf } from '../battle-card.js';
 import { banner, ghostsOf, playLog, since } from '../battle-anim.js';
 import { wireDrag } from '../battle-drag.js';
@@ -191,6 +191,9 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       if (out.clear) { room.picked = null; return draw(); }
       if (out.pick) { room.picked = out.pick; return draw(); }
       if (out.action.kind === 'end') { room.picked = null; return endTurn(); }
+      // A spell that would land on nothing is never played: its one line says what is missing (Hanli 11-04, 痒痒针).
+      const nothing = out.action.kind === 'play' ? idleWhy(room.st, room.st.you, room.st.catalog?.[room.st.you.hand[out.action.index]]) : null;
+      if (nothing) { room.picked = null; room.note = nothing; return draw(); }
       const mark = room.st.log.length, before = view(room.st), res = act(room.st, out.action, 'you');
       room.picked = null;
       if (!res.ok) { room.note = res.why; return draw(); }

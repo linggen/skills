@@ -425,3 +425,38 @@ test('a beast\'s 入阵 draw on a spent pile draws nothing and costs nothing; a 
   act(spell, { kind: 'play', index: 0 });
   assert.ok(spell.you.hp < hp2, 'a spell\'s 抽 N 张 on a spent pile is 反噬, as it was');
 });
+
+test('the player\'s page greys a card whose every verb would land on nothing, and says what is missing (Hanli 11-04: 痒痒针 on an empty rank)', async () => {
+  const { idleWhy, playerOffers } = await import('../scripts/battle.js');
+  const CARDS4 = { ...CARDS, zhen: { id: 'zhen', kind: 'spell', name: '痒痒针', cost: 3, element: 'metal', effect: { sweep: 2 } },
+    mend: { id: 'mend', kind: 'spell', name: '回春', cost: 1, element: 'wood', effect: { heal: 3 } },
+    qi: { id: 'qi', kind: 'spell', name: '回气', cost: 0, element: null, effect: { mana: 2 } },
+    lock: { id: 'lock', kind: 'spell', name: '锁', cost: 1, element: 'metal', effect: { chain: 1 } } };
+  const st = begin({ ...setupOf(), you: { ...setupOf().you, deck: ['cub', 'cub', 'cub'] } }, CARDS4);
+  st.you.mana = 5; st.foe.board = [];
+  st.you.hand = ['zhen', 'mend', 'qi', 'lock', 'bolt'];
+  const why = i => idleWhy(st, st.you, CARDS4[st.you.hand[i]]);
+  assert.equal(why(0), 'rank-empty', '痒痒针 with nobody on their side');
+  assert.equal(why(1), 'hp-full', 'a heal at full 气血');
+  st.you.mana = st.you.manaCap; assert.equal(why(2), 'mana-full'); st.you.mana = 5;
+  assert.equal(why(3), 'none-fits', '锁 with nothing to take');
+  assert.equal(why(4), null, 'a blow always lands');
+  const row = playerOffers(st).find(o => o.action.kind === 'play' && o.action.index === 0);
+  assert.equal(row.ok, false); assert.equal(row.why, 'rank-empty');
+  // The rules' own offers are unchanged: the bands' lines read those.
+  assert.equal(offers(st).find(o => o.action.kind === 'play' && o.action.index === 0).ok, true);
+  // The fight room never plays it: one line, nothing spent.
+  const fs = await import('node:fs');
+  const room = fs.readFileSync(new URL('../scripts/games/kapai.js', import.meta.url), 'utf8');
+  assert.match(room, /playerOffers as offers/);
+  assert.match(room, /const nothing = out\.action\.kind === 'play' \? idleWhy\(/);
+  const { WORDS } = await import('../scripts/battle-card.js');
+  for (const k of ['rank-empty', 'hp-full', 'pile-empty', 'mana-full', 'none-fits', 'does-nothing']) assert.ok(WORDS.zh.why[k] && WORDS.en.why[k], k);
+  assert.equal(WORDS.zh.why['rank-empty'], '对方阵前无人');
+  // With a beast out it lands on the whole rank, and the animator has its hit.
+  st.foe.board = [{ uid: 9, id: 'cub', atk: 1, hp: 3, hpMax: 3, element: 'wood' }];
+  assert.equal(why(0), null);
+  act(st, { kind: 'play', index: 0 });
+  assert.ok(st.foe.board.length === 0 || st.foe.board[0].hp < 3, 'the sweep landed');
+  assert.ok(st.log.some(e => e.from === 'sweep'), 'and the animator has its hit to play');
+});
