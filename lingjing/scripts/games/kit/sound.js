@@ -24,7 +24,7 @@ export const MASTER = 0.7;
 /** Nothing sounding this long, the context is suspended: a running context on silence hisses on some Macs (11-05). */
 export const IDLE_MS = 4000;
 export const MIN_MS = 30; // the least gap of an event that names none
-export const DEFAULTS = Object.freeze({ sfx: { on: true, vol: 0.8 }, music: { on: true, vol: 0.3 }, muted: false });
+export const DEFAULTS = Object.freeze({ sfx: { on: true, vol: 0.8 }, music: { on: true, vol: 0.6 }, muted: false });
 /** What actually sounds: a part on, above zero, and the one mute (the shell's bar button) off. The mute leaves the
     parts' own settings alone, so unmuting brings back exactly what was set. */
 export const audible = (st, k) => Boolean(!st.muted && st[k].on && st[k].vol > 0);
