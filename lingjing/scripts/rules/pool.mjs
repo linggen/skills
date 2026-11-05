@@ -91,16 +91,40 @@ function coin(key) {
    (it is `played`, out of the row) — else the row would deal another in its stead. A member whose round is still
    open (`resume`) is not out: drawn, it stays in the row unplayed; begun in an earlier 时辰, it is `open`, shown beside. */
 /* A 时辰's game waits for him (Hanli 2026-11-04: 「冷却的小游戏」 — 「89 分后换」 changed it whether he had played or not;
-   only once it is played comes the next): the row reads the draw of the 时辰 of his last pool play (`pool_played`, the
-   `played` door's stamp; a save that played none, the 时辰 it began in) while that draw still holds one unplayed — that
-   game stays as the 时辰s turn. Once all of it is played, the 时辰 he is in draws afresh. `held`: an earlier 时辰's draw. */
+   only once it is played comes the next). The row holds ONE game, saved as `pool_hold = { draw, game }` (the 时辰 its
+   draw is of, and the game shown): it stands through every 时辰 until that game itself is played — playing another moves
+   nothing. Played, the next unplayed of the same draw; all of it played, the draw of the 时辰 after it. rules.mjs pins
+   the hold at its door (pinHold) after a pool play, and once for a save that has none (read from `legacyAnchor`).
+   Answers the draw with `sc` (its 时辰), `shown` (the one game standing, or null) and `held` (an earlier 时辰's). */
 export function drawPool(content, state, rows, kinds, now) {
-  const cur = shichenOf(now);
-  const times = Object.values(state.pool_played ?? {}).map(t => new Date(t)).filter(d => !Number.isNaN(d.getTime()));
+  const cur = shichenOf(now), hold = state.pool_hold;
+  const at = hold?.draw ? new Date(hold.draw) : legacyAnchor(state, cur, now);
+  if (!at || Number.isNaN(at.getTime()) || at > now) return shownOf(drawAt(content, state, rows, kinds, cur), null, cur);
+  const base = shichenOf(at), d = drawAt(content, state, rows, kinds, base);
+  const pinned = hold?.draw && hold.game ? d.members.has(hold.game) && !playedSince(state, hold.game, base.start) ? hold.game : null : null;
+  if (pinned || d.drawn.some(x => !x.played)) return shownOf(d, pinned, cur);
+  // All of it played: the draw of the 时辰 after it (its own, once that 时辰 has come) — still the draw he is shown till then.
+  const after = shichenOf(base.end);
+  if (after.start > now || base.start >= cur.start) return shownOf(d, null, cur);
+  return shownOf(drawAt(content, state, rows, kinds, after), null, cur);
+}
+const playedSince = (state, id, start) => { const t = playedAt(state, id); return Boolean(t && t >= start); };
+const shownOf = (d, pinned, cur) => ({ ...d, shown: pinned ?? d.drawn.find(x => !x.played)?.id ?? null, ...(d.shichen.start < cur.start ? { held: true } : {}) });
+/* A save with no hold (before 2026-11-04's pin): the 时辰 of its last pool play, else the one it began in, read once. */
+function legacyAnchor(state, cur, now) {
+  const times = Object.values(state.pool_played ?? {}).map(t => new Date(t)).filter(d => !Number.isNaN(d.getTime()) && d <= now);
   const origin = times.length ? new Date(Math.max(...times)) : state.created ? new Date(state.created) : null;
-  if (!origin || Number.isNaN(origin.getTime()) || origin >= cur.start || origin > now) return drawAt(content, state, rows, kinds, cur);
-  const was = drawAt(content, state, rows, kinds, shichenOf(origin));
-  return was.drawn.some(d => !d.played) ? { ...was, held: true } : drawAt(content, state, rows, kinds, cur);
+  return origin && !Number.isNaN(origin.getTime()) ? origin : cur.start;
+}
+/* The hold to write after a verb (rules.mjs): the row's draw and game as Look's `tray_hour` reads them now — when there
+   is none yet, or the held game was played (a game played elsewhere, the held one standing, writes nothing). */
+export function pinHold(state, before, hour) {
+  if (!hour?.draw) return null;
+  const hold = state.pool_hold;
+  const playedHeld = hold?.game && state.pool_played?.[hold.game] && state.pool_played[hold.game] !== before?.pool_played?.[hold.game];
+  if (hold && !playedHeld && hold.game) return null;
+  const next = { draw: hour.draw, game: hour.game ?? null };
+  return hold && hold.draw === next.draw && hold.game === next.game ? null : next;
 }
 /* One 时辰's own draw (what drawPool reads, the 时辰 it holds to). */
 export function drawAt(content, state, rows, kinds, sc) {

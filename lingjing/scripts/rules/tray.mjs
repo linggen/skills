@@ -51,14 +51,15 @@ export function trayLook(content, state, view, ctx, asideOffers = []) {
     });
   // 小游戏池 (rules/pool.mjs): of the 时辰's three, in their seeded order, only the first not yet played stands — the next
   // comes once it is played (Hanli 11-02: 「如果第一个玩家没玩, 不用接着添加后面的」) — and a round still open beside it.
-  const { drawn, members, open, retired } = drawPool(content, state, rows, PLAY_KINDS, now), shichen = shichenOf(now);
+  // …the one it holds stands until it is itself played (pool.mjs drawPool `shown`, `pool_hold`, 2026-11-04).
+  const draw = drawPool(content, state, rows, PLAY_KINDS, now), { drawn, members, open, retired } = draw, shichen = shichenOf(now);
   // A round under way (`resume`) stands wherever it falls in the order: begun from the stage, it is not lost behind the first.
-  const next = drawn.find(d => !d.played);
-  const shown = new Set([...(next ? [next.id] : []), ...drawn.filter(d => d.resume && !d.played).map(d => d.id), ...open]);
+  const shown = new Set([...(draw.shown ? [draw.shown] : []), ...drawn.filter(d => d.resume && !d.played).map(d => d.id), ...open]);
   // This 时辰's draw is marked (`pool`): 事 lists them together under the 时辰's heading, the tray's card says when they change.
   const drawnIds = new Set(drawn.map(d => d.id));
   const kept = rows.filter(r => !retired.has(r.id) && (!members.has(r.id) || shown.has(r.id))).map(r => (drawnIds.has(r.id) ? { ...r, pool: true } : r));
   const sorted = kept.map((r, i) => [r, i]).sort((a, b) => RANK[a[0].seg] - RANK[b[0].seg] || a[1] - b[1]).map(([r]) => r);
   // No 「N 分后换」 (2026-11-04): an unplayed game no longer changes with the 时辰 (pool.mjs drawPool), so no countdown is told.
-  return { rows: sorted, hour: { i: shichen.i, drawn: drawn.length, played: drawn.filter(d => d.played).length } };
+  // `draw` · `game`: what the row holds, for the door to pin (rules.mjs, pool.mjs pinHold).
+  return { rows: sorted, hour: { i: shichen.i, drawn: drawn.length, played: drawn.filter(d => d.played).length, draw: draw.shichen.start.toISOString(), game: draw.shown } };
 }

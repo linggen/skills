@@ -33,6 +33,7 @@ import { chooseLang, inPlay, langNow, stateText } from './rules/language.mjs';
 import { pageNames, pageThrows } from './rules/core.mjs';
 import { clock, dataDir, freshState, withRun, shiftDays, shiftFile, homeDir, parseArgs, readQuests, SAVE_NAME, savedFile, savedFor, scratchName, skillDir, userTurn, userWords, withLock, writeAtomic } from './rules/files.mjs';
 import { look, stageAt } from './rules/look.mjs';
+import { pinHold } from './rules/pool.mjs';
 import { kaifuFit } from './rules/chores.mjs';
 import { standFit } from './rules/match.mjs';
 import { oddsOn, strongFit } from './rules/strengthen.mjs';
@@ -330,6 +331,12 @@ function runLocked(verb, args, stateFile, reader) {
   // Something of the story happened: 传闻's quiet clock starts again (tale.mjs storyDue).
   if (next && out.result?.ok && STORY_VERBS.has(verb)) next.story_at = now.toISOString();
   if (next) {
+    // 小游戏池's hold (rules/pool.mjs pinHold, 2026-11-04): after a pool play, or once for a save that has none, the game the
+    // row shows is saved — it stands until that game itself is played. Read off the Look the page will draw.
+    if (!next.pool_hold || JSON.stringify(next.pool_played ?? null) !== JSON.stringify((raw ?? state).pool_played ?? null)) {
+      const hold = pinHold(next, raw ?? state, look(next, content, { now, quests: readQuests() }).tray_hour);
+      if (hold) next.pool_hold = hold;
+    }
     // The province stood in, kept for the map (rules/inkmap.mjs: mist → wash).
     markBeen(content, next);
     next.updated = now.toISOString();

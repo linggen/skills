@@ -1577,9 +1577,10 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
   饭桶, 闭关, the practice boards on his map) are a pool, each declaring its cooldown, its 时辰's lean (a weight),
   its 体力 cost and the verb that plays it. Each 时辰 draws three (seed: save + day + 时辰); played, a game leaves the row
   and rests its cooldown. **An unplayed game waits** (2026-11-04, Hanli's 「冷却的小游戏」: 「89 分后换」 changed it unplayed):
-  the row reads the draw of the 时辰 of his last pool play (or the save's first) while it holds one unplayed — that game
-  stays as the 时辰s turn; played (won, lost, ✕, 留 — the `played` door stamps each), the next; all played, the 时辰 he is
-  in draws afresh. No countdown is told: the heading reads 「小游戏 · 玩过一局才换下一局」. The world's events, 问卦 and the story's boards stand outside it. No title line over the row
+  the row holds one game, saved (`pool_hold = {draw, game}`, pinned at rules.mjs's door after a pool play, and once for an
+  older save from the 时辰 of its last play): it stands through every 时辰 until that game itself is played (won, lost, ✕,
+  留 — the `played` door stamps each) — another game played moves nothing; then the next of the same draw; all of it
+  played, the draw of the 时辰 after it. No countdown is told: the heading reads 「小游戏 · 玩过一局才换下一局」. The world's events, 问卦 and the story's boards stand outside it. No title line over the row
   (Hanli 11-02); the 时辰 is a footer chip, 「未时 · 47 分换一批」; 体力 spent, one 闭关 card; all three played,
   「这个时辰的都玩过了」. The tray holds games only: what the 事 book lists (差事, 机缘, 货郎) is declared `in: 'shi'`.
   **Only boards that differ each play** (Hanli 11-02, on 周衡's 灯谜 won four times: 「这个人参的灯谜我是否玩过几次了?」):

@@ -8,7 +8,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, playTo, VERBS } from '../scripts/rules.mjs';
 import { PLAY_KINDS } from '../scripts/rules/aside.mjs';
-import { BRANCH, DRAW, drawAt, drawPool as heldPool, shichenOf } from '../scripts/rules/pool.mjs';
+import { BRANCH, DRAW, drawAt, drawPool as heldPool, pinHold, shichenOf } from '../scripts/rules/pool.mjs';
 // The draw's mechanics are one 时辰's own (drawAt); what the row holds across 时辰s (heldPool, 2026-11-04) is tested below.
 const drawPool = (c, s, rows, kinds, now) => drawAt(c, s, rows, kinds, shichenOf(now));
 import { WORDS, trayHourChipHtml, trayHtml } from '../scripts/cards.js';
@@ -62,7 +62,7 @@ test('the draw is the 时辰\'s: the same three all through it, on every reload;
 });
 
 /* The row waits for him (Hanli 2026-11-04: 「冷却的小游戏」 — 「89 分后换」 changed it whether he had played it or not). */
-test('an unplayed game stays as the 时辰s turn; once played, the next — and when all are, the 时辰 he is in draws afresh', () => {
+test('an unplayed game stays as the 时辰s turn; once played, the next — and when all are, the next 时辰\'s draw', () => {
   const s = at('waimen'), pool = rows(8), first = (d) => d.drawn.find((x) => !x.played)?.id;
   const begun = { ...s, created: AT(13, 5).toISOString() };
   const shown = first(heldPool(content, begun, pool, FAKE, AT(13, 5)));
@@ -77,7 +77,34 @@ test('an unplayed game stays as the 时辰s turn; once played, the next — and 
   const d = drawAt(content, begun, pool, FAKE, shichenOf(AT(13, 5)));
   const all = { ...begun, pool_played: Object.fromEntries(d.drawn.map((x, i) => [x.id, new Date(AT(13, 5).getTime() + (i + 1) * 60_000).toISOString()])) };
   assert.equal(heldPool(content, all, pool, FAKE, AT(13, 50)).drawn.every((x) => x.played), true, 'its own 时辰: all played');
-  assert.deepEqual(ids(heldPool(content, all, pool, FAKE, AT(19, 10))), ids(drawAt(content, all, pool, FAKE, shichenOf(AT(19, 10)))));
+  // …and then the draw of the 时辰 after it — held there in its turn, not the 时辰 he happens to look in.
+  const next = shichenOf(shichenOf(AT(13, 5)).end);
+  assert.deepEqual(ids(heldPool(content, all, pool, FAKE, AT(19, 10))), ids(drawAt(content, all, pool, FAKE, next)));
+});
+
+test('the hold (pool_hold): its game stands until it is itself played — another game played moves nothing', () => {
+  const s = at('waimen'), pool = rows(8), sc = shichenOf(AT(13, 5));
+  const d = drawAt(content, s, pool, FAKE, sc), [g0, g1, g2] = [...d.drawn].map((x) => x.id);
+  // Held on the draw's SECOND game (as the row pinned it), the first unplayed: it is the second that stands.
+  const held = { ...s, pool_hold: { draw: sc.start.toISOString(), game: g1 } };
+  for (const t of [AT(13, 40), AT(17, 10), new Date(2026, 9, 22, 9, 10)]) assert.equal(heldPool(content, held, pool, FAKE, t).shown, g1, `${t}`);
+  // Another game played (in the draw or not): still g1.
+  const other = { ...held, pool_played: { [g2]: AT(15, 0).toISOString(), m7: AT(15, 5).toISOString() } };
+  assert.equal(heldPool(content, other, pool, FAKE, AT(19, 10)).shown, g1);
+  assert.equal(pinHold(other, held, { draw: AT(19, 0).toISOString(), game: 'mX' }), null, 'nothing to pin: the held game stands');
+  // The held game played: the next unplayed of the same draw (g0 here), and the door pins it.
+  const done = { ...other, pool_played: { ...other.pool_played, [g1]: AT(19, 20).toISOString() } };
+  const after = heldPool(content, { ...done, pool_hold: { ...done.pool_hold, game: null } }, pool, FAKE, AT(19, 30));
+  assert.equal(after.shown, g0);
+  assert.deepEqual(pinHold(done, other, { draw: after.shichen.start.toISOString(), game: after.shown }), { draw: sc.start.toISOString(), game: g0 });
+  // No hold yet: pinned once, from the row as it reads.
+  assert.deepEqual(pinHold(s, s, { draw: sc.start.toISOString(), game: g0 }), { draw: sc.start.toISOString(), game: g0 });
+});
+
+test('the door pins the hold after a pool play, or once for a save with none (rules.mjs)', () => {
+  const src = fs.readFileSync(new URL('../scripts/rules.mjs', import.meta.url), 'utf8');
+  assert.match(src, /if \(!next\.pool_hold \|\| JSON\.stringify\(next\.pool_played \?\? null\) !== JSON\.stringify\(\(raw \?\? state\)\.pool_played \?\? null\)\)/);
+  assert.match(src, /pinHold\(next, raw \?\? state, look\(next, content/);
 });
 
 test('✕ and 留 are plays: the door stamps them, so the row moves on (rules/locks.mjs played)', () => {
