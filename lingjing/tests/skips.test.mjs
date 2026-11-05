@@ -214,3 +214,23 @@ test('a 前情 stays in the box: only 银月\'s lines are copied into the chat, 
   assert.match(fn, /if \(who\(b\) !== 'yy'\) continue;/);
   assert.doesNotMatch(fn, /'ling'/);
 });
+
+test('收着的棋局 kept where it is hosted: 玩 away names the place (the page walks him there), and there it is his whatever the plate deals today (Hanli 11-05: 「收着的残局, 我点了玩, 没反应」)', () => {
+  const { s: s0, now } = at('00-zhuji/j07-dark');
+  const kept = { ...s0, place: 'shanmen', kept: [{ task: 'xiangqi', story: false, place: 'zhishi', at: now.toISOString() }] };
+  const away = task(kept, content, ctxAt(now), { action: 'kept-play', id: 'xiangqi' }).result;
+  assert.equal(away.refused, 'not-here');
+  assert.equal(away.place, 'zhishi', 'where to walk');
+  assert.match(away.say, /这一局在.*执事堂玩/);
+  // At 执事堂, even on a day its plate deals another board: taken up, and it stands there as practice.
+  const there = { ...kept, place: 'zhishi' };
+  const s1 = must(task, there, now, { action: 'kept-play', id: 'xiangqi' });
+  assert.deepEqual(s1.kept, [], 'off the list');
+  const t = look(s1, content, ctxAt(now)).tasks.find((x) => x.id === 'xiangqi');
+  assert.ok(t && t.status === 'offered', 'the board stands to be opened (openFromTray)');
+  // The page: a not-here 玩 walks there and takes it up, and any other refusal closes 事 so its line is seen.
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const fn = page.slice(page.indexOf('async function keptTap('), page.indexOf('function gameMove('));
+  assert.match(fn, /r\.refused === 'not-here' && r\.place && !walked[^]*await goTo\(r\.place\)[^]*keptTap\(id, action, true\)/);
+  assert.match(fn, /if \(!r\.ok\) \{ keep\(\{ doNote: refusal\(r\) \}\); show\(\{ bookOpen: false \}\); return; \}/);
+});

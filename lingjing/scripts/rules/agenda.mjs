@@ -106,8 +106,10 @@ export function agendaLook(content, state, view, trayRows = [], hour = view?.tra
 
   // ── The tray's head ──
   let goals = 0, shown = 0;
-  const playable = (i) => i.ready || i.kind === 'kept' || i.kind === 'task' || (i.kind === 'tray' && ['open', 'go'].includes(tray.find((e) => e.id === i.id)?.seg))
-    || ['offer', 'work', 'chance'].includes(i.kind);
+  // The strip shows what is new or due; a row on hand all day (`standing`: 闭关) is 全部's alone (Hanli 11-05).
+  const standing = (i) => i.kind === 'tray' && Boolean(tray.find((e) => e.id === i.id)?.standing);
+  const playable = (i) => !standing(i) && (i.ready || i.kind === 'kept' || i.kind === 'task' || (i.kind === 'tray' && ['open', 'go'].includes(tray.find((e) => e.id === i.id)?.seg))
+    || ['offer', 'work', 'chance'].includes(i.kind));
   const mainFirst = items.find((i) => i.group === 'main');
   for (const i of items) {
     const take = i.group === 'main' ? i === mainFirst || i.kind === 'task'

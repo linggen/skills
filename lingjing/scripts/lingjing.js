@@ -3903,9 +3903,17 @@ function bringWonIntoFocus() {
   requestAnimationFrame(() => bringIntoFocus(document.querySelector('#focus .toasts .spoils, #focus .toasts .donote')));
 }
 /* A kept board taken up (the story's stands offered again; another is opened as from the tray) or dropped. */
-async function keptTap(id, action) {
+async function keptTap(id, action, walked = false) {
   const r = await write('task', { action, id }).catch(failed);
-  if (!r.ok) { keep({ doNote: refusal(r) }); return render(); }
+  // Kept where it is hosted and he is elsewhere: 玩 walks him there and takes it up (Hanli 11-05: 「我点了玩, 没反应」 — the
+  // refusal's line stood on the stage behind the open 事 book). Any other refusal closes the book so its line is seen.
+  if (!r.ok && action === 'kept-play' && r.refused === 'not-here' && r.place && !walked) {
+    show({ bookOpen: false });
+    await goTo(r.place);
+    if (look?.place?.id === r.place) return keptTap(id, action, true);
+    return;
+  }
+  if (!r.ok) { keep({ doNote: refusal(r) }); show({ bookOpen: false }); return; }
   show({ bookOpen: false });
   await refresh();
   if (action === 'kept-play' && !r.story) openFromTray(id);

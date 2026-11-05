@@ -19,7 +19,7 @@ import { periodKey, pick } from '../state.mjs';
 import { clone, pay, refuse } from './core.mjs';
 import { taskOf } from './errands.mjs';
 import { stow, fullLine } from './pouch.mjs';
-import { sceneOf } from './world.mjs';
+import { placeName, placeOf, sceneOf } from './world.mjs';
 import { afterKey, afterParts, partAfterBoard, sceneBoards } from './parts.mjs';
 
 /* A story fight may be left from the first moment (Hanli 11-03: 「统一改成右上角的关闭按钮了. 不需要卡住, 直接就给这个关闭
@@ -130,10 +130,20 @@ export function playKept(state, content, ctx, id, openHere) {
   const e = keptOf(state).find(x => x.task === id);
   if (!e) return refuse('not-kept', null);
   const story = state.tasks?.[id]?.status === 'done' && state.tasks[id].skipped;
-  if (!story && !openHere) return refuse('not-here', pick({ zh: '这一局不在这里玩。', en: 'That game is not played here.' }, state.lang));
+  // Played only where it is hosted (象棋 at 执事堂): the refusal names the place, and the page walks him there to take it
+  // up (Hanli 11-05: 「收着的残局, 我点了玩, 没反应」 — the line stood behind the open 事 book).
+  // A board kept where it was hosted is his to take up there, whatever that place deals today: the plate's rotation had
+  // moved on and 象棋 at 执事堂 was refused even standing in it (Hanli 11-05).
+  const atItsPlace = Boolean(e.place) && e.place === state.place;
+  if (!story && !openHere && !atItsPlace) {
+    const at = e.place ? placeOf(content, e.place) : null, name = at ? placeName(content, state, at)?.name ?? null : null;
+    return refuse('not-here', name ? pick({ zh: `这一局在${name}玩。`, en: `That game is played at ${name}.` }, state.lang) : pick({ zh: '这一局不在这里玩。', en: 'That game is not played here.' }, state.lang), e.place ? { place: e.place } : {});
+  }
   const s = clone(state);
   s.kept = keptOf(s).filter(x => x.task !== id);
   if (story) s.tasks[id] = { status: 'offered', replay: true, kept: true, from: { scene: e.scene ?? null, line: null } };
+  // Taken up where it was kept: it stands there as practice until it is played (look.mjs tasksBrief `taken`).
+  else if (!openHere) s.tasks[id] = { ...(s.tasks?.[id] ?? {}), status: 'offered', taken: e.place };
   return { state: s, result: { ok: true, play: id, story: Boolean(story) } };
 }
 /* Look's `kept`: each kept board's title, where it was kept and when — the Mac's 事 book and tray chip, the phone's list. */

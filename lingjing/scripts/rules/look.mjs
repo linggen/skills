@@ -485,6 +485,8 @@ function tasksBrief(content, state, ctx) {
   Object.assign(hosted, mijingHosted(content, state));
   // 切磋 (rules/qiecuo.mjs): the day's bout at 沉鼎观, out of its cooldown.
   Object.assign(hosted, qiecuoHosted(content, state, ctx.now));
+  // A kept board taken up again where it was kept (rules/skips.mjs playKept `taken`): it stands there as practice until played.
+  for (const [id, t] of Object.entries(state.tasks ?? {})) if (t?.taken && t.taken === state.place && t.status !== 'done' && !hosted[id]) hosted[id] = { status: 'offered', practice: true };
   const again = new Set([...(content.tasks?.tasks ?? []).map(t => t.id).filter(id => reopened(content, state, id, ctx.now)), ...Object.keys(hosted)]);
   const held = Object.fromEntries([...again].map(id => [id, { status: 'offered' }]));
   const hereScene = sceneOf(content, state);

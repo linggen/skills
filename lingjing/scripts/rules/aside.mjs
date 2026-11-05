@@ -117,7 +117,9 @@ export const PLAY_KINDS = [
   { kind: 'seclusion', // 闭关, where the story has opened it (rules/seclusion.mjs)
     open: (content, state, view) => (view && !lockedIn(view, 'seclusion') && !state.seclusion ? [{ id: 'seclusion' }] : []),
     takes: verb => verb === 'seclude',
-    tray: (content, state, view) => (view && !lockedIn(view, 'seclusion') && !state.seclusion ? [{ id: 'seclusion', left: { unit: 'today' }, opens: 'seclude', stage: 'seclude' }] : []),
+    // `standing`: on hand all day, nothing new (Hanli 11-05: 「这个闭关卡一直这么显示吗? 可以折叠进全部dialog里」) — 全部 holds it,
+    // never the strip (rules/agenda.mjs). Spent 体力 still brings it to the strip as the one way on (cards.js trayRestHtml).
+    tray: (content, state, view) => (view && !lockedIn(view, 'seclusion') && !state.seclusion ? [{ id: 'seclusion', left: { unit: 'today' }, opens: 'seclude', stage: 'seclude', standing: true }] : []),
     pool: { row: () => ({ cooldown_min: 240, when: ['hai', 'zi'], cost: null }), plays: (verb, args) => (verb === 'seclude' && args.action === 'enter' ? 'seclusion' : null) } },
   { kind: 'her', // 银月's games open to him, 今日传闻 and 问卦 (rules/aigames.mjs, kao.mjs, duizi.mjs, tale.mjs, fortune.mjs)
     open: (content, state, view) => [

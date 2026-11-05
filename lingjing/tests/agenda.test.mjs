@@ -159,3 +159,20 @@ test('小游戏池 in the list: the draw together under one heading, no countdow
   assert.match(bookPopHtml(page(all)), /poolhead allplayed[^>]*>这个时辰的都玩过了 · \S+时再来</);
   assert.match(bookPopHtml({ ...page(l), lang: 'en', words: WORDS.en }), /Small games · the next once this one is played/);
 });
+
+test('the strip shows what is new or due; 闭关, on hand all day, is 全部\'s alone (Hanli 11-05: 「这个闭关卡一直这么显示吗? 可以折叠进全部dialog里」)', async () => {
+  const { agendaLook } = await import('../scripts/rules/agenda.mjs');
+  const { PLAY_KINDS } = await import('../scripts/rules/aside.mjs');
+  const row = PLAY_KINDS.find((k) => k.kind === 'seclusion').tray(content, {}, { locked: [] })[0];
+  assert.equal(row.standing, true, '闭关 is a standing row');
+  const items = agendaLook(content, {}, { tasks: [], book: [] }, [{ kind: 'seclusion', ...row, seg: 'open', act: 'open' }, { kind: 'fantong', id: 'fantong', left: { unit: 'today' }, opens: 'gear', seg: 'open', act: 'open' }]);
+  const sec = items.find((i) => i.kind === 'tray' && i.id === 'seclusion'), fan = items.find((i) => i.kind === 'tray' && i.id === 'fantong');
+  assert.ok(sec, '闭关 is still in 全部');
+  assert.ok(!sec.tray, 'never on the strip');
+  assert.ok(fan.tray, 'what is due still is');
+  // 全部 opens it as before (its 开局); the strip draws no card for it.
+  const tray = [{ kind: 'seclusion', ...row, seg: 'open', act: 'open' }], look2 = { tasks: [], book: [], tray };
+  look2.agenda = agendaLook(content, {}, look2, tray);
+  assert.match(bookPopHtml({ look: look2, words: WORDS.zh, lang: 'zh' }), /data-seclude-open>开局/);
+  assert.doesNotMatch(trayHtml({ look: look2, words: WORDS.zh, lang: 'zh' }), /data-tray="seclusion"/);
+});
