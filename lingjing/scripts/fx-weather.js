@@ -96,7 +96,18 @@ const fogCanvas = (r) => canvasOf(512, 256, (g, w, h) => {
     g.fillStyle = `rgba(255,255,255,${0.25 + r() * 0.35})`;
     for (const dx of [-w, 0, w]) { g.beginPath(); g.ellipse(x + dx, y, rx, ry, 0, 0, Math.PI * 2); g.fill(); }
   }
+  // Clear at the top and the bottom: a sheet is one tile tall, so it has no edge to show (Hanli 11-05:
+  // 「页面中间一条白色半透明带」 — the tile repeated up and down and was cut mid-cloud at the sheet's edges).
+  g.filter = 'none';
+  g.globalCompositeOperation = 'destination-in';
+  const fade = g.createLinearGradient(0, 0, 0, h);
+  fade.addColorStop(0, 'rgba(0,0,0,0)'); fade.addColorStop(0.3, 'rgba(0,0,0,1)');
+  fade.addColorStop(0.7, 'rgba(0,0,0,1)'); fade.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = fade;
+  g.fillRect(0, 0, w, h);
+  g.globalCompositeOperation = 'source-over';
 });
+const FOG_TILE_H = 256;
 
 /* The stage's wind as paintAtmos set it: the carry across (--wdx) and the force (--wf). */
 function windOf(el) {
@@ -160,7 +171,7 @@ const BUILD = {
       made.push(tex);
       const s = new PIXI.TilingSprite({ texture: tex, width: W(), height: H() * 0.6 });
       s.position.set(0, H() * (0.3 + i * 0.12));
-      s.tileScale.set(1.6 + i * 0.9, 1.4 + i * 0.6);
+      s.tileScale.set(1.6 + i * 0.9, (H() * 0.6) / FOG_TILE_H);
       s.alpha = 0.55 - i * 0.15;
       layer.addChild(s);
       return { s, speed: 9 + i * 7 };
@@ -169,6 +180,7 @@ const BUILD = {
       for (const [i, f] of sheets.entries()) {
         f.s.width = W();
         f.s.height = H() * 0.6;
+        f.s.tileScale.y = f.s.height / FOG_TILE_H; // one tile tall: its faded top and bottom are the sheet's
         f.s.y = H() * (0.3 + i * 0.12);
         f.s.tilePosition.x += (f.speed * (0.6 + wind.force) * (wind.wdx > 0 ? 1 : -1)) * dt;
         f.s.alpha = (0.55 - i * 0.15) * (0.85 + 0.15 * Math.sin(t / 5 + i * 2));
