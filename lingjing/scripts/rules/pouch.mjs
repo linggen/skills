@@ -40,6 +40,12 @@ const addsOf = (content, id) => (id ? itemOf(content, id)?.effect?.pouch ?? 0 : 
    lists several (fitPouch moves the rest to the bag on load) counts only its biggest, the first of a tie. */
 const wornPouch = (content, state) => (state.pouch ?? []).reduce((best, id) => (best == null || addsOf(content, id) > addsOf(content, best) ? id : best), null);
 const pouchCap = (content, state) => baseCap(content, state) + addsOf(content, wornPouch(content, state));
+/* The room he would have with this pouch swapped in — his realm's plus its own, never on top of the one he wears (one at a
+   time, Hanli 2026-11-04: 「我们定的储物袋不能叠加」) — beside the room he has now. Null in a world with no cap. */
+const roomWith = (content, state, id) => {
+  const base = baseCap(content, state);
+  return Number.isFinite(base) ? { room: base + addsOf(content, id), now: pouchCap(content, state), ...(wornPouch(content, state) === id ? { worn: true } : {}) } : null;
+};
 
 /* A thing that takes no slot: a key, a story thing (items.json `story`: kept,
    never sold — 紫须芝 he carries back to 阿禾), one the chapter or a taken
@@ -230,4 +236,4 @@ export function bag(state, content, ctx, args) {
   return { state: s, result: { ...r, pouch: pouchBrief(content, s) } };
 }
 
-export { hasFound, bagFull, fitHeld, fitPouch, freeSlot, storyKeep, fullLine, doorOffers, pouchBrief, pouchCap, roomFor, slotsUsed, stow, wearPouch, wornPouch };
+export { hasFound, bagFull, fitHeld, fitPouch, freeSlot, storyKeep, fullLine, doorOffers, pouchBrief, pouchCap, roomFor, roomWith, slotsUsed, stow, wearPouch, wornPouch };

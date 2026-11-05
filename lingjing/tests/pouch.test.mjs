@@ -502,3 +502,28 @@ test('a story thing (Hanli 11-03): no slot, never tossed nor sold; the card says
     assert.ok(k.slice(k.indexOf('class="pdetail')).includes(line), `${lang}: a key says it too`);
   }
 });
+
+test('a pouch says the room it would leave him with, swapped in — never 「多 N 格」 on top of the one he wears (Hanli 11-04: 百纳袋 still read +6)', async () => {
+  const { roomWith } = await import('../scripts/rules/pouch.mjs');
+  const { pouchSaid, itemDoes, WORDS } = await import('../scripts/cards.js');
+  const bare = at({}, { tier: 'qi' });
+  assert.deepEqual(roomWith(content, bare, 'baina-dai'), { room: 30, now: 24 });
+  const low = { ...bare, pouch: ['pouch-low'] };
+  assert.deepEqual(roomWith(content, low, 'baina-dai'), { room: 30, now: 30 }, '百纳袋 over 下品: the same size');
+  assert.deepEqual(roomWith(content, low, 'pouch-mid'), { room: 36, now: 30 });
+  assert.deepEqual(roomWith(content, { ...bare, pouch: ['pouch-high'] }, 'pouch-low'), { room: 30, now: 48 });
+  assert.equal(roomWith(content, low, 'pouch-low').worn, true);
+  const zh = (e) => pouchSaid(e, WORDS.zh), en = (e) => pouchSaid(e, WORDS.en);
+  assert.equal(zh(roomWith(content, bare, 'baina-dai')), '换上：储物袋共 30 格（多 6）');
+  assert.equal(zh(roomWith(content, low, 'baina-dai')), '换上：储物袋还是 30 格，和你现在的一样大');
+  assert.equal(zh(roomWith(content, { ...bare, pouch: ['pouch-high'] }, 'pouch-low')), '换上：储物袋只有 30 格（少 18）');
+  assert.equal(en(roomWith(content, low, 'baina-dai')), 'Swapped in: still 30 kinds — the same as yours now');
+  // The card reads it from the rules' item brief, the same everywhere.
+  for (const w of [WORDS.zh, WORDS.en]) for (const k of ['effPouch', 'effPouchSame', 'effPouchLess', 'effPouchWorn', 'effPouchBare']) {
+    assert.doesNotMatch(w[k], /多 ?\{n\}|more kinds\b(?! \()/, `${k}: never "N more" on its own`);
+    assert.ok(w[k].split(/\s+/).length <= 20 && [...w[k]].length <= 60, k);
+  }
+  assert.equal(itemDoes({ pouch: 6 }, { words: WORDS.zh }), '一只储物袋，一次只用一只', 'no room known: no number to add');
+  // The items' own words never add one pouch to another either.
+  for (const i of content.items.items.filter((x) => x.effect?.pouch)) assert.doesNotMatch(`${i.about?.zh}${i.about?.en}`, /多出|more kinds/, i.id);
+});

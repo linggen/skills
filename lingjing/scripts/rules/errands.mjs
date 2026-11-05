@@ -23,7 +23,7 @@ import { hashOf } from './travel.mjs';
 import { tideBegun } from './shouchao.mjs';
 import { gamesToday, wallOf, wallPosts } from './rotation.mjs';
 import { coolingUntil, oddsOf } from './breakthrough.mjs';
-import { freeSlot, pouchBrief } from './pouch.mjs';
+import { freeSlot, pouchBrief, roomWith } from './pouch.mjs';
 import { GEAR_SLOTS, armSlot, herKey, herSlot, wornCount } from './wear.mjs';
 import { chapterLabel, comingOf } from './hui.mjs';
 import { capLook, storyAllows } from './cap.mjs';
@@ -656,17 +656,18 @@ const EFFECT_BRIEF = {
   charm: () => ({ charm: true }),
   // 回春丹 · 回气丹: what it does in a fight (rules/cards.mjs fightPill) — the card's 「斗法里服下」 line, never 「可买卖的货物」.
   fight: e => ({ fight: { ...(e.fight.heal ? { heal: e.fight.heal } : {}), ...(e.fight.mana ? { mana: e.fight.mana } : {}) } }),
-  pouch: e => ({ pouch: e.pouch }),
+  // The room it would leave him with, swapped in, and the room he has now (pouch.mjs roomWith) — the card words the total.
+  pouch: (e, content, lang, state, id) => ({ pouch: e.pouch, ...(state && id ? roomWith(content, state, id) ?? {} : {}) }),
   waive: e => ({ waive: e.waive }),
   atk: (e, content, lang) => ({ atk: e.atk, ...(e.root ? { root: e.root, root_name: ELEMENT_NAME(content, lang, e.root) } : {}) }),
   def: e => ({ def: e.def }),
   ward: (e, content, lang) => ({ ward: e.ward, wards: Object.entries(e.ward).map(([el, n]) => ({ id: el, name: ELEMENT_NAME(content, lang, el), n })) }),
   core: (e, content, lang) => ({ core: e.core, core_name: ELEMENT_NAME(content, lang, e.core) }),
 };
-function effectBrief(content, lang, effect, state = null) {
+function effectBrief(content, lang, effect, state = null, id = null) {
   const e = effect ?? {};
   const key = Object.keys(EFFECT_BRIEF).find(k => e[k] != null);
-  return key ? EFFECT_BRIEF[key](e, content, lang, state) : null;
+  return key ? EFFECT_BRIEF[key](e, content, lang, state, id) : null;
 }
 
 /* An item as Look and the card tell it: its words, its prices, its one
@@ -676,7 +677,7 @@ function itemBrief(content, state, item) {
   return {
     id: item.id, kind: item.kind, name: itemName(item, state, lang), about: pick(item.about, lang), art: item.art,
     buy: item.buy, sell: item.sell, held: state.bag[item.id] ?? 0,
-    effect: effectBrief(content, lang, item.effect, state),
+    effect: effectBrief(content, lang, item.effect, state, item.id),
     worn: Object.values(state.wear ?? {}).includes(item.id),
     // `free`: a thing the story needs (pouch.mjs freeSlot) — no slot, never tossed or sold; the card says so.
     ...(freeSlot(content, state, item.id) ? { free: true } : {}),

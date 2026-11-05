@@ -1049,8 +1049,8 @@
       },
       "art": "art/items/pouch-mid.webp",
       "about": {
-        "zh": "靛青绸面，绣着云纹。换上它，储物袋多出十二格。",
-        "en": "Indigo silk worked with clouds. Carry it and your pouch holds twelve more kinds."
+        "zh": "靛青绸面，绣着云纹。换上它，便换下身上那只——储物袋一次只用一只。",
+        "en": "Indigo silk worked with clouds. Carry it and it takes the place of the one you carry — one pouch at a time."
       },
       "sold": [
         "冀",
@@ -1071,8 +1071,8 @@
       },
       "art": "art/items/pouch-high.webp",
       "about": {
-        "zh": "绛红织锦，玉扣系口，袋里自成一方天地。换上它，储物袋多出二十四格。",
-        "en": "Crimson brocade with a jade toggle; a small world inside. Carry it and your pouch holds twenty-four more kinds."
+        "zh": "绛红织锦，玉扣系口，袋里自成一方天地。换上它，便换下身上那只——储物袋一次只用一只。",
+        "en": "Crimson brocade with a jade toggle; a small world inside. Carry it and it takes the place of the one you carry — one pouch at a time."
       },
       "sold": [
         "青",
@@ -1094,8 +1094,8 @@
       },
       "art": "art/items/pouch-mid.webp",
       "about": {
-        "zh": "灰布袋子，口上一道绳。主人死了，袋上的印记散了，到你手里便开。换上它，储物袋多出六格。",
-        "en": "A grey cloth bag with a drawstring. Its owner is dead and the mark on it has faded, so it opens to your hand. Carry it and your pouch holds six more kinds."
+        "zh": "灰布袋子，口上一道绳。主人死了，袋上的印记散了，到你手里便开。换上它，便换下身上那只——储物袋一次只用一只。",
+        "en": "A grey cloth bag with a drawstring. Its owner is dead and the mark on it has faded, so it opens to your hand. Carry it and it takes the place of the one you carry — one pouch at a time."
       },
       "hint": {
         "zh": "主人已故。",
@@ -1787,7 +1787,7 @@
       "effect": {
         "pouch": 6
       },
-      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 卷一's 逆天 from the bucket: convenience, not power — worn, six more slots (like 下品储物袋; one 储物袋 at a time, rewards.json pouch).",
+      "_about": "Free play's 饭桶 (worlds/jiuding/fantong.json, Hanli 2026-10-15): 卷一's 逆天 from the bucket: convenience, not power — worn, its six slots over the realm's own (as 下品储物袋 — the same size; one 储物袋 at a time, rewards.json pouch).",
       "art_source": "The 中品储物袋's picture until its own is painted."
     },
     {
