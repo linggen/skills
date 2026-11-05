@@ -412,6 +412,7 @@ const view = {
   gearNote: null, //     a 储物袋 tap the rules refused, in their words, inside the panel
   opened: null, //       a board he opened from the tray: { id, place } — it stays until he walks on
   left: [], //           boards he put down (收手): [{ id, place, scene }] — back in the tray, never up again by themselves here
+  lookedOnce: false, // the page has drawn a Look: a fight open before it is not pulled back in by itself
   walkedOut: null, //    a fight he left that the rules would not settle: it waits on its card, not pulled back in
   luOpen: false, //      the 录 chip's book (九鼎录), over the stage
   lu: null, //           the rules' `story` read behind it, fetched when it opens
@@ -809,6 +810,11 @@ async function readOnce() {
   // for ever. The rules do not charge the day's 灵气 twice for it. One the
   // player just walked out of, and the rules would not settle, waits on its
   // card for his tap instead of pulling him back in.
+  // …but never on the page's first Look (2026-11-05: a fight kept for later — 留 here or on the phone — pulled him back in
+  // on opening the page): it waits on its 回到这一战 card. One the rules open later in this page (Ling's turn, a scene's
+  // way) still comes up by itself.
+  if (look.fight?.open && !bout && !view.lookedOnce && !intoFight()) keep({ walkedOut: look.fight.game });
+  keep({ lookedOnce: true });
   if (look.fight?.open && !bout && look.fight.game !== view.walkedOut) {
     try { await onDuelStart(look.fight.game); } catch (e) { console.warn('[lingjing] fight resume', e); }
   }
@@ -840,8 +846,13 @@ function engineMoved(r) {
   try { tried = sessionStorage.getItem(ENGINE_KEY); } catch { /* no storage */ }
   return tried !== r.engine;
 }
+/* The reload for a newer engine goes back into the fight it left (the one load that does). */
+const INTO_FIGHT = `${ENGINE_KEY}.fight`;
+function intoFight() {
+  try { const on = sessionStorage.getItem(INTO_FIGHT) === '1'; sessionStorage.removeItem(INTO_FIGHT); return on; } catch { return false; }
+}
 function reloadForEngine(r) {
-  try { sessionStorage.setItem(ENGINE_KEY, r.engine); } catch { /* no storage: reload anyway */ }
+  try { sessionStorage.setItem(ENGINE_KEY, r.engine); sessionStorage.setItem(INTO_FIGHT, '1'); } catch { /* no storage: reload anyway */ }
   keep({ walkedOut: null });
   location.reload();
 }
@@ -4664,8 +4675,9 @@ function mountBout(b) {
   b.node = node;
   forgetShell(fightShell(b));
   const reducedMotion = Boolean(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
-  Promise.resolve(kapai.mount(node, { data: { setup: b.setup, brief: b.brief, st: b.st, catalog: cardCatalog() }, lang: lang(), reducedMotion, shell: shellFor(fightShell(b), 'kapai'), story: boutHooks(b) }))
-    .then((out) => settleBout(b, out))
+  b.stop = new AbortController();
+  Promise.resolve(kapai.mount(node, { data: { setup: b.setup, brief: b.brief, st: b.st, catalog: cardCatalog() }, lang: lang(), reducedMotion, signal: b.stop.signal, shell: shellFor(fightShell(b), 'kapai'), story: boutHooks(b) }))
+    .then((out) => (b.kept ? keptBout(b) : settleBout(b, out)))
     .catch((e) => { console.warn('[lingjing] the fight room', e); return settleBout(b, { r: failed(e) }); });
 }
 /// The shell's frame round the room: drawn once a fight, then left standing — the room and the shell's own
@@ -4680,17 +4692,40 @@ function paintFight(b) {
   // own pair under them steps aside (battle.css), and the bar's taps reach the room through its door (fightTap).
   const bw = boutWords(BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh, b.brief.creature, lang());
   focus.innerHTML = frameHtml({ id, title: duelTitle(b.brief.creature, words(), lang()), kind: kapai.meta.name[lang()] ?? kapai.meta.name.zh, how: forInput(kapai.meta.how[lang()] ?? kapai.meta.how.zh), timed: timedOf(kapai), lang: lang(), body: '<div class="g-mounthost g-fighthost"></div>',
-    ask: toolHtml('ask', bw.how, 'data-fight-tap="help"'), close: toolHtml('close', bw.quit, 'data-fight-tap="quit"') });
+    ask: toolHtml('ask', bw.how, 'data-fight-tap="help"'),
+    // 留 · ✕ as on every board (Hanli 11-03; the phone's fight bar has had its 留着以后玩): 留 leaves the fight open in the
+    // save, its 回到这一战 card on the stage (keptBout); ✕ is the room's 认输.
+    out: toolHtml('keep', words().boardKeep, 'data-fight-tap="keep"') + toolHtml('close', bw.quit, 'data-fight-tap="quit"') });
   focus.querySelector('.g-fighthost')?.replaceChildren(b.node);
 }
 
 /* The bar's ? and ✕ over the room: its 怎么玩 and its 认输, as its own buttons did. 认输 under the pause veil is
    still 认输 — the pause lifts and the room yields (the room ignores taps while paused). */
 function fightTap(kind) {
+  if (kind === 'keep') return keepBout(bout);
   const room = boutRoom(bout);
   if (!room) return;
   if (kind === 'quit' && isPaused(fightShell(bout))) setPaused(fightShell(bout), false);
   room.tap({ kind, index: -1 });
+}
+
+/* 留 on the fight's bar: the room taken down, nothing written — the fight stays open in the save as the phone's 留着以后玩
+   leaves it (lingjing_play.dart: the room popped, no `duel --picks`), and waits on its 回到这一战 card (fightLeftHtml). */
+function keepBout(b) {
+  if (!b || b.settled || b.kept) return;
+  b.kept = true;
+  b.stop?.abort();
+}
+function keptBout(b) {
+  if (b.settled) return;
+  b.settled = true;
+  tracker.fightEnd(b.id, { outcome: 'kept' });
+  if (bout === b) bout = null;
+  forgetShell(fightShell(b));
+  b.say?.close();
+  keep({ walkedOut: b.id });
+  render();
+  refresh();
 }
 
 /* The rules settle it, and the scene reports it — the scene is still the only

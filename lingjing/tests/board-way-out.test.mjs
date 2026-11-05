@@ -56,7 +56,7 @@ test('the shell bar lays its icons in one order: ? · 🔊 · Ⅱ · ✕ — the
   assert.match(tools, /aria-label="收手"[^>]*>✕<\/button>$/);
   // The fight: 怎么玩 and 认输 in the bar, the room's own pair stepping aside under the shell.
   const page = read('../scripts/lingjing.js');
-  assert.match(page, /ask: toolHtml\('ask', bw\.how, 'data-fight-tap="help"'\), close: toolHtml\('close', bw\.quit, 'data-fight-tap="quit"'\)/);
+  assert.match(page, /ask: toolHtml\('ask', bw\.how, 'data-fight-tap="help"'\),[\s\S]{0,400}out: toolHtml\('keep', words\(\)\.boardKeep, 'data-fight-tap="keep"'\) \+ toolHtml\('close', bw\.quit, 'data-fight-tap="quit"'\)/, '? · … · 留 · ✕ (11-05: the fight wears 留 too)');
   assert.match(page, /\['\[data-fight-tap\]', \(el\) => fightTap\(el\.dataset\.fightTap\)\]/);
   assert.match(read('../scripts/battle.css'), /\.gshell:has\(> \.gshell-bar \[data-fight-tap\]\) \.btop :is\(\.bquit, \.bhelpbtn\) \{ display: none; \}/);
   // 开炉 docks in the 储物袋's own page (Hanli 11-03): no ✕ and no way back of its own — the pouch's 合上 is the way out.

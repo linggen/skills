@@ -47,7 +47,11 @@
   #chat-panel .scratch-lines { max-height: calc(var(--sheet-h) - 110px); }
   /* A fight on a phone: the footer holds nothing then — it gives its row to the board; the bar keeps one line. */
   body.fighting .slotfoot:not(:has(.footchips > :not(:empty))):not(:has(.askbar:not([hidden]))) { display: none; }
-  body.fighting .topbar { flex-wrap: nowrap; }
+  /* …kept to one line where it fits, never past the screen (the deployer, 11-05: at 375 and 430 「En」 and 灵石 ran past the
+     right edge on the one line): the words give way to their marks — 修为's bar, 体力's ring, the stones' count stand
+     without their labels — and what still does not fit goes to a second row. */
+  body.fighting .topbar { flex-wrap: wrap; gap: 2px 10px; }
+  body.fighting .topbar :is(.xw, .qi, .ls) > .lbl { display: none; }
   /* The footer's popovers (去往 and 观's painting, 事, 书, the sky, 物品) open as bottom sheets: the whole width,
      standing on the footer so its chips stay a tap away, scrolling inside. */
   .slotfoot .bookpop, .slotfoot .bookpop.agendapop, .slotfoot .bookpop.roadspop, .slotfoot .bookpop.roadspop.plated, .slotfoot .shelfpop {

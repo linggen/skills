@@ -77,7 +77,8 @@ test('the page: ✕ is the skip path for each kind, 留 the keep; a fight\'s ✕
   assert.match(cards, /skipped: \(r, h\) => \(r\.id \? `<button class="act quiet hometodo" data-kept-open>/, 'the 主页 row opens the kept list');
   assert.match(cards, /replay: \(o\) => `data-kept-play="\$\{esc\(o\.id\)\}"`/, 'the aside tray takes a kept board up');
   assert.doesNotMatch(page.slice(page.indexOf('function keptTap('), page.indexOf('function keptTap(') + 400), /'replay'/);
-  assert.match(page, /close: toolHtml\('close', bw\.quit, 'data-fight-tap="quit"'\)/, 'a fight\'s ✕ is its own walk-out');
+  assert.match(page, /toolHtml\('close', bw\.quit, 'data-fight-tap="quit"'\)/, 'a fight\'s ✕ is its own walk-out');
+  assert.match(page, /toolHtml\('keep', words\(\)\.boardKeep, 'data-fight-tap="keep"'\)/, 'and its 留 beside it (11-05)');
 });
 
 test('留 on a board that cannot wait on a list (切磋, 秘境, 兽潮, 考考你) does what ✕ does and says so — never refused', () => {

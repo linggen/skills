@@ -271,6 +271,14 @@
 /* ── 手牌: the hand fanned at the foot ── */
 .bdock { position: relative; z-index: 3; min-height: calc(var(--ch) + 6px); padding-bottom: 8px; }
 .bhand { display: flex; justify-content: center; align-items: flex-end; padding: 0 8px; height: 100%; }
+/* Every card whole, its cost on top (the deployer's playbot, 11-05: at 1280 a ten-card hand ran off both sides — the
+   first card's cost past the left edge — and the 丹囊 tray lay over the first card). The tray stands beside the hand, never
+   over it; the fan keeps a margin for its tilt, and the last leaf lies from its slot's right edge (leaves are wider than
+   their slots once the hand overlaps). The phone's room has its own (below). */
+.bdock { display: flex; align-items: flex-end; gap: 10px; }
+.bdock > .dn-tray { position: static; flex: none; align-self: flex-end; margin-bottom: 6px; }
+.bdock > .bhand { flex: 1 1 0; min-width: 0; padding: 0 calc(var(--cw) * .3); }
+.bhand > .bcard:last-child:not(:first-child) .bleaf { left: auto; right: 0; }
 .bcard {
   position: relative; flex: 0 1 var(--cw); min-width: 0; height: var(--ch); padding: 0; border: 0; background: none; cursor: pointer;
   transform: translateY(var(--y, 0)) rotate(var(--r, 0deg)); transform-origin: 50% 120%; z-index: var(--z, 1);
@@ -473,7 +481,7 @@
   .brank:not(:has(> .bminion:not(.empty))) { height: calc(var(--mh) * .62); }
   .brank:not(:has(> .bminion:not(.empty))) > .bminion.empty { max-height: 100%; }
   .battle .bdock { min-height: 0; display: flex; flex-direction: column; justify-content: flex-start; padding-bottom: 4px; }
-  .battle .bdock > .bhand { flex: 1 1 0; min-height: 0; height: auto; }
+  .battle .bdock > .bhand { flex: 1 1 0; min-height: 0; height: auto; padding: 10px 4px 0; }
   .bhand { --k: 1; --gap: 6px; --cell: min(calc(var(--chp) * .71), calc((100cqi - 26px - (var(--k) - 1) * var(--gap)) / var(--k))); /* cqi: the room's scene (its 8 px sides, the hand's 4 px, a little air) */
     container-type: inline-size; display: grid; grid-template-columns: repeat(var(--k), var(--cell)); grid-auto-rows: minmax(0, 1fr);
     justify-content: center; align-content: stretch; gap: 8px var(--gap); padding: 10px 4px 0; box-sizing: border-box; }
