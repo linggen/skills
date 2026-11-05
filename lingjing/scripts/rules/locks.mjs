@@ -11,6 +11,7 @@ import { isOnce } from './chores.mjs';
 import { sealedVerb } from './sealed.mjs';
 import { asideVerb, PLAY_KINDS } from './aside.mjs';
 import { stampPlay } from './pool.mjs';
+import { advanceDeal, playsDeal } from './rotation.mjs';
 
 /* A chore by id: the apps' menu (`ctx.quests`), 开府's milestones are its `once` rows. */
 const choreSystem = (ctx, id) => {
@@ -48,7 +49,16 @@ export function lockedVerb(content, state, verb, args = {}, ctx = {}) {
 export const gated = verbs => Object.fromEntries(Object.entries(verbs).map(([verb, fn]) => [verb,
   (state, content, ctx, args) => lockedVerb(content, state, verb, args, ctx) ?? sealedVerb(content, state, verb, args) ?? asideVerb(content, state, verb, args, ctx) ?? played(fn(state, content, ctx, args), content, state, verb, args, ctx)]));
 function played(out, content, state, verb, args = {}, ctx = {}) {
-  if (out?.state && out.result?.ok && out.state !== state) stampPlay(PLAY_KINDS, content, state, out.state, verb, args, ctx.now ?? new Date());
+  const now = ctx.now ?? new Date();
+  if (out?.state && out.result?.ok && out.state !== state) stampPlay(PLAY_KINDS, content, state, out.state, verb, args, now);
+  // The plate's board played — won, lost, put down (✕) or kept (留): the next is dealt (rules/rotation.mjs, Hanli 2026-11-04:
+  // 「只有之前的玩了才发新的」). A put-down writes nothing else, so it writes the deal alone.
+  const key = out?.result?.ok ? playsDeal(content, state, verb, args, now) : null;
+  if (key) {
+    const next = out.state && out.state !== state ? out.state : structuredClone(state);
+    advanceDeal(content, next, key, now);
+    return { ...out, state: next };
+  }
   return out;
 }
 

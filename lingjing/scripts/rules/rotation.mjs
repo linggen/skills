@@ -13,7 +13,7 @@
 // deals a fresh order every few days, its first day kept clear of the last day before it — never the same errand
 // two days running. Nothing here names a place or a board: the data declares them.
 import { dayKey, seedOf } from '../state.mjs';
-import { allPlaces } from './world.mjs';
+import { allPlaces, hiddenRoom, placeOpen, tooHard } from './world.mjs';
 
 /* FNV-1a, then a final mix: a spread good enough that each id wins its share of days. */
 function mix(text) {
@@ -48,11 +48,66 @@ export function gamesToday(content, place, now = new Date()) {
 /* Every board a place may ever host (fixed and pooled): for what lints it and for a sim that wants the whole map. */
 export const gamesEver = place => [...new Set([...(place?.has?.games ?? []), ...(place?.has?.games_pool?.from ?? [])])];
 
-/* Each place of the set whose boards turn, with the day's of its pool — Look's `boards` (the plate's captions; a fixed
-   board, 周衡's 灯谜, is the place's every day and needs no caption). */
-export function boardsToday(content, ids, now) {
+/* Each place of the set whose boards turn, with what stands there — Look's `boards` (the plate's captions, the phone's
+   今日棋局; a fixed board, 周衡's 灯谜, is the place's every day and needs no caption): the plate's one deal (above),
+   so the list holds one board until it is played (2026-11-04; it held one a place, seven at 沉鼎观, played or not). */
+export function boardsToday(content, ids, now, state = null) {
   const want = new Set(ids);
-  return allPlaces(content).filter(p => want.has(p.id) && p.has?.games_pool).map(p => ({ id: p.id, games: poolToday(p, now) }));
+  return allPlaces(content).filter(p => want.has(p.id) && p.has?.games_pool)
+    .map(p => ({ id: p.id, games: state ? standingToday(content, state, p, now).filter(g => !(p.has.games ?? []).includes(g)) : poolToday(p, now) }))
+    .filter(r => !state || r.games.length);
+}
+
+/* ── 今日棋局, dealt one at a time (Hanli 2026-11-04, the phone's list at 沉鼎观: seven boards no one had played, more
+   every turn — 「只有之前的玩了才发新的」) ──
+   What a place's pool turns up (poolToday above) is what it may host; what stands as practice is one board for the whole
+   painted map he stands on (the plate, `place.plate.id`; a place off any plate is its own): the deal. It stays, day after
+   day, until it is played — won, lost, put down (✕) or kept (留) — and only then is the next dealt (rules/locks.mjs
+   `played` advances it). The deal walks a seeded order of every (place, board) of the plate's pools, the save's own,
+   skipping places he may not walk to yet. Saved as `plate_deal[plate] = { n, at, game }` (n deals played); a save with
+   none reads its first. A board an errand asks for is hosted where its errand puts it, dealt or not (tasks.mjs hostsNow). */
+export const plateKey = place => place?.plate?.id ?? place?.id ?? null;
+const walkable = (content, state, now) => p => !hiddenRoom(content, state, p) && placeOpen(content, state, p, now) && !tooHard(content, state, p);
+/* The plate's (place, board) pairs in the save's order, those he can reach now. */
+function dealOrder(content, state, key, now) {
+  const can = walkable(content, state, now);
+  const pairs = allPlaces(content).filter(p => p.has?.games_pool && plateKey(p) === key)
+    .flatMap(p => (p.has.games_pool.from ?? []).filter(g => !(p.has.games ?? []).includes(g)).map(g => ({ at: p.id, game: g, ok: can(p) })));
+  const order = ordered(pairs.map(x => `${x.at}:${x.game}`), `deal|${key}|${seedOf(state)}`);
+  const ok = new Set(pairs.filter(x => x.ok).map(x => `${x.at}:${x.game}`));
+  return order.filter(x => ok.has(x)).map(x => { const [at, game] = x.split(':'); return { at, game }; });
+}
+/* The board dealt on the plate now: the saved one while he can still reach it, else the n-th of the order. */
+export function plateDealt(content, state, key, now) {
+  if (!key) return null;
+  const order = dealOrder(content, state, key, now);
+  if (!order.length) return null;
+  const d = state.plate_deal?.[key];
+  const kept = d?.at && order.find(x => x.at === d.at && x.game === d.game);
+  return kept ?? order[(d?.n ?? 0) % order.length];
+}
+/* The next deal, written on `next` (mutated) once the one standing is played: never the same pair twice running. */
+export function advanceDeal(content, next, key, now) {
+  const order = dealOrder(content, next, key, now);
+  if (!order.length) return;
+  const was = plateDealt(content, next, key, now), at = order.findIndex(x => x.at === was?.at && x.game === was?.game);
+  const n = (next.plate_deal?.[key]?.n ?? 0) + 1, pick = order[(at + 1) % order.length];
+  next.plate_deal = { ...(next.plate_deal ?? {}), [key]: { n, at: pick.at, game: pick.game } };
+}
+/* Does this verb play the board dealt where he stands? A task's win counted, loss, ✕ (`leave`/`skip`) or 留 of it. */
+export function playsDeal(content, state, verb, args, now) {
+  // …or a board's own 跳过 sent as a win (`grade: skipped`, tasks.mjs winIsSkip): a put-down too.
+  const ownSkip = verb === 'win' && (args?.grade === 'skipped' || args?.skipped === true || args?.skipped === 'true');
+  if (!ownSkip && (verb !== 'task' || !['done', 'lost', 'leave', 'skip', 'keep'].includes(args?.action))) return null;
+  const place = allPlaces(content).find(p => p.id === state.place), key = plateKey(place);
+  const d = plateDealt(content, state, key, now);
+  return d && d.game === String(args.id ?? '') ? key : null;
+}
+/* The boards that stand at a place now as practice: its fixed `has.games`, and the plate's deal when it is here. */
+export function standingToday(content, state, place, now = new Date()) {
+  if (!place) return [];
+  const d = place.has?.games_pool ? plateDealt(content, state, plateKey(place), now) : null;
+  return [...new Set([...(place.has?.games ?? []), ...(d?.at === place.id ? [d.game] : [])])];
 }
 
 /* ── A wall's errands ── */

@@ -15,7 +15,7 @@ import { payMeaning } from './gongke.mjs';
 import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
 import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf } from './travel.mjs';
-import { gamesToday } from './rotation.mjs';
+import { poolToday, standingToday } from './rotation.mjs';
 import { stow, fullLine } from './pouch.mjs';
 import { dropKept, keepBoard, leaveBoard, leaveOf, owePart, playKept, sceneBoards, skipBoard, storyBoard } from './skips.mjs';
 import { sideLine } from './hui.mjs';
@@ -130,12 +130,14 @@ function hostedHere(content, state, id, now = new Date()) {
   return Boolean(t?.hosted) && hostsNow(content, state, id, now)
     && (errandWants(content, state, id, state.place) || (Boolean(content.balance?.play_pay) && t.kind === 'board' && !t.stall));
 }
-/* The place he stands hosts it now: one of today's boards there (rules/rotation.mjs: the fixed and the day's of its
-   pool) — or a board of its pool an errand in the book names at this very place (a wall tag sends him to 柴房's
-   华容道 on a 拼图 day: the tag is what stands it there). */
+/* The place he stands hosts it now: what stands there (rules/rotation.mjs standingToday: its fixed boards, and the
+   plate's one deal when it is here — 2026-11-04, 「只有之前的玩了才发新的」) — or a board an errand in the book asks for:
+   the day's of its pool, as before the deal, or any of its pool the errand names at this very place (a wall tag sends him
+   to 柴房's 华容道 on a 拼图 day: the tag is what stands it there). */
 function hostsNow(content, state, id, now) {
   const place = placeOf(content, state.place);
-  if (gamesToday(content, place, now).includes(id)) return true;
+  if (standingToday(content, state, place, now).includes(id)) return true;
+  if (poolToday(place, now).includes(id) && errandAsking(content, state, id, state.place)) return true;
   return (place?.has?.games_pool?.from ?? []).includes(id) && Boolean(errandAsking(content, state, id, state.place, true));
 }
 /* A stall's board (tasks/world.json `stall: true`, 钱掌柜's 押宝): played where a

@@ -629,8 +629,11 @@ Not 石坳村's 走南路的货郎 (古二). No 符: a made thing is sold nowher
 **今日棋局 · 东墙的杂役** (Hanli 2026-10-27: 「好像没什么任务能做, 感觉卡在了一个小地图」 → 「可以, 加吧」): each 观 place keeps a
 pool of two or three of the kit's practice boards (places' `has.games_pool {from, today}`: 外门 拼图·五子, 讲堂 五子·拼图,
 藏经阁 华容道·拼图, 柴房 华容道·拼图, 饭堂 拼图·华容道, 执事堂 五子·残局 beside 周衡's 灯谜); today's stand
-there, the same on every device (rules/rotation.mjs, by the day and the place) — the tray, the 主页 and the plate's captions
-(Look `boards`) show them. 执事堂's east wall (quests/wall.json, 07-第七回's 乌木牌) posts three 杂役 a day from twelve —
+there, the same on every device (rules/rotation.mjs, by the day and the place). **Dealt one at a time** (Hanli 2026-11-04:
+「只有之前的玩了才发新的」 — the phone's 今日棋局 held seven unplayed, one a place): of all the plate's pool boards, ONE stands
+as practice (rotation.mjs `plateDealt`, `state.plate_deal[plate]`), the same on Mac and phone; it stays through the day
+turns until played — won, lost, ✕ or 留 — and only then is the next dealt (locks.mjs `played`). The tray, the 时辰 draw and
+the plate's captions (Look `boards`) show only it; a board an errand asks for is hosted where the errand puts it. 执事堂's east wall (quests/wall.json, 07-第七回's 乌木牌) posts three 杂役 a day from twelve —
 a board at a 观 place (the tag stands it there whatever the day's set) or a fetch-and-deliver walk — by the day and the
 save's seed, never a tag two days running; `work: labor` pay; one undone lapses at day's end (rules.mjs fits the save).
 Only boards that deal a new level a sitting — 象棋 only at 执事堂 (three endgames a level); 洛书 keeps its one gate.

@@ -599,12 +599,12 @@ const altOf = (a, lang) => ({
    paintings (`art`, or the row it names). A row whose levels mark some `story` deals the story only
    those; the 游戏厅 keeps all. (A throw is a level of 砸寨 named by the task's `deal.lv`, 2026-10-20: its
    throws are the book's there, the card law kept in the level itself — no tray of cards dealt.) */
-/* Look's `boards`: today's boards at each place of the plate he stands on whose pool turns, by their short names (拼图 · 华容道). */
+/* Look's `boards`: the board dealt on the plate he stands on (rotation.mjs plateDealt — one until it is played), by its short name. */
 function boardsLook(content, state, now) {
   const here = placeOf(content, state.place), plate = here?.plate?.id;
   if (!plate) return {};
   const ids = allPlaces(content).filter(p => p.plate?.id === plate).map(p => p.id);
-  const rows = boardsToday(content, ids, now).map(r => ({ id: r.id, games: r.games.map(g => ({ id: g, name: String(pick(taskOf(content, g)?.title, state.lang) ?? g).split(' · ')[0] })) }));
+  const rows = boardsToday(content, ids, now, state).map(r => ({ id: r.id, games: r.games.map(g => ({ id: g, name: String(pick(taskOf(content, g)?.title, state.lang) ?? g).split(' · ')[0] })) }));
   return rows.length ? { boards: rows } : {};
 }
 

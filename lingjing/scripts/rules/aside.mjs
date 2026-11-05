@@ -20,7 +20,7 @@ import { isBout, qiecuoHere, qiecuoTray } from './qiecuo.mjs';
 import { kaoHere } from './kao.mjs';
 import { aside as asideItem } from './tell.mjs';
 import { allPlaces, encounterOf, lockOf, placeOf, poolStands, poolWait, sceneOf } from './world.mjs';
-import { gamesToday } from './rotation.mjs';
+import { gamesToday, standingToday } from './rotation.mjs';
 import { errandWants, hostedHere } from './tasks.mjs';
 import { boardVaries, wonEver } from './pool.mjs';
 import { duiziBrief } from './duizi.mjs';
@@ -69,7 +69,8 @@ function boardsAround(content, state, now) {
   const here = placeOf(content, state.place), plate = here?.plate?.id;
   const places = plate ? [here, ...allPlaces(content).filter(p => p.plate?.id === plate && p.id !== here.id)] : here ? [here] : [];
   const seen = new Set();
-  return places.flatMap(p => gamesToday(content, p, now).filter(id => !seen.has(id) && hostedHere(content, { ...state, place: p.id }, id, now)).map((id) => {
+  // What stands there (the plate's one deal, rotation.mjs) and the day's pool an errand may still ask for — hostedHere says which.
+  return places.flatMap(p => [...new Set([...standingToday(content, state, p, now), ...gamesToday(content, p, now)])].filter(id => !seen.has(id) && hostedHere(content, { ...state, place: p.id }, id, now)).map((id) => {
     seen.add(id);
     const t = taskOf(content, id);
     return { id, task: id, game: t.game ?? null, title: String(pick(t.title, state.lang) ?? id), places: [p.id], opens: 'play', arg: id, stage: `board:${id}` };
