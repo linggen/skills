@@ -30,3 +30,15 @@ test('the phone is untouched: none of it outside the Mac\'s window rule', () => 
   const before = css.slice(0, css.indexOf('@media (min-width: 900px) {'));
   assert.doesNotMatch(before, /container: stage|--game-chrome/);
 });
+
+// A portrait board on the Mac stage (Hanli 11-05, 夜里的药园 · 东角那三棵禾 at 2000×1316: 「小游戏画面扩大一些, 上下都还有空间」):
+// the bar a 112 px strip, the field by 98% of the stage's height less the card's edge. Headless (2000×1316 · 1466×1150 ·
+// 1280×800): the field 596×1060 → 638×1134, 507×901 → 546×972, 318×565 → 354×629; taps land on the canvas where aimed.
+test('a portrait board on the Mac: a narrow strip beside it, the field the stage\'s height', () => {
+  const tail = css.slice(css.indexOf('/* A portrait board on the Mac stage'));
+  assert.match(tail, /@container scene \(min-width: 621px\)/, 'not on a narrow stage');
+  assert.match(tail, /\.focus \.card\.gamecard:has\(> \.gshell\.is-tall\):not\(:has\(\[data-landscape="true"\]\)\):not\(:has\(> \.gshell > \.gshell-side > :not\(\[hidden\]\)\)\) \{\s*--game-reserve: calc\(100dvh - 98cqh \+ 32px\);/, 'no nested :has — the card rule must match');
+  assert.match(tail, /max-width: min\(98%, calc\(112px \+ 12px \+ 34px \+ \(98cqh - 32px\) \* var\(--ar, \.5625\) \+ var\(--beside, 0px\)\)\);/);
+  assert.match(tail, /grid-template-columns: 112px minmax\(0, 1fr\); column-gap: 12px;/);
+  assert.match(tail, /\.gshell-how \{\s*width: auto; white-space: normal;/, 'the how line wraps small in the strip');
+});

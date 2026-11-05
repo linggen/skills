@@ -160,3 +160,24 @@
   .gshell.is-tall .gshell-side { grid-column: 1; grid-row: 2; flex-direction: column; align-items: stretch; justify-content: flex-start; margin-top: 10px; }
   .gshell.is-tall:has(> .gshell-side:not(:empty)) { --jy-strip: 0px; }
 }
+
+/* A portrait board on the Mac stage (Hanli 11-05, 夜里的药园 · 东角那三棵禾 at 2000×1316: 「小游戏画面扩大一些, 上下都还有空间」 —
+   an 830×960 card on a 1090 stage, its bar a 280 px column mostly empty): the bar a narrow strip beside the field — the
+   icons at its top, the title under them, the how line wrapped small (its whole text on hover) — and the field by the
+   stage's height: 98% of it less only the card's edge. A board whose helper stands in the side (结印's box) keeps the
+   wider column; a landscape field and a narrow stage keep theirs (above). */
+@media (min-width: 900px) {
+  @container scene (min-width: 621px) {
+    .focus .card.gamecard:has(> .gshell.is-tall):not(:has([data-landscape="true"])):not(:has(> .gshell > .gshell-side > :not([hidden]))) {
+      --game-reserve: calc(100dvh - 98cqh + 32px);
+      max-width: min(98%, calc(112px + 12px + 34px + (98cqh - 32px) * var(--ar, .5625) + var(--beside, 0px)));
+    }
+    .focus .card.gamecard > .gshell.is-tall:not(:has([data-landscape="true"])):not(:has(> .gshell-side > :not([hidden]))) {
+      grid-template-columns: 112px minmax(0, 1fr); column-gap: 12px;
+    }
+    .focus .card.gamecard > .gshell.is-tall:not(:has([data-landscape="true"])) .gshell-tools { flex-wrap: wrap; justify-content: flex-start; gap: 6px; }
+    .focus .card.gamecard > .gshell.is-tall:not(:has([data-landscape="true"])):not(:has(> .gshell-side > :not([hidden]))) .gshell-name { font-size: 15px; line-height: 1.35; }
+    .focus .card.gamecard > .gshell.is-tall:not(:has([data-landscape="true"])):not(:has(> .gshell-side > :not([hidden]))) .gshell-how {
+      width: auto; white-space: normal; font-size: 12px; line-height: 1.45; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 9; }
+  }
+}
