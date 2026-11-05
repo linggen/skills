@@ -2890,8 +2890,8 @@ function oneBoard(next = null) {
 const skipStaleAsk = () => { if (!CHATLESS) skipLingAsk(chat?.getSessionId?.() ?? null).catch(() => 0); };
 function openFromTray(id) {
   if (view.opened?.id === id) return; // a second tap on 开局: the one already up
-  skipStaleAsk();
   oneBoard(id);
+  skipStaleAsk();
   const inBox = choicesInBox();
   show({ opened: { id, place: look?.place?.id ?? null, scene: look?.scene?.id ?? null }, left: view.left.filter((l) => l.id !== id), qSkip: view.qSkip.filter((k) => k !== `board:${id}`) });
   if (inBox) nextBeat();
