@@ -396,7 +396,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
     if (s.won) return say((s.end?.kind === 'spent' && level.won?.spent) || level.won?.[s.grade], lang); // 稳 emptied: he went down at last
     if (s.lost || s.end?.kind === 'down') return say(level.lines?.lost, lang);
     if (s.end?.kind === 'out') return say(level.lines?.[s.palmLanded ? 'outClumsy' : 'out'], lang);
-    if (s.end?.kind === 'outlast') return say(level.lines?.outlast, lang);
+    if (s.end?.kind === 'outlast') return say((s.end.early && level.lines?.sheathe) || level.lines?.outlast, lang); // emptied early: she sheathes
     if (s.end?.kind === 'spent') return say(level.lines?.spent, lang);
     if (!started) return shell?.lead ? '' : say(level.ready, lang); // the lead card reads it where there is one
     const l = s.line;

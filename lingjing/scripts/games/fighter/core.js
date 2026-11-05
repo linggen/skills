@@ -91,6 +91,10 @@ export const EDGE_LATE = 4; //  her moves past the edge's `after` with him corne
 /* The stage, in units: the boards from `left` to `right`, the slick at the left edge (the corner he chose). */
 export const STAGE = { w: 960, left: 140, right: 930, oil: { from: 140, to: 250 } };
 export const SPENT_STARS = 2; // her 稳 emptied in a bout the slick should end: a win, never the book's three
+/* The longest chain a bout allows: past it she bursts out (burst) — 8 blows, a fighting game's sort. */
+export const COMBO_CAP = 8;
+/* A chain's n-th blow stuns her this share of its own stun: whole for the first three, then shorter (never under half). */
+export const comboStun = (n) => Math.max(0.5, 1 - 0.08 * Math.max(0, n - 3));
 export const OUTLAST_CLEAN = 0.6; // an outlast bout's `clean`: this share of his 血 or more left
 export const OUTLAST_STARS = [0.6, 0.3]; // ★3 from the first share left, ★2 from the second, else ★1
 
@@ -531,7 +535,10 @@ function hurtFoeBy(s, m, { heavy = false, fire = false, big = false, pow = 1 } =
   const chained = foe.stun > s.t && s.combo.who === 'me' && s.combo.n > 0;
   // `ai.burst`: a foe pinned by that many blows in a chain breaks out (气 burst) and throws him back — mashing one
   // button never holds her down for good (a level's knob; none by default)
-  if (chained && s.combo.n >= (R.foe.ai.burst ?? Infinity)) { burst(s); return; }
+  // The chain cap (Hanli 11-05: 「格斗可以卡bug, 我刚刚打出84连了」 — a light cancelled into a light while she still
+  // reels, for ever): past COMBO_CAP blows she bursts out whatever the level says, and each blow of a chain stuns her
+  // a little shorter (combo scaling), so a loop runs dry before the cap and a 3–6 hit chain stays whole.
+  if (chained && s.combo.n >= Math.min(R.foe.ai.burst ?? Infinity, COMBO_CAP)) { burst(s); return; }
   s.combo = { n: chained ? s.combo.n + 1 : 1, at: s.t, who: 'me' };
   s.best = Math.max(s.best, s.combo.n);
   if (s.combo.n >= 2) bump(s, 'combo');
@@ -552,7 +559,7 @@ function hurtFoeBy(s, m, { heavy = false, fire = false, big = false, pow = 1 } =
   if (s.edge) { s.edge = null; s.cue = null; }
   foe.act = null;
   foe.run = 0;
-  foe.stun = s.t + m.stun + (counter ? 160 : 0);
+  foe.stun = s.t + (m.stun + (counter ? 160 : 0)) * comboStun(s.combo.n);
   foe.hitAt = s.t;
   const looser = 1 + (R.foe.bal - foe.bal) / (R.foe.bal * 0.6);
   foe.vx = sd * m.push * 4 * (fire ? 1 : looser) * (onOil(s, foe.x) && !fire ? 1.6 : 1);
@@ -1339,6 +1346,14 @@ function step(s) {
   if (s.combo.n && s.foe.stun <= s.t && s.t - s.combo.at > 200) s.combo = { ...s.combo, n: 0 };
   if (me.hp <= 0 && !s.end) { s.end = { kind: 'down', at: s.t, won: false }; me.down = s.t + END_MS * 2; say(s, 'lost'); bump(s, 'down'); }
   if (!s.end) sparEnd(s);
+  // A bout to stand through whose foe's 血 is emptied anyway (11-05: 秦雁's 二十四招 at 后山, her bar at 0 by her 11th and
+  // the bout going on): she sheathes — won early, paid as standing through it. Never an empty bar that does nothing.
+  if (!s.end && s.level.outlast?.moves && s.foe.bal <= 0 && !s.foe.air) {
+    s.end = { kind: 'outlast', at: s.t, won: true, early: true };
+    s.foe.vx = 0; me.vx = 0; s.foe.act = null; s.edge = null; s.palm = null; s.cue = null;
+    say(s, s.level.lines?.sheathe ? 'sheathe' : 'outlast');
+    bump(s, 'down');
+  }
   if (!s.end && s.level.outlast?.moves && s.foe.moves >= s.level.outlast.moves && !busy(s.foe, s.t) && !s.edge && !s.palm) {
     s.end = { kind: 'outlast', at: s.t, won: true }; // she has made her moves and he stands: her point comes to rest
     s.foe.vx = 0; me.vx = 0;
