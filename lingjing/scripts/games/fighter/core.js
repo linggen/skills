@@ -789,7 +789,9 @@ function decide(s) {
   }
   // what comes: the blow under way, or (one button pressed and pressed) the one his hands will throw the moment free
   const comes = me.act && (NORMALS.has(me.act.k) || me.act.k === 'air') ? me.act : spamK && !me.act && R.me[spamK.replace(/^c/, '')] ? { k: spamK, m: R.me[spamK.replace(/^c/, '')] } : null;
-  if (pressed2 && comes && d < (comes.m.reach ?? 0) + (comes.m.lunge ?? 0) + 30 && roll(s) < (ai.guardUp ?? 0.5)) {
+  // a slow one (a heavy's long wind-up) pressed and pressed is seen coming every time: her guard far more often
+  const slowSpam = spamK && (comes?.m.startup ?? 0) >= 150;
+  if (pressed2 && comes && d < (comes.m.reach ?? 0) + (comes.m.lunge ?? 0) + 30 && roll(s) < (slowSpam ? Math.max(ai.guardUp ?? 0.5, ai.slowRead ?? 0.85) : ai.guardUp ?? 0.5)) {
     if (spamK && roll(s) < (ai.stepOut ?? 0.1) && backTo0 > 90) { foe.vx = side(s) * R.foe.back * 1.4; foe.think = t + 300; return; } // out of its reach: let it whiff
     startFoe(s, 'block');
     foe.act.low = comes.k !== 'air' && (Boolean(comes.m.low) || comes.k.startsWith('c') || (foe.lowHit && roll(s) < 0.8));
