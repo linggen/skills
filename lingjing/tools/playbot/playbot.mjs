@@ -16,7 +16,8 @@
 //   no-response      a tap on a live control changes nothing on the page within 2 s
 //   no-feedback      a play changed neither the fight nor what the page says
 //   mana-waste       灵力 went down and nothing on the field moved (the card only left the hand)
-//   no-spoils        the rules settled a fight won and no 所得 with real contents showed
+//   no-spoils        the rules settled a fight won and no 所得 with real contents showed — or it showed under
+//                    something (elementFromPoint at its centre is not 所得's)
 //   frozen-by-fight  a thing NOT in the fight (the bag, the 饭桶's feed, wearing) refused because a fight is open
 //   resume-mismatch  a fight reloaded and taken up again shows another state than it was left in
 //   console-error    a console error or an uncaught exception
@@ -89,7 +90,9 @@ const SPOILS = () => {
   const s = [...document.querySelectorAll('.card.spoils, [data-spoils-close].card')].find((e) => e.getClientRects().length);
   if (!s) return null;
   const parts = [...s.querySelectorAll('.spoilpays, .spoilfaces, .spoilgears, .small')].map((e) => e.innerText.trim()).filter(Boolean);
-  return { title: s.querySelector('.cardtitle')?.innerText.trim() ?? '', parts };
+  // Seen is not enough: 所得's centre must be 所得's to tap, not the story box's over it (f959ed0c at 430).
+  const b = s.getBoundingClientRect(), at = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
+  return { title: s.querySelector('.cardtitle')?.innerText.trim() ?? '', parts, hit: Boolean(at && s.contains(at)), over: at && !s.contains(at) ? `${at.tagName}.${at.className}`.slice(0, 80) : null };
 };
 
 /* ── One run ── */
@@ -376,6 +379,7 @@ export async function run(opts) {
       await shot(`${label}-won`);
       const paid = res.settled?.out?.paid ?? res.settled?.out?.spoils ?? null;
       if (!sp || !sp.parts.length) await fail('no-spoils', { fight: label, title: sp?.title ?? null, paid });
+      else if (!sp.hit) await fail('no-spoils', { fight: label, title: sp.title, paid, covered_by: sp.over });
       // Put away, as a player does: since dcab26ad the next play waits behind an open 所得.
       else await click('.cardx[data-spoils-close], [data-spoils-close]', '所得 · 收起').catch(() => {});
     };

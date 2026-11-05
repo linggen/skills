@@ -1496,7 +1496,15 @@ const toastX = (html, attrs) => (html ? withCloseX(html, closeX(lang(), attrs)) 
    end (pending until the rules' answer is in and the passage owed is drawn), shown once no passage is ahead,
    and holds the way on (watchWayOn) until it is put away or he takes the way on himself. */
 const spoilsUp = () => Boolean(view.spoils && view.spoils.place === (look?.place?.id ?? null));
-const spoilsShown = () => spoilsUp() && !view.spoils.pending && !storyAhead();
+const spoilsShown = () => spoilsUp() && !view.spoils.pending && (!storyAhead() || bookStill(view.spoils.book));
+/* …but a box already told to its last beat when the fight ended, with nothing drawn since, is no passage ahead: 所得
+   stands and the box steps aside for it, as for the fight card (live at 430, f959ed0c: a 降妖 won at 后山 beside
+   09-futian's told passage, and 所得 waited behind 「还有：当康 · 斗法」 for ever). `book` is the reading's length then. */
+function bookDone() {
+  const r = readingHere();
+  return r && playing(r) && atLast(r, lang()) && !look?.tell_owed && !drawingTold ? r.items.length : null;
+}
+const bookStill = (n) => n != null && n === bookDone() && !asideOn();
 /* 所得 stays until he puts it away (live 11-05, as the phone does: it closed by itself 4–5 s in, before he had read it) —
    a tap on it or its ✕, walking on, or his next move (a fight begun, a board opened). It was a 6 s notice (11-02). */
 function armSpoils() {}
@@ -2825,7 +2833,7 @@ const boardOpenNow = (id) => (look?.tasks ?? []).some((t) => t.id === id && t.st
 // …or the pool's beast he called up beside the scene (besideHtml): the box steps aside so its 出手 is his to tap (11-05:
 // the done passage covered it, elementFromPoint at 出手 hit the story box).
 const gameUp = (slots) => Boolean(slots?.main?.some?.((c) => (c.card === 'board' && boardOpenNow(c.id)) || (besidePool(c) && slots.main[0] === c)));
-const boxYields = (slots) => boxGivesWay({ bout: Boolean(bout), appearing: Boolean(view.appearing), slots: Boolean(slots), up: momentUp(), huiTurn: atHuiTurn(), game: gameUp(slots) });
+const boxYields = (slots) => boxGivesWay({ bout: Boolean(bout), appearing: Boolean(view.appearing), slots: Boolean(slots), up: momentUp(), huiTurn: atHuiTurn(), game: gameUp(slots), spoils: spoilsShown() });
 /* The page's moments in their order — set piece, 息壤's doors, the gold seal,
    her memory, 鼎归 — each waits for the box and for the one before it, so
    two never stand at once (「完」 over 所得, 突破 over 五门俱开, 修为 +60 over
@@ -4814,7 +4822,7 @@ async function settleBout(b, out = {}) {
   const paid = r.outcome === 'won' && (r.paid?.progress || r.paid?.wealth) ? r.paid : null;
   // A 符 played is spent from the bag, won or lost: the card says so (page fact).
   const spent = r.spent ?? [];
-  if (got.length || paid || spent.length) keep({ spoils: { place: look?.place?.id ?? null, cards: got.filter((d) => d.card), items: got.filter((d) => !d.card), paid, spent, pending: true } });
+  if (got.length || paid || spent.length) keep({ spoils: { place: look?.place?.id ?? null, cards: got.filter((d) => d.card), items: got.filter((d) => !d.card), paid, spent, pending: true, book: bookDone() } });
   if (got.some((d) => !d.card)) gearOnSpoils();
   // The strip counts up once the room has closed and the eye is back on it.
   riseAfter = performance.now() + 600;

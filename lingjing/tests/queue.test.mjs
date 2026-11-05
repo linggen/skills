@@ -62,6 +62,7 @@ test('the box gives the stage away only to what is UP — never to a game or a m
   assert.equal(boxGivesWay({ appearing: true }), true, 'a beast\'s first sight');
   assert.equal(boxGivesWay({ up: true }), true, 'a moment already on the stage');
   assert.equal(boxGivesWay({ huiTurn: true }), true, 'a 回\'s 「完」 and the new title');
+  assert.equal(boxGivesWay({ spoils: true }), true, '所得 over a told passage (f959ed0c: a 降妖 won by 09-futian\'s box)');
 });
 
 test('the moments come after the book, one at a time, in their order: set piece, doors, seal, memory, 鼎归, the map unfolding', () => {
@@ -181,7 +182,7 @@ test('a game and the box are never on the stage together (Hanli, 2026-10-14: 「
   assert.deepEqual(onStage({ cards: [{ card: 'panel' }], ahead: false, playing: true }).box, true);
   // the page asks the same: the box yields to an open board in main, and a played scene board closes
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(page, /const boxYields = \(slots\) => boxGivesWay\(\{[^}]*game: gameUp\(slots\) \}\);/);
+  assert.match(page, /const boxYields = \(slots\) => boxGivesWay\(\{[^}]*game: gameUp\(slots\), spoils: spoilsShown\(\) \}\);/);
   // and a scene's game waits for the box to be put away, its last beat read
   assert.match(page, /if \(storyAhead\(\)\) cards = cards\.filter\(\(c\) => \(c\.card !== 'board' \|\| c\.id === view\.opened\?\.id \|\| \(asideOn\(\) && !ownBoard\(c\.id\)\)\) && /);
   assert.match(page, /const storyAhead = \(\) => Boolean\(look\?\.tell_owed \|\| drawingTold \|\| playing\(readingHere\(\)\) \|\| asideOn\(\)\);/);
