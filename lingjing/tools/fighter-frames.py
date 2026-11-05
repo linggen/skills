@@ -40,6 +40,8 @@ GROUND, HIPX = 1060, W * 0.42  # the sketch's ground and the hips' column
 PGROUND = 1100              # where the master's soles stand in the painting
 SCALE = 0.42                # the sheet against the painting (a standing figure ~430 px)
 L = dict(thigh=190, shin=190, torso=250, neck=30, head=62, upper=130, fore=125, sword=330)
+CUTIN_STYLE = ('Drawn in the same soft graphite pencil and light watercolour wash on warm aged paper as the first image, the same face '
+               'and dress, seen from the side facing right, alone on plain empty paper, no other objects, no text.')
 EDIT_STYLE = ('Drawn in the same soft graphite pencil and light watercolour wash on warm aged paper as the first image, the '
               'whole figure seen from the side facing right, alone on plain empty paper, no ground, no other objects, no text. '
               'The second image is only a pose guide: copy its body pose exactly, never its grey shapes.')
@@ -208,6 +210,11 @@ def paint(who, raw, only, seeds, master):
       sk = raw / f'pose-{name}.png'
       sketch(p, sk, *sk_args)
       for sd in seeds:
+        # A `cutin` (the 绝's close-up still): a bust from the master alone — no body pose to follow, so no sketch.
+        if p.get('cutin'):
+          jobs.append({'seed': sd, 'out': str(raw / f'{who}-{name}-s{sd}.png'), 'refs': [str(mpng)], 'width': p.get('width', W),
+                       'prompt': f"Repaint {spec['who']} as {p['words']} {CUTIN_STYLE}"})
+          continue
         jobs.append({'seed': sd, 'out': str(raw / f'{who}-{name}-s{sd}.png'), 'refs': [str(mpng), str(sk)], 'width': p.get('width', W),
                      'prompt': f"Repaint {spec['who']} in the pose of the second image: {p['words']} {EDIT_STYLE}"})
   env = dict(os.environ, HF_HOME=str(Path.home() / '.linggen/models/hf-hub'), HF_HUB_OFFLINE='1')

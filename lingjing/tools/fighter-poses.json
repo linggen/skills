@@ -1159,6 +1159,210 @@
     ],
     "words": "crouching low on bent knees, the sword held level across in front of her shins, blade flat, guarding low, the left hand braced on the flat of the blade. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
     "head": -4
+   },
+   "run1": {
+    "lean": 24,
+    "legF": [
+     56,
+     6
+    ],
+    "legB": [
+     -44,
+     -40
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, leaning forward, the sword held low and back, the robe flying behind. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+   },
+   "run2": {
+    "lean": 26,
+    "legF": [
+     10,
+     -40
+    ],
+    "legB": [
+     -20,
+     -70
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, mid-stride, one foot driving past the other, the sword held low and back, the robe flying behind. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+   },
+   "run3": {
+    "lean": 24,
+    "legF": [
+     -44,
+     -40
+    ],
+    "legB": [
+     56,
+     6
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, the other foot reaching forward, the sword held low and back, the robe streaming behind. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+   },
+   "roll1": {
+    "lean": 50,
+    "legF": [
+     100,
+     -30
+    ],
+    "legB": [
+     70,
+     -60
+    ],
+    "armF": [
+     90,
+     140
+    ],
+    "armB": [
+     70,
+     140
+    ],
+    "words": "diving into a forward roll, ducking her head, the robe gathering, the sword held close along her arm. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "free": true
+   },
+   "roll2": {
+    "lean": 60,
+    "legF": [
+     110,
+     -40
+    ],
+    "legB": [
+     80,
+     -60
+    ],
+    "armF": [
+     90,
+     150
+    ],
+    "armB": [
+     70,
+     140
+    ],
+    "words": "curled tight rolling forward on the ground, head tucked, knees to chest, the robe wrapped round her, the sword held close along her arm. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "free": true
+   },
+   "roll3": {
+    "lean": 20,
+    "legF": [
+     80,
+     -10
+    ],
+    "legB": [
+     10,
+     -80
+    ],
+    "armF": [
+     60,
+     90
+    ],
+    "armB": [
+     40,
+     140
+    ],
+    "words": "coming up out of a roll onto one knee, the sword coming forward to guard. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+   },
+   "zhen1": {
+    "lean": 10,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -20,
+     -30
+    ],
+    "armF": [
+     20,
+     140
+    ],
+    "armB": [
+     60,
+     150
+    ],
+    "words": "gathering force: the sword drawn in close upright before her chest, her left palm pressed to its flat, knees bent, sleeves stirring. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+   },
+   "zhen2": {
+    "lean": 0,
+    "legF": [
+     40,
+     0
+    ],
+    "legB": [
+     -40,
+     -10
+    ],
+    "armF": [
+     80,
+     100
+    ],
+    "armB": [
+     -80,
+     -60
+    ],
+    "words": "a burst of force outward: arms flung wide, the sword swept out to the right and the left palm thrust out behind, robe and sleeves blasted outward, hair flying, a ring of wind around her. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+   },
+   "zhen3": {
+    "lean": 4,
+    "legF": [
+     28,
+     -4
+    ],
+    "legB": [
+     -14,
+     -30
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "settling back into her guard after a burst of force, sleeves still settling, the sword forward level. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+   },
+   "cutin": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     60,
+     150
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "a close-up bust from the chest up, eyes cold and fixed, the jian sword raised upright beside her face, its blade catching the light, wisps of hair across her cheek, a single dramatic still. Only her head, shoulders, the raised hand and the blade.",
+    "free": true,
+    "cutin": true
    }
   },
   "clips": {
@@ -1404,6 +1608,44 @@
    "getup": {
     "frames": [
      "getup1"
+    ],
+    "fps": 1
+   },
+   "run": {
+    "frames": [
+     "run1",
+     "run2",
+     "run3"
+    ],
+    "fps": 12,
+    "loop": true,
+    "calm": [
+     "run1"
+    ]
+   },
+   "roll": {
+    "frames": [
+     "roll1",
+     "roll2",
+     "roll3"
+    ],
+    "fps": 10
+   },
+   "zhen": {
+    "frames": [
+     "zhen1",
+     "zhen2",
+     "zhen3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "zhen2"
+    ]
+   },
+   "cutin": {
+    "frames": [
+     "cutin"
     ],
     "fps": 1
    }
@@ -2591,6 +2833,369 @@
      40
     ],
     "words": "after a side kick: the kicking leg drawn back in with the knee bent, the hips turning back to face right, arms guarding, about to set the foot down. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "backdash1": {
+    "lean": -14,
+    "legF": [
+     10,
+     -10
+    ],
+    "legB": [
+     -30,
+     -30
+    ],
+    "armF": [
+     50,
+     120
+    ],
+    "armB": [
+     44,
+     160
+    ],
+    "words": "pushing off the front foot to hop quickly backward to the left, body leaning back, guard up. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "backdash2": {
+    "lean": -18,
+    "legF": [
+     40,
+     -40
+    ],
+    "legB": [
+     -10,
+     -60
+    ],
+    "armF": [
+     50,
+     120
+    ],
+    "armB": [
+     44,
+     160
+    ],
+    "words": "in a quick low hop backward to the left, both feet just off the ground, knees bent, guard up. No ground under him. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "air": true
+   },
+   "backdash3": {
+    "lean": -6,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -30,
+     -30
+    ],
+    "armF": [
+     50,
+     120
+    ],
+    "armB": [
+     44,
+     160
+    ],
+    "words": "landing from a backward hop, knees bent to absorb it, guard up, facing right. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "throw1": {
+    "lean": 14,
+    "legF": [
+     34,
+     0
+    ],
+    "legB": [
+     -24,
+     -36
+    ],
+    "armF": [
+     80,
+     80
+    ],
+    "armB": [
+     70,
+     90
+    ],
+    "words": "stepping in close and seizing the opponent's collar and sleeve with both hands at chest height. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "throw2": {
+    "lean": -6,
+    "legF": [
+     20,
+     0
+    ],
+    "legB": [
+     -20,
+     -10
+    ],
+    "armF": [
+     30,
+     60
+    ],
+    "armB": [
+     -30,
+     0
+    ],
+    "words": "turning his hips in under the opponent for a hip throw, pulling both hands down and across his body. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "throw3": {
+    "lean": -20,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -40,
+     -20
+    ],
+    "armF": [
+     -40,
+     -10
+    ],
+    "armB": [
+     -70,
+     -30
+    ],
+    "words": "finishing a throw: his body turned back to the left, both arms swung hard down and back, having flung the opponent over behind him. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "dash2": {
+    "lean": 34,
+    "legF": [
+     20,
+     -40
+    ],
+    "legB": [
+     -30,
+     -60
+    ],
+    "armF": [
+     70,
+     100
+    ],
+    "armB": [
+     -40,
+     -10
+    ],
+    "words": "dashing forward to the right in a low fast run, the rear foot driving past, leaning far forward, fists up. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "dash3": {
+    "lean": 30,
+    "legF": [
+     -40,
+     -30
+    ],
+    "legB": [
+     60,
+     10
+    ],
+    "armF": [
+     70,
+     100
+    ],
+    "armB": [
+     -40,
+     -10
+    ],
+    "words": "dashing forward to the right in a low fast running lunge, the other foot reaching forward, leaning forward, fists up. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "cast3": {
+    "lean": 18,
+    "legF": [
+     40,
+     10
+    ],
+    "legB": [
+     -34,
+     -14
+    ],
+    "armF": [
+     90,
+     90
+    ],
+    "armB": [
+     80,
+     92
+    ],
+    "words": "the pushing palm strike held at full extension, the open palm out forward to the right at chest height, the other fist at his hip, deep bow stance, a burst of force. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "cast4": {
+    "lean": 6,
+    "legF": [
+     30,
+     6
+    ],
+    "legB": [
+     -24,
+     -10
+    ],
+    "armF": [
+     50,
+     120
+    ],
+    "armB": [
+     44,
+     160
+    ],
+    "words": "drawing the palm back from a palm strike into his guard, rising out of the bow stance. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "spin1": {
+    "lean": 4,
+    "legF": [
+     20,
+     0
+    ],
+    "legB": [
+     -20,
+     -20
+    ],
+    "armF": [
+     50,
+     120
+    ],
+    "armB": [
+     -30,
+     40
+    ],
+    "words": "winding up for a turning kick: shoulders turned away to the left, weight on the front foot, arms drawn across. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "spin2": {
+    "lean": -6,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     60,
+     -40
+    ],
+    "armF": [
+     -40,
+     40
+    ],
+    "armB": [
+     60,
+     100
+    ],
+    "words": "spinning on the front foot, his back toward the viewer for an instant, the rear knee lifting, arms swinging round. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "spin3": {
+    "lean": -24,
+    "legF": [
+     -8,
+     -8
+    ],
+    "legB": [
+     92,
+     92
+    ],
+    "armF": [
+     -60,
+     -40
+    ],
+    "armB": [
+     60,
+     120
+    ],
+    "words": "a turning back kick (zhuan shen hou deng): his rear leg whipped round and thrust straight out to the right at waist height, heel leading, body leaning away from it in one line. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "spin4": {
+    "lean": 4,
+    "legF": [
+     30,
+     4
+    ],
+    "legB": [
+     -24,
+     -20
+    ],
+    "armF": [
+     50,
+     120
+    ],
+    "armB": [
+     44,
+     160
+    ],
+    "words": "landing from a turning kick, the foot set down, back in his guard facing right. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "super3": {
+    "lean": 20,
+    "legF": [
+     60,
+     0
+    ],
+    "legB": [
+     -50,
+     -50
+    ],
+    "armF": [
+     90,
+     90
+    ],
+    "armB": [
+     88,
+     92
+    ],
+    "words": "both open palms thrust forward together to the right at chest height in a deep bow stance, the full force of a finishing strike, a fierce shout. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "super4": {
+    "lean": 22,
+    "legF": [
+     64,
+     0
+    ],
+    "legB": [
+     -54,
+     -54
+    ],
+    "armF": [
+     92,
+     88
+    ],
+    "armB": [
+     90,
+     90
+    ],
+    "words": "holding the double palm strike at full extension, leaning into it, hair and clothes blown back by the force. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "super5": {
+    "lean": 6,
+    "legF": [
+     30,
+     4
+    ],
+    "legB": [
+     -24,
+     -20
+    ],
+    "armF": [
+     50,
+     120
+    ],
+    "armB": [
+     44,
+     160
+    ],
+    "words": "after the finishing strike, drawing both hands back into his guard, breathing out, steady. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+   },
+   "cutin": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     60,
+     150
+    ],
+    "armB": [
+     44,
+     160
+    ],
+    "words": "a close-up bust from the chest up, shouting fiercely, eyes blazing with resolve, one open palm raised beside his face, hair flying, a single dramatic still. Only his head, shoulders and raised hand.",
+    "free": true,
+    "cutin": true
    }
   },
   "clips": {
@@ -2789,23 +3394,28 @@
    "cast": {
     "frames": [
      "cast1",
-     "cast2"
+     "cast2",
+     "cast3",
+     "cast4"
     ],
-    "hit": 1,
+    "hit": 2,
     "fps": 8,
     "calm": [
-     "cast2"
+     "cast3"
     ]
    },
    "super": {
     "frames": [
      "super1",
-     "super2"
+     "super2",
+     "super3",
+     "super4",
+     "super5"
     ],
-    "hit": 1,
-    "fps": 5,
+    "hit": 3,
+    "fps": 6,
     "calm": [
-     "super2"
+     "super3"
     ]
    },
    "block": {
@@ -2845,10 +3455,15 @@
    },
    "dash": {
     "frames": [
-     "dash1"
+     "dash1",
+     "dash2",
+     "dash3"
     ],
-    "fps": 1,
-    "loop": true
+    "fps": 12,
+    "loop": true,
+    "calm": [
+     "dash1"
+    ]
    },
    "roll": {
     "frames": [
@@ -2879,6 +3494,45 @@
    "getup": {
     "frames": [
      "getup1"
+    ],
+    "fps": 1
+   },
+   "backdash": {
+    "frames": [
+     "backdash1",
+     "backdash2",
+     "backdash3"
+    ],
+    "fps": 12
+   },
+   "throw": {
+    "frames": [
+     "throw1",
+     "throw2",
+     "throw3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "throw2"
+    ]
+   },
+   "spin": {
+    "frames": [
+     "spin1",
+     "spin2",
+     "spin3",
+     "spin4"
+    ],
+    "hit": 2,
+    "fps": 10,
+    "calm": [
+     "spin3"
+    ]
+   },
+   "cutin": {
+    "frames": [
+     "cutin"
     ],
     "fps": 1
    }
