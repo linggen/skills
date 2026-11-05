@@ -293,3 +293,28 @@ test('the 游戏厅\'s 试玩 of a game the model plays (Hanli 10-19) is the rea
   assert.match(page, /if \(isArcadeBoard\(taskId\)\) return arcadeWon\(taskId, grade\);/);
   assert.match(page, /look = withArcade\(withCaps\(seen, caps\), ARCADE_GAME, arcadeDeal\);/); // Look as this device plays it (caps.js), then the 试玩
 });
+
+test('a new board or round skips Ling\'s question still open in its chat — hers, that chat\'s, nothing else; as the card\'s 跳过 does (Hanli 11-04)', async () => {
+  const { skipLingAsk, skipAnswers } = await import('../scripts/games/drawguess-ling.js');
+  const calls = [];
+  const pending = [
+    { question_id: 'q1', agent_id: 'ling', session_id: 's1', questions: [{ question: 'A riddle?' }] },
+    { question_id: 'q2', agent_id: 'ling', session_id: 'other', questions: [{}] },
+    { question_id: 'q3', agent_id: 'yinyue', session_id: 's1', questions: [{}] },
+    { question_id: 'q4', agent_id: 'coder', session_id: 's1', questions: [{}, {}] },
+  ];
+  const fetchFn = async (url, init = {}) => { calls.push([init.method ?? 'GET', url, init.body ? JSON.parse(init.body) : null]); return { ok: true, json: async () => pending }; };
+  assert.equal(await skipLingAsk('s1', { fetchFn }), 1);
+  assert.deepEqual(calls, [
+    ['GET', '/api/pending-ask-user', null],
+    ['POST', '/api/ask-user-response', { question_id: 'q1', answers: [{ question_index: 0, selected: [], custom_text: null }] }],
+  ]);
+  assert.equal(await skipLingAsk(null, { fetchFn }), 0, 'no chat: nothing');
+  assert.deepEqual(skipAnswers([{}, {}]).map((a) => a.question_index), [0, 1]);
+  // Every board turn and the page's own openings go through it.
+  const ling = fs.readFileSync(new URL('../scripts/games/drawguess-ling.js', import.meta.url), 'utf8');
+  assert.match(ling.slice(ling.indexOf('export async function askInChat')), /^[^]*?await skipLingAsk\(sid\)[^]*?await post\('\/api\/chat'/);
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /function openFromTray\(id\) \{\n[^\n]*\n  skipStaleAsk\(\);/);
+  assert.match(page, /deal\.begin = async \([^)]*\) => \{\n\s*skipStaleAsk\(\);/);
+});

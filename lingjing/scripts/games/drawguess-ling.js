@@ -72,6 +72,9 @@ export const lookTurn = ({ sid, agent, png = null, text, model = null }) => ({
  */
 export async function askInChat({ sid, agent = 'yinyue', png, text, model = null, signal, timeoutMs = TIMEOUT_MS }) {
   const t0 = performance.now();
+  // A board's turn is play, and play never waits on the chat (Hanli 2026-11-04, replacing 09-17's queue-behind for this
+  // case): Ling's question still open in this chat is skipped first, as its own 跳过 does.
+  await skipLingAsk(sid).catch(() => 0);
   const seen = (await linesOf(sid, agent)).length;
   const res = await post('/api/chat', lookTurn({ sid, agent, png, text, model }));
   if (!res.ok) throw new Error(`chat ${res.status}`);
@@ -80,6 +83,23 @@ export async function askInChat({ sid, agent = 'yinyue', png, text, model = null
   const got = await replyAfter(sid, agent, seen, t0 + timeoutMs, signal);
   const bound = await boundModel(sid).catch(() => null);
   return { ...got, ms: Math.round(performance.now() - t0), model: bound };
+}
+
+/** The skip the AskUser card's own 跳过 sends (AskUserCard handleSkip): every question answered with nothing. */
+export const skipAnswers = (questions) => (questions ?? []).map((_, i) => ({ question_index: i, selected: [], custom_text: null }));
+
+/** Ling's AskUser still open in chat `sid` — Ling's only, this session's only — skipped the way the card's 跳过 skips
+    it (POST /api/ask-user-response; the engine resolves it and broadcasts WidgetResolved, so the card closes and her
+    turn goes on: on no answer SKILL.md has her stop). Answers how many were skipped. */
+export async function skipLingAsk(sid, { fetchFn = channel } = {}) {
+  if (!sid) return 0;
+  const res = await fetchFn('/api/pending-ask-user');
+  if (!res?.ok) return 0;
+  const open = ((await res.json()) ?? []).filter((q) => q?.session_id === sid && q?.agent_id === 'ling' && q?.question_id);
+  for (const q of open) {
+    await fetchFn('/api/ask-user-response', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question_id: q.question_id, answers: skipAnswers(q.questions) }) });
+  }
+  return open.length;
 }
 
 /** Whether the page has a way to the engine at all. */

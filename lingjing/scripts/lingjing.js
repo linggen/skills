@@ -50,6 +50,7 @@ import { createVoice, nodeMoment } from './voice.js';
 import { bigPlay, createFightSay, cuesOf, fightFacts, strongFoe } from './fightsay.js';
 import { CLOSE_AT, POOR_AT, createHerSay, gearFacts, gearKey, gearWhat, herMode, mijingEndWhat, mijingWayWhat, shortFacts, wayFacts, whyFacts } from './hersay.js';
 import { factsFor, prefetchLines } from './games/prefetch.js';
+import { skipLingAsk } from './games/drawguess-ling.js';
 import { PREFETCH_TITLE, askHer as askHerLines } from './games/prefetch-ling.js';
 import { NPC_TITLE, npcAsk, SPENT } from './npc-ask.js';
 import { answerPage } from './sync-now.js';
@@ -250,6 +251,7 @@ function mountData(task) {
   if (deal.begin) {
     const { verb: name, ...args } = deal.begin;
     deal.begin = async ({ next = false } = {}) => {
+      skipStaleAsk();
       const r = await verb(name, { ...args, ...(next ? { next: 1 } : {}) });
       // A round under way stands because he is playing it (the page's `opened`), never by the stage rule: after a
       // reload it waits in the tray, 「继续」 (stage.mjs, Hanli 10-27).
@@ -2386,7 +2388,8 @@ function turnEnded() {
 /// A word from the stage is a message, never the answer to a question
 /// waiting in the chat: the question belongs to the chat alone, and the word
 /// waits its turn behind it (his "should it queue instead of hiding the ask
-/// user widget", 2026-09-17 — the skill declares the queue).
+/// user widget", 2026-09-17 — the skill declares the queue). A new board or round is the one exception (Hanli
+/// 2026-11-04): it skips Ling's open question first (skipStaleAsk), so play never waits behind it.
 function deliver(text, hidden) {
   // A chatless test save (`&chat=off`): the word is shown, the turn ends.
   if (CHATLESS) { if (!hidden && !/^\[[a-z]+\]/.test(text)) keep({ doNote: `${SCRATCH_BADGE} · 「${text.split('\n')[0]}」` }); turnEnded(); return; }
@@ -2882,8 +2885,12 @@ function oneBoard(next = null) {
     if (!keepable) boards.delete(id);
   }
 }
+/// A new board or round begun: Ling's question still open in this chat is skipped, as its 跳过 does (Hanli 2026-11-04:
+/// play never waits on the chat; replaces 09-17's queue-behind for this case). Never a test save's chatless page.
+const skipStaleAsk = () => { if (!CHATLESS) skipLingAsk(chat?.getSessionId?.() ?? null).catch(() => 0); };
 function openFromTray(id) {
   if (view.opened?.id === id) return; // a second tap on 开局: the one already up
+  skipStaleAsk();
   oneBoard(id);
   const inBox = choicesInBox();
   show({ opened: { id, place: look?.place?.id ?? null, scene: look?.scene?.id ?? null }, left: view.left.filter((l) => l.id !== id), qSkip: view.qSkip.filter((k) => k !== `board:${id}`) });
