@@ -540,7 +540,11 @@ export function stageSlots(look, cards = [], { skip = [] } = {}) {
   const main = [...(now?.cards ?? []), ...(rider ? [rider] : [])];
   const step = mainIsStep(look, main);
   const waits = queue.map(t => ({ key: t.key, cards: t.cards }));
-  return { header, main, key: now?.key ?? null, queue: waits, footer: { roads, step, waiting: step ? 0 : waits.length, next: step ? null : waits[0] ?? null } };
+  // A step holds the stage and its queue goes unsaid — but a pool's beast that stands beside the scene (降妖 at 后山 while a
+  // story scene stands there, Hanli 11-04) stays one tap away (还有 ›): after the passage its 开局 was out of reach until a
+  // refused tap on the gated way on moved the line (playbot, 09-suifeng, 11-05).
+  const beside = step ? waits.filter(w => w.cards.some(c => c.card === 'duel' && look?.place?.encounter?.pool && look.place.encounter.game?.id === c.id)) : waits;
+  return { header, main, key: now?.key ?? null, queue: waits, footer: { roads, step, waiting: beside.length, next: beside[0] ?? null } };
 }
 
 /* What those cards already offer, as option keys the question is measured

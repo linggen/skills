@@ -1529,7 +1529,9 @@ function heldRoadsHtml(lock) {
 /// way on — or the box holds the scene's choices itself — nothing is counted; else it names what
 /// waits (stage.mjs footer.next).
 function moreHtml(slots) {
-  const w = words(), next = !slots || choicesInBox() ? null : slots.footer.next;
+  // …a pool's beast standing beside the scene stays one tap away even then (stage.mjs footer; 09-suifeng, 11-05).
+  const beside = (n) => n?.cards?.some((c) => c.card === 'duel' && look?.place?.encounter?.pool && look.place.encounter.game?.id === c.id);
+  const w = words(), next = !slots || (choicesInBox() && !beside(slots.footer.next)) ? null : slots.footer.next;
   if (!next) return '';
   const what = queueLabel(next.cards[0]);
   return `<button class="act quiet more" data-qnext="${esc(slots.key)}" title="${esc(fill(w.queueNext, { what: [what.name, what.kind].filter(Boolean).join(' · ') }))}">${esc(waitingLine({ ...what, more: slots.footer.waiting - 1 }, w))} ›</button>`;

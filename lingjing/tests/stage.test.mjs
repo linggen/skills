@@ -345,7 +345,7 @@ test('nothing to tap: the footer names what waits — 「还有：夫诸 · 图�
   const fs = await import('node:fs');
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   const foot = src.slice(src.indexOf('function footRowHtml(slots)'), src.indexOf('const roadsFree'));
-  assert.match(foot, /choicesInBox\(\) \? null : slots\.footer\.next/);
+  assert.match(foot, /\(choicesInBox\(\) && !beside\(slots\.footer\.next\)\) \? null : slots\.footer\.next/);
   assert.match(foot, /waitingLine\(/);
   assert.doesNotMatch(foot, /queueMore/);
 });
@@ -397,4 +397,25 @@ test('三试 · 蠪侄 mid-passage: no fight card on the stage — the box first
   assert.ok(l.stage.some(c => c.card === 'duel'), 'the rules stand the fight');
   assert.ok(!afterBook(l.stage, true).some(c => c.card === 'duel'), 'mid-passage it waits — even past the caption');
   assert.ok(afterBook(l.stage, false).some(c => c.card === 'duel'), 'the passage told, it stands');
+});
+
+test('a pool\'s beast standing beside a story scene stays one tap away, even while the step holds the stage (playbot 11-05, 09-suifeng at 后山: 开局 out of reach until a refused tap)', async () => {
+  const { loadContent } = await import('../scripts/content.mjs');
+  const { look, move, playTo } = await import('../scripts/rules.mjs');
+  const { newState } = await import('../scripts/state.mjs');
+  const content = loadContent(), now = new Date('2026-11-05T10:00:00');
+  const at = playTo(content, newState(content, 'zh', now), '09-suifeng', { now }).state;
+  let s = { ...at, stamina: 100, stamina_at: now.toISOString() };
+  if (s.place !== 'houshan') s = move(s, content, { now, quests: [] }, { place: 'houshan' }).state ?? s;
+  s = { ...s, tell_owed: undefined }; // the passage told (the page's own write, rules.mjs pageTell)
+  const l = look(s, content, { now, quests: [] });
+  assert.equal(l.scene?.id, '09-suifeng');
+  assert.ok(l.place.encounter?.pool, 'the 后山 pool stands beside the scene');
+  const slots = stageSlots(l, l.stage);
+  assert.ok(slots.footer.step, 'the scene holds the stage');
+  assert.equal(slots.footer.waiting, 1, '还有 › counts the fight');
+  assert.ok(slots.footer.next.cards.some((c) => c.card === 'duel'), 'and names it');
+  const fs = await import('node:fs');
+  const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  assert.match(page, /choicesInBox\(\) && !beside\(slots\.footer\.next\)/, 'shown even while the box holds the gated way on');
 });
