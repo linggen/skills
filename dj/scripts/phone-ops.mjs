@@ -65,7 +65,9 @@ function trackPlayed(lib, o) {
   t.plays = (Number(t.plays) || 0) + 1;
   const at = Date.parse(o.at);
   if (Number.isFinite(at) && !(Date.parse(t.last_played) >= at)) t.last_played = new Date(at).toISOString();
-  return { quiet: true };
+  // For dj-pick (quest.mjs playedPick): the song's keys and when it played — the caller asks, never the reply.
+  const keys = [t.id, `${t.artist ?? ''}|${t.title ?? ''}`, t.requested_title ? `${t.artist ?? ''}|${t.requested_title}` : null].filter(Boolean);
+  return { quiet: true, played: { keys, at: Number.isFinite(at) ? new Date(at).toISOString() : null } };
 }
 
 /// One vocabulary, and deliberately a small one: it names the phone view (and
@@ -162,6 +164,7 @@ export function applyPhoneOps(lib, batch) {
   let applied = 0;
   let dirty = false;
   let rings = false;
+  const played = [];
 
   for (const o of batch) {
     const id = String(o?.id ?? '').trim();
@@ -172,7 +175,8 @@ export function applyPhoneOps(lib, batch) {
       results.push({ id, ok: true, duplicate: true });
       continue;
     }
-    const { quiet, unchanged, ...outcome } = tryOp(o)(lib);
+    const { quiet, unchanged, played: one, ...outcome } = tryOp(o)(lib);
+    if (one) played.push(one);
     seen.add(id);
     ring.push(id);
     if (outcome.skipped) {
@@ -185,7 +189,7 @@ export function applyPhoneOps(lib, batch) {
     dirty ||= !unchanged;
     rings ||= !quiet;
   }
-  return { results, skipped, applied, dirty, rings, ring: ring.slice(-RING) };
+  return { results, skipped, applied, dirty, rings, played, ring: ring.slice(-RING) };
 }
 
 export const saveRing = (ring) => writeJson(OP_IDS, { ids: ring });

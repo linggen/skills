@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MENU, RETIRED, dueOf, merged, publishDue, questsDir, stamp, stampCli, stampQuietly } from '../scripts/quest.mjs';
+import { MENU, PICK_HOURS, RETIRED, dueOf, merged, notePicks, playedPick, publishDue, questsDir, songKey, stamp, stampCli, stampQuietly } from '../scripts/quest.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const QUEST = path.join(HERE, '..', 'scripts', 'quest.mjs');
@@ -106,4 +106,40 @@ test('a stamp never moves done_at back; the engine door exits 0 once held, 1 for
   assert.equal(doneOf(read(dir), 'dj-pick'), '2026-09-24T10:00:00.000Z');
   for (const q of read(dir).quests) assert.equal(q.kind, 'song', q.id);
   fs.rmSync(dir, { recursive: true, force: true });
+});
+
+// dj-pick wherever the song is played (Hanli 11-05 「点歌我做完了, 没变成交差」): her picks are kept beside the library,
+// and a song started anywhere in DJ within PICK_HOURS of her naming it is the chore done.
+test('a song she named, started within the window anywhere, stamps dj-pick; another song, or too late, does not', () => {
+  const dir = tmp(), file = path.join(dir, 'data', 'picks.json'), library = lib(dir, []);
+  const at = (h) => new Date(NOW.getTime() + h * 3600_000);
+  notePicks(['张学友|秋意浓', { artist: 'Eason', title: 'K歌之王 ' }], { file, now: NOW });
+  assert.equal(playedPick(['周杰伦|七里香'], { file, dir, now: at(1), library }), false, 'not her pick');
+  assert.equal(fs.existsSync(path.join(dir, 'dj.json')), false, 'nothing written');
+  assert.equal(playedPick(['张学友|秋意浓'], { file, dir, now: at(PICK_HOURS + 1), library }), false, 'too late');
+  assert.equal(playedPick([' 张学友 | 秋意浓'], { file, dir, now: at(2), library }), true);
+  assert.equal(doneOf(read(dir), 'dj-pick'), at(2).toISOString());
+  assert.equal(playedPick(['eason|k歌之王'], { file, dir, now: at(3), library }), true, 'case and spaces fold');
+  // The picks file holds keys and times only, and never crosses into the quests file.
+  assert.deepEqual(Object.keys(JSON.parse(fs.readFileSync(file, 'utf8')).picks[0]).sort(), ['at', 'key']);
+  assert.ok(!fs.readFileSync(path.join(dir, 'dj.json'), 'utf8').includes('秋意浓'));
+});
+
+test('picks older than the window are let go when more are noted; a pick is never in the future', () => {
+  const dir = tmp(), file = path.join(dir, 'picks.json');
+  notePicks(['a|1'], { file, now: NOW });
+  const later = notePicks(['b|2'], { file, now: new Date(NOW.getTime() + (PICK_HOURS + 1) * 3600_000) });
+  assert.deepEqual(later.map((p) => p.key), ['b|2']);
+  assert.equal(playedPick(['b|2'], { file, dir, now: NOW, library: lib(dir, []) }), false, 'played before she named it');
+  assert.equal(songKey({ artist: ' A ', title: 'B' }), 'a|b');
+});
+
+test('the command line: pick, then played', () => {
+  const dir = tmp();
+  const env = { ...process.env, DJ_DIR: dir };
+  const run = (...a) => JSON.parse(execFileSync(process.execPath, [QUEST, ...a], { env, encoding: 'utf8' }).trim());
+  assert.deepEqual(run('pick', '张学友|秋意浓'), { ok: true, picked: 1 });
+  assert.deepEqual(run('played', '周杰伦|七里香'), { ok: true, counted: false });
+  assert.deepEqual(run('played', '张学友|秋意浓'), { ok: true, counted: true });
+  assert.ok(JSON.parse(fs.readFileSync(path.join(dir, 'data', 'quests', 'dj.json'), 'utf8')).quests.find((q) => q.id === 'dj-pick').done_at);
 });

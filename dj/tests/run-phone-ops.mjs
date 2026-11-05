@@ -292,6 +292,31 @@ ok('a play of a song this Mac no longer has is spent, not skipped', () => {
 });
 
 
+// dj-pick (quest.mjs, Hanli 11-05 「点歌我做完了, 没变成交差」): a song the agent named, played on the phone within
+// PICK_HOURS, is the chore done — stamped at the play's time by quest.mjs, the quests file's one writer.
+ok('a song she picked, played on the phone soon after, stamps dj-pick; one she picked long ago does not', () => {
+  const pickAt = (dir, at) => {
+    fs.mkdirSync(path.join(dir, 'data'), { recursive: true });
+    fs.writeFileSync(path.join(dir, 'data', 'picks.json'), JSON.stringify({ picks: [{ key: '|a.mp3', at }] }));
+  };
+  const pickOf = (dir) => {
+    const f = path.join(dir, 'data', 'quests', 'dj.json');
+    return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')).quests.find((q) => q.id === 'dj-pick')?.done_at ?? null : null;
+  };
+  const dir = freshDir(['a.mp3']);
+  pickAt(dir, '2026-09-24T08:00:00Z');
+  send(dir, [{ id: 'p1', op: 'track-played', file: 'a.mp3', at: '2026-09-24T10:00:00Z' }]);
+  assert.equal(pickOf(dir), '2026-09-24T10:00:00.000Z');
+  const old = freshDir(['a.mp3']);
+  pickAt(old, '2026-09-23T08:00:00Z');
+  send(old, [{ id: 'p1', op: 'track-played', file: 'a.mp3', at: '2026-09-24T10:00:00Z' }]);
+  assert.equal(pickOf(old), null, 'a day-old pick is no pick');
+  const none = freshDir(['a.mp3']);
+  send(none, [{ id: 'p1', op: 'track-played', file: 'a.mp3', at: '2026-09-24T10:00:00Z' }]);
+  assert.equal(pickOf(none), null, 'a song she never named');
+});
+
+
 // ── ringing the phone ───────────────────────────────────────────────────────
 // A fake daemon counts publishes. A play must not ring dj/library-changed: it
 // changes no phone view, and a ring makes every connected phone re-sync.

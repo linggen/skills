@@ -25,6 +25,7 @@ import {
 } from './store.js';
 import { die, readJson, writeJson, lock, unlock, backupLibrary, LIB, DJ_DIR } from './io.mjs';
 import { decodeOps, applyPhoneOps, saveRing } from './phone-ops.mjs';
+import { playedPick } from './quest.mjs';
 import { reconcile } from './reconcile.mjs';
 import { downloadRefusal, restricted } from './reach.mjs';
 import {
@@ -312,6 +313,10 @@ const VERBS = {
     if (r.dirty) persist(lib);
     if (r.rings) markPhone();
     if (batch.length) saveRing(r.ring);
+    // A song she picked lately, played on the phone: dj-pick (quest.mjs, its one writer). Never fails the drain.
+    for (const p of r.played ?? []) {
+      try { playedPick(p.keys, p.at ? { now: new Date(p.at) } : {}); } catch { /* the next play asks again */ }
+    }
     return { ok: true, applied: r.applied, results: r.results, skipped: r.skipped, view: phoneView(lib) };
   },
 

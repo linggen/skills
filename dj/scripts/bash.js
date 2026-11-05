@@ -107,3 +107,19 @@ export const FFMPEG_SH =
 export function noteQuest(id) {
   return runBash(`bash "${SCRIPTS}/run-js.sh" "${SCRIPTS}/quest.mjs" ${sq(id)}`, { timeoutMs: 15000 }).catch(() => {});
 }
+
+/// The agent named these songs (a set it proposed, a song it played): kept for dj-pick (quest.mjs `pick`). Silent.
+export function notePicks(tracks) {
+  const keys = (tracks || []).map((t) => `${t?.artist ?? ''}|${t?.title ?? ''}`).filter((k) => k !== '|');
+  if (!keys.length) return Promise.resolve();
+  return runBash(`bash "${SCRIPTS}/run-js.sh" "${SCRIPTS}/quest.mjs" pick ${keys.map(sq).join(' ')}`, { timeoutMs: 15000 }).catch(() => {});
+}
+
+/// A song started playing here: dj-pick when the agent named it lately (quest.mjs `played`) — its row's key and the
+/// title it was asked for, as library.js ownedRow matches them. Silent: a failure never fails the play.
+export function notePlayed(t) {
+  const keys = [t?.id, `${t?.artist ?? ''}|${t?.title ?? ''}`, t?.requested_title ? `${t.artist ?? ''}|${t.requested_title}` : null]
+    .filter((k) => k && k !== '|');
+  if (!keys.length) return Promise.resolve();
+  return runBash(`bash "${SCRIPTS}/run-js.sh" "${SCRIPTS}/quest.mjs" played ${keys.map(sq).join(' ')}`, { timeoutMs: 15000 }).catch(() => {});
+}

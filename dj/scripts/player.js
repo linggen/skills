@@ -5,7 +5,7 @@
 //            (the daemon serves the skill dir; localhost load is instant)
 //   lyrics — parse the .lrc sidecar, highlight + auto-scroll the active line
 
-import { noteQuest, runBash, sq } from './bash.js';
+import { notePlayed, noteQuest, runBash, sq } from './bash.js';
 import { esc } from './ui.js';
 import { t as tr } from './strings.js';
 
@@ -248,6 +248,7 @@ export async function openPlayer(startTrack, opts = {}) {
       await runBash(`cp ${sq(t.file)} "${NP_PATH}"`);
       audio.src = `/apps/dj/scripts/${NP_NAME}?t=${Date.now()}`;
       audio.play().catch(() => {});
+      notePlayed(t); // a song she picked lately, started here, is dj-pick done (quest.mjs)
     } catch (e) { opts.toast?.(String(e.message || e)); }
     updateMini();
     if (!t.lrc && opts.fetchLyrics) autoFetchLyrics(t); // background — don't block playback

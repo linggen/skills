@@ -12,10 +12,15 @@
 //              the phone's (fact `dj-listen`). Due while the library holds a
 //              song with its file.
 //   dj-pick    a song the agent suggested, played: a play started from the
-//              set it pushed (PageUpdate `play`, or ▶ on its proposed set).
-//              Always due.
+//              set it pushed (PageUpdate `play`, or ▶ on its proposed set) —
+//              or that song started anywhere in DJ within PICK_HOURS of her
+//              naming it (the Mac's player from the library, a phone's play
+//              op): her picks are kept beside the library (`pick`), a play
+//              start asks (`played`). Always due.
 //
 //   quest.mjs <id>     stamp <id> done now; prints one JSON line
+//   quest.mjs pick <artist|title>…   the agent named these songs, now
+//   quest.mjs played <artist|title>…  one song started: dj-pick if she named it
 //   quest.mjs due      no stamp: bring the menu and every `due` up to date
 //   quest.mjs stamp <id> <at>   the engine's door for a phone fact (SKILL.md
 //                      `quests:`): done at <at> (2026-09-24T14:03:11Z); exit
@@ -58,6 +63,45 @@ export const questsDir = (env = process.env) =>
 /// The library DJ reads `due` from.
 export const libraryFile = (env = process.env) =>
   path.join(env.DJ_DIR || path.join(env.HOME || '', '.linggen', 'skills', 'dj'), 'library.json');
+
+/// The songs the agent named (a set it proposed, a song it played), kept beside the library — DJ's own data, never
+/// in the quests file (only the fact crosses): { picks: [{ key, at }] }, the last PICK_HOURS only.
+export const PICK_HOURS = 6;
+export const picksFile = (env = process.env) =>
+  path.join(env.DJ_DIR || path.join(env.HOME || '', '.linggen', 'skills', 'dj'), 'data', 'picks.json');
+
+/// A song's key, as library.js trackId makes it: artist|title, case- and space-insensitive. A key given whole
+/// (「张学友|秋意浓」) is folded the same way.
+export const songKey = (t) => (typeof t === 'string'
+  ? t.split('|').map((x) => x.toLowerCase().trim()).join('|')
+  : `${String(t?.artist ?? '').toLowerCase().trim()}|${String(t?.title ?? '').toLowerCase().trim()}`);
+
+const fresh = (picks, now) => picks.filter((p) => {
+  const at = Date.parse(p?.at);
+  return Number.isFinite(at) && at <= now.getTime() + 60_000 && now.getTime() - at <= PICK_HOURS * 3600_000;
+});
+
+/// The agent named these songs at `now`: kept, the stale ones let go.
+export function notePicks(keys, { file = picksFile(), now = new Date() } = {}) {
+  const held = fresh(Array.isArray(readJson(file)?.picks) ? readJson(file).picks : [], now);
+  const add = [...new Set(keys.map(songKey).filter((k) => k !== '|'))];
+  const picks = [...held.filter((p) => !add.includes(p.key)), ...add.map((key) => ({ key, at: now.toISOString() }))];
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const tmp = `${file}.tmp-${process.pid}`;
+  fs.writeFileSync(tmp, `${JSON.stringify({ picks })}\n`);
+  fs.renameSync(tmp, file);
+  return picks;
+}
+
+/// One song started playing at `now` (any of its keys: its row's, the title it was asked for): dj-pick stamped
+/// when the agent named it in the last PICK_HOURS. Answers whether it counted.
+export function playedPick(keys, { file = picksFile(), dir = questsDir(), now = new Date(), library = libraryFile() } = {}) {
+  const want = new Set((Array.isArray(keys) ? keys : [keys]).map(songKey));
+  const picks = fresh(Array.isArray(readJson(file)?.picks) ? readJson(file).picks : [], now);
+  if (!picks.some((p) => want.has(p.key) && Date.parse(p.at) <= now.getTime() + 60_000)) return false;
+  stamp('dj-pick', { dir, now, library });
+  return true;
+}
 
 /// Whether each row can be done now: a song to hear needs a song. Pure.
 export function dueOf(library) {
@@ -152,7 +196,16 @@ export function stampCli(id, at, { dir = questsDir(), library = libraryFile() } 
   }
 }
 
-if (process.argv[1] && real(process.argv[1]) === real(fileURLToPath(import.meta.url)) && process.argv[2] === 'stamp') {
+const isCli = process.argv[1] && real(process.argv[1]) === real(fileURLToPath(import.meta.url));
+if (isCli && (process.argv[2] === 'pick' || process.argv[2] === 'played')) {
+  try {
+    const keys = process.argv.slice(3);
+    const out = process.argv[2] === 'pick' ? { picked: notePicks(keys).length } : { counted: playedPick(keys) };
+    console.log(JSON.stringify({ ok: true, ...out }));
+  } catch (e) {
+    console.log(JSON.stringify({ ok: false, error: String(e?.message || e) }));
+  }
+} else if (process.argv[1] && real(process.argv[1]) === real(fileURLToPath(import.meta.url)) && process.argv[2] === 'stamp') {
   process.exitCode = stampCli(process.argv[3], process.argv[4]);
 } else if (process.argv[1] && real(process.argv[1]) === real(fileURLToPath(import.meta.url))) {
   try {

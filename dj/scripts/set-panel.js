@@ -6,7 +6,7 @@
 import { loadQueue, isOwned, ownedRow, trackId, trackKey } from './library.js';
 import { enqueue, queueVerb } from './download.js';
 import { drainStep } from './drain.js';
-import { noteQuest } from './bash.js';
+import { notePicks, noteQuest } from './bash.js';
 import { play, refreshLibrary } from './lib-view.js';
 import { state, toast } from './state.js';
 import { thumbUrl } from './thumbs.js';
@@ -87,6 +87,7 @@ function applyAgentPlay(pp) {
   const byKey = new Map((state.library.tracks || []).filter((t) => t.file).map((t) => [trackKey(t), t]));
   const queue = (pp.tracks || []).map((t) => byKey.get(trackId(t))).filter(Boolean);
   if (!queue.length) { toast(tr('dj.noneOfThoseAre')); return; }
+  notePicks(pp.tracks); // her picks, for a play of them anywhere in DJ later (quest.mjs)
   play(queue[0], queue);
   noteQuest('dj-pick'); // a song the agent picked, playing (quest.mjs)
 }
@@ -96,6 +97,9 @@ export function applyPageUpdate(args) {
   if (pp) { applyAgentPlay(pp); return; }
   const tl = extractKey(args, 'tracklist');
   if (!tl || !Array.isArray(tl.tracks)) return;
+  // Her picks are kept: the song played later from the library, the player or the phone still counts (quest.mjs
+  // dj-pick; Hanli 11-05 「点歌我做完了, 没变成交差」 — only ▶ on this panel counted).
+  notePicks(tl.tracks);
   state.set = {
     name: tl.name || tr('dj.newSet'),
     brief: tl.brief || '',
