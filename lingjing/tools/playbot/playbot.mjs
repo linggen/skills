@@ -221,10 +221,16 @@ export async function run(opts) {
           if (!(r.right > 0 && r.left < innerWidth && r.bottom > 0 && r.top < innerHeight)) { e.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' }); r = e.getBoundingClientRect(); }
           const x = r.left + r.width / 2, y = r.top + r.height / 2;
           const top = document.elementFromPoint(x, y);
-          if (top && (top === e || e.contains(top))) return { x, y, text: (e.innerText || '').trim().slice(0, 30), sel: e.getAttribute('class') ?? '' };
+          if (top && (top === e || e.contains(top))) return { x, y, text: (e.innerText || '').trim().slice(0, 30), sel: e.getAttribute('class') ?? '', q };
         }
         return null;
       }, sel);
+      // Still there a beat later (a card sliding in, a story closing): a tap lands where it is, not where it was.
+      if (c) {
+        await sleep(150);
+        const still = await page.evaluate(({ q, x, y }) => { const t = document.elementFromPoint(x, y); return Boolean(t && t.closest(q)); }, { q: sel, x: c.x, y: c.y });
+        if (!still) { if (opts.debug) console.error(`[click] ${sel} moved — not tapped`); return false; }
+      }
       if (opts.debug) console.error(`[click] ${sel} → ${c ? `${c.text} @${Math.round(c.x)},${Math.round(c.y)}` : 'none'}`);
       if (!c && opts.debug) console.error('   matches:', JSON.stringify(await page.evaluate((q) => [...document.querySelectorAll(q)].map((e) => { const r = e.getBoundingClientRect(); const up = []; for (let a = e; a && a !== document.body; a = a.parentElement) { const cs = getComputedStyle(a); if (cs.visibility === 'hidden' || cs.display === 'none') up.push(`${a.tagName}.${(a.getAttribute('class') || '').replace(/ /g, '.')}:${cs.visibility}/${cs.display}`); } return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height), e.disabled, up.slice(-3)]; }), sel)));
       if (!c) { if (opts.debug) await shot(`dbg-none-${sel.replace(/[^a-z]/gi, '').slice(0, 20)}`, { lint: false }); return false; }
@@ -366,10 +372,19 @@ export async function run(opts) {
 
     /* Bring a control up and tap it: what stands over the stage cleared, and the scene's story — which hides the
        stage's slots until its way on is taken — taken on (then back to `go`, when the way on moved him). */
-    const reach = async (sel, what, go = null) => {
+    const reach = async (sel, what, go = null, { expect = null } = {}) => {
       for (let k = 0; k < 10; k += 1) {
         await clear();
-        if (await click(sel, what)) return true;
+        const asked = verbs.length;
+        if (await click(sel, what)) {
+          if (!expect) return true;
+          // The tap must have done what it was for (a 开局 asks the rules for the duel): a layout that moved under
+          // the finger opened something else instead (1280: the 物品 panel) — put that away and try again.
+          for (let w = 0; w < 10 && !verbs.slice(asked).some((v) => v.verb === expect); w += 1) await sleep(200);
+          if (verbs.slice(asked).some((v) => v.verb === expect)) return true;
+          await click('[data-pouch-close], [data-pop-close], .cardx[data-toast-close]', '收起').catch(() => {});
+          continue;
+        }
         if (await click('[data-panel-exit]', '剧情 · 往下')) { await sleep(1500); await clear(); if (go) await click(go, 'go'); }
         await sleep(800);
       }
@@ -387,14 +402,14 @@ export async function run(opts) {
     const startHauntOnce = async () => {
       if (!(await click('button.act[data-go=houshan]', 'go 后山'))) return false;
       await sleep(1200);
-      return reach('[data-duel-start]', '开局 降妖', 'button.act[data-go=houshan]');
+      return reach('[data-duel-start]', '开局 降妖', 'button.act[data-go=houshan]', { expect: 'duel' });
     };
     // Twice: the scene's story at 后山 can still be telling itself when the first try gives up; a reload lets it settle.
     const startHaunt = async (name) => {
       if (await startHauntOnce()) return true;
       if (!name) return false;
       await open(name); await clear();
-      return (await reach('[data-duel-start]', '开局 降妖')) || startHauntOnce();
+      return (await reach('[data-duel-start]', '开局 降妖', null, { expect: 'duel' })) || startHauntOnce();
     };
 
     // ── 降妖 × N
