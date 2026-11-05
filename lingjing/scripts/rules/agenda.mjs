@@ -89,9 +89,9 @@ export function agendaLook(content, state, view, trayRows = [], hour = view?.tra
   for (const q of book) if (readyNow(q)) add('other', q.chore ? 'chore' : 'errand', q.id, { ready: true });
   // An errand's board or one hosted here, beside the story (not a tray entry's own): played from here as before.
   for (const t of boards) if (!storys(t)) add('other', 'task', t.id);
-  // 小游戏池 (rules/pool.mjs): this 时辰's draw together under one heading (`hour`: the minutes till the next, `all` once
-  // every one is played — Hanli 11-04 「可以, 挪进清单」), then the rest of the tray.
-  if (hour?.drawn) add('other', 'hour', 'pool', { ends_min: hour.ends_min, ...(hour.played >= hour.drawn ? { all: true } : {}) });
+  // 小游戏池 (rules/pool.mjs): the draw together under one heading (`hour`; `all` once every one is played — Hanli 11-04
+  // 「可以, 挪进清单」), then the rest of the tray. No minutes: a game waits till it is played (2026-11-04).
+  if (hour?.drawn) add('other', 'hour', 'pool', hour.played >= hour.drawn ? { all: true } : {});
   const pooled = tray.filter((e) => e.pool), rest = tray.filter((e) => !e.pool);
   for (const e of pooled) add('other', 'tray', e.id, { pool: true, ...(e.seg === 'cool' ? { cool: true } : {}) });
   for (const e of rest) add('other', 'tray', e.id, e.seg === 'cool' ? { cool: true } : {});

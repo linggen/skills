@@ -2,12 +2,15 @@
 // pool's members, seeded by the save, the day and the 时辰; a member played leaves the row and rests its cooldown; the
 // world's events and the story's boards are never drawn; 体力 spent, the row is one 闭关 card.
 import test from 'node:test';
+import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, playTo, VERBS } from '../scripts/rules.mjs';
 import { PLAY_KINDS } from '../scripts/rules/aside.mjs';
-import { BRANCH, DRAW, drawPool, shichenOf } from '../scripts/rules/pool.mjs';
+import { BRANCH, DRAW, drawAt, drawPool as heldPool, shichenOf } from '../scripts/rules/pool.mjs';
+// The draw's mechanics are one 时辰's own (drawAt); what the row holds across 时辰s (heldPool, 2026-11-04) is tested below.
+const drawPool = (c, s, rows, kinds, now) => drawAt(c, s, rows, kinds, shichenOf(now));
 import { WORDS, trayHourChipHtml, trayHtml } from '../scripts/cards.js';
 
 const content = loadContent();
@@ -19,7 +22,9 @@ const BASE = (() => {
 })();
 const at = (place, extra = {}) => ({ ...structuredClone(BASE), quests: { ...(BASE.quests ?? {}), 'guan-shouchao': { done_at: START.toISOString() } },
   place, stamina: 100, stamina_at: START.toISOString(), ...extra });
-const lookAt = (s, now) => look(s, content, { now, quests: [] });
+/* Look at `now`; a save that has played nothing is taken as begun in this 时辰, so it reads this 时辰's own draw (an unplayed
+   draw waits from the 时辰 a save began in, pool.mjs drawPool — tested below). */
+const lookAt = (s, now) => look(s.pool_played ? s : { ...s, created: now.toISOString() }, content, { now, quests: [] });
 
 /* A pool of eight made-up members (one kind), to ask the draw alone. */
 const FAKE = [{ kind: 'fake', pool: { row: e => ({ cooldown_min: e.cd ?? 60, when: e.when ?? [] }) } }];
@@ -53,7 +58,31 @@ test('the draw is the 时辰\'s: the same three all through it, on every reload;
   const t1 = lookAt(s, AT(13, 5)), t2 = lookAt(s, AT(14, 50));
   assert.deepEqual((t1.tray ?? []).map(e => e.id), (t2.tray ?? []).map(e => e.id));
   assert.equal(t1.tray_hour.i, 7);
-  assert.equal(t1.tray_hour.ends_min, 115);
+  assert.equal(t1.tray_hour.ends_min, undefined, 'no countdown: an unplayed game waits (2026-11-04)');
+});
+
+/* The row waits for him (Hanli 2026-11-04: 「冷却的小游戏」 — 「89 分后换」 changed it whether he had played it or not). */
+test('an unplayed game stays as the 时辰s turn; once played, the next — and when all are, the 时辰 he is in draws afresh', () => {
+  const s = at('waimen'), pool = rows(8), first = (d) => d.drawn.find((x) => !x.played)?.id;
+  const begun = { ...s, created: AT(13, 5).toISOString() };
+  const shown = first(heldPool(content, begun, pool, FAKE, AT(13, 5)));
+  for (const h of [15, 17, 21]) assert.equal(first(heldPool(content, begun, pool, FAKE, AT(h, 10))), shown, `${h}:10 — still ${shown}`);
+  assert.equal(heldPool(content, begun, pool, FAKE, AT(17, 10)).held, true);
+  // Played (at 15:20): the next of that same draw stands, through the 时辰s too.
+  const one = { ...begun, pool_played: { [shown]: AT(15, 20).toISOString() } };
+  const next = first(heldPool(content, one, pool, FAKE, AT(15, 30)));
+  assert.ok(next && next !== shown);
+  assert.equal(first(heldPool(content, one, pool, FAKE, AT(21, 10))), first(drawAt(content, one, pool, FAKE, shichenOf(AT(15, 20)))), 'the draw of his last play, waiting');
+  // All of a draw played: the 时辰 he is in draws its own.
+  const d = drawAt(content, begun, pool, FAKE, shichenOf(AT(13, 5)));
+  const all = { ...begun, pool_played: Object.fromEntries(d.drawn.map((x, i) => [x.id, new Date(AT(13, 5).getTime() + (i + 1) * 60_000).toISOString()])) };
+  assert.equal(heldPool(content, all, pool, FAKE, AT(13, 50)).drawn.every((x) => x.played), true, 'its own 时辰: all played');
+  assert.deepEqual(ids(heldPool(content, all, pool, FAKE, AT(19, 10))), ids(drawAt(content, all, pool, FAKE, shichenOf(AT(19, 10)))));
+});
+
+test('✕ and 留 are plays: the door stamps them, so the row moves on (rules/locks.mjs played)', () => {
+  const src = fs.readFileSync(new URL('../scripts/rules/aside.mjs', import.meta.url), 'utf8');
+  assert.match(src, /\['done', 'lost', 'leave', 'skip', 'keep'\]\.includes\(args\.action\)/);
 });
 
 test('weights: the 时辰\'s lean, where he stands and not played lately count; a gate is the entry itself', () => {

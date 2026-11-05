@@ -139,24 +139,23 @@ test('the footer has no 「事」 chip: 去往 · 木牌 · 天气 · 时辰 · 
   }
 });
 
-test('小游戏池 in the list: this 时辰\'s games together under one heading with the minutes; the tray card marks them; all played, the heading says so', () => {
+test('小游戏池 in the list: the draw together under one heading, no countdown (2026-11-04: it waits till played); all played, the heading says so', () => {
   const at = (h) => new Date(2026, 9, 20, h, 10);
   // A 时辰 whose draw stands in the tray (the 观, 体力 full): find one.
   let l = null;
   for (let h = 1; h < 24 && !l; h += 2) { const x = look(SAVES[1], content, { now: at(h), quests: [] }); if ((x.tray ?? []).some((e) => e.pool)) l = x; }
   assert.ok(l, 'a 时辰 with its draw in the tray');
   const items = l.agenda, head = items.findIndex((i) => i.key === 'hour:pool');
-  assert.ok(head >= 0 && items[head].group === 'other' && items[head].ends_min === l.tray_hour.ends_min);
+  assert.ok(head >= 0 && items[head].group === 'other' && items[head].ends_min === undefined);
   const pooled = items.map((i, n) => [i, n]).filter(([i]) => i.pool).map(([, n]) => n);
   assert.ok(pooled.length);
   assert.deepEqual(pooled, pooled.map((_, k) => head + 1 + k), 'grouped, right under the heading');
   assert.ok(!items[head].tray, 'the heading is the list\'s, never a tray card');
   const pop = bookPopHtml(page(l));
-  assert.match(pop, new RegExp(`class="thead small dim poolhead"[^>]*>这个时辰的小游戏 · ${l.tray_hour.ends_min} 分后换<`));
-  const tray = trayHtml(page(l));
-  if (items.some((i) => i.pool && i.tray)) assert.match(tray, new RegExp(`class="chip poolmark">${l.tray_hour.ends_min} 分后换<`));
+  assert.match(pop, /class="thead small dim poolhead"[^>]*>小游戏 · 玩过一局才换下一局</);
+  assert.doesNotMatch(pop + trayHtml(page(l)), /分后换/, 'no countdown that is not true');
   // All played: the heading is the all-played line with the next 时辰.
   const all = { ...l, agenda: undefined, tray_hour: { ...l.tray_hour, played: l.tray_hour.drawn } };
   assert.match(bookPopHtml(page(all)), /poolhead allplayed[^>]*>这个时辰的都玩过了 · \S+时再来</);
-  assert.match(bookPopHtml({ ...page(l), lang: 'en', words: WORDS.en }), /This hour(?:'|&#39;|&#x27;)s games · new in \d+ min/);
+  assert.match(bookPopHtml({ ...page(l), lang: 'en', words: WORDS.en }), /Small games · the next once this one is played/);
 });

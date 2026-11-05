@@ -19,7 +19,8 @@ const at = (place, extra = {}) => ({ ...structuredClone(BASE), quests: { ...(BAS
   place, stamina: 100, stamina_at: START.toISOString(), ...extra });
 /* Every 时辰 of a week: whether the tray ever stands `id`. */
 const everIn = (c, s, id) => Array.from({ length: 84 }, (_, i) => new Date(2026, 9, 21 + Math.floor(i / 12), 1 + 2 * (i % 12), 10))
-  .some(now => (look(structuredClone(s), c, { now, quests: [] }).tray ?? []).some(e => e.id === id));
+  // …each 时辰's own draw: a save that played nothing, taken as begun in it (an unplayed draw waits, rules/pool.mjs drawPool).
+  .some(now => (look({ ...structuredClone(s), created: now.toISOString() }, c, { now, quests: [] }).tray ?? []).some(e => e.id === id));
 const RIDDLE = 'zhishi-shen';
 const task = (c, id) => c.tasks.tasks.find(t => t.id === id);
 /* 周衡's 灯谜 as it stood before its riddle pool (deal.pool 'dengmi', 2026-11-02): the fixed board these tests stand on. */

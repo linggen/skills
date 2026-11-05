@@ -152,7 +152,8 @@ export const PLAY_KINDS = [
     tray: (content, state, view, now) => boardsAround(content, state, now),
     pool: {
       row: e => ({ cooldown_min: 360, when: BOARD_LEAN[e.game] ?? [], cost: 'game' }),
-      plays: (verb, args, content) => (['task'].includes(verb) && ['done', 'lost'].includes(args.action) && taskOf(content, String(args.id ?? ''))?.hosted ? String(args.id) : null),
+      // Played is won, lost, put down (✕) or kept (留) — a board's own 跳过 too (2026-11-04: the row waits till then).
+      plays: (verb, args, content) => ((verb === 'task' && ['done', 'lost', 'leave', 'skip', 'keep'].includes(args.action)) || (verb === 'win' && (args.grade === 'skipped' || args.skipped === true || args.skipped === 'true'))) && taskOf(content, String(args.id ?? ''))?.hosted ? String(args.id) : null,
       // Counted done is won (rules/pool.mjs `pool_won`).
       won: (verb, args, content) => (verb === 'task' && args.action === 'done' && taskOf(content, String(args.id ?? ''))?.hosted ? String(args.id) : null),
       // One fixed board, won once, is out of the pool for good (pool.mjs boardVaries, Hanli 11-02) — unless an errand

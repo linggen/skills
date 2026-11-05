@@ -11,7 +11,7 @@ import { gated } from './locks.mjs';
 import { move } from './travel.mjs';
 import { placeName, placeOf } from './world.mjs';
 import { PLAY_KINDS } from './aside.mjs';
-import { drawPool } from './pool.mjs';
+import { drawPool, shichenOf } from './pool.mjs';
 
 /* A cooldown is in the tray while it comes back within this many minutes (agent's pick, Hanli delegated 11-02: 6 时辰).
    兽潮 · 切磋 · 妖兽出没 · 饭桶 · a pool at rest wait 1–3 h; nothing daily waits past this, and a wait that long is tomorrow's. */
@@ -51,7 +51,7 @@ export function trayLook(content, state, view, ctx, asideOffers = []) {
     });
   // 小游戏池 (rules/pool.mjs): of the 时辰's three, in their seeded order, only the first not yet played stands — the next
   // comes once it is played (Hanli 11-02: 「如果第一个玩家没玩, 不用接着添加后面的」) — and a round still open beside it.
-  const { drawn, members, shichen, open, retired } = drawPool(content, state, rows, PLAY_KINDS, now);
+  const { drawn, members, open, retired } = drawPool(content, state, rows, PLAY_KINDS, now), shichen = shichenOf(now);
   // A round under way (`resume`) stands wherever it falls in the order: begun from the stage, it is not lost behind the first.
   const next = drawn.find(d => !d.played);
   const shown = new Set([...(next ? [next.id] : []), ...drawn.filter(d => d.resume && !d.played).map(d => d.id), ...open]);
@@ -59,5 +59,6 @@ export function trayLook(content, state, view, ctx, asideOffers = []) {
   const drawnIds = new Set(drawn.map(d => d.id));
   const kept = rows.filter(r => !retired.has(r.id) && (!members.has(r.id) || shown.has(r.id))).map(r => (drawnIds.has(r.id) ? { ...r, pool: true } : r));
   const sorted = kept.map((r, i) => [r, i]).sort((a, b) => RANK[a[0].seg] - RANK[b[0].seg] || a[1] - b[1]).map(([r]) => r);
-  return { rows: sorted, hour: { i: shichen.i, ends_min: Math.max(1, Math.ceil((shichen.end - now) / 60_000)), drawn: drawn.length, played: drawn.filter(d => d.played).length } };
+  // No 「N 分后换」 (2026-11-04): an unplayed game no longer changes with the 时辰 (pool.mjs drawPool), so no countdown is told.
+  return { rows: sorted, hour: { i: shichen.i, drawn: drawn.length, played: drawn.filter(d => d.played).length } };
 }

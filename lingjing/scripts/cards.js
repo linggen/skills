@@ -61,7 +61,7 @@ export const WORDS = {
     agendaAll: '全部 ›', agendaAllTip: '事 · 全部 {n} 件', agendaMain: '主线', agendaGoal: '目标 · {step}', agendaGoalBare: '目标', agendaOther: '其他', agendaServes: '{step} ↑', agendaAim: '{what} · {name}',
     trayGo: '去{name} ›', trayOpen: '开局', trayKe: '{n} 刻', trayShi: '{n} 时辰',
     // 小游戏池 (rules/pool.mjs): the 时辰 in the head, when the next three come; all played; 体力 spent.
-    shichen: ['子时', '丑时', '寅时', '卯时', '辰时', '巳时', '午时', '未时', '申时', '酉时', '戌时', '亥时'], trayHour: '{hour}', trayHourTip: '{next}换一批', agendaPool: '这个时辰的小游戏 · {n} 分后换', trayPoolMark: '{n} 分后换',
+    shichen: ['子时', '丑时', '寅时', '卯时', '辰时', '巳时', '午时', '未时', '申时', '酉时', '戌时', '亥时'], trayHour: '{hour}', trayHourTip: '{next}换一批', agendaPool: '小游戏 · 玩过一局才换下一局', trayPoolMark: '玩过才换',
     trayAllPlayed: '这个时辰的都玩过了 · {next}再来', trayRest: '闭关中 · 约 {n} 分钟体力回满', trayRestOut: '体力耗尽 · 闭关约 {n} 分钟回满', trayRestUp: '闭关', trayRestFeed: '喂饭桶',
     secludeOpen: '闭关', secludeTitle: '闭关', secludeHint: '选一样专心修：一门法术、修为，或本命法宝。',
     secludeRule: '按真实时间，至多{cap}小时；不足{min}小时不长；体力一路回，约{rest}小时回满。',
@@ -128,7 +128,7 @@ export const WORDS = {
     trayLeft: { night: 'tide {n}', batch: 'this batch {n}/{of}', couplets: '{n} today', rounds: '{n} rounds today', errands: '{n} waiting', keys: 'keys ×{n}', ends: '{t} left', today: 'open today', tomorrow: 'up tomorrow' },
     agendaAll: 'All ›', agendaAllTip: 'Tasks · all {n}', agendaMain: 'Story', agendaGoal: 'Goal · {step}', agendaGoalBare: 'Goal', agendaOther: 'Other', agendaServes: '{step} ↑', agendaAim: '{what} · {name}',
     trayGo: 'Go to {name} ›', trayOpen: 'Play', trayKe: '{n} min', trayShi: '{n} h',
-    shichen: ['Rat hour', 'Ox hour', 'Tiger hour', 'Hare hour', 'Dragon hour', 'Snake hour', 'Horse hour', 'Goat hour', 'Monkey hour', 'Rooster hour', 'Dog hour', 'Boar hour'], trayHour: '{hour}', trayHourTip: 'New three at {next}', agendaPool: "This hour's games · new in {n} min", trayPoolMark: 'new in {n} min',
+    shichen: ['Rat hour', 'Ox hour', 'Tiger hour', 'Hare hour', 'Dragon hour', 'Snake hour', 'Horse hour', 'Goat hour', 'Monkey hour', 'Rooster hour', 'Dog hour', 'Boar hour'], trayHour: '{hour}', trayHourTip: 'New three at {next}', agendaPool: 'Small games · the next once this one is played', trayPoolMark: 'next once played',
     trayAllPlayed: "All of this hour's played · back at {next}", trayRest: 'In seclusion · stamina full in about {n} min', trayRestOut: 'Stamina spent · seclusion fills it in about {n} min', trayRestUp: 'Seclude', trayRestFeed: 'Feed the Rice Bucket',
     secludeOpen: 'Seclusion', secludeTitle: 'Seclusion', secludeHint: 'Pick one thing to work on: a spell, cultivation, or your treasure.',
     secludeRule: 'Real hours count, up to {cap}; under {min}, nothing grows. Stamina comes back all along, full in about {rest} h.',
@@ -2148,7 +2148,7 @@ function trayGameHtml(e, ctx) {
   const btn = open ? `<button class="act" ${open(e)}>${esc(e.resume ? w.playOn : w.trayOpen)}</button>`
     : e.act === 'go' ? `<button class="act go" data-go="${esc(e.go.id)}">${esc(say(w.trayGo, { name: e.go.name }))}</button>` : '';
   const meta = trayMeta(e, ctx);
-  // One of this 时辰's three: when they change, quiet (the cooldown's chip).
+  // One of the 时辰's draw: no countdown since 2026-11-04 (it waits till played, rules/pool.mjs) — the heading says so.
   const mins = e.pool && ctx.look?.tray_hour?.ends_min;
   const mark = mins ? `<span class="chip poolmark">${esc(say(w.trayPoolMark, { n: mins }))}</span>` : '';
   return `<div class="card task timed${e.pool ? ' pooled' : ''}${e.seg === 'notice' ? ' notice' : ''}" data-tray="${esc(e.id)}"><div class="tasktitle">${esc(title)}</div>${meta ? `<div class="small dim">${esc(meta)}</div>` : ''}${btn || mark ? `<div class="taskfoot">${mark}${btn}</div>` : ''}</div>`;

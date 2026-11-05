@@ -50,16 +50,18 @@ export const gated = verbs => Object.fromEntries(Object.entries(verbs).map(([ver
   (state, content, ctx, args) => lockedVerb(content, state, verb, args, ctx) ?? sealedVerb(content, state, verb, args) ?? asideVerb(content, state, verb, args, ctx) ?? played(fn(state, content, ctx, args), content, state, verb, args, ctx)]));
 function played(out, content, state, verb, args = {}, ctx = {}) {
   const now = ctx.now ?? new Date();
-  if (out?.state && out.result?.ok && out.state !== state) stampPlay(PLAY_KINDS, content, state, out.state, verb, args, now);
+  if (!out?.result?.ok) return out;
   // The plate's board played — won, lost, put down (✕) or kept (留): the next is dealt (rules/rotation.mjs, Hanli 2026-11-04:
-  // 「只有之前的玩了才发新的」). A put-down writes nothing else, so it writes the deal alone.
-  const key = out?.result?.ok ? playsDeal(content, state, verb, args, now) : null;
-  if (key) {
-    const next = out.state && out.state !== state ? out.state : structuredClone(state);
-    advanceDeal(content, next, key, now);
-    return { ...out, state: next };
-  }
-  return out;
+  // 「只有之前的玩了才发新的」); and a pool member played so is stamped, so the 时辰's row moves on (pool.mjs drawPool). A
+  // put-down writes nothing else, so it writes these alone.
+  const key = playsDeal(content, state, verb, args, now);
+  const stamps = PLAY_KINDS.some(k => k.pool?.plays?.(verb, args, content, state));
+  let next = out.state && out.state !== state ? out.state : null;
+  if (!next && (key || stamps)) next = structuredClone(state);
+  if (!next) return out;
+  stampPlay(PLAY_KINDS, content, state, next, verb, args, now);
+  if (key) advanceDeal(content, next, key, now);
+  return next === out.state ? out : { ...out, state: next };
 }
 
 /* The fields of Look (and Progress) each shut system takes out. The book, the

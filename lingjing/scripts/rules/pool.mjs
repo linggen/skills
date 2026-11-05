@@ -6,7 +6,7 @@
 // cooldown after a play, the 时辰 it leans to (a weight, never a lock) and its 体力 cost. Each 时辰 — two hours of the
 // local clock, 子 from 23:00 — draws THREE of the pool, seeded by the save, the day and the 时辰: the phone and the Mac
 // draw the same three and a reload never changes them. The row shows them one at a time, in the draw's order: the
-// first not yet played, then the next once it is (Hanli 11-02); a 时辰 ending on one unplayed moves on to the next draw.
+// first not yet played, then the next once it is (Hanli 11-02); a 时辰 ending on one unplayed keeps it (2026-11-04, drawPool).
 // A drawn game leaves the row once played or when the 时辰 ends;
 // one played comes back to the pool only after its cooldown. The world's events (兽潮 · 妖兽出没 · 秘境 · 货郎, balance.json
 // `events`) and the story's own boards keep their own clocks and are never drawn.
@@ -90,8 +90,21 @@ function coin(key) {
    going out of the pool never reshuffles the others. A member played in this 时辰 still holds its place in the draw
    (it is `played`, out of the row) — else the row would deal another in its stead. A member whose round is still
    open (`resume`) is not out: drawn, it stays in the row unplayed; begun in an earlier 时辰, it is `open`, shown beside. */
+/* A 时辰's game waits for him (Hanli 2026-11-04: 「冷却的小游戏」 — 「89 分后换」 changed it whether he had played or not;
+   only once it is played comes the next): the row reads the draw of the 时辰 of his last pool play (`pool_played`, the
+   `played` door's stamp; a save that played none, the 时辰 it began in) while that draw still holds one unplayed — that
+   game stays as the 时辰s turn. Once all of it is played, the 时辰 he is in draws afresh. `held`: an earlier 时辰's draw. */
 export function drawPool(content, state, rows, kinds, now) {
-  const sc = shichenOf(now), here = placeOf(content, state.place), plate = here?.plate?.id ?? null;
+  const cur = shichenOf(now);
+  const times = Object.values(state.pool_played ?? {}).map(t => new Date(t)).filter(d => !Number.isNaN(d.getTime()));
+  const origin = times.length ? new Date(Math.max(...times)) : state.created ? new Date(state.created) : null;
+  if (!origin || Number.isNaN(origin.getTime()) || origin >= cur.start || origin > now) return drawAt(content, state, rows, kinds, cur);
+  const was = drawAt(content, state, rows, kinds, shichenOf(origin));
+  return was.drawn.some(d => !d.played) ? { ...was, held: true } : drawAt(content, state, rows, kinds, cur);
+}
+/* One 时辰's own draw (what drawPool reads, the 时辰 it holds to). */
+export function drawAt(content, state, rows, kinds, sc) {
+  const here = placeOf(content, state.place), plate = here?.plate?.id ?? null;
   const pools = new Map(kinds.filter(k => k.pool).map(k => [k.kind, k.pool]));
   // A member its kind has retired (`retired`: a fixed board won) is out of the pool and out of the tray's rows — not left
   // standing beside the draw as a non-member would be.
