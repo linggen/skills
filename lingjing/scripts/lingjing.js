@@ -1100,6 +1100,8 @@ function playTravel(stops) {
 async function gainBurst(g) {
   // After the book and the moments: a gain never floats over her memory or a seal.
   for (let k = 0; k < 720 && (boxAhead() || momentUp() || momentPending.size); k += 1) await pause(250);
+  // 所得 already says these numbers (a won fight, a board's pay): no burst over its text (live 11-05).
+  if (view.spoils?.paid || spoilsUp()) return;
   const w = words(), bits = [];
   if (g.progress) bits.push(`<span>${esc(w.xw)} <b>+${g.progress}</b></span>`);
   if (g.wealth) bits.push(`<span>${esc(w.ls)} <b>+${g.wealth}</b></span>`);
@@ -1445,6 +1447,9 @@ function holdForPops(slots) {
 }
 
 function soloSlots(slots, cards) {
+  // 所得 first (playbot a3bbb8d, live 11-05): after a won 降妖 the scene's next board was dealt alone over the stage and the
+  // card never showed. While it stands, a board he did not open himself waits — no solo, and not in main — until it is put away.
+  if (spoilsUp()) return { ...slots, main: slots.main.filter((c) => c.card !== 'board' || c.id === view.opened?.id) };
   const inMain = new Set(slots.main);
   const alone = gameAlone(cards, { up: (c) => c.card === 'board' && boardOpenNow(c.id) && (inMain.has(c) || c.id === view.opened?.id), chosen: view.opened?.id ?? null });
   if (!alone) return slots;
@@ -1492,16 +1497,11 @@ const toastX = (html, attrs) => (html ? withCloseX(html, closeX(lang(), attrs)) 
    and holds the way on (watchWayOn) until it is put away or he takes the way on himself. */
 const spoilsUp = () => Boolean(view.spoils && view.spoils.place === (look?.place?.id ?? null));
 const spoilsShown = () => spoilsUp() && !view.spoils.pending && !storyAhead();
-/* 所得 puts itself away (Hanli 11-02: 「这个收起卡没用吧, 已经自动收起了」): the pay landed when the win was counted, so the
-   card is a notice — a tap on it, or SPOILS_MS after it first shows, and it goes. No 收起 button. */
-const SPOILS_MS = 6000;
-let spoilsTimer = null, spoilsTimed = null;
-function armSpoils() {
-  if (!spoilsShown() || spoilsTimed === view.spoils) return;
-  const mine = (spoilsTimed = view.spoils);
-  clearTimeout(spoilsTimer);
-  spoilsTimer = setTimeout(() => { if (view.spoils === mine) show({ spoils: null }); }, SPOILS_MS);
-}
+/* 所得 stays until he puts it away (live 11-05, as the phone does: it closed by itself 4–5 s in, before he had read it) —
+   a tap on it or its ✕, walking on, or his next move (a fight begun, a board opened). It was a 6 s notice (11-02). */
+function armSpoils() {}
+/// His next move puts 所得 away: what was won is read by then.
+const spoilsAway = () => { if (view.spoils) keep({ spoils: null }); };
 
 /// 此地 — the people of the scene and the goal line; the place is its own line.
 const headHtml = (slots) => (bout ? '' : slots.header.map(drawCard).join(''));
@@ -2903,6 +2903,7 @@ function openFromTray(id) {
   if (view.opened?.id === id) return; // a second tap on 开局: the one already up
   oneBoard(id);
   skipStaleAsk();
+  spoilsAway();
   const inBox = choicesInBox();
   show({ opened: { id, place: look?.place?.id ?? null, scene: look?.scene?.id ?? null }, left: view.left.filter((l) => l.id !== id), qSkip: view.qSkip.filter((k) => k !== `board:${id}`) });
   if (inBox) nextBeat();
@@ -4587,6 +4588,7 @@ const doorBrief = (id) => (look?.scene?.exits ?? []).find((x) => x.game?.id === 
 async function onDuelStart(id) {
   if (bout || starting) return;
   starting = true;
+  spoilsAway();
   oneBoard(null); // a fight takes the stage: no board plays on under it
   try {
     // 丹囊: the pick made at this door, else his last (the rules remember it).
