@@ -5,6 +5,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as F from '../scripts/games/fighter.js';
+import { sheathe } from '../scripts/games/fighter.js';
 import { COMBO_CAP, comboStun } from '../scripts/games/fighter/core.js';
 import { loadContent } from '../scripts/content.mjs';
 
@@ -71,4 +72,26 @@ test('撑过她的剑: her 血 emptied before her 二十四招 ends the bout ear
   s = run(s, 2500);
   assert.equal(s.won, true, 'won, as standing through it');
   assert.ok(s.stars >= 1);
+});
+
+test('every bout to stand through ends won on an empty bar, paid as standing through it, in her words or general ones', () => {
+  const OUT = LEVELS.filter((l) => l.outlast?.moves);
+  assert.ok(OUT.length >= 5, `the bouts to stand through (${OUT.length})`);
+  for (const lv of OUT) {
+    let s = F.newGame(`out-${lv.id}`, 1, { levels: [lv] });
+    s = run(s, 1600);
+    const moves = s.foe.moves;
+    s.foe.bal = 0; s.foe.think = 1e9;
+    s = run(s, 200);
+    assert.equal(s.end?.kind, 'outlast', `${lv.id}: down at once`);
+    assert.ok(s.end.won && s.end.early, `${lv.id}: won early`);
+    assert.ok(moves < lv.outlast.moves, `${lv.id}: before her last move (${moves})`);
+    s = run(s, 4000);
+    assert.equal(s.won, true, `${lv.id}: won`);
+    const left = s.me.hp / s.R.me.hp;
+    assert.equal(s.stars, left >= 0.6 ? 3 : left >= 0.3 ? 2 : 1, `${lv.id}: paid as standing through it`);
+    const w = sheathe(lv);
+    assert.ok(w.zh && w.en, `${lv.id}: her words`);
+    if (!lv.lines?.sheathe) assert.match(w.zh, new RegExp(`^${lv.foe.name.zh}收势`), `${lv.id}: the general line names her`);
+  }
 });

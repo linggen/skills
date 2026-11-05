@@ -646,14 +646,15 @@ test('稳 emptied ends a slick bout at once, at any move, as a two-star win (Han
   // mid-trick too: her point at his throat goes with her
   let e = atTheEdge('spent-edge'); e.foe.bal = 0; e = run(e, 20);
   assert.equal(e.end?.kind, 'spent'); assert.equal(e.edge, null);
-  // a sparring bout yields as ever; an outlast bout is never ended by it as `spent` (one with a `lines.sheathe` ends
-  // early as won: fighter-combo-cap's 秦雁; 流云剑 has none and goes on)
+  // a sparring bout yields as ever; an outlast bout is ended by it too, never as `spent`: won early, paid as standing
+  // through it (Hanli 11-05: 「格斗把对方血打空了都应该胜利」, ending the 11-03 rule that kept it going)
   const yieldLv = REG.games.find((g) => g.scene === 'wm-dabi' && g.id === 'fighter').levels[0];
   let y = F.newGame('y', 1, { levels: [yieldLv] }); y.foe.bal = 0; y = run(y, 50);
   assert.equal(y.end?.kind, 'yield');
   const outLv = REG.games.find((g) => g.levels?.some((l) => l.id === 'liuyun')).levels.find((l) => l.id === 'liuyun');
   let o = F.newGame('o', 1, { levels: [outLv] }); o.foe.bal = 0; o.foe.think = 1e9; o = run(o, 500);
-  assert.equal(o.end, null, 'outlast: no spent end');
+  assert.equal(o.end?.kind, 'outlast', 'outlast: no spent end');
+  assert.ok(o.end.won && o.end.early, 'outlast: won early');
 });
 
 test('看他的脚: his stamp over the grease, the 勾 cue shown, hooked — off the rim, clean, three stars', () => {

@@ -1346,10 +1346,11 @@ function step(s) {
   if (s.combo.n && s.foe.stun <= s.t && s.t - s.combo.at > 200) s.combo = { ...s.combo, n: 0 };
   if (me.hp <= 0 && !s.end) { s.end = { kind: 'down', at: s.t, won: false }; me.down = s.t + END_MS * 2; say(s, 'lost'); bump(s, 'down'); }
   if (!s.end) sparEnd(s);
-  // A bout to stand through whose foe's 血 is emptied anyway (11-05: 秦雁's 二十四招 at 后山, her bar at 0 by her 11th and
-  // the bout going on): she sheathes — won early, paid as standing through it. Never an empty bar that does nothing.
-  // The level opts in by its `lines.sheathe`; a bout to stand through without one goes on to its last move (11-03).
-  if (!s.end && s.level.outlast?.moves && s.level.lines?.sheathe && s.foe.bal <= 0 && !s.foe.air) {
+  // A bout to stand through whose foe's 血 is emptied anyway: she sheathes — won early, paid as standing through it. Every
+  // bout to stand through, never an empty bar that does nothing (Hanli 11-05: 「格斗把对方血打空了都应该胜利」; this ends
+  // the 11-03 rule that kept an outlast bout going to its last move). Her words: the level's `lines.sheathe`, else a
+  // general one (fighter.js).
+  if (!s.end && s.level.outlast?.moves && s.foe.bal <= 0 && !s.foe.air) {
     s.end = { kind: 'outlast', at: s.t, won: true, early: true };
     s.foe.vx = 0; me.vx = 0; s.foe.act = null; s.edge = null; s.palm = null; s.cue = null;
     say(s, 'sheathe');

@@ -45,6 +45,11 @@ export const meta = {
 };
 
 const say = (x, lang) => (x && typeof x === 'object' ? x[lang] ?? x.zh ?? '' : x ?? '');
+/* A bout to stand through, her 血 emptied before her last move: the level's own words, else her name and 「够了」. */
+export const sheathe = (level) => level?.lines?.sheathe ?? {
+  zh: `${say(level?.foe?.name, 'zh')}收势：「够了。」`,
+  en: `${say(level?.foe?.name, 'en')} draws back: "Enough."`,
+};
 const LINE_MS = 2600;
 const SLOW = { ms: 900, rate: 0.35 }; // the KO in slow motion
 
@@ -393,10 +398,11 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
 
   /* ── The loop ── */
   const textNow = (s) => {
+    if (s.won && s.end?.early) return say(level.won?.early || sheathe(level), lang); // emptied early: her words, never 「第二十招上」
     if (s.won) return say((s.end?.kind === 'spent' && level.won?.spent) || level.won?.[s.grade], lang); // 稳 emptied: he went down at last
     if (s.lost || s.end?.kind === 'down') return say(level.lines?.lost, lang);
     if (s.end?.kind === 'out') return say(level.lines?.[s.palmLanded ? 'outClumsy' : 'out'], lang);
-    if (s.end?.kind === 'outlast') return say((s.end.early && level.lines?.sheathe) || level.lines?.outlast, lang); // emptied early: she sheathes
+    if (s.end?.kind === 'outlast') return say(s.end.early ? sheathe(level) : level.lines?.outlast, lang); // emptied early: she sheathes
     if (s.end?.kind === 'spent') return say(level.lines?.spent, lang);
     if (!started) return shell?.lead ? '' : say(level.ready, lang); // the lead card reads it where there is one
     const l = s.line;
