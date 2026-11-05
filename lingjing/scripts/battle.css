@@ -458,6 +458,32 @@
   .blast:not(.open) .bline:not(:nth-last-of-type(-n+2)) { display: none; }
   .bdmg { font-size: 11px; }
   .bclose .bseal { right: -6px; }
+
+  /* ── The phone's hand, every card readable (Hanli 2026-11-05, 狼 at 上山路 on a 430 pt iPhone: an empty band under the
+     foe's row and over his own, and six cards fanned so deep that 40% of each showed, their costs on each other) ──
+     The slack goes to the hand: the field is as tall as its two ranks (an empty rank lower), the dock takes the rest. The
+     hand is a grid, never an overlap: up to five in one row; six and more in two rows (3 · 4 · 5 · 6 a row). Each leaf is
+     as wide as its cell, up to a phone card; two rows are held to the height the screen can give them. Tap still raises. */
+  .battle { grid-template-rows: auto auto auto auto auto minmax(0, 1fr); --chp: clamp(124px, 17dvh, 168px); }
+  .bfield { grid-template-rows: auto auto auto; align-content: center; }
+  .brank { height: var(--mh); }
+  .brank:not(:has(> .bminion:not(.empty))) { height: calc(var(--mh) * .62); }
+  .brank:not(:has(> .bminion:not(.empty))) > .bminion.empty { max-height: 100%; }
+  .bdock { min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 4px; }
+  .bdock > .bhand { flex: none; height: auto; }
+  .bhand { --k: 1; --cwm: calc(var(--chp) * .71); display: grid; grid-template-columns: repeat(var(--k), minmax(0, var(--cwm))); justify-content: center; align-content: end; gap: 8px 6px; padding: 8px 4px 0; }
+  .bhand:has(> .bcard:nth-child(2)) { --k: 2; }
+  .bhand:has(> .bcard:nth-child(3)) { --k: 3; }
+  .bhand:has(> .bcard:nth-child(4)) { --k: 4; }
+  .bhand:has(> .bcard:nth-child(5)) { --k: 5; }
+  .bhand:has(> .bcard:nth-child(6)) { --k: 3; --cwm: calc(clamp(96px, (100dvh - 600px) / 2, 150px) * .71); }
+  .bhand:has(> .bcard:nth-child(7)) { --k: 4; }
+  .bhand:has(> .bcard:nth-child(9)) { --k: 5; }
+  .bhand:has(> .bcard:nth-child(11)) { --k: 6; }
+  .bhand > .bcard { flex: none; width: auto; height: auto; aspect-ratio: 71 / 100; transform: none; transform-origin: 50% 100%; }
+  .bhand > .bcard .bleaf, .bhand > .bcard:last-child:not(:first-child) .bleaf { inset: 0; width: 100%; height: 100%; }
+  .bhand > .bcard:hover { transform: none; }
+  .bhand > .bcard.held { transform: translateY(-14%) scale(1.1); z-index: 41; }
 }
 
 /* Motion is decoration, and some people do not want it. */
