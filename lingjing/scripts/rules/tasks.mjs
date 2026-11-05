@@ -181,6 +181,9 @@ function taskOpen(content, state, id, now) {
   if (isBout(content, id)) return qiecuoHere(content, state, id, now);
   if (reopened(content, state, id, now) || hostedHere(content, state, id, now) || catchHere(content, state, id) || stallHere(content, state, id, now) || kaoHere(content, state, id, now) || shouchaoHere(content, state, id, now)) return true;
   if (!held) return false;
+  // A kept board taken up (rules/skips.mjs playKept `taken`) is played where it was kept, nowhere else (Hanli 11-05: 象棋 taken
+  // up at 执事堂 was won again on 后山).
+  if (held.taken && held.status !== 'done' && held.taken !== state.place) return false;
   return !(held.status === 'done' && (t.period === 'once' || held.period === periodKey(t.period, now)));
 }
 

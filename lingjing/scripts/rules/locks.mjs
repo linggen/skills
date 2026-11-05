@@ -12,6 +12,7 @@ import { sealedVerb } from './sealed.mjs';
 import { asideVerb, PLAY_KINDS } from './aside.mjs';
 import { stampPlay } from './pool.mjs';
 import { advanceDeal, playsDeal } from './rotation.mjs';
+import { takenHeld, takenPlayed } from './skips.mjs';
 
 /* A chore by id: the apps' menu (`ctx.quests`), 开府's milestones are its `once` rows. */
 const choreSystem = (ctx, id) => {
@@ -59,11 +60,14 @@ function played(out, content, state, verb, args = {}, ctx = {}) {
   // again) stays a read.
   const putDown = (verb === 'task' && ['leave', 'skip', 'keep'].includes(args.action)) || (verb === 'win' && (args.grade === 'skipped' || args.skipped === true || args.skipped === 'true'));
   const stamps = putDown && PLAY_KINDS.some(k => k.pool?.plays?.(verb, args, content, state));
+  // …and a kept board taken up (skips.mjs playKept `taken`), played so: over, never offered again — ✕ wrote nothing else.
+  const taken = takenHeld(state, verb, args);
   let next = out.state && out.state !== state ? out.state : null;
-  if (!next && (key || stamps)) next = structuredClone(state);
+  if (!next && (key || stamps || taken)) next = structuredClone(state);
   if (!next) return out;
   stampPlay(PLAY_KINDS, content, state, next, verb, args, now);
   if (key) advanceDeal(content, next, key, now);
+  if (taken) takenPlayed(next, verb, args);
   return next === out.state ? out : { ...out, state: next };
 }
 

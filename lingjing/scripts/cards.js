@@ -25,7 +25,7 @@ const mijing = (card, ctx) => mijingCardHtml(card, ctx);
 export const WORDS = {
   zh: {
     title: '灵境', listSep: '、', lookHead: '看', lookAt: '看看{label}', goOn: '接着', invite: '也可以直接说你想怎么做', chatHint: '你想怎么做？', xw: '修为', xwFull: '修为已满', ls: '灵石', tray: '手边的棋局', trayEmpty: '手边无局，随处走走。',
-    play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', playedToday: '今日已玩', quest: '人间功课',
+    play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', playedToday: '今日已玩', replayShare: '今日已玩 · 只给{n}', quest: '人间功课',
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。', boardDoneToday: '今日丹已成 · 明日再炼', gameDoneToday: '今日已成 · 明日再来', lundaoWon: '今日论道已胜 · 明日再来', lundaoLost: '今日论道已毕 · 明日再来',
     tamed: '已收服', untamed: '未收服', beatenToday: '今日已降', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', mapLocked: '{title} · 剧情未完，地图暂不开放', unfoldNew: '地图展开', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架', kanjia: '砍价', kanjiaWhich: '砍哪一件？', kanjiaDone: '今天只照价', shortBy: '差 {n}',
     sayBuy: '买{name}', go: '去{name}', sayTask: '说说这功课：{title}', sayGate: '走向下一鼎', sayOmen: '说说今日卦象', sayCreature: '说说{name}', sayItem: '说说{name}', sayGateAbout: '说说下一鼎', sayTrib: '说说雷劫', sayRoots: '说说我的灵根', sayBoard: '说说炼丹', sayMap: '说说九州',
@@ -95,7 +95,7 @@ export const WORDS = {
   },
   en: {
     title: 'Lingjing', listSep: ', ', lookHead: 'Look', lookAt: 'Look at {label}', goOn: 'Go on', invite: 'Or just say what you do', chatHint: 'What do you do?', xw: 'Cultivation', xwFull: 'Cultivation full', ls: 'Spirit stones', tray: 'Boards at hand', trayEmpty: 'No board at hand. Wander a while.',
-    play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', playedToday: 'Played today', quest: 'Real-life practice',
+    play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', playedToday: 'Played today', replayShare: 'Played today · pays {n}', quest: 'Real-life practice',
     paid: 'Counted', due: 'To do', seen: 'Done — to collect', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.', boardDoneToday: 'Done for today — brew again tomorrow', gameDoneToday: 'Done for today — again tomorrow', lundaoWon: 'Won for today — again tomorrow', lundaoLost: 'Done for today — again tomorrow',
     tamed: 'Won over', untamed: 'Not won over', beatenToday: 'Beaten today', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', mapWhole: 'All nine provinces', mapLocked: '{title} · the story is under way; the map waits', unfoldNew: 'A new region', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf', kanjia: 'Haggle', kanjiaWhich: 'Haggle over which?', kanjiaDone: 'List price today', shortBy: '{n} short',
     questTitle: 'The promise under the moon', questSteps: { bell: 'Find a silver-moon bell.', water: 'Carry it to water that holds a moon.', ring: 'There is a moon on this water — ring it.', riddle: 'She is waiting for your answer.' },
@@ -2142,6 +2142,14 @@ function trayMeta(e, ctx) {
   return [left, e.where?.name].filter(Boolean).join(' · ');
 }
 /// A game beside the story, open now (jade): its name, what is left and where, 开局 or 去X › (or nothing, a notice).
+/// A board played today pays a share of the full on its next play (Look's `share`, rules/playpay.mjs replayShare): the card
+/// says so before he plays it — 「今日已玩 · 只给一成」 (Hanli 11-05: 象棋 won a third time for +1 修为 · +1 灵石, unsaid).
+const ZH_TENTHS = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+export function shareChipHtml(share, ctx) {
+  if (!(share > 0 && share < 1)) return '';
+  const n = ctx.lang === 'en' ? `${Math.round(share * 100)}%` : `${ZH_TENTHS[Math.max(1, Math.round(share * 10))]}成`;
+  return `<span class="chip sharemark">${esc(say(ctx.words.replayShare, { n }))}</span>`;
+}
 function trayGameHtml(e, ctx) {
   const w = ctx.words, title = e.title ?? w.trayName[e.id] ?? w.trayName[e.kind] ?? e.id;
   const open = e.act === 'open' && TRAY_OPEN[e.opens];
@@ -2151,7 +2159,8 @@ function trayGameHtml(e, ctx) {
   // One of the 时辰's draw: no countdown since 2026-11-04 (it waits till played, rules/pool.mjs) — the heading says so.
   const mins = e.pool && ctx.look?.tray_hour?.ends_min;
   const mark = mins ? `<span class="chip poolmark">${esc(say(w.trayPoolMark, { n: mins }))}</span>` : '';
-  return `<div class="card task timed${e.pool ? ' pooled' : ''}${e.seg === 'notice' ? ' notice' : ''}" data-tray="${esc(e.id)}"><div class="tasktitle">${esc(title)}</div>${meta ? `<div class="small dim">${esc(meta)}</div>` : ''}${btn || mark ? `<div class="taskfoot">${mark}${btn}</div>` : ''}</div>`;
+  const share = shareChipHtml(e.share, ctx);
+  return `<div class="card task timed${e.pool ? ' pooled' : ''}${e.seg === 'notice' ? ' notice' : ''}" data-tray="${esc(e.id)}"><div class="tasktitle">${esc(title)}</div>${meta ? `<div class="small dim">${esc(meta)}</div>` : ''}${btn || mark || share ? `<div class="taskfoot">${share}${mark}${btn}</div>` : ''}</div>`;
 }
 /// A cooldown back within hours (muted, last): one row shape, as Look's `waits` was drawn.
 const trayCoolHtml = (e, ctx) => {
@@ -2208,7 +2217,7 @@ export function trayHtml(ctx) {
         : `<button class="act" data-play="${esc(t.id)}"${shut ? ` disabled title="${esc(ctx.words.emptyNoPlay)}"` : ''}>${t.light && t.open ? ctx.words.playOn : t.game && t.game !== 'lianliankan' ? ctx.words.playGame : ctx.words.play}</button>` : '';
     const tell = `<button class="act ask" ${askAttr(say(ctx.words.sayTask, { title: t.title }))}>${esc(ctx.words.about)}</button>`;
     return `<div class="card task plot ${state}"><div class="tasktitle">${esc(t.title)}</div>
-      <div class="taskfoot"><span class="chip">${esc(state === 'won' ? ctx.words.keptWin : shut ? ctx.words.emptyShut : ctx.words[state])}</span>${act}${tell}</div></div>`;
+      <div class="taskfoot">${state === 'offered' && t.share ? shareChipHtml(t.share, ctx) : `<span class="chip">${esc(state === 'won' ? ctx.words.keptWin : shut ? ctx.words.emptyShut : ctx.words[state])}</span>`}${act}${tell}</div></div>`;
   };
   const card = (i) => {
     if (i.kind === 'task') { const t = (look.tasks ?? []).find((x) => x.id === i.id); return t && taskShows(t) ? taskCard(t) : ''; }

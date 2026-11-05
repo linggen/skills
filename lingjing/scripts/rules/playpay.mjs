@@ -106,6 +106,12 @@ export function authoredScale(content, state, table) {
 /* How many times this board was paid today (the replay's falling share). */
 const playsToday = (state, id, now) => (state.plays?.day === dayKey(now) ? state.plays.ids?.[id] ?? 0 : 0);
 
+/* The share the next play of this board pays today (play_pay.replay by how often it was paid today: 1 · .5 · .1), or 1. */
+export function replayShare(content, state, id, now) {
+  const pp = content.balance?.play_pay, replay = (sealedOf(content, state) ? pp?.replay_sealed : null) ?? pp?.replay ?? [1];
+  return replay[Math.min(playsToday(state, id, now), replay.length - 1)] ?? 1;
+}
+
 /* The grant a board's win is worth now, or null where the world declares no play pay. `stars`: the win's; `first`: a story
    board's first clear (+50%). A board costs its 体力 (`game`: its own minutes, state.mjs boardCost) and pays by them; its kind
    names its 灵石. */

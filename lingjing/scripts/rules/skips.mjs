@@ -146,6 +146,20 @@ export function playKept(state, content, ctx, id, openHere) {
   else if (!openHere) s.tasks[id] = { ...(s.tasks?.[id] ?? {}), status: 'offered', taken: e.place };
   return { state: s, result: { ok: true, play: id, story: Boolean(story) } };
 }
+/* The board a verb plays — won (counted), lost, put down (✕ · its own 跳过) or kept (留) — or null (rules/locks.mjs `played`). */
+export function boardPlayed(verb, args = {}) {
+  if (verb === 'task' && ['done', 'lost', 'leave', 'skip', 'keep'].includes(args.action)) return String(args.id ?? '') || null;
+  if (verb === 'win' && (args.grade === 'skipped' || args.skipped === true || args.skipped === 'true')) return String(args.id ?? '') || null;
+  return null;
+}
+/* A kept board taken up (playKept `taken`) stands until it is played; played, it is over — the marker goes, so it is never
+   offered again (Hanli 11-05: 象棋 残局 taken up, won, still on the tray, won again for the day's 一成). Mutates `next`. */
+export function takenPlayed(next, verb, args) {
+  const id = boardPlayed(verb, args), t = id ? next.tasks?.[id] : null;
+  if (t?.taken && t.status !== 'done') delete next.tasks[id];
+}
+export const takenHeld = (state, verb, args) => { const id = boardPlayed(verb, args); return Boolean(id && state.tasks?.[id]?.taken && state.tasks[id].status !== 'done'); };
+
 /* Look's `kept`: each kept board's title, where it was kept and when — the Mac's 事 book and tray chip, the phone's list. */
 export function keptBrief(content, state, placeName) {
   return keptOf(state).filter(e => taskOf(content, e.task)).map(e => ({

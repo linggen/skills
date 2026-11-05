@@ -3,7 +3,7 @@
 import { afterParts, boardStaged, readThrough, sceneBoards } from './parts.mjs';
 import { gearHint } from './gearhint.mjs';
 import { linesLook, linesOf } from './lines.mjs';
-import { playGrant } from './playpay.mjs';
+import { playGrant, replayShare } from './playpay.mjs';
 import { CAST, gameOf } from '../content.mjs';
 import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
 import { poolDeal } from './pool.mjs';
@@ -497,6 +497,9 @@ function tasksBrief(content, state, ctx) {
     .filter(([id, t]) => t.status !== 'done' || (t.done_at ? dayKey(new Date(t.done_at)) === today : false) || hereShows.has(id) || shouchaoWaiting(content, state, id, ctx.now) || qiecuoWaiting(content, state, id, ctx.now))
     // A board whose row is gone (told again: the 调息 cut, 2026-10-20) stays in the save, done, for the record — never drawn.
     .filter(([id]) => taskOf(content, id))
+    // …nor a kept board taken up elsewhere (rules/skips.mjs playKept `taken`): it stands where it was kept, as practice
+    // (above) — never as the story's own board on another place's tray (Hanli 11-05: 象棋 on 后山's tray as 主线, won twice).
+    .filter(([id, t]) => !(t?.taken && t.status !== 'done' && t.taken !== state.place && !hosted[id] && !held[id]))
     // …nor a board cut from the story since (`cut`) and only offered: let go (state.mjs fitWorld) — never drawn meanwhile.
     .filter(([id, t]) => !(taskOf(content, id).cut && t.status !== 'done' && !hosted[id] && !held[id]))
     // One board at a time, at its line (rules/parts.mjs boardStaged, Hanli 11-04): in a scene read through its boards, a
@@ -540,6 +543,8 @@ function tasksBrief(content, state, ctx) {
         // A practice board shows what its next play lands (rules/playpay.mjs): 修为 and 灵石, the replay's share counted.
         // Played today already (a practice board): the tray rests it till tomorrow (Hanli, 2026-10-27: 「左下角还是有刚玩完的拼图任务」).
         ...(hosted[id]?.practice && state.plays?.day === dayKey(ctx.now) && (state.plays.ids?.[id] ?? 0) > 0 ? { played_today: state.plays.ids[id] } : {}),
+        // …and what its next play pays of the full (`share`: .5, .1 — the page's 「今日已玩 · 只给一成」, before he plays it).
+        ...(hosted[id]?.practice && replayShare(content, state, id, ctx.now) < 1 ? { share: replayShare(content, state, id, ctx.now) } : {}),
         pays: hosted[id]?.practice ? paysOf(content, state, ctx.now, playGrant(content, state, id, task, ctx.now)) : again.has(id) ? null : task.grant?.progress ?? null, gives: !again.has(id) && task.gives?.bag ? pick(itemOf(content, task.gives.bag)?.name, lang) : null,
       };
     });
@@ -647,6 +652,14 @@ function tierStages(content, state, lang, now) {
     duan: { id: g.id, name: g.name, at: g.at, marks: tier.thresholds.slice(g.first, g.first + g.per), ...(trial ? { trial } : {}) },
   };
 }
+
+/* A tray board's row says what its next play pays of the full (`share`, rules/playpay.mjs replayShare): played today, the
+   card says 「今日已玩 · 只给一成」 before he plays it (Hanli 11-05: 象棋 won a third time for +1 修为 · +1 灵石, unsaid). */
+const shareRow = (content, state, r, now) => {
+  if (r.kind !== 'board' || !r.task) return r;
+  const share = replayShare(content, state, r.task, now);
+  return share < 1 ? { ...r, share } : r;
+};
 
 export function look(state, content, ctx) {
   const lang = state.lang;
@@ -804,7 +817,7 @@ export function look(state, content, ctx) {
   const home = homeOf(content, state, { ...kept, ...aside }, ctx.now);
   // 事 (rules/agenda.mjs): ONE ordered list — 主线 · 目标 · 其他 — the tray its head, the 事 view all of it.
   const agenda = agendaLook(content, state, { ...kept, ...aside }, tray.rows, tray.hour);
-  return { ...onStage(content, state, ctx, {}, kept), ...kept, ...aside, ...(tray.rows.length ? { tray: tray.rows } : {}), ...(agenda.length ? { agenda } : {}), ...(tray.hour ? { tray_hour: tray.hour } : {}), ...(home ? { home } : {}) };
+  return { ...onStage(content, state, ctx, {}, kept), ...kept, ...aside, ...(tray.rows.length ? { tray: tray.rows.map(r => shareRow(content, state, r, ctx.now)) } : {}), ...(agenda.length ? { agenda } : {}), ...(tray.hour ? { tray_hour: tray.hour } : {}), ...(home ? { home } : {}) };
 }
 
 /* 传闻 as Look carries it: the tale, the people met in finished ones, and a nudge. */
