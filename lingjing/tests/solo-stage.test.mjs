@@ -57,7 +57,8 @@ test('the page: stageNow ends in soloSlots, the tray and the header go with it, 
   assert.match(PAGE, /const solo = Boolean\(slots\?\.solo\) \|\| momentUp\(\);\n {2}document\.body\.classList\.toggle\('solo', solo\);/);
   assert.match(PAGE, /\$\('tray'\)\.innerHTML = !solo && stands\(headLook\(\), 'tray'\)/);
   // The box yields to the board in main (gameUp reads the soloed slots).
-  assert.match(PAGE, /const gameUp = \(slots\) => Boolean\(slots\?\.main\?\.some\?\.\(\(c\) => c\.card === 'board' && boardOpenNow\(c\.id\)\)\);/);
+  // …and to the pool's beast called up beside a scene (11-05): its 出手 is the top thing there.
+  assert.match(PAGE, /const gameUp = \(slots\) => Boolean\(slots\?\.main\?\.some\?\.\(\(c\) => \(c\.card === 'board' && boardOpenNow\(c\.id\)\) \|\| \(besidePool\(c\) && slots\.main\[0\] === c\)\)\);/);
 });
 
 test('兽潮 is not the scene\'s game: it waits behind the scene card (the tray\'s 开局), never up beside it', () => {

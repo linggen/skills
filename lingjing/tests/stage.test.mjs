@@ -345,7 +345,7 @@ test('nothing to tap: the footer names what waits — 「还有：夫诸 · 图�
   const fs = await import('node:fs');
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   const foot = src.slice(src.indexOf('function footRowHtml(slots)'), src.indexOf('const roadsFree'));
-  assert.match(foot, /\(choicesInBox\(\) && !beside\(slots\.footer\.next\)\) \? null : slots\.footer\.next/);
+  assert.match(foot, /choicesInBox\(\) \? null : slots\.footer\.next/);
   assert.match(foot, /waitingLine\(/);
   assert.doesNotMatch(foot, /queueMore/);
 });
@@ -417,5 +417,14 @@ test('a pool\'s beast standing beside a story scene stays one tap away, even whi
   assert.ok(slots.footer.next.cards.some((c) => c.card === 'duel'), 'and names it');
   const fs = await import('node:fs');
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(page, /choicesInBox\(\) && !beside\(slots\.footer\.next\)/, 'shown even while the box holds the gated way on');
+  // Under the box's own choices at the passage's end, named by its beast (live 11-05: 「还有：斗法 ›」, cut at 430 in the footer).
+  assert.match(page, /const acts = choicesInBox\(\) \? panelActsHtml\(ctx\(\), \{ inBox: true \}\) \+ besideHtml\(slots\) : '';/);
+  assert.match(page, /if \(c\.card === 'duel'\) return \{ name: \(look\?\.place\?\.encounter\?\.game\?\.id === c\.id \? look\.place\.encounter\.creature\?\.name/);
+  // …and called up, the box steps aside for it, so its 出手 is the top thing there (the done passage covered it, 11-05).
+  assert.match(page, /\(besidePool\(c\) && slots\.main\[0\] === c\)/);
+  const { boxGivesWay } = await import('../scripts/queue.js');
+  assert.equal(boxGivesWay({ slots: true, game: true }), true, 'a game up — the called fight counts as one — puts the box away');
+  // The stage after the tap (还有 ›, the page's putOff: the scene card's key to the end of the line): the fight is main.
+  const after = stageSlots(l, l.stage, { skip: [slots.key] });
+  assert.equal(after.main[0].card, 'duel', 'its card is the one thing on the stage');
 });

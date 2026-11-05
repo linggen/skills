@@ -1529,12 +1529,21 @@ function heldRoadsHtml(lock) {
 /// way on — or the box holds the scene's choices itself — nothing is counted; else it names what
 /// waits (stage.mjs footer.next).
 function moreHtml(slots) {
-  // …a pool's beast standing beside the scene stays one tap away even then (stage.mjs footer; 09-suifeng, 11-05).
-  const beside = (n) => n?.cards?.some((c) => c.card === 'duel' && look?.place?.encounter?.pool && look.place.encounter.game?.id === c.id);
-  const w = words(), next = !slots || (choicesInBox() && !beside(slots.footer.next)) ? null : slots.footer.next;
+  // While the box holds the choices, a pool's beast beside the scene is offered under them instead (besideHtml).
+  const w = words(), next = !slots || choicesInBox() ? null : slots.footer.next;
   if (!next) return '';
   const what = queueLabel(next.cards[0]);
   return `<button class="act quiet more" data-qnext="${esc(slots.key)}" title="${esc(fill(w.queueNext, { what: [what.name, what.kind].filter(Boolean).join(' · ') }))}">${esc(waitingLine({ ...what, more: slots.footer.waiting - 1 }, w))} ›</button>`;
+}
+/* A pool's beast standing beside the scene (stage.mjs footer; 09-suifeng at 后山, 11-05): its card is a duel the place deals now. */
+const besidePool = (c) => c?.card === 'duel' && Boolean(look?.place?.encounter?.pool) && look.place.encounter.game?.id === c.id;
+/// …offered under the box's own choices at the passage's end — 「还有：獙獙 · 斗法 ›」, whole, where his eye is (at 430 the footer
+/// chip was cut to 「还有：…」); a tap brings its card up, and the box steps aside for it (gameUp).
+function besideHtml(slots) {
+  const next = slots?.footer?.next;
+  if (!next?.cards?.some(besidePool)) return '';
+  const w = words(), what = queueLabel(next.cards[0]);
+  return `<button class="act quiet more beside" data-qnext="${esc(slots.key)}">${esc(waitingLine(what, w))} ›</button>`;
 }
 
 /// The roads stand whenever no question waits in the chat, not only while a card holds (live,
@@ -1750,6 +1759,8 @@ function queueLabel(c) {
   if (c.card === 'board') return { name: look?.tasks?.find((t) => t.id === c.id)?.title ?? '', kind };
   if (c.card === 'tale') return { name: look?.tale?.label ?? '', kind };
   if (c.id && ['creature', 'codex', 'meet'].includes(c.card)) return { name: codexNow()?.get?.(c.id)?.name ?? '', kind };
+  // A fight is named by its beast (「还有：獙獙 · 斗法 ›」): the place's, or a scene exit's.
+  if (c.card === 'duel') return { name: (look?.place?.encounter?.game?.id === c.id ? look.place.encounter.creature?.name : (look?.scene?.exits ?? []).find((x) => x.game?.id === c.id)?.duel?.creature?.name) ?? '', kind };
   // A kind with no word is never shown raw (live, 2026-10-15: 「还有：next ›」).
   return { name: '', kind };
 }
@@ -2809,7 +2820,9 @@ const momentUp = () => Boolean(pieceOn || featOn || view.memory || view.homing |
 /* A game to play on the stage now (a board in main, its task still open): the box steps
    aside for it, wholly (queue.js boxGivesWay `game`; his 「小游戏，和剧情不要同时显示」). */
 const boardOpenNow = (id) => (look?.tasks ?? []).some((t) => t.id === id && t.status !== 'done' && !t.won) || Boolean(boards.get(id)?.state && !boards.get(id).sent);
-const gameUp = (slots) => Boolean(slots?.main?.some?.((c) => c.card === 'board' && boardOpenNow(c.id)));
+// …or the pool's beast he called up beside the scene (besideHtml): the box steps aside so its 出手 is his to tap (11-05:
+// the done passage covered it, elementFromPoint at 出手 hit the story box).
+const gameUp = (slots) => Boolean(slots?.main?.some?.((c) => (c.card === 'board' && boardOpenNow(c.id)) || (besidePool(c) && slots.main[0] === c)));
 const boxYields = (slots) => boxGivesWay({ bout: Boolean(bout), appearing: Boolean(view.appearing), slots: Boolean(slots), up: momentUp(), huiTurn: atHuiTurn(), game: gameUp(slots) });
 /* The page's moments in their order — set piece, 息壤's doors, the gold seal,
    her memory, 鼎归 — each waits for the box and for the one before it, so
@@ -2864,7 +2877,7 @@ function dialogBoxHtml(slots) {
   // 黑地十一步 did nothing): the log still opens over the board, and the board's clock waits.
   if (boxYields(slots)) return log;
   const voice = hasAudio(audio) ? dubOn() : null;
-  const acts = choicesInBox() ? panelActsHtml(ctx(), { inBox: true }) : '';
+  const acts = choicesInBox() ? panelActsHtml(ctx(), { inBox: true }) + besideHtml(slots) : '';
   const story = playing(r) ? storyHtml(r, { lang: lang(), voice, acts, herId: look.companion?.id ?? null, speed: modeAt(r, speedNow(), lang()), faces: r.all?.whole ? firstFaces() : [], aside: asideMay(r) }) : '';
   return story + log;
 }
