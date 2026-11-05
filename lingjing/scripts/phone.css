@@ -46,7 +46,9 @@
   /* The chat's own frame fills the sheet; a scratch save's quiet transcript scrolls in it. */
   #chat-panel .scratch-lines { max-height: calc(var(--sheet-h) - 110px); }
   /* A fight on a phone: the footer holds nothing then — it gives its row to the board; the bar keeps one line. */
-  body.fighting .slotfoot:not(:has(.footchips > :not(:empty))):not(:has(.askbar:not([hidden]))) { display: none; }
+  /* …nor its chips (物品 · 新): the fight's 丹囊 is in its own row, and the footer stood over the hand's dots and the cards
+     (the playbot, 11-05, at 375: 199 taps on dots, cards, 主灵根一击 met the footer). Back when the fight ends. */
+  body.fighting .slotfoot:not(:has(.askbar:not([hidden]))) { display: none; }
   /* …kept to one line where it fits, never past the screen (the deployer, 11-05: at 375 and 430 「En」 and 灵石 ran past the
      right edge on the one line): the words give way to their marks — 修为's bar, 体力's ring, the stones' count stand
      without their labels — and what still does not fit goes to a second row. */

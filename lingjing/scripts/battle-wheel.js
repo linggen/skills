@@ -42,12 +42,20 @@ export function wireWheel(host, { reduced = () => !!globalThis.matchMedia?.('(pr
     centreId = ids[centre];
   }
 
+  /* How far apart the cards stand, in the centre card's widths: STEP, opened out (up to 1.6×) when the hand is wider than
+     the wheel needs — a card held small by a short hand (a Mac window at 375, the footer and the bars above it) keeps
+     each neighbour's cost clear of the card in front (the playbot, 11-05: 22 costs under a nearer leaf at 375). */
+  const spread = (hand) => {
+    const cw = hand.querySelector(':scope > .bcard.mid')?.offsetWidth || 0;
+    if (!cw || !hand.clientWidth) return 1;
+    return Math.max(1, Math.min(1.6, (hand.clientWidth / 2 - 0.36 * cw) / (STEP[2] * cw)));
+  };
   function layout(hand, shift = 0) {
-    const cards = cardsOf(hand), n = cards.length, still = reduced();
+    const cards = cardsOf(hand), n = cards.length, still = reduced(), k = spread(hand);
     cards.forEach((card, i) => {
       const o = wrap(i - centre - shift, n), a = Math.min(Math.abs(o), 3), s = Math.sign(o);
       const st = card.style;
-      st.setProperty('--wx', String(s * lerp(STEP, a)));
+      st.setProperty('--wx', String(s * lerp(STEP, a) * k));
       st.setProperty('--ws', String(lerp(SCALE, a)));
       st.setProperty('--wl', String(lerp(LIGHT, a)));
       st.setProperty('--wt', `${still ? 0 : -s * Math.min(a, 2) * TILT}deg`);
@@ -171,7 +179,7 @@ export function wireWheel(host, { reduced = () => !!globalThis.matchMedia?.('(pr
     hand?.classList.remove('turning');
     if (moved && hand) layout(hand);
   }
-  const stepPx = (hand) => (hand.querySelector(':scope > .bcard.mid')?.offsetWidth || 160) * STEP[1];
+  const stepPx = (hand) => (hand.querySelector(':scope > .bcard.mid')?.offsetWidth || 160) * STEP[1] * spread(hand);
 
   const onResize = () => apply();
   host.addEventListener('click', onClick, true);

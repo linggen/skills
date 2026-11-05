@@ -101,3 +101,12 @@ test('the 丹囊 in the action row, folding to 「丹 ×N」; the party\'s chips
   assert.match(phone, /\.battle \.bally \{ grid-template-columns: 20px auto auto; grid-template-rows: auto;/, 'one line: face, name and 嘲讽, the 气血 bar');
   assert.match(phone, /\.bside\.you > \.bparty \{ order: 2;[^}]*\}\s*\.bside\.you > \.bacts \{ order: 3;/);
 });
+
+// The playbot at 375×812 on the Mac page (11-05): the footer's 物品 chip stood over the hand's dots and cards (199 taps
+// met it), and a hand held small by the bars put 22 neighbours' costs under a nearer leaf.
+test('a narrow fight hides the footer; the wheel opens out where the hand is wider than it needs', () => {
+  const phoneCss = read('../scripts/phone.css');
+  assert.match(phoneCss, /body\.fighting \.slotfoot:not\(:has\(\.askbar:not\(\[hidden\]\)\)\) \{ display: none; \}/);
+  assert.match(wheel, /return Math\.max\(1, Math\.min\(1\.6, \(hand\.clientWidth \/ 2 - 0\.36 \* cw\) \/ \(STEP\[2\] \* cw\)\)\);/);
+  assert.match(wheel, /st\.setProperty\('--wx', String\(s \* lerp\(STEP, a\) \* k\)\);/);
+});
