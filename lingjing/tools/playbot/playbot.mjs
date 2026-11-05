@@ -86,7 +86,7 @@ const VISIBLE = (sel) => [...document.querySelectorAll(sel)].filter((e) => {
   return r.width > 2 && r.height > 2 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
 }).map((e) => { const r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, spot: e.dataset.spot ?? null, id: e.dataset.id ?? null, index: e.dataset.index ?? null, text: (e.innerText || '').trim().replace(/\s+/g, ' ').slice(0, 30), sel: e.getAttribute('class') ?? '' }; });
 const SPOILS = () => {
-  const s = [...document.querySelectorAll('.card.spoils')].find((e) => e.getClientRects().length);
+  const s = [...document.querySelectorAll('.card.spoils, [data-spoils-close].card')].find((e) => e.getClientRects().length);
   if (!s) return null;
   const parts = [...s.querySelectorAll('.spoilpays, .spoilfaces, .spoilgears, .small')].map((e) => e.innerText.trim()).filter(Boolean);
   return { title: s.querySelector('.cardtitle')?.innerText.trim() ?? '', parts };
@@ -209,16 +209,22 @@ export async function run(opts) {
     };
     const click = async (sel, what) => {
       // Below the fold on a phone: brought on screen first, as a thumb scrolls to it.
-      let c = (await page.evaluate(VISIBLE, sel))[0];
-      if (!c) {
-        c = await page.evaluate((q) => {
-          const e = [...document.querySelectorAll(q)].find((x) => x.getClientRects().length && !x.disabled && getComputedStyle(x).visibility !== 'hidden');
-          if (!e) return null;
-          e.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' });
-          const r = e.getBoundingClientRect();
-          return r.right > 0 && r.left < innerWidth && r.bottom > 0 && r.top < innerHeight ? { x: r.left + r.width / 2, y: r.top + r.height / 2, text: (e.innerText || '').trim().slice(0, 30), sel: e.getAttribute('class') ?? '' } : null;
-        }, sel);
-      }
+      // The first match a finger can actually reach: drawn, on screen once scrolled to, and the thing under its centre
+      // (11-05 at 1280: the stage's 降妖 card stood under the scene's story; a tap there answered nothing).
+      const c = await page.evaluate((q) => {
+        for (const e of document.querySelectorAll(q)) {
+          if (!e.getClientRects().length || e.disabled || e.getAttribute('aria-disabled') === 'true') continue;
+          let hidden = false;
+          for (let a = e; a && a !== document.documentElement; a = a.parentElement) { const cs = getComputedStyle(a); if (cs.visibility === 'hidden' || cs.display === 'none') { hidden = true; break; } }
+          if (hidden) continue;
+          let r = e.getBoundingClientRect();
+          if (!(r.right > 0 && r.left < innerWidth && r.bottom > 0 && r.top < innerHeight)) { e.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' }); r = e.getBoundingClientRect(); }
+          const x = r.left + r.width / 2, y = r.top + r.height / 2;
+          const top = document.elementFromPoint(x, y);
+          if (top && (top === e || e.contains(top))) return { x, y, text: (e.innerText || '').trim().slice(0, 30), sel: e.getAttribute('class') ?? '' };
+        }
+        return null;
+      }, sel);
       if (opts.debug) console.error(`[click] ${sel} → ${c ? `${c.text} @${Math.round(c.x)},${Math.round(c.y)}` : 'none'}`);
       if (!c && opts.debug) console.error('   matches:', JSON.stringify(await page.evaluate((q) => [...document.querySelectorAll(q)].map((e) => { const r = e.getBoundingClientRect(); const up = []; for (let a = e; a && a !== document.body; a = a.parentElement) { const cs = getComputedStyle(a); if (cs.visibility === 'hidden' || cs.display === 'none') up.push(`${a.tagName}.${(a.getAttribute('class') || '').replace(/ /g, '.')}:${cs.visibility}/${cs.display}`); } return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height), e.disabled, up.slice(-3)]; }), sel)));
       if (!c) { if (opts.debug) await shot(`dbg-none-${sel.replace(/[^a-z]/gi, '').slice(0, 20)}`, { lint: false }); return false; }
@@ -251,7 +257,9 @@ export async function run(opts) {
       await shot(`${label}-open`, { scope: '.battle' });
       for (; steps < maxSteps; steps += 1) {
         if (stopAfter != null && steps >= stopAfter) return { outcome: 'left-open', steps };
-        const settled = verbs.slice(startAt).find((v) => v.verb === 'duel' && v.flags.some((f) => f.startsWith('--picks')) && v.out?.ok !== false);
+        // The settle: `duel --picks` that is not a mark of progress (`--action=mark`, the page keeping a fight's moves as
+        // it goes, so a reload finds them — 11-05) and answered with an outcome.
+        const settled = verbs.slice(startAt).find((v) => v.verb === 'duel' && v.flags.some((f) => f.startsWith('--picks')) && !v.flags.includes('--action=mark') && v.out?.ok !== false);
         const s0 = await page.evaluate(FIGHT);
         if (settled || !s0) {
           const outcome = settled?.out?.outcome ?? settled?.out?.duel?.outcome ?? (settled ? 'settled' : 'gone');
@@ -268,7 +276,12 @@ export async function run(opts) {
         }
         // Not his turn, or the last move still playing out (the scratch seam says so): a person waits, so does the bot.
         const bout = await page.evaluate(() => globalThis.__lingjingPlay?.bout?.() ?? null);
-        if (bout && (bout.whose !== 'you' || bout.busy)) { await sleep(500); steps -= 1; waits += 1; if (waits > 120) return { outcome: 'stuck-waiting', steps }; continue; }
+        if (bout && (bout.whose !== 'you' || bout.busy)) {
+          await sleep(500); steps -= 1; waits += 1;
+          if (opts.debug && waits % 20 === 0) console.error('[wait]', JSON.stringify(bout));
+          if (waits > 120) return { outcome: 'stuck-waiting', steps, bout };
+          continue;
+        }
         const cans = (await page.evaluate(VISIBLE, '.battle [data-spot].can')).filter((c) => c.spot !== 'stage');
         // 结束回合 greyed while the beast moves (`.wait`, disabled, aria-disabled) is not a control to press.
         const end = (await page.evaluate(VISIBLE, '.battle [data-spot=end]:not(.wait):not(.dim):not([aria-disabled=true])'))[0];
@@ -289,14 +302,23 @@ export async function run(opts) {
         // A board body that can strike strikes first; else a card, the dearer weighted up (a hand spends its 灵力).
         const strikers = pool.filter((c) => c.spot === 'mine' || c.spot === 'power');
         const weighted = (xs) => { const w = xs.map((c) => 1 + (Number(c.text.match(/^\d+/)?.[0]) || 0)); let t = r() * w.reduce((a, b) => a + b, 0); for (let i = 0; i < xs.length; i += 1) { t -= w[i]; if (t <= 0) return xs[i]; } return xs[xs.length - 1]; };
+        // A planned play the room will not take (7afc45b3: a spell that would land on nothing is refused, its card not
+        // live) is the end of the turn, as tests/arcade-kapai.test.mjs roomMove plays it.
         const spotOf = (m) => (m.kind === 'play' ? cans.find((c) => c.spot === 'hand' && Number(c.index) === m.index) : m.kind === 'attack' ? cans.find((c) => c.spot === 'mine' && Number(c.index) === m.index) : m.kind === 'power' ? cans.find((c) => c.spot === 'power') : end);
-        if (!pool.length && !end) { await sleep(500); steps -= 1; waits += 1; if (waits > 120) return { outcome: 'stuck-waiting', steps }; continue; }
+        if (!pool.length && !end) {
+          await sleep(500); steps -= 1; waits += 1;
+          if (opts.debug && waits % 20 === 0) console.error('[wait: no live control]', JSON.stringify(bout), JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('.battle [data-spot=end]')].map((e) => [e.className, e.disabled, e.getAttribute('aria-disabled')]))));
+          if (waits > 120) return { outcome: 'stuck-waiting', steps, bout, why: 'no live control' };
+          continue;
+        }
         const move = planned ? (spotOf(planned) ?? end) : fresh.length && r() < (empty ? 0.9 : 0.4) ? pickOne(r, fresh)
           : strikers.length && r() < 0.6 ? pickOne(r, strikers)
           : pool.length && r() < 0.97 ? weighted(pool) : end;
         if (move?.spot === 'hand') tried.add(`${move.id}:${empty ? 'E' : 'F'}`);
         if (!move) { await sleep(800); continue; }
         const at = verbs.length;
+        // `waits` counts the wait since his last move — one stretch longer than a minute is stuck; a long fight is not.
+        waits = 0;
         if (!(await tap(move, `${move.spot}:${move.id ?? ''}`))) continue;
         await sleep(450);
         // A lifted thing waits for its target: tap one of the lit ones.
@@ -327,9 +349,14 @@ export async function run(opts) {
     const afterWin = async (label, res) => {
       if (res.outcome !== 'won') return;
       let sp = null;
-      for (let i = 0; i < 30 && !sp; i += 1) { await sleep(200); sp = await page.evaluate(SPOILS); }
-      // The reveals over a won fight (a seal, a card turned) come first; clear them, then look again.
-      if (!sp) { for (const sel of ['.wonseal', '[data-reveal]', '.feat']) await click(sel).catch(() => {}); await sleep(800); sp = await page.evaluate(SPOILS); }
+      // The reveals over a won fight (a seal, a card turned — 珠光 得) come first and can stand a while; 所得 waits
+      // under them (dcab26ad). Look for 12 s untouched, then clear the reveals and look 6 s more.
+      for (let i = 0; i < 60 && !sp; i += 1) { await sleep(200); sp = await page.evaluate(SPOILS); }
+      if (!sp) {
+        for (const sel of ['.wonseal', '[data-reveal]', '.feat']) await click(sel).catch(() => {});
+        for (let i = 0; i < 30 && !sp; i += 1) { await sleep(200); sp = await page.evaluate(SPOILS); }
+      }
+      if (!sp && opts.debug) console.error('[spoils?]', JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('*')].filter((e) => e.children.length < 8 && /所得/.test(e.textContent || '') && e.textContent.length < 200).slice(0, 6).map((e) => [e.tagName, e.className, e.getClientRects().length, (e.textContent || '').slice(0, 60)]))));
       await shot(`${label}-won`);
       const paid = res.settled?.out?.paid ?? res.settled?.out?.spoils ?? null;
       if (!sp || !sp.parts.length) await fail('no-spoils', { fight: label, title: sp?.title ?? null, paid });
@@ -343,6 +370,15 @@ export async function run(opts) {
         if (await click(sel, what)) return true;
         if (await click('[data-panel-exit]', '剧情 · 往下')) { await sleep(1500); await clear(); if (go) await click(go, 'go'); }
         await sleep(800);
+      }
+      return false;
+    };
+    /* A fight opened: what stands over it first (a map unfolding, a seal) cleared, until the fight is on screen (10 s). */
+    const onScreen = async () => {
+      for (let k = 0; k < 20; k += 1) {
+        if (await page.evaluate(FIGHT)) return true;
+        await clear(2);
+        await sleep(500);
       }
       return false;
     };
@@ -369,6 +405,7 @@ export async function run(opts) {
       const at = verbs.length;
       if (!(await startHaunt(name))) { unplayable.push({ where, why: 'no 降妖 to start (no [data-duel-start] at 后山)' }); noteRefusals(at, where); continue; }
       await sleep(1500);
+      if (!(await onScreen())) { unplayable.push({ where, why: 'the 降妖 was opened and never came on screen' }); noteRefusals(at, where); continue; }
       const careful = i === 0 && !opts.noCareful;
       const res = await fight(`haunt${i}`, { careful, saveName: name });
       played.push({ where, kind: careful ? '降妖 (careful hand)' : '降妖 (random hand)', ...res, settled: undefined });
@@ -393,9 +430,12 @@ export async function run(opts) {
         await clear();
         await click('[data-agenda="way:way"] [data-go], button.act.go.primary[data-go]', '眼下要做的 · 去');
         await sleep(1500);
-        const started = await reach('[data-duel-start], [data-panel-exit="fight"], [data-exit="fight"]', '开局 剧情斗法', '[data-agenda="way:way"] [data-go]');
+        const started = await reach('[data-panel-duel], [data-duel-start], [data-panel-exit="fight"]', '开局 剧情斗法', '[data-agenda="way:way"] [data-go]');
         if (!started) unplayable.push({ where, why: 'the scene offered no fight to start' });
-        else { await sleep(1500); const res = await fight('story', { saveName: name }); played.push({ where, kind: '剧情斗法', ...res, settled: undefined }); await afterWin('story', res); }
+        // The story's 斗 button calls the fight onto the stage (callDuel: a challenge card); its 开局 then begins it.
+        else if (!(await page.evaluate(FIGHT)) && !(await reach('[data-duel-start]', '开局 剧情斗法'))) unplayable.push({ where, why: 'the story fight was called and its 开局 never came' });
+        else if (!(await onScreen())) unplayable.push({ where, why: 'the story fight was opened and never came on screen' });
+        else { const res = await fight('story', { saveName: name }); played.push({ where, kind: '剧情斗法', ...res, settled: undefined }); await afterWin('story', res); }
         noteRefusals(at, where);
       }
     }

@@ -1,5 +1,5 @@
 {
-  "_about": "The play bot's seeded bugs (run.sh --selftest): each one a ref (or a ref + a patch under seeded/) the bot must catch, by the finding named in `expect` (a field that starts and ends with / is a regex). A bug it misses means the bot is broken, not the game fixed. The first three are the phone bugs of 2026-11-04/05 at the commit before their fixes; the fourth (a win with no 所得 — on the phone it was the native screen) is put back on the page by a patch. An entry with `absent: true` is a control (the same play with the bug not there must NOT raise the finding). The 所得 control (seeded/winnable-control.patch, a sure win, the 所得 card as it is) is not in the set while the page itself drops the 所得 after a won 降妖 (11-05, 4b14bd09: the scene's next board is dealt over the stage at once) — put it back once that is fixed.",
+  "_about": "The play bot's seeded bugs (run.sh --selftest): each one a ref (or a ref + a patch under seeded/) the bot must catch, by the finding named in `expect` (a field that starts and ends with / is a regex). A bug it misses means the bot is broken, not the game fixed. The first three are the phone bugs of 2026-11-04/05 at the commit before their fixes; the fourth (a win with no 所得 — on the phone it was the native screen) is put back on the page by a patch. An entry with `absent: true` is a control (the same play with the bug not there must NOT raise the finding).",
   "bugs": [
     {
       "id": "kept-fight-freezes-fantong",
@@ -30,9 +30,9 @@
       "fights": 4,
       "expect": {
         "kind": "mana-waste",
-        "card": "yangzhen"
+        "card": "/^(yangzhen|zhennu)$/"
       },
-      "note": "Hanli 11-04: 痒痒针 spent 灵力 on an empty rank — four random hands (no careful one: the attentive line never wastes a card), cards untried on an empty rank played first",
+      "note": "Hanli 11-04: 痒痒针 spent 灵力 on an empty rank — the bug is a rank spell (痒痒针's sweep, 震怒's the same) taking 灵力 with nothing on the rank; either card caught counts. Four random hands, cards untried on an empty rank played first",
       "flags": "--no-careful --only=haunt"
     },
     {
@@ -45,6 +45,31 @@
         "kind": "no-spoils"
       },
       "note": "Hanli 11-04: a win showed no 所得 (phone native). The patch puts it on the page: the 所得 card never drawn, and his blows land for 999 so the first fight is surely won"
+    },
+    {
+      "id": "spoils-dropped-after-a-win",
+      "ref": "4b14bd09",
+      "patch": "seeded/winnable-control.patch",
+      "sizes": "430x932",
+      "fights": 1,
+      "flags": "--only=haunt",
+      "expect": {
+        "kind": "no-spoils"
+      },
+      "note": "The page's own 11-05 bug, found by the bot: a won 降妖 and the scene's next board dealt over the stage at once, 所得 never shown (fixed dcab26ad). The patch only makes the win sure."
+    },
+    {
+      "id": "spoils-shown-control",
+      "ref": "dcab26ad",
+      "patch": "seeded/winnable-control.patch",
+      "sizes": "430x932",
+      "fights": 1,
+      "flags": "--only=haunt",
+      "absent": true,
+      "expect": {
+        "kind": "no-spoils"
+      },
+      "note": "The control: the same sure win after the fix — 所得 shows, the check stays quiet."
     }
   ]
 }
