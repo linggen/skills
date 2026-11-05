@@ -1189,7 +1189,9 @@ a.readchip { text-decoration: none; display: inline-block; }
    a festival's dressing on the 小人书 frame, the day's weather, one layer.
    `.view` carries fest-<frame> and wx-<weather>; #atmos holds the frame's
    pieces and the particles. Never in the way: no pointer events, faint. ── */
-.atmos { position: absolute; inset: 0; pointer-events: none; z-index: 3; overflow: hidden; }
+/* Behind every card, board and line, over the painting only: the weather never veils what he reads or plays
+   (Hanli 11-05: 「天气可以都放到后面, 不遮挡UI吗?」 — the fog washed over the 降妖 card and 药园巡夜). */
+.atmos { position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
 .atmos[hidden] { display: none; }
 body.fighting .atmos { display: none; }
 .atmos .frame i { position: absolute; display: none; }
