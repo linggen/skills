@@ -997,7 +997,8 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false, kin
     const big = (s.snd.heavy ?? 0) + (s.snd.hook ?? 0) + (s.snd.palm ?? 0) + (s.snd.super ?? 0) + (s.snd.knock ?? 0);
     const hits = (s.snd.hit ?? 0) + big;
     if (big > lastBig) { shake = 9; view.lift = 1; }
-    if (hits > lastHit) view.lift = Math.max(view.lift, 0.5);
+    if (hits > lastHit) { view.lift = Math.max(view.lift, 0.5); shake = Math.max(shake, 2.5); } // a light's tap: the paper hardly moves
+    if (calm()) shake = 0; // reduced motion: the paper holds still
     lastBig = big; lastHit = hits;
     shake *= Math.pow(0.85, dtf);
     view.lift *= Math.pow(0.95, dtf);

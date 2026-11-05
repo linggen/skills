@@ -58,7 +58,7 @@ test('上步: a heavy thrown walking at her steps in and lands from past its rea
   assert.ok(Math.abs(u.foe.x - u.me.x) >= GAP - 1);
 });
 
-test('a whiffed heavy leaves his leg out (her blow reaches it); a heavy she stands off leaves him open longer, a 拳 does not', () => {
+test('a whiffed heavy leaves his leg out (her blow reaches it); a blow she stands off leaves him open longer — a heavy long, a 拳 a moment (11-05)', () => {
   let s = F.act(apart('heqi', 260), { g: 'heavy' }).state;
   s = run(s, ME.heavy.startup + ME.heavy.active + 20);
   assert.equal(limbOut(s), ME.heavy.limb, 'his leg out as it comes back');
@@ -73,7 +73,8 @@ test('a whiffed heavy leaves his leg out (her blow reaches it); a heavy she stan
     return g.me.act?.m.recover ?? 0;
   };
   assert.equal(guarded('heavy'), ME.heavy.recover + ME.heavy.blocked);
-  assert.equal(guarded('light'), ME.light.recover);
+  assert.equal(guarded('light'), ME.light.recover + ME.light.blocked);
+  assert.ok(ME.light.blocked > 0 && ME.light.blocked < ME.heavy.blocked / 2, 'a 拳 stood off: open a moment, far less than a heavy');
 });
 
 test('footsies: against a hand that stands still, no foe spends most of her free time walking in — she holds and gives ground too', () => {

@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as F from '../scripts/games/fighter.js';
-import { FOE, STAGE } from '../scripts/games/fighter/core.js';
+import { FOE, ME, STAGE } from '../scripts/games/fighter/core.js';
 import { bot } from '../scripts/games/bots/fighter.js';
 import { playModule, playOnce } from '../tools/board-bots.mjs';
 
@@ -176,18 +176,19 @@ const hand = (s, list) => { for (const [d, ms] of list) { s = press(s, d); s = r
 const down = [{ g: 'crouch', on: true }, 30], up = [{ g: 'crouch', on: false }, 0];
 const fwd = [{ g: 'walk', dir: 1 }, 30], stop = [{ g: 'walk', dir: 0 }, 0];
 
-test('a chain: K K L into a reeling foe counts 「3 连」, each blow a little lighter; K O chains; a 重 cancels into 掌心火', () => {
+test('a chain is made, not mashed: K K is two blows, she free a beat between; K O chains (a light cut short into a heavy); a 重 cancels into 掌心火', () => {
+  // 11-05 (Hanli: 「只要把对手逼到角落, 一直点轻拳就能一直击中对方」): a light's hitstun ends before the next light lands
   let s = dummy('chain');
   s = hand(s, [[{ g: 'light' }, 150], [{ g: 'light' }, 150], [{ g: 'lkick' }, 260]]); // a hand's pace: apart enough never to read as K+L
-  assert.equal(s.best, 3, 'three in a chain');
-  assert.ok((s.snd.combo ?? 0) >= 2);
+  assert.equal(s.best, 1, 'a light into a light: no chain');
+  assert.ok(ME.light.stun < ME.light.recover + ME.light.startup, 'the light\'s hitstun ends before the next light lands');
   s = hand(dummy('ko'), [[{ g: 'light' }, 120], [{ g: 'hpunch' }, 300]]);
   assert.equal(s.best, 2, 'K then O');
+  assert.ok((s.snd.combo ?? 0) >= 1);
   // ; then S D + K: the 重腿 cut short into 掌心火
   s = dummy('cancel');
   s = hand(s, [[{ g: 'heavy' }, 200], down, up, fwd, [{ g: 'light' }, 400]]);
   assert.equal(s.snd.palmfire ?? 0, 1, '掌心火 came out of the 重腿');
-  assert.equal(s.best, 2);
 });
 
 test('motions + 拳: S D 掌心火 (O the heavier one), D S D 升勾, S D S D the 绝; a plain 拳 is a 拳; the phone\'s 技 gives them', () => {
@@ -262,7 +263,7 @@ test('KOF\'s feet: a double tap runs in while held (v7: it stops when let go); a
 
 test('the move list names every move with its keys, for the pause veil', () => {
   const lines = F.moveLines(LEVEL, 'zh', 'desk');
-  for (const want of ['掌心火', 'S D + K/O', '升勾', 'D S D + K/O', 'S D S D', 'K K L', 'K+L', 'O+;']) assert.ok(lines.some((l) => l.includes(want)), want);
+  for (const want of ['掌心火', 'S D + K/O', '升勾', 'D S D + K/O', 'S D S D', 'K O', 'K+L', 'O+;']) assert.ok(lines.some((l) => l.includes(want)), want);
   assert.ok(F.moveLines(LEVEL, 'zh', 'touch').some((l) => l.includes('技')));
   // In English, every line English: the keys' words and the touch buttons' faces too (Hanli 11-02: 「不少UI上没有英文」).
   for (const kind of ['desk', 'touch']) for (const l of F.moveLines(LEVEL, 'en', kind)) assert.ok(!/[\u3400-\u9fff]/.test(l), `${kind}: ${l}`);

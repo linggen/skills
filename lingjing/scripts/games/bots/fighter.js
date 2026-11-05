@@ -1,6 +1,6 @@
 // The human-like player for 格斗 (games/fighter.js; tools/board-bots.mjs): it reads what a person reads — her point
 // at his throat, the green in her palm going dim, her blade drawn back — and answers a beat late, as a hand does.
-// v2 (10-27): it chains 拳 拳 腿 when the first lands, throws 掌心火 from range and the 绝 when its 气 is full, as the
+// v2 (10-27): it chains 拳 重拳 when the first lands (11-05; was 拳 拳 腿), throws 掌心火 from range and the 绝 when its 气 is full, as the
 // phone's buttons give them (技 · 绝), so the playtest sees every new move. v4 (10-31): the 飞剑 and the 符文 as they cool.
 // v7 (11-01, KOF '97): her sweep stood off low (↙), her jump-in standing, her throw broken with 重 as her hands come;
 // it runs in from far, throws her guard up close, sweeps her long recovery, mixes a low 腿, spends a stock on 爆气 when
@@ -58,8 +58,11 @@ export function bot(s, see = {}) {
   if (Me0.cheavy && a && ['thrust', 'sweep'].includes(a.k) && t - a.at > a.m.startup + a.m.active && d <= Me0.cheavy.reach - 8 && !me.act) return { g: 'heavy', crouch: true };
   // His reach, as his blows have it (v5, 11-01: the 拳 and 腿 longer, the heavies a 上步 walking at her).
   const Me = s.R?.me ?? ME, far = Me.heavy.reach + (Me.heavy.lunge ?? 0);
-  // A chain: the first 拳 landed and she reels — 拳 again, then 腿.
-  if (s.combo.n >= 1 && foe.stun > t && d < Me.light.reach + 10) return { g: s.combo.n >= 2 ? 'heavy' : 'light' };
+  // A chain: the first 拳 landed and she reels — cut it short into the 重拳 (11-05: a light into a light is no chain now;
+  // a light cancels only into a heavy or a special), and there it ends.
+  if (s.combo.n === 1 && foe.stun > t && d < Me.hpunch.reach + 10) return { g: 'hpunch' };
+  // …and the 重拳 landed: cut short again into 掌心火 (技), when it has cooled — three blows, made
+  if (s.combo.n === 2 && foe.stun > t && me.act?.k === 'hpunch' && me.act.landed && (me.cdPf ?? 0) <= 0) return { g: 'skill' };
   // A blow of his gone by her: out of her reach a beat, as a hand does (KOF's footsies).
   if (me.act?.whiff && !me.act.landed) return s.in.dir === -sd ? null : { g: 'walk', dir: -sd };
   if (me.qi >= 2 * QI && !(me.max > t) && d < 400 && !me.act) return { g: 'max' }; // two stocks: 爆气, then the 绝 in it
