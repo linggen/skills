@@ -482,7 +482,8 @@ export function spoilsHtml(spoils, ctx) {
   const gear = (spoils.items ?? []).filter((i) => i.slot && ctx.gearRow).map((i) => ctx.gearRow(i)).join('');
   const things = (spoils.items ?? []).filter((i) => !(i.slot && ctx.gearRow)).map((i) => thingHtml(i, ctx.lang === 'en')).join(' · ');
   // A 符 played is gone from the bag (result.spent), won or lost.
-  const spent = (spoils.spent ?? []).map((id) => name(ctx.catalog[id], ctx.lang) || esc(id)).join(' · ');
+  // Each is {id, name} (the rules name it, so the phone's card reads it too — Hanli 11-05 「用去：talisman」); a bare id from an older answer still reads.
+  const spent = (spoils.spent ?? []).map((x) => { const id = typeof x === 'string' ? x : x?.id; return (typeof x === 'object' && x?.name) ? esc(x.name) : (name(ctx.catalog[id], ctx.lang) || esc(id ?? '')); }).join(' · ');
   // What the win paid, in the card's own words — not only a float on the strip.
   const p = spoils.paid ?? {};
   const pays = [p.progress ? `${w.xw} +${p.progress}` : '', p.wealth ? `${w.ls} +${p.wealth}` : ''].filter(Boolean).join(' · ');

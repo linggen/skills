@@ -572,7 +572,7 @@ export function duel(state, content, ctx, args) {
   const way = won || exit ? null : lossWay(content, s, ctx, game, setup, played);
   // A story fight (`retry`) not won is not over: the way on waits on its win, and it is fought again at once (look.mjs `again`).
   const again = game.retry && !won ? { again: true, story_open: true } : {};
-  return { state: s, result: { ok: true, ...again, ...(way ? way : {}), outcome: played.outcome, game: id, say, ...(spent.length ? { spent } : {}), you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(firsts.first_met ? { first_met: true } : {}), ...(firsts.first_win ? { first_win: true } : {}), ...(hunt ? { tally: poolTally(content, s, placeOf(content, game.hunt), ctx.now) } : {}), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}), ...(ling ? { key: ling } : {}) } };
+  return { state: s, result: { ok: true, ...again, ...(way ? way : {}), outcome: played.outcome, game: id, say, ...(spent.length ? { spent: spent.map(sid => ({ id: sid, name: pick(cardCatalog(content)[sid]?.name, s.lang) ?? sid })) } : {}), you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(firsts.first_met ? { first_met: true } : {}), ...(firsts.first_win ? { first_win: true } : {}), ...(hunt ? { tally: poolTally(content, s, placeOf(content, game.hunt), ctx.now) } : {}), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}), ...(ling ? { key: ling } : {}) } };
 }
 
 /* A fight not won: `beat` — the beast's 护主 (bodies it stood up), its 气血 left, the turns he lasted —

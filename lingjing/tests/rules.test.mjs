@@ -1553,7 +1553,8 @@ test('写符 is gone: no verb, never a choice — a 符 comes from fights and ru
   assert.equal(opened.result.duel.setup.you.extra.filter(id => id === 'talisman').length, 1, 'one 符 a fight');
   const settled = fightOut(base, 'haunt:jingwei', { c: october() });
   assert.ok(['won', 'lost', 'withdrew'].includes(settled.result.outcome));
-  const cast = settled.result.spent?.includes('talisman');
+  const cast = settled.result.spent?.some(x => x.id === 'talisman');
+  if (cast) assert.equal(settled.result.spent.find(x => x.id === 'talisman').name, '符', 'a spent 符 comes back with its name (the phone shows it as is)');
   const fell = settled.result.dropped?.some(d => d.id === 'talisman') ? 1 : 0; // a win may leave one (1 in 3)
   assert.equal(settled.state.bag.talisman, (cast ? 1 : 2) + fell, 'a 符 played is a 符 spent');
   // Held and never played, it stays in the bag.
@@ -3727,7 +3728,7 @@ test('装备入局: a 符 in the bag is in hand at the door, and a 符 played is
   const actions = [`play:${hand.indexOf('talisman')}`];
   while (battle(actions, setup, catalog).outcome === 'open' && actions.length < 60) actions.push('end');
   const settled = must(duel, started.state, { id: 'haunt:jingwei', picks: actions.join(',') }, at);
-  assert.deepEqual(settled.result.spent, ['talisman']);
+  assert.deepEqual(settled.result.spent, [{ id: 'talisman', name: '符' }], 'by id and by name: the phone 所得 shows the name as is (Hanli 11-05 「用去：talisman」)');
   assert.equal(settled.state.bag.talisman, undefined, 'the last one gone from the bag');
   // No 符 in the bag, none in hand.
   const none = must(duel, { ...base, bag: {} }, { id: 'haunt:jingwei' }, at);
