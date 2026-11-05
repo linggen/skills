@@ -50,7 +50,8 @@ test('a fixed board once won is never drawn again; unwon, it is', () => {
 test('a board that varies, won, is still drawn', () => {
   const s = at('zhishi');
   const ids = ['wuziqi', 'xiangqi', 'huarong'];
-  const won = { ...s, pool_won: Object.fromEntries(ids.map(id => [id, START.toISOString()])), stars: Object.fromEntries(ids.map(id => [id, 3])) };
+  // Dealt on the plate (rules/rotation.mjs, 2026-11-04: one practice board at a time): 象棋 at 执事堂.
+  const won = { ...s, pool_won: Object.fromEntries(ids.map(id => [id, START.toISOString()])), stars: Object.fromEntries(ids.map(id => [id, 3])), plate_deal: { guan: { n: 0, at: 'zhishi', game: 'xiangqi' } } };
   assert.ok(ids.some(id => everIn(content, won, id)), 'a varying board stays in the pool once won');
 });
 

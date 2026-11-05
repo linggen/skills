@@ -11,7 +11,7 @@ import { playOnce } from '../tools/board-bots.mjs';
 import { loadContent } from '../scripts/content.mjs';
 import { look, task, win } from '../scripts/rules.mjs';
 import { placeOf } from '../scripts/rules/world.mjs';
-import { gamesEver } from '../scripts/rules/rotation.mjs';
+import { gamesEver, plateKey } from '../scripts/rules/rotation.mjs';
 
 process.env.LINGJING_STAMINA_LIMIT ??= '1';
 const content = loadContent();
@@ -87,7 +87,9 @@ test('the 药园 pools it; standing there on a day it is up, Look deals the rung
   const SAVE = JSON.parse(fs.readFileSync(new URL('./fixtures/saves/waimen.json', import.meta.url), 'utf8'));
   let n = 0;
   const day = (k) => new Date(2026, 9, 27 + k, 10);
-  const here = (now, extra = {}) => ({ ...SAVE, place: 'yaoyuan', tier: 'qi', step: 1, progress: 100, stamina: 100, stamina_at: now.toISOString(), ...extra });
+  // Dealt on the plate (rules/rotation.mjs, 2026-11-04: one practice board at a time, standing till played).
+  const dealt = { plate_deal: { [plateKey(p)]: { n: 0, at: 'yaoyuan', game: 'yaoyuan-zhuochong' } } };
+  const here = (now, extra = {}) => ({ ...SAVE, place: 'yaoyuan', tier: 'qi', step: 1, progress: 100, stamina: 100, stamina_at: now.toISOString(), ...dealt, ...extra });
   let row = null;
   for (; n < 6 && !row; n += 1) row = look(here(day(n)), content, { now: day(n), quests: [] }).tasks.find((t) => t.id === 'yaoyuan-zhuochong');
   assert.ok(row, 'up some day of the six');

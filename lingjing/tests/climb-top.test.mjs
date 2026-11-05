@@ -7,6 +7,8 @@ import assert from 'node:assert/strict';
 import { climbLv, climbWon, dealtOf, topLv } from '../scripts/rules/climb.mjs';
 import { loadContent } from '../scripts/content.mjs';
 import { look } from '../scripts/rules.mjs';
+import { plateKey } from '../scripts/rules/rotation.mjs';
+import { placeOf } from '../scripts/rules/world.mjs';
 
 process.env.LINGJING_STAMINA_LIMIT ??= '1';
 const content = loadContent();
@@ -56,11 +58,14 @@ test('柴房\'s 赶黄鼠狼: five top layouts, each a level of the build; past 
   const SAVE = JSON.parse(fs.readFileSync(new URL('./fixtures/saves/waimen.json', import.meta.url), 'utf8'));
   const deals = [];
   for (let n = 0; n < 9; n += 1) {
-    const now = day(n), s = { ...SAVE, place: 'chaifang', tier: 'qi', step: 1, progress: 100, stamina: 100, stamina_at: now.toISOString(), climb: { zhazhai: 6 } };
+    // The plate deals one practice board at a time (rules/rotation.mjs, 2026-11-04): this one, dealt and unplayed, every day.
+    const now = day(n), s = { ...SAVE, place: 'chaifang', tier: 'qi', step: 1, progress: 100, stamina: 100, stamina_at: now.toISOString(), climb: { zhazhai: 6 },
+      plate_deal: { [plateKey(placeOf(content, 'chaifang'))]: { n: 0, at: 'chaifang', game: 'chaifang-huangshulang' } } };
     const row = look(s, content, { now, quests: [] }).tasks.find((x) => x.id === 'chaifang-huangshulang');
     if (row) deals.push([n, row.deal.lv]);
   }
   assert.ok(deals.length >= 2, `up some days of nine: ${JSON.stringify(deals)}`);
+  assert.equal(deals.length, 9, 'dealt, it stands every day until played');
   for (const [n, lv] of deals) assert.equal(lv, topLv(SAVE, t, day(n)), `day ${n}`);
   assert.ok(deals.every(([, lv]) => t.climb_top.includes(lv)));
 });

@@ -9,7 +9,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { chorePlay, xiuweiOf } from '../scripts/rules/playpay.mjs';
 import { look, move, quest, task, win } from '../scripts/rules.mjs';
 import { placeOf } from '../scripts/rules/world.mjs';
-import { gamesToday, lapseWall, poolToday, wallPosts, wallToday } from '../scripts/rules/rotation.mjs';
+import { gamesToday, lapseWall, plateDealt, plateKey, poolToday, wallPosts, wallToday } from '../scripts/rules/rotation.mjs';
 
 process.env.LINGJING_STAMINA_LIMIT ??= '1';
 const content = loadContent();
@@ -44,17 +44,18 @@ test('each 观 place has a pool of two or three of the kit\'s practice boards, a
   assert.deepEqual(GUAN.filter((id) => placeOf(content, id).has.games_pool.from.includes('xiangqi')), ['zhishi']);
 });
 
-test('the tray and Look show today\'s set: practice boards where he stands, the plate\'s tags for every place of the 观', () => {
+test('the tray and Look show the plate\'s one deal (2026-11-04: 「只有之前的玩了才发新的」): practice where it stands, its tag alone', () => {
   for (const n of [0, 1]) {
-    const now = day(n), l = look(at('cangjing', now), content, ctx(now));
-    const practice = l.tasks.filter((t) => t.practice).map((t) => t.id).sort();
-    assert.deepEqual(practice, poolToday(placeOf(content, 'cangjing'), now).sort());
-    const tag = l.boards.find((b) => b.id === 'cangjing');
-    assert.deepEqual(tag.games.map((g) => g.id), poolToday(placeOf(content, 'cangjing'), now));
-    assert.deepEqual(l.boards.find((b) => b.id === 'zhishi').games.map((g) => g.id), poolToday(placeOf(content, 'zhishi'), now), '周衡\'s 灯谜 is every day\'s: no caption');
-    assert.ok(tag.games.every((g) => g.name && !g.name.includes(' · ')), JSON.stringify(tag));
-    // …and the 药园's, whose 捉虫 turns with 拼图 (tests/yaoyuan-practice.test.mjs).
-    assert.deepEqual(l.boards.map((b) => b.id).sort(), [...GUAN, 'yaoyuan'].sort());
+    const now = day(n), base = at('cangjing', now), d = plateDealt(content, base, plateKey(placeOf(content, 'cangjing')), now);
+    const l = look(base, content, ctx(now));
+    assert.deepEqual(l.boards.map((b) => [b.id, b.games.map((g) => g.id)]), [[d.at, [d.game]]], 'one board on the whole plate');
+    assert.ok(l.boards[0].games.every((g) => g.name && !g.name.includes(' · ')), JSON.stringify(l.boards));
+    const practice = l.tasks.filter((t) => t.practice).map((t) => t.id);
+    assert.deepEqual(practice, d.at === 'cangjing' ? [d.game] : [], 'practice here only when the deal is here');
+    // Standing where it is dealt: it is his to play.
+    const there = look({ ...base, place: d.at }, content, ctx(now));
+    assert.ok(there.tasks.some((t) => t.id === d.game && t.practice), `${d.at}: ${d.game} stands`);
+    assert.deepEqual(d, plateDealt(content, base, plateKey(placeOf(content, 'cangjing')), day(0)), 'the same deal the next day, unplayed');
   }
 });
 
@@ -130,9 +131,10 @@ test('a tag lapses with its day: taken and undone, it is gone tomorrow, and the 
   assert.ok(!offers.some((o) => o.id.endsWith(id.replace(/^wall-\d+-/, ''))), 'never the same tag two days running');
 });
 
-test('the plate wears today\'s boards under each seal (Look\'s `boards`)', async () => {
+test('the plate wears the deal under its seal (Look\'s `boards`)', async () => {
   const { boardsById, plateHtml } = await import('../scripts/plate.js');
-  const l = look(at('waimen'), content, ctx(day(0)));
+  const key = plateKey(placeOf(content, 'cangjing'));
+  const l = look(at('waimen', day(0), { plate_deal: { [key]: { n: 0, at: 'cangjing', game: 'pintu' } } }), content, ctx(day(0)));
   const plate = { spots: [{ id: 'cangjing', name: '藏经阁', at: [0.2, 0.3] }, { id: 'houshan', name: '后山', at: [0.5, 0.5] }] };
   const html = plateHtml(plate, { boards: boardsById(l) });
   const names = l.boards.find((b) => b.id === 'cangjing').games.map((g) => g.name).join(' · ');

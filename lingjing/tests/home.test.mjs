@@ -9,6 +9,8 @@ import { newState } from '../scripts/state.mjs';
 import { playTo } from '../scripts/rules/progress.mjs';
 import { VERBS, look, move, quest, task } from '../scripts/rules.mjs';
 import { homeOf, playsFor } from '../scripts/rules/home.mjs';
+import { plateKey, poolToday } from '../scripts/rules/rotation.mjs';
+import { placeOf } from '../scripts/rules/world.mjs';
 import { chorePlay, playGrant } from '../scripts/rules/playpay.mjs';
 import { stageCards, stageSlots, withNext } from '../scripts/stage.mjs';
 import { WORDS, cardHtml } from '../scripts/cards.js';
@@ -24,7 +26,12 @@ function gate146(at = 'waimen') {
   let s = playTo(content, newState(content, 'zh', NOW), 'wm-yaoyuan', { now: NOW, policy: 'skip' }).state;
   for (const c of content.chapters['00-waimen'].scenes['wm-yaoyuan'].show ?? []) if (c.card === 'board' && s.tasks?.[c.id]?.status !== 'done') s = task(s, content, ctx(), { action: 'skip', id: c.id }).state;
   if (at !== 'yaoyuan') s = move(s, content, ctx(), { place: at }).state;
-  return told({ ...s, progress: 146, stamina: 100, stamina_at: NOW.toISOString() });
+  return told({ ...s, progress: 146, stamina: 100, stamina_at: NOW.toISOString(), ...dealtAt(at) });
+}
+/* The plate deals one practice board at a time (rules/rotation.mjs, 2026-11-04): here, the day's first of this place's pool. */
+function dealtAt(at) {
+  const p = placeOf(content, at), g = p?.has?.games_pool ? poolToday(p, NOW).find((x) => !(p.has.games ?? []).includes(x)) : null;
+  return g ? { plate_deal: { [plateKey(p)]: { n: 0, at, game: g } } } : {};
 }
 /* The best practice board standing here today (the 观's boards turn with the day, rules/rotation.mjs): what the 主页 names first. */
 function bestHere(s, l) {

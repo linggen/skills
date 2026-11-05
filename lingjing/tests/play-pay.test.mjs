@@ -7,9 +7,9 @@ import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { boardCost, newState, staminaCost } from '../scripts/state.mjs';
 import { playTo } from '../scripts/rules/progress.mjs';
-import { look, move, task, win } from '../scripts/rules.mjs';
+import { look, move, task, win, VERBS } from '../scripts/rules.mjs';
 import { gapOf, levelOf, playGrant, rateAt, sittingsAt, xiuweiOf } from '../scripts/rules/playpay.mjs';
-import { gamesToday } from '../scripts/rules/rotation.mjs';
+import { gamesToday, plateDealt, plateKey } from '../scripts/rules/rotation.mjs';
 import { placeOf } from '../scripts/rules/world.mjs';
 
 const content = loadContent();
@@ -63,16 +63,18 @@ test('古四 at 146/470: the place games at 沉鼎观 each pay their formula num
   s = { ...s, tier: 'qi', step: 1, progress: 146, stamina: 100 };
   let plays = 0;
   const seen = new Map();
-  const PLACES = ['chaifang', 'zhishi', 'cangjing', 'waimen', 'fantang', 'jiangtang'];
-  for (const place of PLACES) {
-    const m = move(s, content, ctx, { place });
+  // The plate deals one practice board at a time (rules/rotation.mjs, 2026-11-04): each counted win deals the next, so
+  // the 观's boards are played one after another — through the gated door every host plays by (VERBS).
+  const key = plateKey(placeOf(content, 'chaifang'));
+  for (let k = 0; k < 6; k += 1) {
+    const dealt = plateDealt(content, s, key, NOW);
+    const m = move(s, content, ctx, { place: dealt.at });
     if (!m.result.ok) continue;
     s = m.state;
-    const ids = gamesToday(content, placeOf(content, place), NOW).filter((id) => content.tasks.tasks.find((t) => t.id === id)?.kind === 'board');
-    for (const id of ids) {
-      const w = win(s, content, ctx, { id, stars: 3 });
+    for (const id of [dealt.game].filter((x) => content.tasks.tasks.find((t) => t.id === x)?.kind === 'board')) {
+      const w = VERBS.win(s, content, ctx, { id, stars: 3 });
       if (!w.result.ok) continue;
-      const d = task({ ...w.state, stamina: 100 }, content, ctx, { action: 'done', id });
+      const d = VERBS.task({ ...w.state, stamina: 100 }, content, ctx, { action: 'done', id });
       if (!d.result.ok) continue;
       const got = d.state.progress - w.state.progress;
       const n = seen.get(id) ?? 0; seen.set(id, n + 1);
@@ -87,8 +89,10 @@ test('古四 at 146/470: the place games at 沉鼎观 each pay their formula num
   assert.ok(plays >= 3, `${plays} plays`);
   // The layer asks sittings now (Hanli's formula): what is left of 一层 is more than a sitting's 100 体力 of boards.
   assert.ok((470 - 146) / (R(1) * BOARD / BOARD) > 100, 'more than one sitting');
-  const l = look(s, content, ctx);
-  assert.ok(l.tasks.some((t) => t.practice), 'the place games stay open as practice, in the tray');
+  // …and the next is dealt: standing where it is, it is open as practice, in the tray.
+  const next = plateDealt(content, s, key, NOW);
+  const l = look({ ...s, place: next.at }, content, ctx);
+  assert.ok(l.tasks.some((t) => t.practice && t.id === next.game), 'the place games stay open as practice, in the tray — one dealt at a time');
 });
 
 test('a board lost costs its 体力 in full (it was played; the coordinator for Hanli, 2026-11-04); the story\'s own board nothing', () => {
