@@ -78,8 +78,8 @@ test('an unplayed game stays as the 时辰s turn; once played, the next — and 
   const all = { ...begun, pool_played: Object.fromEntries(d.drawn.map((x, i) => [x.id, new Date(AT(13, 5).getTime() + (i + 1) * 60_000).toISOString()])) };
   assert.equal(heldPool(content, all, pool, FAKE, AT(13, 50)).drawn.every((x) => x.played), true, 'its own 时辰: all played');
   // …and then the draw of the 时辰 after it — held there in its turn, not the 时辰 he happens to look in.
-  const next = shichenOf(shichenOf(AT(13, 5)).end);
-  assert.deepEqual(ids(heldPool(content, all, pool, FAKE, AT(19, 10))), ids(drawAt(content, all, pool, FAKE, next)));
+  const after = shichenOf(shichenOf(AT(13, 5)).end);
+  assert.deepEqual(ids(heldPool(content, all, pool, FAKE, AT(19, 10))), ids(drawAt(content, all, pool, FAKE, after)));
 });
 
 test('the hold (pool_hold): its game stands until it is itself played — another game played moves nothing', () => {
