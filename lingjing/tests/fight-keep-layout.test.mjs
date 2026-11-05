@@ -44,6 +44,6 @@ test('a desk\'s hand: the 丹囊 tray beside it, the fan inside the room, the la
   assert.match(base, /\.bleaf \.bcost \{ position: absolute; top: 3px; left: 3px; z-index: 2;/, 'the cost inside its own card, over its picture');
   assert.match(base, /\.bleaf \.bcost::after \{ content: ''; position: absolute; inset: 0; \}/, 'its whole square its own');
   assert.match(base, /\.bshown \.bleaf \.bcost \{ pointer-events: auto; \}/);
-  // the phone's own hand keeps its padding over the desk's
-  assert.match(css, /\.battle \.bdock > \.bhand \{ flex: 1 1 0; min-height: 0; height: auto; padding: 10px 4px 0; \}/);
+  // the phone's own hand is its wheel, the tray in its action row (duel-phone-hand.test.mjs); the desk shows its dock tray only
+  assert.match(base, /\.bacts > \.bpouch \{ display: none; \}/);
 });

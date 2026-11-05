@@ -322,6 +322,16 @@ export async function run(opts) {
           : pool.length && r() < 0.97 ? weighted(pool) : end;
         if (move?.spot === 'hand') tried.add(`${move.id}:${empty ? 'E' : 'F'}`);
         if (!move) { await sleep(800); continue; }
+        // The phone's hand is a wheel (battle-wheel.js): a card off the centre is turned there first, by its dot under the
+        // wheel, as a person would; then the centre card is tapped (2026-11-05).
+        if (move.spot === 'hand' && /\b(side|far)\b/.test(move.sel)) {
+          const dot = (await page.evaluate(VISIBLE, `.battle .bwheeldots [data-wheel="${move.index}"]`))[0];
+          if (dot && (await tap(dot, `wheel:${move.id ?? ''}`))) {
+            await sleep(450);
+            const mid = (await page.evaluate(VISIBLE, `.battle .bhand > .bcard.mid[data-index="${move.index}"]`))[0];
+            if (mid) Object.assign(move, { x: mid.x, y: mid.y, sel: mid.sel });
+          }
+        }
         const at = verbs.length;
         // `waits` counts the wait since his last move — one stretch longer than a minute is stuck; a long fight is not.
         waits = 0;

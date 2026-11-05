@@ -449,6 +449,15 @@ const fanOf = (i, n) => {
    the companion's id is her card's (ctx.herCard), never a name in the code. */
 const herOf = (id, ctx) => (ctx.herCard && id === ctx.herCard ? ' her' : '');
 
+/* The 丹囊 in the phone's action row, left of 主灵根一击 (Hanli 11-05: the tray under the party row took the hand's height):
+   the same tray, and its 「丹 ×N」 chip for a row too narrow to hold it (battle-wheel.js folds it; the chip opens it).
+   The desk keeps its tray beside the hand (CSS shows one or the other). */
+function pouchRowHtml(st, ctx, picked) {
+  const tray = pillTrayHtml(st, ctx, picked);
+  if (!tray) return '';
+  return `<div class="bpouch"><button type="button" class="dn-fold" aria-label="${esc(ctx.lang === 'en' ? 'Pills' : '丹囊')}"><span class="dn-seal">丹</span><b>×${(st.you.pouch ?? []).length}</b></button>${tray}</div>`;
+}
+
 function handHtml(st, ctx, picked) {
   const w = ctx.words, n = st.you.hand.length;
   return st.you.hand.map((id, index) => {
@@ -883,6 +892,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       ${deckHtml(st.you.deck, 'mine', w)}
       ${partyHtml(st, ctx)}
       <div class="bacts">
+        ${pouchRowHtml(st, ctx, picked)}
         <button class="bact bpower el-${esc(st.you.root ?? 'none')}${powerWhy ? ' dim' : ''}${picked?.from === 'power' ? ' held' : ''}${!powerWhy && picked?.from !== 'power' ? ' can' : ''}" data-spot="power"${powerWhy ? ` title="${esc(w.why[powerWhy] ?? powerWhy)}"` : ''}>
           <span class="bsealface"><b>${esc(w.power)}</b><span class="belem">${GLYPH[st.you.root] ?? ''}</span></span>
           <small>${powerWhy ? esc(w.why[powerWhy] ?? powerWhy) : `${st.you.powerHit} · ${POWER_COST}${ctx.lang === 'en' ? ' ' : ''}${esc(w.mana)}`}</small>

@@ -96,8 +96,12 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null } = {}) => {
   // A thing that lets taps through (pointer-events: none — a speech bubble over the room) is never what elementFromPoint
   // meets, so it cannot be measured by it: its place is the page's to choose (2026-11-05: every 银月 line read as covered).
   const passThrough = (x) => getComputedStyle(x).pointerEvents === 'none';
+  // A card laid behind another on purpose (`data-peek`: the phone's hand wheel, battle-wheel.js) is read at the centre, a
+  // tap away: only its cost must show — on the corner left in view (2026-11-05).
+  const peeks = (x) => !!x.closest('[data-peek]');
   for (const { kind, e, node } of items) {
     if (moving(e) || passThrough(e)) continue;
+    if (kind !== 'cost' && peeks(e)) continue;
     const r = e.getBoundingClientRect();
     rects.push(r);
     const clip = clipOf(e);

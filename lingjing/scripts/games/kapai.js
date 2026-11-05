@@ -29,6 +29,7 @@ import { act, begin, foeStep, foeTurn, idle, idleWhy, playerOffers as offers, re
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, cardFaceHtml, dropOf, endOf, pickOf } from '../battle-card.js';
 import { banner, ghostsOf, playLog, since } from '../battle-anim.js';
 import { wireDrag } from '../battle-drag.js';
+import { wireWheel } from '../battle-wheel.js';
 import { WORDS, duelTitle } from '../cards.js';
 
 export const meta = {
@@ -137,12 +138,14 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
 
   return new Promise((resolve) => {
     let done = false, idleTimer = null, release = null;
-    const draw = () => { if (done) return; host.innerHTML = battleHtml(view(room.st), offers(room.st), ctx(), room.picked, room.openLog, room.note, room.help); idleSoon(); };
+    const wheel = wireWheel(host);
+    const draw = () => { if (done) return; host.innerHTML = battleHtml(view(room.st), offers(room.st), ctx(), room.picked, room.openLog, room.note, room.help); wheel.apply(); idleSoon(); };
     const finish = (r) => {
       if (done) return;
       done = true;
       clearTimeout(idleTimer);
       offDrag();
+      wheel.off();
       offPause?.();
       host.removeEventListener('click', onClick);
       resolve(r);
@@ -285,7 +288,7 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       signal.addEventListener('abort', () => finish({ won: false, left: true }), { once: true });
     }
     // The bot's door (tests, the live check): the room's state and its move, as the story's probe gives them.
-    host.kapai = { state: () => room.st, room: () => room, busy: () => room.busy, picked: () => room.picked, draw, tap: onTap, move: (action) => (room.busy || gone() ? null : doMove({ action })) };
+    host.kapai = { wheel, state: () => room.st, room: () => room, busy: () => room.busy, picked: () => room.picked, draw, tap: onTap, move: (action) => (room.busy || gone() ? null : doMove({ action })) };
     draw();
     const open = fight.brief.says?.foe;
     if (open) shell?.say?.(fight.brief.creature.name, open);
