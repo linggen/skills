@@ -184,6 +184,16 @@ function inRadius(g, x, y, r, { air = true } = {}) {
 // The heroes' reach: the range line; in lane mode only the wall's foot (`guard` px above its face, more with a card).
 const heroReach = (g, b) => inReach(g, b) && (!g.grid || b.y >= g.level.wallY - guardOf(g));
 
+/** The tapped beast while it lives (else the focus is let go). */
+function focused(g) {
+  const f = g.focus == null ? null : g.beasts.find((b) => b.id === g.focus && b.hp > 0) ?? null;
+  if (!f && g.focus != null) g.focus = null;
+  return f;
+}
+
+/** The tapped beast is still above where anyone can reach it: the mark stays, and every shooter takes it the moment it comes in. */
+export const focusFar = (g) => { const f = focused(g); return Boolean(f) && !heroReach(g, f); };
+
 // The one to shoot: the focus while it lives, else the one nearest the wall.
 function target(g) {
   const f = g.beasts.find((b) => b.id === g.focus && b.hp > 0);
@@ -236,8 +246,9 @@ function fireFox(g) {
   if (!t) return;
   const f = lv(g, 'yy-foxfire'), c = card(g, 'yy-foxfire'), h = g.kit.hero.fox;
   const n = f ? at(c.shots, f) : 1;
-  const foes = alive(g).filter((b) => b.y > -10).sort((a, b) => b.y - a.y).slice(0, n);
-  for (const b of foes.length ? foes : [t]) {
+  // The tapped one first when she can reach it (集火), then the nearest the wall.
+  const foes = [t, ...alive(g).filter((b) => b !== t && b.y > -10).sort((a, b) => b.y - a.y)].slice(0, n);
+  for (const b of foes) {
     shoot(g, { kind: f ? 'foxfire' : 'fox', x: g.at.fox.x, y: g.at.fox.y - 20, ...aim(g.at.fox, b, h.speed), dmg: f ? at(c.dmg, f) : h.dmg,
       r: h.r, pierce: 1, splash: f ? at(c.radius, f) : 0, home: b.id });
   }
@@ -286,7 +297,8 @@ const CASTS = {
   },
   strike(g) {
     const L = lv(g, 'lei-strike'), c = card(g, 'lei-strike');
-    const t = alive(g).filter((b) => b.y > 20).sort((a, b) => b.hp - a.hp)[0];
+    const f = focused(g);
+    const t = (f && inReach(g, f) ? f : null) ?? alive(g).filter((b) => b.y > 20).sort((a, b) => b.hp - a.hp)[0];
     if (!t) return false;
     emit(g, { t: 'strike', x: t.x, y: t.y, r: c.radius });
     for (const b of inRadius(g, t.x, t.y, c.radius)) {
@@ -737,6 +749,8 @@ export function pick(g, id) {
 
 /** Click a beast to make it everyone's target (null clears). */
 export function setFocus(g, id) {
+  // The focused one tapped again lets it go (Hanli 11-05: 「兽潮里点一只怪集火似乎没用」).
+  if (id != null && id === g.focus) { g.focus = null; return null; }
   g.focus = g.beasts.some((b) => b.id === id && b.hp > 0) ? id : null;
   return g.focus;
 }
@@ -876,6 +890,9 @@ function sortLanes(g) {
 
 /** The beast a unit at `u` shoots: the nearest one up its lane, past the range line, not yet past the unit. */
 function laneTarget(g, u) {
+  // The tapped beast when it is in this bed's lane and in reach: the bed's 剑符 send theirs at it, past the others.
+  const f = focused(g);
+  if (f && f.col === u.col && f.y < u.y + 8 && inReach(g, f)) return f;
   for (const b of g.lanes[u.col]) if (b.hp > 0 && b.y < u.y + 8 && inReach(g, b)) return b;
   return null;
 }
@@ -889,7 +906,8 @@ const UNIT_ACTS = {
     const n = unitStat(g, u.kind, 'n') ?? 1;
     for (let i = 0; i < n; i += 1) {
       g.shots.push({ id: g.nextId++, kind: `bolt-${u.kind}`, lane: u.col, x: u.x, y: u.y - 34 + i * 22, vy: -k.shoot.speed,
-        dmg: unitStat(g, u.kind, 'dmg'), slow: unitStat(g, u.kind, 'slow') ?? 0, slowFor: k.shoot.for ?? 0, r: k.shoot.r ?? 12, age: 0, hit: null });
+        dmg: unitStat(g, u.kind, 'dmg'), slow: unitStat(g, u.kind, 'slow') ?? 0, slowFor: k.shoot.for ?? 0, r: k.shoot.r ?? 12, age: 0, hit: null,
+        ...(t.id === g.focus ? { aim: t.id } : {}) });
     }
     emit(g, { t: 'shot', id: u.id, kind: u.kind });
   },
@@ -918,7 +936,10 @@ function unitsAct(g, dt) {
 // A sword or frost bolt flies straight up its lane and strikes the first beast it reaches (in reach).
 function moveBolt(g, s, dt) {
   s.y += s.vy * dt;
+  // A bolt sent at the tapped beast flies past the others to it (while it lives); else the first it reaches.
+  const aimed = s.aim != null && g.beasts.some((b) => b.id === s.aim && b.hp > 0);
   for (const b of g.lanes[s.lane]) {
+    if (aimed && b.id !== s.aim) continue;
     if (b.hp <= 0 || !inReach(g, b) || b.y < s.y - b.r - s.r || b.y - b.r * 1.4 > s.y) continue;
     hurt(g, b, s.dmg, s.kind === 'bolt-han' ? 'frost' : 'sword');
     if (s.slow) { b.slow = Math.max(b.slow, s.slow); b.slowT = Math.max(b.slowT, s.slowFor); }
@@ -1012,7 +1033,7 @@ function humanBot(seed) {
   return {
     pick: (g) => g.offer.map((id) => [id, (LOOKS[id] ?? 2) + (g.skills[id] ? 0.4 : 0) + r() * 2.2]).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null,
     act(g, dt) {
-      if (tap && (tap.in -= dt) <= 0) { setFocus(g, tap.id); tap = null; }
+      if (tap && (tap.in -= dt) <= 0) { if (g.focus !== tap.id) setFocus(g, tap.id); tap = null; } // a bot means "this one": never the second tap that lets it go
       if ((think -= dt) > 0 || tap) return;
       think = 1;
       const boss = g.beasts.find((b) => b.boss && b.wailT > 0);

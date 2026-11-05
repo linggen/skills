@@ -1,7 +1,7 @@
 // play.js — 守墙关's scene: draws what the engine (scripts/games/shouqiang/core.js) holds, turns its events into
 // juice, and takes the two inputs the game has: a card pick, and (optional) a tap on a beast to focus it.
 import * as Phaser from 'phaser';
-import { newGame, step, pick, setFocus, reachY, castJieyin, W, H } from 'shouqiang-core';
+import { newGame, step, pick, setFocus, focusFar, reachY, castJieyin, W, H } from 'shouqiang-core';
 import { makeTextures, makeNumberFont, makeEmitters, jag } from './fx.js';
 import { Hud, SealGlow, WORDS, bar, setBarW, wordsFor } from './hud.js';
 import { LaneView, SIDE } from './lanes.js';
@@ -214,8 +214,11 @@ export class PlayScene extends Phaser.Scene {
       const d = Math.hypot(b.x - wp.x, b.y - (b.r * 0.6) - wp.y);
       if (b.hp > 0 && d < bd) { best = b; bd = d; }
     }
-    setFocus(this.g, best?.id ?? null);
-    if (best) this.em.burst('spark', 6, best.x, best.y - 20);
+    const on = setFocus(this.g, best?.id ?? null);
+    if (on == null) return;
+    this.em.burst('spark', 6, best.x, best.y - 20);
+    // Marked at once (the reticle); still up the road: one short line, and the mark waits for it to come in.
+    if (focusFar(this.g)) this.hud.hint(this.hud.w.notInReach);
   }
 
   go() {
