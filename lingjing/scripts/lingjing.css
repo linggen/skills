@@ -153,10 +153,21 @@ button:disabled { cursor: default; }
 /* The 回 before the place (rules/hui.mjs): the book's own heading, small. */
 .huiline { font-family: var(--serif); font-size: 12.5px; letter-spacing: .12em; color: var(--dim); opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 2 auto; min-width: 0; }
 .huiline:empty { display: none; }
-/* The top bar's 回 line whole or on its own row, never cut under the place's name (the playbot, 11-05, at 1280: 「卷一 ·
-   沉…」 ran under 「沉鼎观 · 讲堂」): the title row keeps its words' width, and the bar wraps it to a row of its own. */
-.topbar .titlerow .huiline { min-width: auto; flex: 0 0 auto; }
-.topbar .titlerow { flex-wrap: wrap; row-gap: 2px; min-width: min-content; }
+/* The top bar's 回 line whole or not at all, never cut under the place's name (the playbot, 11-05: 「卷一 · 沉…」 ran under
+   「沉鼎观 · 讲堂」 at 1280 with the chat open, and at 430 · 375). The bar keeps one line on a Mac (story.css: the 回 gives
+   way first): where its room is short it gives way whole. On a phone the title row is a row of its own (phone.css), and
+   the 回 line and the place each keep their words, the place under it when both do not fit. */
+@container scene (min-width: 641px) and (max-width: 1100px) {
+  .topbar .huiline { display: none; }
+  /* …and the place gives way to its 「…」 before the shop's chip or 中/En are crossed. */
+  .topbar .titlerow { overflow: hidden; }
+  .topbar .titlerow .placeshop { flex: none; }
+  .topbar .titlerow .place { flex: 0 1 auto; }
+}
+@container scene (max-width: 640px) {
+  .topbar .titlerow { flex-wrap: wrap; row-gap: 2px; }
+  .topbar .titlerow .huiline { min-width: max-content; flex: 0 0 auto; }
+}
 /* The scene's caption (2026-10-14): a small line under the place — never a beat in the
    box, which plays the book alone (rules/tell.mjs playOf). */
 .placecap { order: 9; flex: 1 1 100%; min-width: 0; margin-top: -2px; font-family: var(--serif); font-size: 13px; line-height: 1.55; color: var(--dim);

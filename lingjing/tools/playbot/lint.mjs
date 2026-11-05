@@ -80,11 +80,16 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null } = {}) => {
     }
     return { l, t, r, b, scrolls, hidden };
   };
+  // A text cut on purpose with an ellipsis (its own `text-overflow: ellipsis` box) is read within that box: the words past
+  // the 「…」 are not on the page to be covered (2026-11-05: 「卷一 · 沉…」 read as lying under the place's name).
+  const ellipsed = (e) => { const cs = getComputedStyle(e); return cs.textOverflow === 'ellipsis' && cs.overflowX !== 'visible'; };
   const boxesOf = (kind, e, node) => {
     if (kind !== 'text') return [e.getBoundingClientRect()];
     const range = document.createRange();
     range.selectNodeContents(node ?? e);
-    return [...range.getClientRects()].filter((q) => q.width > 2 && q.height > 2);
+    const own = ellipsed(e) ? e.getBoundingClientRect() : null;
+    return [...range.getClientRects()].map((q) => (own ? new DOMRect(Math.max(q.left, own.left), q.top, Math.max(0, Math.min(q.right, own.right) - Math.max(q.left, own.left)), q.height) : q))
+      .filter((q) => q.width > 2 && q.height > 2);
   };
   // In motion (a float rising, a card dealt): read when it lands, not mid-flight.
   const moving = (x) => { for (let a = x; a && a !== document.body; a = a.parentElement) { if (a.getAnimations?.().some((an) => an.playState === 'running')) return true; } return false; };
