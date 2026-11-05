@@ -61,6 +61,9 @@
 .gshell-side { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: 8px; }
 .gshell-side:empty { display: none; }
 .gshell:has(> .gshell-side:not(:empty)) { --jy-strip: 164px; }
+/* …on a Mac, only while it shows (2026-11-05, Hanli 「这个游戏画面能调大一些吗」: 药园巡夜's field kept 164 px for a 结印
+   button still hidden — the board drew 756 tall in a 1028 stage). The field grows back the moment the box goes. */
+@media (min-width: 900px) { .gshell:has(> .gshell-side:not(:empty)):not(:has(> .gshell-side > :not([hidden]))) { --jy-strip: 0px; } }
 
 .gshell-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
 .gshell-foot:empty { display: none; }
@@ -82,16 +85,24 @@
    a narrow stage (the chat open in a small window), nor for 守墙关's landscape 药园 (1040 : 960): the bar goes back
    over the field, which would have only the narrow column beside it, and the landscape card stays at 720. */
 @media (min-width: 900px) {
+  /* The stage is the measure (2026-11-05, Hanli 「这个游戏画面能调大一些吗」): #focus is a size container, so a board's
+     `100dvh − --game-reserve` is the stage's own height less only the card's own chrome (`--game-chrome`: its edge, the
+     bar, the how line) — up to 96% of the stage, whatever the page keeps above and below it. */
+  .focus { container: stage / size; }
+  /* …the how line one line over the board (its whole text on hover, shell.js frameHtml `title`): two lines took the field's room. */
+  .focus .card.gamecard .gshell-how { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; width: 0; flex-grow: 1; }
+  .focus .card.gamecard > .gshell:not(.is-tall) > .gshell-bar, .focus .card.gamecard > .gshell.is-tall:has([data-landscape="true"]) > .gshell-bar { align-self: stretch; box-sizing: border-box; width: 100%; min-width: 0; }
+  .focus .card.gamecard:has(> .gshell) { --game-reserve: calc(100dvh - 96cqh + var(--game-chrome, 68px)); }
   /* Every board on the Mac stage as large as the page lets it (Hanli 11-03: 「游戏界面都大一些」): no fixed cap — the card
      up to 96% of the stage, and as wide as its board drawn at the page's height (`--board-ar`, the board's width : height
      less the rows it keeps under it, `--board-rows`), never narrower than it was (`--board-min`, each board's own floor);
      each engine scales itself to the box it is given. */
-  .focus .card.gamecard:has(> .gshell) { --game-reserve: 230px; --board-ar: 1.15; --board-rows: 0px;
+  .focus .card.gamecard:has(> .gshell) { --board-ar: 1.15; --board-rows: 0px;
     max-width: min(96%, max(var(--board-min, 600px), calc((100dvh - var(--game-reserve) - var(--board-rows)) * var(--board-ar) + 34px))); }
   .focus .card.gamecard:has(> .gshell .zhazhai-stage) { --board-ar: 1.778; }
   .focus .card.gamecard .zhazhai-stage { width: min(100%, calc((100dvh - var(--game-reserve)) * 16 / 9)) !important; margin: 0 auto; }
-  .focus .card.gamecard:has(> .gshell .g-taiko) { --board-ar: 1.6; --game-reserve: 242px; }
-  .focus .card.gamecard:has(> .gshell .kailu-stage) { --board-ar: .667; --board-min: 700px; --game-reserve: 236px; }
+  .focus .card.gamecard:has(> .gshell .g-taiko) { --board-ar: 1.6; --game-chrome: 120px; }
+  .focus .card.gamecard:has(> .gshell .kailu-stage) { --board-ar: .667; --board-min: 700px; --game-chrome: 114px; }
   /* 气走经脉 · 冲刺: the scene and the rows under it (the head, the line, the hint) */
   .focus .card.gamecard:has(> .gshell .g-qimai) { --board-ar: 1.636; --board-rows: 150px; }
   .focus .card.gamecard:has(> .gshell .g-dash:not(:has(.is-climb))) { --board-ar: 1.79; --board-rows: 145px; }
@@ -110,21 +121,23 @@
   /* 对话 · the word games (jinchat): the chat as tall as the page leaves, wider, its type larger */
   .focus .card.gamecard:has(> .gshell .g-jc) { --board-ar: 1.2; }
   .focus .card.gamecard .g-jc { max-width: min(100%, 860px); height: max(360px, calc(100dvh - var(--game-reserve) - 20px)); font-size: clamp(15px, calc(10px + .6vw), 18px); }
-  /* 格斗 (fighter.js): its field as tall as the page leaves under the bar, the how line and the keys' pad, and the card
-     as wide as that field drawn up to 2.4:1 — or the stage, if narrower (the chat open in a small window: 16:9 as before). */
-  .focus .card.gamecard:has(> .gshell .g-fighter) { --gf-hm: max(240px, calc(100dvh - 416px)); max-width: min(96%, calc(var(--gf-hm) * 2.4 + 32px)); }
-  /* …with the desk's pad off (fighter.js, the default: Hanli 11-03 「能再大点吗?」), its height is the field's too. */
-  .focus .card.gamecard:has(> .gshell .g-fighter.pad-off) { --gf-hm: max(260px, calc(100dvh - 250px)); }
-  .focus .card.gamecard:has(> .gshell.is-tall) { --game-reserve: 204px;
+  /* 格斗 (fighter.js): its field as tall as the stage leaves under the bar and the how line, and the card as wide as that
+     field drawn up to 2.4:1 — or the stage, if narrower (the chat open in a small window: 16:9 as before). The keys lie
+     over the field (Hanli 11-05: 「不要把游戏画面缩小」), so shown or hidden they take none of its height. */
+  .focus .card.gamecard:has(> .gshell .g-fighter) { --gf-hm: max(260px, calc(100cqh - 112px)); max-width: min(96%, calc(var(--gf-hm) * 2.4 + 32px)); }
+  .focus .card.gamecard:has(> .gshell.is-tall) { --game-chrome: 82px;
     max-width: calc(200px + 18px + 34px + (100dvh - var(--game-reserve)) * var(--ar, .5625) + var(--beside, 0px)); }
   /* 守墙关's landscape 药园 (shouqiang.js: 1040 : 960, its bar over it at 230 px): the card by the field's own shape — never
      the module's portrait --ar (9:16), which drew it 650 px wide in a 2000 px window (Hanli 11-04: 「从收着的游戏打开, 界面大小不对」). */
-  .focus .card.gamecard:has(> .gshell.is-tall [data-landscape="true"]) { max-width: min(96%, calc((100dvh - 230px) * 1040 / 960 + 34px)); }
-  .focus .card.gamecard:has(> .gshell.is-tall [data-landscape="true"]):has(> .gshell > .gshell-side:not(:empty)) { max-width: min(96%, calc((100dvh - 394px) * 1040 / 960 + 34px)); } /* …its strip under it (--jy-strip) */
-  .focus .card.gamecard > .gshell.is-tall:has([data-landscape="true"]) { display: flex; --game-reserve: 230px; }
-  @container scene (max-width: 620px) { .focus .card.gamecard > .gshell.is-tall { display: flex; --game-reserve: 230px; } }
+  .focus .card.gamecard:has(> .gshell.is-tall [data-landscape="true"]) { --game-chrome: 96px; max-width: min(96%, calc((96cqh - var(--game-chrome)) * 1040 / 960 + 34px)); }
+  .focus .card.gamecard:has(> .gshell.is-tall [data-landscape="true"]):has(> .gshell > .gshell-side > :not([hidden])) { max-width: min(96%, calc((96cqh - var(--game-chrome) - 164px) * 1040 / 960 + 34px)); } /* …its strip under it (--jy-strip) */
+  .focus .card.gamecard > .gshell.is-tall:has([data-landscape="true"]) { display: flex; }
+  /* …its bar one line over it — the title, then the icons at its right — and the how line under (it stood on three). */
+  .focus .card.gamecard > .gshell.is-tall:has([data-landscape="true"]) .gshell-tools { order: 0; flex-basis: auto; }
+  .focus .card.gamecard > .gshell.is-tall:has([data-landscape="true"]) .gshell-name { flex-basis: auto; }
+  @container scene (max-width: 620px) { .focus .card.gamecard > .gshell.is-tall { display: flex; } .focus .card.gamecard:has(> .gshell.is-tall) { --game-chrome: 108px; } }
   /* …and those two play the side as the strip under the stage, its room kept (the column's is free). */
-  .focus .card.gamecard > .gshell.is-tall:has([data-landscape="true"]):has(> .gshell-side:not(:empty)) { --jy-strip: 164px; }
+  .focus .card.gamecard > .gshell.is-tall:has([data-landscape="true"]):has(> .gshell-side > :not([hidden])) { --jy-strip: 164px; }
   @container scene (max-width: 620px) { .focus .card.gamecard > .gshell.is-tall:has(> .gshell-side:not(:empty)) { --jy-strip: 164px; } }
 }
 

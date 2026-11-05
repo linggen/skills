@@ -89,12 +89,19 @@ const CSS = `
    比例, 画面更大些」): wider than 16:9, more of the world at its sides (draw.js fieldOf), never stretched. With no
    --gf-hm, 16:9 as ever. */
 .g-fighter:not(.is-touch) { container-type: inline-size; }
+/* The keys over the field, never under it (Hanli 11-05: 「格斗的显示按键可以叠加到游戏上吗? 不要把游戏画面缩小. 按键可以默认显示」):
+   the pad lies over the field's lower corners, see-through, on every surface — its box lets the field's taps through,
+   only the buttons take theirs (and the canvas never hears them: they are not inside it). */
+.g-fighter { position: relative; }
+.g-fighter .gf-pad { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; pointer-events: none; padding: 0 12px 10px; box-sizing: border-box; }
+.g-fighter .gf-pad > * { pointer-events: auto; opacity: .62; }
+.g-fighter .gf-pad > :is(:hover, :has(.is-down)) { opacity: .85; }
 .g-fighter.pad-off .gf-pad { display: none; }
-.g-fighter .gf-padtoggle { position: absolute; right: 8px; bottom: 8px; z-index: 2; width: auto; height: auto; border-radius: 6px; padding: 2px 9px;
+.g-fighter .gf-padtoggle { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 3; width: auto; height: auto; border-radius: 6px; padding: 2px 9px;
   font: 600 12px "Songti SC","STSong","Noto Serif SC",serif; border: 1px solid rgba(42,36,28,.45); background: rgba(243,234,214,.72); color: #2a241c; opacity: .7; }
 .g-fighter .gf-padtoggle:hover, .g-fighter .gf-padtoggle:focus-visible { opacity: 1; }
 .g-fighter:not(.is-touch) .gf-field { aspect-ratio: auto; height: clamp(calc(100cqi / 2.4), var(--gf-hm, 56.25cqi), 56.25cqi); }
-.g-fighter .gf-pad { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; padding: 0 2px; }
+.g-fighter .gf-pad { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; }
 .g-fighter .gf-dirs { display: grid; grid-template-columns: repeat(3, auto); gap: 6px; }
 .g-fighter .gf-dirs [data-k=jump] { grid-column: 2; }
 .g-fighter .gf-dirs [data-k=left] { grid-column: 1; grid-row: 2; }
@@ -154,11 +161,11 @@ html[data-board=fighter] #stage .gf-field { width: min(100%, calc((100vh - 200px
 `;
 function sheet(doc) {
   const old = doc.getElementById('g-fighter-css');
-  if (old?.dataset.v === '8') return;
+  if (old?.dataset.v === '9') return;
   old?.remove();
   const st = doc.createElement('style');
   st.id = 'g-fighter-css';
-  st.dataset.v = '8';
+  st.dataset.v = '9';
   st.textContent = CSS;
   doc.head.append(st);
 }
@@ -177,9 +184,10 @@ const CODES = {
   ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'jump', ArrowDown: 'crouch', Space: 'jump',
 };
 const HELD = new Set(['left', 'right', 'crouch']);
-/* The desk's pad, shown or not (`1`: shown), per browser. */
+/* The desk's pad, shown or not, per browser: shown unless hidden (`0`) — over the field now, it costs the picture nothing
+   (Hanli 11-05: 「按键可以默认显示」). */
 export const PAD_KEY = 'lingjing.fighter.pad';
-const padShown = (win) => { try { return win.localStorage.getItem(PAD_KEY) === '1'; } catch { return false; } };
+const padShown = (win) => { try { return win.localStorage.getItem(PAD_KEY) !== '0'; } catch { return true; } };
 /* W is a press when it goes down (the jump) and a word when it comes up (let go soon: a short hop). */
 const LIFT = { jump: 'jumpRelease' };
 
@@ -231,8 +239,8 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   sheet(doc);
   const root = doc.createElement('div');
   root.className = `g-fighter${kind === 'touch' ? ' is-touch' : ''}`;
-  // On a desk the pad is off by default (Hanli 11-03: 「格斗画面还是有点小, 能再大点吗?」): the keys are named in the how
-  // line, and its height is the field's; 「显示按键」 brings it back, remembered in this browser. A touch screen keeps it.
+  // The pad over the field (Hanli 11-05: 「不要把游戏画面缩小. 按键可以默认显示」), shown by default; on a desk 「收起按键」
+  // hides it (the keys are named in the how line), remembered in this browser. A touch screen keeps it: it is how it plays.
   const padOn = kind === 'touch' || padShown(win);
   root.classList.toggle('pad-off', !padOn);
   const padWord = (on) => (lang === 'en' ? (on ? 'Hide keys' : 'Show keys') : (on ? '收起按键' : '显示按键'));

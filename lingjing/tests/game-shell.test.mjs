@@ -16,7 +16,7 @@ test('the frame: the game\'s own host inside, as given; title and how-to in the 
   assert.ok(f.includes(body), 'the host unchanged (play-human and the page key on [data-game] / [data-mount])');
   assert.match(f, /class="gshell"[^>]*data-shell="t1"/);
   assert.match(f, /gshell-title">喂饭桶</);
-  assert.match(f, /gshell-how">划断藤</);
+  assert.match(f, /gshell-how" title="划断藤">划断藤</);
   assert.match(f, /data-shell-pause="t1"/);
   assert.doesNotMatch(frameHtml({ id: 't2', title: 'x', body, timed: false }), /data-shell-pause/, 'a board not in time has nothing to pause');
   assert.doesNotMatch(frameHtml({ id: 't3', title: '<b>' }), /<b>"/, 'text is escaped');
@@ -53,7 +53,7 @@ test('the story\'s board card wears the shell round a pure board and round a mou
   assert.match(a, /class="gshell"[^>]*data-shell="tk"/);
   assert.match(a, /<div class="game" data-game="tk"><i>b<\/i><\/div>/);
   assert.match(a, /gshell-title">喂饼</);
-  assert.match(a, /gshell-how">划断藤</);
+  assert.match(a, /gshell-how" title="划断藤">划断藤</);
   assert.match(a, /data-shell-pause="tk"/, 'a board in time can be paused in the story too');
   assert.doesNotMatch(a, /class="cardtitle"/, 'one title, the shell\'s — never two');
   const mounted = { mod: { mount: () => new Promise(() => {}), meta: {} }, state: {} };
@@ -81,15 +81,17 @@ test('a Mac window: the story\'s game card takes the stage up to 720, a tall fie
   const css = read('../scripts/games/shell.css');
   const mac = css.slice(css.indexOf('@media (min-width: 900px)'));
   // no fixed cap (Hanli 11-03: 「游戏界面都大一些」): up to 96% of the stage, as wide as the board drawn at the page's height
-  assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\) \{ --game-reserve: 230px; --board-ar: 1\.15; --board-rows: 0px;\s+max-width: min\(96%, max\(var\(--board-min, 600px\), calc\(\(100dvh - var\(--game-reserve\) - var\(--board-rows\)\) \* var\(--board-ar\) \+ 34px\)\)\); \}/);
+  // …the page's height read off the stage itself (2026-11-05: #focus a size container, the reserve its 96% less the card's chrome)
+  assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\) \{ --game-reserve: calc\(100dvh - 96cqh \+ var\(--game-chrome, 68px\)\); \}/);
+  assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\) \{ --board-ar: 1\.15; --board-rows: 0px;\s+max-width: min\(96%, max\(var\(--board-min, 600px\), calc\(\(100dvh - var\(--game-reserve\) - var\(--board-rows\)\) \* var\(--board-ar\) \+ 34px\)\)\); \}/);
   assert.doesNotMatch(mac, /max-width: 720px/, 'no 720 px cap left');
   for (const sel of ['zhazhai-stage', 'g-taiko', 'kailu-stage', 'g-qimai', 'g-xiangqi', 'g-huarong-board', 'g-jc']) assert.ok(mac.includes(`:has(> .gshell .${sel}`), `${sel}: its own shape`);
   // 华容道's arrows beside its board, so the board takes the height and nothing scrolls at 1000×650 (11-03)
   assert.match(mac, /\.focus \.card\.gamecard \.g-huarong:not\(\.is-won\) \{ display: grid; grid-template-columns: auto minmax\(180px, 220px\);/);
   assert.match(mac, /\.g-huarong:not\(\.is-won\) > \.g-huarong-board \{ grid-column: 1; grid-row: 1 \/ span 8; \}/);
   assert.match(read('../scripts/games/kailu.js'), /^const GAP = 22;/m, '开炉\'s table stops short of the card\'s own edge');
-  assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\.is-tall\) \{ --game-reserve: 204px;\s+max-width: calc\(200px \+ 18px \+ 34px \+ \(100dvh - var\(--game-reserve\)\) \* var\(--ar, \.5625\) \+ var\(--beside, 0px\)\); \}/);
-  assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\.is-tall \[data-landscape="true"\]\) \{ max-width: min\(96%, calc\(\(100dvh - 230px\) \* 1040 \/ 960 \+ 34px\)\); \}/, 'the landscape 药园 by its own field, never the portrait --ar');
+  assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\.is-tall\) \{ --game-chrome: 82px;\s+max-width: calc\(200px \+ 18px \+ 34px \+ \(100dvh - var\(--game-reserve\)\) \* var\(--ar, \.5625\) \+ var\(--beside, 0px\)\); \}/);
+  assert.match(mac, /\.focus \.card\.gamecard:has\(> \.gshell\.is-tall \[data-landscape="true"\]\) \{ --game-chrome: 96px; max-width: min\(96%, calc\(\(96cqh - var\(--game-chrome\)\) \* 1040 \/ 960 \+ 34px\)\); \}/, 'the landscape 药园 by its own field, never the portrait --ar');
   assert.match(mac, /\.gshell\.is-tall:has\(\[data-landscape="true"\]\) \{ display: flex;/);
   assert.match(mac, /@container scene \(max-width: 620px\) \{ \.focus \.card\.gamecard > \.gshell\.is-tall \{ display: flex;/);
   assert.equal(css.slice(0, css.indexOf('@media (min-width: 900px)')).includes('.focus'), false, 'nothing of the story\'s outside the Mac rule');

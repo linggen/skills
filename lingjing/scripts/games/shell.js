@@ -91,7 +91,7 @@ export function frameHtml({ id, title = '', kind = '', how = '', body = '', time
   const pause = timed ? `<button type="button" class="gshell-btn gshell-pause" data-shell-pause="${plain(id)}" aria-pressed="${s?.paused ? 'true' : 'false'}" aria-label="${plain(s?.paused ? w.resume : w.pause)}">${s?.paused ? '▶' : 'Ⅱ'}</button>` : '';
   return `<section class="gshell${tall ? ' is-tall' : ''}${s?.paused ? ' is-paused' : ''}" data-shell="${plain(id)}">`
     + `<header class="gshell-bar"><div class="gshell-name"><b class="gshell-title">${plain(title)}</b>${kind ? `<em class="gshell-kind">${plain(kind)}</em>` : ''}</div>`
-    + `<div class="gshell-tools">${ask}${restart}${muteHtml(lang)}${pause}${out || close}</div>${how ? `<p class="gshell-how">${plain(how)}</p>` : ''}</header>`
+    + `<div class="gshell-tools">${ask}${restart}${muteHtml(lang)}${pause}${out || close}</div>${how ? `<p class="gshell-how" title="${plain(how)}">${plain(how)}</p>` : ''}</header>`
     + `<div class="gshell-stage">${body}<div class="gshell-layer">${layerHtml(id, lang)}</div></div>`
     + `<div class="gshell-side" data-shell-side></div>`
     + `<footer class="gshell-foot">${footHtml(id, lang)}</footer></section>`;
