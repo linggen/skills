@@ -307,9 +307,14 @@
 .bleaf .bpic.none { background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--el) 18%, #F3EEE2), #E9E2D2); }
 .bleaf .bname { margin-top: 3px; font-size: 15px; font-weight: 600; letter-spacing: .04em; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bleaf .btext { display: block; margin-top: 1px; font-family: var(--ui); font-size: 10.5px; line-height: 1.32; color: #4A453D; }
-.bleaf .bcost { position: absolute; top: -7px; left: -7px; z-index: 2; width: 26px; height: 28px; display: grid; place-items: center; border-radius: 50% 50% 50% 50% / 64% 64% 36% 36%;
+.bleaf .bcost { position: absolute; top: 3px; left: 3px; z-index: 2; width: 26px; height: 28px; display: grid; place-items: center; border-radius: 50% 50% 50% 50% / 64% 64% 36% 36%;
   background: radial-gradient(circle at 60% 40%, #5F82A3, #2D4C6C 70%); color: #F8F4EA; font-family: var(--serif); font-size: 15px; font-weight: 700; box-shadow: 0 2px 6px rgba(31, 28, 24, 0.3); }
 .bleaf .belem { position: absolute; top: 9px; right: 9px; z-index: 2; }
+/* The cost on its own card, never hanging out over the next one (the playbot, 11-05: a cost under its neighbour, the
+   raised card or the beast's side): inside the leaf's corner, over the picture, its whole square the badge's own to the
+   eye and to a tap; on a card the beast shows, too (that card lets taps through, its cost does not). */
+.bleaf .bcost::after { content: ''; position: absolute; inset: 0; }
+.bshown .bleaf .bcost { pointer-events: auto; }
 .bleaf .batk, .bleaf .bhp { position: absolute; bottom: -6px; z-index: 2; }
 .bleaf .batk { left: 3px; }
 .bleaf .bhp { right: 3px; }
@@ -450,7 +455,7 @@
   .bleaf { padding: 5px 4px 12px; }
   .bleaf .bname { font-size: 12.5px; }
   .bleaf .btext { font-size: 9.5px; line-height: 1.25; }
-  .bleaf .bcost { width: 22px; height: 24px; font-size: 13px; top: -6px; left: -6px; }
+  .bleaf .bcost { width: 22px; height: 24px; font-size: 13px; top: 2px; left: 2px; }
   .bleaf .belem { top: 7px; right: 7px; font-size: 10px; }
   .bleaf .batk, .bleaf .bhp { --gem: 20px; bottom: -5px; }
   .bleaf .batk { left: 2px; } .bleaf .bhp { right: 2px; }

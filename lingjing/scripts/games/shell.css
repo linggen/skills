@@ -73,6 +73,11 @@
 .gshell-grade { color: var(--dim); font-size: 13px; }
 
 @media (prefers-reduced-motion: reduce) { .gshell-count, .gshell-bubble { animation: none; } }
+/* A fight's bubble (the beast's, 银月's) stands under the room's head row — never over the place line or the beast's name
+   (the playbot, 11-05: 「沉鼎山 · 后山崖顶」 under 豺's line at 375) — and on top of what is under it: drawn last, it is
+   what the eye meets there for its few seconds. */
+.gshell:has(.battle) .gshell-bubble { top: 46px; pointer-events: auto; z-index: 6; }
+@container scene (max-width: 640px) { .gshell:has(.battle) .gshell-bubble { top: 40px; max-width: min(78%, 22em); } }
 
 /* The story's card in a Mac window (Hanli 10-21: 守炉 played 330 px wide in a 1400 window, the stage empty both sides):
    the game takes the stage's width up to 720, not the phone-wide 540 of the cards around it; a board sized by the

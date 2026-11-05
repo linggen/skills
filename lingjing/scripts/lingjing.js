@@ -4735,7 +4735,9 @@ function fightTap(kind) {
 function keepBout(b) {
   if (!b || b.settled || b.kept) return;
   b.kept = true;
-  b.stop?.abort();
+  // Every move made so far marked at once, first (the playbot, 11-05: a reload just after 留 took up a fight older than the
+  // one left — the last moves' marks were still on their way), then the room down; the save holds it open.
+  verb('duel', { id: b.id, action: 'mark', picks: b.actions.join(',') }).catch(() => null).finally(() => b.stop?.abort());
 }
 function keptBout(b) {
   if (b.settled) return;

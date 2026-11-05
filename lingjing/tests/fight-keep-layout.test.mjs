@@ -16,9 +16,9 @@ test('the Mac fight bar: ? · 🔊 · Ⅱ · 留 · ✕ — 留 takes the room d
   assert.match(page, /out: toolHtml\('keep', words\(\)\.boardKeep, 'data-fight-tap="keep"'\) \+ toolHtml\('close', bw\.quit, 'data-fight-tap="quit"'\)/);
   assert.match(page, /if \(kind === 'keep'\) return keepBout\(bout\);/);
   const keep = page.slice(page.indexOf('function keepBout('), page.indexOf('/* The rules settle it, and the scene reports it'));
-  assert.match(keep, /b\.stop\?\.abort\(\);/);
+  assert.match(keep, /verb\('duel', \{ id: b\.id, action: 'mark', picks: b\.actions\.join\(','\) \}\)\.catch\(\(\) => null\)\.finally\(\(\) => b\.stop\?\.abort\(\)\);/, 'its moves marked, then the room down');
   assert.match(keep, /keep\(\{ walkedOut: b\.id \}\);/, 'waits on its card');
-  assert.doesNotMatch(keep, /write\(/, 'nothing written: the save holds it open, as the phone leaves it');
+  assert.doesNotMatch(keep, /write\(/, 'nothing settled: the save holds it open, its moves marked');
   assert.match(page, /\.then\(\(out\) => \(b\.kept \? keptBout\(b\) : settleBout\(b, out\)\)\)/);
 });
 
@@ -41,7 +41,9 @@ test('a desk\'s hand: the 丹囊 tray beside it, the fan inside the room, the la
   assert.match(base, /\.bdock \{ display: flex; align-items: flex-end; gap: 10px; \}/);
   assert.match(base, /\.bdock > \.dn-tray \{ position: static; flex: none;/);
   assert.match(base, /\.bdock > \.bhand \{ flex: 1 1 0; min-width: 0; padding: 0 calc\(var\(--cw\) \* \.3\); \}/);
-  assert.match(base, /\.bleaf \.bcost \{ position: absolute; top: -7px; left: -7px; z-index: 2;/, 'the cost over its picture');
+  assert.match(base, /\.bleaf \.bcost \{ position: absolute; top: 3px; left: 3px; z-index: 2;/, 'the cost inside its own card, over its picture');
+  assert.match(base, /\.bleaf \.bcost::after \{ content: ''; position: absolute; inset: 0; \}/, 'its whole square its own');
+  assert.match(base, /\.bshown \.bleaf \.bcost \{ pointer-events: auto; \}/);
   // the phone's own hand keeps its padding over the desk's
   assert.match(css, /\.battle \.bdock > \.bhand \{ flex: 1 1 0; min-height: 0; height: auto; padding: 10px 4px 0; \}/);
 });
