@@ -203,10 +203,10 @@ export async function run(opts) {
       await page.waitForFunction(() => !document.querySelector('.waitcard[aria-busy=true]') && document.querySelectorAll('button').length > 3, null, { timeout: 15000 }).catch(() => {});
       await sleep(1500);
     };
-    const clear = async (n = 12) => {
+    const clear = async (n = 12, { keepBoard = false } = {}) => {
       for (let i = 0; i < n; i += 1) {
         let c = null;
-        for (const sel of CLEARERS) { c = (await page.evaluate(VISIBLE, sel))[0]; if (c) break; }
+        for (const sel of CLEARERS) { if (keepBoard && sel === '[data-board-close]') continue; c = (await page.evaluate(VISIBLE, sel))[0]; if (c) break; }
         if (!c) return;
         await tapAt(c.x, c.y);
         await sleep(700);
@@ -498,17 +498,27 @@ export async function run(opts) {
         const at = verbs.length;
         if (await click('[data-play=qiecuo]', '开局 切磋')) {
           await sleep(2500);
-          await clear(3);
-          await click('[data-k=go], .g-btn-main, [data-go-board]').catch(() => {});
+          // What stands over the bout cleared — never the bout's own 不玩了 (11-06: clear() closed the board it had just
+          // opened, `task --action=leave --id=qiecuo`, and no 切磋 was ever played; the leave started its 3 h wait).
+          await clear(3, { keepBoard: true });
+          // The board's lead (a told opening over it) waits on its 开始 (games/shell.js `data-shell-go`).
+          await click('[data-shell-go], [data-k=go], .g-btn-main, [data-go-board]').catch(() => {});
+          await sleep(800);
           await shot('qiecuo-open');
+          let taps = 0;
           for (let k = 0; k < 40; k += 1) {
-            const cs = await page.evaluate(VISIBLE, '#slot [data-g], .gshell [data-g], [data-g-hold]');
+            // 格斗's keys are `data-k` (games/fighter.js): until 11-06 only `data-g` was looked for and no key was ever pressed.
+            const cs = await page.evaluate(VISIBLE, '#slot [data-g], .gshell [data-g], [data-g-hold], .gshell button[data-k]:not([data-k=go])');
             if (!cs.length) break;
             await tapAt(pickOne(r, cs).x, pickOne(r, cs).y);
+            taps += 1;
             await sleep(250);
           }
           await shot('qiecuo-after');
-          played.push({ where, kind: '切磋', outcome: 'tapped' });
+          // A tap on 切磋 that opened no board (its 待办 chip while the bout waits its hours — 11-06, both runs) is no bout
+          // played: said so, never a 切磋 「tapped」 with nothing tapped.
+          if (taps) played.push({ where, kind: '切磋', outcome: 'tapped', taps });
+          else unplayable.push({ where, why: 'the 切磋 tapped opened no board (not offered now)' });
         } else unplayable.push({ where, why: 'no 切磋 offered' });
         noteRefusals(at, where);
       } else unplayable.push({ where, why: `seed failed: ${s.error ?? JSON.stringify(s)}` });
