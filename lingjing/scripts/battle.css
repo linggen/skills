@@ -306,7 +306,8 @@
 .bleaf::before { top: 2px; } .bleaf::after { bottom: 2px; }
 .bleaf .bpic { display: block; width: 100%; height: 100%; min-height: 0; object-fit: cover; border-radius: 3px; border: 0; }
 .bleaf .bpic.none { background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--el) 18%, #F3EEE2), #E9E2D2); }
-.bleaf .bname { margin-top: 3px; font-size: 15px; font-weight: 600; letter-spacing: .04em; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* A long name whole, on two lines (the playbot, 11-06 at 375 and 1280: 「一箭 · 偏左…」): the art row gives, the words never do. */
+.bleaf .bname { margin-top: 3px; font-size: 15px; font-weight: 600; letter-spacing: .04em; line-height: 1.2; text-wrap: balance; overflow: hidden; }
 .bleaf .btext { display: block; margin-top: 1px; font-family: var(--ui); font-size: 10.5px; line-height: 1.32; color: #4A453D; }
 .bleaf .bcost { position: absolute; top: 3px; left: 3px; z-index: 2; width: 26px; height: 28px; display: grid; place-items: center; border-radius: 50% 50% 50% 50% / 64% 64% 36% 36%;
   background: radial-gradient(circle at 60% 40%, #5F82A3, #2D4C6C 70%); color: #F8F4EA; font-family: var(--serif); font-size: 15px; font-weight: 700; box-shadow: 0 2px 6px rgba(31, 28, 24, 0.3); }
