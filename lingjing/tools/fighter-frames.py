@@ -264,15 +264,21 @@ def build(who, raw, pick, sheet_out):
   spec = POSES[who]
   armed = spec.get('armed', True)
   frames, keyed, heads = {}, {}, {}
+  # A frame with no painting in <raw> is taken from the sheet as it ships (its crop, anchor and points): new frames are
+  # painted and built beside the kept ones without their raws (秦雁's 33 were painted on 10-27; only the sheet remains).
+  shipped = {}
+  if (OUT / f'{who}.json').exists():
+    old = json.loads((OUT / f'{who}.json').read_text()); oldsheet = Image.open(OUT / f'{who}.webp').convert('RGBA')
+    shipped = {n: (oldsheet.crop((f['rect'][0], f['rect'][1], f['rect'][0] + f['rect'][2], f['rect'][1] + f['rect'][3])), f) for n, f in old['frames'].items()}
   for name, p in spec['frames'].items():
     sd = pick.get(name, p.get('seed', 1))
     png = raw / f'{who}-{name}-s{sd}.png'
     if not png.exists():
-      print('missing', png.name); continue
+      print('missing', png.name, '(kept from the sheet)' if name in shipped else ''); continue
     keyed[name] = key(png, p.get('fix', {}).get('erase', ()))
     heads[name] = head_size(keyed[name])
   idle = [heads[n] for n in spec['clips']['idle']['frames'] if heads.get(n)]
-  ref = float(np.median(idle))
+  ref = float(np.median(idle)) if idle else float(np.median([v for v in heads.values() if v] or [1]))
   for name, im0 in keyed.items():
     p = spec['frames'][name]
     fix = dict(p.get('fix', {}))
@@ -285,22 +291,44 @@ def build(who, raw, pick, sheet_out):
     pts = {k: tr(v) for k, v in points(p, armed).items()}
     pts.update({k: tr(v) for k, v in p.get('points', {}).items()})  # a hand placed by eye (painting pixels)
     frames[name] = (im, pts, (HIPX + p.get('anchor', 0), PGROUND))
-  # the standing height: the first idle frame's top of ink to the ground
-  first = frames[next(iter(spec['clips']['idle']['frames']))][0]
-  top = int(np.nonzero((np.asarray(first.getchannel('A')) > 128).any(axis=1))[0].min())
+  # the standing height: the first idle frame's top of ink to the ground (the shipped sheet's, when the idle is kept)
+  idle0 = next(iter(spec['clips']['idle']['frames']))
+  r1 = lambda v: round(v, 1)
+  if idle0 in frames:
+    first = frames[idle0][0]
+    top = int(np.nonzero((np.asarray(first.getchannel('A')) > 128).any(axis=1))[0].min())
+    stand = r1((PGROUND - top) * SCALE)
+  else:
+    stand = old['stand']
   parts = {}
   for name, (im, pts, anc) in frames.items():
     small = im.resize((round(im.width * SCALE), round(H * SCALE)), Image.LANCZOS)
     box = small.getchannel('A').point(lambda v: 255 if v > 10 else 0).getbbox()
     parts[name] = (small.crop(box), box, pts, anc)
-  sheet, rects = pack({k: v[0] for k, v in parts.items()})
+  kept = {n: v for n, v in shipped.items() if n in spec['frames'] and n not in parts}
+  sheet, rects = pack({**{k: v[0] for k, v in parts.items()}, **{k: v[0] for k, v in kept.items()}})
   OUT.mkdir(parents=True, exist_ok=True)
   sheet.save(OUT / f'{who}.webp', quality=74, alpha_quality=70, method=6)
-  r1 = lambda v: round(v, 1)
-  meta = {'stand': r1((PGROUND - top) * SCALE), 'frames': {}, 'clips': spec['clips']}
+  meta = {'stand': stand, 'frames': {}, 'clips': spec['clips']}
   for name, (part, box, pts, anc) in parts.items():
     rel = lambda pt: [r1(pt[0] * SCALE - box[0]), r1(pt[1] * SCALE - box[1])]
     meta['frames'][name] = {'rect': list(rects[name]), 'anchor': rel(anc), **{k: rel(v) for k, v in pts.items()}}
+  for name, (_, f) in kept.items():
+    meta['frames'][name] = {**f, 'rect': list(rects[name])}
+  meta['frames'] = {n: meta['frames'][n] for n in spec['frames'] if n in meta['frames']}
+  # A clip whose frames are not all painted yet ships as it shipped before (or not at all): the board never asks for a
+  # frame the sheet lacks, and falls back to its own reading of the state meanwhile (draw.js FOE_AS).
+  before = old['clips'] if shipped else {}
+  clips = {}
+  for cname, c in spec['clips'].items():
+    if all(f in meta['frames'] for f in c['frames']):
+      clips[cname] = c
+    elif cname in before and all(f in meta['frames'] for f in before[cname]['frames']):
+      clips[cname] = before[cname]
+      print('clip', cname, 'kept as shipped (frames still to paint)')
+    else:
+      print('clip', cname, 'left out (frames still to paint)')
+  meta['clips'] = clips
   (OUT / f'{who}.json').write_text(json.dumps(meta, ensure_ascii=False, separators=(',', ':')) + '\n')
   print(who, len(parts), 'frames · sheet', sheet.size, (OUT / f'{who}.webp').stat().st_size, 'bytes')
   if sheet_out:

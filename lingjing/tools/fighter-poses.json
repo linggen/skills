@@ -975,7 +975,8 @@
      20
     ],
     "words": "in mid-air after a leap, cutting down and forward to the right with the sword in a wide arc, the robe flaring, knees drawn up. No ground under her. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
-    "air": true
+    "air": true,
+    "seed": 2
    },
    "sweep1": {
     "lean": 20,
@@ -995,7 +996,8 @@
      40,
      140
     ],
-    "words": "sinking low on bent knees, the sword drawn back high over her right shoulder to cut low. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+    "words": "sinking low on bent knees, the sword drawn back high over her right shoulder to cut low. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "seed": 2
    },
    "sweep2": {
     "lean": 30,
@@ -1037,27 +1039,8 @@
      30,
      140
     ],
-    "words": "rising out of a low cut, still on bent knees, the sword coming back up to level guard. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
-   },
-   "aa1": {
-    "lean": 10,
-    "legF": [
-     30,
-     -4
-    ],
-    "legB": [
-     -14,
-     -30
-    ],
-    "armF": [
-     10,
-     20
-    ],
-    "armB": [
-     30,
-     140
-    ],
-    "words": "gathering for a rising cut: the sword held low by her right knee, point down and forward, knees bent. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+    "words": "rising out of a low cut, still on bent knees, the sword coming back up to level guard. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "seed": 2
    },
    "aa2": {
     "lean": -14,
@@ -1077,7 +1060,10 @@
      -20,
      30
     ],
-    "words": "a rising cut against a leaping foe: the sword swept up high over and in front of her head, blade pointing up and forward, her body stretched up and leaning back, up on the balls of her feet. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+    "words": "a rising cut against a leaping foe: the sword swept up high over and in front of her head, blade pointing up and forward, her body stretched up and leaning back, up on the balls of her feet. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "fix": {
+     "s": 1.15
+    }
    },
    "aa3": {
     "lean": 4,
@@ -1137,7 +1123,10 @@
      -60,
      -20
     ],
-    "words": "throwing the opponent past her: her body turned back to the left, the left arm swung hard back and down, the sword held out low behind. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+    "words": "throwing the opponent past her: her body turned back to the left, the left arm swung hard back and down, the sword held out low behind. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "fix": {
+     "s": 1.12
+    }
    },
    "lowblock1": {
     "lean": 22,
@@ -1577,7 +1566,7 @@
    },
    "aa": {
     "frames": [
-     "aa1",
+     "poke1",
      "aa2",
      "aa3"
     ],
