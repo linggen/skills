@@ -711,3 +711,23 @@ test('a seal may carry its own facing words (`faceHow`) — the hint uses them i
   assert.equal(facingLine(s, 'en'), 'Palm to yourself is fine');
   assert.notEqual(facingLine(seals.wu, 'zh'), '手心朝自己也行');
 });
+
+/* The camera's first frame no longer pays the model's first look (Hanli 11-05: 「手机上开摄像头结印时卡了一下」; measured in the
+   app's webview: first detect 5.2 s, then 16–18 ms; a needless setOptions made the next look 237 ms). */
+test('the model is warmed by one blank look; a hand count already set is never set again', async () => {
+  const { warm, handsFor } = await import('../scripts/games/jieyin/eye.js');
+  const calls = [];
+  const env = { document: { createElement: () => ({ getContext: () => ({ fillRect() {} }) }) }, performance: { now: () => 1 } };
+  const lm = { __hands: 2, detectForVideo: (src, t) => calls.push(['look', t]), setOptions: async (o) => calls.push(['set', o.numHands]) };
+  assert.equal(warm(lm, env), true);
+  assert.deepEqual(calls, [['look', 1]]);
+  calls.length = 0;
+  assert.equal(await handsFor(lm, 2, env), lm);
+  assert.deepEqual(calls, [], 'two hands already: no rebuild, no look');
+  await handsFor(lm, 1, env);
+  assert.deepEqual(calls, [['set', 1], ['look', 1]], 'one hand: set once, then warmed again');
+  calls.length = 0;
+  await handsFor(lm, 1, env);
+  assert.deepEqual(calls, []);
+  assert.equal(warm({ detectForVideo() { throw new Error('no GL'); } }, env), false, 'a look that fails is left to the camera');
+});

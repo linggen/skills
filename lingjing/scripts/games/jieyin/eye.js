@@ -75,10 +75,41 @@ export function loadModel() {
     const make = (delegate) => HandLandmarker.createFromOptions(fileset, {
       baseOptions: { modelAssetPath: file('hand_landmarker.task'), delegate }, runningMode: 'VIDEO', numHands: 2,
     });
-    return make('GPU').catch(() => make('CPU'));
+    const lm = await make('GPU').catch(() => make('CPU'));
+    lm.__hands = 2;
+    // While the lead card is read: the first look, off the camera's first frame (the phone's card is native, so the
+    // page's stall there is unseen; on the Mac it falls on the card, not on the play).
+    await new Promise((r) => setTimeout(r, 0));
+    warm(lm);
+    return lm;
   })();
   model.catch(() => { model = null; });
   return model;
+}
+
+/* The first look builds the model's GPU programs on the page's thread — measured in the phone app's webview (iPhone SE
+   simulator, 11-05): the first detectForVideo 5.2 s, the next ones 16–18 ms; a setOptions after it, 9 ms itself but the
+   next look 237 ms (the graph rebuilt). Both used to land on the camera's first frame (Hanli 11-05: 「手机上开摄像头结印时
+   卡了一下」). One look at a blank picture as the model comes in takes them early. VIDEO mode wants rising timestamps:
+   the camera's frames come after this one. */
+export function warm(lm, env = globalThis) {
+  try {
+    const c = env.document?.createElement?.('canvas');
+    if (!c) return false;
+    c.width = 64; c.height = 48;
+    c.getContext?.('2d')?.fillRect?.(0, 0, 64, 48);
+    lm.detectForVideo(c, env.performance?.now?.() ?? Date.now());
+    return true;
+  } catch { return false; /* the camera's first frame does it then */ }
+}
+
+/** The landmarker set for `numHands`: rebuilt (its GPU programs again) only when the count changes, then warmed again. */
+export async function handsFor(lm, numHands, env = globalThis) {
+  if (lm.__hands === numHands) return lm;
+  await lm.setOptions?.({ numHands });
+  lm.__hands = numHands;
+  warm(lm, env);
+  return lm;
 }
 
 /** Let the landmarker go (the page is leaving the game). */
@@ -139,7 +170,7 @@ export function openEye({ video, onHands, env = globalThis, fps = EYE.fps, width
       if (on || closed) return;
       const mine = ++ask;
       // Both at once, both settled before going on: a camera that opens after the model failed is still shut.
-      const [m, cam] = await Promise.allSettled([loadModel().then(async (lm) => { await lm.setOptions?.({ numHands }); return lm; }), camera(video, env, { width, height })]);
+      const [m, cam] = await Promise.allSettled([loadModel().then((lm) => handsFor(lm, numHands, env)), camera(video, env, { width, height })]);
       if (m.status === 'rejected' || cam.status === 'rejected' || mine !== ask || closed) {
         const own = cam.value; // only this start's stream: a newer start may own the video by now
         for (const t of own?.getTracks?.() ?? []) t.stop();
