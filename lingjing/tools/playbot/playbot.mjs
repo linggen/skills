@@ -186,7 +186,8 @@ export async function run(opts) {
       const before = await page.evaluate(() => globalThis.__pbMut ?? 0);
       const asked = verbs.length;
       const t0 = Date.now();
-      await tapAt(c.x, c.y);
+      if (c.locator) await c.locator.tap({ timeout: 3000 });
+      else await tapAt(c.x, c.y);
       // Answered: anything on the page moved (a mutation: drawn, pressed, a busy mark) or the page asked the rules.
       while (Date.now() - t0 < 2000) {
         await sleep(100);
@@ -211,6 +212,14 @@ export async function run(opts) {
       }
     };
     const click = async (sel, what) => {
+      if (sel === '[data-duel-start]' && what?.startsWith('开局')) {
+        // Playwright re-resolves the locator on every actionability retry, including after a re-render.
+        const control = page.locator('button[data-duel-start]:visible').filter({ hasText: /^\s*开局/ }).first();
+        try {
+          await control.waitFor({ state: 'visible', timeout: 3000 });
+          return await tap({ locator: control, text: what, sel }, what, { soft: true });
+        } catch (error) { if (opts.debug) console.error(`[click] 开局 unavailable: ${error.message}`); return false; }
+      }
       // Below the fold on a phone: brought on screen first, as a thumb scrolls to it.
       // The first match a finger can actually reach: drawn, on screen once scrolled to, and the thing under its centre
       // (11-05 at 1280: the stage's 降妖 card stood under the scene's story; a tap there answered nothing).
@@ -370,10 +379,12 @@ export async function run(opts) {
       let sp = null;
       // The reveals over a won fight (a seal, a card turned — 珠光 得) come first and can stand a while; 所得 waits
       // under them (dcab26ad). Look for 12 s untouched, then clear the reveals and look 6 s more.
-      for (let i = 0; i < 60 && !sp; i += 1) { await sleep(200); sp = await page.evaluate(SPOILS); }
-      if (!sp) {
-        for (const sel of ['.wonseal', '[data-reveal]', '.feat']) await click(sel).catch(() => {});
-        for (let i = 0; i < 30 && !sp; i += 1) { await sleep(200); sp = await page.evaluate(SPOILS); }
+      // Drawn but still under a reveal (a card turned 得 over it, 11-06) is not yet seen: keep looking until it is on top.
+      const seen = () => sp && sp.hit;
+      for (let i = 0; i < 60 && !seen(); i += 1) { await sleep(200); sp = await page.evaluate(SPOILS); }
+      if (!seen()) {
+        for (const sel of ['.rv-veil', '.wonseal', '[data-reveal]', '.feat']) await click(sel).catch(() => {});
+        for (let i = 0; i < 30 && !seen(); i += 1) { await sleep(200); sp = await page.evaluate(SPOILS); }
       }
       if (!sp && opts.debug) console.error('[spoils?]', JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('*')].filter((e) => e.children.length < 8 && /所得/.test(e.textContent || '') && e.textContent.length < 200).slice(0, 6).map((e) => [e.tagName, e.className, e.getClientRects().length, (e.textContent || '').slice(0, 60)]))));
       await shot(`${label}-won`);
