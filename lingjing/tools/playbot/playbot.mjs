@@ -186,7 +186,8 @@ export async function run(opts) {
       const before = await page.evaluate(() => globalThis.__pbMut ?? 0);
       const asked = verbs.length;
       const t0 = Date.now();
-      if (c.locator) await c.locator.tap({ timeout: 3000 });
+      // A desktop has no touch: its locator is clicked (11-06 at 1280: `tap` threw, every 开局 there unreached).
+      if (c.locator) await (phone ? c.locator.tap({ timeout: 3000 }) : c.locator.click({ timeout: 3000 }));
       else await tapAt(c.x, c.y);
       // Answered: anything on the page moved (a mutation: drawn, pressed, a busy mark) or the page asked the rules.
       while (Date.now() - t0 < 2000) {
@@ -214,7 +215,10 @@ export async function run(opts) {
     const click = async (sel, what) => {
       if (sel === '[data-duel-start]' && what?.startsWith('开局')) {
         // Playwright re-resolves the locator on every actionability retry, including after a re-render.
-        const control = page.locator('button[data-duel-start]:visible').filter({ hasText: /^\s*开局/ }).first();
+        // Its words differ by where it stands: 手边的棋局's 「开局」, the stage's 降妖 card and a story fight's card 「出 手」 /
+        // 「再出手」 (battle-card.js, cards.js `begin`) — 11-06 at 1280 and every story fight: only 开局 was looked for, the
+        // fight was never begun. Never 回到这一战 (a kept fight's way back: 回到斗法 asks for it by name).
+        const control = page.locator('button[data-duel-start]:visible').filter({ hasText: /^\s*(开局|再?出\s*手|Begin|Go again)/ }).first();
         try {
           await control.waitFor({ state: 'visible', timeout: 3000 });
           return await tap({ locator: control, text: what, sel }, what, { soft: true });
@@ -410,7 +414,9 @@ export async function run(opts) {
           await click('[data-pouch-close], [data-pop-close], .cardx[data-toast-close]', '收起').catch(() => {});
           continue;
         }
-        if (await click('[data-panel-exit]', '剧情 · 往下')) { await sleep(1500); await clear(); if (go) await click(go, 'go'); }
+        // The story's way on, never a pass (留 · ✕ on a story fight's card: `data-panel-pass` skips the fight — 11-06, the
+        // story fight's 留 taken for 往下 and the fight put away unplayed).
+        if (await click('[data-panel-exit]:not([data-panel-pass])', '剧情 · 往下')) { await sleep(1500); await clear(); if (go) await click(go, 'go'); }
         await sleep(800);
       }
       return false;

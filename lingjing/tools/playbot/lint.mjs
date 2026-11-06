@@ -13,7 +13,9 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null } = {}) => {
   // A scratch save's own furniture (the 测试存档 badge, the dev 游戏厅 link): never on a player's page.
   const DEV_ONLY = '.scratch-badge, .dev-arcade';
   // A result laid over a finished fight (败 / 胜, the 完 card) or a pause veil: what is under it is meant to be.
-  const OVERLAY = '.bover, .closecard, .gshell-veil, [role=dialog]';
+  // The beast's card shown a moment over the field as it plays it (battle-anim.js showFoeCard `.bshown`, a card in flight
+  // `.bflight`) stands over the ranks on purpose, on its turn (11-06: 狍鸮 and 夔牛 read as covered by its cost).
+  const OVERLAY = '.bover, .closecard, .gshell-veil, [role=dialog], .bshown, .bflight';
   const root = (scope && document.querySelector(scope)) || document.body;
   const vis = (e) => {
     if (!e.getClientRects().length) return false;
