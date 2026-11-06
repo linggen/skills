@@ -187,7 +187,7 @@ export async function run(opts) {
       const asked = verbs.length;
       const t0 = Date.now();
       // A desktop has no touch: its locator is clicked (11-06 at 1280: `tap` threw, every 开局 there unreached).
-      if (c.locator) await (phone ? c.locator.tap({ timeout: 3000 }) : c.locator.click({ timeout: 3000 }));
+      if (c.locator) await (phone ? c.locator.tap({ timeout: 2000 }) : c.locator.click({ timeout: 2000 }));
       else await tapAt(c.x, c.y);
       // Answered: anything on the page moved (a mutation: drawn, pressed, a busy mark) or the page asked the rules.
       while (Date.now() - t0 < 2000) {
@@ -218,11 +218,15 @@ export async function run(opts) {
         // Its words differ by where it stands: 手边的棋局's 「开局」, the stage's 降妖 card and a story fight's card 「出 手」 /
         // 「再出手」 (battle-card.js, cards.js `begin`) — 11-06 at 1280 and every story fight: only 开局 was looked for, the
         // fight was never begun. Never 回到这一战 (a kept fight's way back: 回到斗法 asks for it by name).
-        const control = page.locator('button[data-duel-start]:visible').filter({ hasText: /^\s*(开局|再?出\s*手|Begin|Go again)/ }).first();
-        try {
-          await control.waitFor({ state: 'visible', timeout: 3000 });
-          return await tap({ locator: control, text: what, sel }, what, { soft: true });
-        } catch (error) { if (opts.debug) console.error(`[click] 开局 unavailable: ${error.message}`); return false; }
+        // Each of them in turn, not the first alone: the stage's 「出 手」 can stand under the scene's story while the tray's
+        // 「开局」 is the one a finger reaches (the selftest at 48f0b83c, 11-06: `.first()` waited 3 s on the covered one).
+        const all = page.locator('button[data-duel-start]:visible').filter({ hasText: /^\s*(开局|再?出\s*手|Begin|Go again)/ });
+        try { await all.first().waitFor({ state: 'visible', timeout: 3000 }); } catch (error) { if (opts.debug) console.error(`[click] 开局 unavailable: ${error.message}`); return false; }
+        const n = await all.count();
+        for (let i = 0; i < n; i += 1) {
+          try { return await tap({ locator: all.nth(i), text: what, sel }, what, { soft: true }); } catch (error) { if (opts.debug) console.error(`[click] 开局 #${i} not tapped: ${error.message.split('\n')[0]}`); }
+        }
+        return false;
       }
       // Below the fold on a phone: brought on screen first, as a thumb scrolls to it.
       // The first match a finger can actually reach: drawn, on screen once scrolled to, and the thing under its centre
