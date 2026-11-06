@@ -65,6 +65,8 @@ export function wireWheel(host, { reduced = () => !!globalThis.matchMedia?.('(pr
       card.classList.toggle('side', !mid);
       card.classList.toggle('r', o > 0 && !mid);
       card.classList.toggle('far', far);
+      // Two back, a card shows only a strip: its cost is its dot's (the row under the wheel), never a badge half under the card in front.
+      card.classList.toggle('deep', Math.abs(o) > 1.5);
       // Behind another on purpose: its face is read at the centre (the playbot's lint measures its cost only).
       if (mid) card.removeAttribute('data-peek'); else card.setAttribute('data-peek', '');
     });

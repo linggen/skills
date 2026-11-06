@@ -584,7 +584,7 @@ test('a touch-only hand wins: it fights as a thumb does, and answers her point a
 
 /* 2026-11-03 (Hanli: 「手机上的游戏画面能再宽点, 两边目前黑的比较多」): on a phone on its side the field takes the screen's
    width (up to WIDE_MAX), drawing more of the world at each side, never stretched; the boards stay STAGE's. */
-import { fieldOf, FIELD as FIELD_ART, WIDE_MAX } from '../scripts/games/fighter/draw.js';
+import { fieldOf, FIELD as FIELD_ART, WIDE_MAX, TOP_SHARE } from '../scripts/games/fighter/draw.js';
 
 test('a wide phone draws the world wider, never stretched: the field\'s height fills, the boards keep their place', () => {
   const H = FIELD_ART.h, W = FIELD_ART.w;
@@ -593,9 +593,11 @@ test('a wide phone draws the world wider, never stretched: the field\'s height f
   assert.ok(iphone.edge > 100, `more world at each side: ${iphone.edge}`);
   assert.equal(iphone.left, 0, 'no bands');
   assert.ok(Math.abs((W + 2 * iphone.edge) * iphone.k - 852 * 2) < 1, 'edge to edge');
-  assert.deepEqual(fieldOf(1600, 900), { k: 900 / H, edge: 0, left: 0 }, '16:9 as before');
+  assert.deepEqual(fieldOf(1600, 900), { k: 900 / H, edge: 0, left: 0, top: 0 }, '16:9 as before');
   const tall = fieldOf(960, 900);
   assert.equal(tall.edge, 0, 'narrower than 16:9: as before, the width rules');
+  // …and set down in a taller field (an upright page, 11-05): a little sky above, the boards below, where the keys lie
+  assert.ok(Math.abs(tall.top - (900 - H * tall.k) * TOP_SHARE) < 1e-9 && tall.top > 0);
   const ultra = fieldOf(3000, 540);
   assert.equal(ultra.edge, (H * WIDE_MAX - W) / 2, 'past WIDE_MAX the world stops widening');
   assert.ok(ultra.left > 0, '…and bands stand beside it');

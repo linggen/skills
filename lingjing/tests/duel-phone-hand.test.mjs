@@ -42,7 +42,8 @@ async function wheelOf(n, { can = [] } = {}) {
 }
 
 test('the phone\'s hand is a wheel: the room\'s CSS turns it on, the desk keeps its fan', () => {
-  assert.match(phone, /\.battle \.bdock > \.bhand \{\s*--wheel: 1; container-type: size;[^}]*touch-action: pan-y;/, 'a swipe up and down is the page\'s');
+  assert.match(phone, /\.battle \.bdock > \.bhand \{\s*(\/\*[^*]*\*\/\s*)?--wheel: 1; container-type: size;[^}]*touch-action: pan-y;/, 'a swipe up and down is the page\'s');
+  assert.match(phone, /--wheel: 1; container-type: size; position: relative; display: block; flex: 1 1 0; min-height: 96px;/, 'never taller than the dock leaves: its dots stay inside');
   assert.match(phone, /--wcw: min\(47cqw, calc\(\(100cqh - 48px\) \* \.71\)\);/, 'the centre card ~45% of the room, or what the height allows');
   assert.match(phone, /transform: translateX\(calc\(var\(--wx, 0\) \* var\(--wcw\)\)\) rotateY\(var\(--wt, 0deg\)\) scale\(var\(--ws, 1\)\);/);
   assert.match(phone, /\.battle \.bhand > \.bcard\.far \{ opacity: 0; pointer-events: none; \}/);
@@ -109,4 +110,9 @@ test('a narrow fight hides the footer; the wheel opens out where the hand is wid
   assert.match(phoneCss, /body\.fighting \.slotfoot:not\(:has\(\.askbar:not\(\[hidden\]\)\)\) \{ display: none; \}/);
   assert.match(wheel, /return Math\.max\(1, Math\.min\(1\.6, \(hand\.clientWidth \/ 2 - 0\.36 \* cw\) \/ \(STEP\[2\] \* cw\)\)\);/);
   assert.match(wheel, /st\.setProperty\('--wx', String\(s \* lerp\(STEP, a\) \* k\)\);/);
+});
+
+test('two back, a card\'s cost is its dot\'s: no badge half under the card in front', () => {
+  assert.match(wheel, /card\.classList\.toggle\('deep', Math\.abs\(o\) > 1\.5\);/);
+  assert.match(phone, /\.battle \.bhand > \.bcard\.deep \.bcost \{ visibility: hidden; \}/);
 });

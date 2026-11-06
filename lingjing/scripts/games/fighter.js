@@ -106,6 +106,21 @@ const CSS = `
   font: 600 12px "Songti SC","STSong","Noto Serif SC",serif; border: 1px solid rgba(42,36,28,.45); background: rgba(243,234,214,.72); color: #2a241c; opacity: .7; }
 .g-fighter .gf-padtoggle:hover, .g-fighter .gf-padtoggle:focus-visible { opacity: 1; }
 .g-fighter:not(.is-touch) .gf-field { aspect-ratio: auto; height: clamp(calc(100cqi / 2.4), var(--gf-hm, 56.25cqi), 56.25cqi); }
+/* A narrow or upright page (11-05, the 游戏厅 at 430 × 932: the field a 190 px strip, the keys over most of it): the field
+   taller than 16:9, up to square, as the page lets it (--gf-hm) — the world at its width, the boards below it
+   (draw.js fieldOf, its top); the keys smaller and fainter, in that band below the floor, the arrows and the strikes in its
+   corners, clear of the fighters. */
+@container (max-width: 640px) {
+  .g-fighter:not(.is-touch) .gf-field { height: clamp(calc(100cqi / 2.4), var(--gf-hm, 100cqi), 100cqi); }
+  .g-fighter:not(.is-touch) .gf-pad { padding: 0 6px 6px; gap: 4px; }
+  .g-fighter:not(.is-touch) .gf-pad > * { opacity: .45; }
+  .g-fighter:not(.is-touch) button { width: 32px; height: 32px; font-size: 14px; border-width: 1.5px; }
+  .g-fighter:not(.is-touch) button[data-k=hpunch], .g-fighter:not(.is-touch) button[data-k=heavy] { font-size: 12px; }
+  .g-fighter:not(.is-touch) .gf-dirs, .g-fighter:not(.is-touch) .gf-spells { gap: 3px; }
+  .g-fighter:not(.is-touch) .gf-acts { gap: 5px; }
+  .g-fighter:not(.is-touch) button small { font-size: 8px; padding: 0 3px; }
+  .g-fighter:not(.is-touch) .gf-padtoggle { white-space: nowrap; font-size: 11px; padding: 1px 7px; bottom: 4px; }
+}
 .g-fighter .gf-pad { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; }
 .g-fighter .gf-dirs { display: grid; grid-template-columns: repeat(3, auto); gap: 6px; }
 .g-fighter .gf-dirs [data-k=jump] { grid-column: 2; }

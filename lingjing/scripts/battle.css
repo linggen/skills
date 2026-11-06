@@ -487,7 +487,9 @@
   .battle .bdock { min-height: 0; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 4px; padding-bottom: 4px; }
   .battle .bdock > .dn-tray { display: none; }
   .battle .bdock > .bhand {
-    --wheel: 1; container-type: size; position: relative; display: block; flex: 1 1 0; min-height: 150px; height: auto; padding: 0;
+    /* never taller than the dock leaves (the playbot, 11-05 at 375: a 150 px floor pushed the dots under the chat bar once the
+       beast's rank filled): the card gives way instead, its dots always inside. */
+    --wheel: 1; container-type: size; position: relative; display: block; flex: 1 1 0; min-height: 96px; height: auto; padding: 0;
     touch-action: pan-y; perspective: 900px;
     --wcw: min(47cqw, calc((100cqh - 48px) * .71)); /* ~45% of the room's width, or what the hand's height allows */
     --wtop: max(8px, calc((100cqh - var(--wcw) / .71 - 36px) / 2)); /* the wheel and its dots in the middle of the hand's height */
@@ -513,10 +515,16 @@
   .battle .bhand > .bcard.dim .bleaf { opacity: 1; filter: grayscale(.85) brightness(.97); }
   /* A card right of the centre shows its outer edge: its cost there, its element where the centre covers. */
   .battle .bhand > .bcard.r .bcost { left: auto; right: 4px; }
+  /* Two back: only a strip shows, so its cost is read on its dot below the wheel (the playbot, 11-05: at 375 its badge lay
+     half under the card in front). */
+  .battle .bhand > .bcard.deep .bcost { visibility: hidden; }
   .battle .bhand > .bcard.r .belem { right: auto; left: 9px; }
   .battle .bhand > .bcard.r .bseal-owner { right: auto; left: -4px; }
   /* The dots: one a card, its element's colour and its cost; the centre's ringed. */
-  .bwheeldots { position: absolute; left: 0; right: 0; top: calc(var(--wtop) + var(--wcw) / .71 + 12px); display: flex; justify-content: center; flex-wrap: wrap; gap: 5px; padding: 0 8px; }
+  /* One row, always (the playbot, 11-05: a long hand wrapped its dots onto a second row under the chat bar — a tap there opened
+     the chat over the fight): a dot gives way in size before the row would wrap. */
+  .bwheeldots { position: absolute; left: 0; right: 0; top: calc(var(--wtop) + var(--wcw) / .71 + 12px); display: flex; justify-content: center; flex-wrap: nowrap; gap: 4px; padding: 0 8px; }
+  .bwheeldots > .bdot { flex: 0 1 22px; min-width: 14px; }
   .bdot { width: 22px; height: 22px; padding: 0; border-radius: 50%; border: 1px solid rgba(31, 28, 24, 0.25); cursor: pointer;
     background: color-mix(in srgb, var(--el, #8A8478) 30%, #F3EEE2); color: #1F1C18; font: 700 11.5px/1 var(--serif); display: grid; place-items: center; }
   .bdot.dim { opacity: .5; }

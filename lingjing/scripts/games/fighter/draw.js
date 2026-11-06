@@ -24,8 +24,13 @@ export const FIELD = { w: W, h: H, floor: FLOOR };
 export const WIDE_MAX = 2.4; // the widest a field is drawn (w : h); past it, bands
 export function fieldOf(w, h) {
   const k = Math.min(h / H, w / W), vw = Math.min(w / k, H * WIDE_MAX);
-  return { k, edge: Math.max(0, (vw - W) / 2), left: Math.max(0, (w / k - vw) / 2) };
+  // A field taller than 16:9 (a narrow or upright page, 11-05: the field had been a 190 px strip under its keys): the
+  // world at the field's width, set down so the boards run on below it — a little more sky above (TOP_SHARE of the
+  // spare height), the rest boards, where the keys lie clear of the fighters.
+  const top = Math.max(0, (h - H * k) * TOP_SHARE);
+  return { k, edge: Math.max(0, (vw - W) / 2), left: Math.max(0, (w / k - vw) / 2), top };
 }
+export const TOP_SHARE = 0.35;
 let EDGE = 0; // this frame's (painter)
 const SERIF = '"Songti SC","STSong","Noto Serif SC",serif';
 
@@ -1004,16 +1009,19 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false, kin
     view.lift *= Math.pow(0.95, dtf);
     const ox = shake > 0.3 ? Math.sin(now / 17) * shake : 0, oy = shake > 0.3 ? Math.cos(now / 23) * shake * 0.5 : 0;
     const L0 = fit.left * k; // past WIDE_MAX: the field centred, bands beside it
+    const T = Math.round(fit.top), Hk = Math.round(H * k); // a tall field: the world set down by T, sky above, boards below
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (L0 > 0) { ctx.fillStyle = '#0b0f0a'; ctx.fillRect(0, 0, w, h); }
-    ctx.drawImage(layers.sky, L0, 0);
-    ctx.drawImage(layers.far, L0 + Math.round((-60 - mid * 0.04) * k), 0);
-    ctx.drawImage(layers.near, L0 + Math.round((-60 - mid * 0.09) * k), 0);
-    ctx.setTransform(k, 0, 0, k, X0 + ox * k, oy * k);
+    if (T > 0) ctx.drawImage(layers.sky, 0, 0, layers.sky.width, 2, L0, 0, layers.sky.width, T + 1);
+    ctx.drawImage(layers.sky, L0, T);
+    ctx.drawImage(layers.far, L0 + Math.round((-60 - mid * 0.04) * k), T);
+    ctx.drawImage(layers.near, L0 + Math.round((-60 - mid * 0.09) * k), T);
+    ctx.setTransform(k, 0, 0, k, X0 + ox * k, oy * k + T);
     banners(ctx, s.t, s.level?.stage?.look);
-    ctx.setTransform(1, 0, 0, 1, L0 + ox * k, oy * k);
+    ctx.setTransform(1, 0, 0, 1, L0 + ox * k, oy * k + T);
     ctx.drawImage(layers.stage, 0, 0);
-    ctx.setTransform(k, 0, 0, k, X0 + ox * k, oy * k);
+    if (h > T + Hk) ctx.drawImage(layers.stage, 0, Hk - 3, layers.stage.width, 3, 0, Hk - 1, layers.stage.width, h - T - Hk + 2);
+    ctx.setTransform(k, 0, 0, k, X0 + ox * k, oy * k + T);
     const inv = ctx.getTransform().invertSelf();
     const lv = s.level ?? {};
     const meLook = { hair: 'bun', ...(lv.me?.look ?? {}) }, foeLook = { hair: 'tail', weapon: 'sword', ...(lv.foe?.look ?? {}) };
@@ -1081,7 +1089,7 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false, kin
     } else figure(ctx, s.me.x, meY, s.me.face, mp, meLook, meExtra);
     effects(ctx, s, art, still, lang);
     if (globalThis.LINGJING_HITBOX) hitboxes(ctx, s, meY, foeY);
-    ctx.setTransform(k, 0, 0, k, X0, 0); // the bars and the words over the boards; what fills the field reaches EDGE
+    ctx.setTransform(k, 0, 0, k, X0, T); // the bars and the words over the boards; what fills the field reaches EDGE
     if (s.level?.stage?.look?.crowd !== false) crowd(ctx, s.t, view.lift); // the cliff has no crowd below it
     // the bars' ghosts fall behind the bars
     view.ghostMe = Math.max(s.me.hp / s.R.me.hp, view.ghostMe - 0.006 * dtf);
