@@ -2,7 +2,7 @@
 // Each returns a DOM node. Top bar widgets are compact cards.
 // Body widgets are content panels.
 
-import { drawDiskBars, drawDonut } from './charts.js';
+import { barRows, drawDiskBars, drawDonut, drawWhenSized } from './charts.js';
 import { getScoreHistory } from './health-score.js';
 import { copyText, shellPath } from './shifu-io.js';
 
@@ -291,15 +291,10 @@ function renderBars(w) {
   const canvas = document.createElement('canvas');
   canvas.style.width = '100%';
   canvas.style.display = 'block';
-  const items = (w.items || []).map(i => ({ path: i.label, size_gb: i.value }));
-  const neededH = items.length * 32 + 24;
-  canvas.style.height = `${Math.max(neededH, 80)}px`;
+  const { rows, max } = barRows(w);
+  canvas.style.height = `${Math.max(rows.length * 32 + 24, 80)}px`;
   panel.appendChild(canvas);
-
-  requestAnimationFrame(() => {
-    const maxVal = w.items?.[0]?.max || Math.max(...items.map(i => i.size_gb));
-    drawDiskBars(canvas, items, maxVal);
-  });
+  drawWhenSized(canvas, () => drawDiskBars(canvas, rows, max));
   return panel;
 }
 

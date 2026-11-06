@@ -7,6 +7,7 @@ import {
   buildSystemPage, appsWidget, cleanupWidget, sizeToGb, freePercent, isLowDisk,
 } from '../scripts/system-page.js';
 import { reportPrompt, grewSince, scanFacts, parseClearableSummary } from '../scripts/scan-report.js';
+import { barRows, drawWhenSized } from '../scripts/charts.js';
 
 const NOW = Date.parse('2026-09-25T12:00:00Z');
 
@@ -109,4 +110,33 @@ test('the Files tab summary reads back as totals', () => {
   const c = parseClearableSummary('Clearable scan · finished 2026-09-23 14:56 in 213s\nsafe 423.4 GB · review 517.0 GB · careful 0 KB\n');
   assert.deepEqual(c, { safe_gb: 423.4, review_gb: 517, finished: '2026-09-23 14:56', running: false });
   assert.equal(parseClearableSummary(''), null);
+});
+
+test('the Disk Usage card hands the chart every measured folder, scaled to the volume', () => {
+  const card = buildSystemPage(RESULTS).body.find((w) => w.title === 'Disk Usage');
+  const { rows, max } = barRows(card);
+  assert.deepEqual(rows, [{ path: '~/workspace', size_gb: 900.1 }, { path: '~/Library', size_gb: 300.5 }]);
+  assert.equal(max, 1995.2);
+  assert.deepEqual(barRows({ items: [{ label: 'a', value: 2 }, { label: 'b', value: 5 }] }).max, 5);
+  assert.deepEqual(barRows({}), { rows: [], max: 0 });
+});
+
+test('a bars chart drawn while its view is hidden paints once it has a width', () => {
+  const observers = [];
+  globalThis.ResizeObserver = class { constructor(cb) { this.cb = cb; observers.push(this); } observe() {} };
+  globalThis.requestAnimationFrame = (f) => f();
+  try {
+    const canvas = { clientWidth: 0 };
+    let draws = 0;
+    drawWhenSized(canvas, () => draws++);
+    assert.equal(draws, 0, 'no draw at width 0 (the Overview is showing)');
+    canvas.clientWidth = 854;
+    observers[0].cb();
+    assert.equal(draws, 1, 'drawn when Details shows');
+    observers[0].cb();
+    assert.equal(draws, 1, 'same width, no redraw');
+  } finally {
+    delete globalThis.ResizeObserver;
+    delete globalThis.requestAnimationFrame;
+  }
 });

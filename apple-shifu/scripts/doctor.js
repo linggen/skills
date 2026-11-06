@@ -528,6 +528,7 @@ async function startHardwareProbe() {
     // the agent only comments on it (SKILL.md "After a scan").
     applyPageUpdate(buildSystemPage(results));
     cacheCurrentPage();
+    stayOnDetails();
     await reportScan('full', scanFacts(results));
   } catch (err) {
     console.error('Hardware probe error:', err);
@@ -692,6 +693,12 @@ function applySysView() {
   show('body-area', view === 'details');
   show('footer-area', view === 'details');
   for (const b of document.querySelectorAll('.sys-view')) b.classList.toggle('on', b.dataset.view === view);
+}
+
+/** A finished scan lands on the cards it just drew: the Details view, kept
+    as the user's view, not a step back to the Overview (Hanli, 2026-11-06). */
+function stayOnDetails() {
+  try { localStorage.setItem(VIEW_KEY, 'details'); } catch { /* quota */ }
 }
 
 function wireSysViews() {
@@ -863,6 +870,7 @@ async function startSectionScan(kind) {
   try {
     const r = await section.run(chat?.getSessionId());
     cacheCurrentPage();
+    stayOnDetails();
     toast.close();
     const facts = scanFacts(r);
     delete facts.score;

@@ -6,6 +6,33 @@ const COLORS = [
   '#fb923c', '#fbbf24', '#a3e635', '#4ade80',
 ];
 
+/** A bars widget ({items: [{label, value, max}]}) to what drawDiskBars takes:
+    the rows, and the scale — the first row's `max` (the whole volume for the
+    Disk Usage card), else the largest row. Pure, so the tests read it. */
+export function barRows(w) {
+  const rows = (w?.items || [])
+    .filter((i) => i && Number.isFinite(i.value))
+    .map((i) => ({ path: String(i.label ?? ''), size_gb: i.value }));
+  const max = w?.items?.[0]?.max || Math.max(0, ...rows.map((r) => r.size_gb));
+  return { rows, max };
+}
+
+/** Draw now and again whenever the canvas changes size. A canvas drawn while
+    its view is hidden (the Details view behind the Overview) measures 0 wide
+    and keeps an empty bitmap after it is shown — the Disk Usage card came up
+    blank that way (2026-11-06). Redrawing on resize paints it the moment it
+    has a width. */
+export function drawWhenSized(canvas, draw) {
+  let w = -1;
+  const paint = () => {
+    if (!canvas.clientWidth || canvas.clientWidth === w) return;
+    w = canvas.clientWidth;
+    draw();
+  };
+  if (typeof ResizeObserver === 'function') new ResizeObserver(paint).observe(canvas);
+  requestAnimationFrame(paint);
+}
+
 /**
  * Draw horizontal bar chart for disk usage.
  * @param {HTMLCanvasElement} canvas
