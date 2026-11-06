@@ -440,11 +440,15 @@ export async function run(opts) {
       return reach('[data-duel-start]', '开局 降妖', 'button.act[data-go=houshan]', { expect: 'duel' });
     };
     // Twice: the scene's story at 后山 can still be telling itself when the first try gives up; a reload lets it settle.
+    // Up to three reloads: the tray re-draws under the finger while 后山's story settles, and one reload was not always
+    // enough (the selftest at 48f0b83c, 11-06: the walk's 降妖 unreached in two runs of three, caught in the third).
     const startHaunt = async (name) => {
       if (await startHauntOnce()) return true;
-      if (!name) return false;
-      await open(name); await clear();
-      return (await reach('[data-duel-start]', '开局 降妖', null, { expect: 'duel' })) || startHauntOnce();
+      for (let k = 0; name && k < 3; k += 1) {
+        await open(name); await clear();
+        if ((await reach('[data-duel-start]', '开局 降妖', null, { expect: 'duel' })) || (await startHauntOnce())) return true;
+      }
+      return false;
     };
 
     // ── 降妖 × N
