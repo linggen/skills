@@ -1,5 +1,5 @@
 {
-  "_about": "The play bot's seeded bugs (run.sh --selftest): each one a ref (or a ref + a patch under seeded/) the bot must catch, by the finding named in `expect` (a field that starts and ends with / is a regex). A bug it misses means the bot is broken, not the game fixed. The first three are the phone bugs of 2026-11-04/05 at the commit before their fixes; the fourth (a win with no 所得 — on the phone it was the native screen) is put back on the page by a patch. An entry with `absent: true` is a control (the same play with the bug not there must NOT raise the finding).",
+  "_about": "The play bot's seeded bugs (run.sh --selftest): each one a ref (or a ref + a patch under seeded/) the bot must catch, by the finding named in `expect` (a field that starts and ends with / is a regex). A bug it misses means the bot is broken, not the game fixed. The first three are the phone bugs of 2026-11-04/05 at the commit before their fixes; the fourth (a win with no 所得 — on the phone it was the native screen) is put back on the page by a patch; the hand's floor (hand-too-small) is squeezed by one and kept by its control. An entry with `absent: true` is a control (the same play with the bug not there must NOT raise the finding).",
   "bugs": [
     {
       "id": "kept-fight-freezes-fantong",
@@ -70,6 +70,32 @@
         "kind": "no-spoils"
       },
       "note": "The control: the same sure win after the fix — 所得 shows, the check stays quiet."
+    },
+    {
+      "id": "hand-squeezed",
+      "ref": "94b26505",
+      "patch": "seeded/hand-squeezed.patch",
+      "sizes": "375x812",
+      "fights": 1,
+      "flags": "--only=haunt",
+      "expect": {
+        "kind": "layout",
+        "why": "hand-too-small"
+      },
+      "note": "Gate 11-07 at 375: the 杀招 line, both ranks full and the 丹 row at once squeezed the wheel's centre card to 65×90 — 青光's name cut, its words under 气血已满 (fixed 94b26505). The patch pins the hand at 130 px, so every fight's centre card is ~82 px tall"
+    },
+    {
+      "id": "hand-floor-control",
+      "ref": "94b26505",
+      "sizes": "375x812",
+      "fights": 1,
+      "flags": "--only=haunt",
+      "absent": true,
+      "expect": {
+        "kind": "layout",
+        "why": "hand-too-small"
+      },
+      "note": "The control: the same fight at the fix, no patch — the centre card stands at its floor (128 px), the check stays quiet."
     }
   ]
 }

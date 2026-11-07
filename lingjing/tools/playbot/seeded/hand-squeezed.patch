@@ -1,0 +1,13 @@
+diff --git a/lingjing/scripts/battle.css b/lingjing/scripts/battle.css
+--- a/lingjing/scripts/battle.css
++++ b/lingjing/scripts/battle.css
+@@ -505,7 +505,8 @@
+   .battle .bdock > .bhand {
+     /* never taller than the dock leaves (the playbot, 11-05 at 375: a 150 px floor pushed the dots under the chat bar once the
+        beast's rank filled): its dots always inside; its floor is the dock's row (--handfloor), the field gives way first. */
+-    --wheel: 1; container-type: size; position: relative; display: block; flex: 1 1 0; min-height: 96px; height: auto; padding: 0;
++    /* SEEDED (playbot selftest): the hand pinned short — its centre card ~82 px tall, under the 120 px floor. */
++    --wheel: 1; container-type: size; position: relative; display: block; flex: 0 0 130px; min-height: 0; height: auto; padding: 0;
+     touch-action: pan-y; perspective: 900px;
+     --wcw: min(47cqw, calc((100cqh - 48px) * .71)); /* ~45% of the room's width, or what the hand's height allows */
+     --wtop: max(8px, calc((100cqh - var(--wcw) / .71 - 36px) / 2)); /* the wheel and its dots in the middle of the hand's height */
