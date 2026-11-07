@@ -118,7 +118,7 @@ function personWords(words, creature, lang) {
 
 export const WORDS = {
   zh: {
-    hp: '气血', mana: '灵力', deck: '牌库', hand: '手牌', power: '主灵根一击', end: '结束回合',
+    hp: '气血', mana: '灵力', deck: '牌库', hand: '手牌', power: '主灵根一击', end: '结束回合', theirTurn: '它的回合',
     it: '它', its: '它', itObj: '它',
     yours: '你的阵前', theirs: '它的阵前', empty: '空', taunt: '护主', arriving: '刚到',
     struck: '已出手', spoils: '所得', spoilsCard: '新得一张牌，往后可带进斗法：', spoilsBag: '收进储物袋：', spoilsClose: '收起', spoilsIn: '已入账', spoilsSpent: '用去：', spentTitle: '用去', xw: '修为', ls: '灵石', quit: '认输', won: '胜', passed: '试过了', lost: '败', withdrew: '它力竭遁走',
@@ -169,7 +169,7 @@ export const WORDS = {
   },
   en: {
     it: 'it', its: 'its', itObj: 'it',
-    hp: 'Life', mana: 'Force', deck: 'Deck', hand: 'Hand', power: 'Root Strike', end: 'End turn',
+    hp: 'Life', mana: 'Force', deck: 'Deck', hand: 'Hand', power: 'Root Strike', end: 'End turn', theirTurn: 'Its turn',
     yours: 'Your rank', theirs: 'Its rank', empty: 'empty', taunt: 'Guard', arriving: 'just arrived',
     struck: 'has struck', spoils: 'Spoils', spoilsCard: 'A new card, yours to take into a fight:', spoilsBag: 'Into the pouch: ', spoilsClose: 'Put away', spoilsIn: 'already yours', spoilsSpent: 'Used up: ', spentTitle: 'Used up', xw: 'Cultivation', ls: 'Stones', quit: 'Yield', won: 'Won', passed: 'Passed', lost: 'Lost', withdrew: 'It withdrew',
     wonSays: ['It drops low and backs into the grass.', 'It lowers its head and walks slowly off.', 'It blows a few hard breaths and turns away.', 'It gives in, backs three steps, and comes no closer.', 'It gives you one look and slips into the trees.',
@@ -848,7 +848,8 @@ function askHerHtml(ctx) {
    turn, burning when nothing else is left; on the beast's turn it goes to ink and names whose turn it
    is — the one place the eye checks (the pill by 认输 was too small to read it from). */
 function endSealHtml(st, w, stuck, turn) {
-  if (st.whose === 'foe' && st.outcome === 'open') return `<button class="bact end wait" data-spot="end" aria-disabled="true"><span class="bsealface"><b>${turn}</b></span></button>`;
+  // The seal is a fixed size (it never moves): 「它的回合」 fits it on one line; the beast's name is in the turn pill above (Hanli 11-07).
+  if (st.whose === 'foe' && st.outcome === 'open') return `<button class="bact end wait" data-spot="end" aria-disabled="true" title="${turn}"><span class="bsealface"><b>${w.theirTurn ?? '它的回合'}</b></span></button>`;
   return `<button class="bact end${stuck ? ' urge' : ''}" data-spot="end"><span class="bsealface"><b>${esc(w.end)}</b></span></button>`;
 }
 
