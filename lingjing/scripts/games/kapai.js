@@ -102,7 +102,7 @@ function ctxOf(room) {
     party: setup.you?.party ?? [], fresh: setup.you?.fresh ?? [],
     pillNames: Object.fromEntries(Object.entries(pills).map(([id, p]) => [id, name(p.name)])),
     pillArt: Object.fromEntries(Object.entries(pills).filter(([, p]) => p.art).map(([id, p]) => [id, p.art])),
-    ended: Boolean(room.ended), stake: brief.stake ?? null, way: room.result?.way?.[0] ?? null,
+    ended: Boolean(room.ended), omenOpen: Boolean(room.omenOpen), stake: brief.stake ?? null, way: room.result?.way?.[0] ?? null,
     says: { ...(boutSays(brief.says, room.st.outcome) ?? {}), foe: null, her: null }, herAsk: null,
   };
 }
@@ -129,6 +129,8 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
   const prior = Array.isArray(data.picks) ? data.picks : Array.isArray(data.brief?.picks) ? data.brief.picks : [];
   const st0 = data.st ?? begin(setup, fight.catalog);
   if (prior.length && st0.turn === 0 && !st0.log.some((e) => e.who === 'you' && e.act === 'played')) replayInto(st0, prior);
+  // A fight reopened (the door's `resumed`, or the moves it hands back) is no first meeting.
+  const resumed = Boolean(data.resumed) || prior.length > 0;
   const room = { ...fight, setup, lang, st: st0, picked: null, openLog: false, help: false, note: null, busy: false, ended: false, settling: false, yielded: false };
   const hook = (name, ...a) => { try { return story[name]?.(...a); } catch (e) { console.warn('[kapai]', name, e); return undefined; } };
   const ctx = () => { const base = ctxOf(room), more = hook('ctx', room) ?? {}; return { ...base, ...more, says: { ...base.says, ...(more.says ?? {}) } }; };
@@ -271,6 +273,8 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       return doMove(pickOf(room.picked, spot, view(room.st), room.catalog, offers(room.st)));
     }
     function onClick(e) {
+      // The folded panel under the beast (battle-card.js foldHtml): its own button, no spot — a card dropped on it is no move.
+      if (e.target.closest?.('[data-omen-fold]') && host.contains(e.target)) { e.stopPropagation(); room.omenOpen = !room.omenOpen; draw(); host.querySelector('[data-omen-fold]')?.focus({ preventScroll: true }); return; }
       const el = e.target.closest?.('[data-spot]');
       if (!el || !host.contains(el)) return;
       e.stopPropagation();
@@ -290,7 +294,9 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
     // The bot's door (tests, the live check): the room's state and its move, as the story's probe gives them.
     host.kapai = { wheel, state: () => room.st, room: () => room, busy: () => room.busy, picked: () => room.picked, draw, tap: onTap, move: (action) => (room.busy || gone() ? null : doMove({ action })) };
     draw();
+    // The beast's opening line when the fight first starts, never on a resume (the playbot's third run, 11-06 at 430: a kept
+    // fight reopened said it again, and the bubble under the 杀招 panel lay over the corner of 火鸦 on the beast's row).
     const open = fight.brief.says?.foe;
-    if (open) shell?.say?.(fight.brief.creature.name, open);
+    if (open && !resumed) shell?.say?.(fight.brief.creature.name, open);
   });
 }

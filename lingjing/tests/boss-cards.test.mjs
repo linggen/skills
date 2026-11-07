@@ -187,3 +187,16 @@ test('the fight board keeps its width as the hand runs down', async () => {
   const css = fs.readFileSync(new URL('../scripts/battle.css', import.meta.url), 'utf8');
   assert.match(css, /\.battle \{[^}]*width: 100%/);
 });
+
+test('a summon names what comes (Hanli 11-06: 藤苗 read 「入阵：召来 1 个」), the count only when the name is unknown', async () => {
+  const at = (lang) => ({ lang, catalog: WORLD });
+  assert.match(sayEffect(WORLD.tengmiao, at('zh')), /召来 藤/);
+  assert.doesNotMatch(sayEffect(WORLD.tengmiao, at('zh')), /召来 1 个/);
+  const two = { ...WORLD.tengmiao, effect: { summon: { id: 'tengmiao_token', n: 2 } } };
+  assert.match(sayEffect(two, at('zh')), /召来 2 个 藤/);
+  assert.match(sayEffect(two, at('en')), /summon 2 × /);
+  assert.match(sayEffect(WORLD.tengmiao, { lang: 'zh' }), /召来 1 个/, 'no catalog: the count');
+  const { wayDoes } = await import('../scripts/wayline.js');
+  assert.match(wayDoes({ kind: 'buy', does: { card_kind: 'minion', cost: 1, effect: { summon: { id: 'x', n: 1, name: '藤须' } } } }, 'zh'), /召来 藤须/);
+  assert.match(wayDoes({ kind: 'buy', does: { card_kind: 'minion', cost: 1, effect: { summon: { id: 'x', n: 1 } } } }, 'zh'), /召来 1 个/);
+});

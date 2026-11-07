@@ -79,6 +79,18 @@ test('the page reads the trap: 装睡, the glance, what goes in, and how hard it
   assert.equal(feintHtml(view(begin(setup({ feint: undefined }), CARDS)), { lang: 'zh', words: {} }), '');
 });
 
+test('the panel folds on a phone to one line, 「见人则眠 · 装睡」: a real button, aria-expanded as the room holds it', () => {
+  const st = opened(['bolt']);
+  const shut = feintHtml(view(st), { lang: 'zh', words: {} });
+  assert.match(shut, /<button type="button" class="bfold" data-omen-fold aria-expanded="false" aria-controls="bomen-feint"><b>见人则眠<\/b><span class="bfoldmove"> · 装睡<\/span>/);
+  assert.match(shut, /<div class="bcharge feint" id="bomen-feint">/);
+  assert.doesNotMatch(shut, /data-spot/, 'no spot: a card dropped on it is no move');
+  const open = feintHtml(view(st), { lang: 'zh', words: {}, omenOpen: true });
+  assert.match(open, /class="bcharge feint open"/);
+  assert.match(open, /aria-expanded="true"/);
+  assert.match(open, /擦过/, 'the whole text is still in it');
+});
+
 test('pierce_binds: a bind played at the beast holds it — that turn every blow goes in, its own first; not at a body, not the next turn', () => {
   const cards = { ...CARDS, vine: { id: 'vine', kind: 'spell', name: '青藤缚', cost: 1, element: 'wood', binds: true, effect: { damage: 2 } } };
   const open = (feint) => { const st = begin(setup({ feint: { ...FEINT, ...feint } }), cards); st.you.hand = ['vine', 'bolt', 'bolt']; st.you.mana = 10; return st; };

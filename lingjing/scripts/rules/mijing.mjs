@@ -497,7 +497,8 @@ export function mijingEncounter(content, state, now) {
     creature: { id: creature.id, name: pick(creature.name, state.lang) }, game,
     mijing: { kind: run.room.kind, name: kindName(content, run.room.kind, game.creature, state.lang) },
     ...(run.room.kind === 'xiong' ? { elite: true } : {}),
-    duel: { ...brief, setup: mijingSetup(content, state, game, now), today: null, stake: pick(tierRow(content, run.tier)?.name, state.lang) },
+    // Kept open (its door's own `resuming`: the run's fight is the save's): the card says 回到这一战 (look.mjs duelBrief `kept`).
+    duel: { ...brief, setup: mijingSetup(content, state, game, now), today: null, stake: pick(tierRow(content, run.tier)?.name, state.lang), ...(state.fight?.game === game.id ? { kept: { moves: state.fight.picks?.length ?? 0 } } : {}) },
     won: false, withdrawn: false, tamed: false, beaten: false, likes: null,
   };
 }

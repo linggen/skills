@@ -134,6 +134,8 @@ export const WORDS = {
     begin: '出 手', wonToday: '今日已降', lostToday: '它退入雾中，明日再来', spentToday: '它今日力竭遁走了',
     // A story fight lost or run dry (Look's duel `again`): not over — the story waits on the win.
     againSay: '还没打完 —— 再出手', beginAgain: '再出手',
+    // A fight kept open (Look's duel `kept`: 留, a reload): the way back into it, where it stood.
+    beginKept: '回到这一战',
     stale: '牌面没读全 —— 刷新页面再出手。',
     // A story fight weighed with a thing he owns and does not wear (Look's door `gear_hint`, rules/gearhint.mjs).
     gearHint: '这一场按戴着{name}调的。', gearHintWear: '给{who}戴上 · {name}',
@@ -179,7 +181,7 @@ export const WORDS = {
     mark: { 'just-arrived': 'new', 'already-struck': 'struck', 'no-attack': 'no attack', 'not-your-turn': '', chained: '' },
     pickCard: 'choose a target — the beast, or one of its rank', pickRank: 'choose one of its rank', pickTarget: 'now choose what it strikes',
     begin: 'Begin', wonToday: 'subdued today', lostToday: 'it withdrew — come back tomorrow', spentToday: 'it walked away spent today',
-    againSay: 'Not over yet — go again', beginAgain: 'Go again',
+    againSay: 'Not over yet — go again', beginAgain: 'Go again', beginKept: 'Back to this fight',
     stale: 'The cards did not load — refresh, then begin.',
     gearHint: 'This fight was weighed with the {name} worn.', gearHintWear: 'Put the {name} on {who}',
     lean: { hide: 'thick-hided', ward: 'warded', quick: 'quick', fierce: 'fierce' },
@@ -204,7 +206,8 @@ export const WORDS = {
   },
 };
 
-const name = (c, lang) => esc(typeof c?.name === 'string' ? c.name : c?.name?.[lang] ?? c?.name?.zh ?? '');
+const rawName = (c, lang) => (typeof c?.name === 'string' ? c.name : c?.name?.[lang] ?? c?.name?.zh ?? '');
+const name = (c, lang) => esc(rawName(c, lang));
 
 /* ── What a click means ── */
 
@@ -557,6 +560,14 @@ function liftOf(side, c, ctx) {
   return ` <b class="blift${b.n < 0 ? ' down' : ''}">${ctx.lang === 'en' ? `cast ${n}` : `卦 ${n}`}</b>`;
 }
 
+/* What a summon brings, by its name (Hanli 11-06: 藤苗 read 「入阵：召来 1 个」): 「召来 藤须」, 「召来 2 个 藤须」; the count
+   alone only when the name is unknown. Raw words: the callers escape what sayEffect says. */
+function summonWords(sm, who, zh) {
+  const n = sm.n ?? 1;
+  if (!who) return zh ? `召来 ${n} 个` : `summon ${n}`;
+  return zh ? `召来 ${n > 1 ? `${n} 个 ` : ''}${who}` : `summon ${n > 1 ? `${n} × ` : ''}${who}`;
+}
+
 /* What a card does, in words, on the card — never in a tooltip. */
 export function sayEffect(c, ctx) {
   const zh = ctx.lang !== 'en';
@@ -568,7 +579,7 @@ export function sayEffect(c, ctx) {
   if (e.draw != null) bits.push(zh ? `抽 ${e.draw} 张` : `draw ${e.draw}`);
   if (e.buff) bits.push(zh ? `一个 +${e.buff.atk ?? 0}/+${e.buff.hp ?? 0}` : `one of yours +${e.buff.atk ?? 0}/+${e.buff.hp ?? 0}`);
   if (e.rally) bits.push(zh ? `全体 +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}` : `all of yours +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}`);
-  if (e.summon) bits.push(zh ? `召来 ${e.summon.n ?? 1} 个` : `summon ${e.summon.n ?? 1}`);
+  if (e.summon) bits.push(summonWords(e.summon, rawName(ctx.catalog?.[e.summon.id], ctx.lang), zh));
   if (e.chain != null) bits.push(zh ? `锁${pro(ctx).its}阵前一个，下回合不能出手` : `Chain one of ${pro(ctx).its} rank: it cannot strike next turn`);
   if (e.swallow != null) bits.push(zh ? `吞${pro(ctx).its}阵前一个攻 ≤${e.swallow} 的` : `Swallow one of ${pro(ctx).its} rank with attack ≤ ${e.swallow}`);
   if (e.drain != null) bits.push(zh ? `${pro(ctx).it}下回合灵力 −${e.drain}` : `${pro(ctx).its} Force −${e.drain} next turn`);
@@ -594,7 +605,7 @@ export function sigWords(st, ctx) {
       : (zh ? `你 −${landed(st, 'foe', e.damage, root)}（护主可挡）` : `you −${landed(st, 'foe', e.damage, root)} (a Guard takes it)`));
   }
   if (e.heal != null) out.push(zh ? `${pro(ctx).it}回 ${e.heal}` : `${pro(ctx).it} heals ${e.heal}`);
-  if (e.summon) out.push(zh ? `召来 ${name(ctx.catalog?.[e.summon.id], ctx.lang)} ×${e.summon.n ?? 1}` : `summons ${name(ctx.catalog?.[e.summon.id], ctx.lang)} ×${e.summon.n ?? 1}`);
+  if (e.summon) { const who = name(ctx.catalog?.[e.summon.id], ctx.lang); out.push(who ? (zh ? `召来 ${who} ×${e.summon.n ?? 1}` : `summons ${who} ×${e.summon.n ?? 1}`) : (zh ? `召来 ${e.summon.n ?? 1} 个` : `summons ${e.summon.n ?? 1}`)); }
   if (e.rally) out.push(zh ? `${pro(ctx).its}阵前全体 +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}` : `${pro(ctx).its} rank +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}`);
   return out.join(zh ? ' · ' : ' · ');
 }
@@ -614,7 +625,17 @@ export function chargeHtml(st, ctx) {
   const when = phase === 'gathering'
     ? (zh ? `${pro(ctx).it}在蓄力 —— 下一回合不出牌，再下一回合放出` : `${cap(pro(ctx).it)} gathers — nothing played next turn, let go the turn after`)
     : (zh ? `${pro(ctx).it}下一回合放出 —— 这一回合是你的` : `${cap(pro(ctx).it)} lets go next turn — this turn is yours`);
-  return `<div class="bcharge ${phase}"><b>${zh ? '杀招' : 'Signature'} · ${sig}</b><span>${sigWords(st, ctx)}</span><small>${when}</small></div>`;
+  const title = `${zh ? '杀招' : 'Signature'} · ${sig}`;
+  return `<div class="bcharge ${phase}${foldOpen(ctx)}" id="bomen-charge">${foldHtml(title, '', 'bomen-charge', ctx)}<b>${title}</b><span>${sigWords(st, ctx)}</span><small>${when}</small></div>`;
+}
+
+/* A phone folds the panel under the beast to one line, its title and the move (Hanli 11-06: 犰狳's 「见人则眠」 took four lines
+   at 375, and the hand under it shrank till the side cards hid): the line is a button, a tap opens the whole text and
+   another folds it (games/kapai.js room.omenOpen, kept across redraws). A wide room never shows the button (battle.css). */
+const foldOpen = (ctx) => (ctx.omenOpen ? ' open' : '');
+function foldHtml(title, move, id, ctx) {
+  const open = Boolean(ctx.omenOpen);
+  return `<button type="button" class="bfold" data-omen-fold aria-expanded="${open}" aria-controls="${id}"><b>${title}</b>${move ? `<span class="bfoldmove"> · ${esc(move)}</span>` : ''}<i aria-hidden="true">${open ? '▴' : '▾'}</i></button>`;
 }
 
 /* ── 装睡 — a beast playing dead (battle.js § asleep) ──
@@ -632,7 +653,7 @@ export function feintHtml(st, ctx) {
     ? (zh ? `再 ${f.left} 回合睁眼` : `wakes in ${f.left} turns`)
     : (zh ? '下回合睁眼' : 'wakes next turn');
   const after = sig ? (zh ? `：${sig}，${sigWords(st, ctx)}${f.per_glance ? `（每擦过一下 +${f.per_glance}）` : ''}` : `: ${sig}, ${sigWords(st, ctx)}${f.per_glance ? ` (+${f.per_glance} per glance)` : ''}`) : '';
-  return `<div class="bcharge feint"><b>${name(f, ctx.lang)}</b><span>${what}</span><small>${wake}${after}</small></div>`;
+  return `<div class="bcharge feint${foldOpen(ctx)}" id="bomen-feint">${foldHtml(name(f, ctx.lang), zh ? '装睡' : 'Playing dead', 'bomen-feint', ctx)}<b>${name(f, ctx.lang)}</b><span>${what}</span><small>${wake}${after}</small></div>`;
 }
 
 /* ── 望气 — the beast's plan, as far as the player can read it ──
@@ -751,7 +772,7 @@ export function challengeHtml(brief, ctx) {
     ${done ? '' : gearHintHtml(brief.gear_hint, ctx)}
     ${done ? '' : pouchPickHtml(brief, ctx)}
     ${!done && brief.again ? `<div class="cdone cagain">${esc(w.againSay)}</div>` : ''}
-    ${done ? `<div class="cdone">${esc(done)}</div>${ctx.feed ? `<div class="cacts">${ctx.feed}</div>` : ''}` : `<div class="cacts"><button class="bact end" data-duel-start="${esc(brief.id)}">${esc(brief.again ? w.beginAgain ?? w.begin : w.begin)}</button>${ctx.feed ?? ''}</div>`}
+    ${done ? `<div class="cdone">${esc(done)}</div>${ctx.feed ? `<div class="cacts">${ctx.feed}</div>` : ''}` : `<div class="cacts"><button class="bact end" data-duel-start="${esc(brief.id)}">${esc(brief.kept ? w.beginKept ?? w.begin : brief.again ? w.beginAgain ?? w.begin : w.begin)}</button>${ctx.feed ?? ''}</div>`}
     ${!done && ctx.say ? `<div class="cdone">${esc(ctx.say)}</div>` : ''}
   </div>`;
 }

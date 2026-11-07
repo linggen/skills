@@ -228,6 +228,18 @@ export async function run(opts) {
         }
         return false;
       }
+      // A kept fight's way back reads 「回到这一战」 (battle-card.js beginKept, cards.js fightBack; Look's duel `kept`) — asked
+      // for by those words alone, never the first [data-duel-start] of any label (the tray's 开局 stands beside it), so a
+      // kept card that says 出 手 again is a way back not found.
+      if (sel === '[data-duel-start]' && what === '回到斗法') {
+        const all = page.locator('button[data-duel-start]:visible').filter({ hasText: /^\s*(回到这一战|Back to (this|the) fight)/ });
+        try { await all.first().waitFor({ state: 'visible', timeout: 3000 }); } catch (error) { if (opts.debug) console.error(`[click] 回到这一战 unavailable: ${error.message}`); return false; }
+        const n = await all.count();
+        for (let i = 0; i < n; i += 1) {
+          try { return await tap({ locator: all.nth(i), text: what, sel }, what, { soft: true }); } catch (error) { if (opts.debug) console.error(`[click] 回到这一战 #${i} not tapped: ${error.message.split('\n')[0]}`); }
+        }
+        return false;
+      }
       // Below the fold on a phone: brought on screen first, as a thumb scrolls to it.
       // The first match a finger can actually reach: drawn, on screen once scrolled to, and the thing under its centre
       // (11-05 at 1280: the stage's 降妖 card stood under the scene's story; a tap there answered nothing).

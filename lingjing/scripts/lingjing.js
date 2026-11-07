@@ -4654,7 +4654,7 @@ async function onDuelStart(id) {
     // Reopened mid-fight (a cold reload, Hanli 11-05): the door hands back the moves made, and the fight stands where it
     // stood — replayed on its seed (battle.js replayInto), the moves kept for the settle.
     const prior = Array.isArray(r.picks) ? r.picks : [];
-    bout = { id, brief, setup: brief.setup, st: replayInto(begin(brief.setup, cardCatalog()), prior), actions: [...prior], her: null, gearHint };
+    bout = { id, brief, setup: brief.setup, st: replayInto(begin(brief.setup, cardCatalog()), prior), actions: [...prior], her: null, gearHint, resumed: Boolean(r.resumed) };
     const odds = oddsKept.get(oddsKey(brief.setup));
     tracker.fightOpen(id, { beast: brief.creature?.id ?? null, place: look?.place?.id ?? null, hand: brief.setup?.you?.deck?.length ?? brief.setup?.you?.hand?.length ?? null, source: look?.scene?.id ?? null, ...(odds ? { chip: odds.grade, odds: odds.win } : {}) });
     bout.say = fightSayFor(bout);
@@ -4709,7 +4709,7 @@ function mountBout(b) {
   forgetShell(fightShell(b));
   const reducedMotion = Boolean(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
   b.stop = new AbortController();
-  Promise.resolve(kapai.mount(node, { data: { setup: b.setup, brief: b.brief, st: b.st, catalog: cardCatalog() }, lang: lang(), reducedMotion, signal: b.stop.signal, shell: shellFor(fightShell(b), 'kapai'), story: boutHooks(b) }))
+  Promise.resolve(kapai.mount(node, { data: { setup: b.setup, brief: b.brief, st: b.st, catalog: cardCatalog(), resumed: b.resumed }, lang: lang(), reducedMotion, signal: b.stop.signal, shell: shellFor(fightShell(b), 'kapai'), story: boutHooks(b) }))
     .then((out) => (b.kept ? keptBout(b) : settleBout(b, out)))
     .catch((e) => { console.warn('[lingjing] the fight room', e); return settleBout(b, { r: failed(e) }); });
 }

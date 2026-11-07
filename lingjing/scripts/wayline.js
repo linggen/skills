@@ -21,7 +21,11 @@ function effectWords(e = {}, zh) {
   if (e.draw != null) b.push(zh ? `抽 ${e.draw} 张` : `draw ${e.draw}`);
   if (e.buff) b.push(zh ? `一个 +${e.buff.atk ?? 0}/+${e.buff.hp ?? 0}` : `one ally +${e.buff.atk ?? 0}/+${e.buff.hp ?? 0}`);
   if (e.rally) b.push(zh ? `全体 +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}` : `all allies +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}`);
-  if (e.summon) b.push(zh ? `召来 ${e.summon.n ?? 1} 个` : `summon ${e.summon.n ?? 1}`);
+  // By name when the rules give it (strengthen.mjs effectDoes): 「召来 藤须」, 「召来 2 个 藤须」; else the count.
+  if (e.summon) {
+    const n = e.summon.n ?? 1, who = e.summon.name;
+    b.push(who ? (zh ? `召来 ${n > 1 ? `${n} 个 ` : ''}${who}` : `summon ${n > 1 ? `${n} × ` : ''}${who}`) : (zh ? `召来 ${n} 个` : `summon ${n}`));
+  }
   if (e.chain != null) b.push(zh ? '锁敌阵前一个一回合' : 'chain a foe a turn');
   if (e.swallow != null) b.push(zh ? `吞敌阵前攻 ≤${e.swallow} 的一个` : `swallow a foe of attack ≤ ${e.swallow}`);
   if (e.drain != null) b.push(zh ? `敌下回合灵力 −${e.drain}` : `foe Force −${e.drain} next turn`);

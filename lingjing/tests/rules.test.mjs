@@ -240,6 +240,23 @@ test('staying exits tell their passage and keep the scene; a staying choice made
   assert.deepEqual(taps(home.state), ['rules', 'home', 'alone'], 'a staying choice with no mark may be tried again');
 });
 
+test('a fight kept open says how to get back: 回到这一战 on its card that day, 出 手 once it is no longer resumed', async () => {
+  const open = toOpenWorld();
+  const base = { ...open, chapter: '01-ji', scene: null, place: 'fajiu', tier: 'foundation', step: 0, progress: 0, cards: [...new Set([...(open.cards ?? []), ...ROAD_HAND])] };
+  const day = () => ctx({ now: new Date('2026-10-05T10:00:00') });
+  assert.equal(look(base, content, day()).place.encounter.duel.kept, undefined, 'never fought: no kept fight');
+  const started = must(duel, base, { id: 'haunt:jingwei' }, day()).state;
+  const marked = must(duel, started, { id: 'haunt:jingwei', action: 'mark', picks: 'end' }, day()).state;
+  assert.deepEqual(look(marked, content, day()).place.encounter.duel.kept, { moves: 1 }, 'the door would resume it: kept');
+  const { cardHtml, WORDS } = await import('../scripts/cards.js');
+  const draw = (s, c) => cardHtml({ card: 'duel', id: 'haunt:jingwei' }, { look: look(s, content, c), lang: 'zh', words: WORDS.zh, content: { ...content, creatures: content.creatures.creatures } });
+  assert.match(draw(marked, day()), /data-duel-start="haunt:jingwei">回到这一战</);
+  assert.match(draw(base, day()), /data-duel-start="haunt:jingwei">出 手</);
+  // The next day the door begins it fresh (tasks.mjs duel `resuming` is the day's): the card says 出 手 again.
+  const next = ctx({ now: new Date('2026-10-06T10:00:00') });
+  assert.equal(look(marked, content, next).place.encounter.duel.kept, undefined);
+});
+
 test('an unknown exit and an unfought duel are refused', () => {
   const s = walk(start(), TO_HALL.slice(0, TO_HALL.findIndex(([v, a]) => v === 'won' && a.id === 'gate-longzhi')), content, NOW);
   refused(resolve, s, { exit: 'fly' }, 'unknown-exit');

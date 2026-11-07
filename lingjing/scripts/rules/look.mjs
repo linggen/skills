@@ -388,6 +388,10 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
     // once — never shut for the day as a haunt's or a pool's beast (Hanli 11-04: 「力竭遁走了. 主界面还可以再打, 是故意设计的吗?」).
     // The card says so (battle-card.js `againSay`), and Ling reads it here: it did not get away, the beat is still his.
     ...(game.retry && today?.day === dayKey(now) && ['lost', 'withdrew'].includes(today.outcome) ? { again: { outcome: today.outcome, story_open: true } } : {}),
+    // A fight kept open (留, a reload, the phone popped): the door takes it up where it stood — the same test as the door's
+    // own `resuming` (tasks.mjs duel) — so the card says 回到这一战, not 出 手 (Hanli 11-06). One kept on another day is no
+    // longer resumed: the door begins it fresh, and the card says so.
+    ...(state.fight?.game === game.id && today?.day === dayKey(now) && today.outcome === 'open' ? { kept: { moves: state.fight.picks?.length ?? 0 } } : {}),
     stake: stakeOf(content, state, game),
     // A story fight weighed with a thing worn that he lacks but owns (rules/gearhint.mjs): where it is, for the card and 银月.
     ...(gearHint(content, state, game) ? { gear_hint: gearHint(content, state, game) } : {}),

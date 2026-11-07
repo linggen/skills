@@ -174,6 +174,8 @@
 .bcharge.ready { animation: bgather 1.6s ease-in-out infinite; }
 .bcharge.feint { border-color: rgba(64, 92, 70, 0.45); background: rgba(64, 92, 70, 0.07); }
 .bcharge.feint b { color: var(--ink); }
+/* The folded line (battle-card.js foldHtml): a phone's only; a wide room shows the whole panel, as ever. */
+.bfold { display: none; }
 @keyframes bgather { 50% { box-shadow: 0 0 22px rgba(179, 55, 42, 0.3); } }
 
 /* ── 阵前: the two ranks, an ink seam between ── */
@@ -468,6 +470,13 @@
   .bcard:last-child:not(:first-child) .bleaf { left: auto; right: 0; }
   .bcard.held { transform: translateY(calc(var(--ch) * -.42)) rotate(0deg) scale(1.22); }
   .blast .blab { display: none; }
+  /* The panel under the beast folds to one line, 「见人则眠 · 装睡」 (Hanli 11-06): a tap opens the whole text, another folds it. */
+  .bcharge { max-width: 100%; }
+  .bcharge > .bfold { display: flex; align-items: baseline; justify-content: center; gap: 0; min-width: 0; max-width: 100%; margin: 0; padding: 2px 4px; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bcharge > .bfold > i { font-style: normal; font-size: 10px; color: var(--ink-3); margin-left: 6px; }
+  .bcharge > .bfold:focus-visible { outline: 2px solid var(--ink-2); outline-offset: 2px; border-radius: 6px; }
+  .bcharge > b { display: none; }
+  .bcharge:not(.open) > span, .bcharge:not(.open) > small { display: none; }
   /* A phone's seam holds the last two moves (live, 2026-10-15: four long lines wrapped onto the minions);
      展开 opens the whole log. */
   .blast:not(.open) .bline:not(:nth-last-of-type(-n+2)) { display: none; }

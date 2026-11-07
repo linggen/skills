@@ -54,8 +54,13 @@ function wearable(content, state) {
 
 /* What worn gear lends: its 攻 · 防 · 抗 · the root it lends. */
 const gearDoes = item => Object.fromEntries(['atk', 'def', 'ward', 'root'].filter(k => item.effect?.[k] != null).map(k => [k, item.effect[k]]));
-/* What a card is: its cost, its body, its keywords, its effect (cards.json). */
-const cardDoes = c => ({ card_kind: c.kind, cost: c.cost ?? 0, ...(c.atk != null ? { atk: c.atk } : {}), ...(c.hp != null ? { hp: c.hp } : {}), ...(c.keywords?.length ? { keywords: c.keywords } : {}), ...(c.effect ? { effect: c.effect } : {}), ...(c.element ? { element: c.element } : {}) });
+/* What a card is: its cost, its body, its keywords, its effect (cards.json).
+   A summon carries the name of what comes (`effect.summon.name`, wayline.js effectWords: 「召来 藤须」), from a copy — never the row. */
+const effectDoes = (e, catalog, lang) => {
+  const who = e.summon ? pick(catalog?.[e.summon.id]?.name, lang) : null;
+  return who ? { ...e, summon: { ...e.summon, name: who } } : e;
+};
+const cardDoes = (c, catalog, lang) => ({ card_kind: c.kind, cost: c.cost ?? 0, ...(c.atk != null ? { atk: c.atk } : {}), ...(c.hp != null ? { hp: c.hp } : {}), ...(c.keywords?.length ? { keywords: c.keywords } : {}), ...(c.effect ? { effect: effectDoes(c.effect, catalog, lang) } : {}), ...(c.element ? { element: c.element } : {}) });
 
 /* The shops he can walk to now (their shelves open), nearest first, with the steps there. */
 export function shopsInReach(content, state, now) {
@@ -86,7 +91,7 @@ function buyable(content, state, shops, now = new Date()) {
     const short = Math.max(0, (item.buy ?? Infinity) - (state.wealth ?? 0));
     if (short && !haggleReach(content, state, shop.place, item, now)) continue;
     seen.add(card.id);
-    out.push({ kind: 'buy', item: item.id, card: card.id, name: pick(card.name, state.lang), price: item.buy, place: shop.place, place_name: shop.place_name, steps: shop.steps, answers: answers(card), does: cardDoes(card), ...(short ? { short, haggle: true } : {}) });
+    out.push({ kind: 'buy', item: item.id, card: card.id, name: pick(card.name, state.lang), price: item.buy, place: shop.place, place_name: shop.place_name, steps: shop.steps, answers: answers(card), does: cardDoes(card, catalog, state.lang), ...(short ? { short, haggle: true } : {}) });
   }
   const want = ['blows', 'guards', 'cheap'];
   const rank = o => Math.min(...o.answers.map(a => want.indexOf(a)).filter(i => i >= 0), want.length);
