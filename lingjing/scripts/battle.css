@@ -383,7 +383,8 @@
 .bghost.going { animation: inkout .52s ease-in forwards; }
 @keyframes inkout { 0% { filter: none; opacity: 1; } 45% { filter: grayscale(1) contrast(1.6) blur(1px); opacity: .85; } 100% { filter: grayscale(1) contrast(2) blur(10px); opacity: 0; transform: scale(1.08) translateY(-6px); } }
 /* The 杀招 let go: ink across the whole stage. */
-.bsplash { position: absolute; inset: 0; z-index: 8; display: grid; place-items: center; pointer-events: none; overflow: hidden; }
+/* Over the whole room, the 丹囊's row (30, open 60) and a held card (41) too (Hanli 11-07: 回春丹 stood over 天下大穰's ink). */
+.bsplash { position: absolute; inset: 0; z-index: 70; display: grid; place-items: center; pointer-events: none; overflow: hidden; }
 .bsplash i { position: absolute; border-radius: 46% 54% 41% 59% / 55% 42% 58% 45%; background: radial-gradient(circle, rgba(20, 18, 15, 0.92) 0%, rgba(20, 18, 15, 0.75) 40%, rgba(20, 18, 15, 0) 72%); animation: splash 1.3s cubic-bezier(.2, .8, .2, 1) both; }
 .bsplash i:nth-child(1) { width: 120%; height: 90%; left: -10%; top: 5%; }
 .bsplash i:nth-child(2) { width: 50%; height: 50%; left: 2%; top: -8%; animation-delay: .06s; }
@@ -421,6 +422,12 @@
 .bclose .closetitle { color: var(--ink); }
 .bclose .closedid { color: var(--ink-2); }
 .bclose .bsay { margin: 0 auto 8px; text-align: left; }
+/* 收起 and the loss's way, in the room's own paper and ink whatever the phone's scheme (Hanli 11-07: lingjing.css's .act in a dark
+   phone gave 收起 a dark brown ground, and .battle button's inherited ink drew dark brown on it), centred under the card. */
+.bclose .acts { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.battle .bclose .closeshut, .battle .bclose .closeway { min-width: 132px; padding: 9px 22px; border-radius: 8px; font-size: 15px; letter-spacing: .3em; cursor: pointer; }
+.battle .bclose .closeshut { border: 1px solid var(--ink-2); background: var(--paper-2); color: var(--ink); }
+.battle .bclose .closeway { border: 1px solid var(--cinnabar); background: var(--paper); color: var(--cinnabar); letter-spacing: .1em; }
 .bclose .bseal { position: absolute; top: -22px; right: -14px; display: grid; place-items: center; min-width: 64px; height: 64px; padding: 0 8px; box-sizing: border-box; border-radius: 6px; font-size: 30px; font-weight: 700; letter-spacing: 0;
   color: #FBF5EA; background: var(--cinnabar); box-shadow: inset 0 0 0 3px rgba(251, 245, 234, 0.7), 0 6px 16px rgba(31, 28, 24, 0.25); transform: rotate(-8deg); animation: stamp .5s cubic-bezier(.3, 1.4, .4, 1) .15s both; }
 :lang(en) .bclose .bseal { font-size: 18px; }

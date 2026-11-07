@@ -184,3 +184,13 @@ test('the story\'s fight: 认输 is played to its end and replayed; a refusal cl
   assert.doesNotMatch(host.innerHTML, /class="bover/);
   assert.equal(r.r.ok, false);
 });
+
+// Hanli 11-07 on the phone: the beast's last word stood in the closing card AND in a toast above it. Said once — in the card.
+test('the beast\'s last word is in the closing card, never said again over the room', async () => {
+  const key = 'longzhi@00-longzhi/subdue';
+  const { st, said } = await botPlays(key);
+  const brief = TABLE.fights.find((f) => f.key === key).brief.zh;
+  const end = (st.outcome === 'won' ? brief.says.won : st.outcome === 'lost' ? brief.says.lost : null);
+  assert.ok(said.some(([, t]) => t === brief.says.foe), 'the opening line is still said');
+  if (end) assert.ok(!said.some(([, t]) => t === end), `「${end}」 said over the room too: ${JSON.stringify(said)}`);
+});

@@ -51,7 +51,7 @@ test('the phone\'s hand is a wheel: the room\'s CSS turns it on, the desk keeps 
   assert.match(phone, /\.battle \.bhand > \.bcard\.r \.bcost \{ left: auto; right: 4px; \}/, 'a card right of the centre shows its cost on its outer corner');
   assert.doesNotMatch(css.slice(0, css.indexOf('@container scene (max-width: 640px) {')), /--wheel/, 'never on the desk');
   assert.match(kapai, /const wheel = wireWheel\(host\);/);
-  assert.match(kapai, /host\.innerHTML = battleHtml\([^;]*\); wheel\.apply\(\);/, 'laid out again after every draw');
+  assert.match(kapai, /keepPictures\(host, battleHtml\([^;]*\)\); wheel\.apply\(\);/, 'laid out again after every draw');
   assert.match(kapai, /wheel\.off\(\);/);
 });
 

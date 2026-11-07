@@ -107,6 +107,29 @@ function ctxOf(room) {
   };
 }
 
+/** The room drawn again whole keeps the pictures it already shows: each new <img> gives its place to a drawn one of the
+    same src (its attributes taken over), so no card's art is fetched or decoded again. Every move and every step of the
+    beast's turn redraws the room; on the phone each redraw blanked the hand and the ranks for a frame — white cards
+    with no art (Hanli 11-07, the beast's turn and a drag). A picture new to the room loads at once, never lazily. */
+export function keepPictures(host, html) {
+  if (typeof host.querySelectorAll !== 'function') { host.innerHTML = html; return; }
+  const had = new Map();
+  for (const img of host.querySelectorAll('img[src]')) {
+    if (!img.complete || !img.naturalWidth) continue;
+    const src = img.getAttribute('src');
+    if (!had.has(src)) had.set(src, []);
+    had.get(src).push(img);
+  }
+  host.innerHTML = html;
+  for (const img of host.querySelectorAll('img[src]')) {
+    const old = had.get(img.getAttribute('src'))?.shift();
+    if (!old) { img.loading = 'eager'; img.decoding = 'sync'; continue; }
+    for (const a of [...old.attributes]) if (!img.hasAttribute(a.name)) old.removeAttribute(a.name);
+    for (const a of [...img.attributes]) if (old.getAttribute(a.name) !== a.value) old.setAttribute(a.name, a.value);
+    img.replaceWith(old);
+  }
+}
+
 /** The fight the mount was handed: given whole, or a key of the table. */
 async function fightFrom(data, lang) {
   // The table is read for a fight handed whole too: its `pills` name the 丹囊's pills (the phone showed `mend-pill`).
@@ -141,7 +164,7 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
   return new Promise((resolve) => {
     let done = false, idleTimer = null, release = null;
     const wheel = wireWheel(host);
-    const draw = () => { if (done) return; host.innerHTML = battleHtml(view(room.st), offers(room.st), ctx(), room.picked, room.openLog, room.note, room.help); wheel.apply(); idleSoon(); };
+    const draw = () => { if (done) return; keepPictures(host, battleHtml(view(room.st), offers(room.st), ctx(), room.picked, room.openLog, room.note, room.help)); wheel.apply(); idleSoon(); };
     const finish = (r) => {
       if (done) return;
       done = true;
@@ -187,9 +210,10 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       if (r && r.ok === false) return finish(out);
       room.ended = true;
       draw();
+      // The beast's last word stands in the closing card itself (battle-card.js endHtml `says.end`), so it is never said
+      // again over the room too (Hanli 11-07 on the phone: 「它拱开一片土…」 in the card and in a toast above it).
       const end = boutSays(fight.brief.says, room.st.outcome)?.end;
       const hold = hook('holdMs', end, r) ?? SEAL_MS;
-      if (end) shell?.say?.(fight.brief.creature.name, end, hold);
       await new Promise((go) => { release = go; setTimeout(go, hold); });
       finish(room.go ? { ...out, go: room.go } : out);
     }
