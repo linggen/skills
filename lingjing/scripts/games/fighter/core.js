@@ -630,7 +630,7 @@ function throwFoe(s) {
 /* Her burst out of a chain: her stagger gone, him thrown back a step and stiff a moment. */
 function burst(s) {
   const me = s.me, foe = s.foe, sd = side(s);
-  foe.stun = s.t; foe.act = null; foe.think = s.t + 200;
+  foe.stun = s.t; foe.act = null; foe.think = s.t + 200; foe.burstAt = s.t; // draw.js shows her 震 from here
   s.combo = { n: 0, at: s.t, who: 'me' };
   me.act = null; me.stun = s.t + 420; me.vx = -sd * 900;
   hitstop(s, 90);

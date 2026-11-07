@@ -429,11 +429,11 @@ function meClip(s) {
   if (me.stun > t && !me.guard) return ['hit', null];
   if (a) {
     if (a.k === 'roll') return ['roll', a.at];
-    if (a.k === 'throw') return ['blow', a.at, a.m]; // his throw: the 双推掌's hands on her
+    if (a.k === 'throw') return ['throw', a.at, a.m]; // his throw: reach, yank, fling (a sheet without one: the 双推掌's hands, ME_AS)
     if (a.k === 'max') return ['super', a.at, { startup: 0, active: 200, recover: 60 }]; // 爆气: the 绝's gathering
     if (['clight', 'clkick', 'chpunch', 'cheavy'].includes(a.k)) return [a.k, a.at, a.m];
     if (a.k === 'ying' || a.k === 'dash') return ['dash', a.at];
-    if (a.k === 'backstep') return ['back', a.at];
+    if (a.k === 'backstep') return ['backdash', a.at]; // the hop back (a sheet without one: his walk back, ME_AS)
     if (['special', 'palmfire', 'palmfireH', 'feijian', 'fuwen'].includes(a.k)) return ['cast', a.at, a.m];
     if (CROUCHED[a.k]) return [me.crouch ? CROUCHED[a.k] : a.k, a.at, a.m];
     if (['blow', 'super', 'air', 'rise'].includes(a.k)) return [a.k, a.at, a.m];
@@ -458,6 +458,8 @@ function foeClip(s) {
   if (s.grab) return ['throw', s.grab.at, { startup: 0, active: 1e9, recover: 0 }];
   if (foe.air) return a?.swung ? ['air', a.swung, { startup: 0, active: 1e9, recover: 0 }] : ['jump', a?.at ?? null];
   if (foe.stun > t) return ['hit', null];
+  // her 震 (core.js burst: pinned, she breaks out and throws him back): the burst of force, until she moves again
+  if (!a && foe.burstAt != null && t - foe.burstAt < ZHEN_MS) return ['zhen', foe.burstAt, ZHEN_M];
   if (a) {
     if (a.k === 'block') return [a.low ? 'lowblock' : 'block', a.at];
     if (a.k === 'roll') return ['roll', a.at];
@@ -473,21 +475,38 @@ const FOE_LAID = {
   sweep: { frames: ['jianqi2', 'jianqi1', 'thrust4'], hit: 1, fps: 8 },
   aa: { frames: ['poke1', 'jianqi2', 'poke3'], hit: 1, fps: 8 },
 };
-const FOE_AS = { jump: 'poke', air: 'thrust', sweep: 'jianqi', aa: 'poke', throw: 'strike', roll: 'back', knock: 'slip', run: 'walk', lowblock: 'block', land: 'idle' };
+const ZHEN_M = { startup: 60, active: 140, recover: 160 }, ZHEN_MS = 420;
+const FOE_AS = { jump: 'poke', air: 'thrust', sweep: 'jianqi', aa: 'poke', throw: 'strike', roll: 'back', knock: 'slip', run: 'walk', lowblock: 'block', land: 'idle', zhen: 'idle' };
+/* His sheet without a state's own clip: the one it showed before that clip was painted. */
+const ME_AS = { backdash: 'back', throw: 'blow' };
+/* Every clip name meClip and foeClip may ask for (tests/fighter-clips.test.mjs: each resolves on every sheet). */
+export const CLIP_STATES = {
+  me: ['idle', 'win', 'lose', 'knock', 'hit', 'roll', 'throw', 'super', 'clight', 'clkick', 'chpunch', 'cheavy', 'dash', 'backdash',
+    'cast', 'light', 'lkick', 'hpunch', 'heavy', 'blow', 'air', 'rise', 'jump', 'crouch', 'cblock', 'block', 'walk', 'back'],
+  foe: ['idle', 'lose', 'slip', 'win', 'glow', 'hold', 'strike', 'edge', 'knock', 'throw', 'air', 'jump', 'hit', 'zhen', 'block', 'lowblock',
+    'roll', 'land', 'ice', 'poke', 'thrust', 'jianqi', 'feijian', 'sweep', 'aa', 'run', 'walk', 'back'],
+};
+
+/** The clip a state shows on a sheet: [its name, the clip]. A foe on another fighter's sheet (心魔 on 小满's) names its
+    clips by its own moves (`lookClips`); a robed sheet lays one from its own frames (FOE_LAID) or shows the one that
+    reads as it (FOE_AS); his sheet without the state's own clip shows the older one (ME_AS); else idle. */
+export function resolveClip(meta, who, said, lookClips = null) {
+  const clips = meta.clips;
+  let name = (who === 'foe' && lookClips?.[said]) || said;
+  // a robed sheet: a clip laid from its own frames (the sword raised then cut low for the sweep, raised high for the
+  // rising cut), else the clip that reads as it
+  const laid = !clips[name] && who === 'foe' && FOE_LAID[said]?.frames.every((f) => meta.frames[f]) ? FOE_LAID[said] : null;
+  if (laid) name = `laid:${said}`;
+  else if (!clips[name] && who === 'foe' && FOE_AS[said]) name = FOE_AS[said];
+  else if (!clips[name] && who === 'me' && ME_AS[said]) name = ME_AS[said];
+  return [name, laid ?? clips[name] ?? (said === 'feijian' ? clips.ice : null) ?? clips.idle];
+}
 
 /* The frame a fighter shows: its clip, how far in, its frame; `track` remembers when a clip with no clock of its own
    began (a hit, a crouch, a fall). A fall's frames go by what is left of it: thrown, down, getting up. */
 function pick(sheet, who, s, track, calm) {
   const [said, at, m] = who === 'me' ? meClip(s) : foeClip(s);
-  // a foe on another fighter's sheet (心魔 on 小满's) names its clips by its own moves: `foe.look.clips` maps them
-  const clips = sheet.meta.clips;
-  let name = (who === 'foe' && s.level?.foe?.look?.clips?.[said]) || said;
-  // a robed sheet: a clip laid from its own frames (FOE_LAID — the sword raised then cut low for the sweep, raised
-  // high for the rising cut), else the clip that reads as it
-  const laid = !clips[name] && who === 'foe' && FOE_LAID[said]?.frames.every((f) => sheet.meta.frames[f]) ? FOE_LAID[said] : null;
-  if (laid) name = `laid:${said}`;
-  else if (!clips[name] && who === 'foe' && FOE_AS[said]) name = FOE_AS[said];
-  const clip = laid ?? clips[name] ?? (said === 'feijian' ? clips.ice : null) ?? clips.idle;
+  const [name, clip] = resolveClip(sheet.meta, who, said, s.level?.foe?.look?.clips);
   if (track.name !== name) { track.name = name; track.at = s.t; }
   const e = s.t - (at ?? track.at);
   const body = who === 'me' ? s.me : s.foe;
@@ -946,8 +965,9 @@ function intro(ctx, s, lang, lv) {
   ctx.restore();
 }
 
-/* The 绝's cut-in: a band of ink across the field, the face, the move's name in a big brush. */
-function cutIn(ctx, c, img, lang, age) {
+/* The 绝's cut-in: a band of ink across the field, the face, the move's name in a big brush. The face is the sheet's
+   own `cutin` frame (a bust, facing into the field) when it has one, else the top of the portrait. */
+function cutIn(ctx, c, img, lang, age, sheet) {
   const k = Math.min(1, age / 160), out = age > 700 ? Math.min(1, (age - 700) / 200) : 0, mine = c.who === 'me';
   ctx.save();
   ctx.globalAlpha = 1 - out;
@@ -958,7 +978,16 @@ function cutIn(ctx, c, img, lang, age) {
   ctx.beginPath(); ctx.moveTo(a0, 180); ctx.lineTo(a1, 140); ctx.lineTo(a1, 330); ctx.lineTo(a0, 370); ctx.closePath(); ctx.fill();
   ctx.strokeStyle = mine ? '#c2481f' : '#5fbf98'; ctx.lineWidth = 4;
   ctx.beginPath(); ctx.moveTo(a0, 176); ctx.lineTo(a1, 136); ctx.stroke(); ctx.beginPath(); ctx.moveTo(a0, 374); ctx.lineTo(a1, 334); ctx.stroke();
-  if (img?.complete && img.naturalWidth) {
+  const bust = sheet?.meta.frames.cutin;
+  if (bust) {
+    ctx.save();
+    ctx.beginPath(); ctx.moveTo(a0, 180); ctx.lineTo(a1, 140); ctx.lineTo(a1, 330); ctx.lineTo(a0, 370); ctx.closePath(); ctx.clip();
+    const [rx, ry, rw, rh] = bust.rect, h = 270, w = (rw / rh) * h, x = mine ? 80 : W - 80 - w;
+    ctx.globalAlpha = 0.95;
+    ctx.translate(mine ? x : x + w, 0); ctx.scale(mine ? 1 : -1, 1); // painted facing right: hers turned to face him
+    ctx.drawImage(sheet.img, rx, ry, rw, rh, 0, 166, w, h); // the head just under the band's top edge
+    ctx.restore();
+  } else if (img?.complete && img.naturalWidth) {
     ctx.save();
     ctx.beginPath(); ctx.moveTo(a0, 180); ctx.lineTo(a1, 140); ctx.lineTo(a1, 330); ctx.lineTo(a0, 370); ctx.closePath(); ctx.clip();
     // the face and shoulders: the painting's top part, large
@@ -1111,6 +1140,6 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false, kin
     if (s.end) seal(ctx, say(won(s.end) ? lv.seal?.won : lv.seal?.lost, lang) || (lang === 'en' ? (won(s.end) ? 'Won' : 'Out') : (won(s.end) ? '胜' : '负')), s.t - s.end.at - 300);
     // the 绝: its cut-in plays on the page's clock (the bout's is held through it)
     if (s.cutin && s.cutin !== view.cut) { view.cut = s.cutin; view.cutAt = now; }
-    if (view.cut && now - view.cutAt < 900) cutIn(ctx, view.cut, view.cut.who === 'me' ? art.me : art.foe, lang, now - view.cutAt);
+    if (view.cut && now - view.cutAt < 900) cutIn(ctx, view.cut, view.cut.who === 'me' ? art.me : art.foe, lang, now - view.cutAt, view.cut.who === 'me' ? sheets.me : sheets.foe);
   };
 }
