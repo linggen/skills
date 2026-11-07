@@ -194,3 +194,34 @@ test('the beast\'s last word is in the closing card, never said again over the r
   assert.ok(said.some(([, t]) => t === brief.says.foe), 'the opening line is still said');
   if (end) assert.ok(!said.some(([, t]) => t === end), `「${end}」 said over the room too: ${JSON.stringify(said)}`);
 });
+
+// The phone's resume (sim 11-07: 留, then 回到这一战 came back at turn 1): a fight handed back with its moves (the door's
+// `picks` in the brief, as the phone's host mounts it — no `st`) stands where they left it, the same state the rules replay.
+test('a fight reopened with its moves stands where they left it (the phone\'s mount: brief.picks, no st)', async () => {
+  stubFetch();
+  const { mount } = await import('../scripts/games/kapai.js');
+  const { battle, begin } = await import('../scripts/battle.js');
+  const row = TABLE.fights.find((f) => f.key === 'longzhi@00-longzhi/subdue');
+  const catalog = Object.fromEntries(JSON.parse(read('../worlds/jiuding/cards.json')).cards.map((c) => [c.id, c]));
+  const setup = { ...row.setup, seed: 'resume|1' };
+  // Six of his moves, played by the careful line on the rules' own copy.
+  const st = begin(setup, catalog), picks = [];
+  const { tokenOf, foeTurn, act } = await import('../scripts/battle.js');
+  while (picks.length < 6 && st.outcome === 'open') {
+    if (st.whose === 'foe') { foeTurn(st); continue; }
+    const m = roomMove(st);
+    if (!act(st, m, 'you').ok) break;
+    picks.push(tokenOf(m));
+  }
+  while (st.whose === 'foe' && st.outcome === 'open') foeTurn(st);
+  const container = fakeRoom();
+  mount(container, { data: { setup, brief: { ...row.brief.zh, picks } }, lang: 'zh', shell: { paused: () => false, say() {}, onPause: () => () => {} } });
+  let host = null;
+  for (let i = 0; i < 50 && !host?.kapai; i++) { await new Promise((r) => setTimeout(r, 10)); host = container.kids[0]; }
+  const room = host.kapai.state();
+  const again = battle(picks, setup, catalog);
+  assert.ok(st.turn > 1, 'the moves reach past the first turn');
+  assert.equal(room.turn, st.turn, 'the room stands at the turn they reached');
+  assert.equal(room.foe.hp, again.foe.hp);
+  assert.deepEqual(room.you.hand, st.you.hand);
+});

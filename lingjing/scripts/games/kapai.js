@@ -151,7 +151,10 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
   // Reopened mid-fight (the door's `picks`): the moves already made are replayed, so it stands where it stood.
   const prior = Array.isArray(data.picks) ? data.picks : Array.isArray(data.brief?.picks) ? data.brief.picks : [];
   const st0 = data.st ?? begin(setup, fight.catalog);
-  if (prior.length && st0.turn === 0 && !st0.log.some((e) => e.who === 'you' && e.act === 'played')) replayInto(st0, prior);
+  // A fresh deal stands at turn 1 already (battle.js begin opens his turn), so whether a move was made is the test, never
+  // `turn === 0` — that test never held, and a kept fight came back at its first turn on the phone while the host went on
+  // adding moves to the kept list: the settle then replayed a fight nobody played (sim 11-07, 留 then 回到这一战).
+  if (prior.length && !st0.log.some((e) => e.who === 'you' && e.act === 'played')) replayInto(st0, prior);
   // A fight reopened (the door's `resumed`, or the moves it hands back) is no first meeting.
   const resumed = Boolean(data.resumed) || prior.length > 0;
   const room = { ...fight, setup, lang, st: st0, picked: null, openLog: false, help: false, note: null, busy: false, ended: false, settling: false, yielded: false };
