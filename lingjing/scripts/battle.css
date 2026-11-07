@@ -250,7 +250,8 @@
 .bside.you .bdeck { margin-left: auto; }
 .bacts { display: flex; align-items: center; gap: 10px; flex: none; }
 /* The seals keep their places even as the pouch or the turn label changes. */
-.bacts > .bpower { flex: 0 0 96px; min-width: 0; }
+.bacts > .bpower { flex: 0 0 auto; min-width: 0; } /* its own width: 主灵根一击 on one line (its words never change mid-fight) */
+.bacts > .bpower .bsealface b { white-space: nowrap; }
 .bacts > .end { flex: 0 0 110px; width: 110px; min-width: 0; }
 .bacts > .end .bsealface { box-sizing: border-box; width: 100%; min-width: 0; }
 /* The two seals: 主灵根一击 a square seal in your root's colour, 结束回合 a cinnabar one. */
@@ -595,7 +596,6 @@
   .bside.you > .bparty { order: 2; flex: 1 1 100%; }
   .bside.you > .bacts { order: 3; flex: 1 1 100%; margin-left: 0; display: flex; align-items: center; min-width: 0; }
   .bacts > .bpouch { display: flex; align-items: center; flex: 1 1 0; min-width: 0; position: relative; }
-  .bacts > .bpower { flex-basis: 76px; }
   .bacts > .end { flex-basis: 80px; width: 80px; }
   .bpouch > .dn-tray { position: static; margin: 0; width: auto; padding: 2px 5px; gap: 4px; align-items: center; }
   .bpouch .dn-pill { width: auto; min-width: 42px; padding: 2px 4px; box-sizing: border-box; }

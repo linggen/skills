@@ -22,10 +22,10 @@ test('the action slots and phone deck survive an emptied pouch', () => {
   }
   assert.match(full, /class="bdeck mine"[^]*?<b>7<\/b><small>牌库<\/small>/);
   assert.match(empty, /class="bdeck mine dry"[^]*?<b>0<\/b><small>牌库<\/small>/);
-  assert.match(css, /\.bacts > \.bpower \{ flex: 0 0 96px; min-width: 0; \}/);
+  assert.match(css, /\.bacts > \.bpower \{ flex: 0 0 auto; min-width: 0; \}/);
+  assert.match(css, /\.bacts > \.bpower \.bsealface b \{ white-space: nowrap; \}/);
   assert.match(css, /\.bacts > \.end \{ flex: 0 0 110px; width: 110px; min-width: 0; \}/);
   assert.match(css, /\.bacts > \.bpouch \{ display: flex; align-items: center; flex: 1 1 0; min-width: 0;/);
-  assert.match(css, /\.bacts > \.bpower \{ flex-basis: 76px; \}/);
   assert.match(css, /\.bacts > \.end \{ flex-basis: 80px; width: 80px; \}/);
   assert.match(css, /\.bside\.you \.bdeck \{ margin-left: 0; width: auto; height: auto; display: inline-flex;/);
   assert.match(css, /\.bside\.you \.bdeck\.dry \{ border-color: var\(--cinnabar\);/);
