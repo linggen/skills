@@ -54,6 +54,8 @@ const FROZEN_VERBS = new Set(['fantong', 'gear', 'wear', 'bag']);
 const FIGHT_REFUSALS = new Set(['in-a-fight', 'fight-open', 'unfinished-fight']);
 
 /* What stands between the bot and the play — closed, skipped or taken (never the 所得: that is checked first). */
+/* A kept fight's way back, in its card's words (battle-card.js beginKept · cards.js fightBack). */
+const KEPT_BACK = /^\s*(回到这一战|Back to (this|the) fight)/;
 const CLEARERS = ['[data-unfold]', '[data-qian-close]', '[data-fate=decline]', '[data-board-close]', '[data-reveal]', '[data-titlecard]', '.feat', '.wonseal',
   '[data-dlg-speed="skip"]:not(.on)', '[data-dlg-next]', '[data-emerged-close]', '[data-close-chapter]',
   '[data-appear-done]', '[data-toast-close]', '[data-handin-close]'];
@@ -228,17 +230,17 @@ export async function run(opts) {
         }
         return false;
       }
-      // A kept fight's way back reads 「回到这一战」 (battle-card.js beginKept, cards.js fightBack; Look's duel `kept`) — asked
-      // for by those words alone, never the first [data-duel-start] of any label (the tray's 开局 stands beside it), so a
-      // kept card that says 出 手 again is a way back not found.
+      // A kept fight's way back reads 「回到这一战」 on its card (battle-card.js beginKept, cards.js fightBack; Look's duel
+      // `kept`): that one first. When the card stands under the story's box (a baseline's save at 后山: 秦雁's passage), the
+      // tray's entry for the same fight is the way a finger reaches — the first reachable [data-duel-start], as before.
+      // The walk checks the card's words itself (KEPT_BACK).
       if (sel === '[data-duel-start]' && what === '回到斗法') {
-        const all = page.locator('button[data-duel-start]:visible').filter({ hasText: /^\s*(回到这一战|Back to (this|the) fight)/ });
-        try { await all.first().waitFor({ state: 'visible', timeout: 3000 }); } catch (error) { if (opts.debug) console.error(`[click] 回到这一战 unavailable: ${error.message}`); return false; }
-        const n = await all.count();
+        const all = page.locator('button[data-duel-start]:visible').filter({ hasText: KEPT_BACK });
+        const n = await all.first().waitFor({ state: 'visible', timeout: 3000 }).then(() => all.count(), () => 0);
         for (let i = 0; i < n; i += 1) {
-          try { return await tap({ locator: all.nth(i), text: what, sel }, what, { soft: true }); } catch (error) { if (opts.debug) console.error(`[click] 回到这一战 #${i} not tapped: ${error.message.split('\n')[0]}`); }
+          try { if (await tap({ locator: all.nth(i), text: what, sel }, what, { soft: true })) return true; } catch (error) { if (opts.debug) console.error(`[click] 回到这一战 #${i} not tapped: ${error.message.split('\n')[0]}`); }
         }
-        return false;
+        if (opts.debug) console.error('[click] no 回到这一战 in reach: the first [data-duel-start] a finger reaches');
       }
       // Below the fold on a phone: brought on screen first, as a thumb scrolls to it.
       // The first match a finger can actually reach: drawn, on screen once scrolled to, and the thing under its centre
@@ -571,6 +573,9 @@ export async function run(opts) {
           // Leave mid-fight: a reload, then the way back.
           await open(name); await clear();
           await shot('kept-world');
+          // The kept fight's card says how to get back (Hanli 11-06: it read 「出 手」 after a reload).
+          const cardSays = await page.evaluate(() => [...document.querySelectorAll('.card.challenge button[data-duel-start], .card.duel button[data-duel-start]')].filter((e) => e.getClientRects().length).map((e) => e.textContent.trim()));
+          if (cardSays.length && !cardSays.some((t) => /^(回到这一战|Back to (this|the) fight)/.test(t))) unplayable.push({ where, why: `the kept fight's card reads ${JSON.stringify(cardSays)}, not 回到这一战` });
           const back = (await page.evaluate(FIGHT)) ? true : await reach('[data-duel-start]', '回到斗法');
           if (back) {
             await sleep(1500);

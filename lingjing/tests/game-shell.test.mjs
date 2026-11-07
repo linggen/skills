@@ -127,7 +127,7 @@ test('every game in the registry can be hosted in the shell, and every place a g
   // The story's card fight is the 游戏厅's mounted room in the shell (Hanli 10-22: 「故事里的对战迁移可以开」): mounted once a
   // fight into a shell frame, its taps and drag the room's own — the page draws no room and wires no drag of its own.
   const page = read('../scripts/lingjing.js');
-  assert.match(page, /kapai\.mount\(node, \{ data: \{ setup: b\.setup, brief: b\.brief, st: b\.st, catalog: cardCatalog\(\) \}/);
+  assert.match(page, /kapai\.mount\(node, \{ data: \{ setup: b\.setup, brief: b\.brief, st: b\.st, catalog: cardCatalog\(\), resumed: b\.resumed \}/);
   assert.match(page, /focus\.innerHTML = frameHtml\(\{ id, title: duelTitle/);
   assert.match(page, /shell: shellFor\(fightShell\(b\), 'kapai'\), story: boutHooks\(b\)/);
   assert.doesNotMatch(page, /wireDrag\(|battleHtml\(|\['\[data-spot\]'/, 'no second room, drag or tap route on the page');
