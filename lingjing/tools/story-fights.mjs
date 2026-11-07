@@ -104,6 +104,8 @@ export const FIGHTS = [
   { id: 'yezhu', name: '野猪 (后山崖顶 pool)', at: 'h05g', pool: 'yaoyuan-wai' },
   { id: 'lang', name: '狼 (林子 pool)', at: 'h05', pool: 'songlin' },
   { id: 'gui', name: '蛫 (泗水 pool)', at: 'h10', pool: 'sishui' },
+  { id: 'renyu', name: '人鱼 (泗水 pool)', at: 'h10', pool: 'sishui' },
+  { id: 'heyu', name: '合窳 (泗水 pool)', at: 'h10', pool: 'sishui' },
   { id: 'tianma', name: '天马 (太行)', at: 'h10', pool: 'taihang' },
   { id: 'linghu', name: '领胡 (太行)', at: 'h10', pool: 'taihang' },
   { id: 'renyu', name: '人鱼 (柳湾)', at: 'h10', pool: 'liuwan' },

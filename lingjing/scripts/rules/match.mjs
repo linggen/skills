@@ -13,7 +13,7 @@ import { dayKey, pick, staminaCost } from '../state.mjs';
 import { oddsKey, oddsWithin } from '../fightodds.js';
 import { cardCatalog, fightSetup } from './cards.mjs';
 import { clone, refuse, spendStamina } from './core.mjs';
-import { atScene, creatureOf, foeOf, huntKey, placeOf, poolOf, poolResting, poolUp, standsAtScene } from './world.mjs';
+import { atScene, creatureOf, foeOf, huntKey, huntRules, placeOf, poolOf, poolResting, poolUp, standsAtScene } from './world.mjs';
 
 /* The band a stand aims at: a careful player wins about half (tests/fight-band-pools.test.mjs holds ~45%). */
 export const MATCH = { target: 0.52, low: 0.4, high: 0.65, deals: 8, grow_max: 1.3 };
@@ -59,10 +59,19 @@ const D = MATCH.deals;
 const shareOf = e => (e.out === 'below' ? (e.won + D - e.k) / D : e.won / D);
 /* How near the target a part-weighed share could still end. */
 const nearest = e => { const lo = e.won / D, hi = (e.won + D - e.k) / D; return MATCH.target < lo ? lo - MATCH.target : MATCH.target > hi ? MATCH.target - hi : 0; };
+/* The last few fought here stand down — as world.mjs poolBeast does: the pool's memory deep, read across days (the record
+   of an earlier day still holds `last`), and never all of what is up: one is always left, and the one just fought is
+   never it while another is up (Hanli 2026-11-07: 「我玩斗法, 每次都是同样的妖, 应该打完换新的」 — 上山路 with three up
+   stood 狼 four fights running: once all three were among the last three, the stand fell back to the whole pool and its
+   pick, the same each time, stood the beast just fought). */
+export function restOf(content, state, place, up) {
+  const keep = Math.max(0, Math.min(huntRules(content, poolOf(content, place)).memory, up.length - 1));
+  const shut = new Set(keep ? (state.duels?.[huntKey(place.id)]?.last ?? []).slice(-keep) : []);
+  return up.filter(cid => !shut.has(cid));
+}
 function weigh(content, state, place, now, exclude = [], key = null) {
-  const recent = new Set((recOf(state, place, now)?.last ?? []).slice(-3));
   const up = poolUp(content, state, place, now).map(b => b.creature).filter(cid => !exclude.includes(cid));
-  const fresh = up.filter(cid => !recent.has(cid));
+  const fresh = restOf(content, state, place, up);
   const pool = fresh.length ? fresh : up;
   const catalog = cardCatalog(content);
   const memo = memoOf(state, now, key), of = { ...memo.of };

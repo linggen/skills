@@ -4280,6 +4280,304 @@
    }
   },
   {
+   "key": "renyu@sishui",
+   "id": "renyu",
+   "story": false,
+   "hui": "h10",
+   "art": "art/renyu.webp",
+   "name": {
+    "zh": "人鱼",
+    "en": "Renyu"
+   },
+   "hint": {
+    "zh": "鱼的身子，四只脚，在浅水里爬。",
+    "en": "A fish's body on four legs, crawling in the shallows."
+   },
+   "brief": {
+    "zh": {
+     "creature": {
+      "id": "renyu",
+      "name": "人鱼",
+      "pinyin": "rén yú",
+      "root": "water",
+      "root_name": "水",
+      "lean": "quick",
+      "art": "art/renyu.webp",
+      "about": null
+     },
+     "says": {
+      "foe": "哇——哇——",
+      "won": "它扑通一声滑回了水里。",
+      "lost": "它在水边哭了一夜，你没能近身。"
+     },
+     "stake": "泗水边"
+    },
+    "en": {
+     "creature": {
+      "id": "renyu",
+      "name": "Renyu",
+      "root": "water",
+      "root_name": "Water",
+      "lean": "quick",
+      "art": "art/renyu.webp",
+      "about": null
+     },
+     "says": {
+      "foe": "Waah — waah —",
+      "won": "With a splash it slides back into the water.",
+      "lost": "It cries by the water all night; you never get close."
+     },
+     "stake": "By the Si"
+    }
+   },
+   "setup": {
+    "mode": "pve",
+    "you": {
+     "tier": "foundation",
+     "step": 0.3333333333333333,
+     "root": "wood",
+     "deck": [
+      "mutang",
+      "huochai",
+      "houtu",
+      "zheng",
+      "luying",
+      "yangzhen",
+      "jinren",
+      "ruxi",
+      "suijin",
+      "zhennu"
+     ],
+     "extra": [],
+     "party": [
+      {
+       "id": "ahe",
+       "name": {
+        "zh": "阿禾",
+        "en": "A-He"
+       },
+       "root": "wood",
+       "hp": 0.4,
+       "art": "art/people/ahe-girl.webp",
+       "deck": [
+        "qingteng",
+        "qingteng",
+        "qingguang",
+        "peiyuan",
+        "tengmiao",
+        "bingzhuifu",
+        "chunsheng",
+        "zhenyuefu"
+       ]
+      }
+     ],
+     "pouch": [
+      {
+       "id": "mend-pill",
+       "heal": 10
+      },
+      {
+       "id": "huiqi-pill",
+       "mana": 3
+      }
+     ],
+     "power": 2,
+     "armor": 4
+    },
+    "foe": {
+     "tier": "foundation",
+     "root": "water",
+     "deck": [
+      "luying",
+      "luying",
+      "luying",
+      "luying",
+      "luying",
+      "changyou",
+      "changyou",
+      "hantan",
+      "hantan",
+      "chaoqi",
+      "hanquan",
+      "kui",
+      "luying",
+      "luying",
+      "luying",
+      "luying",
+      "luying",
+      "changyou",
+      "changyou",
+      "hantan",
+      "hantan"
+     ],
+     "hp": 2.89,
+     "power": 1,
+     "heals": 1,
+     "healMax": 7,
+     "signature": {
+      "id": "ti",
+      "name": {
+       "zh": "婴啼",
+       "en": "The Infant's Cry"
+      },
+      "effect": {
+       "sweep": 2
+      }
+     }
+    }
+   }
+  },
+  {
+   "key": "heyu@sishui",
+   "id": "heyu",
+   "story": false,
+   "hui": "h10",
+   "art": "art/heyu.webp",
+   "name": {
+    "zh": "合窳",
+    "en": "Heyu"
+   },
+   "hint": {
+    "zh": "一头比牛还大的彘，黄毛，红尾巴拖在身后像一条火；那张脸是人的，像谁都像，像谁都不像。",
+    "en": "A pig bigger than an ox, yellow-haired, a red tail dragging behind like a trail of fire; the face is a man's — like everyone, like no one."
+   },
+   "brief": {
+    "zh": {
+     "creature": {
+      "id": "heyu",
+      "name": "合窳",
+      "pinyin": "hé yǔ",
+      "root": "earth",
+      "root_name": "土",
+      "lean": "fierce",
+      "art": "art/heyu.webp",
+      "about": null
+     },
+     "says": {
+      "foe": "哭声是饵，你是鱼。",
+      "won": "它拖着那张人脸，滚进坑里不动了。",
+      "lost": "哭声停了。你也没了声。"
+     },
+     "stake": "泗水边"
+    },
+    "en": {
+     "creature": {
+      "id": "heyu",
+      "name": "Heyu",
+      "root": "earth",
+      "root_name": "Earth",
+      "lean": "fierce",
+      "art": "art/heyu.webp",
+      "about": null
+     },
+     "says": {
+      "foe": "The crying is the bait. You are the fish.",
+      "won": "It drags its human face into the pit and lies still.",
+      "lost": "The crying stops. So do you."
+     },
+     "stake": "By the Si"
+    }
+   },
+   "setup": {
+    "mode": "pve",
+    "you": {
+     "tier": "foundation",
+     "step": 0.3333333333333333,
+     "root": "wood",
+     "deck": [
+      "mutang",
+      "huochai",
+      "houtu",
+      "zheng",
+      "luying",
+      "yangzhen",
+      "jinren",
+      "ruxi",
+      "suijin",
+      "zhennu"
+     ],
+     "extra": [],
+     "party": [
+      {
+       "id": "ahe",
+       "name": {
+        "zh": "阿禾",
+        "en": "A-He"
+       },
+       "root": "wood",
+       "hp": 0.4,
+       "art": "art/people/ahe-girl.webp",
+       "deck": [
+        "qingteng",
+        "qingteng",
+        "qingguang",
+        "peiyuan",
+        "tengmiao",
+        "bingzhuifu",
+        "chunsheng",
+        "zhenyuefu"
+       ]
+      }
+     ],
+     "pouch": [
+      {
+       "id": "mend-pill",
+       "heal": 10
+      },
+      {
+       "id": "huiqi-pill",
+       "mana": 3
+      }
+     ],
+     "power": 2,
+     "armor": 4
+    },
+    "foe": {
+     "tier": "foundation",
+     "root": "earth",
+     "deck": [
+      "paoxiao",
+      "jixiao",
+      "jixiao",
+      "jixiao",
+      "paoxiao",
+      "paoxiao",
+      "luoshi",
+      "luoshi",
+      "kuiniu",
+      "kuiniu",
+      "tunshi",
+      "shishou",
+      "paoxiao",
+      "jixiao",
+      "jixiao",
+      "jixiao",
+      "paoxiao",
+      "paoxiao",
+      "luoshi",
+      "luoshi",
+      "kuiniu"
+     ],
+     "hp": 4.23,
+     "power": 1,
+     "might": 1.23,
+     "heals": 1,
+     "healMax": 7,
+     "signature": {
+      "id": "yingti-renmian",
+      "name": {
+       "zh": "其音如婴儿",
+       "en": "A Voice Like a Baby's"
+      },
+      "effect": {
+       "sweep": 2,
+       "damage": 5
+      }
+     }
+    }
+   }
+  },
+  {
    "key": "tianma@taihang",
    "id": "tianma",
    "story": false,
