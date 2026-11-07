@@ -11,6 +11,7 @@ import { gearBrief } from '../scripts/rules/errands.mjs';
 import { gearFight } from '../scripts/rules/cards.mjs';
 import { ARM_SLOTS, GEAR_SLOTS } from '../scripts/rules/wear.mjs';
 import { wayLine } from '../scripts/wayline.js';
+import { WORDS } from '../scripts/cards.js';
 
 const content = everyJuan(loadContent());
 const NOW = new Date('2026-10-05T10:00:00');
@@ -62,4 +63,13 @@ test('an old save wearing 顺风溜 as its 法衣: carried into the shoes slot, 
 test('the way line names the slot 鞋', () => {
   const line = wayLine({ kind: 'wear', slot: 'shoes', does: { def: 1 } }, 'zh');
   assert.match(String(line), /鞋/);
+});
+
+test('the page\'s own slot words (wayline.js, cards.js gearSlots) say what items.json `slots` say, zh and en', () => {
+  for (const sl of content.items.slots) {
+    for (const lang of ['zh', 'en']) {
+      assert.equal(WORDS[lang].gearSlots[sl.id], sl.name[lang], `cards.js gearSlots.${sl.id} (${lang})`);
+      assert.ok(String(wayLine({ kind: 'wear', slot: sl.id, does: {} }, lang)).startsWith(sl.name[lang]), `wayline ${sl.id} (${lang})`);
+    }
+  }
 });

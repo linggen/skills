@@ -214,6 +214,31 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       room.queue.push(fn);
       hurry();
     }
+    /* A queued tap names WHAT was tapped, never only where: by the time it is taken, a tap queued before it may have
+       played a card or driven off a body, and the index it was given points at another. A card is its id and which
+       copy of it (the nth); a body its uid; a pill its id and copy. Taken, it is found again in the room as it then
+       stands; gone, the tap is let go. Other spots (the beast, 结束回合, 主灵根一击) stand where they stood. */
+    const copyAt = (list, i, idOf = (x) => x) => { const id = idOf(list[i]); return { id, nth: list.slice(0, i).filter((x) => idOf(x) === id).length }; };
+    const copyIn = (list, { id, nth }, idOf = (x) => x) => {
+      const at = list.map((x, i) => (idOf(x) === id ? i : -1)).filter((i) => i >= 0);
+      return at.length ? at[Math.min(nth, at.length - 1)] : -1;
+    };
+    const pillId = (p) => p?.id ?? p;
+    function heldOf(spot) {
+      const st = room.st;
+      if (!spot || spot.index == null || spot.index < 0) return { spot };
+      if (spot.kind === 'hand') return st.you.hand[spot.index] == null ? { spot } : { spot, card: copyAt(st.you.hand, spot.index) };
+      if (spot.kind === 'pill') return st.you.pouch?.[spot.index] == null ? { spot } : { spot, pill: copyAt(st.you.pouch, spot.index, pillId) };
+      if (spot.kind === 'theirs' || spot.kind === 'mine') { const m = (spot.kind === 'theirs' ? st.foe : st.you).board[spot.index]; return m?.uid != null ? { spot, uid: m.uid } : { spot }; }
+      return { spot };
+    }
+    function spotNow(h) {
+      const st = room.st;
+      if (h.card) { const i = copyIn(st.you.hand, h.card); return i < 0 ? null : { ...h.spot, index: i }; }
+      if (h.pill) { const i = copyIn(st.you.pouch ?? [], h.pill, pillId); return i < 0 ? null : { ...h.spot, index: i }; }
+      if (h.uid != null) { const i = (h.spot.kind === 'theirs' ? st.foe : st.you).board.findIndex((m) => m.uid === h.uid); return i < 0 ? null : { ...h.spot, index: i }; }
+      return h.spot;
+    }
     function drain() {
       if (gone() || room.busy || !room.queue.length) return;
       if (room.st.outcome !== 'open' || room.st.whose !== 'you') { room.queue.length = 0; return; }
@@ -318,7 +343,10 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       if (spot.kind === 'ask') { if (!room.yielded) hook('onAsk'); return; }
       if (paused()) return;
       if (spot.kind === 'quit') { room.queue.length = 0; return yieldFight(); }
-      if (room.busy) { if (room.mine && !gone()) queueTap(() => onTap(spot)); return; }
+      if (room.busy) {
+        if (room.mine && !gone()) { const h = heldOf(spot); queueTap(() => { const now = spotNow(h); if (now) onTap(now); else drain(); }); }
+        return;
+      }
       if (room.st.outcome !== 'open') return;
       if (spot.kind === 'stage' && !room.picked) return;
       return doMove(pickOf(room.picked, spot, view(room.st), room.catalog, offers(room.st)));
@@ -337,7 +365,13 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       active: () => !gone() && !paused() && (!room.busy || room.mine) && room.st.outcome === 'open' && room.st.whose === 'you',
       onDrop: (from, to) => {
         const go = () => { if (room.busy || room.st.outcome !== 'open') return; room.picked = null; doMove(dropOf(from, to, view(room.st), room.catalog)); };
-        if (room.busy) { if (room.mine && !gone()) queueTap(go); return; }
+        if (room.busy) {
+          if (room.mine && !gone()) {
+            const a = heldOf(from), b = heldOf(to);
+            queueTap(() => { const f = spotNow(a), t = spotNow(b); if (f && t) { from = f; to = t; go(); } else drain(); });
+          }
+          return;
+        }
         go();
       },
     });
