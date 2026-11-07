@@ -203,7 +203,7 @@ test('a summon names what comes (Hanli 11-06: 藤苗 read 「入阵：召来 1 �
 
 test('every playable card says what it does on its face (gate 11-07: 回气丹 showed a name and a cost, nothing else)', () => {
   // Each verb of the closed vocabulary has its words, alone on a card.
-  const sample = { buff: { atk: 1, hp: 1 }, rally: { atk: 1, hp: 0 }, summon: { id: 'tengmiao_token', n: 1 } };
+  const sample = { buff: { atk: 1, hp: 1 }, rally: { atk: 1, hp: 0 }, summon: { id: 'tengmiao_token', n: 1 }, ward: { element: 'fire', half: true, turns: 1 } };
   for (const verb of Object.keys(EFFECTS)) {
     for (const lang of ['zh', 'en']) {
       assert.ok(sayEffect({ effect: { [verb]: sample[verb] ?? 2 } }, { lang, catalog: WORLD }).trim(), `${verb} (${lang}) has no words`);

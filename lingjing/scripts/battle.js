@@ -113,6 +113,9 @@ export const EFFECTS = {
   // Two more, 2026-10-16 (cards.md § 4) — a mortal's first hand and the book's 回气丹:
   dodge: { at: 'none' }, //     一滚 (三试): the next N blows at the lead are turned aside
   mana: { at: 'none' }, //      回气丹 (「丹田空了吞一颗」): N 灵力 back this turn, never past the cap
+  // One more, 2026-11-07 (Hanli: 蛫's 「可以御火」 must be true — option a): 御 {element, half, turns} — blows of that
+  // element at its lead land halved (round down, at least 1) until the end of the other side's next `turns` turns.
+  ward: { at: 'none' },
 };
 
 /* One standing beast state beside the card verbs, 2026-10-16 — 装睡 (犰狳,
@@ -436,6 +439,13 @@ export function endTurn(st) {
   outlived(st, done);
   if (st.outcome !== 'open') return;
   for (const m of done.board) m.held = false; // its chained turn is over
+  // 御: a ward on the other side lasts to the end of this side's turn, `left` of them.
+  const opp = other(st, done);
+  if (opp.wards?.length) {
+    for (const w of opp.wards) w.left -= 1;
+    for (const w of opp.wards.filter(x => x.left <= 0)) st.log.push({ act: 'ward-off', who: opp.who, element: w.element });
+    opp.wards = opp.wards.filter(x => x.left > 0);
+  }
   st.whose = st.whose === 'you' ? 'foe' : 'you';
   startTurn(st);
 }
@@ -467,11 +477,14 @@ function parch(st, side) {
    its 佩 has turned it: `dealt`, less the 抗 of that element, at least 1.
    The page prints this for a blow at the hero, the rules land it. */
 export const wardOf = (side, element) => (element && side?.ward?.[element]) || 0;
+/* 御 (the `ward` verb, § EFFECTS): a ward that halves this element's blows at the lead, while it lasts. */
+export const shieldOf = (side, element) => (element && (side?.wards ?? []).find(w => w.element === element && w.left > 0 && w.half)) || null;
 export const landed = (st, who, n, element) => {
   const them = who === 'you' ? st.foe : st.you;
   if (glances(them, element)) return Math.max(0, them.feint.lands ?? 1);
   const d = dealt(st, who, n, element, them.root);
-  return Math.max(1, d - wardOf(them, element));
+  const h = shieldOf(them, element) ? Math.max(1, Math.floor(d / 2)) : d;
+  return Math.max(1, h - wardOf(them, element));
 };
 
 function hurt(st, side, amount, why = {}) {
@@ -599,6 +612,12 @@ function resolve(st, side, effect, target, { arrival = false } = {}) {
   if (effect.dodge) {
     side.dodge = (side.dodge ?? 0) + effect.dodge;
     st.log.push({ act: 'dodge', who: side.who, n: effect.dodge });
+  }
+  if (effect.ward?.element) {
+    // 御: one ward an element, laid anew (never stacked); counted down as the other side's turns end (§ endTurn).
+    const w = { element: effect.ward.element, half: effect.ward.half !== false, left: Math.max(1, effect.ward.turns ?? 1) };
+    side.wards = [...(side.wards ?? []).filter(x => x.element !== w.element), w];
+    st.log.push({ act: 'ward', who: side.who, element: w.element, turns: w.left });
   }
   if (effect.mana) {
     side.mana = Math.min(side.manaCap, side.mana + effect.mana);
@@ -1075,6 +1094,7 @@ export function view(st) {
     ...(s.feint ? { feint: { ...s.feint } } : {}),
     ...(s.allies?.length ? { allies: s.allies.map(a => ({ id: a.id, name: a.name, root: a.root, hp: a.hp, hpMax: a.hpMax, taunt: a.taunt, gone: a.gone, deck: a.deck.length })) } : {}),
     ...(s.dodge ? { dodge: s.dodge } : {}),
+    ...(s.wards?.length ? { wards: s.wards.map(w => ({ ...w })) } : {}),
     ...(s.pouch?.length || s.pillUsed ? { pouch: s.pouch.map(p => ({ ...p })), pillUsed: s.pillUsed } : {}),
     board: s.board.map(m => ({ id: m.id, uid: m.uid ?? null, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, ready: !m.sick && !m.struck && !m.held, chained: Boolean(m.chain || m.held), drought: m.drought ?? 0 })),
   });

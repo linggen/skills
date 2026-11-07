@@ -510,6 +510,11 @@
           "rally": {
             "atk": 1,
             "hp": 2
+          },
+          "ward": {
+            "element": "fire",
+            "half": true,
+            "turns": 1
           }
         }
       },

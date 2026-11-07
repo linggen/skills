@@ -14,9 +14,13 @@ import { spoken } from './cards.js';
 import { esc } from './esc.js';
 import { freshHtml, partyHtml, sealHtml } from './battle-party.js';
 import { pillTrayHtml, pouchPickHtml } from './danang.js';
-import { POWER_COST, asleep, bodyOf, boostedOf, clash, costOf, dealt, effectOf, hashOf, keywordsOf, landed, pierces, sigEffect, starsOf } from './battle.js';
+import { POWER_COST, asleep, bodyOf, boostedOf, clash, costOf, dealt, effectOf, hashOf, keywordsOf, landed, pierces, shieldOf, sigEffect, starsOf } from './battle.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
+const EL_EN = { metal: 'metal', wood: 'wood', water: 'water', fire: 'fire', earth: 'earth' };
+/* 御 (battle.js `ward`): what it says, on a card and in a 杀招's line. */
+const wardWords = (w, zh) => (zh ? `御${GLYPH[w.element] ?? ''}：${GLYPH[w.element] ?? ''}伤减半，${(w.turns ?? 1) > 1 ? `至对方第 ${w.turns} 回合末` : '至对方下回合末'}`
+  : `Ward ${EL_EN[w.element] ?? w.element}: ${EL_EN[w.element] ?? w.element} lands half${(w.turns ?? 1) > 1 ? `, for the other side's next ${w.turns} turns` : ", to the end of the other side's next turn"}`);
 const EN_EL = { metal: 'metal', wood: 'wood', water: 'water', fire: 'fire', earth: 'earth' };
 
 /* 相克 in words, only when it bites: 「木克土」 when the blow overcomes, the
@@ -29,13 +33,17 @@ function clashWord(element, target, lang) {
   return lang === 'en' ? `${EN_EL[a]} over ${EN_EL[b]}` : `${GLYPH[a]}克${GLYPH[b]}`;
 }
 
+const wardWord = (element, lang) => (lang === 'en' ? `${EL_EN[element] ?? element}-proof · half` : `御${GLYPH[element] ?? ''} 减半`);
+
 /* What the held thing would take off a target, as a badge on it. */
 function dmgBadge(st, n, element, target, lang, hero = false) {
   if (n == null) return '';
   // A blow at a sleeper that glances (battle.js § asleep) says so on its badge.
   const glance = hero && asleep(st.foe) && !pierces(st.foe, element);
-  const word = glance ? (lang === 'en' ? 'glances' : '擦过') : clashWord(element, target, lang);
-  const down = glance || clash(element, target) < 1;
+  // …and one its 御 halves (battle.js `ward`): 「御火 减半」.
+  const shield = hero && !glance && shieldOf(st.foe, element);
+  const word = glance ? (lang === 'en' ? 'glances' : '擦过') : [clashWord(element, target, lang), shield ? wardWord(element, lang) : ''].filter(Boolean).join(' · ');
+  const down = glance || shield || clash(element, target) < 1;
   const hits = hero ? landed(st, 'you', n, element) : dealt(st, 'you', n, element, target);
   return `<span class="bdmg${down ? ' down' : word ? ' up' : ''}">−${hits}${word ? ` · ${word}` : ''}</span>`;
 }
@@ -528,10 +536,12 @@ function thingHtml(i, isEn) {
 function onBeast(st, c, ctx) {
   const e = effectOf(st.you, c);
   if (c.kind !== 'spell' || e?.damage == null) return '';
-  const word = clashWord(c.element, st.foe.root, ctx.lang);
+  // 御 (battle.js `ward`) halves a blow of its element while it lasts: the number on the card is the halved one.
+  const shield = shieldOf(st.foe, c.element);
+  const word = [clashWord(c.element, st.foe.root, ctx.lang), shield ? wardWord(c.element, ctx.lang) : ''].filter(Boolean).join(' · ');
   if (!word) return '';
-  const n = dealt(st, 'you', e.damage, c.element, st.foe.root);
-  return ` <b class="bon${clash(c.element, st.foe.root) < 1 ? ' down' : ''}">${ctx.lang === 'en' ? `→ ${n} on ${pro(ctx).itObj} · ${word}` : `→ 对${pro(ctx).itObj} ${n} · ${word}`}</b>`;
+  const d = dealt(st, 'you', e.damage, c.element, st.foe.root), n = shield ? Math.max(1, Math.floor(d / 2)) : d;
+  return ` <b class="bon${shield || clash(c.element, st.foe.root) < 1 ? ' down' : ''}">${ctx.lang === 'en' ? `→ ${n} on ${pro(ctx).itObj} · ${word}` : `→ 对${pro(ctx).itObj} ${n} · ${word}`}</b>`;
 }
 
 /* 反噬 a draw would cost, reckoned now: each card wanted past a dry deck costs
@@ -568,6 +578,12 @@ function summonWords(sm, who, zh) {
   return zh ? `召来 ${n > 1 ? `${n} 个 ` : ''}${who}` : `summon ${n > 1 ? `${n} × ` : ''}${who}`;
 }
 
+/* 御 on a side while it lasts (battle.js `wards`): a small tag beside its name, 「御火」 — its blows of that element land half. */
+function wardTags(side, ctx) {
+  const zh = ctx.lang !== 'en';
+  return (side?.wards ?? []).filter(w => w.left > 0).map(w => ` <span class="bwardtag el-${esc(w.element)}" title="${esc(wardWords({ ...w, turns: w.left }, zh))}">${zh ? `御${GLYPH[w.element] ?? ''}` : `${cap(EL_EN[w.element] ?? w.element)}-proof`}</span>`).join('');
+}
+
 /* What a card does, in words, on the card — never in a tooltip. */
 export function sayEffect(c, ctx) {
   const zh = ctx.lang !== 'en';
@@ -584,6 +600,7 @@ export function sayEffect(c, ctx) {
   if (e.swallow != null) bits.push(zh ? `吞${pro(ctx).its}阵前一个攻 ≤${e.swallow} 的` : `Swallow one of ${pro(ctx).its} rank with attack ≤ ${e.swallow}`);
   if (e.drain != null) bits.push(zh ? `${pro(ctx).it}下回合灵力 −${e.drain}` : `${pro(ctx).its} Force −${e.drain} next turn`);
   if (e.mana != null) bits.push(zh ? `回 ${e.mana} 灵力` : `+${e.mana} Force`);
+  if (e.ward?.element) bits.push(wardWords(e.ward, zh));
   if (e.dodge != null) bits.push(zh ? (e.dodge > 1 ? `躲过接下来 ${e.dodge} 击` : '躲过下一击') : (e.dodge > 1 ? `dodge the next ${e.dodge} blows` : 'dodge the next blow'));
   if (e.drought != null) bits.push(zh ? `大旱：你每回合末，${pro(ctx).its}阵前每个 ${e.drought} 点` : `Drought: at the end of your turn, ${e.drought} to each of ${pro(ctx).its} rank`);
   const key = c.keywords?.includes('taunt') ? (zh ? '护主' : 'Guard') : null;
@@ -609,6 +626,7 @@ export function sigWords(st, ctx) {
   if (e.heal != null) out.push(zh ? `${pro(ctx).it}回 ${e.heal}` : `${pro(ctx).it} heals ${e.heal}`);
   if (e.summon) { const who = name(ctx.catalog?.[e.summon.id], ctx.lang); out.push(who ? (zh ? `召来 ${who} ×${e.summon.n ?? 1}` : `summons ${who} ×${e.summon.n ?? 1}`) : (zh ? `召来 ${e.summon.n ?? 1} 个` : `summons ${e.summon.n ?? 1}`)); }
   if (e.rally) out.push(zh ? `${pro(ctx).its}阵前全体 +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}` : `${pro(ctx).its} rank +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}`);
+  if (e.ward?.element) out.push(zh ? `${pro(ctx).it}御${GLYPH[e.ward.element] ?? ''}：${GLYPH[e.ward.element] ?? ''}伤减半，到你下回合末` : `${pro(ctx).it} wards ${EL_EN[e.ward.element] ?? e.ward.element}: it lands half, to the end of your next turn`);
   return out.join(zh ? ' · ' : ' · ');
 }
 
@@ -731,6 +749,8 @@ function sayTurn(t, ctx) {
     case 'glanced': return `${who} ${zh ? `装睡，这一下擦过（已 ${t.glanced} 下）` : `plays dead — that one glanced (${t.glanced} so far)`}`;
     case 'bound': return `${who} ${zh ? `被${card(t.id)}缚住 —— 这一回合打得进去` : `is bound by ${card(t.id)} — this turn goes in`}`;
     case 'woke': return `${who} ${zh ? '睁眼了' : 'opens its eyes'}`;
+    case 'ward': return `${who} ${zh ? `御${GLYPH[t.element] ?? ''}：${GLYPH[t.element] ?? ''}伤减半` : `wards ${EL_EN[t.element] ?? t.element}: it lands half`}`;
+    case 'ward-off': return `${who} ${zh ? `御${GLYPH[t.element] ?? ''}散了` : `no longer wards ${EL_EN[t.element] ?? t.element}`}`;
     default: return '';
   }
 }
@@ -887,7 +907,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
 
     <button class="bside foe${aim.hero ? ' aiming aimed' : ''}${windUp(st)}" data-spot="hero">
       <span class="bplate">${ctx.foeArt ? `<img class="bface" src="${esc(ctx.foeArt)}" alt="">` : `<b class="bface none">${esc([...(ctx.foeName ?? '')][0] ?? '')}</b>`}</span>
-      <div class="bwho"><span class="bfoename">${esc(ctx.foeName ?? '')} <span class="belem el-${esc(st.foe.root ?? 'none')}">${GLYPH[st.foe.root] ?? ''}</span></span>
+      <div class="bwho"><span class="bfoename">${esc(ctx.foeName ?? '')} <span class="belem el-${esc(st.foe.root ?? 'none')}">${GLYPH[st.foe.root] ?? ''}</span>${wardTags(st.foe, ctx)}</span>
         ${pool(w.hp, st.foe.hp, st.foe.hpMax, 'hp', st.foe.trial?.yield)}
         ${st.foe.trial?.survive ? `<small class="bstake bsurvive">${esc(ctx.lang === 'en' ? `Stood ${st.foe.endured ?? 0} of ${st.foe.trial.survive} turns` : `已站住 ${st.foe.endured ?? 0}/${st.foe.trial.survive} 回合`)}</small>` : ''}
         ${bubble('foe', ctx.says?.foe)}</div>
