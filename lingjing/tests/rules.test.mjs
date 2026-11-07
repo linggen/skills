@@ -3540,7 +3540,9 @@ test('a fight reopened mid-fight stands where it stood: the moves kept with it (
   assert.match(host, /data\?\.brief\?\.picks/);
   assert.match(host, /rules\('duel', \{ id: fightId, action: 'mark'/);
   const room = fs.readFileSync(new URL('../scripts/games/kapai.js', import.meta.url), 'utf8');
-  assert.match(room, /replayInto\(st0, prior\)/);
+  // The room replays the moves only on a deal of its own (the phone); a state handed (the Mac, already replayed) stands as
+  // handed — never replayed twice (tests/kept-fight-resume.test.mjs).
+  assert.match(room, /const st0 = data\.st \?\? replayInto\(begin\(setup, fight\.catalog\), prior\);/);
   // Settled, the page's Look drops the open fight at once: no 「回到这一战」 card for the second the next Look takes (11-05).
   assert.match(page, /if \(r\.ok && look\?\.fight\?\.game === id\) look = \{ \.\.\.look, fight: null, stage: \(look\.stage \?\? \[\]\)\.filter\(\(c\) => c\.card !== 'fight'\) \};/);
   void actionOf;
