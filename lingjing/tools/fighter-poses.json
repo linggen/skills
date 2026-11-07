@@ -1167,7 +1167,11 @@
      -30,
      10
     ],
-    "words": "running fast forward to the right, leaning forward, the sword held low and back, the robe flying behind. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+    "words": "running fast forward to the right, leaning forward, the sword held low and back, the robe flying behind. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "fix": {
+     "s": 1.12
+    },
+    "seed": 4
    },
    "run2": {
     "lean": 26,
@@ -1187,7 +1191,11 @@
      -30,
      10
     ],
-    "words": "running fast forward to the right, mid-stride, one foot driving past the other, the sword held low and back, the robe flying behind. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+    "words": "running fast forward to the right, mid-stride, one foot driving past the other, the sword held low and back, the robe flying behind. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "fix": {
+     "s": 1.12
+    },
+    "seed": 4
    },
    "run3": {
     "lean": 24,
@@ -1207,7 +1215,11 @@
      -30,
      10
     ],
-    "words": "running fast forward to the right, the other foot reaching forward, the sword held low and back, the robe streaming behind. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+    "words": "running fast forward to the right, the other foot reaching forward, the sword held low and back, the robe streaming behind. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "fix": {
+     "s": 1.05
+    },
+    "seed": 1
    },
    "roll1": {
     "lean": 50,
@@ -1228,7 +1240,8 @@
      140
     ],
     "words": "diving into a forward roll, ducking her head, the robe gathering, the sword held close along her arm. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
-    "free": true
+    "free": true,
+    "seed": 2
    },
    "roll2": {
     "lean": 60,
@@ -1249,27 +1262,8 @@
      140
     ],
     "words": "curled tight rolling forward on the ground, head tucked, knees to chest, the robe wrapped round her, the sword held close along her arm. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
-    "free": true
-   },
-   "roll3": {
-    "lean": 20,
-    "legF": [
-     80,
-     -10
-    ],
-    "legB": [
-     10,
-     -80
-    ],
-    "armF": [
-     60,
-     90
-    ],
-    "armB": [
-     40,
-     140
-    ],
-    "words": "coming up out of a roll onto one knee, the sword coming forward to guard. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+    "free": true,
+    "seed": 2
    },
    "zhen1": {
     "lean": 10,
@@ -1289,7 +1283,8 @@
      60,
      150
     ],
-    "words": "gathering force: the sword drawn in close upright before her chest, her left palm pressed to its flat, knees bent, sleeves stirring. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+    "words": "gathering force: the sword drawn in close upright before her chest, her left palm pressed to its flat, knees bent, sleeves stirring. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "seed": 1
    },
    "zhen2": {
     "lean": 0,
@@ -1309,7 +1304,8 @@
      -80,
      -60
     ],
-    "words": "a burst of force outward: arms flung wide, the sword swept out to the right and the left palm thrust out behind, robe and sleeves blasted outward, hair flying, a ring of wind around her. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+    "words": "a burst of force outward: arms flung wide, the sword swept out to the right and the left palm thrust out behind, robe and sleeves blasted outward, hair flying, a ring of wind around her. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "seed": 1
    },
    "zhen3": {
     "lean": 4,
@@ -1329,7 +1325,8 @@
      30,
      140
     ],
-    "words": "settling back into her guard after a burst of force, sleeves still settling, the sword forward level. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash."
+    "words": "settling back into her guard after a burst of force, sleeves still settling, the sword forward level. ONE sword only, the bare blade in her right hand; no scabbard, no second sword, nothing at her waist but the sash.",
+    "seed": 1
    },
    "cutin": {
     "lean": 0,
@@ -1351,7 +1348,8 @@
     ],
     "words": "a close-up bust from the chest up, eyes cold and fixed, the jian sword raised upright beside her face, its blade catching the light, wisps of hair across her cheek, a single dramatic still. Only her head, shoulders, the raised hand and the blade.",
     "free": true,
-    "cutin": true
+    "cutin": true,
+    "seed": 1
    }
   },
   "clips": {
@@ -1616,7 +1614,7 @@
     "frames": [
      "roll1",
      "roll2",
-     "roll3"
+     "getup1"
     ],
     "fps": 10
    },
@@ -2841,7 +2839,11 @@
      44,
      160
     ],
-    "words": "pushing off the front foot to hop quickly backward to the left, body leaning back, guard up. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+    "words": "pushing off the front foot to hop quickly backward to the left, body leaning back, guard up. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "fix": {
+     "s": 1.04
+    },
+    "seed": 1
    },
    "backdash2": {
     "lean": -18,
@@ -2862,7 +2864,8 @@
      160
     ],
     "words": "in a quick low hop backward to the left, both feet just off the ground, knees bent, guard up. No ground under him. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
-    "air": true
+    "air": true,
+    "seed": 1
    },
    "backdash3": {
     "lean": -6,
@@ -2882,7 +2885,8 @@
      44,
      160
     ],
-    "words": "landing from a backward hop, knees bent to absorb it, guard up, facing right. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+    "words": "landing from a backward hop, knees bent to absorb it, guard up, facing right. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "seed": 1
    },
    "throw1": {
     "lean": 14,
@@ -2902,7 +2906,21 @@
      70,
      90
     ],
-    "words": "stepping in close and seizing the opponent's collar and sleeve with both hands at chest height. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+    "words": "stepping in with a wide low stance, both open hands reaching forward at chest height to seize the opponent's collar and sleeve. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "points": {
+     "handF": [
+      710,
+      380
+     ],
+     "handB": [
+      660,
+      490
+     ]
+    },
+    "fix": {
+     "s": 0.97
+    },
+    "seed": 6
    },
    "throw2": {
     "lean": -6,
@@ -2922,7 +2940,21 @@
      -30,
      0
     ],
-    "words": "turning his hips in under the opponent for a hip throw, pulling both hands down and across his body. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+    "words": "sunk low with his knees bent wide, both fists gripping and yanking the opponent down in front of his belly, hips loaded, shoulders hunched over. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "points": {
+     "handF": [
+      602,
+      630
+     ],
+     "handB": [
+      492,
+      650
+     ]
+    },
+    "fix": {
+     "s": 0.86
+    },
+    "seed": 5
    },
    "throw3": {
     "lean": -20,
@@ -2942,7 +2974,18 @@
      -70,
      -30
     ],
-    "words": "finishing a throw: his body turned back to the left, both arms swung hard down and back, having flung the opponent over behind him. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+    "words": "flinging the opponent away forward: both arms thrown straight out ahead to the right with open hands, his body lunging after them, the rear leg straight. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "points": {
+     "handF": [
+      710,
+      480
+     ],
+     "handB": [
+      650,
+      650
+     ]
+    },
+    "seed": 9
    },
    "dash2": {
     "lean": 34,
@@ -2962,7 +3005,8 @@
      -40,
      -10
     ],
-    "words": "dashing forward to the right in a low fast run, the rear foot driving past, leaning far forward, fists up. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+    "words": "dashing forward to the right in a low fast run, the rear foot driving past, leaning far forward, fists up. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "seed": 1
    },
    "dash3": {
     "lean": 30,
@@ -2982,7 +3026,8 @@
      -40,
      -10
     ],
-    "words": "dashing forward to the right in a low fast running lunge, the other foot reaching forward, leaning forward, fists up. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+    "words": "dashing forward to the right in a low fast running lunge, the other foot reaching forward, leaning forward, fists up. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "seed": 1
    },
    "cast3": {
     "lean": 18,
@@ -3002,7 +3047,8 @@
      80,
      92
     ],
-    "words": "the pushing palm strike held at full extension, the open palm out forward to the right at chest height, the other fist at his hip, deep bow stance, a burst of force. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+    "words": "the pushing palm strike held at full extension, the open palm out forward to the right at chest height, the other fist at his hip, deep bow stance, a burst of force. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "seed": 1
    },
    "cast4": {
     "lean": 6,
@@ -3022,7 +3068,8 @@
      44,
      160
     ],
-    "words": "drawing the palm back from a palm strike into his guard, rising out of the bow stance. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+    "words": "drawing the palm back from a palm strike into his guard, rising out of the bow stance. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "seed": 2
    },
    "spin1": {
     "lean": 4,
@@ -3042,7 +3089,11 @@
      -30,
      40
     ],
-    "words": "winding up for a turning kick: shoulders turned away to the left, weight on the front foot, arms drawn across. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+    "words": "BOTH FEET FLAT ON THE GROUND, no leg raised, no kick: winding up, his shoulders and chest twisted away to the left so his back half turns toward the viewer, weight on the front foot, both fists drawn across his chest. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "fix": {
+     "s": 0.96
+    },
+    "seed": 3
    },
    "spin2": {
     "lean": -6,
@@ -3062,7 +3113,11 @@
      60,
      100
     ],
-    "words": "spinning on the front foot, his back toward the viewer for an instant, the rear knee lifting, arms swinging round. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+    "words": "spinning on the front foot, his back toward the viewer for an instant, the rear knee lifting, arms swinging round. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "fix": {
+     "s": 1.1
+    },
+    "seed": 2
    },
    "spin3": {
     "lean": -24,
@@ -3082,7 +3137,11 @@
      60,
      120
     ],
-    "words": "a turning back kick (zhuan shen hou deng): his rear leg whipped round and thrust straight out to the right at waist height, heel leading, body leaning away from it in one line. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+    "words": "a turning back kick (zhuan shen hou deng): his rear leg whipped round and thrust straight out to the right at waist height, heel leading, body leaning away from it in one line. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "fix": {
+     "s": 1.1
+    },
+    "seed": 2
    },
    "spin4": {
     "lean": 4,
@@ -3102,7 +3161,11 @@
      44,
      160
     ],
-    "words": "landing from a turning kick, the foot set down, back in his guard facing right. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+    "words": "landing from a turning kick, the foot set down, back in his guard facing right. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "fix": {
+     "s": 0.97
+    },
+    "seed": 1
    },
    "super3": {
     "lean": 20,
@@ -3122,7 +3185,8 @@
      88,
      92
     ],
-    "words": "both open palms thrust forward together to the right at chest height in a deep bow stance, the full force of a finishing strike, a fierce shout. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+    "words": "both open palms thrust forward together to the right at chest height in a deep bow stance, the full force of a finishing strike, a fierce shout. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "seed": 1
    },
    "super4": {
     "lean": 22,
@@ -3142,7 +3206,8 @@
      90,
      90
     ],
-    "words": "holding the double palm strike at full extension, leaning into it, hair and clothes blown back by the force. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+    "words": "holding the double palm strike at full extension, leaning into it, hair and clothes blown back by the force. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "seed": 1
    },
    "super5": {
     "lean": 6,
@@ -3162,7 +3227,11 @@
      44,
      160
     ],
-    "words": "after the finishing strike, drawing both hands back into his guard, breathing out, steady. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would."
+    "words": "after the finishing strike, drawing both hands back into his guard, breathing out, steady. A real Chinese kung fu form, clean and exact, weight and hips placed as a kung fu teacher would.",
+    "fix": {
+     "s": 0.97
+    },
+    "seed": 1
    },
    "cutin": {
     "lean": 0,
@@ -3184,7 +3253,8 @@
     ],
     "words": "a close-up bust from the chest up, shouting fiercely, eyes blazing with resolve, one open palm raised beside his face, hair flying, a single dramatic still. Only his head, shoulders and raised hand.",
     "free": true,
-    "cutin": true
+    "cutin": true,
+    "seed": 1
    }
   },
   "clips": {

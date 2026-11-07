@@ -404,7 +404,7 @@ Hanli 10-26: 「你发明的不太行, 用现有的应该都可以」 → 「街
   Frames by what the board plays: his KOF set (idle, walk ↔ back, crouch, jump, the four normals standing and crouching, block,
   hit, knockdown/get-up, 掌心火, 升勾, the 绝, roll, dash, win, lose); hers by her moves (guard, walk, 点剑, 长刺, 冰, the edge's
   point, the palm's glow · hold · strike, block, hit, 剑气三尺, the slip off the oil, win, lose) — she never throws K/L/O/;.
-  沈小满 44 frames (612 KB), 秦雁 33 (424 KB): ~1 MB for both, one webp sheet each (2048 px wide), figures ~430 px tall · preview: scripts/fighter-preview.html?dev=1&who=qinyan|xiaoman.
+  沈小满 68 frames (826 KB), 秦雁 57 (604 KB): ~1.4 MB for both, one webp sheet each (2048 px wide), figures ~430 px tall · preview: scripts/fighter-preview.html?dev=1&who=qinyan|xiaoman.
 - **Bot** (200 ms, chains, 技 and 绝 as the phone's buttons): wins 8/8 seeds in 41–65 s; 320 ms 8/8; masher, wall of blocks, idle lose.
 - **Skipped**: a mount-only board's skip shows the page's 「没走完，往下走了。」, as every board's; `won.skipped` kept in the level.
 - **v5 (10-31)** — the story's fights (Hanli 10-28: 「故事里的战斗可以用格斗」): every 古六 大比 bout a 格斗 board (design.md § 格斗 in
