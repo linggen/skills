@@ -7,6 +7,8 @@
 #                        [--fights 2] [--out <dir>] [--run-id <id>] [--update-baselines] [--debug]
 #                        [--only haunt,story,bout,walk,baseline]
 #   tools/playbot/run.sh --selftest      the seeded bugs (seeded-bugs.json) must each be caught, else the bot is broken
+#   tools/playbot/run.sh --ui [--host 0.0.0.0] [--port 7531]   试玩台, the review page (review-server.mjs): every
+#                        report and gate run, and the unsure shots waiting for Hanli. 127.0.0.1 unless --host says.
 #
 # Default: --ref origin/main. The report: <out>/ (default lingjing/report/<run-id>/) — findings.json, refusals.json,
 # played.json, shots/, contact.png, checklist.md, review.json (pending until a reviewer fills it in for this run id).
@@ -14,7 +16,7 @@
 set -uo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 SKILLS_REPO="$(cd "$HERE/../../.." && pwd)"          # …/skills
-REF="" INSTALL="" SIZES="430x932,375x812,1280x820" FIGHTS=2 OUT="" RUN_ID="" EXTRA=() SELFTEST=0
+REF="" INSTALL="" SIZES="430x932,375x812,1280x820" FIGHTS=2 OUT="" RUN_ID="" EXTRA=() SELFTEST=0 UI=0 UI_ARGS=()
 while [ $# -gt 0 ]; do
   case "$1" in
     --ref) REF="$2"; shift 2 ;;
@@ -26,10 +28,14 @@ while [ $# -gt 0 ]; do
     --update-baselines|--debug|--headed|--no-careful) EXTRA+=("$1"); shift ;;
     --only) EXTRA+=("--only=$2"); shift 2 ;;
     --selftest) SELFTEST=1; shift ;;
-    -h|--help) sed -n '2,14p' "$0"; exit 0 ;;
+    --ui) UI=1; shift ;;
+    --host|--port|--reports|--gate-runs|--rulings) UI_ARGS+=("${1}=$2"); shift 2 ;;
+    -h|--help) sed -n '2,17p' "$0"; exit 0 ;;
     *) echo "playbot: unknown flag $1" >&2; exit 2 ;;
   esac
 done
+# The review page needs nothing but node: no browser, no npm.
+[ "$UI" = 1 ] && exec node "$HERE/review-server.mjs" "${UI_ARGS[@]+"${UI_ARGS[@]}"}"
 [ -d "$HERE/../node_modules/playwright" ] && [ -d "$HERE/../node_modules/pixelmatch" ] \
   || (cd "$HERE/.." && npm ci --silent --no-audit --no-fund) || { echo "playbot: npm ci in lingjing/tools failed" >&2; exit 2; }
 SHARED="${LINGGEN_SHARED:-$(cd "$SKILLS_REPO/../linggen/shared" 2>/dev/null && pwd)}"

@@ -6,10 +6,13 @@
 //   played.json     what was played, and what could not be played and why
 //   shots/          every screenshot; contact.png + contact.html, all of them on one sheet
 //   checklist.md    the questions to answer per screenshot
-//   review.json     the verdict, "pending" until the reviewer fills it in for THIS run id (the release gate reads it)
+//   shots.json      every screenshot in order: {file, size, tag, where} (the review page groups them by fight)
+//   review.json     the verdict, "pending" until the reviewer fills it in for THIS run id (verdict.mjs derives it —
+//                   the release gate and the review page read it through that, nothing else)
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright';
+import { blankReview } from './verdict.mjs';
 
 export const QUESTIONS = [
   'Can every card\'s cost, name and effect be read?',
@@ -25,8 +28,9 @@ export async function writePack(out, result, { runId }) {
   w('findings.json', { run_id: runId, skill: result.skill, at: result.at, hard: result.findings.filter((f) => f.hard).length, findings: result.findings });
   w('refusals.json', { run_id: runId, refusals: result.refusals });
   w('played.json', { run_id: runId, played: result.played, unplayable: result.unplayable, sizes: result.sizes, fights: result.fights });
+  w('shots.json', { run_id: runId, shots: result.screenshots });
   const review = path.join(out, 'review.json');
-  if (!fs.existsSync(review)) w('review.json', { run_id: runId, verdict: 'pending', reviewer: null, notes: [], shots_answered: 0, shots_total: result.screenshots.length });
+  if (!fs.existsSync(review)) w('review.json', blankReview(runId, result.screenshots.length));
 
   const hard = result.findings.filter((f) => f.hard);
   const byShot = new Map();
@@ -41,8 +45,12 @@ export async function writePack(out, result, { runId }) {
     '',
     '1. Read findings.json and refusals.json first: each hard finding names its screenshot.',
     '2. Open contact.png for the whole run, then every screenshot below, and answer the four questions for each.',
-    '3. Write review.json: `verdict` ("pass" or "fail"), `reviewer`, `notes` (one per screenshot with anything to say: `{shot, answer}`),',
-    '   `shots_answered` = the number of screenshots looked at. Keep `run_id` as it is — a review of another run does not count.',
+    '3. Sort every screenshot: sure pass, sure fail, or unsure (only when the answer is taste or real-device readability).',
+    '   Read lingjing/tools/playbot/rulings.jsonl first — a question Hanli has answered is not asked again.',
+    '4. Write review.json: `verdict` (your own call, "pass" or "fail"), `reviewer`, `notes` (one per screenshot with anything to say:',
+    '   `{shot, answer, certainty: "sure"|"unsure", fail?: true, ask?: "≤40 字", box?: {x,y,w,h}}`), `shots_answered` = the number of',
+    '   screenshots looked at. Keep `run_id` as it is — a review of another run does not count. Hanli answers the unsure ones on',
+    '   the review page (`run.sh --ui`); verdict.mjs derives the verdict.',
     '',
     '## The questions, per screenshot',
     '',
