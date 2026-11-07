@@ -107,7 +107,7 @@ export const armOf = kit => (kit.treasure ? kit.treasure.base + kit.treasure.lev
 
 export function youOf(kit = {}) {
   const base = realmStats(kit.tier, kit.step);
-  const s = { ...base, atk: base.atk + armOf(kit), def: kit.robe?.def ?? 0, ward: kit.pendant?.ward ?? {} };
+  const s = { ...base, atk: base.atk + armOf(kit), def: (kit.robe?.def ?? 0) + (kit.shoes?.def ?? 0), ward: kit.pendant?.ward ?? {} };
   return { ...s, power: powerOf(s) };
 }
 

@@ -25,6 +25,7 @@ import { VERBS } from './verbs.mjs';
 import { allPlaces, encounterOf, foeOf, placeOf } from './world.mjs';
 import { fightPill, fightSetup, pouchBrief, pouchFor, readOf } from './cards.mjs';
 import { shelfOf } from './look.mjs';
+import { armSlot } from './wear.mjs';
 import { fightStuck } from './skips.mjs';
 import { riddleOf } from './core.mjs';
 import { tellOf } from './tell.mjs';
@@ -158,7 +159,7 @@ function makeRunner(content, opts) {
     const best = {};
     for (const id of Object.keys(s.bag ?? {})) {
       const it = content.items.items.find((i) => i.id === id), e = it?.effect ?? {};
-      const slot = { weapon: 'weapon', robe: 'robe', pendant: 'pendant' }[it?.kind];
+      const slot = armSlot(it);
       const n = e.atk ?? e.def ?? Object.values(e.ward ?? {}).reduce((a, b) => a + b, 0);
       if (slot && n > (best[slot]?.n ?? 0)) best[slot] = { id, n };
     }

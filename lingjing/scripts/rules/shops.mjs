@@ -31,7 +31,7 @@ export const SHOP_KINDS = {
 };
 
 /* The class of one good, by the catalog's `kind`: a herb (herbs.json) is the apothecary's too. */
-const CLASS_OF = { pill: 'yao', charm: 'fu', weapon: 'qi', treasure: 'qi', artifact: 'qi', pouch: 'qi', robe: 'yi', pendant: 'yu', scroll: 'shu', material: 'liang' };
+const CLASS_OF = { pill: 'yao', charm: 'fu', weapon: 'qi', treasure: 'qi', artifact: 'qi', pouch: 'qi', robe: 'yi', shoes: 'yi', pendant: 'yu', scroll: 'shu', material: 'liang' };
 function classOf(content, item) {
   if (item.kind === 'material' && (content.herbs?.herbs ?? []).some(h => h.id === item.id)) return 'yao';
   return CLASS_OF[item.kind] ?? null;

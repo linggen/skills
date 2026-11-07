@@ -241,7 +241,7 @@ test('opens by 回: the base pool at 古四; 古六\'s treasures, 古五\'s gear
   assert.ok(later.length);
   for (const id of later) assert.ok(!reach(g7, id), `${id} (卷${items.get(id).juan}) not in 卷一`);
   // Its gear all had, a hide pot still gives: the 妖丹 and the 器料, then 符 and odds and ends — never nothing.
-  const all = Object.fromEntries(T.pools.gear.filter(r => r.item && ['weapon', 'robe', 'pendant', 'pouch'].includes(items.get(r.item)?.kind)).map(r => [r.item, 1]));
+  const all = Object.fromEntries(T.pools.gear.filter(r => r.item && ['weapon', 'robe', 'pendant', 'shoes', 'pouch'].includes(items.get(r.item)?.kind)).map(r => [r.item, 1]));
   const spent = chances(T, { ids: pots.gear, realm: 1, content, state: gu7({ found: all }) });
   assert.ok(Object.keys(all).every(id => !spent.items[id]), 'no gear twice');
   assert.ok(spent.value > 0.5 * spent.worth, `still worth it: ${spent.value} of ${spent.worth}`);

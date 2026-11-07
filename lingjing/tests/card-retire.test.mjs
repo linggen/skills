@@ -41,7 +41,7 @@ test('worn, the sword deals its strike into the fight deck as the card was (Hanl
 });
 
 test('no card doubles a piece of gear: none is named as a weapon, robe, pendant or treasure', () => {
-  const gear = content.items.items.filter((i) => ['weapon', 'robe', 'pendant', 'treasure', 'artifact'].includes(i.kind) && !i.effect?.card && !i.effect?.wear);
+  const gear = content.items.items.filter((i) => ['weapon', 'robe', 'pendant', 'shoes', 'treasure', 'artifact'].includes(i.kind) && !i.effect?.card && !i.effect?.wear);
   for (const c of content.cards.cards.filter((k) => !k.owner && !k.gear && k.from?.every((f) => f.kind !== 'member'))) {
     const twin = gear.find((i) => name(i.name) === name(c.name) && (i.effect?.atk != null || i.effect?.def != null || i.effect?.ward));
     assert.equal(twin, undefined, `card ${c.id} doubles ${twin?.id}`);

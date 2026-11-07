@@ -23,7 +23,7 @@ import { gameOf } from '../content.mjs';
 import { fightOdds, oddsKey } from '../fightodds.js';
 import { wayLine } from '../wayline.js';
 import { wornOf } from './arms.mjs';
-import { wornCount } from './wear.mjs';
+import { GEAR_SLOTS, wornCount } from './wear.mjs';
 import { cardCatalog, fightSetup, ownedCards, rootsOf, usable } from './cards.mjs';
 import { clone } from './core.mjs';
 import { shelfOf } from './look.mjs';
@@ -33,7 +33,6 @@ import { visitorHere } from './visiting.mjs';
 import { chorePlay, secludeHour } from './playpay.mjs';
 import { haggleReach } from './aigames.mjs';
 
-const SLOTS = { weapon: 'weapon', robe: 'robe', pendant: 'pendant' };
 const MEND = 'mend-pill';
 
 /* What a worn thing adds, to pick the better of two: a weapon's 攻, a robe's 防, a 佩's 抗 summed. */
@@ -42,7 +41,7 @@ const worth = item => (item?.effect?.atk ?? 0) + (item?.effect?.def ?? 0) + Obje
 /* 1 · Put on what he holds: a slot empty, or holding less than the bag has — a copy no one wears (not one on her). */
 function wearable(content, state) {
   const out = [];
-  for (const slot of Object.keys(SLOTS)) {
+  for (const slot of GEAR_SLOTS) {
     const on = wornOf(content, state, slot);
     const best = Object.keys(state.bag ?? {}).map(id => content.items.items.find(i => i.id === id))
       .filter(i => i && i.kind === slot && (state.bag[i.id] ?? 0) > wornCount(state, i.id) && i.id !== on?.id && worth(i) > worth(on))

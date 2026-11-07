@@ -116,7 +116,7 @@ test('the panel: her three slots, 戴上 · 法器 and 给银月 · 法器 side 
   for (const lang of ['zh', 'en']) {
     const zh = lang === 'zh';
     const gear = VERBS.gear({ ...s, lang }, content, ctx()).result.gear;
-    assert.deepEqual(gear.her.slots.map(x => [x.slot, x.item?.id ?? null]), [['weapon', 'iron-sword'], ['robe', null], ['pendant', null]]);
+    assert.deepEqual(gear.her.slots.map(x => [x.slot, x.item?.id ?? null]), [['weapon', 'iron-sword'], ['robe', null], ['pendant', null], ['shoes', null]]);
     const c = { look: { lang, words: content.dictionary.words?.[lang] ?? {} }, gear, lang, words: WORDS[lang] };
     const h = pouchHtml(c, { sel: 'bamboo-sword' });
     // One named row a person (Hanli 11-03): hers is headed 银月, her cells say only the slot.

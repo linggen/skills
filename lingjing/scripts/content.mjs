@@ -132,9 +132,9 @@ const GAME_KINDS = new Set(['duel', 'board']);
 /* An exit's game, one shape: `{id, kind, creature?}`; a bare string is a
    board known by its id. */
 export const gameOf = exit => (exit?.game == null ? null : typeof exit.game === 'string' ? { id: exit.game, kind: 'board' } : exit.game);
-export const ITEM_KINDS = new Set(['pill', 'weapon', 'robe', 'pendant', 'gear', 'artifact', 'treasure', 'key', 'material', 'charm', 'scroll', 'pouch']);
-/* What a player wears, each its own slot: a 法器 in hand, a 法衣, a 佩. */
-import { ARM_SLOTS } from './rules/wear.mjs';
+export const ITEM_KINDS = new Set(['pill', 'weapon', 'robe', 'pendant', 'shoes', 'gear', 'artifact', 'treasure', 'key', 'material', 'charm', 'scroll', 'pouch']);
+/* What a player wears, each its own slot (items.json `slots`): a 法器 in hand, a 法衣, a 佩, the shoes. */
+import { ARM_SLOTS, declareSlots } from './rules/wear.mjs';
 export { ARM_SLOTS };
 export const WEAR_SLOTS = new Set(['yinyue', 'abode']);
 const VALUE_FIELDS = new Set(['name']);
@@ -156,6 +156,9 @@ export const codexFiles = content => ({ codex: content.codex, people: content.pe
 
 export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
   const at = file => readJson(path.join(dir, file));
+  // The slots a player wears things in are the world's (items.json `slots`, rules/wear.mjs declareSlots).
+  const items = at('items.json');
+  declareSlots(items.slots);
   return withBalance({
     dir,
     world: at('world.json'),
@@ -165,7 +168,7 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     rewards: at('rewards.json'),
     creatures: at('creatures.json'),
     herbs: at('herbs.json'),
-    items: at('items.json'),
+    items,
     cards: at('cards.json'),
     arts: at('arts.json'),
     hexagrams: at('hexagrams.json'),
@@ -1242,6 +1245,9 @@ function lintSignature(content, c, bad) {
   const verbs = Object.keys(sig.effect ?? {});
   if (!verbs.length) bad(at, 'signature does nothing');
   for (const v of verbs) if (!EFFECTS[v]) bad(at, `signature uses an unknown verb: ${v}`);
+  // 御 (battle.js `ward`): an element, halving its blows, for a whole number of the other side's turns.
+  const w = sig.effect?.ward;
+  if (w != null && (!ELEMENTS.includes(w.element) || (w.half != null && typeof w.half !== 'boolean') || (w.turns != null && (!Number.isInteger(w.turns) || w.turns < 1)))) bad(at, 'a ward names an element, half true or false, and whole turns above zero');
   const summon = sig.effect?.summon?.id;
   if (summon && !(content.cards?.cards ?? []).some(x => x.id === summon)) bad(at, `signature summons unknown card ${summon}`);
 }
@@ -1367,6 +1373,9 @@ const doubled = list => [...new Set(list.filter((x, i) => list.indexOf(x) !== i)
 function lintTask(task, content, ids, bad) {
   const where = `task ${task.id}`;
   lintGrant(where, task.grant, content, ids, bad);
+  // A board names the game it is played as: the phone opens a board by its `game` only (2026-11-07, 云龙山的八味's 开局
+  // opened nothing there — alchemy-first had none, and only the Mac's page read that as the herb board).
+  if (task.kind === 'board' && !task.game) bad(where, 'a board names its game');
   // A board's grades, each with the mark it writes (tasks.mjs win).
   if (task.marks != null && !(task.kind === 'board' && task.game && Object.entries(task.marks).length && Object.entries(task.marks).every(([g, m]) => /^[a-z][a-z0-9-]*$/.test(g) && /^[a-z][a-z0-9-]*$/.test(String(m))))) bad(where, 'marks are a game board\'s grades, each to a lowercase mark id');
   if (task.gives?.bag && !ids.items.has(task.gives.bag)) bad(where, `gives unknown item ${task.gives.bag}`);
@@ -1818,6 +1827,12 @@ function lintItems(content, bad) {
   const seen = new Set();
   // balance.json `prices` is every shop price: each names a thing that exists.
   for (const id of Object.keys(content.balance?.prices ?? {})) if (!content.items.items.some(i => i.id === id)) bad(`price ${id}`, 'prices an unknown item');
+  // The slots (rules/wear.mjs): each a kind of its own, named in zh and en, carrying one of 攻 · 防 · 抗.
+  for (const sl of content.items.slots ?? []) {
+    if (!sl?.id || !sl.name?.zh || !sl.name?.en) bad(`slot ${sl?.id}`, 'a slot has an id and a name in zh and en');
+    if (!['atk', 'def', 'ward'].includes(sl?.arms)) bad(`slot ${sl?.id}`, 'a slot carries atk, def or ward');
+    if (sl?.id && !ITEM_KINDS.has(sl.id)) bad(`slot ${sl.id}`, 'a slot is an item kind (content.mjs ITEM_KINDS)');
+  }
   for (const item of content.items.items) {
     const where = `item ${item.id}`;
     if (seen.has(item.id)) bad(where, 'duplicate id');
@@ -1866,7 +1881,7 @@ function lintItems(content, bad) {
     if (arms.length > 1) bad(where, 'arms are one of 攻, 防 or 抗');
     for (const k of arms) {
       if (k !== 'ward' && (!Number.isInteger(e[k]) || e[k] < 1)) bad(where, `${k} must be a whole number above zero`);
-      if (ARM_SLOTS.get(item.kind) !== { atk: 'weapon', def: 'robe', ward: 'pendant' }[k]) bad(where, `${k} belongs to a ${{ atk: 'weapon', def: 'robe', ward: 'pendant' }[k]}, not a ${item.kind}`);
+      if (ARM_SLOTS.get(item.kind) !== k) bad(where, `${k} belongs to a thing worn in a slot that carries it (${[...ARM_SLOTS].filter(([, a]) => a === k).map(([s]) => s).join(' · ')}), not a ${item.kind}`);
     }
     if (e.ward != null) {
       for (const [el, n] of Object.entries(e.ward)) {
@@ -1889,7 +1904,7 @@ function lintItems(content, bad) {
     }
     if (e.wear != null && !WEAR_SLOTS.has(e.wear)) bad(where, `cannot wear on ${e.wear}`);
     // A thing only she wears names which of her three slots it takes (rules/wear.mjs herSlot).
-    if (e.wear != null && e.wear !== 'abode' && !ARM_SLOTS.has(item.slot)) bad(where, 'a thing she wears names its slot: weapon, robe or pendant');
+    if (e.wear != null && e.wear !== 'abode' && !ARM_SLOTS.has(item.slot)) bad(where, `a thing she wears names its slot: ${[...ARM_SLOTS.keys()].join(', ')}`);
     // What a thing worn by a companion lifts: one point on her card, 攻 or
     // 气血 (+2/+2 won 97%, so kept small).
     if (e.lift != null) {

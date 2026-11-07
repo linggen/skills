@@ -9,7 +9,8 @@
 //   shortWords(o, lang) → '差 20 · 可砍价' for a buy he is short of, '' else
 
 const EL = { zh: { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' }, en: { metal: 'Metal', wood: 'Wood', water: 'Water', fire: 'Fire', earth: 'Earth' } };
-const SLOT = { zh: { weapon: '法器', robe: '法衣', pendant: '佩' }, en: { weapon: 'Weapon', robe: 'Robe', pendant: 'Pendant' } };
+// The slots' names, as items.json `slots` says them (a test holds the two the same: wear.test.mjs).
+const SLOT = { zh: { weapon: '法器', robe: '法衣', pendant: '佩', shoes: '鞋' }, en: { weapon: 'Weapon', robe: 'Robe', pendant: 'Pendant', shoes: 'Shoes' } };
 const L = lang => (lang === 'en' ? 'en' : 'zh');
 
 /* A card's effect, as the card's face says it (battle-card.js sayEffect, kept short). */

@@ -2,7 +2,7 @@
 // Part of the rules engine; rules.mjs is its one door.
 import { dayKey, normalizeAnswer, pick, seedOf } from '../state.mjs';
 import { wornOf } from './arms.mjs';
-import { GEAR_SLOTS, herKey } from './wear.mjs';
+import { armsOf, GEAR_SLOTS, herKey } from './wear.mjs';
 import { itemOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
 import { memoriesOf } from './memories.mjs';
@@ -274,11 +274,11 @@ const sumLift = (a, b) => Object.fromEntries([...new Set([...Object.keys(a), ...
    气血, a 佩's 抗 off the blows of that element (battle.js hurtMinion); a thing of hers adds its own `lift` (齐纨 +1 气血). */
 function herGear(content, state, her) {
   const rate = herCardOf(content).gear ?? {}, on = slot => wornOf(content, state, herKey(her, slot));
-  const [weapon, robe, pendant] = GEAR_SLOTS.map(on), n = (v, r) => Math.round((v ?? 0) * (r ?? 0));
-  const ward = Object.fromEntries(Object.entries(pendant?.effect?.ward ?? {}).map(([el, v]) => [el, n(v, rate.ward_per_point)]).filter(([, v]) => v > 0));
-  const own = { ...(n(weapon?.effect?.atk, rate.atk_per_atk) ? { atk: n(weapon.effect.atk, rate.atk_per_atk) } : {}),
-    ...(n(robe?.effect?.def, rate.hp_per_def) ? { hp: n(robe.effect.def, rate.hp_per_def) } : {}), ...(Object.keys(ward).length ? { ward } : {}) };
-  return [own, ...[weapon, robe, pendant].map(i => i?.effect?.lift ?? {})].reduce(sumLift, {});
+  const worn = GEAR_SLOTS.map(on), arms = armsOf(worn), n = (v, r) => Math.round((v ?? 0) * (r ?? 0));
+  const ward = Object.fromEntries(Object.entries(arms.ward).map(([el, v]) => [el, n(v, rate.ward_per_point)]).filter(([, v]) => v > 0));
+  const own = { ...(n(arms.atk, rate.atk_per_atk) ? { atk: n(arms.atk, rate.atk_per_atk) } : {}),
+    ...(n(arms.def, rate.hp_per_def) ? { hp: n(arms.def, rate.hp_per_def) } : {}), ...(Object.keys(ward).length ? { ward } : {}) };
+  return [own, ...worn.map(i => i?.effect?.lift ?? {})].reduce(sumLift, {});
 }
 function herLift(content, state) {
   const { tier, ...realm } = realmLift(content, state) ?? {};

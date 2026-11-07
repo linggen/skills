@@ -735,11 +735,13 @@ function gearBrief(content, state, now = new Date()) {
     return { ...itemBrief(content, state, item), n, ...(shop?.buys ? { sell: buyBack(shop, item) } : {}), ...(slot ? { slot } : {}),
       ...(on.length ? { wear_on: on } : {}), ...(off.length ? { worn_on: off } : {}), ...(e.progress || e.learn || e.pouch ? { usable: true } : {}) };
   });
+  // Each slot named as the world names it (items.json `slots`), so a page or the phone needs no table of its own.
+  const slotName = slot => pick((content.items.slots ?? []).find(x => x.id === slot)?.name, state.lang) ?? null;
   return {
-    slots: GEAR_SLOTS.map(slot => ({ slot, item: worn(state.wear?.[slot]) })),
+    slots: GEAR_SLOTS.map(slot => ({ slot, name: slotName(slot), item: worn(state.wear?.[slot]) })),
     // Her card as it stands (companion.mjs herCard): 攻/血, the realm it grew with, her abilities.
     // Her three slots; `item` is her 佩 (the phone's one cell until it draws the three).
-    ...(her ? { her: { name: nameOf(content, her.id, state.lang), slots: GEAR_SLOTS.map(slot => ({ slot, item: worn(state.wear?.[herKey(her.id, slot)]) })),
+    ...(her ? { her: { name: nameOf(content, her.id, state.lang), slots: GEAR_SLOTS.map(slot => ({ slot, name: slotName(slot), item: worn(state.wear?.[herKey(her.id, slot)]) })),
       item: worn(state.wear?.[herKey(her.id, 'pendant')]), card: herCard(content, state) } } : {}),
     // What the fight takes from them (cards.mjs § 装备入局): 主灵根一击 +power,
     // 护体 armor, 抗 by element, the 符 in hand, and the roots they lend.

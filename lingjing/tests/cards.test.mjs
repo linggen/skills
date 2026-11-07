@@ -384,7 +384,7 @@ test('储物袋 · 装备 open together: what he wears, what he carries, and the
   const seen = look(s, content, { now: new Date('2026-09-22T12:00:00'), quests: [] });
   assert.equal(seen.gear, undefined, 'never in Look: Ling pays for every character of it');
   const g = VERBS.gear(s, content).result.gear;
-  assert.deepEqual(g.slots.map((x) => [x.slot, x.item?.id ?? null]), [['weapon', null], ['robe', null], ['pendant', null]]);
+  assert.deepEqual(g.slots.map((x) => [x.slot, x.item?.id ?? null]), [['weapon', null], ['robe', null], ['pendant', null], ['shoes', null]]);
   assert.equal(g.her.item.id, 'moon-bell');
   assert.equal(g.fight.power, 0, 'a sword in the bag is not worn');
   const ctx = { look: seen, gear: g, lang: 'zh', words: WORDS.zh };

@@ -75,7 +75,7 @@ export function pillShares(P) {
 }
 
 const points = e => (e?.atk ?? 0) + (e?.def ?? 0) + Object.values(e?.ward ?? {}).reduce((a, b) => a + b, 0);
-const GEAR = new Set(['weapon', 'robe', 'pendant']);
+const GEAR = new Set(['weapon', 'robe', 'pendant', 'shoes']);
 
 /* Every shop price: a 修为 pill's by its share, gear's by its points, the buy-back of all; the rest as written. */
 export function pricesOf(raw, items, shares) {

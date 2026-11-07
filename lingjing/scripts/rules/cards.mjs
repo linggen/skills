@@ -3,6 +3,7 @@
 import { MODES, POUCH_MAX, REALMS as CARD_REALMS, shuffle } from '../battle.js';
 import { dayKey, hpStep, pick, seedOf } from '../state.mjs';
 import { boundOf, duelSeed, wornOf } from './arms.mjs';
+import { armsOf, GEAR_SLOTS } from './wear.mjs';
 import { herAwake, herLifts } from './companion.mjs';
 import { clone, refuse } from './core.mjs';
 import { gearBrief } from './errands.mjs';
@@ -148,10 +149,11 @@ const RATES = content => content.cards?.gear ?? {};
 const weaponPower = (content, atk) => Math.round((atk ?? 0) * (RATES(content).weapon_power ?? 0));
 const treasurePower = (content, t) => weaponPower(content, t.base) + Math.floor((t.level - 1) / Math.max(1, RATES(content).treasure_levels ?? 99));
 function gearFight(content, state) {
-  const weapon = wornOf(content, state, 'weapon'), robe = wornOf(content, state, 'robe'), pendant = wornOf(content, state, 'pendant');
-  const power = Math.max(weapon ? weaponPower(content, weapon.effect?.atk) : 0, boundOf(content, state) ? treasurePower(content, state.treasure) : 0);
-  const armor = Math.round((robe?.effect?.def ?? 0) * (RATES(content).armor_per_def ?? 0));
-  const ward = Object.fromEntries(Object.entries(pendant?.effect?.ward ?? {})
+  // Every slot's number, whichever slot carries it (rules/wear.mjs armsOf): the 法衣's 防 and the shoes' add to 护体.
+  const arms = armsOf(GEAR_SLOTS.map(slot => wornOf(content, state, slot)));
+  const power = Math.max(arms.atk ? weaponPower(content, arms.atk) : 0, boundOf(content, state) ? treasurePower(content, state.treasure) : 0);
+  const armor = Math.round(arms.def * (RATES(content).armor_per_def ?? 0));
+  const ward = Object.fromEntries(Object.entries(arms.ward)
     .map(([el, n]) => [el, Math.round(n * (RATES(content).ward_per_point ?? 0))]).filter(([, n]) => n > 0));
   // Every 符 in the bag that is a card (the drawn 符, and a story's one-time
   // 符 such as 踏马的符, 古五) goes in hand at the door, one of each.

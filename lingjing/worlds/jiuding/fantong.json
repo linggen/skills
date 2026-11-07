@@ -22,7 +22,7 @@
     "pill": { "tint": "#9be08f", "family": "pill", "item_kinds": ["pill"] },
     "beast": { "tint": "#e0703a", "family": "gear", "items": ["yaodan-1", "yaodan-2", "yaodan-3", "deer-hide", "hu-pi", "li-pi", "she-tui", "she-dan", "ying-yu", "chai-ya", "zhu-ya", "lang-pi", "xiong-dan", "congcong-zhua", "xiegou-yu", "lingling-pi", "yumu", "jingjing-wei", "bibi-ling", "dangkang-ya", "geju-zong", "qique-zhua", "houer-jiu", "yike-daya"] },
     "ore": { "tint": "#5aa9e6", "family": "gear", "items": ["tongkuang", "tie-sha", "yunmu", "cishi", "chishizhi", "langgan", "qi-salt", "shujin"] },
-    "gear": { "tint": "#c9a26b", "family": "gear", "item_kinds": ["weapon", "robe", "pendant", "pouch"] },
+    "gear": { "tint": "#c9a26b", "family": "gear", "item_kinds": ["weapon", "robe", "pendant", "shoes", "pouch"] },
     "paper": { "tint": "#e0564a", "family": "fu", "items": ["sang-paper", "dansha", "xionghuang", "tama-defu", "penti-fu", "chenlian-fu", "jinglu-fu"], "item_kinds": ["charm"] }
   },
   "families": {
@@ -53,7 +53,7 @@
   },
   "once": {
     "_about": "Things of these kinds come out once ever (state.found — he has had it, by any door): the 饭桶 never hands him a second sword, robe, pendant, pouch or bell of hers. Hanli 10-20: equipment drops, \"each only once its 回 is reached\".",
-    "kinds": ["weapon", "robe", "pendant", "pouch", "artifact"]
+    "kinds": ["weapon", "robe", "pendant", "shoes", "pouch", "artifact"]
   },
   "pity": {
     "_about": "After `after` 凡 in a row, the next feed is at least 有用 (Hanli 10-20 asked for a pity; N = 5: at 70% 凡, five in a row comes about one run in six, so it bites now and then without flattening the odds).",

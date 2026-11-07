@@ -37,7 +37,7 @@ const say = (t, vars) => String(t).replace(/\{(\w+)\}/g, (_, k) => String(vars[k
 /* A thing's tab: what the story still needs is 剧情 whatever its kind; the
    rest by kind. No search — a pouch holds a few dozen. */
 export const TABS = ['all', 'pill', 'arms', 'material', 'charm', 'story'];
-const KIND_TAB = { pill: 'pill', weapon: 'arms', robe: 'arms', pendant: 'arms', artifact: 'arms', gear: 'arms', treasure: 'arms', pouch: 'arms',
+const KIND_TAB = { pill: 'pill', weapon: 'arms', robe: 'arms', shoes: 'arms', pendant: 'arms', artifact: 'arms', gear: 'arms', treasure: 'arms', pouch: 'arms',
   material: 'material', charm: 'charm', scroll: 'charm', key: 'story' };
 export const tabOf = (i) => (i.free ? 'story' : KIND_TAB[i.kind] ?? 'material');
 
@@ -47,13 +47,13 @@ function wornHtml(g, ctx) {
   const w = ctx.words, t = ctx.look?.treasure;
   const cell = (label, body, off = '') => `<div class="pworn"><span class="lbl">${esc(label)}</span>${body}${off}</div>`;
   const name = (it) => (it ? `<b data-pouch-item="${esc(it.id)}" role="button" tabindex="0">${esc(it.name)}</b>` : `<span class="dim">${esc(w.gearEmpty)}</span>`);
-  const slots = g.slots.map((s) => cell(w.gearSlots[s.slot] ?? s.slot, name(s.item), s.item ? `<button class="act quiet" data-remove="${esc(s.item.id)}">${esc(w.gearOff)}</button>` : '')).join('');
+  const slots = g.slots.map((s) => cell(s.name ?? w.gearSlots[s.slot] ?? s.slot, name(s.item), s.item ? `<button class="act quiet" data-remove="${esc(s.item.id)}">${esc(w.gearOff)}</button>` : '')).join('');
   const treasure = t ? cell(w.gearSlots.treasure, `<b>${esc(t.name)}</b><span class="small dim">${esc(t.step)} · ${esc(t.element_name)}</span>`) : '';
   // Hers: the same three (Hanli 11-03 — rules/wear.mjs), each with its own 卸下.
   const herCell = (s) => {
     const lift = s.item ? liftSaid(s.item.effect, w) : '';
     const off = s.item ? `<button class="act quiet" data-remove="${esc(s.item.id)}" data-on="her" data-slot="${esc(s.slot)}">${esc(w.gearOff)}</button>` : '';
-    return cell(w.gearSlots[s.slot] ?? s.slot, `${name(s.item)}${lift ? `<span class="small dim">${esc(lift)}</span>` : ''}`, off);
+    return cell(s.name ?? w.gearSlots[s.slot] ?? s.slot, `${name(s.item)}${lift ? `<span class="small dim">${esc(lift)}</span>` : ''}`, off);
   };
   // One row a person, named (Hanli 11-03: 「每个角色装备栏占1行, 写清楚角色名」): his slots, pouch and treasure,
   // his fight line under them; then hers, her card under hers.

@@ -243,6 +243,6 @@ test('the new things are whole: a picture, a hint, a price, and a use — the fu
     assert.ok(it.hint?.zh && it.hint?.en, `${id}: one line of small print`);
     assert.ok(it.sell > 0, `${id}: sells`);
     assert.ok(it.kind !== 'material' || fed.has(id) || ['tie-sha', 'yunmu', 'cishi', 'xionghuang', 'chishizhi', 'houer-jiu'].includes(id), `${id}: the 饭桶 knows it`);
-    if (['robe', 'pendant'].includes(it.kind)) assert.equal(it.once, true, `${id}: a piece of gear is a one-off`);
+    if (['robe', 'pendant', 'shoes'].includes(it.kind)) assert.equal(it.once, true, `${id}: a piece of gear is a one-off`);
   }
 });

@@ -1,7 +1,7 @@
 // The player's state and the arithmetic over it. Pure: no files, no clock —
 // the caller passes `now`.
 import { afterParts, parseAfter, readThrough, sceneBoards } from './rules/parts.mjs';
-import { herSlotsCarry } from './rules/wear.mjs';
+import { herSlotsCarry, slotsCarry } from './rules/wear.mjs';
 
 export const STATE_VERSION = 17;
 export const FIRST_WORLD = 'jiuding'; // the world every save before worlds was playing
@@ -879,6 +879,8 @@ export function fitWorld(saved, content) {
   if ('ladder_stages' in state) state = stagesCarry(content, state);
   // Also unmarked: an older rules bundle (the phone's, before it carries v16) may still write her one slot on a v16 save.
   if ('her_slots' in state || typeof state.wear?.[content.world?.companion?.id] === 'string') state = herSlotsCarry(content, state);
+  // A thing worn in a slot its kind no longer goes in (顺风溜, a 法衣 until the 鞋 slot, 11-07) moves to its own (rules/wear.mjs).
+  state = slotsCarry(content, state);
   const tier = tierOf(content, state.tier);
   const chapter = content.chapters[state.chapter];
   // A scene renamed since — the prologue rewrite of 2026-09-28 — goes to the
