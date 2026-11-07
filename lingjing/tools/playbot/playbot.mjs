@@ -21,7 +21,8 @@
 //   frozen-by-fight  a thing NOT in the fight (the bag, the 饭桶's feed, wearing) refused because a fight is open
 //   resume-mismatch  a fight reloaded and taken up again shows another state than it was left in
 //   console-error    a console error or an uncaught exception
-//   layout           the lint (lint.mjs): covered / clipped / outside the viewport — and a baseline that drifted
+//   layout           the lint (lint.mjs): covered / clipped / outside the viewport, a fight's hand card under its floor
+//                    (hand-too-small, 120 px) — and a baseline that drifted
 // Every refusal the rules gave is listed (refusals.json) with its reason and where it happened, for a person.
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';

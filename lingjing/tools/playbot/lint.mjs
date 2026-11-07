@@ -12,7 +12,7 @@
 // what it lies over reads as covered; and a cut sideways is excused only by a scroller that scrolls sideways (切磋's 重腿).
 
 /** The lint, as a function the page runs (page.evaluate(LINT, opts)). Returns { fails: [...], warns: [...] }. */
-export const LINT = ({ minShown = 0.9, band = 100, scope = null } = {}) => {
+export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120 } = {}) => {
   const W = innerWidth, H = innerHeight;
   // A scratch save's own furniture (the 测试存档 badge, the dev 游戏厅 link): never on a player's page.
   const DEV_ONLY = '.scratch-badge, .dev-arcade';
@@ -163,6 +163,20 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null } = {}) => {
     if (shown < minShown) fails.push({ el_kind: kind, why: 'covered', shown: Math.round(shown * 100) / 100, el: label(e), by: by ? label(by) : null, rect: [r.left, r.top, r.width, r.height].map(Math.round) });
   }
   } finally { for (const [x, was] of solid) x.style.pointerEvents = was; }
+  // The hand's card big enough to read (the gate's playbot, 11-07 at 375: the 杀招 line, both ranks full and the 丹 row at
+  // once squeezed the wheel's centre card to 65×90 — its name cut, its words under its 「气血已满」, and nothing above saw it,
+  // for nothing lay over anything). In a fight, the card a thumb reads — the phone wheel's centre (battle-wheel.js: the one
+  // card without `data-peek`), or on the desk's fan the tallest — is at least `cardFloor` px tall.
+  for (const hand of root.querySelectorAll('.battle .bhand')) {
+    if (!vis(hand) || hand.closest('.battle.over')) continue;
+    const cards = [...hand.querySelectorAll(':scope > .bcard')].filter((c) => vis(c) && !c.classList.contains('far'));
+    if (!cards.length) continue;
+    const wheel = hand.classList.contains('wheel');
+    const read = wheel ? cards.find((c) => !c.hasAttribute('data-peek')) : cards.reduce((a, c) => (c.getBoundingClientRect().height > a.getBoundingClientRect().height ? c : a));
+    if (!read || moving(read)) continue;
+    const r = (read.querySelector('.bleaf') ?? read).getBoundingClientRect();
+    if (r.height < cardFloor - 0.5) fails.push({ el_kind: 'card', why: 'hand-too-small', el: label(read), floor: cardFloor, size: [r.width, r.height].map(Math.round), rect: [r.left, r.top, r.width, r.height].map(Math.round) });
+  }
   // Blank bands: rows of the screen no drawn thing covers, between two that are covered.
   const rows = new Array(Math.ceil(H)).fill(false);
   for (const r of rects) for (let y = Math.max(0, Math.floor(r.top)); y < Math.min(H, Math.ceil(r.bottom)); y += 1) rows[y] = true;

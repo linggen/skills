@@ -489,16 +489,23 @@
      corner where it shows; the rest wait behind, unseen. battle-wheel.js lays them out (--wx in centre widths, --ws,
      --wl, --wt, --wz), turns it on a swipe or a tap, and puts a dot a card under it. The slack goes to the hand: the field
      is as tall as its two ranks (an empty rank lower), the party a row of slim chips, the 丹囊 in the action row. */
-  .battle { grid-template-rows: auto auto auto auto auto minmax(0, 1fr); }
-  .bfield { grid-template-rows: auto auto auto; align-content: center; }
-  .brank { height: var(--mh); }
-  .brank:not(:has(> .bminion:not(.empty))) { height: calc(var(--mh) * .62); }
+  /* The hand's floor (the gate's playbot, 11-07 at 375: the 杀招 line, both ranks full and the 丹 row at once left the hand
+     ~140 px, its centre card 65×90 — 青光's name cut, its words under 气血已满): a centre card never under 128 px tall (91 wide,
+     ~6 字 a line): its cost, its name, three lines of its words and a why on its picture's row all read; the row adds its dots
+     (48 px) and the dock's foot (4 px). The lint's floor is 120 (tools/playbot/lint.mjs hand-too-small). When the room is short
+     the field gives way, never the hand: the ranks shrink (--mh down to --mmin, an empty rank's band with them); the log and
+     the hint stay. */
+  .battle { --handfloor: 180px; --mmin: 70px; grid-template-rows: auto auto auto minmax(0, auto) auto minmax(var(--handfloor), 1fr); }
+  .bfield { display: flex; flex-direction: column; justify-content: center; }
+  .bfield > .bseam { flex: none; }
+  .brank { flex: 0 1 var(--mh); height: auto; min-height: var(--mmin); }
+  .brank:not(:has(> .bminion:not(.empty))) { flex-basis: calc(var(--mh) * .62); min-height: calc(var(--mmin) * .62); }
   .brank:not(:has(> .bminion:not(.empty))) > .bminion.empty { max-height: 100%; }
   .battle .bdock { min-height: 0; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 4px; padding-bottom: 4px; }
   .battle .bdock > .dn-tray { display: none; }
   .battle .bdock > .bhand {
     /* never taller than the dock leaves (the playbot, 11-05 at 375: a 150 px floor pushed the dots under the chat bar once the
-       beast's rank filled): the card gives way instead, its dots always inside. */
+       beast's rank filled): its dots always inside; its floor is the dock's row (--handfloor), the field gives way first. */
     --wheel: 1; container-type: size; position: relative; display: block; flex: 1 1 0; min-height: 96px; height: auto; padding: 0;
     touch-action: pan-y; perspective: 900px;
     --wcw: min(47cqw, calc((100cqh - 48px) * .71)); /* ~45% of the room's width, or what the hand's height allows */
@@ -517,7 +524,13 @@
   .battle .bhand > .bcard .bleaf, .battle .bhand > .bcard:last-child:not(:first-child) .bleaf { inset: 0; width: 100%; height: 100%; padding: 7px 7px 16px; }
   .battle .bhand > .bcard .bname { font-size: clamp(14px, calc(var(--wcw) * .095), 19px); margin-top: 5px; }
   .battle .bhand > .bcard .btext { font-size: clamp(12px, calc(var(--wcw) * .072), 14.5px); line-height: 1.3; margin-top: 2px; }
-  .battle .bhand > .bcard .bwhy { font-size: clamp(11.5px, calc(var(--wcw) * .068), 13.5px); top: 30%; padding: 2px 5px; }
+  /* Why it cannot be played lies at the foot of the picture's row, never over the name or the words (11-07: 气血已满 hid
+     青光's words): that row is never lower than the cost and the why together, and the name keeps its whole two lines (a
+     min-content row: its own overflow: hidden would let the art row squeeze it to a sliver). */
+  .battle .bhand > .bcard .bpic { grid-row: 1; grid-column: 1; }
+  .battle .bhand > .bcard .bleaf { grid-template-rows: minmax(16px, 1fr) min-content auto; }
+  .battle .bhand > .bcard .bleaf:has(> .bwhy) { grid-template-rows: minmax(40px, 1fr) min-content auto; }
+  .battle .bhand > .bcard .bwhy { font-size: clamp(11.5px, calc(var(--wcw) * .068), 13.5px); position: relative; inset: auto; grid-row: 1; grid-column: 1; align-self: end; z-index: 2; margin: 0 -1px; padding: 2px 5px; line-height: 1.25; }
   .battle .bhand > .bcard .bcost { width: clamp(22px, calc(var(--wcw) * .165), 32px); height: clamp(24px, calc(var(--wcw) * .18), 35px); font-size: clamp(14px, calc(var(--wcw) * .1), 19px); top: 4px; left: 4px; }
   .battle .bhand > .bcard .belem { top: 9px; right: 9px; font-size: 12px; }
   .battle .bhand > .bcard .batk, .battle .bhand > .bcard .bhp { --gem: 28px; bottom: -7px; }
