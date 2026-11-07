@@ -457,6 +457,7 @@ const herOf = (id, ctx) => (ctx.herCard && id === ctx.herCard ? ' her' : '');
    The desk keeps its tray beside the hand (CSS shows one or the other). */
 function pouchRowHtml(st, ctx, picked) {
   const tray = pillTrayHtml(st, ctx, picked);
+  if (!tray) return '<div class="bpouch is-empty" aria-hidden="true"></div>'; // keeps the row's places (Hanli 11-07: 结束回合 never moves)
   return `<div class="bpouch"><button type="button" class="dn-fold" aria-label="${esc(ctx.lang === 'en' ? 'Pills' : '丹囊')}"><span class="dn-seal">丹</span><b>×${(st.you.pouch ?? []).length}</b></button>${tray}</div>`;
 }
 

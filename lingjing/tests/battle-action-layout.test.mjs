@@ -16,7 +16,7 @@ test('the action slots and phone deck survive an emptied pouch', () => {
   const full = render([{ id: 'heal' }, { id: 'heal' }, { id: 'heal' }], 7);
   const empty = render([], 0);
   for (const html of [full, empty]) {
-    assert.match(html, /<div class="bacts">\s*<div class="bpouch">/);
+    assert.match(html, /<div class="bacts">\s*<div class="bpouch( is-empty)?"/);
     assert.match(html, /data-spot="power"/);
     assert.match(html, /data-spot="end"/);
   }
