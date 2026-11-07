@@ -93,10 +93,14 @@ export function shouchaoWaiting(content, state, id, now) {
   const t = tideTask(content);
   return Boolean(t) && t.id === id && tideUp(content, state, t) && cooling(content, state, now);
 }
-/* Look's `waits` row for the tide inside its cooldown, where he may join: the tide just held, its line, the minutes left. */
+/* Look's `waits` row for the tide inside its cooldown, where he may join: the tide just held, its line, the minutes left.
+   Wherever the tray's row stands (shouchaoTray: anywhere he may walk back to join it), so a walk out of the 观 inside the
+   cooldown never drops it — the phone read a row gone from `waits` as the tide open again (Hanli 11-07: 「兽潮冷却时，
+   页面上出现了一个按钮说兽潮又可去了」). */
 export function shouchaoWait(content, state, now) {
   const t = tideTask(content);
-  if (!t || !shouchaoWaiting(content, state, t.id, now)) return null;
+  const at = t?.shouchao.places ?? null, there = at && !at.includes(state.place) ? { ...state, place: at[0] } : state;
+  if (!t || !shouchaoWaiting(content, there, t.id, now)) return null;
   const r = shouchaoRow(content, state, now);
   return { id: t.id, title: r.title, shut: r.shut ?? null, wait_min: r.wait_min };
 }

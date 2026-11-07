@@ -266,3 +266,15 @@ test('waiting out the cooldown: the row stands past midnight with the time left,
   // The done task row itself never stands in the tray: the wait is the row.
   assert.equal(trayHtml({ look: { tasks: [row] }, lang: 'zh', words: WORDS.zh, qi: { st: 'full' } }), `<div class="small dim trayempty">${WORDS.zh.trayEmpty}</div>`);
 });
+
+test('a walk out of the 观 inside the cooldown keeps the wait on Look: the tray\'s row and `waits` say the same (Hanli 11-07: the phone read the row gone as 兽潮 open again)', () => {
+  const s = at('wm-yaoyuan');
+  const one = night(s, day(20, 23, 30));
+  const away = { ...structuredClone(one.state), place: 'fangshi', stamina: content.rewards.stamina.max };
+  const L = look(away, content, ctx(day(21, 0, 10)));
+  const cool = L.tray?.find((x) => x.id === T.id);
+  assert.equal(cool?.seg, 'cool', 'the tray still shows it cooling');
+  assert.ok(L.waits?.some((x) => x.id === T.id), 'and so does `waits`');
+  assert.ok(!(L.tasks ?? []).some((t) => t.id === T.id && t.status === 'offered'), 'nothing offered');
+  assert.ok(!(L.home?.todo ?? []).some((r) => r.kind === 'tide'), 'no 兽潮 · 开局 on the 主页');
+});
