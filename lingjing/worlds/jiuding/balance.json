@@ -569,6 +569,15 @@
   },
   "_lock_fight": "A story fight inside a key beat's lock (chapter.json `beats`, world.mjs lockOf) may be left once he is stuck (Hanli 2026-10-21: 「OK, a」): no shelf is reachable there, so a weak hand with an empty 丹囊 had no way past a 试. After `losses` fights of it lost or run dry, 「算了，往下走」 stands under its card (rules/skips.mjs fightStuck): the way on a win would take, paying nothing — no fight pay, no card, no drop, no exit grant — as a board left or a riddle passed. Since 2026-10-27 every story fight, inside a lock or not (Hanli: 「确保都能跳过去, 不会卡住游戏进程」), and a guard lost to as often lets him by (world.mjs guardOf); tests/no-win-walk.test.mjs walks 卷一 to its end with nothing won.",
   "lock_fight": {"losses": 3},
+  "_fight_length": "How long a card fight may run (Hanli 2026-11-07: 「斗法敌人100多血，攻击牌攻击一般都几点，一局要玩快10分钟。能控制在3分钟吗」 — then: about 3 minutes at today's 练气, longer with more cards and higher realms but within about 5, Hearthstone's match length; a boss within the same 5). A CEILING, not a target: a fight already shorter stays as it is. `minutes` by the ladder's tier index (练气, 筑基, 结丹, 元婴, then `cap`); `sec_per_round` turns rounds (his turn and the beast's) into minutes — measured on his recording, 当康 at 古七 (101 气血, two heals): about 5 minutes, which the rules play in about 16 rounds (≈150 logged moves, his \"157 plays\"), so ≈18.6 s a round. The door (rules/cards.mjs fightLength) caps a beast's 气血 at `dpt` × the realm's rounds, where `dpt` is what a player of that realm deals a round (`base` by tier index, + `step` a 层 — fitted on the road's hands, tools/fight-length.mjs; the party beside him adds next to none: 阿禾 heals, 孙二狗 guards), the 气血 it loses coming back on its blows (`carry`: its blows × (old 气血 ÷ new)^carry, so the fight is as hard, only shorter), and lets it heal `heals` times a fight, never more than one round's `dpt` (battle.js § heal). Not capped: a 试 (creatures.json `trial`: outlasted, its 气血 does not set its length) and a fight whose foe says `long: true` (a story fight the plot wants long — none today). tests/fight-length.test.mjs plays every fight of 卷一 and fails one too long for its realm.",
+  "fight_length": {
+    "sec_per_round": 18.6,
+    "minutes": [3, 3.5, 4, 4.5],
+    "cap": 5,
+    "dpt": {"base": [2.5, 6.5, 7.5, 8.5], "step": [0.6, 0.3, 0.3, 0.3]},
+    "heals": 1,
+    "carry": 1
+  },
   "mijing": {
     "cap_day": 2,
     "drops": {"shouchao": 1, "qiecuo": 0.5, "yaoshou": 0.2},

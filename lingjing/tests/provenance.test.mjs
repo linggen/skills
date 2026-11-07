@@ -138,7 +138,10 @@ test('a roaming beast (Hanli: 「小队是人数跟剧情走」): the 回\'s par
   assert.equal(foe.power, r.power * 2);
   assert.equal(foe.deck.length, chai.deck.length + r.cards * 2);
   // a pool entry's own `roaming` stands over party.json's
-  assert.equal(fightSetup(content, s, { ...chai, hp: 2, roaming: { hp: 0.5 } }, NOW, 'haunt:chai').foe.hp, 4);
+  assert.equal(fightSetup(content, s, { ...chai, hp: 2, roaming: { hp: 0.25 } }, NOW, 'haunt:chai').foe.hp, 3);
+  // …and past what the realm's minutes allow it is cut at the door (balance.json fight_length), its blows carrying the rest
+  const big = fightSetup(content, s, { ...chai, hp: 2, roaming: { hp: 0.5 } }, NOW, 'haunt:chai').foe;
+  assert.ok(big.hp < 4 && big.might > 1, `cut to ${big.hp} ×${big.might}`);
   // alone, or a story fight (its exit weighs the foe with its party already): the beast as written
   const alone = fightSetup(content, { ...s, chapter: '00-waimen', scene: 'wm-fushi' }, { ...chai, hp: 2 }, NOW, 'haunt:chai').foe;
   assert.deepEqual([alone.hp, alone.power, alone.deck.length], [2, undefined, chai.deck.length]);

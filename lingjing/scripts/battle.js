@@ -240,6 +240,9 @@ function sideOf(who, cfg, catalog, mode, seed) {
     allies: (cfg.party ?? []).map(a => allyOf(a, hp, seed, who)), next: 0, dodge: 0,
     // 丹囊 (§ pills): the pills carried in, each its number locked at the door; one a turn, no 灵力.
     pouch: pouchOf(cfg.pouch), pillUsed: false,
+    // § heal: how often this side may heal in the fight and how much at most, locked at the door
+    // (balance.json fight_length, rules/cards.mjs fightLength); none given, as before: no limit.
+    healsLeft: Number.isInteger(cfg.heals) ? cfg.heals : null, healMax: cfg.healMax ?? null,
   };
 }
 
@@ -276,7 +279,8 @@ export function begin(setup, catalog) {
   for (let i = 0; i < mode.foeHand; i += 1) draw(st, foe);
   for (let i = 0; i < (mode.headStart ?? 0); i += 1) draw(st, you);
   const [mine, theirs] = mode.suppress ? suppression(setup.you.tier, setup.foe.tier) : [1, 1];
-  st.scale = { you: mine, foe: theirs };
+  // `foe.might`: a beast whose 气血 the door cut to keep the fight short hits that much harder (rules/cards.mjs fightLength).
+  st.scale = { you: mine, foe: theirs * (setup.foe.might ?? 1) };
   startTurn(st);
   return st;
 }
@@ -577,15 +581,19 @@ function resolve(st, side, effect, target, { arrival = false } = {}) {
     them.drain = (them.drain ?? 0) + effect.drain;
     st.log.push({ act: 'drained', who: them.who, amount: effect.drain });
   }
-  if (effect.heal != null) {
+  if (effect.heal != null && side.healsLeft !== 0) {
+    // A side whose heals the door counted (a beast: balance.json fight_length) heals that often and
+    // never past `healMax` (Hanli 2026-11-07: a fight within 3 minutes) — the card's other verbs still land.
+    const n = side.healMax != null ? Math.min(effect.heal, side.healMax) : effect.heal;
+    if (side.healsLeft != null) side.healsLeft -= 1;
     // The most wounded of the row (阿禾 heals whoever needs it); the lead on a tie.
     const a = woundedAlly(side);
     if (a) {
-      a.hp = Math.min(a.hpMax, a.hp + effect.heal);
-      st.log.push({ act: 'heal', who: side.who, member: a.id, amount: effect.heal, hp: a.hp });
+      a.hp = Math.min(a.hpMax, a.hp + n);
+      st.log.push({ act: 'heal', who: side.who, member: a.id, amount: n, hp: a.hp });
     } else {
-      side.hp = Math.min(side.hpMax, side.hp + effect.heal);
-      st.log.push({ act: 'heal', who: side.who, amount: effect.heal, hp: side.hp });
+      side.hp = Math.min(side.hpMax, side.hp + n);
+      st.log.push({ act: 'heal', who: side.who, amount: n, hp: side.hp });
     }
   }
   if (effect.dodge) {
@@ -917,7 +925,7 @@ const VERB_USE = {
   summon: (st, side) => side.board.length < st.mode.board,
   rally: (st, side) => side.board.length > 0,
   buff: (st, side) => side.board.length > 0,
-  heal: (st, side) => side.hp < side.hpMax,
+  heal: (st, side) => side.hp < side.hpMax && side.healsLeft !== 0,
   sweep: (st, side) => other(st, side).board.length > 0,
   chain: (st, side, e) => other(st, side).board.some(m => fits(e, m)),
   swallow: (st, side, e) => other(st, side).board.some(m => fits(e, m)),

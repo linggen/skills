@@ -231,7 +231,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
       // 问卦: the lower trigram's element, its 功法 lifted or lowered today.
     },
     // An elite is its harder deck and nothing else (redesign-v2 § 四).
-    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...beastToParty(content, creature, party, game), ...(creature.signature ? { signature: creature.signature } : {}), ...(creature.feint ? { feint: creature.feint } : {}), ...(creature.trial ? { trial: creature.trial } : {}) },
+    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...fightLength(content, state, creature, beastToParty(content, creature, party, game)), ...(creature.signature ? { signature: creature.signature } : {}), ...(creature.feint ? { feint: creature.feint } : {}), ...(creature.trial ? { trial: creature.trial } : {}) },
   };
 }
 
@@ -264,6 +264,30 @@ export function beastToParty(content, creature, party, game = null) {
   const grown = Math.round((hp ?? 1) * (1 + (r.hp ?? 0) * n) * 100) / 100;
   const power = (r.power ?? 0) * n, more = deck.length ? (r.extra ?? 0) + (r.cards ?? 0) * n : 0;
   return { hp: grown, ...(power ? { power } : {}), ...(more ? { deck: [...deck, ...Array.from({ length: more }, (_, i) => deck[i % deck.length])] } : {}) };
+}
+/* 斗法's length (balance.json fight_length; Hanli 2026-11-07: about 3 minutes at 练气, within 5 at
+   any realm): a beast's 气血 at most what a player of this realm and 层 deals a round (`dpt`) times
+   the realm's rounds — what it loses back on its blows (`might`, battle.js) — and its heals counted (`heals` a fight, none past a round's
+   `dpt`). A ceiling — a frailer beast keeps its own. A 试 (`trial`) and a foe that says `long` are
+   left as they are. `grown` is the foe's { hp, power, deck } as the party left it (beastToParty). */
+export function lengthRule(content, state) {
+  const r = content.balance?.fight_length, at = Math.max(0, tierIndex(content, state));
+  if (!r) return null;
+  const minutes = Math.min(r.cap ?? Infinity, r.minutes?.[at] ?? r.cap ?? 5);
+  const rounds = (minutes * 60) / r.sec_per_round;
+  const at1 = (list, fall = 0) => list?.[at] ?? list?.[list.length - 1] ?? fall;
+  const dpt = at1(r.dpt?.base) + at1(r.dpt?.step) * (state.step ?? 0);
+  return { minutes, rounds, dpt, hp: Math.round(dpt * rounds), heals: r.heals ?? null, healMax: Math.max(1, Math.round(dpt)), carry: r.carry ?? 0 };
+}
+export function fightLength(content, state, creature, grown) {
+  const rule = !creature.trial && !creature.long ? lengthRule(content, state) : null;
+  if (!rule) return grown;
+  const share = (CARD_REALMS[state.tier] ?? CARD_REALMS.qi).hp * (MODES.pve.foeHp ?? 1);
+  const most = Math.floor((rule.hp / share) * 100) / 100;
+  const was = grown.hp ?? 1, cut = was > most;
+  // The weight a cut takes off its 气血 comes back on its blows (`carry`: 0 none, 1 all of it).
+  const might = cut ? Math.round((was / most) ** rule.carry * 100) / 100 : 1;
+  return { ...grown, ...(cut ? { hp: most } : {}), ...(might > 1 ? { might } : {}), ...(rule.heals != null ? { heals: rule.heals, healMax: rule.healMax } : {}) };
 }
 /* The 卷 he stands in: his chapter's (chapter.json `juan`), 1 when it says none. */
 const juanOf = (content, state) => content.chapters?.[state.chapter]?.juan ?? 1;
