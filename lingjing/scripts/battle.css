@@ -525,12 +525,16 @@
   .battle .bhand > .bcard .bname { font-size: clamp(14px, calc(var(--wcw) * .095), 19px); margin-top: 5px; }
   .battle .bhand > .bcard .btext { font-size: clamp(12px, calc(var(--wcw) * .072), 14.5px); line-height: 1.3; margin-top: 2px; }
   /* Why it cannot be played lies at the foot of the picture's row, never over the name or the words (11-07: 气血已满 hid
-     青光's words): that row is never lower than the cost and the why together, and the name keeps its whole two lines (a
-     min-content row: its own overflow: hidden would let the art row squeeze it to a sliver). */
+     青光's words): that row is never lower than the cost and the why together, a why of two lines too (the playbot, 11-07:
+     「对方阵前无人」 wrapped and rose over the cost) — the picture sized out of it (contain: size), the why's top margin the
+     cost's height; and the name keeps its whole two lines (a min-content row: its own overflow: hidden would let the art row
+     squeeze it to a sliver). */
   .battle .bhand > .bcard .bpic { grid-row: 1; grid-column: 1; }
   .battle .bhand > .bcard .bleaf { grid-template-rows: minmax(16px, 1fr) min-content auto; }
-  .battle .bhand > .bcard .bleaf:has(> .bwhy) { grid-template-rows: minmax(40px, 1fr) min-content auto; }
-  .battle .bhand > .bcard .bwhy { font-size: clamp(11.5px, calc(var(--wcw) * .068), 13.5px); position: relative; inset: auto; grid-row: 1; grid-column: 1; align-self: end; z-index: 2; margin: 0 -1px; padding: 2px 5px; line-height: 1.25; }
+  .battle .bhand > .bcard .bleaf:has(> .bwhy) { grid-template-rows: minmax(min-content, 1fr) min-content auto; }
+  .battle .bhand > .bcard .bleaf:has(> .bwhy) > .bpic { contain: size; }
+  .battle .bhand > .bcard .bwhy { font-size: clamp(11px, calc(var(--wcw) * .066), 13.5px); position: relative; inset: auto; grid-row: 1; grid-column: 1; align-self: end; z-index: 2;
+    margin: calc(clamp(24px, calc(var(--wcw) * .18), 35px) - 2px) -1px 0; padding: 1px 3px; line-height: 1.25; }
   .battle .bhand > .bcard .bcost { width: clamp(22px, calc(var(--wcw) * .165), 32px); height: clamp(24px, calc(var(--wcw) * .18), 35px); font-size: clamp(14px, calc(var(--wcw) * .1), 19px); top: 4px; left: 4px; }
   .battle .bhand > .bcard .belem { top: 9px; right: 9px; font-size: 12px; }
   .battle .bhand > .bcard .batk, .battle .bhand > .bcard .bhp { --gem: 28px; bottom: -7px; }
