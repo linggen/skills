@@ -873,7 +873,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       ${aim.hero && ctx.striker ? dmgBadge(st, ctx.striker.n, ctx.striker.element, st.foe.root, ctx.lang, true) : ''}
     </button>
 
-    <div class="bomen">${feintHtml(st, ctx)}${chargeHtml(st, ctx)}${intentHtml(st, ctx)}</div>
+    <div class="bomen" data-shell-bubble-under>${feintHtml(st, ctx)}${chargeHtml(st, ctx)}${intentHtml(st, ctx)}</div>
 
     <div class="bfield">
       <div class="brank theirs" aria-label="${esc(w.theirs)}">${rank('theirs', st.foe.board, ctx.board)}</div>

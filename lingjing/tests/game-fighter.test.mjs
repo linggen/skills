@@ -479,7 +479,10 @@ test('the round pad (touch): 8 ways by the thumb\'s angle, a diagonal two at onc
   assert.deepEqual(at(0, 200), ['right'], 'past the rim still counts');
   const src = fs.readFileSync(new URL('../scripts/games/fighter.js', import.meta.url), 'utf8');
   assert.match(src, /kind === 'touch' \? dial :/, 'the pad on touch only; the desk keeps its four buttons');
-  assert.match(src, /dataset\.v = '9'/);
+  assert.match(src, /dataset\.v = '10'/);
+  // 11-06 (the playbot at 375): the touch pad scales with a board narrower than it, every key inside.
+  assert.match(src, /\.g-fighter\.is-touch \{ container-type: inline-size; \}/);
+  assert.match(src, /@container \(max-width: 380px\)[^]*?--gfb: clamp\(34px, 12\.5cqi, 48px\)/);
 });
 
 /* 2026-11-03 (Hanli: 「好像卡住了, 秦燕不会滑倒失败呢」 · 「kl翻滚这个也没告诉玩家啊」 · 「手机上组合键不太好操作」): the edge always

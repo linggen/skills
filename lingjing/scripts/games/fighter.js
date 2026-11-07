@@ -166,6 +166,21 @@ html[data-board=fighter] #stage .gf-field { width: min(100%, calc((100vh - 200px
 .g-fighter .gf-dial b { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%;
   background: #2a241c; opacity: .35; transform: translate(var(--x, 0px), var(--y, 0px)); pointer-events: none; }
 .g-fighter .gf-dial.is-held b { opacity: .7; }
+/* The touch pad on a board narrower than it (the playbot, 11-06 at 375: the story's card 317 px wide, the pad 362 — 重腿 past
+   the board's right edge, cut off): the keys and the round pad scale with the board's width, as the desk's do below 640
+   (above), every key inside it. --gfb is a key's width: 48 px from a 380 px board up, down to 34 px. */
+.g-fighter.is-touch { container-type: inline-size; }
+@container (max-width: 380px) {
+  .g-fighter.is-touch .gf-pad { --gfb: clamp(34px, 12.5cqi, 48px); padding: 0 8px 8px; }
+  .g-fighter.is-touch .gf-acts { gap: 6px; }
+  .g-fighter.is-touch .gf-diamond { gap: 0 3px; }
+  .g-fighter.is-touch button { width: var(--gfb); height: var(--gfb); font-size: calc(var(--gfb) * .42); }
+  .g-fighter.is-touch button[data-k=hpunch], .g-fighter.is-touch button[data-k=heavy] { font-size: calc(var(--gfb) * .32); }
+  .g-fighter.is-touch button.gf-cue { min-width: calc(var(--gfb) * 1.6); height: calc(var(--gfb) * 1.6); font-size: calc(var(--gfb) * .66); }
+  .g-fighter.is-touch .gf-dial { width: calc(var(--gfb) * 2.6); height: calc(var(--gfb) * 2.6); }
+  .g-fighter.is-touch .gf-dial i { transform: rotate(var(--a)) translateY(calc(var(--gfb) * -1)) rotate(calc(-1 * var(--a))); }
+  .g-fighter.is-touch .gf-dial b { width: calc(var(--gfb) * 1.08); height: calc(var(--gfb) * 1.08); margin: calc(var(--gfb) * -.54) 0 0 calc(var(--gfb) * -.54); }
+}
 /* Turned on its side on a phone: the field as tall as the page (the app's bar above it holds ✕ and Ⅱ) and as wide as
    the screen, up to WIDE_MAX (2.4 : 1; Hanli 11-03: 「两边目前黑的比较多」) — the world drawn wider at its sides, the
    boards as they are (draw.js fieldOf) — the hands over its lower corners, see-through, clear of the notch and the home
@@ -181,11 +196,11 @@ html[data-board=fighter] #stage .gf-field { width: min(100%, calc((100vh - 200px
 `;
 function sheet(doc) {
   const old = doc.getElementById('g-fighter-css');
-  if (old?.dataset.v === '9') return;
+  if (old?.dataset.v === '10') return;
   old?.remove();
   const st = doc.createElement('style');
   st.id = 'g-fighter-css';
-  st.dataset.v = '9';
+  st.dataset.v = '10';
   st.textContent = CSS;
   doc.head.append(st);
 }

@@ -6,6 +6,10 @@
 // it shows. A control, a cost or a line of text under something else, cut by its box, or off the screen's sides is a
 // FAIL; a blank band taller than 100 px between blocks is a WARN. Off the bottom is only an error inside a one-screen
 // layer (a fight, a sheet, a fixed bar): the page itself scrolls.
+//
+// 11-06 (the playbot's second run, 375): a fight's words are measured (its room is a tap spot, `[data-spot=stage]`, and was
+// taken for a control, so no word in a fight was read); a bubble that lets taps through is made solid for the measure, so
+// what it lies over reads as covered; and a cut sideways is excused only by a scroller that scrolls sideways (切磋's 重腿).
 
 /** The lint, as a function the page runs (page.evaluate(LINT, opts)). Returns { fails: [...], warns: [...] }. */
 export const LINT = ({ minShown = 0.9, band = 100, scope = null } = {}) => {
@@ -55,12 +59,16 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null } = {}) => {
       items.push({ kind, e });
     }
   }
+  // A tap spot, as a control: the fight's whole room is one too (`.battle[data-spot=stage]`, a tap on nothing puts a lifted
+  // card down) — a surface, not a control its words belong to (11-06: every word in a fight went unmeasured under it, so
+  // a bubble over the 杀招's words could not be seen).
+  const SPOT = '[data-spot]:not([data-spot=stage])';
   // Text: an element with its own words (a direct text node), not already a control.
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   for (let n = walker.nextNode(); n; n = walker.nextNode()) {
     if (!n.textContent.trim()) continue;
     const e = n.parentElement;
-    if (!e || seen.has(e) || e.closest(DEV_ONLY) || e.closest('button, [role=button], [data-spot], script, style, noscript, [aria-hidden=true]')) continue;
+    if (!e || seen.has(e) || e.closest(DEV_ONLY) || e.closest(`button, [role=button], ${SPOT}, script, style, noscript, [aria-hidden=true]`)) continue;
     if (!vis(e)) continue;
     seen.add(e);
     items.push({ kind: 'text', e, node: n });
@@ -69,18 +77,26 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null } = {}) => {
   const rects = [];
   const fixedish = (e) => { for (let a = e; a && a !== document.body; a = a.parentElement) { const p = getComputedStyle(a).position; if (p === 'fixed' || p === 'sticky') return true; } return false; };
   // Where an element can be seen: the viewport cut by every ancestor that clips. A scroller's cut is not a fault (it
-  // scrolls to it); an overflow:hidden cut is — the words or the control are cut off for good.
+  // scrolls to it); an overflow:hidden cut is — the words or the control are cut off for good. A cut is excused per axis:
+  // sideways only by a scroller laid out to scroll sideways — a row (flex, no wrap; a column-flowing grid; a snap on x; a
+  // line that never wraps) or one shut on y. A panel that scrolls down (`.focus`, overflow-y: auto, whose x computes to
+  // auto as well) is no way to a key spilled past its right edge: no thumb scrolls a column sideways to find it (the
+  // playbot, 11-06 at 375: 切磋's 「重腿」 past the board's right edge, excused by .focus's vertical scroll).
+  const rowScroller = (cs) => cs.overflowY === 'hidden' || cs.overflowY === 'clip' || /x|inline/.test(cs.scrollSnapType)
+    || (/flex/.test(cs.display) && cs.flexDirection.startsWith('row') && cs.flexWrap === 'nowrap')
+    || (/grid/.test(cs.display) && cs.gridAutoFlow.includes('column')) || cs.whiteSpace === 'nowrap';
   const clipOf = (e) => {
-    let l = 0, t = 0, r = W, b = H, scrolls = false, hidden = false;
+    let l = 0, t = 0, r = W, b = H, scrollsX = false, scrollsY = false;
     for (let a = e.parentElement; a && a !== document.documentElement; a = a.parentElement) {
       const cs = getComputedStyle(a);
       const ox = cs.overflowX, oy = cs.overflowY;
       if (ox === 'visible' && oy === 'visible') continue;
       const q = a.getBoundingClientRect();
       l = Math.max(l, q.left); t = Math.max(t, q.top); r = Math.min(r, q.right); b = Math.min(b, q.bottom);
-      if (/auto|scroll/.test(ox + oy)) scrolls = true; else hidden = true;
+      if (/auto|scroll/.test(ox) && rowScroller(cs)) scrollsX = true;
+      if (/auto|scroll/.test(oy)) scrollsY = true;
     }
-    return { l, t, r, b, scrolls, hidden };
+    return { l, t, r, b, scrollsX, scrollsY };
   };
   // A text cut on purpose with an ellipsis (its own `text-overflow: ellipsis` box) is read within that box: the words past
   // the 「…」 are not on the page to be covered (2026-11-05: 「卷一 · 沉…」 read as lying under the place's name).
@@ -101,16 +117,27 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null } = {}) => {
   // A card laid behind another on purpose (`data-peek`: the phone's hand wheel, battle-wheel.js) is read at the centre, a
   // tap away: only its cost must show — on the corner left in view (2026-11-05).
   const peeks = (x) => !!x.closest('[data-peek]');
+  // A word laid over the page that lets taps through (a fight's bubble, games/shell.js `.gshell-bubble`) still hides what is
+  // under it from the eye: for the measure it is made solid a moment, so elementFromPoint meets it where it lies over
+  // something to be read (the playbot, 11-06 at 375: 犰狳's line over its own 杀招's words, unflagged because it was skipped).
+  // Only one standing over the page on its own — absolute or fixed, outside any card or control (a badge on its card,
+  // `.bfresh`, is the card's), drawn and still (a float in flight is read when it lands).
+  const veils = [...document.querySelectorAll('body *')].filter((x) => passThrough(x) && /absolute|fixed/.test(getComputedStyle(x).position)
+    && [...x.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()) && vis(x) && !moving(x)
+    && !x.parentElement?.closest(`button, [role=button], ${SPOT}, .bcard, .bminion`) && !x.closest(DEV_ONLY));
+  const solid = veils.map((x) => [x, x.style.pointerEvents]);
+  for (const [x] of solid) x.style.setProperty('pointer-events', 'auto');
+  try {
   for (const { kind, e, node } of items) {
-    if (moving(e) || passThrough(e)) continue;
+    if (veils.some((v) => v.contains(e)) || moving(e) || passThrough(e)) continue;
     if (kind !== 'cost' && peeks(e)) continue;
     const r = e.getBoundingClientRect();
     rects.push(r);
     const clip = clipOf(e);
     const lone = oneScreen(e);
     // Off the screen's sides with no scroller to bring it back, or off a one-screen layer.
-    const sideOut = !clip.scrolls && (r.left < -1 || r.right > W + 1);
-    const vertOut = lone && !clip.scrolls && (r.top < -1 || r.bottom > H + 1);
+    const sideOut = !clip.scrollsX && (r.left < -1 || r.right > W + 1);
+    const vertOut = lone && !clip.scrollsY && (r.top < -1 || r.bottom > H + 1);
     if (sideOut || vertOut) fails.push({ el_kind: kind, why: 'outside-viewport', el: label(e), rect: [r.left, r.top, r.width, r.height].map(Math.round) });
     let on = 0, hit = 0, cut = 0, all = 0, by = null;
     for (const q of boxesOf(kind, e, node)) {
@@ -118,7 +145,8 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null } = {}) => {
         for (let j = 0; j < 3; j += 1) {
           const x = q.left + q.width * (0.12 + 0.76 * (i / 4)), y = q.top + q.height * (0.25 + 0.5 * (j / 2));
           all += 1;
-          if (x < clip.l || y < clip.t || x >= clip.r || y >= clip.b) { if (clip.hidden && !clip.scrolls && x >= 0 && y >= 0 && x < W && y < H) cut += 1; continue; }
+          const outX = x < clip.l || x >= clip.r, outY = y < clip.t || y >= clip.b;
+          if (outX || outY) { if (((outX && !clip.scrollsX) || (outY && !clip.scrollsY)) && x >= 0 && y >= 0 && x < W && y < H) cut += 1; continue; }
           on += 1;
           const top = document.elementFromPoint(x, y);
           if (top && (top === e || e.contains(top) || top.contains(e))) hit += 1;
@@ -134,6 +162,7 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null } = {}) => {
     const shown = hit / on;
     if (shown < minShown) fails.push({ el_kind: kind, why: 'covered', shown: Math.round(shown * 100) / 100, el: label(e), by: by ? label(by) : null, rect: [r.left, r.top, r.width, r.height].map(Math.round) });
   }
+  } finally { for (const [x, was] of solid) x.style.pointerEvents = was; }
   // Blank bands: rows of the screen no drawn thing covers, between two that are covered.
   const rows = new Array(Math.ceil(H)).fill(false);
   for (const r of rects) for (let y = Math.max(0, Math.floor(r.top)); y < Math.min(H, Math.ceil(r.bottom)); y += 1) rows[y] = true;

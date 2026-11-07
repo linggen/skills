@@ -138,6 +138,31 @@ function footHtml(id, lang) {
   return `<span class="gshell-won${r.won ? '' : ' is-lost'}" id="won">${plain(r.won ? w.won : w.lost)}</span>${stars}${grade}${acts}`;
 }
 
+/* What the bubble stands under, where a board names it (`data-shell-bubble-under`: a fight's head — the beast's row and its
+   装睡 / 杀招 / 蓄力 under it, battle-card.js `.bomen`): its bottom, measured, is the bubble's top on a narrow room
+   (shell.css `--gshell-bubble-top`). A guessed 112 px stood on the 杀招's own words once the omen grew under the row (the
+   playbot, 11-06 at 375: 犰狳's line over 「装睡 —— 寻常一击只擦过…」). Measured again while the bubble shows, as the board
+   redraws under it (a turn's omen comes and goes). */
+const bubbleWatch = new WeakMap(); // frame → its MutationObserver while a bubble shows
+function placeBubble(f) {
+  const stage = f.querySelector(':scope > .gshell-stage'), layer = stage?.querySelector(':scope > .gshell-layer');
+  const under = stage?.querySelector('[data-shell-bubble-under]');
+  if (!layer) return;
+  if (!under?.getClientRects().length) { layer.style.removeProperty('--gshell-bubble-top'); return; }
+  const top = Math.round(under.getBoundingClientRect().bottom - stage.getBoundingClientRect().top + 6);
+  if (layer.style.getPropertyValue('--gshell-bubble-top') !== `${top}px`) layer.style.setProperty('--gshell-bubble-top', `${top}px`);
+}
+function keepBubbleUnder(f, on) {
+  const was = bubbleWatch.get(f);
+  if (!on) { was?.disconnect(); bubbleWatch.delete(f); return; }
+  placeBubble(f);
+  const stage = f.querySelector(':scope > .gshell-stage');
+  if (was || !stage || typeof MutationObserver !== 'function') return;
+  const mo = new MutationObserver(() => placeBubble(f));
+  mo.observe(stage, { childList: true, subtree: true });
+  bubbleWatch.set(f, mo);
+}
+
 /** Lay the store's state into every frame of `id` on the page (the story may have drawn it twice). */
 function paint(id, doc = globalThis.document) {
   if (!doc?.querySelectorAll) return;
@@ -149,6 +174,7 @@ function paint(id, doc = globalThis.document) {
     if (btn) { btn.setAttribute('aria-pressed', String(Boolean(s?.paused))); btn.textContent = s?.paused ? '▶' : 'Ⅱ'; btn.setAttribute('aria-label', s?.paused ? words(lang).resume : words(lang).pause); }
     const layer = f.querySelector(':scope > .gshell-stage > .gshell-layer');
     if (layer) layer.innerHTML = layerHtml(id, lang);
+    keepBubbleUnder(f, Boolean(s?.bubble));
     const foot = f.querySelector(':scope > .gshell-foot');
     if (foot) foot.innerHTML = footHtml(id, lang);
   }
