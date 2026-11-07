@@ -27,7 +27,7 @@
 // A story mount settles { …, r } — what the rules answered; the story's own pay and 所得 follow it.
 import { act, begin, foeStep, foeTurn, idle, idleWhy, playerOffers as offers, replayInto, tokenOf, view } from '../battle.js';
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, cardFaceHtml, dropOf, endOf, pickOf } from '../battle-card.js';
-import { banner, ghostsOf, playLog, since } from '../battle-anim.js';
+import { banner, ghostsOf, hurry, playLog, since } from '../battle-anim.js';
 import { wireDrag } from '../battle-drag.js';
 import { wireWheel } from '../battle-wheel.js';
 import { WORDS, duelTitle } from '../cards.js';
@@ -157,7 +157,7 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
   if (prior.length && !st0.log.some((e) => e.who === 'you' && e.act === 'played')) replayInto(st0, prior);
   // A fight reopened (the door's `resumed`, or the moves it hands back) is no first meeting.
   const resumed = Boolean(data.resumed) || prior.length > 0;
-  const room = { ...fight, setup, lang, st: st0, picked: null, openLog: false, help: false, note: null, busy: false, ended: false, settling: false, yielded: false };
+  const room = { ...fight, setup, lang, st: st0, picked: null, openLog: false, help: false, note: null, busy: false, mine: false, queue: [], ended: false, settling: false, yielded: false };
   const hook = (name, ...a) => { try { return story[name]?.(...a); } catch (e) { console.warn('[kapai]', name, e); return undefined; } };
   const ctx = () => { const base = ctxOf(room), more = hook('ctx', room) ?? {}; return { ...base, ...more, says: { ...base.says, ...(more.says ?? {}) } }; };
   const paused = () => Boolean(shell?.paused?.());
@@ -191,6 +191,8 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
 
     async function playOut(mark, by = null) {
       room.busy = true;
+      // His own move being drawn: a tap meanwhile is taken at once (queued, the drawing hurried), never dropped.
+      room.mine = by?.who === 'you';
       try {
         const ghosts = ghostsOf(battle(), since(room.st.log, mark), by);
         draw();
@@ -198,7 +200,25 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
         await playLog(battle(), since(room.st.log, mark), { words: cx.words, ghosts, faceOf: (id) => cardFaceHtml(id, cx), sigName: name(sig), onEntry: (t) => shell?.sound?.(t.act) });
       } finally {
         room.busy = false;
+        room.mine = false;
       }
+    }
+
+    /* Taps while his own move is drawn (Hanli 11-07: 「斗法一张牌出手后要等1秒，才能点第二张…能优化一下，让用户能快速连着点击吗」):
+       each is kept in order and the drawing runs to its end at once (battle-anim.js hurry), then each is taken as if
+       tapped on the room as it now stands — the room drawn at the start of the move is already the rules' state, so the
+       card played has left the hand and the indices are the room's. A tap the rules refuse says why (room.note) and the
+       card stays in the hand; one taken after the fight is over, or after the turn ended, is let go. Each tap is taken
+       once: shifted off the queue before it is acted on. */
+    function queueTap(fn) {
+      room.queue.push(fn);
+      hurry();
+    }
+    function drain() {
+      if (gone() || room.busy || !room.queue.length) return;
+      if (room.st.outcome !== 'open' || room.st.whose !== 'you') { room.queue.length = 0; return; }
+      const next = room.queue.shift();
+      next();
     }
 
     async function settle() {
@@ -224,27 +244,30 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
     async function doMove(out) {
       room.note = null;
       if (out.quit) return yieldFight();
-      if (out.clear) { room.picked = null; return draw(); }
-      if (out.pick) { room.picked = out.pick; return draw(); }
+      if (out.clear) { room.picked = null; draw(); return drain(); }
+      if (out.pick) { room.picked = out.pick; draw(); return drain(); }
       if (out.action.kind === 'end') { room.picked = null; return endTurn(); }
       // A spell that would land on nothing is never played: its one line says what is missing (Hanli 11-04, 痒痒针).
       const nothing = out.action.kind === 'play' ? idleWhy(room.st, room.st.you, room.st.catalog?.[room.st.you.hand[out.action.index]]) : null;
-      if (nothing) { room.picked = null; room.note = nothing; return draw(); }
+      if (nothing) { room.picked = null; room.note = nothing; draw(); return drain(); }
       const mark = room.st.log.length, before = view(room.st), res = act(room.st, out.action, 'you');
       room.picked = null;
-      if (!res.ok) { room.note = res.why; return draw(); }
+      if (!res.ok) { room.note = res.why; draw(); return drain(); }
       hook('onMove', tokenOf(out.action));
       await playOut(mark, { who: 'you', action: out.action });
       if (gone()) return;
       hook('onStep');
       hook('onPlayed', { before, mark, mine: true });
-      if (room.st.outcome !== 'open') return settle();
+      if (room.st.outcome !== 'open') { room.queue.length = 0; return settle(); }
       draw();
+      drain();
     }
 
     async function endTurn() {
       const st = room.st;
       if (room.busy || st.outcome !== 'open' || st.whose !== 'you') return;
+      // A tap kept behind the end is for a turn that is over: let go.
+      room.queue.length = 0;
       const mark = st.log.length, before = view(st);
       if (!act(st, { kind: 'end' }, 'you').ok) return;
       hook('onMove', 'end');
@@ -294,8 +317,9 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       // 问银月: words only — nothing in the fight moves (fightsay.js); the story's.
       if (spot.kind === 'ask') { if (!room.yielded) hook('onAsk'); return; }
       if (paused()) return;
-      if (spot.kind === 'quit') return yieldFight();
-      if (room.busy || room.st.outcome !== 'open') return;
+      if (spot.kind === 'quit') { room.queue.length = 0; return yieldFight(); }
+      if (room.busy) { if (room.mine && !gone()) queueTap(() => onTap(spot)); return; }
+      if (room.st.outcome !== 'open') return;
       if (spot.kind === 'stage' && !room.picked) return;
       return doMove(pickOf(room.picked, spot, view(room.st), room.catalog, offers(room.st)));
     }
@@ -310,8 +334,12 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
     host.addEventListener('click', onClick);
     const offDrag = wireDrag({
       room: host,
-      active: () => !gone() && !paused() && !room.busy && room.st.outcome === 'open' && room.st.whose === 'you',
-      onDrop: (from, to) => { if (room.busy || room.st.outcome !== 'open') return; room.picked = null; doMove(dropOf(from, to, view(room.st), room.catalog)); },
+      active: () => !gone() && !paused() && (!room.busy || room.mine) && room.st.outcome === 'open' && room.st.whose === 'you',
+      onDrop: (from, to) => {
+        const go = () => { if (room.busy || room.st.outcome !== 'open') return; room.picked = null; doMove(dropOf(from, to, view(room.st), room.catalog)); };
+        if (room.busy) { if (room.mine && !gone()) queueTap(go); return; }
+        go();
+      },
     });
     const offPause = shell?.onPause?.((on) => { if (on) { room.picked = null; clearTimeout(idleTimer); } else idleSoon(); });
     if (signal) {

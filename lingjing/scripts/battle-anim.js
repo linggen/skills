@@ -11,7 +11,23 @@
 
 import { squash } from './fx.js';
 
-const sleep = ms => new Promise(r => setTimeout(r, ms));
+/* Every wait here is a `sleep`, so a stretch being drawn can be hurried to its end (hurry): the next tap never waits
+   for the last one's ink (Hanli 11-07: 「斗法一张牌出手后要等1秒，才能点第二张」). */
+let rushing = false, liveRoot = null;
+const pending = new Set();
+const sleep = ms => (rushing ? Promise.resolve() : new Promise((r) => {
+  const done = () => { clearTimeout(t); pending.delete(done); r(); };
+  const t = setTimeout(done, ms);
+  pending.add(done);
+}));
+/* The stretch being drawn runs to its end at once — its waits resolve, its flights land — and the room stands as the
+   rules left it (ANIMATION NEVER DECIDES ANYTHING: cutting it short changes nothing but the drawing). */
+export function hurry() {
+  if (!liveRoot) return;
+  rushing = true;
+  for (const done of [...pending]) done();
+  for (const a of liveRoot.getAnimations?.({ subtree: true }) ?? []) { try { a.finish(); } catch { /* an endless one */ } }
+}
 
 /* How long each beat takes. Tuned so a whole exchange lands in about a second:
    this is a game you open for six minutes, not an epic. An attack — the
@@ -418,9 +434,15 @@ export async function playLog(root, entries, ctx = {}) {
   if (ctx.skip || !root) { for (const t of entries ?? []) ctx.onEntry?.(t); return; }
   raiseGhosts(root, ctx.ghosts);
   const held = holdPools(root, ctx.ghosts?.hp);
-  try { await replay(root, entries, { ...ctx, held }); await floatsDone(); } finally { held.release(); }
-  // Only once everything going has gone to ink does the rank close up.
-  await reflow(root);
+  liveRoot = root;
+  try {
+    try { await replay(root, entries, { ...ctx, held }); await floatsDone(); } finally { held.release(); }
+    // Only once everything going has gone to ink does the rank close up.
+    await reflow(root);
+  } finally {
+    // The next stretch is drawn at its own pace, unless it too is hurried.
+    if (liveRoot === root) { liveRoot = null; rushing = false; }
+  }
 }
 
 async function replay(root, entries, ctx) {
