@@ -103,7 +103,9 @@ export function gateLine(d, { dir = '', gateRun = '' } = {}) {
   }
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)) {
+const real = (f) => { try { return fs.realpathSync(f); } catch { return path.resolve(f); } };
+// Run as a script — by any path to it (the gate runs a copy under $TMPDIR, /var → /private/var on macOS).
+if (process.argv[1] && real(process.argv[1]) === real(new URL(import.meta.url).pathname)) {
   const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
   const asJson = process.argv.includes('--json');
   const gateRun = process.argv.find((a) => a.startsWith('--gate-run='))?.slice(11) ?? '';

@@ -128,6 +128,18 @@ test('a missing certainty is sure; a fail flag on a sure note is the fail', () =
   assert.equal(noteState({ shot: 'a', certainty: 'unsure', hanli: { ok: 'yes' } }).result, 'waiting');
 });
 
+test('the cli runs from a copy through a symlinked dir (the gate\'s $TMPDIR copy)', () => {
+  const real = fs.mkdtempSync(path.join(os.tmpdir(), 'pb-verdict-real-'));
+  const link = `${real}-link`;
+  fs.symlinkSync(real, link);
+  fs.copyFileSync(VERDICT, path.join(real, 'v.mjs'));
+  fs.writeFileSync(path.join(real, 'findings.json'), JSON.stringify(clean));
+  fs.writeFileSync(path.join(real, 'review.json'), JSON.stringify(done([sure('a')])));
+  const r = spawnSync(process.execPath, [path.join(link, 'v.mjs'), link, RUN], { encoding: 'utf8' });
+  assert.match(r.stdout, /^PASS\t/);
+  fs.unlinkSync(link); fs.rmSync(real, { recursive: true });
+});
+
 test('the cli prints the gate line from a report folder', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pb-verdict-'));
   fs.writeFileSync(path.join(dir, 'findings.json'), JSON.stringify(clean));
