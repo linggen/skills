@@ -42,7 +42,7 @@
   position: relative; isolation: isolate; width: 100%; height: 100%; box-sizing: border-box;
   display: grid; grid-template-rows: auto auto auto minmax(0, 1fr) auto auto; gap: 6px;
   padding: 10px 18px 8px; overflow: hidden;
-  --ch: clamp(150px, 22vh, 200px); --cw: calc(var(--ch) * .71); --mh: clamp(112px, 18vh, 170px); --mw: calc(var(--mh) * .84); --plate: clamp(78px, 12vh, 120px);
+  --ch: clamp(150px, 22vh, 200px); --cw: calc(var(--ch) * .71); --lift: 16px; --mh: clamp(112px, 18vh, 170px); --mw: calc(var(--mh) * .84); --plate: clamp(78px, 12vh, 120px);
   font-family: var(--serif); color: var(--ink);
   background:
     radial-gradient(120% 70% at 50% 0%, rgba(243, 238, 226, 0.58), rgba(243, 238, 226, 0.8) 60%),
@@ -119,6 +119,7 @@
 
 /* 气血: a cinnabar figure over a thin brushed bar. */
 .bpool { display: grid; grid-template-columns: auto minmax(90px, 160px) auto; align-items: center; gap: 7px; font-family: var(--ui); font-size: 10.5px; color: var(--ink-3); }
+.bpool > span { white-space: nowrap; } /* 气血 on one line (the gate, 11-07 at 375: the beast's read 气/血) */
 .bbar { position: relative; height: 5px; border-radius: 3px; background: var(--ink-wash); box-shadow: inset 0 0 0 1px rgba(31, 28, 24, 0.08); overflow: visible; }
 .bbar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #8E2A20, var(--cinnabar) 70%, #C9503F); transition: width .5s cubic-bezier(.2, .8, .2, 1); }
 .bbar .bmark { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: var(--ink); text-decoration: none; }
@@ -271,7 +272,7 @@
 @keyframes urge { 0%, 100% { box-shadow: inset 0 0 0 2px rgba(251, 245, 234, 0.65); } 50% { box-shadow: inset 0 0 0 2px rgba(251, 245, 234, 0.65), 0 0 24px rgba(179, 55, 42, 0.6); transform: rotate(-2deg) translateY(-2px); } }
 
 /* ── 手牌: the hand fanned at the foot ── */
-.bdock { position: relative; z-index: 3; min-height: calc(var(--ch) + 6px); padding-bottom: 8px; }
+.bdock { position: relative; z-index: 3; min-height: calc(var(--ch) + 6px + var(--lift)); padding-top: var(--lift); padding-bottom: 8px; box-sizing: border-box; }
 .bhand { display: flex; justify-content: center; align-items: flex-end; padding: 0 8px; height: 100%; }
 /* Every card whole, its cost on top (the deployer's playbot, 11-05: at 1280 a ten-card hand ran off both sides — the
    first card's cost past the left edge — and the 丹囊 tray lay over the first card). The tray stands beside the hand, never
@@ -288,10 +289,14 @@
   transition: transform .2s cubic-bezier(.2, .8, .2, 1);
 }
 .bcard .bleaf { position: absolute; left: 0; top: 0; width: var(--cw); height: var(--ch); }
-.bcard:hover { transform: translateY(calc(var(--ch) * -.18)) rotate(0deg) scale(1.04); z-index: 40; }
-.bcard.held { transform: translateY(calc(var(--ch) * -.3)) rotate(0deg) scale(1.1); z-index: 41; }
+/* A card under the pointer or held rises into the dock's own head room (--lift), never past it: it keeps its place in the
+   fan (its tilt, its order, no scale), so it never lies over its neighbour's cost nor over 护体 · 灵力 above the hand (the
+   gate, 11-07 at 1280: the leftmost 新 火弹术 raised .18 of a card and scaled lay on 金刃's cost and the 2/2 beside 护体 4).
+   Held, its ink edge and shadow say so (.held .bleaf). */
+.bcard:hover { transform: translateY(calc(var(--y, 0px) - var(--lift) * .7)) rotate(var(--r, 0deg)); }
+.bcard.held { transform: translateY(calc(var(--y, 0px) - var(--lift))) rotate(var(--r, 0deg)); }
 .bcard.dim .bleaf { filter: grayscale(.8); opacity: .62; box-shadow: none; }
-.bcard.dim:hover { transform: translateY(calc(var(--ch) * -.14)) rotate(0deg); }
+.bcard.dim:hover { transform: translateY(calc(var(--y, 0px) - var(--lift) * .5)) rotate(var(--r, 0deg)); }
 .bcard.can .bleaf { box-shadow: 0 0 0 1.5px var(--ink-2), 0 0 14px rgba(31, 28, 24, 0.3), 0 8px 18px rgba(31, 28, 24, 0.2); }
 .bcard.held .bleaf { box-shadow: 0 0 0 2px var(--ink), 0 16px 30px rgba(31, 28, 24, 0.35); }
 .bcard.dragging { opacity: .55; }
@@ -354,6 +359,9 @@
 .bhint { max-width: 100%; padding: 3px 14px; border-radius: 99px; background: rgba(31, 28, 24, 0.82); color: #F3EEE2; font-family: var(--ui); font-size: 12px; letter-spacing: .04em; text-align: center; box-shadow: 0 4px 14px rgba(31, 28, 24, 0.2); }
 .bhint.bno { background: var(--cinnabar); animation: shake .3s ease-in-out; }
 .bhint.burge { background: rgba(31, 28, 24, 0.88); }
+/* Only 结束回合 left: on the seam's row beside 上一手 (wrapping under it where the room is narrow), never over it. */
+.bseam { flex-wrap: wrap; align-items: center; gap: 3px 10px; }
+.bhint.bstuck { position: relative; z-index: 1; max-width: 92%; }
 
 /* ── Motion: a stroke, a bloom, a number, a splash, a dissolve ── */
 .bstroke { position: absolute; z-index: 6; height: 7px; margin-top: -3.5px; transform-origin: 0 50%; pointer-events: none; border-radius: 50% 100% 100% 50% / 50%;
@@ -431,7 +439,7 @@
 
 /* ── The phone: the same room, smaller leaves; the hand overlaps itself ── */
 @container scene (max-width: 640px) {
-  .battle { padding: 6px 8px 4px; gap: 4px; --cw: 86px; --ch: 124px; --mw: 80px; --mh: 98px; --plate: 60px; }
+  .battle { padding: 6px 8px 4px; gap: 4px; --cw: 86px; --ch: 124px; --mw: 80px; --mh: 98px; --plate: 60px; --lift: 0px; }
   /* The head on one line (live, 2026-10-16: 认/输, 你的回/合, 问银/月 broke in two at 390px). */
   .btop { gap: 6px; }
   .bquit, .bhelpbtn, .bturn, .bask { flex: none; white-space: nowrap; }

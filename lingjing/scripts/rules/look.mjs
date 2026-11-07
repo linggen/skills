@@ -352,6 +352,9 @@ function saysOf(content, state, game) {
   return Object.values(says).some(Boolean) ? says : null;
 }
 
+/* The fight is kept open and its door takes it up where it stood — the same test as tasks.mjs duel's `resuming`. */
+const keptHere = (state, game, today, now) => state.fight?.game === game.id && today?.day === dayKey(now) && today?.outcome === 'open';
+
 function duelBrief(content, state, game, now, { door = false } = {}) {
   const creature = creatureOf(content, game.creature);
   // A pool's fight is kept by the place (world.mjs huntKey): only one open now is today's; a settled one drew the next beast.
@@ -391,12 +394,13 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
     // A fight kept open (留, a reload, the phone popped): the door takes it up where it stood — the same test as the door's
     // own `resuming` (tasks.mjs duel) — so the card says 回到这一战, not 出 手 (Hanli 11-06). One kept on another day is no
     // longer resumed: the door begins it fresh, and the card says so.
-    ...(state.fight?.game === game.id && today?.day === dayKey(now) && today.outcome === 'open' ? { kept: { moves: state.fight.picks?.length ?? 0 } } : {}),
+    ...(keptHere(state, game, today, now) ? { kept: { moves: state.fight.picks?.length ?? 0 } } : {}),
     stake: stakeOf(content, state, game),
     // A story fight weighed with a thing worn that he lacks but owns (rules/gearhint.mjs): where it is, for the card and 银月.
     ...(gearHint(content, state, game) ? { gear_hint: gearHint(content, state, game) } : {}),
-    // 丹囊 at the door: the pills he may carry in, and his last pick.
-    ...(pouchBrief(content, state) ? { pouch: pouchBrief(content, state) } : {}),
+    // 丹囊 at the door: the pills he may carry in, and his last pick. A kept fight takes up the pills it began with (tasks.mjs
+    // duel ignores `pills` when resuming), so its card shows no picker that would do nothing (gate 11-07, 019/043/068).
+    ...(!keptHere(state, game, today, now) && pouchBrief(content, state) ? { pouch: pouchBrief(content, state) } : {}),
     // The lines only at the door, where the page opens the fight — Look stays lean.
     ...(door ? { says: saysOf(content, state, game) } : {}),
   };

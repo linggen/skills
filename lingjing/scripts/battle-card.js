@@ -583,6 +583,8 @@ export function sayEffect(c, ctx) {
   if (e.chain != null) bits.push(zh ? `锁${pro(ctx).its}阵前一个，下回合不能出手` : `Chain one of ${pro(ctx).its} rank: it cannot strike next turn`);
   if (e.swallow != null) bits.push(zh ? `吞${pro(ctx).its}阵前一个攻 ≤${e.swallow} 的` : `Swallow one of ${pro(ctx).its} rank with attack ≤ ${e.swallow}`);
   if (e.drain != null) bits.push(zh ? `${pro(ctx).it}下回合灵力 −${e.drain}` : `${pro(ctx).its} Force −${e.drain} next turn`);
+  if (e.mana != null) bits.push(zh ? `回 ${e.mana} 灵力` : `+${e.mana} Force`);
+  if (e.dodge != null) bits.push(zh ? (e.dodge > 1 ? `躲过接下来 ${e.dodge} 击` : '躲过下一击') : (e.dodge > 1 ? `dodge the next ${e.dodge} blows` : 'dodge the next blow'));
   if (e.drought != null) bits.push(zh ? `大旱：你每回合末，${pro(ctx).its}阵前每个 ${e.drought} 点` : `Drought: at the end of your turn, ${e.drought} to each of ${pro(ctx).its} rank`);
   const key = c.keywords?.includes('taunt') ? (zh ? '护主' : 'Guard') : null;
   const cry = c.keywords?.includes('battlecry') ? (zh ? '入阵：' : 'On arrival: ') : '';
@@ -831,10 +833,13 @@ function endSealHtml(st, w, stuck, turn) {
 }
 
 /* What the room says back — a refused move, what to tap next, or that only 结束回合 is left — on the
-   seam between the ranks (battle.css .bhints). */
+   seam between the ranks (battle.css .bhints). That only 结束回合 is left stands on the seam's own row beside
+   上一手, never over it (the gate, 11-07: at 375 and 1280 it lay on the log's line): it is the turn's state, held
+   while it lasts, not a word that flashes (battle.css .bstuck). */
 function hintsHtml(w, note, advice, stuck) {
-  const said = [note ? `<div class="bhint bno">${esc(w.why[note] ?? note)}</div>` : '', advice ? `<div class="bhint${stuck ? ' burge' : ''}">${esc(advice)}</div>` : ''].join('');
-  return said ? `<div class="bhints">${said}</div>` : '';
+  const left = stuck && advice === w.nothing;
+  const said = [note ? `<div class="bhint bno">${esc(w.why[note] ?? note)}</div>` : '', advice && !left ? `<div class="bhint">${esc(advice)}</div>` : ''].join('');
+  return `${left ? `<div class="bhint burge bstuck">${esc(advice)}</div>` : ''}${said ? `<div class="bhints">${said}</div>` : ''}`;
 }
 
 /* `st` is `view(state)`, `offers` is `offers(state)`, `ctx` carries the

@@ -492,13 +492,15 @@ export function mijingEncounter(content, state, now) {
   if (run.room?.phase !== 'fight' || !(tableOf(content)?.doors ?? []).includes(state.place)) return null;
   const game = gameOf(run), creature = creatureOf(content, game.creature);
   if (!creature) return null;
-  const brief = duelBrief(content, state, game, now);
+  // Kept open (its door's own `resuming`: the run's fight is the save's): the card says 回到这一战 (look.mjs duelBrief `kept`),
+  // and offers no 丹囊 pick — the door ignores `pills` when resuming.
+  const kept = state.fight?.game === game.id;
+  const { pouch, ...brief } = duelBrief(content, state, game, now);
   return {
     creature: { id: creature.id, name: pick(creature.name, state.lang) }, game,
     mijing: { kind: run.room.kind, name: kindName(content, run.room.kind, game.creature, state.lang) },
     ...(run.room.kind === 'xiong' ? { elite: true } : {}),
-    // Kept open (its door's own `resuming`: the run's fight is the save's): the card says 回到这一战 (look.mjs duelBrief `kept`).
-    duel: { ...brief, setup: mijingSetup(content, state, game, now), today: null, stake: pick(tierRow(content, run.tier)?.name, state.lang), ...(state.fight?.game === game.id ? { kept: { moves: state.fight.picks?.length ?? 0 } } : {}) },
+    duel: { ...brief, setup: mijingSetup(content, state, game, now), today: null, stake: pick(tierRow(content, run.tier)?.name, state.lang), ...(kept ? { kept: { moves: state.fight.picks?.length ?? 0 } } : { ...(pouch ? { pouch } : {}) }) },
     won: false, withdrawn: false, tamed: false, beaten: false, likes: null,
   };
 }

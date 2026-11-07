@@ -263,17 +263,40 @@ async function flyPlayed(root, card, t) {
   await sleep(BEATS.gap);
 }
 
+/* Where the beast's 功法 is shown when no room stands beside its plate (a phone): a spot over no words — an empty place of
+   a rank (its own first, then his), the card as tall as that rank and never under a readable leaf (FOE_CARD_MIN), centred
+   on the place, or laid from the rank's top or foot; else the plate's column. None clear: it is not raised at all, and
+   上一手 says it (the gate, 11-07 at 375: 饥啸 raised over the field's left half lay on 山精, its neighbour and 上一手; then,
+   shrunk into an empty rank's band, its own 火 lay on its cost). */
+const FOE_CARD_MIN = 92;
+const WORDS_AT = '.bminion:not(.empty), .blast, .bhints, .bstuck, .bwho, .bnums, .bomen > *, .bturn, .bwhere, .bdeck, .btop, .bside.you, .bdock';
+function foeCardSpot(root, plate) {
+  const words = [...root.querySelectorAll(WORDS_AT)].filter((el) => el.getClientRects().length).map((el) => inRoom(root, el));
+  const room = root.getBoundingClientRect();
+  const clear = (b) => b.x >= 4 && b.y >= 0 && b.x + b.w <= room.width - 4 && b.y + b.h <= room.height
+    && !words.some((t) => t.x < b.x + b.w - 2 && b.x < t.x + t.w - 2 && t.y < b.y + b.h - 2 && b.y < t.y + t.h - 2);
+  const sized = (h) => { const hh = Math.min(190, Math.max(FOE_CARD_MIN, h)); return { h: hh, w: hh * 0.71 }; };
+  const spots = [];
+  for (const el of [...root.querySelectorAll('.brank.theirs > .bminion.empty'), ...root.querySelectorAll('.brank.mine > .bminion.empty')]) {
+    const rank = inRoom(root, el.closest('.brank')), cell = inRoom(root, el), { h, w } = sized(rank.h), x = cell.x + (cell.w - w) / 2;
+    spots.push({ x, y: rank.y + (rank.h - h) / 2, w, h }, { x, y: rank.y, w, h }, { x, y: rank.y + rank.h - h, w, h });
+  }
+  const { h, w } = sized(plate.h);
+  spots.push({ x: plate.x + (plate.w - w) / 2, y: plate.y, w, h });
+  return spots.find(clear) ?? null;
+}
+
 /* The beast's 功法, face up beside its plate a moment, then gone to ink. */
 async function showFoeCard(root, html) {
   const plate = q(root, '.bside.foe .bplate');
   const field = q(root, '.bfield');
   if (!html || !plate || !field || still()) return;
-  const p = inRoom(root, plate), f = inRoom(root, field), r = root.getBoundingClientRect();
+  const p = inRoom(root, plate), f = inRoom(root, field);
   const h = Math.min(f.h * 0.9, 190), w = h * 0.71;
-  // Beside the plate where there is room, else over the field's left half.
-  const x = p.x - w - 28 > 8 ? p.x - w - 28 : Math.max(8, Math.min(r.width - w - 8, f.x + f.w * 0.25 - w / 2));
-  const y = p.x - w - 28 > 8 ? p.y : f.y + (f.h - h) / 2;
-  const shown = paper(root, html, { x, y, w, h }, 'bshown');
+  // Beside the plate where there is room, else on a spot that covers no words (foeCardSpot).
+  const box = p.x - w - 28 > 8 ? { x: p.x - w - 28, y: p.y, w, h } : foeCardSpot(root, p);
+  if (!box) return;
+  const shown = paper(root, html, box, 'bshown');
   await sleep(BEATS.shown);
   shown.classList.add('going');
   setTimeout(() => shown.remove(), 420);

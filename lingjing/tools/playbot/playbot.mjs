@@ -89,6 +89,29 @@ const VISIBLE = (sel) => [...document.querySelectorAll(sel)].filter((e) => {
   const r = e.getBoundingClientRect();
   return r.width > 2 && r.height > 2 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
 }).map((e) => { const r = e.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, spot: e.dataset.spot ?? null, id: e.dataset.id ?? null, index: e.dataset.index ?? null, text: (e.innerText || '').trim().replace(/\s+/g, ' ').slice(0, 30), sel: e.getAttribute('class') ?? '' }; });
+/* What a finger can reach of `sel`: VISIBLE's, scrolled whole onto the screen first when it is cut by an edge, and only
+   those whose centre is the thing itself (11-07, the kept bag: a tile under the 储物袋's detail sheet at 430 and 放进饭桶 half
+   under the foot bar at 1280 were tapped and answered nothing — the bot's miss, not the page's). */
+const REACH = (sel) => {
+  const shown = (e) => {
+    if (!e.getClientRects().length || e.disabled || e.getAttribute('aria-disabled') === 'true') return false;
+    for (let a = e; a && a !== document.documentElement; a = a.parentElement) { const cs = getComputedStyle(a); if (cs.visibility === 'hidden' || cs.display === 'none') return false; }
+    const r = e.getBoundingClientRect();
+    return r.width > 2 && r.height > 2;
+  };
+  const all = [...document.querySelectorAll(sel)].filter(shown);
+  const hit = () => all.map((e) => {
+    const r = e.getBoundingClientRect();
+    if (r.top < 0 || r.bottom > innerHeight || r.left < 0 || r.right > innerWidth) return null;
+    const x = r.left + r.width / 2, y = r.top + r.height / 2, top = document.elementFromPoint(x, y);
+    return top && (top === e || e.contains(top)) ? { x, y, text: (e.innerText || '').trim().replace(/\s+/g, ' ').slice(0, 30), sel: e.getAttribute('class') ?? '' } : null;
+  }).filter(Boolean);
+  // Measured all at once, none scrolled meanwhile; only when none is in reach is the first one scrolled to, then measured again.
+  const now = hit();
+  if (now.length || !all.length) return now;
+  all[0].scrollIntoView({ block: 'center', behavior: 'instant' });
+  return hit();
+};
 const SPOILS = () => {
   const s = [...document.querySelectorAll('.card.spoils, [data-spoils-close].card')].find((e) => e.getClientRects().length);
   if (!s) return null;
@@ -296,6 +319,22 @@ export async function run(opts) {
       const tried = new Set();
       let steps = 0, waits = 0;
       await shot(`${label}-open`, { scope: '.battle' });
+      // The pointer resting on the hand's leftmost, centre and rightmost card, each linted (the gate, 11-07 at 1280: the
+      // leftmost card raised under the pointer lay on its neighbour's cost and the 灵力 beside 护体). Once a run and size.
+      if (label === 'haunt0') {
+        const cards = await page.evaluate(() => [...document.querySelectorAll('.battle .bhand > .bcard:not(.far)')].map((e) => {
+          const r = e.getBoundingClientRect();
+          return r.width > 2 ? { x: r.left + Math.min(r.width / 2, 24), y: r.top + r.height * 0.6, l: r.left } : null;
+        }).filter(Boolean).sort((a, b) => a.l - b.l));
+        if (cards.length) {
+          for (const [tag, c] of [['left', cards[0]], ['centre', cards[Math.floor((cards.length - 1) / 2)]], ['right', cards.at(-1)]]) {
+            await page.mouse.move(c.x, c.y);
+            await sleep(400);
+            await shot(`${label}-hover-${tag}`, { scope: '.battle' });
+          }
+          await page.mouse.move(2, 2);
+        }
+      }
       for (; steps < maxSteps; steps += 1) {
         if (stopAfter != null && steps >= stopAfter) return { outcome: 'left-open', steps };
         // The settle: `duel --picks` that is not a mark of progress (`--action=mark`, the page keeping a fight's moves as
@@ -586,24 +625,45 @@ export async function run(opts) {
             }
             await shot('kept-resumed', { scope: '.battle' });
           } else unplayable.push({ where, why: 'no way back to the open fight after a reload' });
-          // The bag and the 饭桶's feed, with the fight kept.
+          // The bag and the 饭桶's feed, with the fight kept. The page draws no 储物袋 over a fight on screen (lingjing.js
+          // drawPouch: `gearOpen && !bout`), so a 物品 tapped there opens nothing — said so (11-07 at 1280: the chip stood beside
+          // the fight, the tap answered, and kept-bag was the resumed fight again). Then the fight is kept (留) and the bag opened.
           const atBag = verbs.length;
-          if (await click('[data-gear]', '物品')) {
-            await sleep(1200);
+          const bagUp = () => page.evaluate(() => { const b = document.getElementById('pouchbook'); return Boolean(b && !b.hidden && b.getClientRects().length && b.getBoundingClientRect().height > 40); });
+          const waitBag = async () => { for (let k = 0; k < 12; k += 1) { if (await bagUp()) return true; await sleep(250); } return false; };
+          if (await page.evaluate(FIGHT)) {
+            const chip = (await page.evaluate(VISIBLE, '[data-gear]'))[0];
+            if (chip) {
+              await tap(chip, '物品 (斗法在场)', { soft: true });
+              if (!(await waitBag())) findings.push({ kind: 'bag-under-fight', hard: false, size, where, why: 'the 物品 chip stands beside the open fight, and a tap on it draws no 储物袋 (lingjing.js drawPouch)' });
+              else await click('[data-pouch-close]').catch(() => {});
+            }
+            const aside = (await page.evaluate(VISIBLE, '[data-fight-tap=keep]'))[0];
+            if (aside) { await tap(aside, '留着以后玩'); await sleep(1200); }
+          }
+          const bagOpen = (await bagUp()) || ((await click('[data-gear]', '物品')) && (await waitBag()));
+          if (!bagOpen) {
+            const file = await shot('kept-bag-refused', { lint: false });
+            findings.push({ kind: 'bag-refused', hard: false, size, where, why: (await page.evaluate(FIGHT)) ? 'the fight stayed on screen: no 留 in reach, and no 储物袋' : 'no 物品 in reach, or its tap drew no 储物袋', shot: path.relative(out, file) });
+          }
+          if (bagOpen) {
+            await sleep(600);
             await shot('kept-bag');
-            const tiles = (await page.evaluate(VISIBLE, '.ptile[draggable=true]:not(.worn):not(.free)'));
+            const TILE = '.ptile[draggable=true]:not(.worn):not(.free)';
+            const tiles = await page.evaluate(REACH, TILE);
             if (tiles.length) {
               await tap(pickOne(r, tiles), '储物袋 · 一件');
               await sleep(800);
               // Into the 饭桶 (放进饭桶), up to three things, then 开炉.
               for (let k = 0; k < 3; k += 1) {
-                const put = (await page.evaluate(VISIBLE, '[data-ft-put]'))[0];
+                const put = (await page.evaluate(REACH, '[data-ft-put]'))[0];
                 if (put) { await tap(put, '放进饭桶'); await sleep(800); }
-                const more = (await page.evaluate(VISIBLE, '.ptile[draggable=true]:not(.worn):not(.free)'));
+                const more = await page.evaluate(REACH, TILE);
                 if (!more.length) break;
-                await tapAt(pickOne(r, more).x, pickOne(r, more).y); await sleep(600);
+                const next = pickOne(r, more);
+                await tapAt(next.x, next.y); await sleep(600);
               }
-              const fire = (await page.evaluate(VISIBLE, '[data-ft-fire]'))[0];
+              const fire = (await page.evaluate(REACH, '[data-ft-fire]'))[0];
               if (fire) { await tap(fire, '开炉'); await sleep(1500); }
               await shot('kept-fantong');
             }

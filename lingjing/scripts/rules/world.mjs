@@ -532,8 +532,9 @@ function encounterOf(content, state, now) {
         duel: duelBrief(content, state, game, now), won: false, withdrawn: false, tamed: false,
         // 妖兽出没 (rules/yaoshou.mjs): the batch this fight is of — how many are left of how many.
         ...eventBatch(content, state, place, now),
-        // 「换一只」 (rules/match.mjs reroll): free once a visit, then its 体力.
-        reroll: state.duels?.[huntKey(place.id)]?.day === dayKey(now) && state.duels[huntKey(place.id)].rerolled ? { free: false, cost: staminaCost(content, 'reroll') } : { free: true },
+        // 「换一只」 (rules/match.mjs reroll): free once a visit, then its 体力. Not while a fight is kept open — reroll
+        // refuses `in-a-fight`, so the card offers no button that does nothing (gate 11-07).
+        ...(state.fight ? {} : { reroll: state.duels?.[huntKey(place.id)]?.day === dayKey(now) && state.duels[huntKey(place.id)].rerolled ? { free: false, cost: staminaCost(content, 'reroll') } : { free: true } }),
         beaten: Boolean(state.wins?.[game.id]), likes: null,
       };
     }

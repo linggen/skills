@@ -84,6 +84,18 @@ test('「换一只」: another of the fitting set, free once a visit, then 体�
   assert.equal(reroll({ ...s, place: 'zhishi' }, content, ctx).result.refused, 'no-pool');
 });
 
+test('a kept fight\'s card offers neither 换一只 nor the 丹囊 pick — the door takes it up as it stood, so both would do nothing', () => {
+  const s = standFit(content, at('mid', { bag: { ...at('mid').bag, 'mend-pill': 2 } }), NOW), ctx = { now: NOW, quests: [] };
+  const e = encounterOf(content, s, NOW);
+  assert.ok(e.reroll, 'a fresh door: 换一只');
+  assert.ok(e.duel.pouch?.pills?.length, 'a fresh door: the 丹囊 pick');
+  const started = duel(s, content, ctx, { id: e.game.id, pills: '' }).state;
+  const kept = encounterOf(content, started, NOW);
+  assert.ok(kept.duel.kept, 'kept open');
+  assert.equal(kept.reroll, undefined, 'no 换一只 while a fight is kept');
+  assert.equal(kept.duel.pouch, undefined, 'no 丹囊 pick while a fight is kept');
+});
+
 /* A fight at the 后山 played out by the bot (`win`: a careful line, else passing every turn). */
 function fightThere(s, now, win) {
   const ctx = { now, quests: [] }, id = encounterOf(content, s, now)?.game?.id;

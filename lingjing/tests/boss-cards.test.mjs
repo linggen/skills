@@ -4,7 +4,7 @@
 // aim, the player's aim, and the words on the card, zh and en.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { act, begin, foeTurn, legal, offers, view } from '../scripts/battle.js';
+import { EFFECTS, act, begin, foeTurn, legal, offers, view } from '../scripts/battle.js';
 import { WORDS, battleHtml, pickOf, sayEffect, wantsTarget } from '../scripts/battle-card.js';
 import { loadContent } from '../scripts/content.mjs';
 
@@ -199,4 +199,30 @@ test('a summon names what comes (Hanli 11-06: 藤苗 read 「入阵：召来 1 �
   const { wayDoes } = await import('../scripts/wayline.js');
   assert.match(wayDoes({ kind: 'buy', does: { card_kind: 'minion', cost: 1, effect: { summon: { id: 'x', n: 1, name: '藤须' } } } }, 'zh'), /召来 藤须/);
   assert.match(wayDoes({ kind: 'buy', does: { card_kind: 'minion', cost: 1, effect: { summon: { id: 'x', n: 1 } } } }, 'zh'), /召来 1 个/);
+});
+
+test('every playable card says what it does on its face (gate 11-07: 回气丹 showed a name and a cost, nothing else)', () => {
+  // Each verb of the closed vocabulary has its words, alone on a card.
+  const sample = { buff: { atk: 1, hp: 1 }, rally: { atk: 1, hp: 0 }, summon: { id: 'tengmiao_token', n: 1 } };
+  for (const verb of Object.keys(EFFECTS)) {
+    for (const lang of ['zh', 'en']) {
+      assert.ok(sayEffect({ effect: { [verb]: sample[verb] ?? 2 } }, { lang, catalog: WORLD }).trim(), `${verb} (${lang}) has no words`);
+    }
+  }
+  // And every card he can hold: a spell, or a minion that carries a verb, reads its effect line.
+  for (const c of content.cards.cards) {
+    if (c.kind !== 'spell' && !Object.keys(c.effect ?? {}).some((k) => k in EFFECTS)) continue;
+    for (const lang of ['zh', 'en']) assert.ok(sayEffect(c, { lang, catalog: WORLD }).trim(), `${c.id} (${lang}) says nothing`);
+  }
+});
+
+test('「这一回合没别的可做了」 stands on the seam\'s own row beside 上一手, never in the hints laid over it (gate 11-07)', () => {
+  const st = opened([]);
+  st.you.mana = 0;
+  const stuck = offers(st).filter((o) => o.ok && o.action.kind !== 'end');
+  assert.equal(stuck.length, 0, 'nothing but 结束回合 left');
+  const html = battleHtml(view(st), offers(st), { lang: 'zh', words: WORDS.zh, catalog: CARDS, board: 4 });
+  const seam = html.match(/<div class="bseam">([\s\S]*?)<\/div>\s*<div class="brank mine"/)[1];
+  assert.match(seam, /class="bhint burge bstuck">这一回合没别的可做了/);
+  assert.doesNotMatch(seam, /class="bhints"[\s\S]*没别的可做了/, 'not among the hints laid over the log');
 });
