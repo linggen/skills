@@ -219,7 +219,7 @@
 .bminion .bpic.small.none { background: radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--el) 22%, var(--paper)), var(--paper-2)); }
 .bminion .bglyph { position: absolute; top: 4px; right: 4px; width: 17px; height: 17px; display: grid; place-items: center; border-radius: 3px; background: var(--el); color: var(--paper); font-size: 11px; line-height: 1; }
 .bminion .bname { padding: 3px 4px 19px; font-size: 14px; line-height: 1.2; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-top: 1px solid var(--ink-line); }
-.bminion small { position: absolute; left: 0; right: 0; top: 4px; margin: 0 auto; width: max-content; max-width: calc(100% - 28px); padding: 0 6px; border-radius: 99px; background: rgba(243, 238, 226, 0.92); font-family: var(--ui); font-size: 10px; line-height: 1.6; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bminion small { position: absolute; left: 2px; top: 4px; box-sizing: border-box; width: max-content; max-width: calc(100% - 25px); padding: 0 3px; border-radius: 6px; background: rgba(243, 238, 226, 0.92); font-family: var(--ui); font-size: 10px; line-height: 1.15; color: var(--ink-2); white-space: normal; overflow-wrap: anywhere; }
 .bminion .batk, .bminion .bhp { position: absolute; bottom: 2px; z-index: 2; }
 .bminion .batk { left: 3px; }
 .bminion .bhp { right: 3px; }
@@ -248,6 +248,8 @@
 .bside.you .bwho { flex: 0 1 auto; }
 .bside.you .bnums { flex: 0 1 auto; }
 .bside.you .bdeck { margin-left: auto; }
+/* Reserve space for the absolutely positioned life number on every viewport. */
+.battle .ballyhp { margin-right: 5em; }
 .bacts { display: flex; align-items: center; gap: 10px; flex: none; }
 /* The seals keep their places even as the pouch or the turn label changes. */
 .bacts > .bpower { flex: 0 0 auto; min-width: 0; } /* its own width: 主灵根一击 on one line (its words never change mid-fight) */
@@ -271,7 +273,7 @@
 /* The beast's turn: the seal in ink, level, its name on it — not pressable. */
 .bact.end.wait { cursor: default; }
 .bact.end.wait .bsealface { background: rgba(31, 28, 24, 0.82); border-color: rgba(31, 28, 24, 0.9); color: #F2C9BF; transform: none; max-width: 120px; }
-.bact.end.wait .bsealface b { font-size: 12.5px; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.bact.end.wait .bsealface b { font-size: 12.5px; letter-spacing: .04em; white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
 .bact.end.wait:hover .bsealface { transform: none; }
 .battle.foes .bhand { filter: saturate(.7); }
 .bact.dim:hover .bsealface { transform: none; }
@@ -590,7 +592,7 @@
   .battle .ballyface b { font-size: 11px; }
   .battle .ballyname { font-size: 12px; }
   .battle .ballyguard { font-size: 10.5px; padding: 0 2px; }
-  .battle .ballyhp { width: 40px; height: 4px; margin-right: 34px; }
+  .battle .ballyhp { width: 40px; height: 4px; }
   .battle .ballyhp b { top: -6px; font-size: 11px; }
   /* His row: name, 气血 and 灵力; the party's slim chips; then the action row — [丹囊][主灵根一击][结束回合]. */
   .bside.you > .bparty { order: 2; flex: 1 1 100%; }
