@@ -183,3 +183,10 @@
       width: auto; white-space: normal; font-size: 12px; line-height: 1.45; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 9; }
   }
 }
+
+/* Compact fighter lead on touch: details remain available without crowding the stage. */
+.gshell-lead:has(.gshell-lead-details) { gap: 8px; padding: 10px; }
+.gshell-lead .gshell-lead-title { color: #fff; font-size: 24px; }
+.gshell-lead-details { max-width: min(80%, 36em); max-height: 40%; overflow: auto; color: #fff; font-size: 17px; }
+.gshell-lead-details summary { cursor: pointer; }
+.gshell-lead:has(.gshell-lead-details) .gshell-btn.is-main { min-width: 150px; min-height: 48px; font-size: 20px; font-weight: 700; }

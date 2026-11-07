@@ -51,7 +51,7 @@ export const sheathe = (level) => level?.lines?.sheathe ?? {
   en: `${say(level?.foe?.name, 'en')} draws back: "Enough."`,
 };
 const LINE_MS = 2600;
-const SLOW = { ms: 900, rate: 0.35 }; // the KO in slow motion
+const SLOW = { ms: 500, rate: 0.3 }; // the KO in slow motion (Hanli 11-07: a finishing blow, not a fade)
 
 /* ── The level ── */
 export function ladderOf(registry) {
@@ -144,6 +144,11 @@ const CSS = `
 .g-fighter button[data-k=hpunch], .g-fighter button[data-k=heavy] { background: #e9d4b8; font-size: 15px; }
 .g-fighter button[data-k=skill] { background: #f0c9a8; }
 .g-fighter button[data-k=skill].is-ready { background: #e7b84a; box-shadow: 0 0 0 3px rgba(231,184,74,.45); } /* a stock full: 技 is the 绝 */
+.g-fighter button[data-k=skill].is-ready:not(:disabled) { animation: gf-super .75s ease-in-out infinite alternate; }
+@keyframes gf-super { to { box-shadow: 0 0 0 8px rgba(231,184,74,.22), 0 0 20px #ffcf54; transform: scale(1.12); } }
+@media (prefers-reduced-motion: reduce) { .g-fighter button[data-k=skill].is-ready, .g-fighter button.gf-cue { animation: none; } }
+.g-fighter .gf-pad button:disabled, .g-fighter .gf-dial[aria-disabled=true] { opacity: .35; filter: grayscale(1); }
+.g-fighter .gf-super-hint { position: absolute; z-index: 3; top: 18%; left: 50%; transform: translateX(-50%); background: #2a241c; color: #fff0bf; padding: 7px 16px; border-radius: 20px; font: 700 17px system-ui; white-space: nowrap; pointer-events: none; }
 .g-fighter button.is-cool { opacity: .5; }
 /* The cue as a button (touch): 迎 in her push, 勾 as she holds back — one tap, there only while its window is open */
 .g-fighter.is-touch button.gf-cue { min-width: 76px; width: auto; padding: 0 14px; border-radius: 38px; height: 76px; font-size: 32px; font-weight: 800; background: #b22218; color: #f6eedc; border-color: #f6eedc;
@@ -279,7 +284,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   const padOn = kind === 'touch' || padShown(win);
   root.classList.toggle('pad-off', !padOn);
   const padWord = (on) => (lang === 'en' ? (on ? 'Hide keys' : 'Show keys') : (on ? '收起按键' : '显示按键'));
-  root.innerHTML = `<div class="gf-field"><canvas></canvas>${kind === 'touch' ? '' : `<button type="button" class="gf-padtoggle" data-pad aria-pressed="${padOn}">${padWord(padOn)}</button>`}</div>${padHtml(level, lang, kind)}`;
+  root.innerHTML = `<div class="gf-field"><canvas></canvas>${kind === 'touch' ? '' : `<button type="button" class="gf-padtoggle" data-pad aria-pressed="${padOn}">${padWord(padOn)}</button>`}</div>${padHtml(level, lang, kind)}<div class="gf-super-hint" hidden></div>`;
   container.replaceChildren(root);
   root.querySelector('[data-pad]')?.addEventListener('click', (e) => {
     const on = root.classList.contains('pad-off');
@@ -341,7 +346,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   /* ── Hands ── */
   const held = { left: new Set(), right: new Set(), crouch: new Set(), block: new Set() }; // who holds each: pointer ids and 'key'
   const apply = (d) => {
-    if (!started || done || shell?.paused?.()) return;
+    if (!started || done || g.state.end || shell?.paused?.()) return;
     const was = g.state;
     g.state = core.act(g.state, d).state ?? g.state;
     sounded(shell, self, was, g.state);
@@ -353,6 +358,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
     for (const b of root.querySelectorAll('button[data-k]')) if (HELD.has(b.dataset.k)) b.classList.toggle('is-down', Boolean(held[b.dataset.k]?.size));
   };
   const press = (k, who) => {
+    if (!started || done || g.state.end || shell?.paused?.()) return;
     if (k === 'cue') { const c = g.state.cue?.k; if (c) apply({ g: c === 'ying' ? 'ying' : 'hook' }); return; } // the cue's button: 迎 · 升勾
     if (HELD.has(k)) { held[k].add(who); sync(); return; }
     const btn = root.querySelector(`button[data-k="${k}"]`);
@@ -385,6 +391,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   if (dial) {
     on(dial, 'pointerdown', (e) => {
       e.preventDefault();
+      if (!started || done || g.state.end || shell?.paused?.()) return;
       if (dialBy != null && dialBy !== e.pointerId) dialOff();
       dialBy = e.pointerId;
       try { dial.setPointerCapture(e.pointerId); } catch { /* the document still hears it */ }
@@ -401,6 +408,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
     const b = e.target.closest?.('button[data-k]');
     if (!b) return;
     e.preventDefault();
+    if (!started || done || g.state.end || shell?.paused?.()) return;
     try { b.setPointerCapture(e.pointerId); } catch { /* the document still hears it */ }
     pads.set(e.pointerId, b.dataset.k);
     press(b.dataset.k, e.pointerId);
@@ -453,6 +461,12 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   const skillBtn = root.querySelector('button[data-k=skill]'), skillFace = skillBtn.firstChild;
   const spellBtn = { feijian: root.querySelector('button[data-k=feijian]'), fuwen: root.querySelector('button[data-k=fuwen]') };
   const skillNames = [say(level.me?.buttons?.skill, lang) || say(BUTTONS.skill.face, lang), say(level.me?.buttons?.super, lang) || say(SUPER, lang)];
+  const superHint = root.querySelector('.gf-super-hint');
+  const saveName = new URLSearchParams(win.location?.search ?? '').get('save') || 'default';
+  const hintKey = `lingjing.fighter.super-hint:${saveName}`;
+  let hintSeen = false, hintUntil = 0;
+  try { hintSeen = win.localStorage.getItem(hintKey) === '1'; } catch { /* this mount only */ }
+  let locked = false;
   const frame = (now) => {
     raf = win.requestAnimationFrame(frame);
     let dt = Math.min(50, last ? now - last : 16);
@@ -462,7 +476,19 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
       if (s0.end && s0.t - s0.end.at < SLOW.ms) dt *= SLOW.rate; // the KO, slowed
       g.state = core.tick(s0, dt);
       if (g.state !== s0) sounded(shell, self, s0, g.state);
-      const full = core.superReady(g.state); // a stock, 爆气, or 绝境
+      if (g.state.end && !locked) {
+        locked = true;
+        liftAll(); pads.clear();
+        for (const b of root.querySelectorAll('button[data-k]')) { b.disabled = true; b.classList.remove('is-down'); }
+        dial?.setAttribute('aria-disabled', 'true');
+      }
+      const full = core.superReady(g.state) && !g.state.end; // a stock, 爆气, or 绝境
+      if (full && !hintSeen) {
+        hintSeen = true; hintUntil = now + 3000;
+        superHint.textContent = kind === 'touch' ? (lang === 'en' ? 'Super ready · tap 绝' : '绝 已满 · 按 绝') : (lang === 'en' ? 'Super ready · press J' : '绝 已满 · 按 J');
+        try { win.localStorage.setItem(hintKey, '1'); } catch { /* this mount only */ }
+      }
+      superHint.hidden = !full || now >= hintUntil;
       if (skillBtn.classList.contains('is-ready') !== full) { skillBtn.classList.toggle('is-ready', full); skillFace.textContent = skillNames[full ? 1 : 0]; }
       skillBtn.classList.toggle('is-cool', !full && g.state.me.cdPf > 0);
       for (const [k, cd] of [['feijian', 'cdFj'], ['fuwen', 'cdFw']]) spellBtn[k]?.classList.toggle('is-cool', (g.state.me[cd] ?? 0) > 0);
@@ -482,7 +508,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   // …and what he learned that bears on this foe (the deal's `hints`: 阿禾's 底册, 相克 — rules/look.mjs dealOf, by his marks)
   const learned = (data.hints ?? []).join('\n');
   const leadText = [ready, learned, hint].filter(Boolean).join('\n\n');
-  Promise.resolve(shell?.lead && leadText ? shell.lead(leadText, { auto: 'read', lang }) : null).then(() => {
+  Promise.resolve(shell?.lead && leadText ? shell.lead(leadText, { auto: kind === 'touch' ? 0 : 'read', lang, compact: kind === 'touch', title: lang === 'en' ? 'Fight' : '切磋' }) : null).then(() => {
     if (done) return;
     started = true;
     last = 0;

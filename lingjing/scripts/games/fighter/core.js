@@ -78,6 +78,9 @@ export const STEP_MS = 10; //   one physics step; tick(ms) runs as many as fit (
 export const BUF_MS = 130; //   how long a press waits for his hands to be free: about eight frames (a link's next blow, a fast thumb)
 export const MOTION_MS = 320; // a motion's directions, read back from the press that ends it
 export const PAIR_MS = 80; //   two keys at once (A+B a roll, C+D a blowback): as near together as KOF's
+export const KO_HIT_MS = 150, KO_FALL_MS = 400, KO_SEAL_MS = 900;
+export const koEnd = (e) => Boolean(e && (e.kind === 'down' || e.kind === 'yield' || e.kind === 'spent' || (e.kind === 'outlast' && e.early)));
+export const koClip = (s, who) => koEnd(s.end) && (endWon(s.end) ? who === 'foe' : who === 'me') ? (s.t - s.end.at < KO_HIT_MS ? 'hit' : 'knock') : null;
 export const END_MS = 1700; //  the last frame (her slide off the edge, his fall) before the bout is over
 export const GRAVITY = 2600;
 export const GAP = 58; //       the least distance between two bodies
@@ -1333,7 +1336,7 @@ function endStep(s) {
     foe.vx *= 1 - 1.5 * k;
     if (foe.x < s.R.stage.left - 4 || foe.x > s.R.stage.right + 4) { foe.y = Math.max(-62, (foe.y ?? 0) - 340 * k); if (foe.y <= -62) foe.vx *= 1 - 14 * k; } // down on the frozen ground, on her feet
   }
-  if (s.t - e.at < END_MS) return;
+  if (s.t - e.at < (koEnd(e) ? KO_SEAL_MS + 300 : END_MS)) return;
   s.live = false;
   if (e.kind === 'outlast') {
     const left = s.me.hp / s.R.me.hp;
@@ -1412,6 +1415,14 @@ function step(s) {
     s.end = { kind: 'outlast', at: s.t, won: true }; // she has made her moves and he stands: her point comes to rest
     s.foe.vx = 0; me.vx = 0;
     say(s, 'outlast');
+  }
+  if (s.end && koEnd(s.end) && !s.end.blow) { // the finishing blow, once: hitstop, spark, shake
+    s.end.blow = true;
+    const loser = endWon(s.end) ? s.foe : s.me;
+    loser.down = s.t + KO_SEAL_MS + 1000;
+    hitstop(s, 100);
+    fx(s, 'spark', loser.x, 110);
+    bump(s, 'heavy');
   }
   if (s.cue && s.t - s.cue.at > 900) s.cue = null;
 }

@@ -7,7 +7,7 @@
 // the crowd bobbing on a big blow, and the KO's vignette. Nothing here plays: it reads a state.
 
 import { loopAt } from '../jieyin/flight.js';
-import { QI } from './core.js';
+import { QI, koEnd, koClip, KO_HIT_MS, KO_FALL_MS, KO_SEAL_MS } from './core.js';
 
 const W = 960, H = 540, FLOOR = 432;
 /* The painted fighters stand ~245 units tall (KOF scale: near half the field); the core counts heights for ~190: what it
@@ -98,7 +98,8 @@ const lerpPose = (a, b, k) => ({
 /* What pose a body takes this instant, from the state. */
 function mePose(s) {
   const me = s.me, t = s.t;
-  if (s.end?.kind === 'down' || me.down > t) return 'knock';
+  if (koClip(s, 'me')) return koClip(s, 'me');
+  if (me.down > t) return 'knock';
   if (me.stun > t && !me.guard) return 'hit';
   const a = me.act;
   if (a?.k === 'ying') return 'ying';
@@ -126,6 +127,7 @@ function mePose(s) {
 }
 function foePose(s) {
   const foe = s.foe, t = s.t;
+  if (koClip(s, 'foe')) return koClip(s, 'foe');
   if (s.end?.kind === 'out') return foe.x < (s.R.stage.left - 4) || foe.x > (s.R.stage.right + 4) ? 'stand' : 'slip';
   if (s.palm) return { glow: 'glow', hold: 'hold', strike: 'strike', after: 'strike', done: 'guard' }[s.palm.phase] ?? 'glow';
   if (s.edge) return 'edge';
@@ -421,6 +423,7 @@ const CROUCHED = { light: 'clight', lkick: 'clkick', hpunch: 'chpunch', heavy: '
 /* His clip now: [clip, start (ms on the bout's clock, or null: since the clip began), the move]. */
 function meClip(s) {
   const me = s.me, t = s.t, a = me.act;
+  if (koClip(s, 'me')) return [koClip(s, 'me'), s.end.at + (koClip(s, 'me') === 'knock' ? KO_HIT_MS : 0)];
   if (s.end?.kind === 'outlast') return ['idle', 0]; // he stood through it; her point rests at his heart
   if (s.end) return won(s.end) ? ['win', s.end.at] : ['lose', s.end.at];
   // the hero's stance before the first exchange (Hanli 11-01: 「主角光环还是要有」): his 抱拳 as the bout opens
@@ -450,6 +453,7 @@ function meClip(s) {
    as it (FOE_AS: the robed foes' sheets have no jump or fall painted). */
 function foeClip(s) {
   const foe = s.foe, t = s.t, a = foe.act;
+  if (koClip(s, 'foe')) return [koClip(s, 'foe'), s.end.at + (koClip(s, 'foe') === 'knock' ? KO_HIT_MS : 0)];
   if (s.end?.kind === 'out') return [foe.x < s.R.stage.left - 4 || foe.x > s.R.stage.right + 4 ? 'lose' : 'slip', s.end.at];
   if (s.end) return [won(s.end) ? 'lose' : 'win', s.end.at]; // she yields (切磋) or stands over him
   if (s.palm) return [{ glow: 'glow', hold: 'hold', strike: 'strike', after: 'strike' }[s.palm.phase] ?? 'idle', null];
@@ -513,6 +517,7 @@ function pick(sheet, who, s, track, calm) {
   // a fall's frames by what is left of it, a jump's by its rise and fall — on a sheet that has them painted
   if (name === 'knock' && clip.frames.length >= 3) {
     const [thrown, down, up] = clip.frames;
+    if (koEnd(s.end) && koClip(s, who)) return { clip, name, frame: calm ? down : e < KO_FALL_MS - KO_HIT_MS ? thrown : down, e };
     return { clip, name, frame: body.down - s.t < 260 ? up : e < 220 && !calm ? thrown : down, e };
   }
   if (name === 'jump' && clip.frames.length >= 3) {
@@ -1134,10 +1139,10 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false, kin
       ctx.fillStyle = g; ctx.fillRect(-EDGE, 0, W + 2 * EDGE, H);
     }
     // KO: a white flash as it falls (the slow-down is the mount's)
-    if (s.end && s.t - s.end.at < 220 && !still) { ctx.fillStyle = `rgba(255,252,240,${0.75 * (1 - (s.t - s.end.at) / 220)})`; ctx.fillRect(-EDGE, 0, W + 2 * EDGE, H); }
+    if (koEnd(s.end) && s.t - s.end.at >= KO_FALL_MS && s.t - s.end.at < KO_FALL_MS + 100 && !still) { ctx.fillStyle = `rgba(255,252,240,${0.35 * (1 - (s.t - s.end.at - KO_FALL_MS) / 100)})`; ctx.fillRect(-EDGE, 0, W + 2 * EDGE, H); }
     if (s.intro && s.t < s.intro + 500) intro(ctx, s, lang, lv);
     lineBand(ctx, text);
-    if (s.end) seal(ctx, say(won(s.end) ? lv.seal?.won : lv.seal?.lost, lang) || (lang === 'en' ? (won(s.end) ? 'Won' : 'Out') : (won(s.end) ? '胜' : '负')), s.t - s.end.at - 300);
+    if (s.end) seal(ctx, say(won(s.end) ? lv.seal?.won : lv.seal?.lost, lang) || (lang === 'en' ? (won(s.end) ? 'Won' : 'Out') : (won(s.end) ? '胜' : '负')), s.t - s.end.at - (koEnd(s.end) ? KO_SEAL_MS : 300));
     // the 绝: its cut-in plays on the page's clock (the bout's is held through it)
     if (s.cutin && s.cutin !== view.cut) { view.cut = s.cutin; view.cutAt = now; }
     if (view.cut && now - view.cutAt < 900) cutIn(ctx, view.cut, view.cut.who === 'me' ? art.me : art.foe, lang, now - view.cutAt, view.cut.who === 'me' ? sheets.me : sheets.foe);

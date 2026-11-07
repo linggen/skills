@@ -103,7 +103,7 @@ function layerHtml(id, lang) {
   // A game's own note under the pause (its move list: 格斗), lines as it gave them.
   const note = s?.note?.length ? `<div class="gshell-note">${s.note.map((l) => `<p>${plain(l)}</p>`).join('')}</div>` : '';
   const pause = s?.paused ? `<div class="gshell-veil"><b>${plain(w.paused)}</b><button type="button" class="gshell-btn is-main" data-shell-pause="${plain(id)}">${plain(w.resume)}</button>${note}</div>` : '';
-  const lead = s?.lead ? `<div class="gshell-veil gshell-lead">${leadParas(s.lead.text)}${s.lead.count != null ? `<b class="gshell-count">${s.lead.count || plain(w.start)}</b>` : `<button type="button" class="gshell-btn is-main" data-shell-go="${plain(id)}">${plain(w.start)}</button>`}</div>` : '';
+  const lead = s?.lead ? `<div class="gshell-veil gshell-lead">${s.lead.compact ? `<b class="gshell-lead-title">${plain(s.lead.title)}</b><details class="gshell-lead-details"><summary>${lang === 'en' ? 'Details' : '详情'}</summary>${leadParas(s.lead.text)}</details>` : leadParas(s.lead.text)}${s.lead.count != null ? `<b class="gshell-count">${s.lead.count || plain(w.start)}</b>` : `<button type="button" class="gshell-btn is-main" data-shell-go="${plain(id)}">${plain(w.start)}</button>`}</div>` : '';
   return lead + pause + bubble;
 }
 
@@ -225,14 +225,14 @@ export function leadMs(text, lang = 'zh') {
 /* A lead card's words: the story's first, then any hint after a blank line (结印's camera line), smaller. */
 const leadParas = (text) => String(text).split(/\n\n+/).map((p, i) => `<p${i ? ' class="gshell-hint"' : ''}>${plain(p)}</p>`).join('');
 
-export function lead(id, text, { count = false, auto = 0, lang = 'zh', reducedMotion = false } = {}) {
+export function lead(id, text, { count = false, auto = 0, lang = 'zh', reducedMotion = false, compact = false, title = '' } = {}) {
   if (auto === 'read') auto = leadMs(text, lang);
   const s = entry(id);
   return new Promise((resolve) => {
     if (!text) { resolve(); return; }
     let over = false;
     const done = () => { if (over) return; over = true; s.lead = null; paint(id); resolve(); };
-    if (!count) { s.lead = { text, go: done }; paint(id); if (auto) setTimeout(done, auto); return; }
+    if (!count) { s.lead = { text, go: done, compact, title }; paint(id); if (auto) setTimeout(done, auto); return; }
     let n = 3;
     s.lead = { text, count: n };
     sound.play(gameOf(id), 'tick');
