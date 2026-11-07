@@ -6,6 +6,8 @@
       "id": "alchemy-first",
       "title": { "zh": "炼丹 · 配齐八味灵草", "en": "Alchemy · Pair the eight spirit herbs" },
       "kind": "board",
+      "game": "lianliankan",
+      "_game": "Named 2026-11-07 (Hanli on the phone: 云龙山的八味's 开局 opened nothing): the Mac's page read a board with no game as the herb board, the phone opened none.",
       "period": "once",
       "grant": { "table": "task", "progress": 20 },
       "gives": { "bag": "lingzhi" },

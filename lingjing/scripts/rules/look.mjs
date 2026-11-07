@@ -546,7 +546,7 @@ function tasksBrief(content, state, ctx) {
         // 兽潮: tonight's night — a hand-made row of 守墙关, else one a 主力 塔防 kit made — its kit (`game`), title and deal (rules/shouchao.mjs).
         ...sc,
         ...mj, ...deal,
-        asks: task.kind === 'board' && !task.game ? (lang === 'zh' ? '在炉前把八味灵草两两配齐' : 'Pair the eight spirit herbs on the furnace board') : task.game ? pick(task.title, lang) : null,
+        asks: task.kind === 'board' && (!task.game || task.game === 'lianliankan') ? (lang === 'zh' ? '在炉前把八味灵草两两配齐' : 'Pair the eight spirit herbs on the furnace board') : task.game ? pick(task.title, lang) : null,
         // reopened for an errand, the errand pays — not the task again
         // A practice board shows what its next play lands (rules/playpay.mjs): 修为 and 灵石, the replay's share counted.
         // Played today already (a practice board): the tray rests it till tomorrow (Hanli, 2026-10-27: 「左下角还是有刚玩完的拼图任务」).
