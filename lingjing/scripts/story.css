@@ -391,7 +391,10 @@ body.fighting .sight { display: none; }
   .topbar .xw { width: 118px; }
   .topbar .xw .lbl { display: none; }
   .topbar .titlerow { order: 4; flex: 1 1 55%; min-width: 0; }
-  .topbar .headcards { order: 5; margin-left: 0; }
+  /* Keep the faces' room and wrap both the chapter/where line and place within what remains. */
+  .topbar .titlerow .huiline, .topbar .titlerow .place {
+    flex: 0 1 auto; min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; overflow: visible; }
+  .topbar .headcards { order: 5; flex: none; margin-left: 0; }
   .topbar .langsw { order: 6; }
   .story .lines { padding: 0 20px; bottom: 64px; }
   .story .wholecol { padding: 12px 16px 4px; bottom: 52px; }
