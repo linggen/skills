@@ -10,13 +10,12 @@ test('on narrow screens the empty bag hint follows the grid in normal flow', () 
   assert.match(css, /\.pdetail\.empty\s*\{\s*position:\s*static;/);
   const pouch = read('../scripts/pouch.js');
   assert.match(pouch, /\$\{grid\}\$\{g\.bag\.length \? detailHtml/);
+  assert.match(css, /#tray \.allchip \{ flex: none; order: -1; align-self: center; white-space: nowrap; position: static; \}/);
+  assert.doesNotMatch(css, /#tray \.allchip[^{]*\{[^}]*position: sticky/);
 });
 
 test('the tray reserves a bottom lane for the sticky all chip at every width', () => {
   const css = read('../scripts/lingjing.css');
-  assert.match(css, /#tray:has\(\.allchip\) \.card\s*\{\s*padding-bottom:\s*50px;/);
-  assert.match(css, /#tray \.allchip\s*\{[^}]*position:\s*sticky;/);
-  assert.match(css, /@media \(max-width: 640px\) \{\s*#tray:has\(\.allchip\) \.card \{ padding-bottom: 50px; \}\s*#tray \.allchip \{ align-self: end; \}/);
 });
 
 test('opening and closing the bag during a fight leaves the same fight intact', () => {
