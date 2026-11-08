@@ -151,8 +151,8 @@ const CSS = `
 .g-fighter .gf-super-hint { position: absolute; z-index: 3; top: 18%; left: 50%; transform: translateX(-50%); background: #2a241c; color: #fff0bf; padding: 7px 16px; border-radius: 20px; font: 700 17px system-ui; white-space: nowrap; pointer-events: none; }
 .g-fighter button.is-cool { opacity: .5; }
 /* The cue as a button (touch): 迎 in her push, 勾 as she holds back — one tap, there only while its window is open */
-.g-fighter.is-touch button.gf-cue { min-width: 76px; width: auto; padding: 0 14px; border-radius: 38px; height: 76px; font-size: 32px; font-weight: 800; background: #b22218; color: #f6eedc; border-color: #f6eedc;
-  box-shadow: 0 0 0 4px rgba(178,34,24,.4); animation: gf-cue .5s ease-in-out infinite alternate; align-self: center; }
+.g-fighter.is-touch button.gf-cue { position: absolute; left: 50%; top: 50%; translate: -50% -50%; z-index: 1; min-width: 76px; width: auto; padding: 0 14px; border-radius: 38px; height: 76px; font-size: 32px; font-weight: 800; background: #b22218; color: #f6eedc; border-color: #f6eedc;
+  box-shadow: 0 0 0 4px rgba(178,34,24,.4); animation: gf-cue .5s ease-in-out infinite alternate; }
 .g-fighter button.gf-cue[hidden] { display: none; }
 @keyframes gf-cue { to { transform: scale(1.08); box-shadow: 0 0 0 9px rgba(178,34,24,.18); } }
 html[data-board=fighter][data-input=touch] #stage .g-fighter.is-touch .gf-pad > :has(.gf-cue:not([hidden])) { opacity: 1; }
@@ -201,11 +201,11 @@ html[data-board=fighter] #stage .gf-field { width: min(100%, calc((100vh - 200px
 `;
 function sheet(doc) {
   const old = doc.getElementById('g-fighter-css');
-  if (old?.dataset.v === '10') return;
+  if (old?.dataset.v === '11') return;
   old?.remove();
   const st = doc.createElement('style');
   st.id = 'g-fighter-css';
-  st.dataset.v = '10';
+  st.dataset.v = '11';
   st.textContent = CSS;
   doc.head.append(st);
 }
