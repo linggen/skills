@@ -788,6 +788,8 @@ body.fighting .footrow { display: none; }
   .pbody { grid-template-columns: minmax(0, 1fr); }
   .pgrid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 6px; }
   .pdetail { position: sticky; top: auto; bottom: 0; flex-direction: row; box-shadow: 0 -6px 16px rgba(0, 0, 0, .08); }
+  /* The empty hint belongs after the grid, not over its first visible row. */
+  .pdetail.empty { position: static; box-shadow: none; }
   .pdetail > img, .pdetail > .noart { width: 84px; flex: none; align-self: flex-start; }
   .pwornrow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -1605,8 +1607,9 @@ button.qchip.on { color: var(--ling); border-color: var(--ling); background: var
 #tray .card.task.agenda .bookgoal { margin: 0; font-size: 13px; }
 #tray .card.task.agenda .tsteps, #tray .card.task.agenda .tpay { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 #tray [data-agenda-at] { cursor: pointer; }
-/* 「全部 ›」 always in sight: the row scrolls under it. */
-#tray .allchip { flex: none; align-self: center; white-space: nowrap; position: sticky; right: 0; z-index: 1; box-shadow: -10px 0 12px -4px var(--surface); }
+/* 「全部 ›」 stays in sight in its own bottom lane, clear of card text and buttons. */
+#tray:has(.allchip) .card { padding-bottom: 50px; }
+#tray .allchip { flex: none; align-self: end; white-space: nowrap; position: sticky; right: 0; z-index: 1; box-shadow: -10px 0 12px -4px var(--surface); }
 #tray .allchip .due { margin-left: 4px; }
 .bookpop.agendapop > .cardx + .tgroup { margin-top: 0; border-top: 0; padding-top: 0; }
 /* 小游戏池 in 事: this 时辰's games under one quiet heading; on a tray card, when they change — the cooldown's chip, dashed. */

@@ -625,9 +625,7 @@ export async function run(opts) {
             }
             await shot('kept-resumed', { scope: '.battle' });
           } else unplayable.push({ where, why: 'no way back to the open fight after a reload' });
-          // The bag and the 饭桶's feed, with the fight kept. The page draws no 储物袋 over a fight on screen (lingjing.js
-          // drawPouch: `gearOpen && !bout`), so a 物品 tapped there opens nothing — said so (11-07 at 1280: the chip stood beside
-          // the fight, the tap answered, and kept-bag was the resumed fight again). Then the fight is kept (留) and the bag opened.
+          // First check that 物品 opens over the live fight and closes back to it; then keep the fight and exercise 饭桶.
           const atBag = verbs.length;
           const bagUp = () => page.evaluate(() => { const b = document.getElementById('pouchbook'); return Boolean(b && !b.hidden && b.getClientRects().length && b.getBoundingClientRect().height > 40); });
           const waitBag = async () => { for (let k = 0; k < 12; k += 1) { if (await bagUp()) return true; await sleep(250); } return false; };

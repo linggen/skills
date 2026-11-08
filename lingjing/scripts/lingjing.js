@@ -3588,7 +3588,7 @@ async function offerTap(action, args) {
 let drawnPouch = null;
 function drawPouch() {
   const el = $('pouchbook');
-  const open = view.gearOpen && !bout;
+  const open = view.gearOpen;
   if (open) document.body.classList.add('reading');
   el.hidden = !open;
   if (!open) { drawnPouch = null; ftKailu.stop(); return; }
