@@ -56,10 +56,11 @@ test('every game, every kind of board: one 留 and one ✕ at the bar\'s right, 
 
 test('the 游戏厅 and the try page wear the same two (shell.js playAlone); the arcade keeps its own list', () => {
   const shell = read('../scripts/games/shell.js');
-  const alone = shell.slice(shell.indexOf('export function playAlone('), shell.indexOf('export function playAlone(') + 1800);
+  const alone = shell.slice(shell.indexOf('export function playAlone('), shell.indexOf('export function playAlone(') + 3200);
   assert.match(alone, /\.\.\.outTools\(id, lang\)/);
-  assert.match(alone, /if \(act === 'again' \|\| act === 'close'\) deal\(\);/, '✕ deals it again');
-  assert.match(alone, /else if \(act === 'keep'\) \{ onKeep\?\.\(\); deal\(\); \}/);
+  // ✕ puts it away, never deals it again (Hanli 11-08: 「点右上角关闭, 关闭后会马上再出来」 — the 11-03 shell dealt afresh on ✕).
+  assert.match(alone, /else if \(act === 'close'\) away\(\);/, '✕ puts it away');
+  assert.match(alone, /else if \(act === 'keep'\) \{ onKeep\?\.\(\); away\(\); \}/);
   assert.match(read('../scripts/arcade.js'), /onKeep: \(\) => keptAdd\(/);
   assert.match(read('../scripts/games/phone/host.js'), /\/\/ No stuck wait any more[^\n]*\n\s*post\(\{ t: 'stuck' \}\);/, 'the phone\'s way out from the first moment');
 });
@@ -98,4 +99,49 @@ test('a story fight\'s card and a scene\'s riddle: 留 · ✕ from the first mom
   assert.match(read('../scripts/rules/look.mjs'), /const stuck = true;/, 'a riddle may be left at once');
   assert.match(read('../scripts/rules/skips.mjs'), /return game\?\.kind === 'duel' && !state\.wins\?\.\[game\.id\];/, 'a story fight may be left at once');
   assert.ok(!/function stuckNow|STUCK_MS/.test(read('../scripts/stuck.js')), 'the stuck gate is gone');
+});
+
+test('the 游戏厅\'s ✕ and 留 put the game away for good — only 再来 deals it again (Hanli 11-08: 「关闭后会马上再出来」)', async () => {
+  const { playAlone } = await import('../scripts/games/shell.js');
+  let click = null;
+  const slot = { replaceChildren() { slot.cleared = (slot.cleared ?? 0) + 1; } };
+  const root = { innerHTML: '', querySelector: (q) => (q === '.gshell' ? { dataset: {} } : q === '#slot' ? slot : null),
+    ownerDocument: { addEventListener: (k, fn) => { if (k === 'click') click = fn; }, removeEventListener() {} } };
+  const mounts = [];
+  const mount = (_slot, o) => new Promise((done) => { mounts.push(o); o.signal.addEventListener('abort', () => done({ left: true })); });
+  let kept = 0;
+  const stop = playAlone(root, mount, { id: 'pa-out', opts: {}, onKeep: () => { kept += 1; } });
+  const tick = () => new Promise((r) => setTimeout(r, 0));
+  const tap = (act) => click({ preventDefault() {}, target: { closest: (q) => (q === '[data-shell-act]' ? { dataset: { shellAct: act }, closest: () => ({ dataset: { shell: 'pa-out' } }) } : null) } });
+  await tick();
+  assert.equal(mounts.length, 1, 'dealt once');
+  tap('close');
+  await tick(); await tick();
+  assert.equal(mounts.length, 1, '✕: not dealt again');
+  assert.ok(mounts[0].signal.aborted, '✕: its play stopped');
+  assert.equal(slot.cleared, 1, '✕: its board gone from the slot');
+  tap('again');
+  await tick();
+  assert.equal(mounts.length, 2, '再来 deals it again');
+  tap('keep');
+  await tick(); await tick();
+  assert.equal(kept, 1);
+  assert.equal(mounts.length, 2, '留: kept and put away, not dealt again');
+  stop();
+});
+
+test('a 试玩 board on the game page: ✕ · 留 put it away (view.left, its play taken down), and the tray holds it to take up again', async () => {
+  const page = read('../scripts/lingjing.js');
+  assert.match(page, /if \(isArcadeBoard\(id\)\) return arcadeAway\(id\);/);
+  const away = page.slice(page.indexOf('function arcadeAway('), page.indexOf('function arcadeAway(') + 600);
+  assert.match(away, /beats\.leave\(id\)/);
+  assert.match(away, /left: \[\.\.\.view\.left\.filter\(\(l\) => l\.id !== id\), \{ id,/);
+  // the stage drops a board in view.left, whatever Look stands (withArcade stands the 试玩 first)
+  assert.match(page, /if \(view\.left\.length\) cards = cards\.filter\(\(c\) => !\(c\.card === 'board' && view\.left\.some\(\(l\) => l\.id === c\.id\)\)\);/);
+  const { withArcade } = await import('../scripts/arcade-board.js');
+  const look = withArcade({ tasks: [], stage: [], agenda: [{ key: 'stage:stage', group: 'main', kind: 'stage', id: 'stage', tray: true }] }, 'drawguess');
+  assert.deepEqual(look.agenda[0], { key: 'task:arcade:drawguess', group: 'other', kind: 'task', id: 'arcade:drawguess', tray: true }, 'its tray row, 玩');
+  const { trayHtml, WORDS } = await import('../scripts/cards.js');
+  assert.match(trayHtml({ look, words: WORDS.zh, lang: 'zh', onStage: [] }), /data-play="arcade:drawguess"/, 'put away, the tray offers it');
+  assert.doesNotMatch(trayHtml({ look, words: WORDS.zh, lang: 'zh', onStage: ['arcade:drawguess'] }), /data-play="arcade:drawguess"/, 'on the stage, not twice');
 });

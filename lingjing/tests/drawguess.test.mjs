@@ -178,7 +178,13 @@ test('猜者: Ling or 银月; each look is the player\'s short line to her in th
   assert.deepEqual(GUESSERS, ['ling', 'yinyue']);
   // A hidden turn (Hanli 10-27: the prompts stood in the chat as his words), then her name (her guest turn), Ling's
   // never; a short line, and one note of the reply's shape.
-  assert.match(askGuess('yinyue', 1), /^\[HIDDEN\] @银月 我画了一样东西，你猜是什么？（.*「猜：」.*）$/);
+  assert.match(askGuess('yinyue', 1), /^\[HIDDEN\] @银月 我画了一样东西，你猜是什么？（.*「猜：」.*） \(lang zh-Hans\)$/);
+  // Each look and the reveal name the game's language last — the engine's `(lang <tag>)` (prompt/mod.rs named_language)
+  // and the phone's her_talk.dart read it (Hanli 11-08: 「AI猜画, 切换成英文时, Yinyue仍然说中文」).
+  assert.match(askGuess('yinyue', 1, null, 'en'), / \(lang en\)$/);
+  assert.match(askGuess('yinyue', 2, null, 'en', ['bun']), / \(lang en\)$/);
+  assert.match(askReveal('yinyue', 'chicken', true, 'en'), / \(lang en\)$/);
+  assert.match(askReveal('yinyue', '鸡', false), / \(lang zh-Hans\)$/);
   assert.match(askGuess('yinyue', 1, null, 'en'), /^\[HIDDEN\] @yinyue I drew something.*"Guess: "/);
   assert.doesNotMatch(askGuess('ling', 1), /@|银月/);
   // Where they are rides the round's first look only; later looks are short. She sees the dialogue:

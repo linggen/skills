@@ -41,6 +41,10 @@ test('the keeper\'s line: a hidden line of facts, never the floor; his reply is 
   assert.match(l, /^\[HIDDEN\] \[npc\] /);
   assert.match(l, /不调用任何工具/);
   assert.match(npcLine({ who: '周衡', facts: 'x', first: false }), /^\[HIDDEN\] \[npc\] 周衡·/);
+  // The game's language named last (`(lang <tag>)`, the engine's rule; the phone's her_talk.dart), first line and later.
+  assert.match(npcLine({ who: 'Zhou Heng', facts: 'x', first: true, lang: 'en' }), / \(lang en\)$/);
+  assert.match(npcLine({ who: 'Zhou Heng', facts: 'x', first: false, lang: 'en' }), / \(lang en\)$/);
+  assert.match(npcLine({ who: '周衡', facts: 'x', first: false }), / \(lang zh-Hans\)$/);
   assert.deepEqual(npcReply('周衡：一分钱一分货。\n（他拨了拨算盘）\n「五十七，不能再少。」\n第三句', '周衡'), ['一分钱一分货。', '五十七，不能再少。']);
   assert.deepEqual(npcReply('<!--x-->好吧。'), ['好吧。']);
   assert.ok(NPC_SYSTEM.zh && NPC_SYSTEM.en);

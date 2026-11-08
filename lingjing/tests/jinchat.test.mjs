@@ -90,13 +90,13 @@ test('the hidden line: facts and the goal first, short after; never shown (HIDDE
   assert.match(first, /不 Look，不调用任何工具/);
   assert.ok(first.includes(c.facts.zh) && first.includes(c.goal.zh), 'the facts and the goal, as data says them');
   assert.ok(first.includes('马小宝：「我手麻了……嘴也麻了……我是不是要死了……」'), 'what is on the screen');
-  assert.match(first, /第1条（共6条）。他发来：「小宝哥，先别吸，跟着我吐」$/);
+  assert.match(first, /第1条（共6条）。他发来：「小宝哥，先别吸，跟着我吐」 \(lang zh-Hans\)$/);
   assert.ok(!first.includes('名字加冒号'), 'one person: no names asked for');
   const later = turnLine(c, { k: 3, text: '吐——', cast, lang: 'zh' });
-  assert.equal(later, '[HIDDEN] [jinchat] 黑地里·第3条（共6条）。他发来：「吐——」（照目标，他这一条之后确实已经做到了，才另起一行写 <!--成-->；还差一点就不写。）', 'the tag\'s rule on every line');
+  assert.equal(later, '[HIDDEN] [jinchat] 黑地里·第3条（共6条）。他发来：「吐——」（照目标，他这一条之后确实已经做到了，才另起一行写 <!--成-->；还差一点就不写。） (lang zh-Hans)', 'the tag\'s rule on every line');
   assert.match(turnLine(c, { k: 6, text: 'x', cast, lang: 'zh' }), /最后一条/, 'the last line asks for an ending');
   // English (live 10-26: a session that had talked Chinese answered an English chat in Chinese): every line asks for English.
-  for (const k of [1, 3]) assert.match(turnLine(c, { k, text: 'x', cast: castOf(c, PEOPLE, 'en'), lang: 'en' }), /in English/, `line ${k} asks for English`);
+  for (const k of [1, 3]) assert.match(turnLine(c, { k, text: 'x', cast: castOf(c, PEOPLE, 'en'), lang: 'en' }), /in English.* \(lang en\)$/s, `line ${k} asks for English, and names it last for the engine`);
   const group = turnLine(CHATS['617'], { k: 1, text: 'x', cast: castOf(CHATS['617'], PEOPLE, 'zh'), lang: 'zh' });
   assert.match(group, /每行以说话人的名字加冒号开头/);
   const en = turnLine(CHATS.ahe, { k: 1, text: 'hi', cast: castOf(CHATS.ahe, PEOPLE, 'en'), lang: 'en' });

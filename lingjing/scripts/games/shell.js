@@ -23,8 +23,8 @@ import { SPEEDS, paceOf, sentencesOf } from '../lines.js';
 import { onSoundReload, sound, unlockOn } from './kit/sound.js';
 
 const W = {
-  zh: { pause: '暂停', resume: '继续', paused: '暂停中', won: '成', lost: '未成', again: '再来', next: '下一关', start: '开始', mute: '静音', unmute: '取消静音', restart: '重来', keep: '留着以后玩', close: '不玩了' },
-  en: { pause: 'Pause', resume: 'Resume', paused: 'Paused', won: 'Done', lost: 'Not yet', again: 'Again', next: 'Next', start: 'Start', mute: 'Mute', unmute: 'Unmute', restart: 'Start over', keep: 'Keep for later', close: 'Put it away' },
+  zh: { pause: '暂停', resume: '继续', paused: '暂停中', won: '成', lost: '未成', again: '再来', next: '下一关', start: '开始', mute: '静音', unmute: '取消静音', restart: '重来', keep: '留着以后玩', close: '不玩了', away: '收起来了' },
+  en: { pause: 'Pause', resume: 'Resume', paused: 'Paused', won: 'Done', lost: 'Not yet', again: 'Again', next: 'Next', start: 'Start', mute: 'Mute', unmute: 'Unmute', restart: 'Start over', keep: 'Keep for later', close: 'Put it away', away: 'Put away' },
 };
 const words = (lang) => W[lang === 'en' ? 'en' : 'zh'];
 const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -135,7 +135,7 @@ function footHtml(id, lang) {
   const stars = r.stars != null ? `<span class="gshell-stars" aria-label="${r.stars}/3">${'★'.repeat(r.stars)}${'☆'.repeat(Math.max(0, 3 - r.stars))}</span>` : '';
   const grade = r.grade ? `<span class="gshell-grade">${plain(r.grade)}</span>` : '';
   const acts = (r.acts ?? []).map((a) => `<button type="button" class="gshell-btn${a.main ? ' is-main' : ''}" data-shell-act="${plain(a.id)}">${plain(w[a.id] ?? a.label ?? a.id)}</button>`).join('');
-  return `<span class="gshell-won${r.won ? '' : ' is-lost'}" id="won">${plain(r.won ? w.won : w.lost)}</span>${stars}${grade}${acts}`;
+  return `<span class="gshell-won${r.won ? '' : ' is-lost'}" id="won">${plain(r.won ? w.won : r.away ? w.away : w.lost)}</span>${stars}${grade}${acts}`;
 }
 
 /* What the bubble stands under, where a board names it (`data-shell-bubble-under`: a fight's head — the beast's row and its
@@ -305,31 +305,41 @@ export function wireShell(doc = globalThis.document, { onAct = () => {} } = {}) 
     `?prefetch=1`), is asked once a deal for the mount's 台词预取 options (`{ lines }`, games/prefetch.js). */
 const outTools = (id, lang) => ({ out: outHtml(lang, `data-shell-act="keep" data-shell-for="${plain(id)}"`, `data-shell-act="close" data-shell-for="${plain(id)}"`) });
 export function playAlone(root, mount, { id, game, title, kind, how, timed, tall, lang = 'zh', opts = {}, leadLine = '', next = null, prefetch = null, restart = false, onKeep = null } = {}) {
-  // Its ✕ deals it again; its 留 keeps it (`onKeep`, the 游戏厅's list) and deals again — both from the first moment.
+  // Its ✕ puts it away; its 留 keeps it (`onKeep`, the 游戏厅's list) and puts it away — both from the first moment. Put away,
+  // the play stops and only 再来 deals it again (Hanli 11-08: 「点右上角关闭, 关闭后会马上再出来」 — ✕ dealt it afresh at once).
   root.innerHTML = frameHtml({ id, title, kind, how, timed, tall, lang, restart: restart ? restartHtml(id, lang, false) : '', body: '<div class="gshell-slot" id="slot"></div>',
     ...outTools(id, lang) });
   root.querySelector('.gshell').dataset.lang = lang;
   let stop = null, n = 0, last = null;
   const deal = async () => {
     stop?.abort();
-    stop = new AbortController();
+    const mine = (stop = new AbortController());
     forget(id);
     if (game) entry(id).game = game;
     paint(id);
     const slot = root.querySelector('#slot');
     await lead(id, leadLine, { count: timed, reducedMotion: opts.reducedMotion });
+    if (stop !== mine) return; // put away (or dealt again) while its lead card read
     const seed = n++ ? `${opts.seed ?? id}|${n}` : opts.seed; // 再来 deals a fresh one
-    const her = prefetch?.({ signal: stop.signal }) ?? null;
-    const r = await mount(slot, { ...opts, ...(her ?? {}), seed, lang, signal: stop.signal, shell: shellFor(id, game) });
+    const her = prefetch?.({ signal: mine.signal }) ?? null;
+    const r = await mount(slot, { ...opts, ...(her ?? {}), seed, lang, signal: mine.signal, shell: shellFor(id, game) });
+    if (stop !== mine) return; // put away meanwhile: its foot is the put-away one
     if (r?.left) { settle(id, r); return; }
     const on = Boolean(next && r?.won && r?.next != null);
     last = r;
     showResult(id, { ...r, acts: [{ id: 'again', main: !on }, ...(on ? [{ id: 'next', main: true }] : [])] });
   };
+  const away = () => {
+    stop?.abort();
+    stop = null;
+    root.querySelector('#slot')?.replaceChildren();
+    showResult(id, { won: false, left: true, away: true, acts: [{ id: 'again', main: true }] });
+  };
   const off = wireShell(root.ownerDocument, { onAct: (k, act) => {
     if (k !== id) return;
-    if (act === 'again' || act === 'close') deal();
-    else if (act === 'keep') { onKeep?.(); deal(); } else if (act === 'next') next?.(last?.next);
+    if (act === 'again') deal();
+    else if (act === 'close') away();
+    else if (act === 'keep') { onKeep?.(); away(); } else if (act === 'next') next?.(last?.next);
   } });
   deal();
   return () => { off(); stop?.abort(); forget(id); };

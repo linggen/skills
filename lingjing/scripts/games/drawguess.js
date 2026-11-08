@@ -200,6 +200,10 @@ const SHAPE = {
 /* A look is a hidden turn (`[HIDDEN]`, the engine's mark — tests/hidden): the game's line to her, never shown as
    his words in the chat (Hanli 10-27: the board's prompts stood in the chat as 「[Hanli] …」); her reply shows. */
 const HIDDEN = '[HIDDEN] ';
+/* The game's language, named last on each look (`(lang en)`: the engine's rule for a page's own message, prompt/mod.rs
+   named_language; the phone's her_talk.dart reads the same tag): an English look was answered in Chinese (Hanli 11-08:
+   「AI猜画, 切换成英文时, Yinyue仍然说中文」) — her persona and the thread are Chinese, and the line's own English lost. */
+export const langTag = (lang) => ` (lang ${lang === 'en' ? 'en' : 'zh-Hans'})`;
 /** The player's line for a look: the first of a round (`n` 1) with where they are (`context`), the next ones short.
     `tried`: her guesses this round, all wrong — never guessed again (Hanli 10-27: 「同一个东西猜多次也不对吧」). */
 export const askGuess = (who, n = 1, context = null, lang = 'zh', tried = []) => {
@@ -207,7 +211,7 @@ export const askGuess = (who, n = 1, context = null, lang = 'zh', tried = []) =>
   const scene = context ? (en ? `(${context}) ` : `（${context}）`) : '';
   const said = n <= 1 ? (en ? 'I drew something — what is it?' : '我画了一样东西，你猜是什么？') : (en ? 'I added a few strokes. Another guess?' : '我又添了几笔，再猜猜？');
   const no = tried.length ? (en ? ` Not ${tried.join(', not ')} — guess something else.` : `不是${tried.join('，也不是')}——换一样猜。`) : '';
-  return `${HIDDEN}${at(who, lang)}${scene}${said}${no}${SHAPE[en ? 'en' : 'zh']}`;
+  return `${HIDDEN}${at(who, lang)}${scene}${said}${no}${SHAPE[en ? 'en' : 'zh']}${langTag(lang)}`;
 };
 /* The reveal (Hanli 10-19: 「最后解释答案的时候, 让yingyue表达一下懊恼等感情, 评论一下作者的画. 把情绪价值拉满」):
    one more look at the finished picture, now with the answer — she owns the miss or crows over the hit,
@@ -216,10 +220,10 @@ export const askReveal = (who, word, won, lang = 'zh') => {
   const en = lang === 'en';
   if (en) {
     return `${HIDDEN}${at(who, lang)}${won ? `Yes — it's ${word}!` : `Time's up. It was ${word}.`} What do you make of my drawing?`
-      + (won ? ' (A line or two: crow over it, and say something about the drawing.)' : ' (A line or two: let the miss sting, and say what the drawing got wrong.)');
+      + (won ? ' (A line or two: crow over it, and say something about the drawing.)' : ' (A line or two: let the miss sting, and say what the drawing got wrong.)') + langTag(lang);
   }
   return `${HIDDEN}${at(who, lang)}${won ? `对了，就是「${word}」！` : `时间到——我画的是「${word}」。`}你说说我这画？`
-    + (won ? '（一两句：得意就说足，再点评一下这幅画。）' : '（一两句：懊恼不服就说足，再说说这东西该怎么画。）');
+    + (won ? '（一两句：得意就说足，再点评一下这幅画。）' : '（一两句：懊恼不服就说足，再说说这东西该怎么画。）') + langTag(lang);
 };
 
 let lastWord = null; // the word just drawn on this page: never twice running

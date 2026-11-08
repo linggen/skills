@@ -3854,9 +3854,20 @@ function boardSkipped(g) {
   const id = g.taskId, task = look?.tasks?.find((t) => t.id === id);
   g.state = { ...g.state, won: false, live: false };
   forgetShell(id);
-  if (isArcadeBoard(id)) { tracker.boardEnd(id, 'skipped'); boards.delete(id); render(); return true; }
+  if (isArcadeBoard(id)) return arcadeAway(id);
   if (task?.leave && !task.replay) return leaveGame(id);
   return skipGame(id);
+}
+/* ✕ · 留 · its own 跳过 on a 试玩 board (arcade-board.js): put away for good — its play taken down, and the stage never
+   stands it again by itself (Hanli 11-08: 「你画我猜点右上角关闭, 关闭后会马上再出来」: withArcade stands it open, and the
+   next draw dealt it afresh). It waits in the tray (withArcade's agenda row); its 玩 opens it again (openFromTray). */
+function arcadeAway(id) {
+  tracker.boardEnd(id, 'skipped');
+  beats.leave(id);
+  boards.delete(id);
+  forgetShell(id);
+  show({ opened: view.opened?.id === id ? null : view.opened, left: [...view.left.filter((l) => l.id !== id), { id, place: look?.place?.id ?? null, scene: look?.scene?.id ?? null }] });
+  return true;
 }
 /* The told boards held on the stage now (board-deal.js toldHeld). */
 const toldUp = () => [...boards.entries()].filter(([, g]) => toldHeld(g)).map(([id]) => id);

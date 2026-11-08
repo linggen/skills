@@ -45,8 +45,10 @@ export function npcLine({ who = '', voice = '', where = '', facts = '', did = ''
   const w = W[lang] ?? W.zh;
   const at = where ? (lang === 'en' ? `, at ${where}` : `，在${where}`) : '';
   const body = [facts ? fill(w.facts, { facts }) : '', did ? fill(w.did, { did }) : '', say ? fill(w.say, { say }) : ''].filter(Boolean).join(lang === 'en' ? ' ' : '');
-  if (!first) return `${fill(w.again, { who })}${body}${w.short}`;
-  return [fill(w.head, { who, where: at }), voice ? fill(w.voice, { who, voice }) : '', body, fill(w.shape, { who })].filter(Boolean).join(lang === 'en' ? ' ' : '');
+  // The game's language named last (`(lang en)`: the engine's rule for a page's own message; her_talk.dart on the phone).
+  const named = ` (lang ${lang === 'en' ? 'en' : 'zh-Hans'})`;
+  if (!first) return `${fill(w.again, { who })}${body}${w.short}${named}`;
+  return [fill(w.head, { who, where: at }), voice ? fill(w.voice, { who, voice }) : '', body, fill(w.shape, { who })].filter(Boolean).join(lang === 'en' ? ' ' : '') + named;
 }
 
 /** The system turn a host with its own model gives each line (the phone): what SKILL.md's `[npc]` rule tells Ling. */

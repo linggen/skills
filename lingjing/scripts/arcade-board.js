@@ -88,7 +88,11 @@ export function withArcade(look, game, { row = null, title = null } = {}) {
   const task = { id, kind: 'board', game, status: 'offered', light: true, open: true, her: true, hosted: true, title: title ?? game, deal };
   // …and on the stage Look drew (its `stage`, the rules' reading — made without the 试玩, so the page stood only what the
   // save had: 泗水岸's 降妖, the 试玩 left in the tray, 11-02): first of the games here, so it takes the slot.
-  return { ...look, tasks: [...(look.tasks ?? []), task], ...(Array.isArray(look.stage) ? { stage: [{ card: 'board', id }, ...look.stage] } : {}) };
+  // …and a row in the tray's list (Look's `agenda`, the rules' — made without it too): put away (✕ · 留), the board waits
+  // there, 玩, and never stands up again by itself (Hanli 11-08: 「关闭后会马上再出来」).
+  const listed = { key: `task:${id}`, group: 'other', kind: 'task', id, tray: true };
+  return { ...look, tasks: [...(look.tasks ?? []), task], ...(Array.isArray(look.stage) ? { stage: [{ card: 'board', id }, ...look.stage] } : {}),
+    ...(Array.isArray(look.agenda) ? { agenda: [listed, ...look.agenda] } : {}) };
 }
 
 /* 收着的棋局 in the 游戏厅 (Hanli 11-03, 留 on its shell): this browser's own, at most 20 — the 游戏厅 keeps no save. */

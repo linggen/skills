@@ -117,7 +117,10 @@ export function turnLine(chat, { k = 1, text = '', cast = [], shown = [], lang =
   const tail = [fill(w.count, { k, n }), k >= n ? w.last : '', fill(w.said, { text: String(text).trim() })].join('');
   // Every later line carries the tag's rule again: live 10-22 the first line's rule was forgotten by the fifth
   // (马小宝 「手没那么麻了」, no tag) — the goal was met and the chat ran out instead.
-  if (k > 1) return `${fill(w.again, { title: pick(chat.title, lang) })}${tail}${w.tag}`;
+  // The game's language named last (`(lang en)`, the engine's rule; her_talk.dart on the phone): the line's own words lost to
+  // a Chinese thread and persona (Hanli 11-08, 画猜 in English answered in Chinese — the same way here).
+  const named = ` (lang ${lang === 'en' ? 'en' : 'zh-Hans'})`;
+  if (k > 1) return `${fill(w.again, { title: pick(chat.title, lang) })}${tail}${w.tag}${named}`;
   const names = cast.map((c) => c.name).join(lang === 'en' ? ' and ' : '和');
   const quote = (who, text) => (lang === 'en' ? `${who}: "${text}"` : `${who}：「${text}」`);
   const lines = shown.map((s) => quote(cast.find((c) => c.id === s.who)?.name ?? (lang === 'en' ? 'he' : '他'), s.text)).join(' ');
@@ -130,6 +133,7 @@ export function turnLine(chat, { k = 1, text = '', cast = [], shown = [], lang =
     fill(w.goal, { goal: pick(chat.goal, lang) }),
     fill(w.shape, { multi: cast.length > 1 ? w.multi : '' }),
     tail,
+    named,
   ].filter(Boolean).join('');
 }
 
