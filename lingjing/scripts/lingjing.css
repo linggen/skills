@@ -1607,9 +1607,14 @@ button.qchip.on { color: var(--ling); border-color: var(--ling); background: var
 #tray .card.task.agenda .bookgoal { margin: 0; font-size: 13px; }
 #tray .card.task.agenda .tsteps, #tray .card.task.agenda .tpay { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 #tray [data-agenda-at] { cursor: pointer; }
-/* 「全部 ›」 stays in sight in its own bottom lane, clear of card text and buttons. */
-#tray:has(.allchip) .card { padding-bottom: 50px; }
-#tray .allchip { flex: none; align-self: end; white-space: nowrap; position: sticky; right: 0; z-index: 1; box-shadow: -10px 0 12px -4px var(--surface); }
+/* 「全部 ›」 always in sight: the row scrolls under it. */
+#tray .allchip { flex: none; align-self: center; white-space: nowrap; position: sticky; right: 0; z-index: 1; box-shadow: -10px 0 12px -4px var(--surface); }
+/* On a phone it floated over the last card's words (Hanli 11-08 ruling): there it stands in its own bottom lane. The
+   wide tray is taller than the window, so it keeps the centre there (a bottom lane fell below the fold at 1280). */
+@media (max-width: 640px) {
+  #tray:has(.allchip) .card { padding-bottom: 50px; }
+  #tray .allchip { align-self: end; }
+}
 #tray .allchip .due { margin-left: 4px; }
 .bookpop.agendapop > .cardx + .tgroup { margin-top: 0; border-top: 0; padding-top: 0; }
 /* 小游戏池 in 事: this 时辰's games under one quiet heading; on a tray card, when they change — the cooldown's chip, dashed. */

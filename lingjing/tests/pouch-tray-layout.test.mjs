@@ -15,7 +15,8 @@ test('on narrow screens the empty bag hint follows the grid in normal flow', () 
 test('the tray reserves a bottom lane for the sticky all chip at every width', () => {
   const css = read('../scripts/lingjing.css');
   assert.match(css, /#tray:has\(\.allchip\) \.card\s*\{\s*padding-bottom:\s*50px;/);
-  assert.match(css, /#tray \.allchip\s*\{[^}]*align-self:\s*end;[^}]*position:\s*sticky;/);
+  assert.match(css, /#tray \.allchip\s*\{[^}]*position:\s*sticky;/);
+  assert.match(css, /@media \(max-width: 640px\) \{\s*#tray:has\(\.allchip\) \.card \{ padding-bottom: 50px; \}\s*#tray \.allchip \{ align-self: end; \}/);
 });
 
 test('opening and closing the bag during a fight leaves the same fight intact', () => {
