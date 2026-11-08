@@ -500,6 +500,8 @@
   .blast .blab { display: none; }
   /* The panel under the beast folds to one line, 「见人则眠 · 装睡」 (Hanli 11-06): a tap opens the whole text, another folds it. */
   .bcharge { max-width: 100%; }
+  /* The folded panel stands above the beast's rank: a shrunk rank's empty places ran under it (gate 20261108-150559). */
+  .bcharge:has(> .bfold) { position: relative; z-index: 3; }
   .bcharge > .bfold { display: flex; align-items: baseline; justify-content: center; gap: 0; min-width: 0; max-width: 100%; margin: 0; padding: 2px 4px; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .bcharge > .bfold > i { font-style: normal; font-size: 10px; color: var(--ink-3); margin-left: 6px; }
   .bcharge > .bfold:focus-visible { outline: 2px solid var(--ink-2); outline-offset: 2px; border-radius: 6px; }
