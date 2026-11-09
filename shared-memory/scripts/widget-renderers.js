@@ -530,6 +530,7 @@ function renderDreamCalendar(w) {
 //
 // Shape:
 //   { "type": "review-queue", "title": "Review queue",
+//     "open": 71,   // the queue's true size (open_count)
 //     "issues": [{id, kind, note, row_ids, created_at}] }
 
 function renderReviewQueue(w) {
@@ -538,7 +539,7 @@ function renderReviewQueue(w) {
 
   const head = el('div', 'rq-head');
   head.appendChild(el('div', 'rq-title',
-    `<strong>${esc(w.title || 'Review queue')}</strong> · ${issues.length} open`));
+    `<strong>${esc(w.title || 'Review queue')}</strong> · ${w.open ?? issues.length} open`));
   const solve = el('button', 'rq-solve-btn', '🧩 Solve');
   solve.title = tr('mem.workTheQueueWith');
   solve.addEventListener('click', () => {

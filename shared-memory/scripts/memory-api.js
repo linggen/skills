@@ -88,9 +88,10 @@ export async function fetchMemoryDays(filter = {}) {
 // Open review-queue items from the daemon — what a dream audit could
 // not solve with confidence. Returns the endpoint's data payload:
 // { open_count, issues: [{id, kind, note, row_ids, created_at, status}] }
+// The endpoint pages (50 by default) — ask for the whole queue; `open_count` is the true size.
 export async function fetchMemoryIssues(status = 'open') {
   const base = await lingMemBase();
-  const body = JSON.stringify({ status });
+  const body = JSON.stringify({ status, limit: 1000 });
   const cmd = `curl -s -X POST ${base}/api/memory/issues -H 'Content-Type: application/json' -d ${JSON.stringify(body)}`;
   const out = await bashExec(cmd);
   if (!out) return null;

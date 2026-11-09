@@ -286,7 +286,7 @@ async function paintDashboard() {
 function buildReviewQueue(issuesData) {
   const issues = issuesData?.issues || [];
   if (!issues.length) return null;
-  return { type: 'review-queue', title: tr('mem.reviewQueue'), issues };
+  return { type: 'review-queue', title: tr('mem.reviewQueue'), issues, open: issuesData.open_count ?? issues.length };
 }
 
 // Shape the daemon's rollup into the dream-calendar widget: a per-day
