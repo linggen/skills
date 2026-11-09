@@ -346,7 +346,7 @@ mode's references.
 | **Dream** | Message says `/shared-memory dream` (all undreamed days) or `/shared-memory dream <YYYY-MM-DD>` (one day). Always user-triggered here — the *nightly* dream is an engine mission shipped separately, running the same runbook, and on Linggen the memory app's buttons trigger that mission directly. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md` (the canonical remember/forget runbook) and `~/.linggen/skills/shared-memory/references/routing-rules.md`. |
 | **Scan** | Message says `/shared-memory scan <YYYY-MM-DD>` — stage that day's session logs (backfill), see the verb table. The calendar's scan button sends this. | `Read ~/.linggen/skills/shared-memory/references/dream-flow.md` (its Scan section) and `references/extractor-prompt.md` (what to stage). |
 | **Condense** | Message says `/shared-memory condense` — collapse stale chains in long-term memory. On Linggen the nightly `dream` mission already runs the high-confidence slices (cited chains + completion-bar marker merges) as its last stage; the chat verb is the attended deep pass (below-the-bar candidates, where the user can be asked) and the path for hosts without a mission runtime. | `Read ~/.linggen/skills/shared-memory/references/condense-flow.md` (the canonical condense runbook). |
-| **Solve** | Message says `/shared-memory solve` — drain the review queue: items the nightly dream's audit could not solve with confidence and queued for the user. | The Solve runbook below; `references/routing-rules.md` for write decisions. |
+| **Solve** | Message says `/shared-memory solve` — drain the review queue: the rare leftovers the dream could not settle itself (a user-voice row would change, a pick between rows, or evidence it could not read). | The Solve runbook below; `references/routing-rules.md` for write decisions. |
 | **Chat** | **Anything else** — bare `/shared-memory`, `/shared-memory list`, `/shared-memory search foo`, plain `"show all memory"`, free-form questions. | Body of this SKILL.md is the entry. `Read ~/.linggen/skills/shared-memory/references/routing-rules.md` only when making save / dedup decisions. |
 
 The old **Dashboard mode** (the agent rendering the on-open page) is
@@ -366,7 +366,7 @@ it's what a bare `/shared-memory` greeting should mention first.
 
 | Verb | Action |
 |:---|:---|
-| `dream` | **Remember all undreamed days, oldest first, then sweep.** Worklist via `days --undreamed`; per day: list its episodic rows → cluster → promote durable signal to semantic → `remember-day` stamp. Never deletes; the final `sweep` ages out judged rows past TTL. See `references/dream-flow.md`. (On Linggen, the memory app's buttons route this to the `dream` **mission** — same procedure, plus the in-flight guard and run report. The chat verb is for hosts without a mission runtime, or explicit chat requests.) |
+| `dream` | **Remember all undreamed days, oldest first, then sweep.** Worklist via `days --undreamed`; per day: list its episodic rows → cluster → promote durable signal to semantic → `remember-day` stamp. Never deletes; the final `sweep` ages out judged rows past TTL, then the audit settles stale long-term rows itself from evidence and queues only what needs the user. See `references/dream-flow.md`. (On Linggen, the memory app's buttons route this to the `dream` **mission** — same procedure, plus the in-flight guard and run report. The chat verb is for hosts without a mission runtime, or explicit chat requests.) |
 | `dream <YYYY-MM-DD>` | **Remember one day.** Same procedure, one day. |
 | `scan <YYYY-MM-DD>` | **Stage one day's session logs (backfill).** Run `scripts/scan.sh <date>`; before encoding, `list --day <date>` the day's existing rows and collect their `source_session` ids — **skip any scanned session already in that set** (live capture or a prior scan covered it; this is what makes scan idempotent). Encode the remaining worthwhile candidates into episodic with `--episodic` + the day's `occurred_at`, then stamp: `ling-mem harvest-day <date>` (stamps scanned only — the day stays *undreamed* and dream judges it later). A day with nothing new: still stamp, report `CLEAN`. |
 | `add "<content>" [--type ...] [--tier ...] [--scope <dir>] [--summary "..."]` | Insert a new memory row. Omitted tier = episodic. |
@@ -381,12 +381,15 @@ it's what a bare `/shared-memory` greeting should mention first.
 
 ### Solve runbook — `/shared-memory solve`
 
-The review queue holds what the nightly dream's audit could NOT solve
-with confidence: uncertain merges (`chain`), status claims likely
-overtaken by the world (`stale-status`), conflicts needing the
-user's pick (`contradiction`), digest clusters of doubtful
-subject coherence (`subject`). Index and scope fixes are not queued —
-the dream applies them itself when sure. The daemon only bookkeeps — **you are
+The dream settles review items itself from evidence and queues only
+what needs the user — so the open queue is the rare leftover: a
+user-voice row that would change, rows the user must pick between
+(`contradiction`), or a `chain` / `stale-status` / `subject` item whose
+evidence the dream could not read (the Linggen nightly mission is
+memory-only — no code or git). Items the dream settled are already
+closed (`memory_issues {"status":"resolved"}` / `"dismissed"` shows
+them with its why). Index and scope fixes are not queued — the dream
+applies them itself when sure. The daemon only bookkeeps — **you are
 the solver**, and this is an attended surface: the user is right here.
 
 1. **List.** `memory_issues`. Empty → say so, done.
@@ -466,9 +469,9 @@ When you capture a status change (shipped / fixed / dormant /
 abandoned), search the subject first and write the new status with
 `replace_ids` listing the prior status row(s) on that subject — never
 leave "in progress" beside its own outcome. Own-notes only; a
-user-voice predecessor follows the merge law below. The dream audit's
-review queue (`/shared-memory solve`) is the backstop for what slips
-through — write-time supersede is the real fix.
+user-voice predecessor follows the merge law below. The dream audit
+settles what slips through (queueing only what needs the user for
+`/shared-memory solve`) — write-time supersede is the real fix.
 
 ## Memory hygiene — see it, solve it
 

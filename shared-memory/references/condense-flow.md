@@ -12,9 +12,10 @@ a recall window; condense cures what no recall ever touches.
   candidates merge unattended only on the completion bar (a strictly
   newer same-subject derived neighbor asserts the marked work done);
   quiet `subject` clusters digest unattended when the judge is
-  confident they share one subject. Doubt always queues for the
-  user's solve flow — and every merge archives its losers, so a
-  wrong call is an unpack, not a loss.
+  confident they share one subject. The rest it settles itself from
+  evidence and queues only what needs the user (see `dream-flow.md`
+  Audit) — and every merge archives its losers, so a wrong call is an
+  unpack, not a loss.
 - **Claude Code / Codex / OpenClaw** — no mission runtime; the host
   agent runs the steps below via the `ling-mem` CLI (or the
   `memory_chains` / `memory_add` MCP tools), on demand — this is also
@@ -66,13 +67,15 @@ Three kinds, one law:
   reports how many were withheld) and skips clusters a prior ruling
   covers (`ruled_skipped`). Cap: 5 digests per run. In an
   attended pass, confirm each digest with the user before writing;
-  unattended (the dream), digest only what you are confident is one
-  subject and queue the rest as `subject` issues. When the user says
-  keep-separate, RECORD THE RULING so the cluster stops
+  unattended (the dream), digest what you are confident is one
+  subject, rule clearly separate clusters yourself, and queue only the
+  ones you cannot tell as `subject` issues. On a keep-separate ruling
+  (the user's, or the dream's own when the members clearly differ),
+  RECORD THE RULING so the cluster stops
   re-serving: `ling-mem issue-add --kind subject --row <id> [--row
   <id> …] "<subject>: ruled keep-separate <date>"` listing EVERY member
   id, then `ling-mem issue-resolve <issue-id> dismissed` — the ruling
-  is the user's, not an open question.
+  is closed, not an open question.
 
 **Always pass `derived_only`** on an unattended or semi-attended pass —
 it filters to clusters that are entirely the agent's own notes
