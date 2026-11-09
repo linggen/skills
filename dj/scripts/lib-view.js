@@ -440,8 +440,9 @@ async function unfile(files, name) {
 
 const lyricsFor = (fallback) => (cur) => fetchTrackLyrics(cur || fallback, renderLibrary);
 
-export function play(start, queue, shuffle = false) {
-  openPlayer(start, { toast, fetchLyrics: lyricsFor(start), queue, shuffle });
+/// `hooks`: { onStart, onRefused } — a play sent to the Mac hears how it went (mac-play.js).
+export function play(start, queue, shuffle = false, hooks = {}) {
+  openPlayer(start, { toast, fetchLyrics: lyricsFor(start), queue, shuffle, ...hooks });
 }
 
 /// Hand a queue to the full-screen karaoke page via localStorage.

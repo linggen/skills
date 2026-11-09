@@ -349,17 +349,17 @@ tools:
     cmd: "bash $SKILL_DIR/scripts/rename.sh {{track}}"
     tier: edit
     timeout_ms: 120000
-  # Sound on the Mac with no page: the phone (or any handoff) asks to play and
-  # no DJ page is open to carry it. afplay in a detached runner; every call
-  # answers with what the processes say. A page play stops it (player.js).
-  - name: PlayOnMac
+  # Sound on the Mac where the user sees it: the DJ page in the Linggen app
+  # plays the songs in its player and answers with what its audio really did.
+  - name: PlayInApp
     remote: true
     description: >-
-      Play owned songs out loud on the Mac, no DJ page needed — for a play
-      asked from the phone, a handoff, or "on the Mac". Replaces whatever it
-      was playing. Returns { ok, playing, state: playing|paused|loading|stopped,
-      track: { artist, title }, index, count, missing?: ["Artist - Title: why"],
-      error? }. Say it is playing only when `playing` is true.
+      Play owned songs on the Mac in the DJ page of the Linggen app (its player
+      shows lyrics and can be paused or stopped there) — for a play asked from
+      the phone, a handoff, or "on the Mac". Waits up to 10 s for the page to
+      say the sound started. Returns { ok, playing, track: { artist, title },
+      count, missing?: ["Artist - Title: why"], error? }. Say it is playing
+      only when `playing` is true.
     args:
       tracks:
         type: array
@@ -373,22 +373,17 @@ tools:
             artist: { type: string }
             title:  { type: string }
             file:   { type: string }
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/mac-player.mjs play {{tracks}}"
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/mac-play.mjs play {{tracks}}"
     tier: edit
-    timeout_ms: 15000
-  - name: MacPlayer
+    timeout_ms: 20000
+  - name: StopInApp
     remote: true
     description: >-
-      Control or check what PlayOnMac is playing on the Mac. Returns the same
-      status shape as PlayOnMac, read from the live player process.
-    args:
-      action:
-        type: string
-        required: true
-        description: 'One of "pause", "resume", "next", "stop", "status".'
-    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/mac-player.mjs {{action}}"
+      Stop the music the DJ page in the Linggen app is playing on the Mac.
+      Returns { ok, stopped, was_playing, error? }.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/mac-play.mjs stop"
     tier: edit
-    timeout_ms: 10000
+    timeout_ms: 20000
 ---
 
 # DJ — your personal Disc Jockey
@@ -624,16 +619,18 @@ Cantopop"):
    download first, and say so (*"You don't have these yet — here's a set to
    grab."*).
 
-**Which door plays it.** The page `play` makes sound only where an open DJ
-page is, with the user at the Mac. Use **`PlayOnMac`** instead (same tracks)
-when the ask comes from the phone or another agent (Ling, a handoff), when it
-says "on the Mac", or when you have no sign the page is open. Control it with
-**`MacPlayer`** (pause, resume, next, stop, status).
+**Which door plays it.** The page `play` sounds only in a DJ page the user
+has open in front of them. When the ask comes from the phone or another agent
+(Ling, a handoff), says "on the Mac", or you have no sign the page is open, use
+**`PlayInApp`** (same tracks): the DJ page in the Linggen app plays them where
+the user can see and stop them. **`StopInApp`** stops it.
 
-- Say "playing" only when the returned `playing` is true. Otherwise say what
-  the result shows failed (`error`, `missing`) — never a hopeful "playing".
+- Say "playing" only when the returned `playing` is true. Otherwise say plainly
+  that it did not play on the Mac and why, from `error` (e.g. Linggen is
+  closed or its DJ tab isn't open — open it and try again). Never a hopeful
+  "playing", and no other way round.
 - `missing` names songs it skipped; mention them in the same line.
-- A page `play` stops the Mac player on its own; don't call both.
+- Use one door per ask — never both `PlayInApp` and a page `play`.
 
 ## The Mac and the phone
 

@@ -15,6 +15,7 @@ import { loadConfig, loadLibrary } from './library.js';
 import { backfillLyrics } from './lyrics-backfill.js';
 import { phoneDevices } from './phone.js';
 import { applyPageUpdate, extractKey, onQueueDrained, restoreSet, watchQueue } from './set-panel.js';
+import { onMacPlayEvent, watchMacPlay } from './mac-play.js';
 import { applyPlayNow, renderPlayNow, wirePlayNow } from './play-now-view.js';
 import { drainMessage } from './drain.js';
 import { afterRefresh, refreshLibrary, renderLibrary, playlists, startKaraoke, libraryView, wireLibrary } from './lib-view.js';
@@ -102,6 +103,7 @@ document.addEventListener('visibilitychange', () => {
   wirePlayNow();
   restoreSet();
   watchQueue();
+  watchMacPlay(); // a play sent to the Mac, once the library is here to play it from
   noteQuest('due'); // the chores' due, from the library as it opens (quest.mjs)
   wireButtons();
   wireResizer();
@@ -260,6 +262,7 @@ async function mountChat() {
       sessionId: resume || undefined,
       onStreamToken: () => { activity = true; },
       onContentBlock: (payload) => { activity = true; onContentBlock(payload); },
+      onSkillEvent: onMacPlayEvent, // a play sent to this Mac (mac-play.js)
     });
   } catch (e) {
     console.error('[dj] chat mount failed', e);

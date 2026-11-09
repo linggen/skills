@@ -5,7 +5,7 @@
 //            (the daemon serves the skill dir; localhost load is instant)
 //   lyrics — parse the .lrc sidecar, highlight + auto-scroll the active line
 
-import { notePlayed, noteQuest, runBash, sq, SCRIPTS } from './bash.js';
+import { notePlayed, noteQuest, runBash, sq } from './bash.js';
 import { esc } from './ui.js';
 import { t as tr } from './strings.js';
 
@@ -53,11 +53,13 @@ try {
   bc.addEventListener('message', (e) => { if (e.data?.claim && e.data.claim !== PAGE && active) active.stop(); });
 } catch { /* BroadcastChannel unsupported — single-tab still fine */ }
 const claimPlayback = () => { try { bc?.postMessage({ claim: PAGE }); } catch { /* ignore */ } };
-// The page's sound replaces the headless Mac player's (PlayOnMac) — never two
-// songs at once. Fire and forget: a stop with nothing playing is a no-op.
-const stopMacPlayer = () => {
-  runBash(`bash "${SCRIPTS}/run-js.sh" "${SCRIPTS}/mac-player.mjs" stop`, { timeoutMs: 8000 }).catch(() => {});
-};
+
+/// Stop whatever this page is playing (a stop sent to the Mac, mac-play.js).
+export function stopPlayer() {
+  const had = !!active;
+  if (active) active.stop();
+  return had;
+}
 
 // Sweep stale .nowplaying copies from pages that never got to clean up (tab
 // closed mid-play, refresh) — stop() only removes THIS page's file. Anything
@@ -206,8 +208,11 @@ export async function openPlayer(startTrack, opts = {}) {
 
   // Transport
   audio.addEventListener('loadedmetadata', () => { $('#pl-dur').textContent = fmt(audio.duration); });
-  audio.addEventListener('play', () => { blocked = false; $('#pl-play').textContent = '⏸'; updateMini(); claimPlayback(); stopMacPlayer(); });
+  audio.addEventListener('play', () => { blocked = false; $('#pl-play').textContent = '⏸'; updateMini(); claimPlayback(); });
   audio.addEventListener('pause', () => { $('#pl-play').textContent = '▶'; updateMini(); });
+  // The first real sound, once: what a play sent to the Mac reports back
+  // (opts.onStart, mac-play.js) — `playing`, not `play`, which fires on the ask.
+  if (opts.onStart) audio.addEventListener('playing', () => opts.onStart(track), { once: true });
   $('#pl-play').onclick = () => { if (audio.paused) audio.play(); else audio.pause(); };
   $('#pl-seek').oninput = (e) => { if (audio.duration) audio.currentTime = (e.target.value / 1000) * audio.duration; };
 
@@ -241,6 +246,12 @@ export async function openPlayer(startTrack, opts = {}) {
   $('.pl-shuffle').onclick = toggleShuffle;
   $('.pl-repeat').onclick = cycleRepeat;
 
+  // The start never came (opts.onRefused, mac-play.js): said once, for the
+  // first track only — a later track failing is the player's own business.
+  let asked = !!opts.onRefused;
+  const refused = (e) => { if (asked) { asked = false; opts.onRefused(e); } };
+  if (opts.onStart) audio.addEventListener('playing', () => { asked = false; }, { once: true });
+
   // Load + play a track: header, lyrics, audio.
   async function load(t) {
     track = t;
@@ -263,9 +274,10 @@ export async function openPlayer(startTrack, opts = {}) {
           // NotAllowedError: no user gesture behind this play. Show the tap.
           if (e?.name === 'NotAllowedError') { blocked = true; showMini(); }
           else opts.toast?.(String(e?.message || e));
+          refused(e);
         },
       );
-    } catch (e) { opts.toast?.(String(e.message || e)); }
+    } catch (e) { opts.toast?.(String(e.message || e)); refused(e); }
     updateMini();
     if (!t.lrc && opts.fetchLyrics) autoFetchLyrics(t); // background — don't block playback
   }
