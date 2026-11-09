@@ -4,7 +4,12 @@
 import { makeToast } from './ui.js';
 
 const UI_KEY = 'dj:ui';
-const loadUi = () => { try { return JSON.parse(localStorage.getItem(UI_KEY)) || {}; } catch { return {}; } };
+const loadUi = () => {
+  try {
+    const { tab, pins, ...ui } = JSON.parse(localStorage.getItem(UI_KEY)) || {};
+    return ui;
+  } catch { return {}; }
+};
 export const savedUi = loadUi();
 export const saveUi = (patch) => {
   Object.assign(savedUi, patch);

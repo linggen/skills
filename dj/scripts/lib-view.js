@@ -15,13 +15,9 @@ import { ensureThumbs, thumbUrl } from './thumbs.js';
 import { $, esc, confirmDialog, debounce, plural } from './ui.js';
 import { t as tr } from './strings.js';
 
-/// Who else repaints from the library when it is re-read (the Play now tab).
-export const afterRefresh = new Set();
-
 export async function refreshLibrary() {
   state.library = await loadLibrary();
   renderLibrary();
-  for (const fn of afterRefresh) fn();
   // Covers for whatever just arrived, whichever door it came through; only
   // songs not asked about yet cost anything.
   ensureThumbs(state.library.tracks).then((asked) => asked && renderLibrary()).catch(() => {});

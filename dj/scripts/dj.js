@@ -14,11 +14,10 @@ import { noteQuest, runAction as action } from './bash.js';
 import { loadConfig, loadLibrary } from './library.js';
 import { backfillLyrics } from './lyrics-backfill.js';
 import { phoneDevices } from './phone.js';
-import { applyPageUpdate, extractKey, onQueueDrained, restoreSet, watchQueue } from './set-panel.js';
+import { applyPageUpdate, onQueueDrained, restoreSet, watchQueue } from './set-panel.js';
 import { onMacPlayEvent, watchMacPlay } from './mac-play.js';
-import { applyPlayNow, renderPlayNow, wirePlayNow } from './play-now-view.js';
 import { drainMessage } from './drain.js';
-import { afterRefresh, refreshLibrary, renderLibrary, playlists, startKaraoke, libraryView, wireLibrary } from './lib-view.js';
+import { refreshLibrary, renderLibrary, playlists, startKaraoke, libraryView, wireLibrary } from './lib-view.js';
 import { state, setCollection, toast } from './state.js';
 import { ensureThumbs } from './thumbs.js';
 import { $, plural } from './ui.js';
@@ -99,8 +98,6 @@ document.addEventListener('visibilitychange', () => {
     setCollection({ kind: 'all' });
   }
   renderLibrary();
-  afterRefresh.add(renderPlayNow);
-  wirePlayNow();
   restoreSet();
   watchQueue();
   watchMacPlay(); // a play sent to the Mac, once the library is here to play it from
@@ -244,7 +241,6 @@ function onContentBlock(payload) {
     try {
       const args = typeof payload.args === 'string' ? JSON.parse(payload.args) : payload.args;
       applyPageUpdate(args);
-      applyPlayNow(extractKey(args, 'play_now'));
     } catch (e) { console.warn('[dj] PageUpdate parse', e); }
   }
   if (AGENT_WRITERS.has(payload?.tool)) scheduleAgentRefresh();
