@@ -70,6 +70,11 @@ test('a fire card shows the halved number while it lasts; the tag stands beside 
   assert.doesNotMatch(battleHtml(view(begin(setup(), CARDS)), offers(begin(setup(), CARDS)), { lang: 'zh', words: WORDS.zh, catalog: CARDS, board: 5, foeName: '蛫' }), /bwardtag/, 'no ward, no tag');
 });
 
+test('窃脂 (creatures.json): 赤身白首 strikes for 6, draws and wards fire', () => {
+  const qiezhi = loadContent().creatures.creatures.find(c => c.id === 'qiezhi');
+  assert.deepEqual(qiezhi.signature.effect, { damage: 6, draw: 1, ward: WARD });
+});
+
 test('蛫 (creatures.json): 「可以御火」 keeps its damage and rally, and lays the fire ward', () => {
   const gui = loadContent().creatures.creatures.find(c => c.id === 'gui');
   assert.equal(gui.signature.name.zh, '可以御火');

@@ -437,6 +437,7 @@ export async function run(opts) {
     };
 
     const afterWin = async (label, res) => {
+      if (res.outcome === 'lost') { await sleep(1500); await shot(`${label}-lost`); return; }
       if (res.outcome !== 'won') return;
       let sp = null;
       // The reveals over a won fight (a seal, a card turned — 珠光 得) come first and can stand a while; 所得 waits
@@ -687,8 +688,9 @@ export async function run(opts) {
           if (await click('[data-roads]', '去往')) {
             await sleep(700);
             const roads = await page.evaluate(VISIBLE, '.spot[data-go]');
-            if (roads.length) { await tap(pickOne(r, roads), '一条路'); await sleep(1500); await shot('kept-road'); }
+            if (roads.length) { await tap(pickOne(r, roads), '一条路'); await sleep(1500); }
           }
+          await shot('kept-road'); // Also keep the failed attempt, at every viewport including 375px.
           noteRefusals(atRoad, `${where} · 去往`);
           played.push({ where, kind: '留着的斗法 + 储物袋 · 饭桶 · 路 · 重载' });
         } else unplayable.push({ where, why: 'no 降妖 to start for the walk' });

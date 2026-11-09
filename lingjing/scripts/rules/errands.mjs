@@ -134,10 +134,13 @@ function errandsOf(content, state, lang, now) {
       // What it asks, step by step, each with its place, who takes it, and the one next act (rules/errand-line.mjs):
       // the 事 book, the 主页's 待办 and the phone show these as they are (Hanli 10-28: 「彭城的药钱, 没有提示」).
       const line = errandLine(content, state, q, need, lang, now);
+      const open = need.findIndex(n => !n.done);
+      const go = open >= 0 && need[open].kind === 'subdue' && line.steps[open]?.at?.here
+        ? { does: 'fight', id: `quest:${id}`, place: line.steps[open].at } : line.go;
       return { id, title: pick(q.title, lang), thread: threadColour(q), who: q.from?.who ? pick(q.from.who, lang) : null, pays: questPays(content, state, now, q),
         need: need.map(n => ({ kind: n.kind, have: n.have, n: n.n, ...(kept(n) ? { kept: true } : {}) })), ready,
         steps: line.steps.map(s => ({ text: s.text, done: s.done, ...(s.at ? { at: s.at } : {}) })), ...(line.hand ? { hand: { text: line.hand.text, ...(line.hand.at ? { at: line.hand.at } : {}) } } : {}),
-        ...(line.go ? { go: line.go } : {}), say: fill(pick(q.say, lang), state, content),
+        ...(go ? { go } : {}), say: fill(pick(q.say, lang), state, content),
         // Done, but the person it is for is elsewhere: who, and the way there.
         ...(away ? { away: { who: pick(q.from.who, lang) } } : {}),
         where: away ? whereAt(content, state, placeOf(content, giverAt(q)), lang, now) : whereFor(content, state, q, need, lang, now, line) };

@@ -413,7 +413,7 @@ function minionHtml(m, side, index, ctx, picked) {
       <span class="bglyph">${GLYPH[m.element] ?? ''}</span>
     </span>
     <span class="bname">${name(m, ctx.lang)}</span>
-    <span class="batk">${m.atk}</span><span class="bhp">${m.hp}</span>
+    <span class="batk">${side === 'theirs' ? dealt(ctx.st, 'foe', m.atk, m.element, null) : m.atk}</span><span class="bhp">${m.hp}</span>
     ${marks.length ? `<small>${marks.map(esc).join(' · ')}</small>` : ''}${badge}
   </button>`;
 }
@@ -444,9 +444,14 @@ function leafHtml(c, ctx, o = {}) {
 }
 
 /// One card's face by its id, as the hand draws it — for a card shown in passing (the beast's 功法).
-export function cardFaceHtml(id, ctx) {
+export function cardFaceHtml(id, ctx, foeState = null) {
   const c = ctx.catalog?.[id];
-  return c ? leafHtml(c, ctx) : '';
+  if (!c) return '';
+  if (!foeState) return leafHtml(c, ctx);
+  const hit = n => dealt(foeState, 'foe', n, c.element, null);
+  const effect = { ...c.effect };
+  for (const key of ['damage', 'sweep', 'drought']) if (effect[key] != null) effect[key] = hit(effect[key]);
+  return leafHtml({ ...c, effect }, ctx, c.kind === 'minion' ? { atk: hit(c.atk) } : {});
 }
 
 /* The fan: each card turned a little about the middle of the hand and dropped
@@ -584,6 +589,14 @@ function wardTags(side, ctx) {
   return (side?.wards ?? []).filter(w => w.left > 0).map(w => ` <span class="bwardtag el-${esc(w.element)}" title="${esc(wardWords({ ...w, turns: w.left }, zh))}">${zh ? `御${GLYPH[w.element] ?? ''}` : `${cap(EL_EN[w.element] ?? w.element)}-proof`}</span>`).join('');
 }
 
+/* The same scale used by dealt, visible on the foe's plate. */
+export function fierceTag(st, ctx) {
+  const scale = st.scale?.foe ?? 1;
+  if (scale === 1) return '';
+  const en = ctx.lang === 'en';
+  return ` <span class="bfierce" title="${en ? 'Every blow it lands is multiplied by this' : '它每一击都乘这个数'}">${en ? 'Fierce' : '凶'} ×${scale.toFixed(1)}</span>`;
+}
+
 /* What a card does, in words, on the card — never in a tooltip. */
 export function sayEffect(c, ctx) {
   const zh = ctx.lang !== 'en';
@@ -694,7 +707,7 @@ export function intentBits(st, ctx) {
       return zh ? '助' : 'bolster';
     }
     const nm = name(c, ctx.lang);
-    if (c.kind === 'minion') return zh ? `召 ${nm} ${c.atk}/${c.hp}` : `${nm} ${c.atk}/${c.hp}`;
+    if (c.kind === 'minion') return zh ? `召 ${nm} ${dealt(st, 'foe', c.atk, c.element, null)}/${c.hp}` : `${nm} ${dealt(st, 'foe', c.atk, c.element, null)}/${c.hp}`;
     if (e.damage != null) return zh ? `${nm} 打 ${landed(st, 'foe', e.damage, c.element)}` : `${nm}: ${landed(st, 'foe', e.damage, c.element)}`;
     if (e.sweep != null) return zh ? `${nm} 你阵前各 −${dealt(st, 'foe', e.sweep, c.element, null)}` : `${nm}: each of yours −${dealt(st, 'foe', e.sweep, c.element, null)}`;
     if (e.heal != null) return zh ? `${nm} 回 ${e.heal}` : `${nm}: heals ${e.heal}`;
@@ -725,8 +738,8 @@ function sayTurn(t, ctx) {
   const who = t.who === 'foe' ? (ctx.foeName ?? '') : (zh ? '你' : 'You');
   const card = id => name(ctx.catalog?.[id], ctx.lang) || id;
   switch (t.act) {
-    case 'played': return `${who} ${zh ? '出' : 'plays'} ${card(t.id)}`;
-    case 'summoned': return `${who} ${zh ? '召来' : 'summons'} ${card(t.id)}`;
+    case 'played': return `${who} ${zh ? '出' : t.who === 'foe' ? 'plays' : 'play'} ${card(t.id)}`;
+    case 'summoned': return `${who} ${zh ? '召来' : t.who === 'foe' ? 'summons' : 'summon'} ${card(t.id)}`;
     case 'power': return `${who} ${w.power}`;
     case 'hurt': return t.kind === 'fatigue'
       ? `${who} ${zh ? `反噬 −${t.amount}` : `fatigue −${t.amount}`}`
@@ -908,7 +921,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
 
     <button class="bside foe${aim.hero ? ' aiming aimed' : ''}${windUp(st)}" data-spot="hero">
       <span class="bplate">${ctx.foeArt ? `<img class="bface" src="${esc(ctx.foeArt)}" alt="">` : `<b class="bface none">${esc([...(ctx.foeName ?? '')][0] ?? '')}</b>`}</span>
-      <div class="bwho"><span class="bfoename">${esc(ctx.foeName ?? '')} <span class="belem el-${esc(st.foe.root ?? 'none')}">${GLYPH[st.foe.root] ?? ''}</span>${wardTags(st.foe, ctx)}</span>
+      <div class="bwho"><span class="bfoename"><span class="bfoetitle">${esc(ctx.foeName ?? '')}</span> <span class="belem el-${esc(st.foe.root ?? 'none')}">${GLYPH[st.foe.root] ?? ''}</span>${wardTags(st.foe, ctx)}${fierceTag(st, ctx)}</span>
         ${pool(w.hp, st.foe.hp, st.foe.hpMax, 'hp', st.foe.trial?.yield)}
         ${st.foe.trial?.survive ? `<small class="bstake bsurvive">${esc(ctx.lang === 'en' ? `Stood ${st.foe.endured ?? 0} of ${st.foe.trial.survive} turns` : `已站住 ${st.foe.endured ?? 0}/${st.foe.trial.survive} 回合`)}</small>` : ''}
         ${bubble('foe', ctx.says?.foe)}</div>

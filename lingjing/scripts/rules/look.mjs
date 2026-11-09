@@ -358,7 +358,7 @@ const keptHere = (state, game, today, now) => state.fight?.game === game.id && t
 function duelBrief(content, state, game, now, { door = false } = {}) {
   const creature = creatureOf(content, game.creature);
   // A pool's fight is kept by the place (world.mjs huntKey): only one open now is today's; a settled one drew the next beast.
-  const lang = state.lang, today = state.duels?.[game.hunt ? `hunt:${game.hunt}` : game.creature];
+  const lang = state.lang, today = state.duels?.[game.hunt ? `hunt:${game.hunt}` : game.quest ? game.id : game.creature];
   // A trial fight (`retry`) lost or run dry is simply open again.
   const open = today?.day === dayKey(now) && !(game.retry && ['lost', 'withdrew'].includes(today.outcome)) && (!game.hunt || today.outcome === 'open') ? today : null;
   return {

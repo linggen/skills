@@ -13,6 +13,7 @@ import { clone, gainsOf, pay, refuse, replaying, spendStamina } from './core.mjs
 import { choreCounts, choreGrant, isOnce, questDone } from './chores.mjs';
 import { payMeaning } from './gongke.mjs';
 import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
+import { errandLine } from './errand-line.mjs';
 import { duelBrief, tasksBrief } from './look.mjs';
 import { hashOf, move } from './travel.mjs';
 import { poolToday, standingToday } from './rotation.mjs';
@@ -449,16 +450,23 @@ export function duel(state, content, ctx, args) {
   if (isMijingFight(id)) return mijingDuel(state, content, ctx, args);
   const exit = sceneOf(content, state)?.exits.find(e => gameOf(e)?.id === id && gameOf(e).kind === 'duel');
   const haunt = !exit && id.startsWith('haunt:') ? encounterOf(content, state, ctx.now) : null;
-  if (!exit && !(haunt && haunt.game.id === id)) return refuse('not-here', null);
+  const qid = id.startsWith('quest:') ? id.slice(6) : null;
+  const quest = qid && state.quests?.[qid] && !questDoneBefore(state, qid) ? questOf(content, qid) : null;
+  const needs = quest ? countsOf(content, state, quest) : [];
+  const index = needs.findIndex(n => !n.done);
+  const step = index >= 0 ? errandLine(content, state, quest, needs, state.lang, ctx.now).steps[index] : null;
+  const questGame = step?.at?.here && needs[index]?.kind === 'subdue' && creatureOf(content, needs[index].creature)
+    ? { id, kind: 'duel', creature: needs[index].creature, quest: qid } : null;
+  if (!exit && !(haunt && haunt.game.id === id) && !questGame) return refuse('not-here', null);
   if (haunt?.tamed) return refuse('tamed', null, { creature: haunt.creature });
-  const game = exit ? gameOf(exit) : haunt.game, creature = creatureOf(content, game.creature);
+  const game = exit ? gameOf(exit) : questGame ?? haunt.game, creature = creatureOf(content, game.creature);
   // A beast that is caught, not fought (`catch`), runs the moment it is struck at.
   if (haunt && !haunt.pool && creature.catch) return refuse('runs', pick(creature.runs, state.lang), { creature: haunt.creature, catch: creature.catch });
   const withdrawnLine = exit ? pick(exit.withdrawn, state.lang)
     : pick({ zh: `${pick(creature.name, 'zh')}退入林影，明日再来。`, en: `${pick(creature.name, 'en')} withdraws into the shadows; come back tomorrow.` }, state.lang);
   const s = clone(state);
   // A pool's fights are kept by the place, numbered through the day (world.mjs huntKey): fought again and again.
-  const key = game.hunt ? huntKey(game.hunt) : creature.id, hunt = Boolean(game.hunt);
+  const key = game.hunt ? huntKey(game.hunt) : game.quest ? id : creature.id, hunt = Boolean(game.hunt);
   const day = dayKey(ctx.now), today = s.duels?.[key];
 
   // ── 落子记下: the moves so far, kept with the open fight (Hanli 11-05: a cold reload at turn 10 began the fight over at
@@ -560,8 +568,8 @@ export function duel(state, content, ctx, args) {
   // What a subdued creature leaves, and what a haunt pays for it. A fight that
   // ended in 遁走 pays nothing: it has to be WON (design.md § 斗法 v3). An
   // elite pays as any beast: its harder deck is all it is (redesign-v2 § 四).
-  const dropped = pays ? drop(content, s, creature, ctx.now, { loot: hunt || Boolean(haunt) }) : [];
-  const card = pays ? winCard(content, s, creature, ctx.now) : null;
+  const dropped = pays && !game.quest ? drop(content, s, creature, ctx.now, { loot: hunt || Boolean(haunt) }) : [];
+  const card = pays && !game.quest ? winCard(content, s, creature, ctx.now) : null;
   if (card) dropped.push(card);
   const t = content.rewards.tables.haunt;
   // The same beast beaten again the same day pays the play rules' falling share (balance.json play_pay.replay:
@@ -663,8 +671,9 @@ export function closeStaleFight(state, now) {
   if (!f || dayKey(new Date(f.at)) === dayKey(now)) return state;
   const s = clone(state);
   delete s.fight;
-  const was = s.duels?.[f.creature];
-  if (was?.outcome === 'open') s.duels[f.creature] = { ...was, outcome: 'withdrew' };
+  const key = f.game?.startsWith('quest:') ? f.game : f.creature;
+  const was = s.duels?.[key];
+  if (was?.outcome === 'open') s.duels[key] = { ...was, outcome: 'withdrew' };
   return s;
 }
 

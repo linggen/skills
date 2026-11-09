@@ -675,8 +675,9 @@
           "en": "Red Body, White Head"
         },
         "effect": {
-          "damage": 8,
-          "draw": 1
+          "damage": 6,
+          "draw": 1,
+          "ward": {"element": "fire", "half": true, "turns": 1}
         }
       },
       "_deck": "赤身 —— 火鸦一群一群扑下来，快，身薄。",

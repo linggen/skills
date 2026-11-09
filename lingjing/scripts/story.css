@@ -9,7 +9,8 @@
 /* The top bar (Hanli, 2026-10-15: 「layout改一下」 — the name ran down one character a line): the
    name, the realm, the 修为 bar with its count and 灵石 never wrap and never shrink; the 回 gives way
    first, then the place, both to an ellipsis. The scene's caption is the place's title, not a row. */
-.topbar { flex-wrap: nowrap; min-height: 52px; padding: 6px 18px; gap: 6px 14px; overflow: hidden; }
+.topbar { flex-wrap: nowrap; min-height: 52px; padding: 6px 18px; gap: 6px 14px; overflow: hidden;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--surface) 92%, transparent), color-mix(in srgb, var(--surface) 78%, transparent)); }
 .topbar .daohao, .topbar .realm, .topbar .ls, .topbar .qi, .topbar .omenchip { flex: none; white-space: nowrap; }
 .topbar .xw { flex: none; width: 196px; min-width: 0; max-width: none; white-space: nowrap; }
 .topbar .xw .bar { min-width: 36px; }

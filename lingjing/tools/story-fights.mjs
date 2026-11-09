@@ -109,6 +109,7 @@ export const FIGHTS = [
   { id: 'tianma', name: '天马 (太行)', at: 'h10', pool: 'taihang' },
   { id: 'linghu', name: '领胡 (太行)', at: 'h10', pool: 'taihang' },
   { id: 'renyu', name: '人鱼 (柳湾)', at: 'h10', pool: 'liuwan' },
+  { id: 'heyu', name: '合窳 (柳湾)', at: 'h10', pool: 'liuwan' },
   // 后山崖顶's beasts by the 回 their entry opens (2026-10-15, 不打重复的怪 — places/xu.json `from`).
   { id: 'chihu', name: '赤狐 (后山崖顶)', at: 'h05g', pool: 'yaoyuan-wai' },
   { id: 'shanli', name: '山狸 (后山崖顶 · 夜)', at: 'h05g', pool: 'yaoyuan-wai' },

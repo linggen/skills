@@ -198,7 +198,7 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
         const ghosts = ghostsOf(battle(), since(room.st.log, mark), by);
         draw();
         const cx = ctx(), sig = room.st.foe.signature?.name;
-        await playLog(battle(), since(room.st.log, mark), { words: cx.words, ghosts, faceOf: (id) => cardFaceHtml(id, cx), sigName: name(sig), onEntry: (t) => shell?.sound?.(t.act) });
+        await playLog(battle(), since(room.st.log, mark), { words: cx.words, ghosts, faceOf: (id) => cardFaceHtml(id, cx, room.st), sigName: name(sig), onEntry: (t) => shell?.sound?.(t.act) });
       } finally {
         room.busy = false;
         room.mine = false;

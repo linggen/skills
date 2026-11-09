@@ -288,8 +288,8 @@
       },
       "sold": [],
       "effect": {
-        "progress": 40,
-        "table": "task"
+        "progress": 120,
+        "table": "play"
       }
     },
     {

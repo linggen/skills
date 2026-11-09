@@ -5022,6 +5022,156 @@
      }
     }
    }
+  },
+  {
+   "key": "heyu@liuwan",
+   "id": "heyu",
+   "story": false,
+   "hui": "h10",
+   "art": "art/heyu.webp",
+   "name": {
+    "zh": "合窳",
+    "en": "Heyu"
+   },
+   "hint": {
+    "zh": "一头比牛还大的彘，黄毛，红尾巴拖在身后像一条火；那张脸是人的，像谁都像，像谁都不像。",
+    "en": "A pig bigger than an ox, yellow-haired, a red tail dragging behind like a trail of fire; the face is a man's — like everyone, like no one."
+   },
+   "brief": {
+    "zh": {
+     "creature": {
+      "id": "heyu",
+      "name": "合窳",
+      "pinyin": "hé yǔ",
+      "root": "earth",
+      "root_name": "土",
+      "lean": "fierce",
+      "art": "art/heyu.webp",
+      "about": null
+     },
+     "says": {
+      "foe": "哭声是饵，你是鱼。",
+      "won": "它拖着那张人脸，滚进坑里不动了。",
+      "lost": "哭声停了。你也没了声。"
+     },
+     "stake": "漳水下游"
+    },
+    "en": {
+     "creature": {
+      "id": "heyu",
+      "name": "Heyu",
+      "root": "earth",
+      "root_name": "Earth",
+      "lean": "fierce",
+      "art": "art/heyu.webp",
+      "about": null
+     },
+     "says": {
+      "foe": "The crying is the bait. You are the fish.",
+      "won": "It drags its human face into the pit and lies still.",
+      "lost": "The crying stops. So do you."
+     },
+     "stake": "Down the Zhang"
+    }
+   },
+   "setup": {
+    "mode": "pve",
+    "you": {
+     "tier": "foundation",
+     "step": 0.3333333333333333,
+     "root": "wood",
+     "deck": [
+      "mutang",
+      "huochai",
+      "houtu",
+      "zheng",
+      "luying",
+      "yangzhen",
+      "jinren",
+      "ruxi",
+      "suijin",
+      "zhennu"
+     ],
+     "extra": [],
+     "party": [
+      {
+       "id": "ahe",
+       "name": {
+        "zh": "阿禾",
+        "en": "A-He"
+       },
+       "root": "wood",
+       "hp": 0.4,
+       "art": "art/people/ahe-girl.webp",
+       "deck": [
+        "qingteng",
+        "qingteng",
+        "qingguang",
+        "peiyuan",
+        "tengmiao",
+        "bingzhuifu",
+        "chunsheng",
+        "zhenyuefu"
+       ]
+      }
+     ],
+     "pouch": [
+      {
+       "id": "mend-pill",
+       "heal": 10
+      },
+      {
+       "id": "huiqi-pill",
+       "mana": 3
+      }
+     ],
+     "power": 2,
+     "armor": 4
+    },
+    "foe": {
+     "tier": "foundation",
+     "root": "earth",
+     "deck": [
+      "paoxiao",
+      "jixiao",
+      "jixiao",
+      "jixiao",
+      "paoxiao",
+      "paoxiao",
+      "luoshi",
+      "luoshi",
+      "kuiniu",
+      "kuiniu",
+      "tunshi",
+      "shishou",
+      "paoxiao",
+      "jixiao",
+      "jixiao",
+      "jixiao",
+      "paoxiao",
+      "paoxiao",
+      "luoshi",
+      "luoshi",
+      "kuiniu"
+     ],
+     "hp": 4.23,
+     "power": 1,
+     "might": 1.23,
+     "heals": 1,
+     "healMax": 7,
+     "signature": {
+      "id": "yingti-renmian",
+      "name": {
+       "zh": "其音如婴儿",
+       "en": "A Voice Like a Baby's"
+      },
+      "effect": {
+       "sweep": 2,
+       "damage": 5
+      }
+     }
+    }
+   }
   }
  ]
 }

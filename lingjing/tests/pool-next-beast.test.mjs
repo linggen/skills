@@ -55,14 +55,11 @@ for (const [place, plan] of [['sibei', 'wlwlwwl'], ['shanlu', 'wlwwlww']]) {
   });
 }
 
-/* A pool met again and again holds more than one beast. A 秘境's room is met once a run (its own fight, rules/mijing.mjs).
-   漳水下游 (冀, liuwan) holds only 人鱼 still — open for Hanli (named here, not hidden: it fails the day it is meant to pass). */
-const ONE_BEAST_STILL = new Set(['liuwan']);
+/* A pool met again and again holds more than one beast. A 秘境's room is met once a run (its own fight, rules/mijing.mjs). */
 test('every pool on the map, met again and again, holds two beasts or more', () => {
   const pools = new Map(allPlaces(content).filter(p => p.has?.pool && !p.id.startsWith('mijing-')).map(p => [p.has.pool, poolOf(content, p)]));
   for (const [id, pool] of pools) {
     const n = new Set(pool.beasts.filter(b => (b.weight ?? 1) > 0).map(b => b.creature)).size;
-    if (ONE_BEAST_STILL.has(id)) { assert.equal(n, 1, `${id} has more now: take it off ONE_BEAST_STILL`); continue; }
     assert.ok(n >= 2, `${id} holds ${n} beast — every fight there is the same one`);
   }
 });

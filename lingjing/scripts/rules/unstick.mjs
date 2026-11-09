@@ -37,7 +37,8 @@ const APPLY = {
     const f = s.fight;
     if (!f) return false;
     delete s.fight;
-    if (s.duels?.[f.creature]?.outcome === 'open') s.duels[f.creature] = { ...s.duels[f.creature], outcome: 'withdrew' };
+    const key = f.game?.startsWith('quest:') ? f.game : f.creature;
+    if (s.duels?.[key]?.outcome === 'open') s.duels[key] = { ...s.duels[key], outcome: 'withdrew' };
     return true;
   },
   'pass-fight': (s, r, content, now) => { s.wins = { ...s.wins, [r.game]: now.toISOString() }; return true; },

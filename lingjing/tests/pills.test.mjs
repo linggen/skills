@@ -81,3 +81,11 @@ test('bought at the stall, carried in, one eaten: 灵石 and the bag both drop',
   assert.equal(out.state.bag['huiqi-pill'] ?? 0, 0, 'the 回气丹 eaten is gone');
   assert.equal(out.state.bag['mend-pill'], 1, 'the 回春丹 not eaten stays');
 });
+
+test('九转筑基丹 pays 30% of 筑基一层 without filling it', () => {
+  const s = { ...newState(content, 'zh', NOW), tier: 'foundation', step: 0, progress: 0, ended: ['00-prologue', '00-waimen', '00-zhuji'], chapter: '01-ji', bag: { 'foundation-pill-9': 1 }, stamina: 100, stamina_at: NOW.toISOString() };
+  const r = trade(s, content, { now: NOW, quests: [] }, { action: 'use', id: 'foundation-pill-9' });
+  assert.equal(r.result.ok, true, JSON.stringify(r.result));
+  assert.ok(Math.abs(r.state.progress - 120) <= 1, `got ${r.state.progress}`);
+  assert.equal(r.state.step, 0);
+});
