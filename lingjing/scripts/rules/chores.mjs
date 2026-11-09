@@ -102,6 +102,13 @@ export function todayChores(state, quests, now) {
 }
 
 /* How it is done, the app's own words (`how`, ≤20 words), or null. */
+/* Whom a row's chat line goes to (`to`, an agent's id: 问安 is 银月's, milestones.rs) and the line it
+   asks (`ask`, empty: the box opened for him to type) — the page opens the chat addressed so. */
+const AGENT_ID = /^[a-z0-9-]{1,32}$/;
+export const choreTalk = (q, lang) => ({
+  ...(q?.ask ? { ask: pick(q.ask, lang) ?? '' } : {}),
+  ...(AGENT_ID.test(q?.to ?? '') ? { to: q.to } : {}),
+});
 export const choreHow = (q, lang) => (q?.how && typeof q.how === 'object' ? pick(q.how, lang) ?? null : null);
 
 /* May it be handed in today: a fixed one, the pick, or a milestone that is
@@ -226,7 +233,7 @@ function kaifuMay(state, content, quests, q, now) {
 export function kaifuList(state, quests, now, lang, content) {
   return kaifuSteps(state, content, quests, now).map(({ q, step }) => ({
     id: q.id, app: q.app, title: pick(q.title, lang), device: deviceOf(q), open: choreOpen(q),
-    ...(q.how ? { how: pick(q.how, lang) } : {}), ...(q.ask ? { ask: pick(q.ask, lang) ?? '' } : {}),
+    ...(q.how ? { how: pick(q.how, lang) } : {}), ...choreTalk(q, lang),
     done: questDone(q, now), paid: paidNow(state, q, now), step, reward: q.reward ?? null, stamina: questStamina(content, q) || null,
   }));
 }
@@ -250,7 +257,7 @@ function kaifuOther(content, quests, list, lang) {
 export function kaifuBrief(state, quests, now, lang, content) {
   const list = kaifuList(state, quests, now, lang, content);
   if (!list.length) return null;
-  const pick1 = k => ({ id: k.id, title: k.title, device: k.device, done: k.done, open: k.open, ...(k.how ? { how: k.how } : {}), ...('ask' in k ? { ask: k.ask } : {}) });
+  const pick1 = k => ({ id: k.id, title: k.title, device: k.device, done: k.done, open: k.open, ...(k.how ? { how: k.how } : {}), ...('ask' in k ? { ask: k.ask } : {}), ...(k.to ? { to: k.to } : {}) });
   const rows = [...list.filter(k => k.step === 'ready'), ...list.filter(k => k.step === 'open')].map(k => ({ ...pick1(k), step: k.step }));
   const next = list.find(k => k.step === 'open'), waits = list.some(k => k.step === 'waits'), other = kaifuOther(content, quests, list, lang);
   return { done: list.filter(k => k.paid).length, of: list.length, ready: list.filter(k => k.step === 'ready').length, rows,

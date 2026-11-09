@@ -250,3 +250,23 @@ test('the book row carries the app\'s how; only shares_per_day dailies pay their
   const week = { ...NEW_SET[6] };
   assert.ok(choreGrant(content, week, { ...s, chores: paidToday }, day(0)).progress > 0, 'a weekly is not a daily share');
 });
+
+// Hanli 11-09: 问安 is 银月's — a plain 「早上好」 went to Ling and the row stayed undone. The row (milestones.rs) says
+// whom its line goes to (`to`) and asks nothing set (`ask` empty): the book's button opens the box to her, never a link out.
+test('问安 opens the chat addressed to her: the book row carries `to` and `ask`, its button the box to 银月', async () => {
+  const { WORDS, bookPopHtml } = await import('../scripts/cards.js');
+  const greet = { ...NEW_SET[0], open: '/', ask: { zh: '', en: '' }, to: 'yinyue' };
+  const quests = [greet, ...NEW_SET.slice(1)];
+  const l = look(start(), content, ctx(quests, day(0)));
+  const row = (l.book ?? []).find(b => b.id === 'linggen-greet');
+  assert.equal(row?.chore?.to, 'yinyue');
+  assert.equal(row?.chore?.ask, '');
+  const html = bookPopHtml({ look: l, lang: 'zh', words: { ...WORDS.zh, xw: '修为', ls: '灵石', qi: '体力' } });
+  const at = html.indexOf('linggen-greet'), next = html.indexOf('data-bookrow', at + 1);
+  const its = html.slice(at, next < 0 ? undefined : next);
+  assert.match(its, /data-ask-her/, its);
+  assert.doesNotMatch(its, /href="\/"/, 'no link out to the home page');
+  // a `to` that is no agent's id is dropped
+  const odd = look(start(), content, ctx([{ ...greet, to: 'x y' }, ...NEW_SET.slice(1)], day(0)));
+  assert.equal((odd.book ?? []).find(b => b.id === 'linggen-greet')?.chore?.to, undefined);
+});

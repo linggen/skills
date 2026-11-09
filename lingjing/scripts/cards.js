@@ -1481,7 +1481,7 @@ const periodTag = (period) => (['week', 'month', 'once'].includes(period) ? peri
 function choreRow(q, life, ctx) {
   const w = ctx.words, c = q.chore, gk = gongkeBits(ctx.look?.gongke?.rows?.find((r) => r.id === q.id), ctx.lang);
   const meta = [gk.name, countsOf(q, w), w.periods?.[c.period] ?? ''].filter(Boolean).join(' · ');
-  const act = q.ready ? doBtn(w.turnIn, 'turn', q.id) : c.open ? openBtn(c, w) : '';
+  const act = q.ready ? doBtn(w.turnIn, 'turn', q.id) : talkAct(c, ctx) ?? (c.open ? openBtn(c, w) : '');
   const paysHtml = gk.stamp || gk.adds ? `${gk.stamp}${gk.adds || esc(paysLine(life?.pays, w))}` : '';
   // How it is done, the app's own words (`how`, ≤20 words) — shown until it is done.
   const steps = c.how && !q.ready ? [{ text: say(w.choreHow, { how: c.how }) }] : null;
@@ -1517,12 +1517,20 @@ function onceRow(k, ctx) {
   return taskRow({ id: k.id, tag: 'once', device: k.device, title: k.title, meta: '', steps: k.how && !k.done ? [{ text: k.how }] : null, pays: paysLine(k.pays, w), act, ready: Boolean(k.done), cls: ' kaifu', expand: false }, ctx);
 }
 function onceAct(k, ctx) {
-  const w = ctx.words, her = ctx.look?.companion?.name ?? w.yinyue;
-  if (typeof k.ask === 'string' && k.ask) return askBtn(w.kaifuAskHer, `@${her} ${k.ask}`);
-  if (typeof k.ask === 'string') return `<button class="act ask" data-ask-her>${esc(w.kaifuTalk)}</button>`;
+  const w = ctx.words, talk = talkAct(k, ctx);
+  if (talk) return talk;
   // The app its page belongs to (`/apps/cfo/…` → CFO), else the row's own.
   const app = /^\/apps\/([a-z0-9-]+)\//.exec(k.open ?? '')?.[1] ?? k.app ?? 'linggen';
   return k.open ? openBtn({ open: k.open, app }, w) : '';
+}
+
+/* A row done by a line to her (its `ask`, `to` her or unsaid — rules/chores.mjs choreTalk): the line in one tap
+   (问天), or the box to her opened for him to type (问道, 问安) — a line that goes to her, never to Ling. */
+function talkAct(k, ctx) {
+  if (typeof k.ask !== 'string' || (k.to && k.to !== 'yinyue')) return null;
+  const w = ctx.words, her = ctx.look?.companion?.name ?? w.yinyue;
+  if (k.ask) return askBtn(w.kaifuAskHer, `@${her} ${k.ask}`);
+  return `<button class="act ask" data-ask-her>${esc(w.kaifuTalk)}</button>`;
 }
 
 /* An errand offered where he stands: 接下. Its tag is the rules' (`tag`, e.g.
