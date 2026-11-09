@@ -24,7 +24,7 @@ const mijing = (card, ctx) => mijingCardHtml(card, ctx);
 
 export const WORDS = {
   zh: {
-    title: '灵境', listSep: '、', lookHead: '看', lookAt: '看看{label}', goOn: '接着', invite: '也可以直接说你想怎么做', chatHint: '你想怎么做？', xw: '修为', xwFull: '修为已满', ls: '灵石', tray: '手边的棋局', trayEmpty: '手边无局，随处走走。',
+    title: '灵境', listSep: '、', lookHead: '看', lookAt: '看看{label}', goOn: '接着', invite: '也可以直接说你想怎么做', chatHint: '你想怎么做？', xw: '修为', xwFull: '修为已满', storyGain: '剧情所得', ls: '灵石', tray: '手边的棋局', trayEmpty: '手边无局，随处走走。',
     play: '炼丹', done: '已完成', won: '丹成，待收', offered: '待做', playedToday: '今日已玩', replayShare: '今日已玩 · 只给{n}', quest: '人间功课',
     paid: '已记', due: '待做', seen: '已完成，待收', boardHint: '成对点选，八味灵草配齐即丹成。', boardDone: '丹成。', boardDoneToday: '今日丹已成 · 明日再炼', gameDoneToday: '今日已成 · 明日再来', lundaoWon: '今日论道已胜 · 明日再来', lundaoLost: '今日论道已毕 · 明日再来',
     tamed: '已收服', untamed: '未收服', beatenToday: '今日已降', rootTitle: '测灵根', mapTitle: '九州', mapWhole: '九州全图', mapLocked: '{title} · 剧情未完，地图暂不开放', unfoldNew: '地图展开', here: '此处', inBag: '在囊中', buy: '买', sell: '卖', shelf: '货架', kanjia: '砍价', kanjiaWhich: '砍哪一件？', kanjiaDone: '今天只照价', shortBy: '差 {n}',
@@ -94,7 +94,7 @@ export const WORDS = {
     capGo: '走剧情破境 ›', capIn: '圆满 · 剧情中', capGoTitle: '{xw} {progress}/{of} · {say}', capMark: '破境在此', capHere: '剧情就在此处 · {place}', effProgressCapped: '{xw}已到这一回的顶，服下不起作用 · 走剧情破了境再服',
   },
   en: {
-    title: 'Lingjing', listSep: ', ', lookHead: 'Look', lookAt: 'Look at {label}', goOn: 'Go on', invite: 'Or just say what you do', chatHint: 'What do you do?', xw: 'Cultivation', xwFull: 'Cultivation full', ls: 'Spirit stones', tray: 'Boards at hand', trayEmpty: 'No board at hand. Wander a while.',
+    title: 'Lingjing', listSep: ', ', lookHead: 'Look', lookAt: 'Look at {label}', goOn: 'Go on', invite: 'Or just say what you do', chatHint: 'What do you do?', xw: 'Cultivation', xwFull: 'Cultivation full', storyGain: 'From the story', ls: 'Spirit stones', tray: 'Boards at hand', trayEmpty: 'No board at hand. Wander a while.',
     play: 'Make the pill', done: 'Done', won: 'Pill made — to collect', offered: 'To do', playedToday: 'Played today', replayShare: 'Played today · pays {n}', quest: 'Real-life practice',
     paid: 'Counted', due: 'To do', seen: 'Done — to collect', boardHint: 'Tap pairs. When all eight herbs are paired, the pill is made.', boardDone: 'The pill is made.', boardDoneToday: 'Done for today — brew again tomorrow', gameDoneToday: 'Done for today — again tomorrow', lundaoWon: 'Won for today — again tomorrow', lundaoLost: 'Done for today — again tomorrow',
     tamed: 'Won over', untamed: 'Not won over', beatenToday: 'Beaten today', rootTitle: 'The root test', mapTitle: 'The Nine Provinces', mapWhole: 'All nine provinces', mapLocked: '{title} · the story is under way; the map waits', unfoldNew: 'A new region', here: 'You', inBag: 'In your bag', buy: 'Buy', sell: 'Sell', shelf: 'The shelf', kanjia: 'Haggle', kanjiaWhich: 'Haggle over which?', kanjiaDone: 'List price today', shortBy: '{n} short',

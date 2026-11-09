@@ -678,6 +678,9 @@ function gainedThings(was, now) {
   if (n?.at && n.at !== was.story_node?.at && setpieceOf(n)) pieceDue = { id: setpieceOf(n), at: Date.now() };
   // …and the passage the step owes may lay one under its words: held while it is owed and while a 景 is still ahead.
   pieceSoon = true;
+  // 修为 the step paid (Hanli 2026-11-09: 「剧情可以给修为…然后有动画显示剧情奖励」): the bar's rise on this read says where it
+  // came from — the gain burst reads 「剧情所得 · 修为 +n」 (gainBurst).
+  if (g.progress) storyGainDue = { n: g.n, at: Date.now() };
   // Gear first (Hanli 11-03 at 古七's 09-snow: 「以为只拿到一张牌, 没看到剑」): a thing to wear before the rest.
   const items = [...(g.items ?? [])].sort((a, b) => Number(Boolean(b.slot)) - Number(Boolean(a.slot)));
   for (const it of items) revealQueue.push({ thing: it });
@@ -1097,12 +1100,18 @@ function playTravel(stops) {
 /* A gain, where the eye is: 修为 +30 · 灵石 +10 rises in the middle of the
    stage — the strip's count-up alone ran while he read the chat and he never
    saw one (2026-09-23: 还是没看到动画). */
+/* A story step's 修为 just landed (gainedThings): the next burst of 修为 is the story's. */
+let storyGainDue = null;
 async function gainBurst(g) {
   // After the book and the moments: a gain never floats over her memory or a seal.
   for (let k = 0; k < 720 && (boxAhead() || momentUp() || momentPending.size); k += 1) await pause(250);
   // 所得 already says these numbers (a won fight, a board's pay): no burst over its text (live 11-05).
   if (view.spoils?.paid || spoilsUp()) return;
+  // Taken from the step just read (gainedThings), not a stale one: 「剧情所得」 heads the burst.
+  const story = Boolean(g.progress && storyGainDue && Date.now() - storyGainDue.at < 200_000);
+  if (story) storyGainDue = null;
   const w = words(), bits = [];
+  if (story) bits.push(`<span class="from">${esc(w.storyGain)}</span>`);
   if (g.progress) bits.push(`<span>${esc(w.xw)} <b>+${g.progress}</b></span>`);
   if (g.wealth) bits.push(`<span>${esc(w.ls)} <b>+${g.wealth}</b></span>`);
   const el = document.createElement('div');

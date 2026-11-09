@@ -73,7 +73,10 @@
    "grant": {
     "table": "scene",
     "progress": 60,
-    "wealth": 20
+    "wealth": 20,
+    "narrated": {
+     "line": "化神了。"
+    }
    },
    "beat": [
     {

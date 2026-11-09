@@ -62,7 +62,10 @@
    "grant": {
     "table": "scene",
     "progress": 60,
-    "wealth": 20
+    "wealth": 20,
+    "narrated": {
+     "line": "炼虚了。"
+    }
    },
    "beat": [
     {

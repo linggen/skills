@@ -17,8 +17,11 @@ import { starterFor } from '../scripts/rules/roots.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
 import { authoredScale, chorePlay } from '../scripts/rules/playpay.mjs';
+import { paysOf } from '../scripts/rules/core.mjs';
 // What the book authors is a share of 练气一层, read at the layer he stands on (play_pay.authored, 2026-10-27).
 const atLayer = (s, n, table = 'scene') => Math.round(n * authoredScale(content, s, table));
+// A story step (`story`, Hanli 2026-11-09): one small game's 修为 where he stands, as the rules pay it.
+const storyAt = (s, ctx) => paysOf(content, s, ctx.now, { table: 'story' }).progress;
 
 // These tests play the 体力 pool as it was: the command turns it off for live play while we test (state.mjs staminaLimited).
 process.env.LINGJING_STAMINA_LIMIT ??= '1';
@@ -2241,10 +2244,10 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   const lei = riddleAt(s, 'riddle', nctx());
   missed(resolve, s, { exit: 'riddle', answer: lei.wrong }, nctx());
   r = answerN(resolve, s, { exit: 'riddle', answer: lei.right });
-  assert.equal(r.state.scene, '02-deep'); assert.equal(r.result.paid.progress, atLayer(s, 40));
+  assert.equal(r.state.scene, '02-deep'); assert.equal(r.result.paid.progress, storyAt(s, nctx()));
   // and 舜's way, from the same shore
   const yielded = answerN(resolve, s, { exit: 'yield' });
-  assert.equal(yielded.state.scene, '02-deep'); assert.equal(yielded.result.paid.progress, atLayer(s, 40));
+  assert.equal(yielded.state.scene, '02-deep'); assert.equal(yielded.result.paid.progress, storyAt(s, nctx()));
   s = r.state; assert.equal(s.place, 'leiyuan');
   missed(resolve, s, { exit: 'seal', answer: '西' }, nctx());
   r = answerN(resolve, s, { exit: 'seal', answer: '东' });
@@ -2323,10 +2326,10 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   const kui = riddleAt(s, 'riddle', dctx());
   missed(resolve, s, { exit: 'riddle', answer: kui.wrong }, dctx());
   r = answerD(resolve, s, { exit: 'riddle', answer: kui.right });
-  assert.equal(r.state.scene, '03-deep'); assert.equal(r.result.paid.progress, atLayer(s, 40));
+  assert.equal(r.state.scene, '03-deep'); assert.equal(r.result.paid.progress, storyAt(s, dctx()));
   // and 孔子's word, from the same shore
   const enough = answerD(resolve, s, { exit: 'enough' });
-  assert.equal(enough.state.scene, '03-deep'); assert.equal(enough.result.paid.progress, atLayer(s, 40));
+  assert.equal(enough.state.scene, '03-deep'); assert.equal(enough.result.paid.progress, storyAt(s, dctx()));
   s = r.state; assert.equal(s.place, 'liubo');
   missed(resolve, s, { exit: 'seal', answer: '震' }, dctx());
   r = answerD(resolve, s, { exit: 'seal', answer: '离' });

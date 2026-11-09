@@ -70,8 +70,7 @@
     "en": "Feiyi flies to a higher ledge and bends to drink again. Tomorrow it will still be there."
    },
    "grant": {
-    "table": "scene",
-    "progress": 60,
+    "table": "story",
     "wealth": 20
    },
    "beat": [
@@ -94,7 +93,8 @@
      }
     }
    ],
-   "next": "08-deep"
+   "next": "08-deep",
+   "_story": "2026-11-09 (Hanli 2026-11-09: 「不要白给修为, 除了像秘境埋土里那次, 剧情里明确写了突破的」 · 「剧情可以给修为, 但要给的和玩一场小游戏差不多, 然后有动画显示剧情奖励」): one small game's 修为 (the `story` table); was `scene` 60, untold."
   },
   {
    "id": "riddle",
@@ -108,8 +108,7 @@
     "feiyi-2"
    ],
    "grant": {
-    "table": "scene",
-    "progress": 40,
+    "table": "story",
     "wealth": 10
    },
    "beat": [
@@ -132,7 +131,8 @@
      }
     }
    ],
-   "next": "08-deep"
+   "next": "08-deep",
+   "_story": "2026-11-09 (Hanli 2026-11-09: 「不要白给修为, 除了像秘境埋土里那次, 剧情里明确写了突破的」 · 「剧情可以给修为, 但要给的和玩一场小游戏差不多, 然后有动画显示剧情奖励」): one small game's 修为 (the `story` table); was `scene` 40, untold."
   },
   {
    "id": "dragon",
@@ -142,8 +142,7 @@
    },
    "means": "makes a dragon of mud in the shape of Yinglong, the old rain rite, to bring rain",
    "grant": {
-    "table": "scene",
-    "progress": 40,
+    "table": "story",
     "wealth": 10
    },
    "beat": [
@@ -166,7 +165,8 @@
      }
     }
    ],
-   "next": "08-deep"
+   "next": "08-deep",
+   "_story": "2026-11-09 (Hanli 2026-11-09: 「不要白给修为, 除了像秘境埋土里那次, 剧情里明确写了突破的」 · 「剧情可以给修为, 但要给的和玩一场小游戏差不多, 然后有动画显示剧情奖励」): one small game's 修为 (the `story` table); was `scene` 40, untold."
   },
   {
    "id": "flee",

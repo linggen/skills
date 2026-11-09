@@ -24,7 +24,7 @@ import { capLook, pastCapSay, rebank, shareRoom, storyAllows, underCap } from '.
 import { entryGate, stageBrief, stageGate, stageSay } from './gates.mjs';
 import { fightStuck } from './skips.mjs';
 import { atScene, inMade, placeName, placeOf, placeOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
-import { authoredScale, convertRate, fightPlay, pillBelow } from './playpay.mjs';
+import { authoredScale, convertRate, fightPlay, pillBelow, storyPlay } from './playpay.mjs';
 
 /* ── Changing it ── */
 
@@ -65,7 +65,9 @@ function amountsOf(content, state, now, grant) {
   // authors as written. Capped by its table as authored.
   const fight = grant.table === 'haunt' && grant.progress ? fightPlay(content, state, grant) : null;
   // A pill (`pill`, its 阶 in `tier`): its 转's share of the layer at its own realm, less past it (playpay.mjs pillBelow).
-  const authored = fight ?? Math.min(grant.progress ?? 0, table.progress) * authoredScale(content, state, grant.table) * (grant.table === 'pill' ? pillBelow(content, state, grant.tier) : 1);
+  // A story step (`story`): one small game's worth at his level (playpay.mjs storyPlay), whatever the exit says.
+  const story = grant.table === 'story' ? storyPlay(content, state) : null;
+  const authored = fight ?? story ?? Math.min(grant.progress ?? 0, table.progress) * authoredScale(content, state, grant.table) * (grant.table === 'pill' ? pillBelow(content, state, grant.tier) : 1);
   // `share`: a replay's falling share (tasks.mjs duel, playpay.mjs fightReplay) — 修为 and 灵石 alike.
   const share = grant.share ?? 1;
   // 问签 (fortune.mjs qianPayOf): the day's 签 speed, and its 宜 kind's ×pay — 1 before the draw, never below.
@@ -169,11 +171,12 @@ function pay(content, state, ctx, grant, landing = state) {
   return { progress: progress - over - (hold?.held ?? 0), wealth, ...(trial ? { duan: trial } : {}), ...(over ? { converted: { progress: over, wealth: lingshi } } : {}), cast: grant.cast ?? null, item: grant.item ?? null, ...(extra.length ? { more: extra } : {}), ...(full ? { offered: true, pouch_full: full } : {}), levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
 }
 
-/* What a story grant put in his hands: its thing (`n` of it), the rest (`more`), and the 灵石 it paid. Null: nothing. */
+/* What a story grant put in his hands: its thing (`n` of it), the rest (`more`), the 灵石 it paid, and the 修为 that landed
+   (Hanli 2026-11-09: 「…然后有动画显示剧情奖励」 — the page shows 「剧情所得 · 修为 +n」). Null: nothing. */
 function gainsOf(grant, paid) {
   const items = [grant.item ? { id: grant.item, n: grant.n ?? 1 } : null, ...Object.entries(grant.more ?? {}).map(([id, n]) => ({ id, n }))].filter(Boolean);
-  const wealth = paid.wealth ?? 0;
-  return items.length || wealth > 0 ? { items, ...(wealth > 0 ? { wealth } : {}) } : null;
+  const wealth = paid.wealth ?? 0, progress = paid.progress ?? 0;
+  return items.length || wealth > 0 || progress > 0 ? { items, ...(wealth > 0 ? { wealth } : {}), ...(progress > 0 ? { progress } : {}) } : null;
 }
 
 /* What was owed while a gate kept it shut (tasks.mjs owe: 开府 handed in before the 灵石 were his)

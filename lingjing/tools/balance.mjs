@@ -38,7 +38,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadContent } from '../scripts/content.mjs';
-import { boardPlay, chorePlay, convertRate, fightPlay, playGrant, secludeHour, wallGrant } from '../scripts/rules/playpay.mjs';
+import { boardPlay, chorePlay, convertRate, fightPlay, playGrant, secludeHour, storyPlay, wallGrant } from '../scripts/rules/playpay.mjs';
 const NOW = new Date('2026-10-27T12:00:00Z');
 import { gatesOf, roomWorks } from '../scripts/rules/gates.mjs';
 import { dayKey, lockedOf, staminaCost } from '../scripts/state.mjs';
@@ -122,7 +122,8 @@ export function bookWalk(content, model = content.balance.model) {
         // (`line_tasks`) are for the 今 column (tools/numbers.mjs). Until 2026-10-28 the model paid them to the 古.
         ...(side ? { line: side, line_tasks: boards } : {}), tasks: side ? [] : boards,
         wealth: wealthCap(content, e?.grant) + (side ? 0 : boards.reduce((n, t) => n + wealthCap(content, t.grant), 0) + boardFirst(content, ch, sc, boards)),
-        grant: tableCap(content, e?.grant), pill: pillOf(content, e?.grant?.item), pill9: itemOf(content, e?.grant?.item)?.fill === 'full',
+        // A story step (`story`, Hanli 2026-11-09) pays one small game's 修为 where he stands — priced when it lands.
+        story: e?.grant?.table === 'story', grant: tableCap(content, e?.grant), pill: pillOf(content, e?.grant?.item), pill9: itemOf(content, e?.grant?.item)?.fill === 'full',
         rise, breakthrough: Boolean(e?.breakthrough), fight,
         gate: e ? gates.find(g => g.scene === sc.id && g.exits.includes(e.id)) ?? null : null,
       });
@@ -405,6 +406,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
             }
           }
           gain(w.grant + w.pill);
+          if (w.story) gain(storyPlay(content, { ...s, need: need() }), false, 'play');
           earn(w.wealth);
           // A story fight on the way takes its pills too.
           if (w.fight) takePills(1 / model.fight_win_rate);

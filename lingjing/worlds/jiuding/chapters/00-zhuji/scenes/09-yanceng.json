@@ -97,9 +97,12 @@
    },
    "grant": {
     "table": "gate",
-    "progress": 750
+    "progress": 750,
+    "narrated": {
+     "line": "九层圆满，他已经到了"
+    }
    },
-   "_gate": "2026-11-03: the story 修为 lump that stood on 09-laba's way on (2026-11-02, pay.gate), moved here with 入秋's gate — into 09-qulao, whose stage quest (九层圆满) waits under 古八's share hold until he stands there.",
+   "_gate": "2026-11-09 (Hanli 2026-11-09: 「不要白给修为, 除了像秘境埋土里那次, 剧情里明确写了突破的」 · 「剧情可以给修为, 但要给的和玩一场小游戏差不多, 然后有动画显示剧情奖励」): kept — the story tells this gain: 「九层圆满，他已经到了」. The autumn of year eight. The lint (content.mjs lintEarned) finds the line in the text.",
    "refuse": {
     "zh": "这一年的事还没完。",
     "en": "This year isn't done yet."

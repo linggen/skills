@@ -90,6 +90,13 @@ export function fightPlay(content, state, grant = {}) {
   // `star`: the night's ★ as play_pay.stars prices it (兽潮, shouchao.mjs); a pool's beast has none.
   return Math.round(xiuweiOf(content, state, units, { difficulty: grant.boss ? 'boss' : grant.difficulty ?? 'normal' }) * (grant.star ?? 1));
 }
+/* A story step's 修为 (the `story` table, Hanli 2026-11-09: 「剧情可以给修为, 但要给的和玩一场小游戏差不多」): one small game's
+   worth where he stands — `play_pay.story.units` 体力 (a default board's, tools/master.mjs) × R. Never an authored number; a
+   larger story gain is only one the scene itself tells (exit.grant `narrated`, content.mjs lintEarned). */
+export function storyPlay(content, state) {
+  const units = content.balance?.play_pay?.story?.units;
+  return X(content) && units ? Math.round(xiuweiOf(content, state, units)) : 0;
+}
 /* `minutes` of board play (1 体力 ≈ 1 分钟) at full ★ and first play (秘境's rooms; tools/balance.mjs plays it). */
 export function boardPlay(content, state, minutes) {
   return X(content) ? Math.round(xiuweiOf(content, state, minutes)) : null;

@@ -139,9 +139,9 @@
    }
   ],
   "grant": {
-   "table": "scene",
-   "progress": 40
+   "table": "story"
   },
+  "_grant": "2026-11-09 (Hanli: 「剧情可以给修为, 但要给的和玩一场小游戏差不多」): her joining pays one small game's 修为 (the `story` table); was `scene` 40, untold.",
   "_forms": "How she looks before she walks with the player (prologue-v3): the little silver fox in the valley, the girl at dawn. A scene's `her` names the form the people card shows; once she walks with the player she stands on the stage herself.",
   "forms": {
    "fox": {

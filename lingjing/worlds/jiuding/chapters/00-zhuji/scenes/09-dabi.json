@@ -84,10 +84,9 @@
     "en": "The pill house isn't done with you yet."
    },
    "grant": {
-    "table": "gate",
-    "progress": 570
+    "table": "story"
    },
-   "_gate": "2026-11-02 (agent's pick, Hanli approved: 「可以, 按你说的做」): a story 修为 lump on the way into 09-shenshi, whose stage quest waits on 圆满 — the gate layer's need less about a day and a half of play at his pace (~174 修为 a day, his 11-02 replayed), so the gate is ground, never jumped (the lint: a gate lump stays under the layer it leads to; balance.json pay.gate)."
+   "_story": "2026-11-09 (Hanli 2026-11-09: 「不要白给修为, 除了像秘境埋土里那次, 剧情里明确写了突破的」 · 「剧情可以给修为, 但要给的和玩一场小游戏差不多, 然后有动画显示剧情奖励」): this step pays one small game's 修为 (the `story` table, rules/playpay.mjs storyPlay). Was a 2026-11-02 `gate` lump of 570, on the way into 09-shenshi (it put Hanli at 704/830 five minutes into 练气七层); its words tell no gain. Saves keep what it paid."
   }
  ],
  "_beats": "古八's per-回 pass (2026-10-21, tasks/h09.json), re-cut 2026-10-28: 年六's opening — 考书 (jinchat `kaoshu`) and 守炉 · 丹房看炉 (it gives the 十年黄精, the 方子's 君), then the 九节聚气 night; the way on waits on the 看炉 and leads to the 讲堂 (09-shenshi).",

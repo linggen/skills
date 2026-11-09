@@ -896,6 +896,7 @@ button.gcard { cursor: pointer; font: inherit; }
   font-family: var(--serif); font-size: 20px; color: #5a4520; pointer-events: none; transform: translate(-50%, 0); opacity: 0;
   animation: gainBurst 3.2s ease-out both; }
 .gainburst b { color: #a8741a; font-size: 26px; }
+.gainburst .from { opacity: .75; font-size: .85em; letter-spacing: .08em; }
 @keyframes gainBurst { 0% { opacity: 0; transform: translate(-50%, 18px) scale(.9); } 12% { opacity: 1; transform: translate(-50%, 0) scale(1.06); }
   20% { transform: translate(-50%, 0) scale(1); } 75% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -26px); } }
 @media (prefers-reduced-motion: reduce) { .gainburst { animation-name: gainFade; } @keyframes gainFade { 0%, 80% { opacity: 1; } 100% { opacity: 0; } } }

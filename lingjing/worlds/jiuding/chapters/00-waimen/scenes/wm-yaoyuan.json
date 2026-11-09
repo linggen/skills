@@ -47,9 +47,8 @@
    },
    "means": "faces the bristling zheng without striking, shows empty hands and sets the radish down before it; it eats, falls asleep in front of him, and joins him",
    "grant": {
-    "table": "gate",
-    "cast": "zheng",
-    "progress": 210
+    "table": "story",
+    "cast": "zheng"
    },
    "ledger": [
     {
@@ -75,7 +74,7 @@
     "en": "It pawed over to a second herb and stopped, its nose twitching twice towards the west. The wind had turned, and it had his scent. It stared at the clump of herbs where he was hiding and crouched low, all five tails standing up together, tock, tock, tock in its mouth, fast and hard. Xiaoman's chest tightened, so he let his belly drop, a long drop, and pressed the tightness down. Only then did he slowly stand up, both hands open, letting it see there was nothing in them, except a radish. He took three steps, bent down, laid the radish gently on the ground in front of it, stepped back and squatted down again.\n\nIt stopped eating and looked at the radish, then at him. That look, Xiaoman remembered until he was old. The first layer of it was \"Who do you think you're insulting?\" The second was \"This beast eats spirit herbs.\" The third, the third he didn't understand at the time; he understood only later. That layer was: \"...This is for me?\" It stared at the radish for a long, long time. Then it ate the radish.\n\nThe way it ate the radish wasn't the way it ate spirit herbs. With spirit herbs it hugged them and gnawed, a bite, a look all round, as if afraid someone would snatch them away. The radish it ate lying down on the ground, both front paws holding it, bite by bite, very slowly, and it even ate the leaves. When it had finished it gave a long, loud burp, toppled over on the spot, wrapped its five tails round itself and went to sleep. It didn't run. In front of a stranger.\n\nXiaoman squatted there not daring to move. This thing had been stealing spirit herbs for a year, and the more it stole the hungrier it got; a radish, not worth a copper, given to it by somebody, and it was full. He thought of Ma Xiaobao's hand that went on feeling around in the food box even when he was asleep, and his chest went a little cold."
    },
    "_tame": "狰是一根萝卜收的，不是打的 (cards.md § 1, 第四回「把一根萝卜放在它面前」)：没有斗法，grant.cast 照旧。",
-   "_gate": "2026-11-02 (agent's pick, Hanli approved: 「可以, 按你说的做」): a story 修为 lump on the way into wm-chaifang, whose stage quest waits on 圆满 — the gate layer's need less about a day and a half of play at his pace (~174 修为 a day, his 11-02 replayed), so the gate is ground, never jumped (the lint: a gate lump stays under the layer it leads to; balance.json pay.gate)."
+   "_story": "2026-11-09 (Hanli 2026-11-09: 「不要白给修为, 除了像秘境埋土里那次, 剧情里明确写了突破的」 · 「剧情可以给修为, 但要给的和玩一场小游戏差不多, 然后有动画显示剧情奖励」): this step pays one small game's 修为 (the `story` table, rules/playpay.mjs storyPlay). Was a 2026-11-02 `gate` lump of 210, on the way into wm-chaifang; its words tell no gain. Saves keep what it paid."
   }
  ],
  "story": {

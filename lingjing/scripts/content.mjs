@@ -907,6 +907,8 @@ function lintPlaces(content, ids, bad) {
 function lintWorld(world, bad) {
   if (!/^[a-z0-9-]+$/.test(world.id ?? '')) bad('world', 'id must be lowercase letters, digits and dashes');
   for (const k of ['title', 'style']) if (!world[k]?.zh || !world[k]?.en) bad('world', `${k} needs zh and en`);
+  // Her joining is a story step: one small game's 修为 at most (lintGrantTold).
+  lintGrantTold('world companion', world.companion?.grant, () => null, null, null, bad);
 }
 
 /* The names a world refuses — a novel's — found anywhere in its strings.
@@ -1572,6 +1574,7 @@ function lintScene(scene, chapter, content, ids, bad) {
   }
   for (const exit of scene.exits) lintExit(`${where} exit ${exit.id}`, exit, chapter, content, ids, speakers, bad);
   if (scene.hui) for (const exit of scene.exits) lintEarned(`${where} exit ${exit.id}`, exit, content, bad);
+  for (const exit of scene.exits) lintStoryPay(`${where} exit ${exit.id}`, scene, exit, chapter, content, bad);
   // A 连环画 beat (rules/tell.mjs): the passage told in the chat, the panel on the stage.
   lintStory(where, scene.story, bad);
   for (const k of RETIRED) if (scene[k] != null) bad(where, `${k} is retired: the box plays the book's full text in \`story\``);
@@ -1598,23 +1601,54 @@ function lintScene(scene, chapter, content, ids, bad) {
 }
 
 /* A passage (zh + en), with the companion's words marked ⟪…⟫ alike in both. */
-/* The story never raises 修为 or 层 (Hanli, 2026-10-16: 「要让玩家去刷经验/修为等. 不要直接跳层」):
-   in a 回 a choice grants no 修为, fills no step (`fill`), and lifts no layer — the book's rises are
-   stage quests (ladder.json caps.hui.<回>.gates). One rise stands: 入门, 零层 to 一层 (the 小周天) —
-   零层 holds no 修为 (state.mjs addProgress), so it skips nothing. A breakthrough is the player's throw. */
+/* The story never raises a 层 (Hanli, 2026-10-16: 「要让玩家去刷经验/修为等. 不要直接跳层」): in a 回 a choice fills no
+   step (`fill`) and lifts no layer — the book's rises are stage quests (ladder.json caps.hui.<回>.gates). One rise stands:
+   入门, 零层 to 一层 (the 小周天) — 零层 holds no 修为 (state.mjs addProgress), so it skips nothing. Its 修为: lintStoryPay. */
 function lintEarned(where, exit, content, bad) {
   const first = content.ladder.tiers[0], r = exit.rise;
   const entry = first.zero && r === 1;
   if (r != null && !entry) bad(where, 'the story raises a layer: make it a stage quest (caps.hui.<回>.gates)');
-  // One exception (2026-11-02, fixed pay; agent's pick, Hanli approved 「可以, 按你说的做」): a `gate` lump on the way into a
-  // scene whose stage quest waits on 圆满 (caps.hui.<回>.gates) — the gate is still ground (doc/status.md); nowhere else.
-  const gateScenes = new Set(Object.values(content.ladder.caps?.hui ?? {}).flatMap(h => (h?.gates ?? []).map(g => g.scene)));
-  const lump = exit.grant?.table === 'gate' && gateScenes.has(exit.next);
-  if (exit.grant?.table === 'gate' && !lump) bad(where, 'a `gate` lump leads into a gate scene (caps.hui.<回>.gates) or nowhere');
-  if (exit.grant?.progress && !lump) bad(where, 'the story grants 修为: it is earned (功课, fights, 秘境, 闭关)');
   if (exit.fill != null) bad(where, 'the story fills a step to 圆满');
   const item = exit.grant?.item ? content.items?.items?.find?.(i => i.id === exit.grant.item) : null;
   if (item?.fill != null) bad(where, `grants ${item.id}, which fills a step to 圆满`);
+}
+
+/* No free 修为 from the story (Hanli 2026-11-09: 「不要白给修为, 除了像秘境埋土里那次, 剧情里明确写了突破的」 · 「剧情可以给修为,
+   但要给的和玩一场小游戏差不多」). A story step pays one small game's 修为 — `{table: 'story'}`, sized by the rules
+   (playpay.mjs storyPlay), never an authored number; an authored `progress` stands only where the story tells the gain:
+   `narrated: {line, scene?}` quotes a line found word for word in that scene (its own unless `scene` names the one the way
+   leads into). Every scene, every 卷. */
+const toldIn = (scene) => {
+  const out = [];
+  const walk = (v, k = '') => {
+    if (k.startsWith('_') || k === 'narrated') return;
+    if (typeof v === 'string') { if (k === 'zh') out.push(v); return; }
+    if (Array.isArray(v)) v.forEach(x => walk(x)); else if (v && typeof v === 'object') for (const [kk, x] of Object.entries(v)) walk(x, kk);
+  };
+  walk(scene);
+  return out.join('\n');
+};
+export function lintGrantTold(where, grant, sceneOf, own, next, bad) {
+  if (!grant) return;
+  // A player's own made scene pays on its own table (MADE.tables: `branch`, capped at 20 — the model's, not the book's).
+  if (MADE.tables.includes(grant.table)) return;
+  if (grant.table === 'story' && grant.progress != null) bad(where, 'a story step\'s 修为 is one small game\'s (the `story` table): it authors no progress');
+  const n = grant.narrated;
+  if (!n) {
+    if (grant.progress > 0) bad(where, 'the story grants 修为 its words do not tell: make it {table: \'story\'}, or quote the line that tells the gain (narrated: {line})');
+    if (grant.table === 'gate') bad(where, 'a `gate` grant is a gain the story tells: it needs narrated: {line}');
+    return;
+  }
+  if (!(grant.progress > 0)) bad(where, 'narrated marks an authored 修为 gain: it needs progress');
+  if (typeof n.line !== 'string' || n.line.trim().length < 4) { bad(where, 'narrated.line quotes the line that tells the gain'); return; }
+  if (n.scene != null && n.scene !== next) bad(where, `narrated.scene ${n.scene} is not where this way leads (${next ?? 'nowhere'})`);
+  const told = n.scene != null ? sceneOf(n.scene) : own;
+  if (!told) bad(where, `narrated.scene ${n.scene} does not exist`);
+  else if (!toldIn(told).includes(n.line)) bad(where, `narrated.line 「${n.line}」 is not in ${told.id}'s words`);
+}
+function lintStoryPay(where, scene, exit, chapter, content, bad) {
+  if (MADE.tables.includes(exit.grant?.table) && chapter.id !== MADE.chapter && hasWorld(content.world.id)) bad(where, `the ${exit.grant.table} table is a made scene's: the book's steps pay {table: 'story'}`);
+  lintGrantTold(where, exit.grant, id => chapter.scenes[id] ?? null, scene, exit.next ?? null, bad);
 }
 
 function lintStory(where, story, bad) {

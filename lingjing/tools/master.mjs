@@ -143,6 +143,8 @@ export function derive(raw0, { ladder, items }) {
   pp.wall = { day: X.units.wall_day };
   pp.chore = { ...X.units.chore };
   pp.seclusion = { night: X.units.seclusion_night };
+  // A story step's 修为 (rules/playpay.mjs storyPlay, Hanli 2026-11-09): one small game's 体力 at R.
+  pp.story = { units: X.units.story };
   // `authored.base` stays the book's yardstick (the 练气一层 its grants were written against, 470): never `need.first`, which is
   // display only — moving it must not move what a story grant is worth.
   for (const t of ['pill']) if (!pp.authored.tables.includes(t)) pp.authored.tables.push(t);
