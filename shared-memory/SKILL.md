@@ -396,12 +396,16 @@ the solver**, and this is an attended surface: the user is right here.
    "continue?" — only the final report summarizes. If the context gets
    heavy, finish the current item, report the counts and how many
    remain, and say the next `/shared-memory solve` continues from there.
+   **Main chat only:** solve never uses Task or subagents. This run
+   gathers every item's evidence itself (`memory_get`, Read, git via
+   Bash) and is the only writer (`memory_add`, `memory_issue_resolve`).
 2. **Per item, gather evidence — solve it yourself first.**
    `memory_get {"id":<row_id>}` for each referenced row, then read
    whatever settles the question: git history since the row's date,
-   the code, docs, files — whatever the note says to verify (hand
-   technical checks to a Task subagent if this session lacks the
-   tools). Asking the user is the last resort, not a step.
+   the code, docs, files — whatever the note says to verify. If this
+   session lacks a tool to check something, leave that item open with
+   the reason and include it in the end-of-run question. Asking the
+   user is the last resort, not a step.
    **Evidence you can't read** — a permission prompt was declined, or
    the path is outside your grants: don't ask again and don't try it
    with another tool. Leave that item open, move on, and at the end
