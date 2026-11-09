@@ -390,6 +390,12 @@ the dream applies them itself when sure. The daemon only bookkeeps — **you are
 the solver**, and this is an attended surface: the user is right here.
 
 1. **List.** `memory_issues`. Empty → say so, done.
+   **Work the whole queue in this run.** Every item ends solved,
+   dismissed, or left open with its reason. Go item by item without
+   pausing: don't stop early to report partial progress or ask
+   "continue?" — only the final report summarizes. If the context gets
+   heavy, finish the current item, report the counts and how many
+   remain, and say the next `/shared-memory solve` continues from there.
 2. **Per item, gather evidence — solve it yourself first.**
    `memory_get {"id":<row_id>}` for each referenced row, then read
    whatever settles the question: git history since the row's date,
@@ -419,8 +425,10 @@ the solver**, and this is an attended surface: the user is right here.
    again. Ask only when you genuinely can't tell.
 5. **Close as you go.** `memory_issue_resolve {"id":"<issue id>","outcome":"resolved","note":"<what you did>"}`
    (or `"dismissed"` when not worth fixing).
-6. **Report** one line per item (`SOLVED <id> …` / `DISMISSED <id> …` /
-   `SKIPPED <id> needs <dir>`) plus a closing count. The page footer's "N to review" refreshes on
+6. **Report** once, at the end: one line per item (`SOLVED <id> …` /
+   `DISMISSED <id> …` / `SKIPPED <id> needs <dir>`), the counts (solved /
+   dismissed / left open), and the one plain question for the items
+   whose evidence you couldn't read. The page footer's "N to review" refreshes on
    the next dashboard paint.
 
 ### Chat-mode rules — do NOT leak dashboard language
