@@ -354,10 +354,10 @@ tools:
   - name: PlayInApp
     remote: true
     description: >-
-      Play owned songs on the Mac in the DJ page of the Linggen app (its player
-      shows lyrics and can be paused or stopped there) — for a play asked from
-      the phone, a handoff, or "on the Mac". Waits up to 10 s for the page to
-      say the sound started. Returns { ok, playing, track: { artist, title },
+      Play owned songs on the Mac in the DJ page of the Linggen app — it brings
+      the Linggen window up on the DJ tab, whose player shows lyrics and can be
+      paused or stopped there — for a play asked from the phone, a handoff, or
+      "on the Mac". Waits up to 20 s for the page to say the sound started. Returns { ok, playing, track: { artist, title },
       count, missing?: ["Artist - Title: why"], error? }. Say it is playing
       only when `playing` is true.
     args:
@@ -375,7 +375,7 @@ tools:
             file:   { type: string }
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/mac-play.mjs play {{tracks}}"
     tier: edit
-    timeout_ms: 20000
+    timeout_ms: 30000
   - name: StopInApp
     remote: true
     description: >-
@@ -622,12 +622,12 @@ Cantopop"):
 **Which door plays it.** The page `play` sounds only in a DJ page the user
 has open in front of them. When the ask comes from the phone or another agent
 (Ling, a handoff), says "on the Mac", or you have no sign the page is open, use
-**`PlayInApp`** (same tracks): the DJ page in the Linggen app plays them where
-the user can see and stop them. **`StopInApp`** stops it.
+**`PlayInApp`** (same tracks): it brings the Linggen window up on the DJ tab,
+which plays them where the user can see and stop them. **`StopInApp`** stops it.
 
 - Say "playing" only when the returned `playing` is true. Otherwise say plainly
   that it did not play on the Mac and why, from `error` (e.g. Linggen is
-  closed or its DJ tab isn't open — open it and try again). Never a hopeful
+  closed — open it and try again). Never a hopeful
   "playing", and no other way round.
 - `missing` names songs it skipped; mention them in the same line.
 - Use one door per ask — never both `PlayInApp` and a page `play`.

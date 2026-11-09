@@ -64,6 +64,7 @@ function door(page) {
   return {
     sent: box,
     io: {
+      async launch() { box.launched = (box.launched || 0) + 1; },
       async publish(op, payload) { box[op] = payload; const r = page(payload); if (r) box['mac-playing'] = { nonce: payload.nonce, ...r }; },
       async latest(op) { return box[op] ?? null; },
     },
@@ -79,6 +80,7 @@ test('a page that starts the song: playing, with the track it reports', async ()
   assert.equal(sent.action, 'play');
   assert.equal(sent.tracks[0].file, '/m/周杰伦 - 以父之名.mp3');
   assert.ok(sent.deadline > sent.at, 'the ask carries its deadline, so a late page leaves it');
+  assert.equal(d.sent.launched, 1, 'DJ is brought up in the app before the ask');
 });
 
 test('no page answering: an honest failure after the wait, never "playing"', async () => {
@@ -100,7 +102,7 @@ test('a song not in the library never reaches the page', async () => {
 });
 
 test('the engine unreachable says so', async () => {
-  const io = { publish: async () => { throw new Error('ECONNREFUSED'); }, latest: async () => null };
+  const io = { launch: async () => { throw new Error('fetch failed'); }, publish: async () => { throw new Error('ECONNREFUSED'); }, latest: async () => null };
   const r = await ask({ action: 'stop' }, { io, wait: 300 });
   assert.match(r.error, /Could not reach Linggen/);
 });
@@ -109,4 +111,11 @@ test('stop: the page answers stopped', async () => {
   const d = door((a) => (a.action === 'stop' ? { state: 'stopped', was_playing: true } : null));
   const r = await main(['stop'], { io: d.io, wait: 1000 });
   assert.deepEqual({ ok: r.ok, stopped: r.stopped, was: r.was_playing }, { ok: true, stopped: true, was: true });
+});
+
+test('a launch the engine refuses still lets the page answer', async () => {
+  const d = door(() => ({ state: 'playing', track: { title: 't' } }));
+  d.io.launch = async () => { throw new Error('launch HTTP 404'); };
+  const r = await ask({ action: 'play', tracks: [] }, { io: d.io, wait: 1000 });
+  assert.equal(r.playing, true);
 });

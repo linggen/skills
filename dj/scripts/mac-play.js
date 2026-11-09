@@ -60,6 +60,16 @@ function inFront() {
   } catch { return true; } // a parent we cannot read: the window being shown is all we know
 }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function cameToFront(until) {
+  while (!inFront()) {
+    if (Date.now() >= until) return false;
+    await sleep(200);
+  }
+  return true;
+}
+
 /// Take one ask: a fresh one this page has not taken yet, else nothing.
 export async function takeMacPlay(req) {
   if (!IN_APP || !req?.nonce || req.nonce === seen) return;
@@ -70,7 +80,9 @@ export async function takeMacPlay(req) {
     answer(req.nonce, { state: 'stopped', was_playing: had });
     return;
   }
-  if (!inFront()) {
+  // The launch that came with this ask is bringing the tab and the window up;
+  // give it a moment before calling the page out of sight.
+  if (!(await cameToFront(Math.min(Number(req.deadline) - 1000, Date.now() + 6000)))) {
     answer(req.nonce, { state: 'failed', error: 'the DJ tab is not in front in the Linggen window (another tab is open, or the window is hidden)' });
     return;
   }

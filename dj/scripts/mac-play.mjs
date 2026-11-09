@@ -6,13 +6,15 @@
 //   play <tracks>   resolve against library.json, ask the page, wait for its answer
 //   stop            ask the page to stop, wait for its answer
 //
-// The ask goes up on the retained `dj`/`mac-play` topic with a nonce and a
-// deadline; the page (mac-play.js) answers on `dj`/`mac-playing` with what its
+// First the engine brings DJ up (POST /api/apps/launch: the Linggen window
+// shows with the DJ tab in front). The ask goes up on the retained
+// `dj`/`mac-play` topic with a nonce and a deadline; the page (mac-play.js) answers on `dj`/`mac-playing` with what its
 // <audio> really did. "playing" is the page's word, never this script's hope:
 // no answer by the deadline is a plain failure, and the page ignores an ask
 // whose deadline has passed, so a late page never plays what was reported failed.
 //
-// LINGGEN_PORT picks the engine (9527); DJ_MAC_PLAY_WAIT_MS the wait (10 s).
+// LINGGEN_PORT picks the engine (9527); DJ_MAC_PLAY_WAIT_MS the wait (20 s:
+// a page opened by the launch boots its library before it can play).
 // Runs under bun or node (run-js.sh picks). Prints one JSON line.
 
 import crypto from 'node:crypto';
@@ -22,14 +24,14 @@ import { fileURLToPath } from 'node:url';
 import { resolveTracks } from './store.js';
 import { readJson, LIB } from './io.mjs';
 
-const WAIT_MS = Number(process.env.DJ_MAC_PLAY_WAIT_MS) || 10_000;
+const WAIT_MS = Number(process.env.DJ_MAC_PLAY_WAIT_MS) || 20_000;
 const POLL_MS = 250;
 const BASE = `http://127.0.0.1:${process.env.LINGGEN_PORT || 9527}`;
 const placeholder = (s) => /^\{\{.*\}\}$/.test(String(s ?? '').trim());
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export const NO_PAGE =
-  'No DJ page in the Linggen app answered — Linggen may be closed, or its DJ tab not open. Nothing is playing; ask them to open Linggen → DJ and try again.';
+  'The DJ page in the Linggen app did not come up or answer — Linggen may be closed. Nothing is playing; ask them to open Linggen and try again.';
 
 // ── resolving what to play ───────────────────────────────────────────────────
 
@@ -81,6 +83,15 @@ export function resultOf(reply, nonce) {
 
 /// The engine's topic door, over loopback. Injected in tests.
 export const http = {
+  /// Bring DJ's page up in the app (tab in front, window shown).
+  async launch() {
+    const r = await fetch(`${BASE}/api/apps/launch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ skill: 'dj' }),
+    });
+    if (!r.ok) throw new Error(`launch HTTP ${r.status}`);
+  },
   async publish(op, payload) {
     const r = await fetch(`${BASE}/api/topic/publish`, {
       method: 'POST',
@@ -101,6 +112,9 @@ export async function ask(body, { io = http, wait = WAIT_MS, now = Date.now } = 
   const nonce = crypto.randomUUID();
   const deadline = now() + wait;
   try {
+    // A launch that no window hears is not an error here: the page's answer
+    // (or its silence) is what counts. Only an engine we cannot reach is.
+    if (body.action === 'play') await io.launch?.().catch((e) => { if (/fetch failed|ECONNREFUSED/.test(String(e?.message || e))) throw e; });
     await io.publish('mac-play', { ...body, nonce, at: now(), deadline });
   } catch (e) {
     return { ok: false, playing: false, error: `Could not reach Linggen on this Mac (${e.message || e}).` };
