@@ -392,6 +392,7 @@ body.resizing iframe { pointer-events: none; } /* the iframe would swallow the d
 .dj-mini .mini-btn.on { color: var(--accent); }
 .dj-mini .mini-close { color: var(--muted); }
 .dj-mini .mini-btn[hidden] { display: none; }
+.dj-mini .mini-tap { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 5px 10px; font-size: 13px; cursor: pointer; }
 
 /* ── Settings overlay (app-mode.js) ── */
 .app-mode-overlay { position: fixed; inset: 0; background: var(--bg); display: none; flex-direction: column; z-index: 50; }

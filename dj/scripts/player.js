@@ -5,7 +5,7 @@
 //            (the daemon serves the skill dir; localhost load is instant)
 //   lyrics — parse the .lrc sidecar, highlight + auto-scroll the active line
 
-import { notePlayed, noteQuest, runBash, sq } from './bash.js';
+import { notePlayed, noteQuest, runBash, sq, SCRIPTS } from './bash.js';
 import { esc } from './ui.js';
 import { t as tr } from './strings.js';
 
@@ -53,6 +53,11 @@ try {
   bc.addEventListener('message', (e) => { if (e.data?.claim && e.data.claim !== PAGE && active) active.stop(); });
 } catch { /* BroadcastChannel unsupported — single-tab still fine */ }
 const claimPlayback = () => { try { bc?.postMessage({ claim: PAGE }); } catch { /* ignore */ } };
+// The page's sound replaces the headless Mac player's (PlayOnMac) — never two
+// songs at once. Fire and forget: a stop with nothing playing is a no-op.
+const stopMacPlayer = () => {
+  runBash(`bash "${SCRIPTS}/run-js.sh" "${SCRIPTS}/mac-player.mjs" stop`, { timeoutMs: 8000 }).catch(() => {});
+};
 
 // Sweep stale .nowplaying copies from pages that never got to clean up (tab
 // closed mid-play, refresh) — stop() only removes THIS page's file. Anything
@@ -104,6 +109,9 @@ export async function openPlayer(startTrack, opts = {}) {
 
   // Close = hide to a mini-bar, keep playing. The mini-bar's × actually stops.
   let mini = null;
+  // The webview refused to start sound with no tap behind it (an agent's
+  // `play`): the mini-bar asks for that one tap instead of sitting silent.
+  let blocked = false;
   function close() { ov.style.display = 'none'; showMini(); }
   function expand() { ov.style.display = ''; if (mini) mini.style.display = 'none'; ov.focus(); }
   function stopAll() {
@@ -119,7 +127,8 @@ export async function openPlayer(startTrack, opts = {}) {
     if (!mini) return;
     const multi = queue.length > 1;
     mini.innerHTML = `
-      <button class="mini-btn mini-play">${audio.paused ? '▶' : '⏸'}</button>
+      ${blocked ? `<button class="mini-tap">▶ ${esc(tr('dj.tapToPlay'))}</button>` : ''}
+      <button class="mini-btn mini-play"${blocked ? ' hidden' : ''}>${audio.paused ? '▶' : '⏸'}</button>
       <div class="mini-meta"><b>${esc(track.title)}</b> <span>${esc(track.artist)}</span></div>
       ${multi ? `<button class="mini-btn mini-shuffle${shuffle ? ' on' : ''}" title="Shuffle">🔀</button>` : ''}
       <button class="mini-btn mini-repeat${repeat !== 'off' ? ' on' : ''}" title="Repeat">${repeat === 'one' ? '🔂' : '🔁'}</button>
@@ -127,6 +136,7 @@ export async function openPlayer(startTrack, opts = {}) {
       <button class="mini-btn mini-expand" title="Lyrics">▴</button>
       <button class="mini-btn mini-close" title="Stop">×</button>`;
     mini.querySelector('.mini-play').onclick = () => { if (audio.paused) audio.play(); else audio.pause(); };
+    mini.querySelector('.mini-tap')?.addEventListener('click', () => audio.play().catch(() => {}));
     mini.querySelector('.mini-next')?.addEventListener('click', () => go(pickNext()));
     mini.querySelector('.mini-shuffle')?.addEventListener('click', toggleShuffle);
     mini.querySelector('.mini-repeat').onclick = cycleRepeat;
@@ -196,7 +206,7 @@ export async function openPlayer(startTrack, opts = {}) {
 
   // Transport
   audio.addEventListener('loadedmetadata', () => { $('#pl-dur').textContent = fmt(audio.duration); });
-  audio.addEventListener('play', () => { $('#pl-play').textContent = '⏸'; updateMini(); claimPlayback(); });
+  audio.addEventListener('play', () => { blocked = false; $('#pl-play').textContent = '⏸'; updateMini(); claimPlayback(); stopMacPlayer(); });
   audio.addEventListener('pause', () => { $('#pl-play').textContent = '▶'; updateMini(); });
   $('#pl-play').onclick = () => { if (audio.paused) audio.play(); else audio.pause(); };
   $('#pl-seek').oninput = (e) => { if (audio.duration) audio.currentTime = (e.target.value / 1000) * audio.duration; };
@@ -247,8 +257,14 @@ export async function openPlayer(startTrack, opts = {}) {
     try {
       await runBash(`cp ${sq(t.file)} "${NP_PATH}"`);
       audio.src = `/apps/dj/scripts/${NP_NAME}?t=${Date.now()}`;
-      audio.play().catch(() => {});
-      notePlayed(t); // a song she picked lately, started here, is dj-pick done (quest.mjs)
+      audio.play().then(
+        () => notePlayed(t), // a song she picked lately, started here, is dj-pick done (quest.mjs)
+        (e) => {
+          // NotAllowedError: no user gesture behind this play. Show the tap.
+          if (e?.name === 'NotAllowedError') { blocked = true; showMini(); }
+          else opts.toast?.(String(e?.message || e));
+        },
+      );
     } catch (e) { opts.toast?.(String(e.message || e)); }
     updateMini();
     if (!t.lrc && opts.fetchLyrics) autoFetchLyrics(t); // background — don't block playback

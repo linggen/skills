@@ -349,6 +349,46 @@ tools:
     cmd: "bash $SKILL_DIR/scripts/rename.sh {{track}}"
     tier: edit
     timeout_ms: 120000
+  # Sound on the Mac with no page: the phone (or any handoff) asks to play and
+  # no DJ page is open to carry it. afplay in a detached runner; every call
+  # answers with what the processes say. A page play stops it (player.js).
+  - name: PlayOnMac
+    remote: true
+    description: >-
+      Play owned songs out loud on the Mac, no DJ page needed — for a play
+      asked from the phone, a handoff, or "on the Mac". Replaces whatever it
+      was playing. Returns { ok, playing, state: playing|paused|loading|stopped,
+      track: { artist, title }, index, count, missing?: ["Artist - Title: why"],
+      error? }. Say it is playing only when `playing` is true.
+    args:
+      tracks:
+        type: array
+        required: true
+        description: >-
+          Songs in play order, artist + title exactly as ListLibrary gives them
+          (or its `file`). Example: [{"artist": "周杰伦", "title": "以父之名"}].
+        items:
+          type: object
+          properties:
+            artist: { type: string }
+            title:  { type: string }
+            file:   { type: string }
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/mac-player.mjs play {{tracks}}"
+    tier: edit
+    timeout_ms: 15000
+  - name: MacPlayer
+    remote: true
+    description: >-
+      Control or check what PlayOnMac is playing on the Mac. Returns the same
+      status shape as PlayOnMac, read from the live player process.
+    args:
+      action:
+        type: string
+        required: true
+        description: 'One of "pause", "resume", "next", "stop", "status".'
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/mac-player.mjs {{action}}"
+    tier: edit
+    timeout_ms: 10000
 ---
 
 # DJ — your personal Disc Jockey
@@ -583,6 +623,17 @@ Cantopop"):
 3. **Not owned (or library empty)** → don't play; propose a `tracklist` set to
    download first, and say so (*"You don't have these yet — here's a set to
    grab."*).
+
+**Which door plays it.** The page `play` makes sound only where an open DJ
+page is, with the user at the Mac. Use **`PlayOnMac`** instead (same tracks)
+when the ask comes from the phone or another agent (Ling, a handoff), when it
+says "on the Mac", or when you have no sign the page is open. Control it with
+**`MacPlayer`** (pause, resume, next, stop, status).
+
+- Say "playing" only when the returned `playing` is true. Otherwise say what
+  the result shows failed (`error`, `missing`) — never a hopeful "playing".
+- `missing` names songs it skipped; mention them in the same line.
+- A page `play` stops the Mac player on its own; don't call both.
 
 ## The Mac and the phone
 
