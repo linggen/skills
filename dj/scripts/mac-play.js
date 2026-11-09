@@ -49,6 +49,17 @@ async function rowsFor(tracks) {
 
 const label = (t) => ({ artist: t?.artist || '', title: t?.title || '' });
 
+/// Sound only where the user can see its source: this page's window shown and
+/// its tab the launcher's active one (inactive tabs stay mounted, display:none).
+function inFront() {
+  if (document.hidden) return false;
+  try {
+    const frame = window.frameElement;
+    if (!frame) return true;
+    return frame.getClientRects().length > 0 && getComputedStyle(frame).display !== 'none';
+  } catch { return true; } // a parent we cannot read: the window being shown is all we know
+}
+
 /// Take one ask: a fresh one this page has not taken yet, else nothing.
 export async function takeMacPlay(req) {
   if (!IN_APP || !req?.nonce || req.nonce === seen) return;
@@ -57,6 +68,10 @@ export async function takeMacPlay(req) {
   if (req.action === 'stop') {
     const had = stopPlayer();
     answer(req.nonce, { state: 'stopped', was_playing: had });
+    return;
+  }
+  if (!inFront()) {
+    answer(req.nonce, { state: 'failed', error: 'the DJ tab is not in front in the Linggen window (another tab is open, or the window is hidden)' });
     return;
   }
   const queue = await rowsFor(req.tracks);
