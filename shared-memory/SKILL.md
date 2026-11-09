@@ -396,6 +396,11 @@ the solver**, and this is an attended surface: the user is right here.
    the code, docs, files — whatever the note says to verify (hand
    technical checks to a Task subagent if this session lacks the
    tools). Asking the user is the last resort, not a step.
+   **Evidence you can't read** — a permission prompt was declined, or
+   the path is outside your grants: don't ask again and don't try it
+   with another tool. Leave that item open, move on, and at the end
+   ask the user ONE plain question covering all of them (e.g. "The
+   <project> items — want me to check them?"). On a yes, go read.
 3. **Confidence rule.** Evidence settles it AND all affected rows are
    your own notes (`from=derived`) → solve directly: one
    `memory_add {..., "replace_ids":[...]}` writing
@@ -414,8 +419,8 @@ the solver**, and this is an attended surface: the user is right here.
    again. Ask only when you genuinely can't tell.
 5. **Close as you go.** `memory_issue_resolve {"id":"<issue id>","outcome":"resolved","note":"<what you did>"}`
    (or `"dismissed"` when not worth fixing).
-6. **Report** one line per item (`SOLVED <id> …` / `DISMISSED <id> …`)
-   plus a closing count. The page footer's "N to review" refreshes on
+6. **Report** one line per item (`SOLVED <id> …` / `DISMISSED <id> …` /
+   `SKIPPED <id> needs <dir>`) plus a closing count. The page footer's "N to review" refreshes on
    the next dashboard paint.
 
 ### Chat-mode rules — do NOT leak dashboard language
