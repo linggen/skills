@@ -3553,7 +3553,23 @@ async function useItem(id, action = 'use', more = {}) {
   await rereadGear();
   keep({ gearNote: r.ok ? null : refusal(r) });
   await refresh();
+  return r;
 }
+
+/* A sale says what it paid where he sold it (Hanli 11-10: 「+灵石的动画在最上面显示小字 不容易发现」): a large +N 灵石 rising from
+   the middle of the item's card, beside the top bar's own small float. */
+function saleFloat(rect, n) {
+  if (!rect || !(n > 0)) return;
+  const d = document.createElement('div');
+  d.className = 'salefloat';
+  d.textContent = `+${n} ${SALE_WORD[lang()]}`;
+  d.style.left = `${rect.left + rect.width / 2}px`;
+  d.style.top = `${rect.top + rect.height / 2}px`;
+  document.body.append(d);
+  d.addEventListener('animationend', () => d.remove(), { once: true });
+  setTimeout(() => d.remove(), 2600);
+}
+const SALE_WORD = { zh: '灵石', en: 'spirit stones' };
 
 /* `pane`: null opens the 储物袋, 'deck' the 牌组 — two chips, one panel's read. An open panel on the other one switches. */
 /* 'fantong' (the old 饭桶 tab's links, cards.js `data-gear-open`): the 储物袋 page with the docked 饭桶 open and in view. */
@@ -4185,7 +4201,10 @@ const CLICKS = [
   }],
   ['[data-panglu-fire]', (el) => { if (!el.matches(':disabled')) run(`panglu:fire:${el.dataset.pangluFire}`, () => firePanglu(el.dataset.pangluFire)); }],
   ['[data-pouch-item]', (el) => show({ pouchSel: el.dataset.pouchItem, pouchToss: null, pouchPane: null })],
-  ['[data-sell]', (el) => run(`item:sell:${el.dataset.sell}`, () => useItem(el.dataset.sell, 'sell'))],
+  ['[data-sell]', (el) => {
+    const rect = (el.closest('.pdetail') ?? el).getBoundingClientRect();
+    return run(`item:sell:${el.dataset.sell}`, () => useItem(el.dataset.sell, 'sell').then((r) => { if (r?.ok) saleFloat(rect, r.paid?.wealth); }));
+  }],
   ['[data-toss]', (el) => show({ pouchToss: el.dataset.toss })],
   ['[data-toss-no]', () => show({ pouchToss: null })],
   ['[data-toss-yes]', (el) => run(`bag:toss:${el.dataset.tossYes}`, () => bagTap('toss', el.dataset.tossYes))],
