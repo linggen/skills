@@ -74,7 +74,7 @@ test('a 今 board pays the 今 by its minutes on the 今 ladder — never the �
   const t = content.tasks.tasks.find(x => x.id === 'jin-chat-dark');
   const g = lineGrant(content, { lang: 'zh', plays: null, lines: { jin: { tier: 'xinsheng', step: 0, progress: 0 } } }, 'jin', t.id, t, NOW, null);
   const X = W.balance.play_pay.xiuwei;
-  assert.equal(g.progress, Math.round(X.rate.base * boardCost(content, 'game', playedRow(content, t.id, t))), 'its own minutes (2026-11-04)');
+  assert.equal(g.progress, Math.round(X.rate.base * boardCost(content, 'game', playedRow(content, t.id, t)) * X.board), 'its own minutes (2026-11-04)');
   assert.equal(g.wealth, 0);
   assert.equal(boardLine(content, 'jin-chat-dark'), 'jin');
   assert.equal(boardLine(content, content.tasks.tasks.find(x => x.id === 'notice-shuitong')?.id ?? 'notice-shuitong'), null, 'a 古 board is the 古\'s');
@@ -112,7 +112,7 @@ test('the numbers\' 今 column: 卷一\'s 今 takes a reader from 新生一层 i
   const { jin } = lineColumns(content);
   assert.deepEqual(jin.huis.map(h => h.hui), ['j01', 'j04', 'j07', 'j09']);
   assert.ok(jin.huis.every(h => h.boards > 0 && h.progress > 0));
-  assert.ok(jin.end >= 1.2 && jin.end <= 1.6, `卷一 ends ${jin.end} layers up at the model's ★`);
+  assert.ok(jin.end >= 1.8 && jin.end <= 2.2, `卷一 ends ${jin.end} layers up at the model's ★ (was 1.2–1.6 before a small game's ×1.5, 2026-11-10)`);
   assert.match(jin.huis.at(-1).at, /^新生二层 /);
   assert.ok(jin.end_best >= jin.end);
   assert.equal(jin.layers[0].name, '新生一层');

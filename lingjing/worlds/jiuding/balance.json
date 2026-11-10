@@ -13,6 +13,7 @@
       "sittings": {"base": 2, "growth": 1.1, "realm": 1.3, "stamina": 100},
       "difficulty": {"normal": 1, "elite": 1.5, "boss": 2, "first_clear": 0.5},
       "gap": {"below": 0.15, "floor": 0.2, "above": 0.1, "cap": 0.3},
+      "board": 1.5,
       "units": {"chore": {"day": 5, "week": 10, "month": 15}, "wall_day": 5, "seclusion_night": 23.5, "story": 3}
     },
     "lines": {
@@ -566,7 +567,8 @@
       "rate": {"base": 2, "growth": 1.05, "realm": 1.2},
       "sittings": {"base": 2, "growth": 1.1, "realm": 1.3, "stamina": 100},
       "difficulty": {"normal": 1, "elite": 1.5, "boss": 2, "first_clear": 0.5},
-      "gap": {"below": 0.15, "floor": 0.2, "above": 0.1, "cap": 0.3}
+      "gap": {"below": 0.15, "floor": 0.2, "above": 0.1, "cap": 0.3},
+      "board": 1.5
     }
   },
   "_lock_fight": "A story fight inside a key beat's lock (chapter.json `beats`, world.mjs lockOf) may be left once he is stuck (Hanli 2026-10-21: 「OK, a」): no shelf is reachable there, so a weak hand with an empty 丹囊 had no way past a 试. After `losses` fights of it lost or run dry, 「算了，往下走」 stands under its card (rules/skips.mjs fightStuck): the way on a win would take, paying nothing — no fight pay, no card, no drop, no exit grant — as a board left or a riddle passed. Since 2026-10-27 every story fight, inside a lock or not (Hanli: 「确保都能跳过去, 不会卡住游戏进程」), and a guard lost to as often lets him by (world.mjs guardOf); tests/no-win-walk.test.mjs walks 卷一 to its end with nothing won.",

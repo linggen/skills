@@ -258,9 +258,10 @@ export function shouchaoDone(state, content, ctx, id) {
   const stars = Math.max(1, Math.min(3, Number(s.stars?.[id] ?? 1) || 1));
   if (s.stars) delete s.stars[id]; // the night's, not a best ever
   const row = c.pay?.[stars] ?? {}, share = tideShare(content, state, ctx.now);
-  // 修为: the night's 体力 × the formula × its ★ (playpay.mjs fightPlay; 2026-11-02) — a boss night as a boss.
+  // 修为: the night's 体力 × the formula × its ★ (playpay.mjs fightPlay; 2026-11-02) — a boss night as a boss; `board`: a
+  // night is a small game (a 塔防 board), paid × play_pay.xiuwei.board (2026-11-10).
   const star = content.balance?.play_pay?.stars?.[String(stars)] ?? 1;
-  const paid = pay(content, s, ctx, { table: c.table ?? 'haunt', play: 'tide', units, progress: row.progress ?? 0, wealth: 0, star, ...(night.boss ? { boss: true } : {}), ...(share < 1 ? { share } : {}) }); // `play`: 问签's 宜 reads it (fortune.mjs)
+  const paid = pay(content, s, ctx, { table: c.table ?? 'haunt', play: 'tide', board: true, units, progress: row.progress ?? 0, wealth: 0, star, ...(night.boss ? { boss: true } : {}), ...(share < 1 ? { share } : {}) }); // `play`: 问签's 宜 reads it (fortune.mjs)
   // 灵石 by the small-game ranks (balance.json `boards`): every night, by the day's share.
   if (!lockedOf(content, s).includes('wealth')) {
     const amount = Math.round((content.balance?.boards?.[row.rank] ?? 0) * share);

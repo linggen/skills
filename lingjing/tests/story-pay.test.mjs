@@ -23,16 +23,16 @@ test('a story step pays one small game: R × a default board\'s 体力 at his la
   for (let step = 1; step <= 9; step++) {
     const st = { tier: 'qi', step };
     const n = storyPlay(content, st);
-    assert.ok(n > 0 && n <= 12, `练气${step}层: ${n}`);
+    assert.ok(n > 0 && n <= 18, `练气${step}层: ${n}`);
     assert.equal(n, boardPlay(content, st, content.balance.play_pay.story.units), 'the same as a board of that many minutes');
   }
-  assert.equal(storyPlay(content, { tier: 'qi', step: 7 }), 8, '练气七层: 8 (09-dabi\'s way on was 570)');
+  assert.equal(storyPlay(content, { tier: 'qi', step: 7 }), 12, '练气七层: 12 (09-dabi\'s way on was 570)');
 });
 
 test('paying {table: \'story\'} lands one small game\'s 修为, whatever progress it claims, and its 所得 says so', () => {
   const s = { ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: '09-dabi', place: 'waimen', ended: ['00-prologue'], tier: 'qi', step: 7, progress: 100 };
   const paid = pay(content, s, { now: NOW, quests: [] }, { table: 'story' });
-  assert.ok(paid.progress > 0 && paid.progress <= 12, `paid ${paid.progress}`);
+  assert.ok(paid.progress > 0 && paid.progress <= 18, `paid ${paid.progress}`);
   assert.equal(s.progress, 100 + paid.progress);
   assert.deepEqual(gainsOf({ table: 'story' }, paid), { items: [], progress: paid.progress }, '所得 carries the 修为 (the page\'s 「剧情所得」)');
 });

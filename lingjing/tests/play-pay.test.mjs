@@ -8,7 +8,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { boardCost, newState, staminaCost } from '../scripts/state.mjs';
 import { playTo } from '../scripts/rules/progress.mjs';
 import { look, move, task, win, VERBS } from '../scripts/rules.mjs';
-import { gapOf, levelOf, playGrant, rateAt, sittingsAt, xiuweiOf } from '../scripts/rules/playpay.mjs';
+import { chorePlay, fightPlay, gapOf, levelOf, playGrant, rateAt, secludeHour, sittingsAt, xiuweiOf } from '../scripts/rules/playpay.mjs';
 import { gamesToday, plateDealt, plateKey } from '../scripts/rules/rotation.mjs';
 import { placeOf } from '../scripts/rules/world.mjs';
 
@@ -46,14 +46,14 @@ test('a board at 练气一层: its 体力 × R, by its kind; ★ and the replay 
   const world = kind => ({ ...content, games: { games: [{ id: 'x', task: 'x', mechanic: kind }] } });
   const grant = (kind, stars, st = s) => playGrant(world(kind), st, 'x', { game: 'x' }, NOW, stars);
   const units = k => boardCost(content, 'game', { mechanic: k });
-  for (const k of ['打地鼠', '割绳子', '格斗', '解谜', '你画我猜', '棋牌']) assert.equal(grant(k).progress, Math.round(R(1) * units(k)), k);
+  for (const k of ['打地鼠', '割绳子', '格斗', '解谜', '你画我猜', '棋牌']) assert.equal(grant(k).progress, Math.round(R(1) * units(k) * X.board), k);
   assert.deepEqual(['打地鼠', '割绳子', '解谜'].map(units), [1, 2, 3], 'each its own minutes');
-  assert.equal(grant('解谜', 1).progress, Math.round(R(1) * BOARD * PP.stars['1']), '★1');
+  assert.equal(grant('解谜', 1).progress, Math.round(R(1) * BOARD * X.board * PP.stars['1']), '★1');
   const again = { ...s, plays: { day: '2026-10-27', ids: { x: 1 } } };
-  assert.equal(grant('解谜', null, again).progress, Math.round(R(1) * BOARD * PP.replay[1]), 'the same board again today');
+  assert.equal(grant('解谜', null, again).progress, Math.round(R(1) * BOARD * X.board * PP.replay[1]), 'the same board again today');
   assert.equal(playGrant(content, { tier: 'qi', step: 0 }, 'pintu', { game: 'pintu' }, NOW)?.progress ?? 0, 0, '零层 pays no 修为');
-  assert.equal(grant('棋牌', null, { tier: 'qi', step: 3, plays: null }).progress, Math.round(R(3) * BOARD), '三层: R(3)');
-  assert.equal(playGrant(world('棋牌'), s, 'x', { game: 'x' }, NOW, null, { first: true }).progress, Math.round(R(1) * BOARD * 1.5), 'a story board\'s first clear +50%');
+  assert.equal(grant('棋牌', null, { tier: 'qi', step: 3, plays: null }).progress, Math.round(R(3) * BOARD * X.board), '三层: R(3)');
+  assert.equal(playGrant(world('棋牌'), s, 'x', { game: 'x' }, NOW, null, { first: true }).progress, Math.round(R(1) * BOARD * 1.5 * X.board), 'a story board\'s first clear +50%');
   // A fixed number, not a share: the same at 练气一层 whatever the layer asks (a model's `need`).
   assert.equal(grant('棋牌', null, { ...s, need: 5000 }).progress, grant('棋牌').progress);
 });
@@ -79,7 +79,7 @@ test('古四 at 146/470: the place games at 沉鼎观 each pay their formula num
       const got = d.state.progress - w.state.progress;
       const n = seen.get(id) ?? 0; seen.set(id, n + 1);
       const cost = boardCost(content, 'game', content.games.games.find(g => g.task === id && !g.cut && !g.replaced));
-      const want = Math.round(R(1) * cost * PP.replay[Math.min(n, PP.replay.length - 1)]);
+      const want = Math.round(R(1) * cost * X.board * PP.replay[Math.min(n, PP.replay.length - 1)]);
       if (!d.result.handed?.length) assert.ok(Math.abs(got - want) <= 1, `${id} (play ${n + 1}): +${got}, the formula ${want}`);
       // …and the verb took that board's own 体力 (task done on a hosted board, state.mjs boardCost).
       if (content.tasks.tasks.find((t) => t.id === id)?.hosted) assert.equal(d.state.stamina, 100 - cost, `${id}: ${cost} 体力`);
@@ -116,4 +116,15 @@ test('a board lost costs its 体力 in full (it was played; the coordinator for 
   // A story board (not hosted) lost: nothing.
   const story = content.tasks.tasks.find((x) => x.kind === 'board' && !x.hosted && !x.shouchao && !x.qiecuo);
   assert.equal(task(s, content, ctx, { action: 'lost', id: story.id }).state.stamina, 100, `${story.id}: free`);
+});
+
+test('only small games gain the board factor', () => {
+  const s = { tier: 'qi', step: 1 };
+  const old = structuredClone(content);
+  old.balance.play_pay.xiuwei.board = 1;
+  assert.equal(X.board, 1.5);
+  assert.equal(xiuweiOf(content, s, 3, { board: true }), 1.5 * xiuweiOf(old, s, 3, { board: true }));
+  assert.equal(fightPlay(content, s), fightPlay(old, s));
+  assert.equal(chorePlay(content, s, 'day'), chorePlay(old, s, 'day'));
+  assert.equal(secludeHour(content, s), secludeHour(old, s));
 });

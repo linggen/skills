@@ -36,5 +36,5 @@ test('a 3rd same-day play inside wm-xiongya pays as the first; outside the 秘�
   assert.ok(outside[0] < inside[0] && outside[1] < inside[1]);
   // The hand check (2026-11-02) read 7 · 10 inside, 1 · 1 outside on its own save (its ★ and 层); here, at 二层 with no ★, the
   // first play's numbers inside and a tenth of them outside.
-  assert.deepEqual(outside, [1, 1]);
+  assert.deepEqual(outside, [2, 1], '×1.5 board 修为 rounds the third play up; 灵石 is unchanged');
 });

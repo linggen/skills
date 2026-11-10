@@ -366,6 +366,7 @@ Hanli 2026-11-02, on 1022 修为 in 68 minutes (1.5 layers at 练气四层): 「
 nothing pays a share of the layer at runtime; % of the layer and minutes of play stay only as the reference tools/numbers.mjs
 prints.** (rules/playpay.mjs; balance.json `master.xiuwei` → `play_pay.xiuwei`, derived by `node tools/numbers.mjs --apply`.)
 
+- **2026-11-10 — Hanli:** 「把小游戏奖励修为提高到1.5呗, 加快一点升级速度」: small games and one-game story steps ×1.5; beast fights, chores, 闭关, pills and authored gains unchanged.
 - **Levels.** Each 层 is one level (零层 0, pays none) — past 练气 too since the nine 层 (2026-11-02: 筑基一层 L10 … 九层
   L18, 结丹九层 L27; levelOf); before, a realm's step of three 层 counted three (筑基小成 L12, 中成 15, 大成 18). A realm up: ×`sittings.realm` 1.3 to S and ×`rate.realm` 1.2 to R.
 - **Sittings per level** S(L) = 2 × 1.1^(L−1); a sitting is 100 体力 ≈ 100 minutes. **修为 per 体力** R(L) = 2 × 1.05^(L−1).
@@ -374,7 +375,7 @@ prints.** (rules/playpay.mjs; balance.json `master.xiuwei` → `play_pay.xiuwei`
 - **Reward** = R(content level) × 体力 cost × difficulty (normal 1 · elite 1.5 · boss/副本 2; a first clear +50%) × ★ (0.6 ·
   0.8 · 1.0) × level gap (−15% a level he stands above it, floor 20%; +10% a level below, cap +30%) × replay (the same thing
   the same day 100 · 50 · 10%) × 灵根 · 签 ×1.2 · 宜 ×1.3 (core.mjs amountsOf), × the realm's `pay` (ladder.json, 元婴 ×2 up).
-  At 练气一层: a board (3 体力) 6, a fight (4) 8, a 兽潮 night (5) 10; a story board's first clear 9.
+  At 练气一层: a board (3 体力) 9, a fight (4) 8, a 兽潮 night (5) 15; a story board's first clear rounds to 14.
 - **Content level** is his own unless the thing declares `level` (a task, a grant): place `tier` (0–2) is too coarse to be a
   level and beasts carry none, so routine play stands at his level (gap 1); none is assigned by hand yet.
 - **No 体力 of its own**, priced in 体力-units at the same R (`master.xiuwei.units`): 人间功课 a day 5 (≈10), a week 10, a

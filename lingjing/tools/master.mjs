@@ -139,7 +139,8 @@ export function derive(raw0, { ladder, items }) {
   // 修为 a fixed number (Hanli 2026-11-02: 「不要按照百分比给」, and the formula 「这套公式基本可以」): R · S · difficulty · gap,
   // and what has no 体力 of its own priced in 体力-units (rules/playpay.mjs xiuweiOf).
   const X = M.xiuwei;
-  pp.xiuwei = { rate: { ...X.rate }, sittings: { ...X.sittings }, difficulty: { ...X.difficulty }, gap: { ...X.gap } };
+  // `board`: a small game's 修为 on top of the formula (Hanli, confirmed 2026-11-10: ×1.5) — only where the master declares it.
+  pp.xiuwei = { rate: { ...X.rate }, sittings: { ...X.sittings }, difficulty: { ...X.difficulty }, gap: { ...X.gap }, ...(X.board != null ? { board: X.board } : {}) };
   pp.wall = { day: X.units.wall_day };
   pp.chore = { ...X.units.chore };
   pp.seclusion = { night: X.units.seclusion_night };

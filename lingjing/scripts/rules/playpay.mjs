@@ -2,6 +2,9 @@
 // 给.... 给太多了」 · 「我是说参考百分比的数值. 不能直接给百分比」 — supersedes 10-27's 「按照百分比奖励」; and the formula,
 // 「这套公式基本可以, 先记下来, 以后在调整吧」; doc/design.md § Pay, doc/games.md § Pay). An act pays
 //   R(content level) × its 体力 cost × difficulty × ★ × level gap × replay  (× 灵根 · 签 · 宜, core.mjs amountsOf)
+// — and a small game's (a board, a 秘境 room's boards, a 兽潮 night, a 切磋 bout) × `board` 1.5 on top (Hanli, confirmed
+// 2026-11-10: 「把小游戏奖励修为提高到1.5呗, 加快一点升级速度」); a card fight against a beast, 人间功课, an errand, a wall tag,
+// 闭关, a pill and what the book authors never.
 // R(L) = 2 × 1.05^(L−1), × 1.2 a realm up (the 修为 a 体力 is worth at that level); 体力 ≈ minutes (1 体力 ≈ 1 分钟); difficulty
 // normal 1 · elite 1.5 · boss/副本 2, a first clear +50%; ★ 0.6 · 0.8 · 1.0; the gap −15% a level he stands above the
 // content (to 20%), +10% a level below it (to +30%); the replay 100 · 50 · 10% the same thing the same day. What has no
@@ -74,32 +77,35 @@ export function gapOf(content, mine, theirs) {
   return d < 0 ? Math.max(g.floor, 1 + d * g.below) : Math.min(1 + g.cap, 1 + d * g.above);
 }
 /* What `units` 体力 of play is worth to him now: R at the content's level (his own unless `level` says) × units ×
-   difficulty (`normal` · `elite` · `boss`; `first` a first clear's more) × the gap. Unrounded. */
-export function xiuweiOf(content, state, units, { level = null, difficulty = 'normal', first = false } = {}) {
+   difficulty (`normal` · `elite` · `boss`; `first` a first clear's more) × the gap — and, `board` (the caller says: it is a
+   small game's play), × `play_pay.xiuwei.board` (1 where the world declares none). Unrounded. */
+export function xiuweiOf(content, state, units, { level = null, difficulty = 'normal', first = false, board = false } = {}) {
   const x = X(content), me = levelOf(content, state?.tier, state?.step ?? 0);
   if (!x || !me || !units) return 0;
   const lc = level ?? me.level, realm = me.realm;
   const diff = (x.difficulty?.[difficulty] ?? 1) * (first ? 1 + (x.difficulty?.first_clear ?? 0) : 1);
-  return rateAt(content, lc, realm) * units * diff * gapOf(content, me.level, lc);
+  return rateAt(content, lc, realm) * units * diff * gapOf(content, me.level, lc) * (board ? x.board ?? 1 : 1);
 }
-/* A fight won (the `haunt` table, a pool's beast; 兽潮's night with `play: 'tide'`): the 体力 it costs × the formula. */
+/* A fight won (the `haunt` table, a pool's beast; 兽潮's night with `play: 'tide'`): the 体力 it costs × the formula. A grant
+   that says it is a small game's (`board`: 兽潮's night, a 塔防 board — shouchao.mjs) is paid as one; a card fight never. */
 export function fightPlay(content, state, grant = {}) {
   if (!X(content)) return null;
   // A night of 兽潮 its kit's minutes (`units`, shouchao.mjs: the 塔防 kits run 1 to 5 minutes), else the kind's.
   const units = grant.units ?? staminaCost(content, grant.play === 'tide' ? 'shouchao' : 'duel');
   // `star`: the night's ★ as play_pay.stars prices it (兽潮, shouchao.mjs); a pool's beast has none.
-  return Math.round(xiuweiOf(content, state, units, { difficulty: grant.boss ? 'boss' : grant.difficulty ?? 'normal' }) * (grant.star ?? 1));
+  return Math.round(xiuweiOf(content, state, units, { difficulty: grant.boss ? 'boss' : grant.difficulty ?? 'normal', board: Boolean(grant.board) }) * (grant.star ?? 1));
 }
 /* A story step's 修为 (the `story` table, Hanli 2026-11-09: 「剧情可以给修为, 但要给的和玩一场小游戏差不多」): one small game's
    worth where he stands — `play_pay.story.units` 体力 (a default board's, tools/master.mjs) × R. Never an authored number; a
    larger story gain is only one the scene itself tells (exit.grant `narrated`, content.mjs lintEarned). */
 export function storyPlay(content, state) {
   const units = content.balance?.play_pay?.story?.units;
-  return X(content) && units ? Math.round(xiuweiOf(content, state, units)) : 0;
+  // `board`: one small game's worth, so a small game's factor with it (play_pay.xiuwei.board, 2026-11-10) — it stays a board's.
+  return X(content) && units ? Math.round(xiuweiOf(content, state, units, { board: true })) : 0;
 }
 /* `minutes` of board play (1 体力 ≈ 1 分钟) at full ★ and first play (秘境's rooms; tools/balance.mjs plays it). */
 export function boardPlay(content, state, minutes) {
-  return X(content) ? Math.round(xiuweiOf(content, state, minutes)) : null;
+  return X(content) ? Math.round(xiuweiOf(content, state, minutes, { board: true })) : null;
 }
 /* An authored 修为 is the number the book wrote (2026-11-02): no table scales it by the layer any more — but a pill. A pill's
    number (content.mjs pillPay: its 转's share of the 练气一层 the book is written against) is 体力-units at R(1): it rides
@@ -135,7 +141,7 @@ export function playGrant(content, state, id, task, now, stars = null, { first =
   const share = replay[Math.min(playsToday(state, id, now), replay.length - 1)];
   const f = star * share;
   const units = boardCost(content, 'game', played);
-  const progress = Math.round(xiuweiOf(content, state, units, { level: task?.level ?? null, difficulty: task?.difficulty ?? 'normal', first }) * f);
+  const progress = Math.round(xiuweiOf(content, state, units, { level: task?.level ?? null, difficulty: task?.difficulty ?? 'normal', first, board: true }) * f);
   const wealth = Math.round((pp.wealth?.[kind] ?? pp.wealth?.default ?? 0) * f);
   return progress || wealth ? { table: 'play', progress, wealth, kind, minutes, stamina: units } : null;
 }
