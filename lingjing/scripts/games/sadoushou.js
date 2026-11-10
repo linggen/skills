@@ -24,8 +24,8 @@ export const meta = {
   bot: 'scripts/games/sadoushou/core.js', // its human-like hand (humanBot, headless): tests/game-sadoushou.test.mjs plays every level with it, the story's too
   name: { zh: '撒豆成兵 · 守山门', en: 'Beans into Soldiers · Hold the Gate' },
   how: {
-    zh: '左右拖动选一列，豆兵自己会打：打两边的卡，卡上的数越打越大，接住它队伍就壮；打中间的兽，别让它们撞上山门；石墙打碎了有好东西。大妖冲哪一列，就躲开哪一列。',
-    en: 'Drag left and right to pick a column; the soldiers fire on their own. Shoot the side cards — their numbers grow with every hit — and take them to grow the squad; shoot the beasts in the middle before they reach the gate; break the stone walls for what they hide. When the great beast charges a column, get off it.',
+    zh: '左右拖动选一列，豆兵自己会打：打两边的卡，卡上的数越打越大，接住它队伍就壮；带法术的卡（火弹、冰符……）站到那一列接住才生效；打中间的兽，别让它们撞上山门；石墙打碎了有好东西。大妖冲哪一列，就躲开哪一列。',
+    en: 'Drag left and right to pick a column; the soldiers fire on their own. Shoot the side cards — their numbers grow with every hit — and take them to grow the squad; a card with a power (Fireball, Frost …) works once you stand in its column to take it; shoot the beasts in the middle before they reach the gate; break the stone walls for what they hide. When the great beast charges a column, get off it.',
   },
 
 };

@@ -119,6 +119,9 @@ const PRESETS = {
   dust: ['soft', { speed: { min: 60, max: 200 }, lifespan: { min: 500, max: 900 }, scale: { start: 0.8, end: 2.2 }, alpha: { start: 0.6, end: 0 }, tint: [0xcdb89a, 0xa89277] }],
   debris: ['chunk', { speed: { min: 180, max: 420 }, angle: { min: 200, max: 340 }, lifespan: 800, scale: { min: 0.6, max: 1.3 }, gravityY: 900, rotate: { min: 0, max: 360 }, tint: [0x8a6d4e, 0x6b5a48, 0x9e8a6a] }],
   fire: ['glow', { speed: { min: 60, max: 360 }, lifespan: { min: 300, max: 700 }, scale: { start: 1.3, end: 0.1 }, alpha: { start: 1, end: 0 }, blendMode: 'ADD', color: [0xfff6b0, 0xffb02e, 0xff5a1a, 0x7a1d00], gravityY: -160 }],
+  frost: ['glow', { speed: { min: 40, max: 220 }, lifespan: { min: 400, max: 800 }, scale: { start: 0.55, end: 0 }, alpha: { start: 0.9, end: 0 }, blendMode: 'ADD', tint: [0xe8f8ff, 0x9fdcff, 0x5fb0ff], gravityY: 60 }],
+  zap: ['glow', { speed: { min: 120, max: 420 }, lifespan: { min: 150, max: 320 }, scale: { start: 0.5, end: 0 }, blendMode: 'ADD', tint: [0xffffff, 0xd9c2ff, 0x9f7aff] }],
+  spit: ['soft', { speed: { min: 60, max: 220 }, lifespan: { min: 300, max: 600 }, scale: { start: 0.45, end: 0.9 }, alpha: { start: 0.9, end: 0 }, tint: [0xb6d65a, 0x7f9f2a, 0xd6e88a], gravityY: 400 }],
   stars: ['star', { speed: { min: 140, max: 340 }, lifespan: 700, scale: { start: 0.9, end: 0.2 }, rotate: { min: 0, max: 360 }, gravityY: 500, tint: [0xffe14d, 0xfff6c2] }],
 };
 

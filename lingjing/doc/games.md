@@ -1965,3 +1965,23 @@ is unchanged.
   马三要跺棍子了！快换列！ · 马小宝停下来吃桂花糕！ · 飞剑！; the 结印 call 「做梦嘛——当一回仙人！结印！」 and bubble
   「对着摄像头，比个剑诀——飞剑就出去！」; the task's 「三只碗，还在灶台上。——想想而已。」 and its how; 00-zaotai's setup,
   recap and panel.
+- **兽潮 nights: powers, roles, a ceiling (2026-11-10).** Hanli at 第20潮 (练气八层, a squad of 1002 against a wave of 81):
+  「开始难度还行, 后面太简单, 一直打野猪, 没有其他妖. 两边的卡有点单调…提高下可玩性」 → 「可以，按这个做」. The ladder and 守灶台
+  are unchanged (their rows name none of this; their sims are identical).
+  - **Powers on the side cards** (sadoushou.json `fx`; a card `{ fx, n, cap, step }`): shot, the number charges to its
+    cap (shots then fly past it); taken at the line (the squad under it) it fires — never by itself. Attack forms, ONE
+    on at a time (a new one replaces it; a chip over the squad shows it and its seconds): **火弹** shots burst (more on
+    the group hit, some on any group beside it), **连珠** twice the shots, **分兵** a shot up every column, **穿云**
+    through a group and on, and through armour. At once: **冰符** slows the road, **雷符** strikes the front ranks of
+    every group, **换命卡** gives up a share of the squad (shooting brings the cost down) for a tier. Each with a hint
+    (≤ 20 字) the first time it comes; drawn in code (its colour, light shots), no new painting; the sounds are the kit's.
+  - **Beasts with roles** (a beast row's `walker`, riding in the night's `roles`): 野猪 many, straight down · 狰 thick
+    hide · 鬿雀 fly, the flock changes column · 犰狳 stop at range and spit soldiers off until killed · 合窳 (new on the
+    road, smaller than the 大妖) armoured, 火弹 · 穿云 · 雷符 open it · 蠪侄 (new on the road) burst near the wall.
+    The only two book beasts with a 回 and painted frames beyond the four (shouqiang / sadou art).
+  - **The twenty levels** (tools/tide-levels.mjs, games/sadoushou/tide.js): a theme of 2–3 kinds, from the 5th never a
+    wave of boars alone, a 大妖 on every fifth (the maker's `bossEvery`); powers open level by level (火弹 · 冰符, 连珠 3rd,
+    雷符 5th, 穿云 7th, 分兵 10th, 换命 13th); a squad ceiling `cap` 130 → 260 and the later waves counted against it, a
+    rout turned up (the maker's guard: 19 of 20 human plays), and past the 4th a layout still a rout skipped. Each kept
+    only when the human hand wins it 8/8 (`--need 8`). End of level, before → after (human hand): 1 · 1133 squad vs a last wave of 487 → 130 vs 323; 20 · 608 vs
+    252 → 136 vs 1015 (tests/tide-sadoushou.test.mjs).

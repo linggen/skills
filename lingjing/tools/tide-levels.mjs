@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // tools/tide-levels.mjs — 兽潮's levels: twenty a kit, rising (Hanli 2026-10-28: 「塔防类的可以适当加到20个关卡, 每一种, 撒豆成兵,
 // 守城墙, 守炉」). Each 主力 塔防 kit's maker (games/<kit>/tide.js) is asked for level i of 20 at tier i/19, with the beasts
-// of the 回 that level is for (古四's first six, 古五's next seven, 古八's last seven) and a 大妖 every third level (its
-// kit able); each layout new, and kept only once its human-like hand wins it on at least `--need` of `--seeds` plays it
-// never made it on (`prove`, no 结印). Written to worlds/jiuding/levels/tide.json, which rules/shouchao.mjs deals in order
+// of the 回 that level is for (古四's first six, 古五's next seven, 古八's last seven), its number (`level`), and a 大妖
+// every third level (its kit able; a maker's `bossEvery` over it — 守山门 every fifth); each layout new, and kept only
+// once its human-like hand wins it on at least `--need` of `--seeds` plays it never made it on (`prove`, no 结印) — and,
+// where the maker says (`fair`), its own guard passed. Written to worlds/jiuding/levels/tide.json, which rules/shouchao.mjs deals in order
 // before the makers' own nights (tests/tide-levels.test.mjs re-proves them).
 //
 //   node tools/tide-levels.mjs [--kit shouqiang] [--seeds 8] [--need 6] [--dry]
@@ -24,6 +25,8 @@ const tableOf = (g) => kitOf(content, g) ?? (content.games?.games ?? []).find((x
 const openAt = (h) => new Set(creatures.filter((c) => c.hui && huiOrder(content, c.hui) <= huiOrder(content, h)).map((c) => c.id));
 export const BANDS = [{ from: 0, hui: 'h05' }, { from: 6, hui: 'h07' }, { from: 13, hui: 'h09' }];
 const huiFor = (i) => BANDS.filter((b) => i >= b.from).at(-1).hui;
+/* A 大妖 level: every third (the third, sixth …), or every `bossEvery`th where the kit's maker says (守山门: every fifth). */
+export const bossAt = (maker, i) => Boolean(maker.boss) && (maker.bossEvery ? (i + 1) % maker.bossEvery === 0 : i % 3 === 2);
 
 const out = fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, 'utf8')) : {};
 out._about = 'Twenty 兽潮 levels a 主力 塔防 kit, rising (Hanli 2026-10-28: 「塔防类的可以适当加到20个关卡, 每一种」): written by tools/tide-levels.mjs from each kit\'s maker (games/<kit>/tide.js), every one won by its human-like hand without 结印 on at least `need` of `seeds` plays (`won`); `hui` the 回 whose beasts it plays, `boss` a 大妖 in it. rules/shouchao.mjs deals a kit\'s levels in order (a 大妖\'s night its next boss level), then its maker\'s own nights. tests/tide-levels.test.mjs re-proves them.';
@@ -31,11 +34,12 @@ for (const [game, maker] of Object.entries(TIDES)) {
   if (ONLY && game !== ONLY) continue;
   const table = tableOf(game), used = new Set(), levels = [];
   for (let i = 0; i < 20; i += 1) {
-    const hui = huiFor(i), open = openAt(hui), tier = Math.round((i / 19) * 1000) / 1000, boss = maker.boss && i % 3 === 2;
+    const hui = huiFor(i), open = openAt(hui), tier = Math.round((i / 19) * 1000) / 1000, boss = bossAt(maker, i);
     let kept = null;
     for (let t = 0; t < 30 && !kept; t += 1) {
-      const n = maker.night(table, { seed: `tide-level|${game}|${i}|${t}`, tier, boss, open: (k) => open.has(k) });
-      if (!n || used.has(n.sig)) continue;
+      const n = maker.night(table, { seed: `tide-level|${game}|${i}|${t}`, tier, boss, open: (k) => open.has(k), level: i + 1 });
+      if (!n || used.has(n.sig) || n.fair === false) continue; // a maker that says its own guard never passed: the next
+      if (n.rout && i >= 4 && t < 29) continue; // a rout past the first four (a maker that says so): the next layout
       const won = Array.from({ length: SEEDS }, (_, j) => maker.prove(table, n.deal, `lv-prove|${j}`, creatures)).filter(Boolean).length;
       if (won >= NEED) kept = { i: i + 1, tier, hui, boss: n.boss, kinds: n.kinds, sig: n.sig, won: `${won}/${SEEDS}`, deal: n.deal };
       else console.log(`${game} ${i + 1}: try ${t} won ${won}/${SEEDS}, again`);

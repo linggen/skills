@@ -7,7 +7,7 @@
 // beasts: 守墙关's frames), laid out every frame by the engine's numbers and scaled by depth — no physics, no tween per
 // unit, no per-frame depth changes (layers keep a fixed order; a wave's beasts are handed out far to near).
 import * as Phaser from 'phaser';
-import { newGame, step, aim, waveLeft, waveCount, perRank, hordeAll, tierOf, colMid, castJieyin, bossRows, COLS, TOP } from 'sadoushou-core';
+import { newGame, step, aim, waveLeft, waveCount, perRank, hordeAll, tierOf, colMid, colOf, castJieyin, bossRows, fxOf, capOf, COLS, TOP } from 'sadoushou-core';
 import { W, H, CX, Y0, HY, HALF, CARD, sOf, yOf, xOf, zOfY, uOfX } from './view.js';
 import { makeTextures, makeNumberFont, makeEmitters, rng, canvasTex, rounded } from './fx.js';
 import { Hud, SealGlow, WORDS, text } from './hud.js';
@@ -25,6 +25,12 @@ const HAND = { u: 0.72, v: 0.3 }; // xiaoman-cast.webp's raised hand (its glowin
 const SPELL = { fly: 300, num: 100, slow: 0.4 };
 const D = { ground: 0, beast: 20, boss: 25, belt: 27, shot: 30, squad: 32, rush: 35, wall: 40, man: 41, fx: 3000, num: 3100, hud: 4000 };
 const TIER_TINT = [0xffffff, 0xfff0c8, 0xe0a060];
+// a power's look (its row's `color` over these): the card's face, the chip, the shot. Shots by form: a burning ball
+// (火弹), quick small bolts (连珠), green bolts up every column (分兵), a long white streak (穿云) — light, no painting.
+const FX_COLOR = { huo: 0xff7a2a, lian: 0x5fe0ff, fen: 0x8fe36b, chuan: 0xe8f4ff, bing: 0x9fdcff, lei: 0xc9a2ff, huan: 0xd0405a };
+const SHOT_LOOK = { huo: { sx: 1.25, sy: 1.25, glow: 0xff7a2a }, lian: { sx: 0.5, sy: 0.9, glow: 0x5fe0ff }, fen: { sx: 0.7, sy: 0.9, glow: 0x8fe36b }, chuan: { sx: 0.4, sy: 2.4, glow: 0xe8f4ff } };
+const hexOf = (c) => (typeof c === 'string' ? Phaser.Display.Color.HexStringToColor(c).color : c);
+const SLOW_TINT = 0xa8dcff; // the beasts under 冰符
 const backOut = (t) => 1 + 2.70158 * (t - 1) ** 3 + 1.70158 * (t - 1) ** 2;
 const quadOut = (t) => t * (2 - t);
 const hash = (j, k = 1) => (((j * 2654435761 + k * 40503) >>> 0) % 10007) / 10007; // a stable 0…1 per beast
@@ -159,6 +165,12 @@ export class PlayScene extends Phaser.Scene {
     card('card-blue', ['rgba(120,214,255,0.92)', 'rgba(36,110,230,0.85)'], '#0b2556');
     card('card-gold', ['rgba(255,240,140,0.95)', 'rgba(255,160,10,0.9)'], '#5a2a00');
     card('card-red', ['rgba(255,120,110,0.92)', 'rgba(170,16,34,0.88)'], '#4a0610');
+    // a power's card (a row in the level's `fx`, or the kit's): its own colour, a darker rim, a light band across
+    for (const id of Object.keys({ ...(this.cfg.kit.fx ?? {}), ...(this.cfg.level.fx ?? {}) }).filter((k) => !k.startsWith('_'))) {
+      const col = Phaser.Display.Color.IntegerToColor(hexOf(fxOf(this.g, id).color ?? FX_COLOR[id] ?? 0xffffff));
+      const rgba = (k, a) => `rgba(${Math.round(col.red * k)},${Math.round(col.green * k)},${Math.round(col.blue * k)},${a})`;
+      card(`card-fx-${id}`, [rgba(1, 0.95), rgba(0.55, 0.92)], rgba(0.25, 1));
+    }
     canvasTex(this, 'block', 180, 130, (c, w, h) => {
       const g = c.createLinearGradient(0, 0, 0, h);
       g.addColorStop(0, '#b9b4a8'); g.addColorStop(1, '#6f6a60');
@@ -263,8 +275,10 @@ export class PlayScene extends Phaser.Scene {
     const wallPic = it.kind === 'block' && it.icon;
     const img = this.add.image(0, 0, wallPic ? it.icon : it.kind === 'block' ? 'block' : 'card-blue').setOrigin(0.5, 1).setDepth(d);
     const icon = it.kind === 'card' && it.icon ? this.add.image(0, 0, it.icon).setOrigin(0.5, 1).setDepth(d + 0.00005) : null;
-    const label = this.add.bitmapText(0, 0, 'numGood', '', 60).setOrigin(0.5).setDepth(d + 0.0001);
-    v = { img, icon, label, punch: 0, face: null, pic: Boolean(wallPic) };
+    // a power's card says what it is and its number in words (火弹 6秒 · 雷符 ×2 · 换命 −30%), the font's
+    // (a Text redraws its canvas on every size change: drawn once at 34 px, then only scaled as it rides down)
+    const label = it.fx ? text(this, 0, 0, '', 34, { thick: 6 }).setLineSpacing(-8).setDepth(d + 0.0001) : this.add.bitmapText(0, 0, 'numGood', '', 60).setOrigin(0.5).setDepth(d + 0.0001);
+    v = { img, icon, label, punch: 0, face: null, pic: Boolean(wallPic), fx: it.fx };
     this.cards.set(it.id, v);
     return v;
   }
@@ -290,6 +304,7 @@ export class PlayScene extends Phaser.Scene {
         v.label.setFont('numSmall').setText(String(Math.ceil(it.hp))).setPosition(x, y - wpx * 0.36).setFontSize(Math.round(18 + 30 * s)).setScale(k);
         continue;
       }
+      if (v.fx) { this.drawPowerCard(it, v, x, y, s, wpx, k); continue; }
       const n = Math.floor(it.n), face = it.gold ? 'card-gold' : n < 0 ? 'card-red' : 'card-blue';
       if (v.face !== face) { v.face = face; v.img.setTexture(face); v.label.setFont(it.gold ? 'numGold' : n < 0 ? 'numBad' : 'numGood'); }
       v.img.setPosition(x, y + 4 * s).setDisplaySize(wpx * k, wpx * 0.72 * k);
@@ -297,6 +312,21 @@ export class PlayScene extends Phaser.Scene {
       if (v.icon) v.icon.setPosition(x - wpx * 0.2 * k, y - wpx * 0.1).setDisplaySize(wpx * 0.46 * k, wpx * 0.46 * k * (v.icon.height / v.icon.width));
       v.label.setText(n < 0 ? `-${-n}` : `+${n}`).setPosition(v.icon ? x + wpx * 0.2 * k : x, y - wpx * 0.36).setFontSize(Math.round(20 + 36 * s)).setScale(k);
     }
+  }
+
+  /** What a power's card reads: its short name and its number (seconds · ranks · the cost). */
+  powerWords(it) {
+    const f = fxOf(this.g, it.fx), name = f.short?.[this.lang] ?? f.name?.[this.lang] ?? it.fx, en = this.lang === 'en';
+    if (it.fx === 'lei') return `${name}\n×${Math.max(1, Math.floor(it.n))}`;
+    if (it.fx === 'huan') return `${name}\n-${Math.round(-it.n)}%`;
+    return `${name}\n${Math.floor(it.n)}${en ? 's' : '秒'}`;
+  }
+
+  drawPowerCard(it, v, x, y, s, wpx, k) {
+    const face = `card-fx-${it.fx}`;
+    if (v.face !== face) { v.face = face; v.img.setTexture(this.textures.exists(face) ? face : 'card-blue'); }
+    v.img.setPosition(x, y + 4 * s).setDisplaySize(wpx * k, wpx * 0.72 * k);
+    v.label.setText(this.powerWords(it)).setPosition(x, y - wpx * 0.36).setScale(((12 + 22 * s) / 34) * k); // setText redraws only when the words change
   }
 
   // ---------------------------------------------------------------- pools: the squad, the stream, beasts, ghosts, numbers
@@ -309,13 +339,38 @@ export class PlayScene extends Phaser.Scene {
     this.shots = Array.from({ length: MAXS }, () => this.add.image(0, 0, 'units', 'soldier-1').setOrigin(0.5, 0.92).setDepth(D.shot).setVisible(false));
     this.beasts = Array.from({ length: MAXB }, () => { const s = this.add.image(0, 0, 'units', 'bean').setOrigin(0.5, 0.9).setDepth(D.beast).setVisible(false); s.key = null; return s; });
     this.srcH = new Map();
-    this.wavePills = Array.from({ length: 5 }, () => ({
+    this.wavePills = Array.from({ length: 8 }, () => ({
       pill: this.add.image(0, 0, 'pill-red').setDepth(D.num).setVisible(false),
       num: this.add.bitmapText(0, 0, 'numBig', '', 44).setOrigin(0.5).setDepth(D.num + 1).setVisible(false),
     }));
     this.ghosts = [];
     this.nums = [];
     this.squadX = CX;
+    // the attack form on (core.js g.form): a chip over the squad — its name, the seconds left, a bar running down
+    this.chip = {
+      back: this.add.graphics().setDepth(D.num + 3),
+      label: text(this, 0, 0, '', 20, { thick: 5 }).setDepth(D.num + 4).setVisible(false),
+      glow: this.add.image(0, 0, 'glow').setBlendMode(Phaser.BlendModes.ADD).setDepth(D.squad - 0.5).setVisible(false),
+    };
+  }
+
+  /** The form chip: over the squad, following it; the frost under it while 冰符 holds. */
+  drawChip() {
+    const g = this.g, c = this.chip, f = g.form, slow = g.slowT > 0;
+    c.back.clear();
+    if (!f && !slow) { c.label.setVisible(false); c.glow.setVisible(false); return; }
+    const x = Phaser.Math.Clamp(this.squadX, 70, W - 70), y = Y0 - 92;
+    const parts = [];
+    if (f) parts.push(`${fxOf(g, f.id).name?.[this.lang] ?? f.id} ${Math.ceil(f.t)}${this.lang === 'en' ? 's' : '秒'}`);
+    if (slow) parts.push(`${fxOf(g, 'bing').short?.[this.lang] ?? '冰'} ${Math.ceil(g.slowT)}${this.lang === 'en' ? 's' : '秒'}`);
+    c.label.setVisible(true).setText(parts.join(' · ')).setPosition(x, y - 2);
+    const w = Math.max(96, c.label.width + 24), col = hexOf(f ? fxOf(g, f.id).color ?? FX_COLOR[f.id] : fxOf(g, 'bing').color ?? FX_COLOR.bing);
+    c.back.fillStyle(0x0a0814, 0.72).fillRoundedRect(x - w / 2, y - 17, w, 34, 14).lineStyle(3, col, 1).strokeRoundedRect(x - w / 2, y - 17, w, 34, 14);
+    const share = f ? Phaser.Math.Clamp(f.t / Math.max(0.1, f.of), 0, 1) : Phaser.Math.Clamp(g.slowT / 6, 0, 1);
+    c.back.fillStyle(col, 1).fillRoundedRect(x - w / 2 + 8, y + 10, (w - 16) * share, 4, 2);
+    // the squad glows in the form's colour
+    if (f && !this.calm) c.glow.setVisible(true).setTint(col).setPosition(this.squadX, Y0 - 22).setScale(5.5, 2.4).setAlpha(0.35 + 0.15 * Math.sin(this.time.now / 120));
+    else c.glow.setVisible(false);
   }
 
   texH(key) {
@@ -346,7 +401,15 @@ export class PlayScene extends Phaser.Scene {
     let k = 0;
     for (const s of g.shots) {
       if (k >= MAXS) break;
-      const sc = sOf(s.z), m = this.shots[k++];
+      const sc = sOf(s.z), m = this.shots[k++], look = s.form ? SHOT_LOOK[s.form] : null;
+      if (look) { // a form's shot: light, its colour, its shape
+        if (m.look !== s.form) { m.look = s.form; m.setTexture('glow').setBlendMode(Phaser.BlendModes.ADD).setOrigin(0.5, 0.5).setTint(look.glow); }
+        const pulse = s.form === 'huo' ? 1 + 0.15 * Math.sin(t * 30 + k) : 1;
+        m.setVisible(true).setPosition(xOf(s.x, s.z), yOf(s.z) - 14 * sc).setScale(look.sx * sc * pulse, look.sy * sc * pulse);
+        if (s.form === 'huo' && !this.calm && this.rand() < 0.08) this.em.burst('fire', 1, m.x, m.y);
+        continue;
+      }
+      if (m.look) { m.look = null; m.setTexture('units', 'soldier-1').setBlendMode(Phaser.BlendModes.NORMAL).setOrigin(0.5, 0.92); }
       m.setVisible(true).setFrame(((t * 12 + k) | 0) & 1 ? this.run2 : 'soldier-1').setPosition(xOf(s.x, s.z), yOf(s.z)).setScale(this.manScale * sc * 0.9);
       if (m.tintTopLeft !== tint) m.setTint(tint);
     }
@@ -356,7 +419,7 @@ export class PlayScene extends Phaser.Scene {
   /** The waves: a loose, jostling crowd down the middle — each beast its own stable offset, size and facing, the
       edges ragged — as many as the budget shows, handed out far to near; its number over its back. */
   drawBeasts() {
-    const g = this.g, t = this.time.now / 1000, kit = this.cfg.kit;
+    const g = this.g, t = this.time.now / 1000, beasts = g.beasts, slow = g.slowT > 0;
     const waves = [...g.live].sort((a, b) => b.front - a.front);
     const total = waves.reduce((s, w) => s + waveCount(w), 0) || 1;
     let k = 0, pi = 0;
@@ -374,17 +437,18 @@ export class PlayScene extends Phaser.Scene {
         const z = wv.front + r * gap + jz + (r === 0 ? Math.abs(jz) : 0);
         const u = Phaser.Math.Clamp(wv.span[0] + ((col + 0.5 + ju) / per) * wid + jost, wv.span[0] - 0.04, wv.span[1] + 0.04);
         back = Math.max(back, z);
-        const b = kindAt(j), kb = kit.beasts[b];
+        const b = kindAt(j), kb = beasts[b];
         const key = `${b}-${kb.frames[Math.floor(t * 6 + hash(j, 3) * 4) % kb.frames.length]}`;
         const sp = this.beasts[k];
         if (sp.key !== key) { sp.setTexture(key); sp.key = key; }
         const sc = sOf(z), size = kb.size * (0.85 + hash(j, 4) * 0.3);
         const bob = kb.fly ? Math.sin(t * 7 + j) * 10 * sc + 16 * sc : Math.abs(Math.sin(t * 8 + j)) * 3 * sc;
         sp.setVisible(true).setPosition(xOf(u, z), yOf(z) - bob).setScale((size * sc) / this.texH(key)).setFlipX(hash(j, 5) < 0.35);
+        if (sp.slowed !== slow) { sp.slowed = slow; if (slow) sp.setTint(SLOW_TINT); else sp.clearTint(); }
       }
       const p = this.wavePills[pi++];
-      if (p) { // over its back rank, in the middle column — never over the side columns' cards
-        const zb = back + 3, sc = sOf(zb), x = xOf(colMid('M'), zb), y = yOf(zb) - 90 * sc - 22;
+      if (p) { // over its back rank, in the column it walks (the middle, or where a flock has flown) — over the group, never beside it
+        const zb = back + 3, sc = sOf(zb), x = xOf(colMid(colOf((wv.span[0] + wv.span[1]) / 2)), zb), y = yOf(zb) - 90 * sc - 22;
         const sx = Math.min((0.55 + String(n).length * 0.2) * (0.5 + sc * 0.4), ((COLS.M[1] - COLS.M[0]) * HALF * sc) / 180);
         p.pill.setVisible(true).setPosition(x, y).setScale(sx, 0.5 + sc * 0.4);
         p.num.setVisible(true).setPosition(x, y - 3).setText(String(n)).setScale(0.5 + sc * 0.4);
@@ -571,7 +635,7 @@ export class PlayScene extends Phaser.Scene {
     if (e.gives === 'tier') {
       this.flash(160, 255, 236, 180);
       this.hud.banner(tierOf(this.g).name[this.lang], { color: '#ffe36b', ribbon: true, y: 400 });
-      this.hud.setTier(tierOf(this.g).name[this.lang]);
+      this.hud.setTier(this.tierLabel());
       this.say('tier', true);
     }
   }
@@ -579,6 +643,7 @@ export class PlayScene extends Phaser.Scene {
   on_card(e) {
     const x = xOf(colMid(e.col), Math.max(0, e.z)), y = yOf(Math.max(0, e.z));
     this.dropCard(e.id);
+    if (e.fx) { this.em.burst('gold', 18, x, y - 30); return; } // a power's own event (bing · lei · huan) draws the rest
     const good = e.n >= 0, big = e.n >= 20;
     this.em.burst(good ? 'gold' : 'bad', big ? 40 : 16, x, y - 30);
     if (big) { this.em.burst('stars', 12, x, y - 40); this.flash(90, 255, 230, 140); }
@@ -587,16 +652,117 @@ export class PlayScene extends Phaser.Scene {
     if (good && e.how === 'line') this.sayOnce('card');
   }
 
+  /** A power's name over the squad, in its colour. */
+  powerBanner(id, extra = '') {
+    const f = fxOf(this.g, id);
+    const col = Phaser.Display.Color.IntegerToColor(hexOf(f.color ?? FX_COLOR[id] ?? 0xffffff)).rgba;
+    this.hud.banner(`${f.name?.[this.lang] ?? id}${extra}`, { color: col, y: 600 });
+  }
+
+  /** An attack form taken: the chip comes up over the squad (drawChip); a new one replaces the one on. */
+  on_form(e) {
+    this.dropCard(e.id);
+    const x = xOf(colMid(e.col), Math.max(0, e.z)), y = yOf(Math.max(0, e.z));
+    this.em.burst(e.form === 'huo' ? 'fire' : e.form === 'chuan' ? 'spark' : 'gold', 24, x, y - 30);
+    this.em.burst('stars', 8, this.squadX, Y0 - 60);
+    this.powerBanner(e.form);
+    this.sfx.good();
+    this.hud.punch();
+    this.fact({ t: 'form', form: e.form, sec: e.sec, was: e.was });
+  }
+
+  on_form_end() { this.em.burst('poof', 6, this.squadX, Y0 - 92); }
+
+  /** 冰符: the road frosts over (the beasts tinted while it holds: drawBeasts). */
+  on_bing(e) {
+    this.powerBanner('bing');
+    this.flash(160, 170, 220, 255);
+    for (const w of this.g.live) { const z = Math.min(w.front, TOP); this.em.burst('frost', 22, xOf((w.span[0] + w.span[1]) / 2, z), yOf(z) - 20); }
+    this.em.burst('frost', 20, this.squadX, Y0 - 40);
+    this.sfx.tick();
+    this.fact({ t: 'power', fx: 'bing', sec: e.sec });
+  }
+
+  /** 雷符: a bolt from the sky onto each front it struck. */
+  on_lei(e) {
+    this.powerBanner('lei');
+    this.flash(120, 220, 200, 255);
+    this.shake(260, 0.014);
+    const bolt = this.add.graphics().setDepth(D.fx).setBlendMode(Phaser.BlendModes.ADD);
+    for (const h of e.hits) {
+      const z = Math.min(h.z, TOP), x = xOf(h.x, z), y = yOf(z) - 20;
+      let px = x + (this.rand() - 0.5) * 80, py = HY - 40;
+      bolt.lineStyle(10, 0x9f7aff, 0.5).beginPath().moveTo(px, py);
+      const pts = [];
+      for (let i = 1; i <= 7; i += 1) { const k = i / 7; pts.push([x + (1 - k) * (px - x) + (this.rand() - 0.5) * 50 * (1 - k), py + (y - py) * k]); }
+      for (const [qx, qy] of pts) bolt.lineTo(qx, qy);
+      bolt.strokePath().lineStyle(3, 0xffffff, 1).beginPath().moveTo(px, py);
+      for (const [qx, qy] of pts) bolt.lineTo(qx, qy);
+      bolt.strokePath();
+      this.em.burst('zap', 26, x, y);
+      if (h.killed) this.num(x, y - 40, `-${h.killed}`, 'numBig', 40, { rise: 50 });
+    }
+    this.tweens.add({ targets: bolt, alpha: 0, duration: 380, onComplete: () => bolt.destroy() });
+    this.sfx.slam();
+    this.fact({ t: 'power', fx: 'lei', rows: e.rows });
+  }
+
+  /** 换命: soldiers given up fly off, the squad rises a tier (or its attack a step). */
+  on_huan(e) {
+    for (let i = 0; i < Math.min(24, e.lost); i += 1) {
+      const [ox, oy] = SLOTS[i % SLOTS.length];
+      this.ghost('units', 'soldier-1', this.squadX + ox, Y0 - oy * 1.6, this.manScale, { vx: (this.rand() - 0.5) * 300, vy: -380 - this.rand() * 260, spin: (this.rand() - 0.5) * 12, life: 0.8, tint: 0xd0405a });
+    }
+    if (e.lost) this.num(this.squadX, Y0 - 90, `-${e.lost}`, 'numBad', 60, { rise: 60 });
+    this.em.burst('gold', 30, this.squadX, Y0 - 50);
+    this.flash(160, 255, 220, 160);
+    this.hud.banner(e.up ? tierOf(this.g).name[this.lang] : `${fxOf(this.g, 'huan').name?.[this.lang] ?? ''} ×${e.boost.toFixed(2)}`, { color: '#ffe36b', ribbon: true, y: 400 });
+    this.hud.setTier(this.tierLabel());
+    this.sfx.bad();
+    this.time.delayedCall(240, () => this.sfx.good());
+    this.fact({ t: 'power', fx: 'huan', lost: e.lost, tier: e.tier });
+  }
+
+  /** 犰狳 spit: a gob from where they stand onto the squad, a few soldiers knocked off. */
+  on_spit(e) {
+    const z = Math.min(e.z, TOP), from = { x: xOf(e.x, z), y: yOf(z) - 30 * sOf(z) }, to = { x: this.squadX, y: Y0 - 30 };
+    const gob = this.add.image(from.x, from.y, 'glow').setTint(0x9fbf3a).setScale(1.2).setDepth(D.fx);
+    this.tweens.add({ targets: gob, x: to.x, y: to.y, scale: 2, duration: this.calm ? 120 : 380, ease: 'Quad.easeIn', onComplete: () => {
+      gob.destroy();
+      this.em.burst('spit', 14, to.x, to.y);
+      if (e.n) { this.num(to.x + 40, Y0 - 80, `-${e.n}`, 'numBad', 44, { rise: 50 }); for (let i = 0; i < Math.min(8, e.n); i += 1) { const [ox, oy] = SLOTS[i]; this.ghost('units', 'soldier-1', this.squadX + ox, Y0 - oy * 1.6, this.manScale, { vx: (this.rand() - 0.5) * 260, vy: -300, spin: 8, life: 0.6 }); } }
+      this.sfx.hit();
+    } });
+  }
+
+  /** 蠪侄 bursting near the wall: fire where they fell, soldiers knocked off. */
+  on_burst(e) {
+    const z = Math.min(e.z, TOP), x = xOf(e.x, z), y = yOf(z) - 20;
+    if (this.time.now - (this.burstAt ?? 0) < 120) { this.burstSum = (this.burstSum ?? 0) + e.lost; return; }
+    this.burstAt = this.time.now;
+    this.em.burst('fire', 20, x, y);
+    this.shake(120, 0.008);
+    const lost = e.lost + (this.burstSum ?? 0);
+    this.burstSum = 0;
+    if (lost) this.num(this.squadX - 40, Y0 - 80, `-${lost}`, 'numBad', 44, { rise: 50 });
+    this.sfx.thud();
+  }
+
+  /** The tier's name over the count, 换命's boost beside it. */
+  tierLabel() { const b = this.g.boost ?? 1; return `${tierOf(this.g).name[this.lang]}${b > 1.001 ? ` ×${b.toFixed(2)}` : ''}`; }
+
   on_strike(e) {
     this.strikes = (this.strikes ?? 0) + 1;
     if (this.strikes > 6) return;
     const sc = sOf(e.z), x = xOf(e.x, e.z), y = yOf(e.z) - 20 * sc;
     this.em.burst('spark', 3, x, y);
     if (e.killed) {
-      const wv = this.g.live.find((w) => w.i === e.wave);
+      const wv = this.g.live.find((w) => w.id === e.g) ?? this.g.live.find((w) => w.i === e.wave);
       const b = wv ? [...waveLeft(wv)].reverse().find((u) => u.n > 0)?.b ?? wv.units.at(-1).b : null;
+      if (e.form === 'huo') this.em.burst('fire', 4, x, y);
+      else if (e.form === 'chuan') this.em.burst('spark', 4, x, y - 20 * sc);
       if (b && this.rand() < 0.7) {
-        const kb = this.cfg.kit.beasts[b], key = `${b}-${kb.hit}`;
+        const kb = this.g.beasts[b], key = `${b}-${kb.hit}`;
         this.ghost(key, null, x, y + 10 * sc, (kb.size * sc) / this.texH(key), { vx: (this.rand() - 0.5) * 220, vy: -260 - this.rand() * 220, spin: (this.rand() - 0.5) * 10, life: 0.5 });
         this.em.burst('poof', 2, x, y);
       }
@@ -738,8 +904,22 @@ export class PlayScene extends Phaser.Scene {
     for (const it of this.g.belt) {
       if (it.gone || it.z > TOP - 10) continue;
       if (it.kind === 'block') this.sayOnce('wall');
+      else if (it.fx) this.tell(`fx-${it.fx}`, fxOf(this.g, it.fx).hint);
       else if (it.n < 0) this.sayOnce('red');
     }
+    // a 兽潮 night's kinds, each told once the first time its group is on the road (its `walker` hint)
+    if (this.g.level.roles) for (const w of this.g.live) if (w.front < TOP - 6) for (const u of w.units) this.tell(`beast-${u.b}`, this.g.beasts[u.b]?.hint);
+  }
+
+  /** A hint (a power's, a beast's) in 银月's bubble, once a run, no two within 3 s. */
+  tell(key, hint) {
+    if (!hint || this.said.has(key)) return;
+    const now = this.time.now / 1000;
+    if (now - (this.toldAt ?? -99) < 3) return;
+    this.toldAt = now;
+    this.said.add(key);
+    this.saidAt = now;
+    this.hud.say(hint[this.lang] ?? hint.zh);
   }
 
   // ---------------------------------------------------------------- 结印 (games/jieyin/helper.js makes the seals; the page calls these)
@@ -857,10 +1037,11 @@ export class PlayScene extends Phaser.Scene {
     this.drawBeasts();
     this.drawShots();
     this.drawSquad(dt);
+    this.drawChip();
     this.drawBoss(dt);
     this.drawGhosts(dt);
     this.drawNums(dt);
-    this.hud.tick(dt, { horde: hordeAll(g), count: g.squad, wall: g.wall.hp, wallMax: g.wall.max });
+    this.hud.tick(dt, { horde: hordeAll(g), count: g.squad, wall: g.wall.hp, wallMax: g.wall.max, full: g.squad >= capOf(g) });
     if (this.hud.fps && (this.fpsT = (this.fpsT ?? 0) + dt) > 0.25 && !(this.fpsT = 0)) {
       this.hud.fps.setText(`FPS ${this.game.loop.actualFps.toFixed(0)} · 豆${this.shownSquad ?? 0}/${g.squad} · 飞${g.shots.length} · 兽${this.shownBeasts ?? 0}`);
     }

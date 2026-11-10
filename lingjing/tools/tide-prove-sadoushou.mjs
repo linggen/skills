@@ -6,7 +6,7 @@
 //
 //   node tools/tide-prove-sadoushou.mjs [--nights 40] [--tries 6] [--sigs 2000]
 import { readFileSync } from 'node:fs';
-import { tide, proven } from '../scripts/games/sadoushou/tide.js';
+import { tide } from '../scripts/games/sadoushou/tide.js';
 import { sim, humanBot, BOTS } from '../scripts/games/sadoushou/core.js';
 import { levelDealt } from '../scripts/games/sadoushou.js';
 
@@ -27,8 +27,7 @@ for (const h of ['h05', 'h07', 'h09']) for (const boss of [false, true]) for (co
     const night = tide.night(table, { seed: `prove|${h}|${n}`, tier, boss, open: openAt(h) });
     ms += Date.now() - a;
     const level = { ...levelDealt(table, night.deal, ''), jieyin: null };
-    const p = proven(table, level, { salt: `tide|prove|${h}|${n}` }); // what the maker's own guard saw on what it dealt
-    if (p.won * 10 < p.tries * 9) unproven += 1;
+    if (night.fair === false) unproven += 1; // the maker's own guard never passed (it dealt the easiest it could make)
     let w = 0;
     for (let i = 0; i < TRIES; i += 1) w += sim(table, level, humanBot(`cli|${n}|${i}`), { seed: `cli|${i}` }).won ? 1 : 0;
     won += w; all += TRIES;

@@ -8,7 +8,13 @@
    "frames": [
     "walk-1"
    ],
-   "hit": "hit"
+   "hit": "hit",
+   "walker": {
+    "hint": {
+     "zh": "野猪多，直直冲下来",
+     "en": "Boars: many, straight down"
+    }
+   }
   },
   "zheng": {
    "power": 3,
@@ -17,7 +23,13 @@
     "walk-1",
     "walk-2"
    ],
-   "hit": "hit"
+   "hit": "hit",
+   "walker": {
+    "hint": {
+     "zh": "狰皮厚，集中火力打",
+     "en": "Zheng: thick hide, focus your fire"
+    }
+   }
   },
   "qiuyu": {
    "power": 2,
@@ -26,7 +38,19 @@
     "walk-1",
     "walk-2"
    ],
-   "hit": "hit"
+   "hit": "hit",
+   "walker": {
+    "spit": {
+     "stand": 42,
+     "every": 2.6,
+     "share": 0.03,
+     "hold": 16
+    },
+    "hint": {
+     "zh": "犰狳站定吐口水，先打它",
+     "en": "Qiuyu stop and spit: shoot them first"
+    }
+   }
   },
   "qique": {
    "power": 1,
@@ -36,7 +60,18 @@
     "walk-2"
    ],
    "hit": "hit",
-   "fly": true
+   "fly": true,
+   "walker": {
+    "drift": {
+     "every": 3.4,
+     "speed": 0.75,
+     "first": 2.5
+    },
+    "hint": {
+     "zh": "鬿雀会换列，跟着它打",
+     "en": "Qique change columns: follow them"
+    }
+   }
   },
   "longzhi": {
    "power": 1,
@@ -55,6 +90,18 @@
    "name": {
     "zh": "蠪侄",
     "en": "Longzhi"
+   },
+   "walker": {
+    "power": 1,
+    "size": 112,
+    "burst": {
+     "z": 15,
+     "kill": 0.3
+    },
+    "hint": {
+     "zh": "蠪侄近了会炸，远处打掉",
+     "en": "Longzhi burst up close: kill them far off"
+    }
    }
   },
   "heyu": {
@@ -67,6 +114,15 @@
    "name": {
     "zh": "合窳",
     "en": "Heyu"
+   },
+   "walker": {
+    "power": 5,
+    "size": 120,
+    "armor": 0.4,
+    "hint": {
+     "zh": "合窳皮硬，火弹穿云能破",
+     "en": "Heyu are armoured: fire or pierce breaks it"
+    }
    }
   },
   "_people": "第一回's 收租 daydream (levels `zaotai`, 2026-10-22): people, not beasts — the 马家 men down the middle of 小满's daydream on the floor. `art: \"sadoushou\"` = this kit's own (scripts/games/sadoushou/art/); `pose` names the frame a 大妖 shows while it gathers itself (`warn`) and charges (`rush`). They are the book's own (第一回: 马三 · 马小宝 · 马家的家丁) — never a creatures.json row.",
@@ -126,6 +182,166 @@
     "zh": "马三",
     "en": "Ma San"
    }
+  },
+  "_roles": "兽潮 nights (`roles`, Hanli 11-10: 「后面太简单, 一直打野猪, 没有其他妖」): a row's `walker` is what it is on the road there — scripts/games/sadoushou/tide.js copies it into the night's `roles` (the phone carries an old copy of this file). `drift`: its flock makes for another column every `every` s (± 30%), `speed` across a second (鬿雀 flies). `spit`: they stop at `stand` and spit for `hold` s, each `every` s knocking `share` of the squad off (犰狳). `armor`: a plain shot does that share (火弹 · 穿云 · 雷符 · 结印 open it; 合窳's hide). `burst`: one that falls within `z` of the wall takes `kill` 豆兵 with it (蠪侄). `power` · `size` over the row's (合窳 and 蠪侄 walk smaller than as a 大妖). `hint`: what the field says the first time it comes (≤ 20 字)."
+ },
+ "fx": {
+  "_about": "The side cards' powers (Hanli 11-10: 「两边的卡有点单调, 可以加一些变化吗? 比如打一个卡后攻击变火弹之类的. 提高下可玩性」 → 「可以，按这个做」). A belt card with `fx` charges like any card (shot: its number grows a `step` a hit to its `cap`; charged full, shots fly past it) and fires only when it is taken at the line (the squad under it) — never by itself. `form` ones are attack forms for their number of seconds, ONE on at a time (a new one replaces it): 火弹 bursts (`splash` more on the group hit, `near` on any group within `reach`, × `boss` on a 大妖), 连珠 `rate` × the shots, 分兵 a shot up each other column at `side`, 穿云 through a group (× `mul`) and on. 冰符 slows the road to `slow` for its seconds; 雷符 strikes its number of front ranks of every group on the road (and `boss` of a 大妖's hp a rank); 换命 gives up its number in % of the squad (shooting brings it down) for a tier, at the top tier × `boost` the attack (to `max`). `card`: its number to start, cap and step on a 兽潮 night (scripts/games/sadoushou/tide.js). `hint` (≤ 20 字) the first time one comes; `color` its face.",
+  "huo": {
+   "form": true,
+   "name": {
+    "zh": "火弹",
+    "en": "Fireball"
+   },
+   "short": {
+    "zh": "火弹",
+    "en": "Fire"
+   },
+   "hint": {
+    "zh": "火弹会炸开，旁边的兽也挨打",
+    "en": "Fireballs burst and hit the beasts beside"
+   },
+   "card": {
+    "n": 4,
+    "cap": 9,
+    "step": 0.5
+   },
+   "splash": 0.6,
+   "near": 0.4,
+   "reach": 10,
+   "boss": 1.3,
+   "color": "#ff7a2a"
+  },
+  "lian": {
+   "form": true,
+   "name": {
+    "zh": "连珠",
+    "en": "Rapid fire"
+   },
+   "short": {
+    "zh": "连珠",
+    "en": "Rapid"
+   },
+   "hint": {
+    "zh": "连珠：出手快一倍",
+    "en": "Rapid fire: twice the shots"
+   },
+   "card": {
+    "n": 3,
+    "cap": 7,
+    "step": 0.4
+   },
+   "rate": 2,
+   "color": "#5fe0ff"
+  },
+  "fen": {
+   "form": true,
+   "name": {
+    "zh": "分兵",
+    "en": "Split"
+   },
+   "short": {
+    "zh": "分兵",
+    "en": "Split"
+   },
+   "hint": {
+    "zh": "分兵：三列一起打",
+    "en": "Split: fire up all three columns"
+   },
+   "card": {
+    "n": 4,
+    "cap": 9,
+    "step": 0.5
+   },
+   "side": 0.5,
+   "color": "#8fe36b"
+  },
+  "chuan": {
+   "form": true,
+   "name": {
+    "zh": "穿云",
+    "en": "Pierce"
+   },
+   "short": {
+    "zh": "穿云",
+    "en": "Pierce"
+   },
+   "hint": {
+    "zh": "穿云：一串打穿，破硬甲",
+    "en": "Pierce: through the line, and armour"
+   },
+   "card": {
+    "n": 4,
+    "cap": 9,
+    "step": 0.5
+   },
+   "mul": 1.5,
+   "boss": 1.5,
+   "color": "#e8f4ff"
+  },
+  "bing": {
+   "name": {
+    "zh": "冰符",
+    "en": "Frost charm"
+   },
+   "short": {
+    "zh": "冰符",
+    "en": "Frost"
+   },
+   "hint": {
+    "zh": "冰符：路上的兽走慢了",
+    "en": "Frost: the beasts slow down"
+   },
+   "card": {
+    "n": 3,
+    "cap": 6,
+    "step": 0.3
+   },
+   "slow": 0.45,
+   "color": "#9fdcff"
+  },
+  "lei": {
+   "name": {
+    "zh": "雷符",
+    "en": "Thunder charm"
+   },
+   "short": {
+    "zh": "雷符",
+    "en": "Thunder"
+   },
+   "hint": {
+    "zh": "雷符：劈掉最前一排",
+    "en": "Thunder: the front row falls"
+   },
+   "card": {
+    "n": 1,
+    "cap": 3,
+    "step": 0.12
+   },
+   "boss": 0.04,
+   "color": "#c9a2ff"
+  },
+  "huan": {
+   "name": {
+    "zh": "换命卡",
+    "en": "Life trade"
+   },
+   "short": {
+    "zh": "换命",
+    "en": "Trade"
+   },
+   "hint": {
+    "zh": "换命：舍些兵，全队升一阶",
+    "en": "Trade: lose soldiers, rise a tier"
+   },
+   "card": {
+    "n": -40,
+    "cap": -15,
+    "step": 1.2
+   },
+   "boost": 1.3,
+   "max": 1.69,
+   "color": "#d0405a"
   }
  },
  "jieyinSets": {

@@ -8,7 +8,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import { BOTS, humanBot, waveLeft, waveCount, newGame, aim, step, sim, stars, beltOf, dpsOf, rateOf, colOf, colMid, castJieyin, jieyinState, beastFor, bossesUp, charging, movesOf, jieyinOf, COLS, TOP } from '../scripts/games/sadoushou/core.js';
+import { BOTS, humanBot, waveLeft, waveCount, newGame, aim, step, sim, stars, beltOf, dpsOf, rateOf, colOf, colMid, castJieyin, jieyinState, beastFor, bossesUp, charging, movesOf, jieyinOf, perRank, FORMS, COLS, TOP } from '../scripts/games/sadoushou/core.js';
 import { levelAsked, ladderOf, nextOf, meta, offerJieyin } from '../scripts/games/sadoushou.js';
 import { sourceHash } from '../tools/sadoushou/hash.mjs';
 
@@ -508,7 +508,7 @@ test('the bundle is current, loads the one shared Phaser, and every picture and 
   }
   const chars = readFileSync(at('scripts/games/sadoushou/font/chars.txt'), 'utf8');
   const play = ['play.js', 'hud.js'].map((f) => readFileSync(at(`tools/sadoushou/src/${f}`), 'utf8')).join('');
-  const words = JSON.stringify([kit.levels.map((l) => [l.title, l.lead, l.moments, l.tiers, l.words, l.belt, l.boss, l.pieces]), kit.beasts, meta]) + play;
+  const words = JSON.stringify([kit.levels.map((l) => [l.title, l.lead, l.moments, l.tiers, l.words, l.belt, l.boss, l.pieces]), kit.beasts, kit.fx, meta]) + play;
   for (const ch of words.match(/[　-鿿＀-￯]/g)) assert.ok(chars.includes(ch), `font lacks ${ch}`);
   assert.ok(TOP === 100 && COLS.M[0] < 0 && COLS.M[1] > 0);
 });
@@ -523,4 +523,178 @@ test('the ready card\'s moment (jieyinState `soon`, Hanli 10-28): every wave out
   assert.equal(jieyinState(g).soon, true, 'every wave out: the 大妖 next');
   g.phase = 'boss';
   assert.equal(jieyinState(g).soon, false, 'the 大妖 out: the box, not the card');
+});
+
+/* ── 兽潮 nights since 2026-11-10 (Hanli at 第20潮, a squad of 1002 against a wave of 81: 「后面太简单, 一直打野猪, 没有其他
+   妖. 两边的卡有点单调, 可以加一些变化吗? 比如打一个卡后攻击变火弹之类的」 → 「可以，按这个做」): side cards with powers,
+   one attack form at a time, a ceiling on the squad, beasts with roles. Each is the engine's, seeded and headless. ── */
+
+const roles = Object.fromEntries(Object.entries(kit.beasts).filter(([, b]) => b?.walker).map(([k, b]) => [k, b.walker]));
+const night = (over = {}) => ({ ...level, waves: [], belt: { ...level.belt, lines: [] }, boss: null, roles, fx: kit.fx, cap: 300, ...over });
+/** A game standing still on a night with these waves already on the road (each a group at `front`). */
+function onRoad(lv, groups, seed = 'fx') {
+  const g = newGame(kit, { ...lv, waves: [{ t: 999, beasts: [['yezhu', 1]], speed: 1 }] }, { seed });
+  for (const [i, gr] of groups.entries()) {
+    const units = gr.beasts.map(([b, n]) => ({ b, n, p: g.beasts[b].power }));
+    const w = { id: 100 + i, i: 50 + i, span: [...(gr.span ?? COLS.M)], units, hp: units.reduce((s, u) => s + u.n * u.p, 0), front: gr.front, speed: gr.speed ?? 0.001, role: gr.role ?? null, depth: 4, n0: units.reduce((s, u) => s + u.n, 0) };
+    w.armor = units.some((u) => g.beasts[u.b].armor); w.burst = units.some((u) => g.beasts[u.b].burst);
+    if (w.role === 'drift') Object.assign(w, { cx: 0, half: 0.34, to: 0, driftT: 1 });
+    if (w.role === 'spit') Object.assign(w, { stand: g.beasts[units[0].b].spit.stand, held: 0, spitT: 1 });
+    g.live.push(w);
+  }
+  return g;
+}
+const take = (g, id, n = kit.fx[id].card.n) => { g.belt.push({ id: 900 + g.belt.length, kind: 'card', col: 'L', z: 0.01, n, step: 1, cap: 99, fx: id, gone: false }); aim(g, colMid('L')); step(g, 1 / 30); };
+const shoot = (g, sec, x = colMid('M')) => { for (let t = 0; t < sec; t += 1 / 30) { aim(g, x); step(g, 1 / 30); } return g; };
+
+test('powers are data: seven, each named in both languages with a hint of at most 20 字, a card to start from; four are attack forms', () => {
+  const ids = Object.keys(kit.fx).filter((k) => !k.startsWith('_'));
+  assert.deepEqual(ids.sort(), ['bing', 'chuan', 'fen', 'huan', 'huo', 'lei', 'lian']);
+  assert.deepEqual(ids.filter((k) => kit.fx[k].form).sort(), [...FORMS].sort());
+  assert.deepEqual(['huo', 'lian', 'fen', 'chuan', 'bing', 'lei', 'huan'].map((k) => kit.fx[k].name.zh), ['火弹', '连珠', '分兵', '穿云', '冰符', '雷符', '换命卡']);
+  for (const k of ids) {
+    const f = kit.fx[k];
+    assert.ok(both(f.name) && both(f.short) && both(f.hint) && [...f.hint.zh].length <= 20, k);
+    assert.ok(f.card && f.card.step !== 0 && (f.card.cap - f.card.n) * Math.sign(f.card.step) > 0, `${k}: a card that charges toward its cap`);
+  }
+  for (const [b, w] of Object.entries(roles)) assert.ok(both(w.hint) && [...w.hint.zh].length <= 20, `${b}'s hint`);
+});
+
+test('火弹: shots burst — the group hit takes more than a plain shot does, and a group beside it is hurt too', () => {
+  const lv = night();
+  const two = () => onRoad(lv, [{ beasts: [['yezhu', 400]], front: 40 }, { beasts: [['yezhu', 400]], front: 46, span: [-0.3, 0.3] }]);
+  const plain = shoot(two(), 3), fire = two();
+  take(fire, 'huo', 9);
+  assert.equal(fire.form.id, 'huo');
+  shoot(fire, 3);
+  const lostPlain = 800 - plain.live.reduce((s, w) => s + waveCount(w), 0), lostFire = 800 - fire.live.reduce((s, w) => s + waveCount(w), 0);
+  assert.ok(lostFire > lostPlain * 1.4, `fire ${lostFire} vs plain ${lostPlain}`);
+  assert.ok(waveCount(fire.live[1]) < 400 && waveCount(plain.live[1]) === 400, 'the group behind: hurt by the burst only');
+});
+
+test('连珠 doubles the shots; 分兵 fires up all three columns; a form runs out on its clock', () => {
+  const lv = night();
+  const thrown = (form) => { const g = onRoad(lv, []); if (form) take(g, form, 6); g.stats.thrown = 0; shoot(g, 2, colMid('L')); return g; };
+  const plain = thrown(null), rapid = thrown('lian');
+  assert.ok(Math.abs(rapid.stats.thrown / plain.stats.thrown - 2) < 0.15, `${rapid.stats.thrown} vs ${plain.stats.thrown}`);
+  const split = onRoad(lv, []);
+  take(split, 'fen', 4);
+  shoot(split, 0.5, colMid('L'));
+  assert.deepEqual(new Set(split.shots.map((s) => colOf(s.x))), new Set(['L', 'M', 'R']));
+  shoot(split, 4, colMid('L'));
+  assert.equal(split.form, null, 'four seconds on, it is gone');
+  assert.ok(split.shots.every((s) => colOf(s.x) === 'L' || s.z > 5), 'back to the one column');
+});
+
+test('穿云: a shot goes through a group and on to the one behind it, and through 合窳\'s armour', () => {
+  const lv = night();
+  const g = onRoad(lv, [{ beasts: [['yezhu', 300]], front: 30 }, { beasts: [['yezhu', 300]], front: 60 }]);
+  take(g, 'chuan', 9);
+  shoot(g, 2);
+  assert.ok(waveCount(g.live[1]) < 300, 'the group behind is hit');
+  const armour = (form) => { const a = onRoad(lv, [{ beasts: [['heyu', 80]], front: 50 }]); if (form) take(a, form, 9); a.events.length = 0; shoot(a, 2); return 400 - a.live[0].hp; };
+  const plain = armour(null), pierce = armour('chuan'), fire = armour('huo');
+  assert.ok(pierce > plain * 2.5 && fire > plain * 2.5, `plain ${plain.toFixed(0)} · pierce ${pierce.toFixed(0)} · fire ${fire.toFixed(0)}`);
+});
+
+test('one attack form at a time: a new one replaces the one on (the event says which); 冰符 and 雷符 replace nothing', () => {
+  const g = onRoad(night(), [{ beasts: [['yezhu', 300]], front: 60 }]);
+  take(g, 'huo', 8);
+  assert.equal(g.form.id, 'huo');
+  g.events.length = 0;
+  take(g, 'lian', 5);
+  const e = g.events.find((x) => x.t === 'form');
+  assert.deepEqual([g.form.id, e.form, e.was], ['lian', 'lian', 'huo']);
+  take(g, 'bing', 3);
+  take(g, 'lei', 1);
+  assert.equal(g.form.id, 'lian', 'the instant powers leave the form on');
+  assert.ok(g.slowT > 2);
+});
+
+test('冰符 slows every beast on the road for its seconds; 雷符 strikes the front ranks of every group', () => {
+  const lv = night();
+  const walk = (frost) => { const g = onRoad(lv, [{ beasts: [['yezhu', 50]], front: 80, speed: 5 }]); if (frost) take(g, 'bing', 3); aim(g, colMid('L'), false); for (let i = 0; i < 30; i += 1) step(g, 1 / 30); return 80 - g.live[0].front; };
+  const free = walk(false), slow = walk(true);
+  assert.ok(Math.abs(slow / free - kit.fx.bing.slow) < 0.05, `${slow.toFixed(2)} vs ${free.toFixed(2)}`);
+  const g = onRoad(lv, [{ beasts: [['zheng', 30], ['yezhu', 200]], front: 40 }, { beasts: [['qiuyu', 100]], front: 70 }]);
+  const per = perRank(COLS.M, lv);
+  take(g, 'lei', 2);
+  assert.equal(waveCount(g.live[0]), 230 - 2 * per, 'two ranks of the front kind gone');
+  assert.equal(waveCount(g.live[1]), 100 - 2 * per);
+  assert.ok(g.events.some((e) => e.t === 'lei' && e.hits.length === 2));
+});
+
+test('换命: a share of the squad given up for a tier — the attack rises past what was lost; at the top tier, a boost', () => {
+  const g = onRoad(night(), []);
+  g.squad = 100;
+  const before = dpsOf(g);
+  take(g, 'huan', -20);
+  assert.deepEqual([g.squad, g.tier], [80, 1]);
+  assert.ok(dpsOf(g) > before, `${dpsOf(g)} > ${before}`);
+  g.tier = g.level.tiers.length - 1;
+  take(g, 'huan', -20);
+  assert.ok(g.boost > 1 && g.squad === 64);
+  // shot, its cost comes down a step a hit
+  const s = onRoad(night({ belt: { ...level.belt, lines: [{ col: 'L', from: 50, every: 999, cards: [{ fx: 'huan', ...kit.fx.huan.card }] }] } }), []);
+  const card = s.belt[0];
+  shoot(s, 1.5, colMid('L'));
+  assert.ok(card.n > kit.fx.huan.card.n && card.n <= kit.fx.huan.card.cap, `${card.n}`);
+});
+
+test('the squad\'s ceiling: a + card past `cap` pays nothing, a gold one fills it only to the cap; no cap, no ceiling', () => {
+  const g = onRoad(night({ cap: 50 }), []);
+  g.squad = 45;
+  g.belt.push({ id: 1, kind: 'card', col: 'L', z: 0.01, n: 10, step: 1, cap: 99, gone: false });
+  aim(g, colMid('L')); step(g, 1 / 30);
+  assert.equal(g.squad, 50);
+  g.belt.push({ id: 2, kind: 'card', col: 'L', z: 0.01, n: 60, step: 2, cap: 60, gold: true, gone: false });
+  step(g, 1 / 30);
+  assert.equal(g.squad, 50);
+  g.belt.push({ id: 3, kind: 'card', col: 'L', z: 0.01, n: -5, step: 1, cap: 10, gone: false });
+  step(g, 1 / 30);
+  assert.equal(g.squad, 45, 'a red one still costs');
+  const free = newGame(kit, quiet(level, [{ col: 'L', from: 1, every: 999, cards: [{ n: 9, cap: 10 }] }]), { seed: 't' });
+  free.squad = 5000; run(free, 1, colMid('L'));
+  assert.ok(free.squad > 5000, 'the ladder has no ceiling');
+});
+
+test('beast roles: 鬿雀\'s flock changes column; 犰狳 stand and spit until killed; 合窳 armoured; 蠪侄 burst near the wall', () => {
+  const lv = night();
+  // a wave that brings them splits: the flyers and the spitters walk as their own groups
+  const mixed = newGame(kit, { ...lv, waves: [{ t: 0, beasts: [['qiuyu', 20], ['qique', 30], ['yezhu', 40]], speed: 5 }] }, { seed: 'roles' });
+  step(mixed, 1 / 30);
+  assert.deepEqual(mixed.live.map((w) => w.role).sort(), ['drift', 'spit', null].sort());
+  assert.equal(mixed.waves[0].done, false);
+  // 鬿雀: a flock that leaves the middle
+  const cols = new Set();
+  for (let t = 0; t < 14; t += 1 / 30) { aim(mixed, colMid('L'), false); step(mixed, 1 / 30); for (const w of mixed.live) if (w.role === 'drift') cols.add(colOf((w.span[0] + w.span[1]) / 2)); }
+  assert.ok(cols.size >= 2, `the flock flew over ${[...cols]}`);
+  // 犰狳: walks to its place and stops there, spitting the squad down while it lives
+  const sp = onRoad(lv, [{ beasts: [['qiuyu', 30]], front: 60, speed: 5, role: 'spit' }]);
+  sp.squad = 200;
+  aim(sp, colMid('L'), false);
+  for (let i = 0; i < 30 * 8; i += 1) step(sp, 1 / 30);
+  assert.equal(sp.live[0].front, kit.beasts.qiuyu.walker.spit.stand, 'it stands');
+  assert.ok(sp.squad < 200 && sp.stats.spat > 0, `${sp.squad}`);
+  const killed = onRoad(lv, [{ beasts: [['qiuyu', 30]], front: 60, speed: 5, role: 'spit' }]);
+  killed.squad = 200;
+  shoot(killed, 8);
+  assert.equal(killed.stats.spat, 0, 'shot before it spat: no soldier lost');
+  // 合窳: a plain shot does `armor` of its harm
+  const a = onRoad(lv, [{ beasts: [['heyu', 40]], front: 50 }]), y = onRoad(lv, [{ beasts: [['zheng', 67]], front: 50 }]);
+  shoot(a, 2); shoot(y, 2);
+  assert.ok(Math.abs((200 - a.live[0].hp) / (201 - y.live[0].hp) - kit.beasts.heyu.walker.armor) < 0.05);
+  // 蠪侄: killed far off, nothing; killed near the wall, soldiers go with them
+  const far = onRoad(lv, [{ beasts: [['longzhi', 40]], front: 60 }]), near = onRoad(lv, [{ beasts: [['longzhi', 40]], front: 8 }]);
+  far.squad = near.squad = 200;
+  shoot(far, 3); shoot(near, 3);
+  assert.equal(far.stats.burst, 0);
+  assert.ok(near.stats.burst > 0 && near.events.length >= 0, `${near.stats.burst}`);
+});
+
+test('roles and powers stay off the ladder and 守灶台: their rows name none, so they play as before', () => {
+  for (const l of kit.levels) {
+    assert.ok(!l.roles && !l.fx && l.cap == null, l.id);
+    assert.ok(l.belt.lines.every((ln) => (ln.cards ?? []).every((c) => !c.fx)), `${l.id}: no power cards`);
+  }
 });

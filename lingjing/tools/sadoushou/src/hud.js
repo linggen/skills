@@ -7,9 +7,9 @@ import { FONT, canvasTex, rounded } from './fx.js';
 
 export const WORDS = {
   zh: { go: '打！', won: '守住了！', lost: '山门破了', horde: '兽潮', wall: '山门', hint: '左右拖动 · 选一列打', keys: 'A / D 或 ← / → 也行',
-    wave: '又来一拨！', boss: (n) => `${n} 出来了！`, charge: '它要冲这一列！快换列！', broke: '墙破了！', yinyue: '银月' },
+    wave: '又来一拨！', boss: (n) => `${n} 出来了！`, charge: '它要冲这一列！快换列！', broke: '墙破了！', yinyue: '银月', full: '满' },
   en: { go: 'Fire!', won: 'Held!', lost: 'The gate broke', horde: 'Tide', wall: 'Gate', hint: 'Drag left · right to pick a column', keys: 'A / D or ← / → work too',
-    wave: 'Another wave!', boss: (n) => `The ${n} steps out!`, charge: 'It\'s charging this column! Move!', broke: 'Wall down!', yinyue: 'Yinyue' },
+    wave: 'Another wave!', boss: (n) => `The ${n} steps out!`, charge: 'It\'s charging this column! Move!', broke: 'Wall down!', yinyue: 'Yinyue', full: 'MAX' },
 };
 
 export const text = (scene, x, y, s, size, o = {}) => scene.add.text(x, y, s, {
@@ -78,6 +78,8 @@ export class Hud {
     this.countNum = s.add.bitmapText(W - 120, 917, 'numGood', '0', 52).setOrigin(0.5).setDepth(depth + 2);
     this.countPunch = 0;
     this.tierName = text(s, W - 40, 878, '', 18, { color: '#d6f6ff', ox: 1 }).setDepth(depth + 2);
+    // the squad at the level's ceiling (`cap`): a + card past it pays nothing
+    this.fullTag = text(s, W - 196, 878, this.w.full, 18, { color: '#ffe36b', ox: 1 }).setDepth(depth + 2).setVisible(false);
     // a wall told in pieces (守灶台's three bowls: `pieces`), their pictures over its bar — stars are the pieces kept
     const pc = scene.cfg.level.pieces;
     // beside the bar, not over it: 结印's button stands over the corner above it (games/jieyin/helper.js)
@@ -86,7 +88,8 @@ export class Hud {
   }
 
   /** Every frame: the two big numbers tick toward the truth (a fast count-up reads as a reward), the wall's bar. */
-  tick(dt, { horde, count, wall, wallMax }) {
+  tick(dt, { horde, count, wall, wallMax, full = false }) {
+    if (this.fullTag.visible !== full) this.fullTag.setVisible(full);
     this.hordeShown = this.hordeShown == null ? horde : this.hordeShown + (horde - this.hordeShown) * Math.min(1, dt * 10);
     const hs = Math.round(this.hordeShown);
     this.hordeNum.setText(String(hs));

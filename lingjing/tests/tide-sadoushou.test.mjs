@@ -147,3 +147,53 @@ test('the mount lays `over` on the row (levelDealt), keeps 结印 on it, and a �
   assert.match(src, /jieyin: jieyinOf\(kit, dealt\)/);
   assert.match(src, /data\?\.tide \? null : nextOf\(kit, asked\)/, 'no 下一关 on a 兽潮 night');
 });
+
+/* 守山门's twenty 兽潮 levels since 2026-11-10 (worlds/jiuding/levels/tide.json § sadoushou, written by tools/tide-levels.mjs;
+   Hanli at 第20潮: 「后面太简单, 一直打野猪, 没有其他妖」 → 「可以，按这个做」): a theme of 2–3 kinds, from the 5th level never a wave
+   of boars alone, a 大妖 on every fifth, a ceiling on the squad rising with the tier, the powers and the road rules riding in
+   the deal — and every one won as written. */
+const LV = JSON.parse(readFileSync(at('worlds/jiuding/levels/tide.json'), 'utf8')).sadoushou;
+
+test('the twenty: a theme of 2–3 kinds; from the 5th no wave of boars alone; a 大妖 on every fifth and no other', () => {
+  assert.equal(LV.levels.length, 20);
+  for (const l of LV.levels) {
+    const level = dealtOf(table, l.deal);
+    const walkers = new Set(level.waves.flatMap((w) => w.beasts.map(([k]) => k)));
+    assert.ok(walkers.size >= 2 && walkers.size <= 3, `${l.i}: ${[...walkers]}`);
+    if (l.i >= 5) assert.ok(level.waves.every((w) => w.beasts.some(([k]) => k !== 'yezhu')), `${l.i}: a wave of boars alone`);
+    assert.equal(Boolean(l.boss), l.i % 5 === 0, `${l.i}: 大妖 every fifth`);
+    assert.equal([level.boss].flat().filter(Boolean).length, l.i % 5 === 0 ? 1 : 0);
+  }
+  assert.ok(LV.levels.slice(4).some((l) => dealtOf(table, l.deal).waves.some((w) => w.beasts.some(([k]) => table.beasts[k].walker?.drift || table.beasts[k].walker?.spit))), 'the flyers and spitters come');
+});
+
+test('the twenty carry their own rules (the phone has an old table): a ceiling rising with the tier, the kinds\' roles, the powers\' rows', () => {
+  let cap = 0;
+  for (const l of LV.levels) {
+    const o = l.deal.over;
+    assert.ok(Number.isFinite(o.cap) && o.cap >= cap && o.cap <= 300, `${l.i}: cap ${o.cap}`);
+    cap = o.cap;
+    assert.ok(o.roles && typeof o.roles === 'object' && o.fx && typeof o.fx === 'object', `${l.i}`);
+    const cards = o.belt.lines.flatMap((ln) => ln.cards ?? []);
+    for (const c of cards.filter((x) => x.fx)) assert.ok(o.fx[c.fx]?.name?.zh && o.fx[c.fx].name.en, `${l.i}: ${c.fx}'s row rides`);
+    assert.ok(cards.some((c) => c.fx), `${l.i}: a power on the belts`);
+    for (const k of l.kinds) if (table.beasts[k].walker && !table.beasts[k].name) assert.deepEqual(o.roles[k], table.beasts[k].walker, `${l.i}: ${k}'s road`);
+  }
+  // the powers open level by level: the first nights 火弹 · 冰符 only, 换命 not before the 13th
+  const fxAt = (i) => new Set(LV.levels[i - 1].deal.over.belt.lines.flatMap((ln) => (ln.cards ?? []).map((c) => c.fx)).filter(Boolean));
+  for (const i of [1, 2]) assert.ok([...fxAt(i)].every((f) => f === 'huo' || f === 'bing'), `${i}: ${[...fxAt(i)]}`);
+  for (let i = 1; i < 13; i += 1) assert.ok(!fxAt(i).has('huan'), `${i}: no 换命 yet`);
+});
+
+test('every one of the twenty won as written (its `won`, replayed on the generator\'s own seeds), and the squad never past its ceiling', () => {
+  for (const l of LV.levels) {
+    const won = Array.from({ length: LV.seeds }, (_, j) => tide.prove(table, l.deal, `lv-prove|${j}`)).filter(Boolean).length;
+    assert.equal(`${won}/${LV.seeds}`, l.won, `${l.i}`);
+    assert.ok(won >= LV.need && LV.need >= 6, `${l.i}: ${l.won}`);
+    const level = { ...dealtOf(table, l.deal), jieyin: null };
+    for (const s of ['cap-a', 'cap-b']) {
+      const r = sim(table, level, humanBot(s), { seed: s });
+      assert.ok(r.peak <= level.cap, `${l.i}: peak ${r.peak} over ${level.cap}`);
+    }
+  }
+});
