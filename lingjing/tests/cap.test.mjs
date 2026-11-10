@@ -76,7 +76,9 @@ test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 throu
   const r = resolve(s0, content, ctx, { exit: 'save' });
   assert.equal(r.result.ok, true, JSON.stringify(r.result));
   let s = r.state;
-  assert.equal(named(s), '练气一层', 'no jump: 二层 is ground in 古五');
+  // The way on lifts nothing: what he stands at is what the load alone settles. (Past the 柴房 his full 一层 steps to h05's 二层
+  // on load, as below at wm-baoming — the 柴房's gate is behind him in the book's order, rules/cap.mjs gatePassed, since 2026-11-10.)
+  assert.equal(named(s), named(settleHeld(content, s0)), 'no jump: the story lifts no layer');
   s = { ...s, scene: 'wm-mijing', place: 'shimen' }; // past 今 · 二, at 古五's 秘境 gate
   grind(s);
   assert.equal(named(s), '练气二层', '古五 grinds to 二层, no further');
@@ -101,7 +103,7 @@ test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 throu
 });
 
 test('古七: 四层 until 定风 is walked — each layer ground behind its gate; 古八 grinds 七层 for 年六, 八层 for 年七\'s 腊月, then 九层 for 入秋', () => {
-  const s = at('00-zhuji', '09-year', 'yaoyuan', ['00-prologue', '00-waimen'], { step: 4 });
+  const s = at('00-zhuji', '09-furnace', 'chaifang', ['00-prologue', '00-waimen'], { step: 4, done_scenes: ['09-snow', '09-jiuge'] }); // 定风 ahead (was 09-year: the sketch left 定风 out of its history)
   grind(s);
   // The cap follows the 回's stage quests (rules/cap.mjs heldBy): before 定风 he grinds no further than 四层.
   assert.equal(named(s).replace('圆满', ''), '练气四层');

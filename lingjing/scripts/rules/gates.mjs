@@ -11,6 +11,11 @@
 // (交差, stageTurn) for balance.json `pay.stage`; one behind him never handed in is paid on the next load
 // (settleStages). A scene already passed is never gated again (a save above a
 // new gate keeps its place), nor is a scene played again.
+// A gate may ask a share of the layer instead (`share`, Hanli 2026-11-10: 「可以是剧情-游戏-剧情-游戏-剧情-游戏到圆满-剧情突破」):
+// the way on waits until the bar stands at that share of the layer (or past it) — a step inside the layer, named
+// 「练气五层六成」 (ladder.json `caps.stage.part`). Met, it simply opens: nothing to hand in, nothing paid (no 灵石 the
+// economy did not have, and no back pay to a save that walked by before it stood). The layer's last gate asks 圆满.
+const handsIn = g => g.share == null;
 // Nothing here names a 回 or a scene: the data declares it.
 import { fullName, pick, stepName, stepOfLayer, threshold } from '../state.mjs';
 import { huiNow, huiOrder } from './hui.mjs';
@@ -25,16 +30,27 @@ export function gatesOf(content) {
   const out = Object.entries(content.ladder.caps?.hui ?? {}).filter(([id]) => !id.startsWith('_'))
     .flatMap(([hui, cap]) => (cap.gates ?? []).map(g => {
       const tier = g.tier ?? first;
-      return { hui, tier, layer: g.layer, step: stepOfLayer(content, tier, g.layer), scene: g.scene, exits: g.exits, ...(g.say ? { say: g.say } : {}) };
+      return { hui, tier, layer: g.layer, step: stepOfLayer(content, tier, g.layer), scene: g.scene, exits: g.exits, ...(g.share != null ? { share: g.share } : {}), ...(g.say ? { say: g.say } : {}) };
     }));
   GATES.set(content, out);
   return out;
 }
 
-/* Has the realm reached the gate's layer full (or gone past it)? */
+/* The bar's mark the gate asks on its layer, where he stands on it: its share of the layer, else the layer full. */
+export const gateMark = (content, state, gate) => (gate.share != null ? Math.floor(gate.share * threshold(content, state)) : threshold(content, state));
+
+/* Has the realm reached the gate's mark on its layer — full, or its share (or gone past the layer)? */
 export function gateMet(content, state, gate) {
   const at = rankOf(content, state.tier, state.step), want = rankOf(content, gate.tier, gate.step);
-  return at > want || (at === want && (state.progress ?? 0) >= threshold(content, state));
+  return at > want || (at === want && (state.progress ?? 0) >= gateMark(content, state, gate));
+}
+
+/* The gate's name: the layer full (练气四层圆满), or the layer at its share (练气五层六成; ladder.json `caps.stage.part`). */
+export function gateName(content, gate, lang) {
+  if (gate.share == null) return fullName(content, gate.tier, gate.step, lang);
+  const part = pick(content.ladder.caps?.stage?.part, lang) ?? '{step} {n}';
+  const n = Math.round(gate.share * 10), pct = Math.round(gate.share * 100);
+  return part.replace('{step}', stepName(content, gate.tier, gate.step, lang)).replace('{n}', pick(content.ladder.caps?.stage?.tenths, lang)?.[n] ?? String(n)).replace('{pct}', String(pct));
 }
 
 /* The gate on this way on, when it still holds him. */
@@ -70,9 +86,9 @@ export function entryGate(content, state, exit) {
 export function stageBrief(content, state, gate, lang = state.lang) {
   const here = gate.tier === state.tier && gate.step === state.step;
   return {
-    hui: gate.hui, scene: gate.scene, step: fullName(content, gate.tier, gate.step, lang),
-    now: { step: stepName(content, state.tier, state.step, lang), progress: state.progress ?? 0, of: threshold(content, state) },
-    met: gateMet(content, state, gate), ...(here ? {} : { below: true }),
+    hui: gate.hui, scene: gate.scene, step: gateName(content, gate, lang),
+    now: { step: stepName(content, state.tier, state.step, lang), progress: state.progress ?? 0, of: here ? gateMark(content, state, gate) : threshold(content, state) },
+    met: gateMet(content, state, gate), ...(here ? {} : { below: true }), ...(gate.share != null ? { part: true } : {}),
   };
 }
 
@@ -94,7 +110,8 @@ export function stageNow(content, state) {
   const hui = huiNow(content, state);
   if (!hui) return null;
   const paid = paidSet(state);
-  const gate = gatesOf(content).find(g => g.hui === hui && !paid.has(gateKey(g)) && !behind(content, state, g, hui));
+  // A share gate met is open, not a quest to hand in: the next one stands.
+  const gate = gatesOf(content).find(g => g.hui === hui && !paid.has(gateKey(g)) && !behind(content, state, g, hui) && (handsIn(g) || !gateMet(content, state, g)));
   if (!gate) return null;
   const b = stageBrief(content, state, gate);
   return { ...b, key: gateKey(gate), ...(b.met ? { pays: { wealth: stagePay(content) } } : {}) };
@@ -124,7 +141,7 @@ export function stageTurn(content, state, ctx) {
 export function settleStages(content, state, now) {
   if (!state || !content.ladder.caps?.hui) return state;
   const hui = huiNow(content, state), paid = paidSet(state);
-  const owed = gatesOf(content).filter(g => !paid.has(gateKey(g)) && behind(content, state, g, hui) && gateMet(content, state, g));
+  const owed = gatesOf(content).filter(g => handsIn(g) && !paid.has(gateKey(g)) && behind(content, state, g, hui) && gateMet(content, state, g));
   if (!owed.length) return state;
   const s = structuredClone(state);
   let wealth = 0;
@@ -144,28 +161,28 @@ export function stageBack(content, state, now, lang = state.lang) {
   const b = state.stage_back;
   if (!b || now - new Date(b.at) >= 86_400_000) return null;
   const all = gatesOf(content), byKey = new Map(all.map(g => [gateKey(g), g]));
-  const named = (n) => all.find(g => ['zh', 'en'].some(l => fullName(content, g.tier, g.step, l) === n));
+  const named = (n) => all.find(g => ['zh', 'en'].some(l => gateName(content, g, l) === n));
   const { gates, steps, ...rest } = b;
   const held = gates ? gates.map(k => byKey.get(k)) : (steps ?? []).map(named);
-  return { ...rest, steps: held.map((g, i) => (g ? fullName(content, g.tier, g.step, lang) : steps?.[i])).filter(Boolean) };
+  return { ...rest, steps: held.map((g, i) => (g ? gateName(content, g, lang) : steps?.[i])).filter(Boolean) };
 }
 
 /* Stage quests handed in, in the 回 he stands in — the 事 book's 已交. */
 export function stagesPaid(content, state) {
   const hui = huiNow(content, state), paid = paidSet(state);
-  return gatesOf(content).filter(g => g.hui === hui && paid.has(gateKey(g))).map(g => fullName(content, g.tier, g.step, state.lang));
+  return gatesOf(content).filter(g => g.hui === hui && paid.has(gateKey(g))).map(g => gateName(content, g, state.lang));
 }
 
 /* The refusal's line, in the world's words (the gate's own `say` where the usual work is out of reach — 古五's 石室, inside
    the 秘境 — else ladder.json `caps.stage.refuse`; `{step}` filled). */
 export const stageSay = (content, state, gate, lang = state.lang) =>
-  (pick(gate.say ?? content.ladder.caps?.stage?.refuse, lang) ?? '').replace('{step}', fullName(content, gate.tier, gate.step, lang));
+  (pick(gate.say ?? content.ladder.caps?.stage?.refuse, lang) ?? '').replace('{step}', gateName(content, gate, lang));
 
 /* Earned: the realm at the gate's layer, full — for a test or the explorer that plays a 回's
    routine as one move ("he did the work"); never called by the game itself. Returns a copy. */
 export function earned(content, state, gate) {
   const s = structuredClone(state);
   if (rankOf(content, s.tier, s.step) < rankOf(content, gate.tier, gate.step)) { s.tier = gate.tier; s.step = gate.step; s.progress = 0; }
-  if (s.tier === gate.tier && s.step === gate.step) s.progress = Math.max(s.progress ?? 0, threshold(content, s));
+  if (s.tier === gate.tier && s.step === gate.step) s.progress = Math.max(s.progress ?? 0, gateMark(content, s, gate));
   return s;
 }

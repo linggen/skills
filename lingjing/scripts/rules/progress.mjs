@@ -345,8 +345,11 @@ function take(content, r, s, exit, policy) {
   // fill it are the economy's (tools/balance.mjs), not played here: the realm stands there, earned.
   // Earned before the way on's fight: a player grinds the layer the gate asks, then goes up
   // (古八's 腊八 final is weighed at the 八层 its gate holds — tools/story-fights.mjs h09b).
-  const gate = stageGate(content, s, sc?.id, exit.id) ?? entryGate(content, s, exit);
-  if (gate) { s = earned(content, s, gate); r.log.push(`earned ${gate.hui} ${gate.tier}:${gate.layer}`); }
+  // The scene's own gate, then one held at its door (a share of the layer, then the next scene's 圆满: both may ask this way).
+  for (const pick of [() => stageGate(content, s, sc?.id, exit.id), () => entryGate(content, s, exit)]) {
+    const gate = pick();
+    if (gate) { s = earned(content, s, gate); r.log.push(`earned ${gate.hui} ${gate.tier}:${gate.layer}${gate.share != null ? `@${gate.share}` : ''}`); }
+  }
   s = handIn(r, s); // the 回's stage quest met (earned here, or already by the realm he holds): 交差
   const game = exit.game ?? null;
   if (game?.kind === 'duel' && !s.wins?.[game.id]) s = r.fight(s, game);

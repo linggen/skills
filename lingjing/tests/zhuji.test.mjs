@@ -86,7 +86,8 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
   assert.equal(s.scene, '09-danfang', '闵丹师\'s pill (第二批 2026-10-26), then the year');
   s = go(placed(s), 'smell').state;
   assert.equal(s.scene, '09-year');
-  assert.equal(s.step, 4, '定风 lifts no layer (2026-10-16): 五层 is ground behind the next gate');
+  // 定风 lifts no layer (2026-10-16): 五层 is ground — since 2026-11-10 to the 丹房's 四成, behind its gate (earnedFor), never told.
+  assert.deepEqual([s.step, s.progress], [5, Math.floor(0.4 * threshold(content, s))], '五层 ground to the 丹房\'s 四成, no more');
   s = placed(s);
   // Only the season due is offered; one out of order is refused.
   assert.deepEqual(buttons(s), ['qingming']);
@@ -98,7 +99,8 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
   s = go({ ...s, stamina: 0, resting: true }, 'qingming').state;
   assert.equal(s.stamina, 0, '清明 costs no 体力');
   assert.ok(!buttons(s).includes('qingming'), '清明 is not offered again');
-  assert.equal(resolve(s, content, ctx, { exit: 'futian' }).result.refused, undefined, '伏天 moves the story on: a spent pool never holds a story step (「剧情保持不扣」, 2026-11-04)');
+  // (伏天's way on waits on 五层六成 since 2026-11-10, a share gate: earned here, as the routine would.)
+  assert.equal(resolve(earnedFor(content, s, 'futian'), content, ctx, { exit: 'futian' }).result.refused, undefined, '伏天 moves the story on: a spent pool never holds a story step (「剧情保持不扣」, 2026-11-04)');
   const layers = [];
   for (const [exit, at] of [['futian', '09-lingcao'], ['fight', '09-fangshi'], ['autumn', '09-suifeng'], ['on', '09-yishui'], ['night', '09-xie'], ['go', '09-nianyao'], ['on', '09-futian'], ['spar', '09-dabi']]) {
     const r = go(placed(s), exit);
@@ -107,9 +109,9 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
     assert.equal(s.bag['foundation-pill'], undefined, 'not yet: the 官丹 waits for the year-five 大比');
   }
   // No story rise (2026-10-16): each layer is his own, earned behind its gate (earnedFor stands in for the routine) —
-  // 伏天 四层 · 灵草谷 五层 (what he banked steps him once 伏天 is behind) · 年四 五层 · 沂水 五层 · 柴房 五层 · 年五 六层 · 崖顶 六层 · 秦雁 六层
-  // (年四 09-suifeng and 年五 09-nianyao, doc/gates-2026-10-27.md 古七 (c)).
-  assert.deepEqual(layers, [4, 5, 5, 5, 5, 6, 6, 6]);
+  // 伏天 五层 (since 2026-11-10 the 丹房's 四成 and 伏天's 六成 are ground behind their share gates; was 四层) · 灵草谷 五层 · 年四 五层 ·
+  // 沂水 五层 · 柴房 五层 · 年五 六层 · 崖顶 六层 · 秦雁 六层 (年四 09-suifeng and 年五 09-nianyao, doc/gates-2026-10-27.md 古七 (c)).
+  assert.deepEqual(layers, [5, 5, 5, 5, 5, 6, 6, 6]);
   assert.equal(s.bag['shunfeng-liu'], 1, 'the boots, from the 鯥\'s hide');
   assert.deepEqual(buttons(placed(s)), ['on'], '古八 opens on 年六 at the 丹房; its years follow, a scene each (2026-10-28)');
   const seven = look(placed(s), content, ctx).chapter.close;

@@ -45,7 +45,8 @@ test('the pay is declared: balance.json pay.stage, 灵石 only (at 圆满 修为
 });
 
 test('his save at 九层 in 古八: the gates behind him are paid once on load, with a note; the open row is 九层圆满, never 七层', () => {
-  const owed = gatesOf(content).filter(g => huiOrder(content, g.hui) < huiOrder(content, 'h09') || BEHIND.includes(gateKey(g)));
+  // A share gate (a step inside a layer, 2026-11-10) is never handed in nor paid back: only the 圆满 ones are owed.
+  const owed = gatesOf(content).filter(g => g.share == null && (huiOrder(content, g.hui) < huiOrder(content, 'h09') || BEHIND.includes(gateKey(g))));
   const healed = settleStages(content, his(), NOW);
   assert.equal(healed.wealth, 112 + owed.length * PAY, 'each gate behind him, once');
   assert.deepEqual([...healed.stages].sort(), owed.map(gateKey).sort());

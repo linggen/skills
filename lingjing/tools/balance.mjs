@@ -220,7 +220,8 @@ export function play(content, player, { model = content.balance.model, ladder = 
   };
   /* Full where he may not step on: the 回's cap or a stage quest ahead (a fight's 修为 there is 灵石). */
   const held = () => { if (s.progress < need()) return false; const top = s.step >= tierAt(s.tier).thresholds.length - 1, cap = capAt(); return top || (cap && rank(s.tier, s.step + 1) > cap.grind); };
-  const gateMet = g => { const a = rank(s.tier, s.step), b = rank(g.tier, g.step); return a > b || (a === b && s.progress >= need()); };
+  // A gate asks its layer full, or a share of it (`share`, rules/gates.mjs gateMark).
+  const gateMet = g => { const a = rank(s.tier, s.step), b = rank(g.tier, g.step); return a > b || (a === b && s.progress >= (g.share != null ? Math.floor(g.share * need()) : need())); };
   let wins = 0;
   /* Each scene as he leaves it: the layer he stands on and whether he is held there full, the door shut (the pacing walk, tests/pacing.test.mjs). */
   const trace = [];

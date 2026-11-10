@@ -58,23 +58,25 @@ test('the share holds as data: each names a layer, a share under one and a scene
     n += 1;
     assert.ok(h.share > 0 && h.share < 1, `${hui}: share ${h.share}`);
     assert.ok(order.includes(h.until), `${hui}: ${h.until} on the walk`);
-    for (const g of gates.filter(x => x.tier === (h.tier ?? first) && x.layer === h.layer)) {
+    // A gate asking a share of the layer (2026-11-10) at or under the hold's opens under it; one asking more would never open.
+    for (const g of gates.filter(x => x.tier === (h.tier ?? first) && x.layer === h.layer && !(x.share != null && x.share <= h.share))) {
       const at = order.indexOf(g.scene);
       if (at >= order.indexOf(h.until) || at < 0) continue; // a gate at the hold's own scene: let go as he stands there
       // A gate before the hold lifts may stand only where the hold's 回 is not his yet (a later 回's hold, on an older layer).
-      assert.ok(g.hui !== hui, `${hui}: the share hold on ${h.layer}层 until ${h.until} outlasts ${g.scene}'s gate on its 圆满`);
+      assert.ok(g.hui !== hui, `${hui}: the share hold on ${h.layer}层 until ${h.until} outlasts ${g.scene}'s gate on ${g.share != null ? `its ${g.share}` : 'its 圆满'}`);
     }
   }
   assert.ok(n >= 6, 'the share holds of 古四 through 古八');
 });
 
-test('gates climb (the lint): no gate asks the layer the highest gate before it already asked full; one asking lower is a named catch-up', () => {
+test('gates climb (the lint): no gate asks the layer the highest gate before it already asked full; one asking lower is a named catch-up; inside a layer its shares rise to 圆满', () => {
   // 古六's eve asks 三层圆满 again after the 石室's wm-kaikai@3: passed above by a fresh save (it stands at 四层 there), it holds a save
   // that came through the 石室 before its gates (2026-10-31) — he steps into 褚先生's 「四层」 there.
   const CATCH_UP = { 'wm-qianye@3': 'a save from before the 石室 gates' };
   const first = content.ladder.tiers[0].id;
   const order = runs.typical.trace.map(t => t.id);
-  const rank = g => content.ladder.tiers.findIndex(t => t.id === (g.tier ?? first)) * 100 + g.layer;
+  // A share of the layer (a step inside it, 2026-11-10) ranks under the layer full: shares rise, 圆满 last.
+  const rank = g => content.ladder.tiers.findIndex(t => t.id === (g.tier ?? first)) * 100 + g.layer - (g.share != null ? 1 - g.share : 0);
   const gates = Object.entries(content.ladder.caps.hui).filter(([id]) => !id.startsWith('_')).flatMap(([, c]) => c.gates ?? [])
     .map(g => ({ ...g, key: `${g.scene}@${g.layer}`, at: order.indexOf(g.scene) })).sort((a, b) => a.at - b.at);
   assert.ok(gates.every(g => g.at >= 0), 'every gate on the walk');
@@ -83,6 +85,34 @@ test('gates climb (the lint): no gate asks the layer the highest gate before it 
     if (top && rank(g) < rank(top)) { assert.ok(CATCH_UP[g.key], `${g.key} asks less than ${top.key} before it: a catch-up, or stale`); continue; }
     if (top && rank(g) === rank(top)) { assert.ok(CATCH_UP[g.key], `${top.key} → ${g.key}: the same layer asked full twice in a row`); continue; }
     top = g;
+  }
+});
+
+// ── 剧情-游戏-剧情 (Hanli 2026-11-10: 「不一定是两段式的剧情-游戏到圆满-剧情, 可以是剧情-游戏-剧情-游戏-剧情-游戏到圆满-剧情突破」 ·
+// 「可以，按 2 天来」): inside a layer the story comes out in stretches, each opened by a share of the bar (a gate's `share`),
+// the last 圆满. The typical player plays only small games at most MAX_WAIT model days between two stretches — 七层 aside:
+// two scenes from 六层's gate to its own, too few to split under 2 days (a proposal, not forced).
+const MAX_WAIT = 2;
+const LONG = { '09-shenshi': '七层: 09-dabi is its only scene before its gate' };
+test('the typical player waits at most MAX_WAIT days of only small games between two stretches of story, 七层 aside (named)', () => {
+  for (const g of runs.typical.gates) {
+    if (LONG[g.scene]) continue;
+    assert.ok((g.days ?? 0) <= MAX_WAIT, `${g.scene} (${g.layer.step}层): ${g.days?.toFixed(2)} days of play before the story goes on — add a share gate earlier in the layer`);
+  }
+  assert.ok(runs.typical.gates.find(g => g.scene === '09-shenshi').days > MAX_WAIT, '七层 still waits long: the exception is real (drop it when it is fixed)');
+});
+
+test('the share gates as data (2026-11-10, a proposal for Hanli): 一层 at 点卯 and the 执事房, 五层 at the 丹房 and 这一年, 六层 at 鯥 and 碾药 — each before its layer\'s 圆满, never at the door that 圆满 is held at', () => {
+  const parts = gatesOf(content).filter(g => g.share != null).map(g => `${g.scene}@${g.layer}:${g.share}`);
+  assert.deepEqual(parts, ['wm-dianmao@1:0.4', 'wm-zhishi@1:0.7', '09-danfang@5:0.4', '09-year@5:0.6', '09-xie@6:0.3', '09-nianyao@6:0.7']);
+  for (const g of gatesOf(content).filter(x => x.share != null)) {
+    const sc = Object.values(content.chapters).map(ch => ch.scenes[g.scene]).find(Boolean);
+    for (const id of g.exits) {
+      const to = sc.exits.find(e => e.id === id)?.next;
+      const held = gatesOf(content).find(x => x.scene === to && x.share == null);
+      const toSc = to && Object.values(content.chapters).map(ch => ch.scenes[to]).find(Boolean);
+      assert.ok(!held || (toSc.show ?? []).some(c => c.card === 'board'), `${g.scene}/${id}: the door ${to}'s 圆满 is held at — one stop, not two`);
+    }
   }
 });
 

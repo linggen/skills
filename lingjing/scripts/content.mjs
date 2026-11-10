@@ -11,7 +11,7 @@ import { EFFECTS } from './battle.js';
 import { FRAMES, PARTICLES } from './atmos.js';
 import { lintCodex } from './codex.js';
 import { bookEntries, idsOf } from './book-order.js';
-import { rankOf, storyAllows } from './rules/cap.mjs';
+import { holdReached, rankOf, storyAllows } from './rules/cap.mjs';
 import { roomWorks } from './rules/gates.mjs';
 import { withWorth } from './rules/fantong-roll.mjs';
 import { rhythm } from './rhythm.mjs';
@@ -1199,6 +1199,14 @@ function lintGate(content, hui, cap, g, bad) {
   if (ch.corridor || (beat && !works)) bad(where, beat?.sealed ? 'inside a sealed instance whose room hosts no practice board: nothing to earn it with' : 'inside a locked beat: he could not leave to earn it');
   for (const x of g.exits ?? []) if (!sc.exits.some(e => e.id === x)) bad(where, `no exit ${x}`);
   if (!(g.exits ?? []).length) bad(where, 'no exits');
+  // A share of the layer (a step inside it, 2026-11-10): whole tenths under 圆满, its name's words, and no share hold of the
+  // 回 still binding there below it — the bar would stop short of the gate for good.
+  if (g.share != null) {
+    if (!(g.share > 0 && g.share < 1) || Math.abs(g.share * 10 - Math.round(g.share * 10)) > 1e-9) bad(where, `share ${g.share}: whole tenths, under 1`);
+    if (!content.ladder.caps?.stage?.part?.zh || !content.ladder.caps?.stage?.part?.en) bad('ladder caps', 'stage.part in zh and en');
+    const at = { chapter: ch.id, scene: g.scene, done_scenes: [] };
+    for (const h of cap.holds ?? []) if (h.share != null && h.share < g.share && h.layer === g.layer && (h.tier ?? tier) === tier && !holdReached(at, h, content)) bad(where, `share ${g.share} behind a share hold of ${h.share} until ${h.until}`);
+  }
   const t = content.ladder.tiers.find(x => x.id === tier), step = stepOfLayer(content, tier, g.layer);
   if (!t || !(step >= 0 && step < t.thresholds.length)) return bad(where, `layer ${g.layer} of ${tier}`);
   const story = cap.story ?? cap;

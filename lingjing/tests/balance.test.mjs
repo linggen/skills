@@ -14,6 +14,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { STATE_VERSION, fitWorld, layerPayOf, migrate, newState, realmName, staminaCost, stepName } from '../scripts/state.mjs';
 import { look, quest, resolve } from '../scripts/rules.mjs';
 import { pay, paysOf } from '../scripts/rules/core.mjs';
+import { settleHeld } from '../scripts/rules/cap.mjs';
 import { choreGrant } from '../scripts/rules/chores.mjs';
 import { chorePlay, convertRate, fightPlay } from '../scripts/rules/playpay.mjs';
 import { turnedPays } from '../scripts/turned.js';
@@ -94,7 +95,7 @@ test('the book as the model reads it: every 回\'s scenes, a way on from each, m
   const walk = bookWalk(content);
   for (const h of ['h01', 'h02', 'h04', 'h05', 'h07', 'h08', 'h11', 'h09', 'h10']) assert.ok(walk.some(w => w.hui === h), h);
   assert.ok(walk.every(w => w.minutes > 0));
-  assert.equal(walk.filter(w => w.gate).length, 9, 'the nine ways a stage quest holds on 卷一\'s line (古五\'s one since 2026-11-03 — the 石室\'s 三层; the 秘境\'s door and the 石室\'s 四层 went with the share holds —, 古七\'s three (09-year\'s 伏天 dropped 11-03), 古八\'s three since 2026-10-28, 入秋\'s at 09-qulao since 11-03)');
+  assert.equal(walk.filter(w => w.gate).length, 15, 'the fifteen ways (2026-11-10: + six shares — 一层 at 点卯 and the 执事房, 五层 at the 丹房 and 这一年, 六层 at 鯥 and 碾药; before that the nine ways a stage quest holds on 卷一\'s line (古五\'s one since 2026-11-03 — the 石室\'s 三层; the 秘境\'s door and the 石室\'s 四层 went with the share holds —, 古七\'s three (09-year\'s 伏天 dropped 11-03), 古八\'s three since 2026-10-28, 入秋\'s at 09-qulao since 11-03)');
 });
 
 test('every errand and 榜文 says what work it is: 修行 pays 修为 for a fight, 杂役 pays 灵石 only; the model places each 修为 errand in its 回', () => {
@@ -182,9 +183,13 @@ test('no story jump (2026-10-16): past the mark the 功课 counts on and a fight
   assert.equal(won.wealth, T.haunt.wealth + Math.round(fightPlay(content, f) * convertRate(content, f)));
   // 第一路 (wm-diyilu): once a rise to 二层; now the story moves nothing — 古五's grinding steps him. (Its way on waits on
   // 喂饭桶 · 一根牛骨头 since 2026-10-21: played.)
-  const r = resolve({ ...s, scene: 'wm-diyilu', place: 'chaifang', tasks: { ...s.tasks, 'diyilu-niugu': { status: 'done' }, 'diyilu-tama': { status: 'done' } } }, content, ctx, { exit: 'save' });
+  const at = { ...s, scene: 'wm-diyilu', place: 'chaifang', tasks: { ...s.tasks, 'diyilu-niugu': { status: 'done' }, 'diyilu-tama': { status: 'done' } } };
+  const r = resolve(at, content, ctx, { exit: 'save' });
   assert.equal(r.result.ok, true, JSON.stringify(r.result));
-  assert.deepEqual([r.state.step, r.state.progress], [s.step, s.progress], 'the story moved nothing');
+  // Past the 柴房 the full 一层 steps to h05's 二层 on load (its gate behind him in the book's order, rules/cap.mjs gatePassed,
+  // 2026-11-10): the story's way on adds nothing to what the load settles.
+  const settled = settleHeld(content, at);
+  assert.deepEqual([r.state.step, r.state.progress], [settled.step, settled.progress], 'the story moved nothing');
   assert.equal(r.result.rose, undefined);
 });
 

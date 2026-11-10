@@ -10,7 +10,7 @@ import { newState, threshold } from '../scripts/state.mjs';
 import { look, move, playTo, resolve, targetOf } from '../scripts/rules.mjs';
 import { health } from '../scripts/rules/health.mjs';
 import { sealedOf } from '../scripts/rules/world.mjs';
-import { gatesOf, stageGate, stageNow } from '../scripts/rules/gates.mjs';
+import { gatesOf, settleStages, stageGate, stageNow } from '../scripts/rules/gates.mjs';
 import { settleHeld } from '../scripts/rules/cap.mjs';
 import { pay } from '../scripts/rules/core.mjs';
 import { WORDS, bookPopHtml, panelActsHtml } from '../scripts/cards.js';
@@ -32,9 +32,10 @@ test('every 回 past 古三 holds one (古九 aside); 古七\'s four as the book
     // 古五: the 石室's 三层圆满 (wm-kaikai); the 秘境's door (二层圆满) and the 石室's 四层圆满 (wm-xiqi) dropped 2026-11-03 (Hanli:
     // 「可以, 两件一起做」) — 二层 stops at a share through the rooms, 四层 is entered in the 石室 and fills toward 定风. 古六's eve on
     // 三层圆满 again (a catch-up for a save that came through the 石室 before its gates: 四层 for 褚先生's 「四层」).
-    h05: ['wm-chaifang@1'], h07: ['wm-kaikai@3'], h08: ['wm-qianye@3'],
+    // 古四's 一层 and 古七's 五层 · 六层 in three stretches since 2026-11-10 (shares; a proposal for Hanli — tests/pacing.test.mjs pins them).
+    h05: ['wm-dianmao@1', 'wm-zhishi@1', 'wm-chaifang@1'], h07: ['wm-kaikai@3'], h08: ['wm-qianye@3'],
     // 古七: 定风 is the 五层 the book tells (「那天早上……他过了五层」) — 09-year's 伏天 asks nothing since 2026-11-03 (it held 五层 two scenes past it)
-    h11: ['09-furnace@4', '09-yishui@5', '09-futian@6'], h09: ['09-shenshi@7', '09-dingfeng@8', '09-qulao@9'], // 入秋's 九层圆满 at 瞿老's door (09-qulao) since 2026-11-03
+    h11: ['09-furnace@4', '09-danfang@5', '09-year@5', '09-yishui@5', '09-xie@6', '09-nianyao@6', '09-futian@6'], h09: ['09-shenshi@7', '09-dingfeng@8', '09-qulao@9'], // 入秋's 九层圆满 at 瞿老's door (09-qulao) since 2026-11-03
   });
   assert.equal(content.ladder.caps.hui.h11.layer, 6, '古七 grinds to 六层 (its rises come behind its gates)');
   // Nothing in the rules names a 回 or a scene of them.
@@ -55,6 +56,25 @@ test('the 柴房 night waits on 一层圆满: refused in the world\'s words with
   assert.equal(full.result.ok, true, JSON.stringify(full.result));
   assert.equal(full.state.scene, 'wm-tonglu'); // the gift's night, cut from wm-danlu (the reading gaps, 2026-10-31)
   assert.match(resolve({ ...atChaifang(0), lang: 'en' }, content, ctx, { exit: 'count' }).result.say, /Stage quest.*Layer 1, Consummation/);
+});
+
+// A share of the layer (Hanli 2026-11-10: 「可以是剧情-游戏-剧情-游戏-剧情-游戏到圆满-剧情突破」): 点卯's way on waits on 一层四成.
+const atDianmao = (progress, extra = {}) => atChaifang(progress, { scene: 'wm-dianmao', place: 'jiangtang', done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian', 'wm-qingshi'],
+  tasks: Object.fromEntries((content.chapters['00-waimen'].scenes['wm-dianmao'].show ?? []).filter(c => c.card === 'board').map(c => [c.id, { status: 'done' }])), ...extra });
+test('a share gate: refused at the layer\'s share in the world\'s words (练气一层四成), open at its mark; met, nothing to hand in — the next gate stands, and no back pay', () => {
+  const mark = Math.floor(0.4 * th[1]);
+  const short = resolve(atDianmao(mark - 1), content, ctx, { exit: 'on' });
+  assert.equal(short.result.refused, 'stage', JSON.stringify(short.result).slice(0, 300));
+  assert.match(short.result.say, /^阶段任务：先修炼到练气一层四成。/);
+  assert.deepEqual(short.result.stage.now, { step: '练气一层', progress: mark - 1, of: mark }, 'where he stands, toward the mark');
+  assert.match(resolve({ ...atDianmao(0), lang: 'en' }, content, ctx, { exit: 'on' }).result.say, /Stage quest: first cultivate to Qi Condensation · Layer 1 at 40%\./);
+  assert.equal(stageNow(content, atDianmao(0)).step, '练气一层四成');
+  const open = resolve(atDianmao(mark), content, ctx, { exit: 'on' });
+  assert.equal(open.result.ok, true, JSON.stringify(open.result).slice(0, 300));
+  assert.equal(open.state.scene, 'wm-zhishi');
+  // Met, it is open: the 事 row is the next gate's (执事房's 七成), never a 交差 for 四成; no 灵石 paid for it, now or later.
+  assert.equal(stageNow(content, atDianmao(mark)).step, '练气一层七成');
+  assert.equal(settleStages(content, { ...open.state, scene: 'wm-tonglu', done_scenes: [...open.state.done_scenes, 'wm-zhishi', 'wm-yaoyuan'] }, NOW).stages?.some(k => k.startsWith('wm-dianmao') || k.startsWith('wm-zhishi')) ?? false, false);
 });
 
 test('a scene already passed is never gated again (a save above a new gate keeps its place); one past the layer walks through', () => {

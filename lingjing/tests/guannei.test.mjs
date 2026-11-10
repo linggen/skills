@@ -8,6 +8,7 @@ import { newState } from '../scripts/state.mjs';
 import { look, move, quest, task, win } from '../scripts/rules.mjs';
 import { resolve } from '../scripts/rules.mjs';
 import { boardsFor, stepVerb, TO_OPEN, walk } from './prologue.mjs';
+import { earnedFor } from './earn.mjs';
 
 const content = loadContent();
 const CH = content.chapters['00-waimen'];
@@ -28,7 +29,7 @@ function step(s, exit) {
   if (exit === 'breathe') { s = must(win, s, { id: 'zhoutian-sanguan' }); s = must(task, s, { action: 'done', id: 'zhoutian-sanguan' }); }
   // whatever else the way on waits on (全文后的小游戏 2026-10-26: 一拳, 周衡), in the scene's `show` order
   for (const [verb, args] of boardsFor(s, content, exit)) s = must(stepVerb(verb), s, args);
-  return must(resolve, s, { exit });
+  return must(resolve, earnedFor(content, s, exit), { exit }); // a share of 一层 at 点卯 and the 执事房 since 2026-11-10: earned, as the routine would
 }
 /* Past 入门第一课 and 周衡's office (at 外门, 2026-10-26): the 观 is his to walk (the next scene waits at the 药园). */
 const roaming = () => {

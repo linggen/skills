@@ -125,7 +125,8 @@ export function rebank(content, s, carried = false) {
    taken that stays in the scene and marks it (古八's 腊八 · 再上五行台, `mark: y-dabi`, before 入秋
    in the same scene — 2026-10-16: two gates, one scene). */
 export function gatePassed(content, state, g) {
-  if ((state.done_scenes ?? []).includes(g.scene)) return true;
+  // …or behind him in the book's order (a gate cut in since he walked by, as a hold's `until`: holdReached).
+  if ((state.done_scenes ?? []).includes(g.scene) || standsPast(content, state, g.scene)) return true;
   const sc = Object.values(content.chapters ?? {}).map(ch => ch.scenes?.[g.scene]).find(Boolean);
   const marks = new Set(state.marks ?? []);
   return (sc?.exits ?? []).some(x => g.exits.includes(x.id) && x.mark && !x.next && !x.ends && marks.has(x.mark));

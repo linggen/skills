@@ -320,13 +320,21 @@
       "refuse": {
         "zh": "阶段任务：先修炼到{step}。功课、秘境、斗法，都长修为。",
         "en": "Stage quest: first cultivate to {step}. Practice, the secret realm and fights all raise cultivation."
-      }
+      },
+      "_part": "A gate that asks a share of its layer (`share` on a gate, rules/gates.mjs gateName; Hanli 2026-11-10: 「可以是剧情-游戏-剧情-游戏-剧情-游戏到圆满-剧情突破」 · 「可以，按 2 天来」): named as the layer at that many tenths — 练气五层四成, the 成 a tenth as the cultivators count it. Met, it opens: no 交差, no `pay.stage` (nothing new paid, no back pay to an older save). `tenths` the digit by tenths. The layer's last gate asks 圆满.",
+      "part": { "zh": "{step}{n}成", "en": "{step} at {pct}%" },
+      "tenths": { "zh": ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"], "en": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"] }
     },
     "hui": {
       "h04": { "tier": "qi", "layer": 0 },
       "h05": { "tier": "qi", "layer": 2,
         "holds": [{ "layer": 2, "share": 0.6, "until": "wm-yan" }, { "layer": 2, "share": 0.85, "until": "wm-mingpai" }],
-        "gates": [{ "layer": 1, "scene": "wm-chaifang", "exits": ["count", "fist"] }] },
+        "_gates": "The 柴房 night on 一层圆满, and before it two steps of 一层 (shares, 2026-11-10 — a proposal for Hanli: tools/balance.mjs's typical player waited 3.4 days at the 柴房 in one block; 点卯 and the 执事房 each stop him a day or so first): 点卯's way on at 四成, the 执事房's way to the patrol at 七成. Not at the 青石 (inside 入门's lock: nowhere to earn it) nor at the 药园's way to the 柴房 (the 柴房's own gate is held at that door, rules/gates.mjs entryGate, so a share there would only lengthen the one stop).",
+        "gates": [
+          { "layer": 1, "share": 0.4, "scene": "wm-dianmao", "exits": ["on"] },
+          { "layer": 1, "share": 0.7, "scene": "wm-zhishi", "exits": ["patrol"] },
+          { "layer": 1, "scene": "wm-chaifang", "exits": ["count", "fist"] }
+        ] },
       "h07": { "tier": "qi", "layer": 4,
         "holds": [{ "layer": 2, "share": 0.85, "until": "wm-mingpai" }, { "layer": 2, "until": "wm-kaikai" }, { "layer": 4, "share": 0.3, "until": "wm-yaban" }],
         "gates": [
@@ -338,9 +346,14 @@
         "gates": [{ "layer": 3, "scene": "wm-qianye", "exits": ["eve"] }] },
       "h11": { "tier": "qi", "layer": 6,
         "holds": [{ "layer": 4, "share": 0.8, "until": "09-jiuge" }, { "layer": 5, "share": 0.7, "until": "09-fangshi" }, { "layer": 6, "share": 0.7, "until": "09-nianyao" }],
+        "_gates": "古七's layers as the book's rises come (定风 五层, 沂水 六层, 伏天 七层), and since 2026-11-10 (a proposal for Hanli) 五层 and 六层 each in three stretches, not one block of play after the layer's story: 五层 四成 at the 丹房's way on, 六成 at 这一年's 伏天; 六层 三成 at 鯥's spring, 七成 at 碾药's way on (tools/balance.mjs typical: 2.4 → ≤ 1.1 days a stop at 五层, 4.5 → ≤ 1.9 at 六层).",
         "gates": [
           { "layer": 4, "scene": "09-furnace", "exits": ["fire"] },
+          { "layer": 5, "share": 0.4, "scene": "09-danfang", "exits": ["smell"] },
+          { "layer": 5, "share": 0.6, "scene": "09-year", "exits": ["futian"] },
           { "layer": 5, "scene": "09-yishui", "exits": ["night"] },
+          { "layer": 6, "share": 0.3, "scene": "09-xie", "exits": ["go"] },
+          { "layer": 6, "share": 0.7, "scene": "09-nianyao", "exits": ["on"] },
           { "layer": 6, "scene": "09-futian", "exits": ["spar"] }
         ] },
       "h09": { "tier": "qi", "layer": 9, "story": { "tier": "foundation", "layer": 3 },

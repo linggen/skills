@@ -8,6 +8,7 @@ import { newState, pick } from '../scripts/state.mjs';
 import { look, move, quest } from '../scripts/rules.mjs';
 import { resolve, task, win } from '../scripts/rules.mjs';
 import { boardsFor, stepVerb, TO_OPEN, walk } from './prologue.mjs';
+import { earnedFor } from './earn.mjs';
 
 const content = loadContent();
 const DAY1 = new Date('2026-09-29T09:00:00');
@@ -21,7 +22,7 @@ const fresh = (s) => ({ ...s, stamina: 100, stamina_at: DAY1.toISOString() });
 function step(s, exit) {
   if (exit === 'breathe') { s = must(win, s, { id: 'zhoutian-sanguan' }); s = must(task, s, { action: 'done', id: 'zhoutian-sanguan' }); }
   for (const [verb, args] of boardsFor(s, content, exit)) s = must(stepVerb(verb), s, args);
-  return must(resolve, s, { exit });
+  return must(resolve, earnedFor(content, s, exit), { exit }); // a share of 一层 at 点卯 and the 执事房 since 2026-11-10: earned, as the routine would
 }
 const roaming = (lang = 'zh') => {
   let s = fresh(walk(newState(content, lang, DAY1), TO_OPEN, content, DAY1));

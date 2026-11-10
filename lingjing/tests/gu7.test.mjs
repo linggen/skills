@@ -173,7 +173,7 @@ test('saves from before the split: one past 09-year stays put; one in 09-year mo
   assert.equal(mid.tasks['year-smell'], undefined, '闻焦 cut 2026-10-19: no board offered there');
   assert.equal(mid.tasks['year-kanlu']?.status, 'offered', '看炉 (2026-10-26) is offered to a save standing here');
   const on = go(play(mid, 'year-kanlu'), 'futian');
-  assert.deepEqual([on.scene, on.step], ['09-lingcao', 4]);
+  assert.deepEqual([on.scene, on.step], ['09-lingcao', 5], '伏天 waits on 五层六成 since 2026-11-10 (a share gate): ground there, as the routine would (go earns it)');
   // Standing in 09-furnace from before: its board is offered (认方 cut 2026-10-19: one held offered is let go), the way on is the 定风 morning.
   const fur = fitWorld(at('09-furnace', { tasks: { 'furnace-recipe': { status: 'offered' } } }), content);
   assert.deepEqual(['furnace-recipe', 'furnace-ding'].map((id) => fur.tasks[id]?.status), [undefined, 'offered']);
