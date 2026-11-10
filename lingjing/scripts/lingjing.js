@@ -403,6 +403,7 @@ const view = {
   offerRow: null, //     the errand on the stage's offer card that is open
   tookOffer: null, //    an errand just taken: its row is stamped 已接下, then goes
   qSkip: [], //          queue keys he put off here with 下一件 ›, oldest first
+  shelfNote: null, //    what a tap on a shelf row came to, said on that row: { id, place, line } (doTap)
   doNote: null, //       a page tap the rules refused, in their words, until the next tap
   bookInfo: null, //     what the rules say of it (`Quest info`), read on the tap
   kaifu: null, //        开府 in full (`Quest kaifu`), read when the 事 chip opens
@@ -472,7 +473,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, homeFrom: homePct, boardTitle: (id) => boardTitles.get(id) ?? null, toldOf: (id) => (toldHeld(boards.get(id)) ? boards.get(id).told : null), pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, oddsFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, qianShaking: view.qianShaking, qianNote: view.qianNote, qianHer: view.qianHer, qianHerWaiting: view.qianHerWaiting, qianFriendOpen: view.qianFriendOpen, qianFriendName: view.qianFriendName, qianFriendBirth: view.qianFriendBirth, qianFriendNoKeep: view.qianFriendNoKeep, qianFriendNote: view.qianFriendNote, qianFriend: view.qianFriend, qianFriendHer: view.qianFriendHer, qianFriendWaiting: view.qianFriendWaiting, qianFriendFresh: view.qianFriendFresh, qianPngReady: view.qianPngReady, qianCan: view.qianCan, qianShareNote: view.qianShareNote, qianShown: view.qianShown, qianBookOpen: view.qianBookOpen, qianBook: view.qianBook, herHere: herHere(), fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, kanjiaPick: view.kanjiaPick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv });
+const ctx = () => ({ look, homeFrom: homePct, boardTitle: (id) => boardTitles.get(id) ?? null, toldOf: (id) => (toldHeld(boards.get(id)) ? boards.get(id).told : null), pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, oddsFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, qianShaking: view.qianShaking, qianNote: view.qianNote, qianHer: view.qianHer, qianHerWaiting: view.qianHerWaiting, qianFriendOpen: view.qianFriendOpen, qianFriendName: view.qianFriendName, qianFriendBirth: view.qianFriendBirth, qianFriendNoKeep: view.qianFriendNoKeep, qianFriendNote: view.qianFriendNote, qianFriend: view.qianFriend, qianFriendHer: view.qianFriendHer, qianFriendWaiting: view.qianFriendWaiting, qianFriendFresh: view.qianFriendFresh, qianPngReady: view.qianPngReady, qianCan: view.qianCan, qianShareNote: view.qianShareNote, qianShown: view.qianShown, qianBookOpen: view.qianBookOpen, qianBook: view.qianBook, herHere: herHere(), fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, kanjiaPick: view.kanjiaPick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv, shelfNote: view.shelfNote?.place === (look?.place?.id ?? null) ? view.shelfNote : null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -3357,11 +3358,16 @@ const DOES = {
   sell: (id) => write('trade', { action: 'sell', id }),
   use: (id) => write('trade', { action: 'use', id }),
 };
-async function doTap(action, id) {
+async function doTap(action, id, inRow = false) {
   if (!DOES[action]) return;
   const r = await DOES[action](id).catch(failed);
+  // A buy or sell tapped on a shelf row says what it came to on that row (Hanli 11-10: 「在替身草人上, 好像没买成功」 — a card
+  // bought is no thing in the 储物袋, a card held is refused): the card bought, or the rules' refusal in their words.
+  const card = r.ok && action === 'buy' ? r.cards?.[0] : null;
+  const rowLine = !inRow ? null : r.ok ? (card ? `${card.name ?? (look?.place?.shelf ?? []).find((i) => i.id === id)?.name ?? id} · ${words().boughtCard}` : null) : refusal(r);
+  keep({ shelfNote: rowLine ? { id, place: look?.place?.id ?? null, line: rowLine } : null });
   // A reward that found the 储物袋 full says where it went, in the rules' line.
-  keep({ doNote: r.ok ? r.paid?.pouch_full ?? r.pouch_full ?? null : refusal(r) });
+  keep({ doNote: r.ok ? r.paid?.pouch_full ?? r.pouch_full ?? null : rowLine ? null : refusal(r) });
   if (r.ok && action === 'take') tookOffer(id);
   await refresh();
   if (r.ok && action === 'turn' && view.bookOpen) await loadKaifu();
@@ -4187,7 +4193,7 @@ const CLICKS = [
   ['[data-gear]', () => (view.gearOpen ? show({ gearOpen: false }) : openGear())],
   // A door to one pane of the panel (the tray's 饭桶 opens on 饭桶, not the 储物袋 — Hanli 11-02).
   ['[data-gear-open]', (el) => run(`gear:${el.dataset.gearOpen}`, () => openGear(el.dataset.gearOpen || null))],
-  ['[data-do]', (el) => { if (!el.matches(':disabled')) run(`do:${el.dataset.do}:${el.dataset.id}`, () => doTap(el.dataset.do, el.dataset.id)); }],
+  ['[data-do]', (el) => { if (!el.matches(':disabled')) run(`do:${el.dataset.do}:${el.dataset.id}`, () => doTap(el.dataset.do, el.dataset.id, Boolean(el.closest('.shelf .item')))); }],
   ['[data-kanjia-pick]', (el) => { if (!el.matches(':disabled')) show({ kanjiaPick: !view.kanjiaPick }); return true; }],
   ['[data-kanjia]', (el) => { if (!el.matches(':disabled')) { keep({ kanjiaPick: false }); run(`kanjia:${el.dataset.kanjia}`, () => kanjia(el.dataset.kanjia)); } }],
   ['[data-deck]', (el) => run(`deck:${el.dataset.deck}`, () => deckTap({ action: 'toggle', id: el.dataset.deck }))],
