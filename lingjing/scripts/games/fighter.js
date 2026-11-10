@@ -224,6 +224,9 @@ const CODES = {
   ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'jump', ArrowDown: 'crouch', Space: 'jump',
 };
 const HELD = new Set(['left', 'right', 'crouch']);
+/* One thumb for two keys (the phone; KOF's A+B and C+D need two fingers down within PAIR_MS): a thumb that goes down on a
+   key and slides onto its pair presses the pair — 拳 ↔ 腿 the roll, 重拳 ↔ 重腿 the blowback. [the pair's other key, the press]. */
+export const SLIDE = { light: ['lkick', 'ying'], lkick: ['light', 'ying'], hpunch: ['heavy', 'blow'], heavy: ['hpunch', 'blow'] };
 /* The desk's pad, shown or not, per browser: shown unless hidden (`0`) — over the field now, it costs the picture nothing
    (Hanli 11-05: 「按键可以默认显示」). */
 export const PAD_KEY = 'lingjing.fighter.pad';
@@ -413,6 +416,16 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
     pads.set(e.pointerId, b.dataset.k);
     press(b.dataset.k, e.pointerId);
   });
+  on(root, 'pointermove', (e) => {
+    const pair = SLIDE[pads.get(e.pointerId)];
+    if (!pair) return;
+    const b = doc.elementFromPoint(e.clientX, e.clientY)?.closest?.('button[data-k]');
+    if (b?.dataset.k !== pair[0] || !root.contains(b)) return;
+    pads.set(e.pointerId, 'slid'); // once a touch
+    b.classList.add('is-down');
+    win.setTimeout(() => b.classList.remove('is-down'), 110);
+    apply({ g: pair[1], cut: true });
+  });
   const up = (e) => { const k = pads.get(e.pointerId); if (k == null) return; pads.delete(e.pointerId); lift(k, e.pointerId); };
   on(root, 'pointerup', up);
   on(root, 'pointercancel', up);
@@ -467,6 +480,14 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   let hintSeen = false, hintUntil = 0;
   try { hintSeen = win.localStorage.getItem(hintKey) === '1'; } catch { /* this mount only */ }
   let locked = false;
+  /* The hands at a round's end: put down and shut; open again when the next round is called (`level.rounds`). */
+  const lock = (on) => {
+    locked = on;
+    if (on) { liftAll(); pads.clear(); }
+    else shell?.sound?.('start');
+    for (const b of root.querySelectorAll('button[data-k]')) { b.disabled = on; b.classList.remove('is-down'); }
+    if (on) dial?.setAttribute('aria-disabled', 'true'); else dial?.removeAttribute('aria-disabled');
+  };
   const frame = (now) => {
     raf = win.requestAnimationFrame(frame);
     let dt = Math.min(50, last ? now - last : 16);
@@ -476,12 +497,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
       if (s0.end && s0.t - s0.end.at < SLOW.ms) dt *= SLOW.rate; // the KO, slowed
       g.state = core.tick(s0, dt);
       if (g.state !== s0) sounded(shell, self, s0, g.state);
-      if (g.state.end && !locked) {
-        locked = true;
-        liftAll(); pads.clear();
-        for (const b of root.querySelectorAll('button[data-k]')) { b.disabled = true; b.classList.remove('is-down'); }
-        dial?.setAttribute('aria-disabled', 'true');
-      }
+      if (Boolean(g.state.end) !== locked) lock(Boolean(g.state.end));
       const full = core.superReady(g.state) && !g.state.end; // a stock, 爆气, or 绝境
       if (full && !hintSeen) {
         hintSeen = true; hintUntil = now + 3000;

@@ -363,6 +363,12 @@ while its key is down; a finger sees 鼓心 · 鼓边 instead.
 
 ## 格斗 — the arcade 1v1 (10-26, first bout: 秦雁)
 
+- 切磋关卡设置 `rounds.wins: 2`，三局两胜；其他关卡不设则保持单局。
+- 每局限时 60 秒；时间到比较双方血条剩余比例，平手判对手胜。
+- 血条旁圆点记录胜局；局间重置血量与位置、保留气，并显示回合提示。
+- 最终胜负由局数决定；先失一局再获胜不能拿三星。
+- 小满的旋踢使用已绘制动作；触屏可下加技，拳腿或重拳重腿可滑动组合。
+
 Hanli 10-26: 「你发明的不太行, 用现有的应该都可以」 → 「街霸好做吗? 拳皇之类的」 → 「好, 先做秦雁那一场」. One bout only, wm-yingjian
 (task `yingjian-hook`, its won lines and stars kept), until he has played it on the Mac and the phone.
 - **Kit** `games/fighter.js` (mount, own hands) · `fighter/core.js` (pure, seeded rules + her AI) · `fighter/draw.js` (ink 皮影 on a

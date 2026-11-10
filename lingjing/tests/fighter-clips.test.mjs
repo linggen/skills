@@ -53,6 +53,8 @@ test('the painted gap clips show where the sheet has them, the old ones where it
   const xm = SHEETS.xiaoman, qy = SHEETS.qinyan, lf = SHEETS.lufang;
   assert.equal(resolveClip(xm, 'me', 'backdash')[1], xm.clips.backdash);
   assert.equal(resolveClip(xm, 'me', 'throw')[1], xm.clips.throw);
+  assert.equal(resolveClip(xm, 'me', 'spin')[1], xm.clips.spin);
+  assert.deepEqual(resolveClip(lf, 'me', 'spin'), resolveClip(lf, 'me', 'heavy'));
   assert.equal(resolveClip(lf, 'me', 'backdash')[1], lf.clips.back);
   assert.equal(resolveClip(qy, 'foe', 'zhen')[1], qy.clips.zhen);
   assert.equal(resolveClip(lf, 'foe', 'zhen')[1], lf.clips.idle);

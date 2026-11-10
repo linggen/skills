@@ -165,14 +165,22 @@ test('pay: its 体力 × R × ★, the day\'s first two in full, then the replay
 test('the board: a sparring bout ends when her 稳 is gone (she yields) or the incense is out (a judge); a hand wins every style', () => {
   for (const o of ['qiecuo-qinyan', 'qiecuo-lufang', 'qiecuo-qichangsong']) {
     const L = levelOf(content, o);
-    let s = F.newGame('y', 1, { levels: [L] });
-    s.foe.bal = 0.5; s.foe.think = 1e9;
-    s = F.act(s, { g: 'walk', dir: 1 }).state;
-    for (let t = 0; t < 4000 && !s.end; t += 10) { s = F.tick(s, 10); if (Math.abs(s.foe.x - s.me.x) < 100) s = F.act(s, { g: 'light' }).state; }
-    assert.equal(s.end?.kind, 'yield', `${o}: she yields`);
-    s = F.tick(s, 3000);
+    // best of three (2026-11-10, `rounds: { wins: 2 }`): a round is hers to yield, the match his at the second
+    assert.deepEqual(L.rounds, { wins: 2 }, `${o}: best of three`);
+    const round = (s0) => {
+      let s = s0;
+      s.foe.bal = 0.5; s.foe.think = 1e9;
+      s = F.act(s, { g: 'walk', dir: 1 }).state;
+      for (let t = 0; t < 8000 && !s.end; t += 10) { s = F.tick(s, 10); if (Math.abs(s.foe.x - s.me.x) < 100) s = F.act(s, { g: 'light' }).state; }
+      assert.equal(s.end?.kind, 'yield', `${o}: she yields`);
+      return F.tick(s, 3000);
+    };
+    let s = round(F.newGame('y', 1, { levels: [L] }));
+    assert.deepEqual([s.won, s.live, s.round.n, s.round.me], [false, true, 2, 1], `${o}: one round his, the second called`);
+    s = round(s);
     assert.equal(s.won, true);
-    let j = F.newGame('j', 1, { levels: [L] });
+    assert.equal(s.stars, 3, `${o}: two rounds straight`);
+    let j = F.newGame('j', 1, { levels: [{ ...L, rounds: { wins: 1 } }] });
     j.t = L.time - 20; j.foe.bal = 10; j.foe.think = 1e9;
     j = F.tick(j, 2500);
     assert.equal(j.won, true, `${o}: judged his way when she stands looser`);

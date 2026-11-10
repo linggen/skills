@@ -7,7 +7,7 @@
 // the crowd bobbing on a big blow, and the KO's vignette. Nothing here plays: it reads a state.
 
 import { loopAt } from '../jieyin/flight.js';
-import { QI, koEnd, koClip, KO_HIT_MS, KO_FALL_MS, KO_SEAL_MS } from './core.js';
+import { QI, koEnd, koClip, roundNow, KO_HIT_MS, KO_FALL_MS, KO_SEAL_MS } from './core.js';
 
 const W = 960, H = 540, FLOOR = 432;
 /* The painted fighters stand ~245 units tall (KOF scale: near half the field); the core counts heights for ~190: what it
@@ -439,7 +439,7 @@ function meClip(s) {
     if (a.k === 'backstep') return ['backdash', a.at]; // the hop back (a sheet without one: his walk back, ME_AS)
     if (['special', 'palmfire', 'palmfireH', 'feijian', 'fuwen'].includes(a.k)) return ['cast', a.at, a.m];
     if (CROUCHED[a.k]) return [me.crouch ? CROUCHED[a.k] : a.k, a.at, a.m];
-    if (['blow', 'super', 'air', 'rise'].includes(a.k)) return [a.k, a.at, a.m];
+    if (['blow', 'super', 'air', 'rise', 'spin'].includes(a.k)) return [a.k, a.at, a.m];
   }
   if (me.air) return ['jump', me.jumpAt ?? t];
   if (me.running) return ['dash', null];
@@ -482,11 +482,11 @@ const FOE_LAID = {
 const ZHEN_M = { startup: 60, active: 140, recover: 160 }, ZHEN_MS = 420;
 const FOE_AS = { jump: 'poke', air: 'thrust', sweep: 'jianqi', aa: 'poke', throw: 'strike', roll: 'back', knock: 'slip', run: 'walk', lowblock: 'block', land: 'idle', zhen: 'idle' };
 /* His sheet without a state's own clip: the one it showed before that clip was painted. */
-const ME_AS = { backdash: 'back', throw: 'blow' };
+const ME_AS = { backdash: 'back', throw: 'blow', spin: 'heavy' };
 /* Every clip name meClip and foeClip may ask for (tests/fighter-clips.test.mjs: each resolves on every sheet). */
 export const CLIP_STATES = {
   me: ['idle', 'win', 'lose', 'knock', 'hit', 'roll', 'throw', 'super', 'clight', 'clkick', 'chpunch', 'cheavy', 'dash', 'backdash',
-    'cast', 'light', 'lkick', 'hpunch', 'heavy', 'blow', 'air', 'rise', 'jump', 'crouch', 'cblock', 'block', 'walk', 'back'],
+    'cast', 'light', 'lkick', 'hpunch', 'heavy', 'blow', 'air', 'rise', 'spin', 'jump', 'crouch', 'cblock', 'block', 'walk', 'back'],
   foe: ['idle', 'lose', 'slip', 'win', 'glow', 'hold', 'strike', 'edge', 'knock', 'throw', 'air', 'jump', 'hit', 'zhen', 'block', 'lowblock',
     'roll', 'land', 'ice', 'poke', 'thrust', 'jianqi', 'feijian', 'sweep', 'aa', 'run', 'walk', 'back'],
 };
@@ -813,6 +813,27 @@ function qiBar(ctx, x, w, qi, t, right) {
     ctx.fillRect(right ? sx + seg - f * seg + 1 : sx + 1, y, f * seg - 2, 5);
   }
 }
+/* A match's rounds won (`level.rounds`): a seal-red dot for each, a ring for each still to win, at the inner end of each bar. */
+function roundPips(ctx, r, BW) {
+  const dot = (cx, on) => {
+    ctx.beginPath(); ctx.arc(cx, 66, 5.5, 0, Math.PI * 2);
+    ctx.fillStyle = on ? '#c2381e' : 'rgba(20,18,15,.55)'; ctx.fill();
+    ctx.lineWidth = 1.5; ctx.strokeStyle = '#f1e6cf'; ctx.stroke();
+  };
+  for (let i = 0; i < r.wins; i += 1) { dot(86 + BW - 7 - i * 16, i < r.me); dot(W - 86 - BW + 7 + i * 16, i < r.foe); }
+}
+/** The round's call: 「第二回合」, the deciding one 「决胜回合」 (a level's `words.round` / `words.lastRound`, `{n}` the round). */
+const ROUND_WORDS = {
+  zh: { round: '第{n}回合', last: '决胜回合', numerals: ['一', '二', '三', '四', '五'] },
+  en: { round: 'Round {n}', last: 'Final round', numerals: [] },
+};
+export function roundWord(r, lang, words = {}) {
+  const defaults = ROUND_WORDS[lang] ?? ROUND_WORDS.zh;
+  if (r.last && r.n > 1) return say(words.lastRound, lang) || defaults.last;
+  const own = say(words.round, lang);
+  if (own) return own.replace('{n}', String(r.n));
+  return defaults.round.replace('{n}', String(defaults.numerals[r.n - 1] ?? r.n));
+}
 function hud(ctx, s, art, lang, view) {
   const lv = s.level ?? {}, me = lv.me ?? {}, foe = lv.foe ?? {}, BW = 320;
   bar(ctx, 86, BW, s.me.hp / s.R.me.hp, view.ghostMe, me.look?.bar ?? '#a33025', false);
@@ -833,6 +854,8 @@ function hud(ctx, s, art, lang, view) {
     ctx.fillStyle = 'rgba(20,18,15,.7)'; ctx.fillRect(84, y, BW * 0.62 + 4, 5);
     ctx.fillStyle = `rgba(255,${130 + Math.round(Math.sin(s.t / 60) * 40)},50,1)`; ctx.fillRect(86, y + 1, BW * 0.62 * left, 3);
   }
+  const rounds = roundNow(s);
+  if (rounds) roundPips(ctx, rounds, BW);
   ctx.textBaseline = 'middle';
   ctx.font = `600 15px ${SERIF}`;
   const name = (n, b) => `${say(n, lang)} · ${say(b, lang)}`;
@@ -867,7 +890,7 @@ function hud(ctx, s, art, lang, view) {
   if (s.R.me.feijian) ring(120, say(lv.words?.feijian, lang)?.[0] || (lang === 'en' ? 'S' : '剑'), 1 - (s.me.cdFj ?? 0) / s.R.me.feijian.cd); // 飞剑's
   if (s.R.me.fuwen) ring(144, say(lv.words?.fuwen, lang)?.[0] || (lang === 'en' ? 'T' : '符'), 1 - (s.me.cdFw ?? 0) / s.R.me.fuwen.cd); // 符文's
   // the incense (the bout's clock, burning down) and her count of moves, small
-  const total = lv.time ?? 120000, left = Math.max(0.06, 1 - s.t / total), ix = W / 2, top = 14, len = 34;
+  const total = lv.time ?? 120000, left = Math.max(0.06, 1 - (s.t - (s.t0 ?? 0)) / total), ix = W / 2, top = 14, len = 34;
   ctx.fillStyle = '#6b4b2a'; ctx.fillRect(ix - 1.5, top + len * (1 - left), 3, len * left);
   ctx.fillStyle = '#e24a1b'; ctx.beginPath(); ctx.arc(ix, top + len * (1 - left), 2.6, 0, Math.PI * 2); ctx.fill();
   ctx.strokeStyle = 'rgba(80,80,80,.35)'; ctx.lineWidth = 1;
@@ -957,8 +980,9 @@ function seal(ctx, word, age) {
 /* The bout's call (KOF's 「ROUND 1 · READY · GO」): 「比武」 while the hands wait, then 「开始！」 as they go. */
 function intro(ctx, s, lang, lv) {
   const left = s.intro - s.t, go = left <= 0;
-  const word = go ? say(lv.words?.go, lang) || (lang === 'en' ? 'Fight!' : '开始！') : say(lv.words?.ready, lang) || (lang === 'en' ? 'Ready' : '比武');
-  const age = go ? -left : s.t, k = Math.min(1, age / 160), a = go ? Math.max(0, 1 - -left / 500) : 1;
+  const r = roundNow(s);
+  const word = go ? say(lv.words?.go, lang) || (lang === 'en' ? 'Fight!' : '开始！') : r ? roundWord(r, lang, lv.words) : say(lv.words?.ready, lang) || (lang === 'en' ? 'Ready' : '比武');
+  const age = go ? -left : s.t - (s.t0 ?? 0), k = Math.min(1, age / 160), a = go ? Math.max(0, 1 - -left / 500) : 1;
   ctx.save();
   ctx.globalAlpha = a;
   ctx.fillStyle = 'rgba(20,16,12,.55)'; ctx.fillRect(-EDGE, 214, W + 2 * EDGE, 92);
