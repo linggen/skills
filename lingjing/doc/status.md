@@ -4,22 +4,39 @@ The one list of what is in flight, parked, not started, and waiting on Hanli.
 Every agent reads it before starting and edits its own row when it lands (hash or tag, date).
 Systems themselves live in `design.md` (【已建】 · 【在建】 · 【远景】); this file is only the work.
 
-Updated 2026-11-10.
+Updated 2026-11-10 (evening).
 
-Shipped: Linggen 2.0 (ling-mem 1.13.0 · engine 2.0.1 · App 2.0, 11-08/09); iOS 2.0.0 (27) in App Store review since 11-09. What follows rides iOS 2.0.1 and the next skills install.
+Shipped: Linggen 2.0 (ling-mem 1.13.0 · engine 2.0.1 · App 2.0, 11-08/09); iOS 2.0.0 (27) in App Store review since 11-09. Everything below is on skills main and installed on the Mac; the phone carries it from build 2.0.0 (29), installed on Hanli's iPhone, not yet in a store build.
 
 ## In flight
 
-Started 2026-11-10 (Hanli: 「先把灵境剩下的修完」), four agents, each on its own files:
+None.
 
-- **结印课堂 on the phone + the no-camera demo** (Hanli 11-10: 「那个是很重要的课堂…如果用户不开摄像头, 就改成自动演示」). Finding: never cut — the phone never chose a task's `alt` (only the Mac's caps.js did), so `qianye-qiajue` was dealt as 砸寨 · 讲堂试法. Build: the phone deals the alt by the same rule; no camera / refused → the lesson demonstrates its seals itself (Mac and phone), then the row's own board, same pay; the camera asked on 开始. Files: games/jieyin*, caps.js, levels/jieyin.json, tools/phone, linggen-mobile.
-- **格斗 layers 2 and 5, what is really left** (plan 11-05): audit first — dash, hop, roll, throw, low guard, 绝, intro and KO slow-mo are in; missing by grep: a round timer and best of three (for 切磋 · 演武场 only, as level knobs; story bouts keep their own endings), thumbs check of every move at 375/430, 小满's painted 旋踢 with no move.
-- **格斗 layer 4, the other seven fighters** (Hanli 11-10: 「格斗帧重画, 做吧」): heqi · lufang · qichangsong · zouqingsong · jiuceng · laojing · maxiaobao from 33 frames to the 秦雁/小满 standard, local FLUX, one fighter a commit.
-- **小游戏 修为 ×1.5** (Hanli 11-10, first asked a session earlier, never built: 「把小游戏奖励修为提高到1.5呗, 加快一点升级速度」): one declared factor on boards, 秘境 rooms and 兽潮 nights; not 斗法 beasts, 人间功课, errands, 闭关, pills.
+## Done 2026-11-10 (Hanli: 「先把灵境剩下的修完」)
 
-Then, one batch: Mac install + phone repack, playtest run + review, his phone.
+- **小游戏 修为 ×1.5** (`c460d2631`): one declared factor `play_pay.xiuwei.board` on boards, 秘境 rooms, 兽潮 nights, 切磋; not beast card fights, 人间功课, errands, 闭关, pills.
+- **结印课堂 on the phone + the no-camera demo** (`2b1d31f13`, mobile `cd5e629`): one choice rule (scripts/board-choice.js) for the Mac page and the phone's rules door; no camera → the lesson shows its five seals itself (games/jieyin/auto.js), then the row's own 砸寨 · 讲堂试法.
+- **格斗 rounds** (`46f4e1702`): a round timer and best of three as a level's knobs, on for 切磋 · 演武场 only; 小满's 旋踢; roll and blowback by a slide on the touch pad.
+- **Three page fixes from the verify run** (`f1278879a`): no camera dock during the demo; a round lost says the round, not the match; the round call clear of the pad at 375.
+- **A stretch of cultivation pays** (`5ec98e21e`, rules/cultivation.mjs): a scene marked `cultivation: true` left with no 修为 paid pays one story step, shown as 剧情所得; nothing before 入门; 17 scenes marked. **A full bar gets no floor** (`fe892774b`).
+- **Pacing** — Hanli: 「满了后的下一场剧情是突破」 · 「剧情-游戏-剧情-游戏-剧情-游戏到圆满-剧情突破」 · 「可以，按 2 天来」: the 二层 and 四层 holds let go one scene later (`6273d9113`); a hold lets go once the save stands past its scene (`3a37cbef5`); **share gates** (`a549a6c0e`) — 一层 四成·七成, 五层 四成·六成, 六层 三成·七成 — so the typical player plays at most 2 days between story beats.
+- **画猜 says what to draw** (`001758f08`): a creature word shows its pinyin and the bestiary's look line (狰, 犰狳 linked); never sent to the guesser.
+- **Phone: nothing settled unplayed** (mobile `b663d6f`): only the story's own board stands in; a board or one of 银月's talking games the phone cannot host reads 「在 Mac 上玩」.
+- 格斗 layer 4: 何七 and 卢方 repainted to 57 frames (`c7d324c0d`, `20bffab6c`), the old way.
 
-Checked 11-10, already done (were on old lists): the kept card's 丹囊/换一只, 回气丹's effect line, the 饥啸 cover, the playbot's 储物袋 (`e22bbe9ab`, 11-07); 当康's hidden ×2.5 shown as 凶 ×N (`5c27d0748`, 11-09); a carried pill no longer holds the turn (`afb9911f0`, 11-09); 石室 gate and 格斗 大比 (10-31).
+Checked 11-10, already done before (were on old lists): the kept card's 丹囊/换一只, 回气丹's effect line, the 饥啸 cover, the playbot's 储物袋 (`e22bbe9ab`, 11-07); 当康's hidden ×2.5 shown as 凶 ×N (`5c27d0748`, 11-09); a carried pill no longer holds the turn (`afb9911f0`, 11-09); 石室 gate and 格斗 大比 (10-31).
+
+## Open after 11-10
+
+- **Not seen on a device or a live page:** everything landed after the morning verify run (cultivation floor, full bar, holds, share gates, 画猜 hint, the three page fixes, the phone's 在 Mac 上玩). The morning run's playbot review opened 12 of 79 shots and must be redone before a release gate.
+- **九层 stays** (Hanli: 「九层保持现状」): 圆满 at 瞿老's door, the night 09-qulao → 09-shijie → 09-cliff is the 筑基 beat.
+- **七层** takes the typical player 5.6 days in one block (one scene before its gate). Options on record: one more story beat, or a 五成 gate at 09-dabi with the threshold near 600. Hanli: 「先不动」. 六层's second stretch sits at 1.9 days.
+- **格斗 repaint paused** (Hanli: 「先这样吧. 以后有时间, 让gpt画吧」): the silhouette + FLUX method gives extra limbs; tools at tag `wip/2026-11-10-fighter-pose`. Five fighters still at 33 frames. Candidates later: GPT over a colour-coded pose sheet, or Blender renders.
+- 画猜: a 「看图鉴」 help button was offered, not built; the hint's layout at 375 not looked at.
+- Phone: 问签 is told apart from 银月's talking games by its opener name in Dart (`macChatOnly`); the rules should say which rows are the Mac chat's.
+- 格斗 at 393–430 wide: the round call was moved only for canvases ≤ 380.
+- `node tools/numbers.mjs --apply` reports one row (`play_pay.hours.qi`) on main; `tests/game-zhazhai` goes red under load (passes alone); linggen-mobile `lingjing_greet_quest_test` red since 11-09.
+- linggen-app `vendor/skills` not bumped.
 
 ## Play bot — how to run (tools/playbot, not in check.sh: minutes)
 
