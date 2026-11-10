@@ -1,3 +1,4 @@
+export { demoHow } from './jieyin/auto.js';
 // jieyin.js — 结印 (hand seals), a prototype in the 游戏厅 (Hanli 2026-10-21: 「做一个测试一下, 好玩的话, 可以在守墙里面,
 // 让用户结印发火弹帮忙打怪」). The player makes seals at the camera; four in order cast a 火蛋 at the boar — on a phone
 // 推掌 · 剑诀 · 申文 · 午文, on a Mac 双掌 · 双剑 · 申文 · 离火印 (two hands, each step also taken by its one-hand seal — judge.also; levels/jieyin.json `moves`) — three eggs drive it off. A wrong seal held = 走火: a charred egg and a puff, back to the first seal.
@@ -271,7 +272,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         const seal = kit.seals[id];
         $('.jy-auto-hand').innerHTML = seal ? iconSvg(seal, 84, { lang }) : '';
         $('.jy-auto-name').textContent = seal ? tr(seal.name, lang) : '';
-        $('.jy-hint').textContent = seal ? `${tr(seal.hint, lang)}　${tr(seal.how, lang)}` : '';
+        $('.jy-hint').textContent = seal ? tr(seal.hint, lang) : '';
       };
       const AUTO = {
         show: (st) => { slots(st.at); shown(st.seal); if (st.at) shell?.sound?.('seal'); },

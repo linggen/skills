@@ -16,6 +16,7 @@
 
 /* The camera's picture is never shown: the video feeds the model only (kept in the page, where every browser decodes it). */
 .jy-eye { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.jy[data-auto] .jy-dock { display: none; }
 .jy-dock { position: absolute; right: 8px; bottom: 8px; z-index: 2; }
 [data-mode="one"] .jy-dock { right: 50%; transform: translateX(50%); bottom: 10px; }
 

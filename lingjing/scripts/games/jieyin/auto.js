@@ -17,6 +17,8 @@
 import { forInput } from '../kit/device.js';
 import { sequenceFor } from './sets.js';
 
+export const demoHow = { zh: '先看一遍结印演示。', en: 'Watch the hand-seal demonstration.' };
+
 const KNOBS = { stepMs: 3600, castMs: 700, endMs: 1400 };
 
 /** The level's demo knobs: a teaching level that declares `auto`, else null. */
@@ -42,7 +44,7 @@ const WHY = {
   },
   en: {
     nocamera: 'No camera here — watch the seals shown once.',
-    denied: 'Camera is off — watch the demo.',
+    denied: { desk: 'Camera is off — watch the demo. To try it yourself, allow the camera in browser or system settings.', touch: 'Camera is off — watch the demo. To try it yourself, turn on Settings › Linggen › Camera.' },
     failed: 'The camera did not start — watch the demo.',
   },
 };

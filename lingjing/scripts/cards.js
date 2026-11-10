@@ -554,7 +554,7 @@ function board(card, ctx) {
     out,
   };
   const framed = body == null ? frameHtml({ id, title, lang: ctx.lang, timed: timedOf(g.mod), tall: tallOf(g.mod), ...tools,
-    how: forInput(task?.how ?? g.mod.meta?.how?.[ctx.lang] ?? g.mod.meta?.how?.zh ?? ''),
+    how: forInput((task?.deal?.demo ? g.mod.demoHow?.[ctx.lang] : null) ?? task?.how ?? g.mod.meta?.how?.[ctx.lang] ?? g.mod.meta?.how?.zh ?? ''),
     body: mountOnly(g.mod) ? mountHostHtml(id, esc) : `<div class="game" data-game="${esc(id)}">${g.mod.html(g.state, ctx.lang)}</div>` })
     // 炼丹's herbs (board.js) wear the same shell, its 🔊 with it (Hanli 10-26: every board has both); its tiles as ever.
     : body === '' ? frameHtml({ id, title, lang: ctx.lang, ...tools, body: boardHtml(g, ctx.words) }) : null;

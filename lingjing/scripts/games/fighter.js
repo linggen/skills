@@ -24,7 +24,7 @@
 // Lost, it settles { won: false } and the host deals it again (the story) or offers 再来 (the 游戏厅).
 import { sounded } from './kit/heard.js';
 import { inputKind, forInput } from './kit/device.js';
-import { painter, makeSheet, FIELD, cueText } from './fighter/draw.js';
+import { painter, makeSheet, FIELD, cueText, roundEndWord } from './fighter/draw.js';
 import * as core from './fighter/core.js';
 import * as self from './fighter.js';
 
@@ -449,6 +449,8 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
 
   /* ── The loop ── */
   const textNow = (s) => {
+    const roundLine = roundEndWord(s, lang);
+    if (roundLine) return roundLine;
     if (s.won && s.end?.early) return say(level.won?.early || sheathe(level), lang); // emptied early: her words, never 「第二十招上」
     if (s.won) return say((s.end?.kind === 'spent' && level.won?.spent) || level.won?.[s.grade], lang); // 稳 emptied: he went down at last
     if (s.lost || s.end?.kind === 'down') return say(level.lines?.lost, lang);

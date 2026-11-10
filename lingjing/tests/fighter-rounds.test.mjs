@@ -133,3 +133,29 @@ test('one thumb, two keys (the phone): a slide from 拳 onto 腿 rolls, from 重
   late = run(F.act(late, { g: 'blow', cut: true }).state, 20);
   assert.equal(late.me.act?.k, 'heavy');
 });
+
+test('unfinished round uses round words; decisive round uses match words', async () => {
+  const { roundEndWord } = await import('../scripts/games/fighter/draw.js');
+  const s = F.newGame('round-lines', 1, { levels: [SPAR] });
+  for (const won of [true, false]) {
+    const ending = { ...s, end: { won } };
+    assert.equal(roundEndWord(ending, 'zh'), won ? '这一回合，你的。' : '这一回合，对手的。');
+    assert.equal(roundEndWord(ending, 'en'), won ? 'This round is yours.' : 'This round goes to your opponent.');
+    ending.round = { ...ending.round, [won ? 'me' : 'foe']: 1 };
+    assert.equal(roundEndWord(ending, 'en'), '');
+  }
+});
+
+test('narrow touch intro stays in the top bar, above the scaled pad', async () => {
+  const fs = await import('node:fs');
+  const draw = fs.readFileSync(new URL('../scripts/games/fighter/draw.js', import.meta.url), 'utf8');
+  const page = fs.readFileSync(new URL('../scripts/games/fighter.js', import.meta.url), 'utf8');
+  assert.match(draw, /narrowTouch \? 32 : 262/);
+  assert.match(draw, /narrowTouch \? 64 : 92/);
+  assert.match(draw, /getBoundingClientRect\(\)\.width <= 380/);
+  assert.match(page, /--gfb: clamp\(34px, 12\.5cqi, 48px\)/);
+  const width = 317, field = width * 9 / 16, key = width * .125;
+  const padTop = field - (3 * key + 12 + 8);
+  const bannerBottom = width * 64 / 960;
+  assert.ok(bannerBottom < padTop, `${bannerBottom} < ${padTop}`);
+});

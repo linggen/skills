@@ -28,3 +28,16 @@ test('demo clock stops and resolves on skip', async () => {
   clock.stop();
   assert.equal(await clock.done, false);
 });
+
+test('demo hides the live dock and uses demo instructions in both languages', async () => {
+  const { demoHow } = await import('../scripts/games/jieyin.js');
+  assert.match(demoHow.zh, /演示/);
+  assert.match(demoHow.en, /demonstration/);
+  assert.doesNotMatch(demoHow.en, /camera/i);
+  assert.match(whyLine('denied', 'en', 'touch'), /Settings › Linggen › Camera/);
+  assert.match(whyLine('denied', 'en', 'desk'), /browser or system settings/);
+  const css = fs.readFileSync(new URL('../scripts/games/jieyin/jieyin.css', import.meta.url), 'utf8');
+  assert.match(css, /\.jy\[data-auto\] \.jy-dock\s*\{\s*display:\s*none/);
+  const cards = fs.readFileSync(new URL('../scripts/cards.js', import.meta.url), 'utf8');
+  assert.match(cards, /task\?\.deal\?\.demo \? g\.mod\.demoHow/);
+});

@@ -824,8 +824,8 @@ function roundPips(ctx, r, BW) {
 }
 /** The round's call: 「第二回合」, the deciding one 「决胜回合」 (a level's `words.round` / `words.lastRound`, `{n}` the round). */
 const ROUND_WORDS = {
-  zh: { round: '第{n}回合', last: '决胜回合', numerals: ['一', '二', '三', '四', '五'] },
-  en: { round: 'Round {n}', last: 'Final round', numerals: [] },
+  zh: { round: '第{n}回合', last: '决胜回合', roundWon: '这一回合，你的。', roundLost: '这一回合，对手的。', numerals: ['一', '二', '三', '四', '五'] },
+  en: { round: 'Round {n}', last: 'Final round', roundWon: 'This round is yours.', roundLost: 'This round goes to your opponent.', numerals: [] },
 };
 export function roundWord(r, lang, words = {}) {
   const defaults = ROUND_WORDS[lang] ?? ROUND_WORDS.zh;
@@ -833,6 +833,12 @@ export function roundWord(r, lang, words = {}) {
   const own = say(words.round, lang);
   if (own) return own.replace('{n}', String(r.n));
   return defaults.round.replace('{n}', String(defaults.numerals[r.n - 1] ?? r.n));
+}
+export function roundEndWord(s, lang) {
+  const r = roundNow(s);
+  if (!s.end || !r || (s.end.won ? r.me : r.foe) + 1 >= r.wins) return '';
+  const key = s.end.won ? 'roundWon' : 'roundLost';
+  return say(s.level?.words?.[key], lang) || (ROUND_WORDS[lang] ?? ROUND_WORDS.zh)[key];
 }
 function hud(ctx, s, art, lang, view) {
   const lv = s.level ?? {}, me = lv.me ?? {}, foe = lv.foe ?? {}, BW = 320;
@@ -978,17 +984,19 @@ function seal(ctx, word, age) {
 }
 
 /* The bout's call (KOF's 「ROUND 1 · READY · GO」): 「比武」 while the hands wait, then 「开始！」 as they go. */
-function intro(ctx, s, lang, lv) {
+function intro(ctx, s, lang, lv, narrowTouch) {
   const left = s.intro - s.t, go = left <= 0;
   const r = roundNow(s);
   const word = go ? say(lv.words?.go, lang) || (lang === 'en' ? 'Fight!' : '开始！') : r ? roundWord(r, lang, lv.words) : say(lv.words?.ready, lang) || (lang === 'en' ? 'Ready' : '比武');
   const age = go ? -left : s.t - (s.t0 ?? 0), k = Math.min(1, age / 160), a = go ? Math.max(0, 1 - -left / 500) : 1;
   ctx.save();
   ctx.globalAlpha = a;
-  ctx.fillStyle = 'rgba(20,16,12,.55)'; ctx.fillRect(-EDGE, 214, W + 2 * EDGE, 92);
-  ctx.translate(W / 2, 262);
-  ctx.scale(1.6 - 0.6 * k, 1.6 - 0.6 * k);
-  ctx.font = `800 ${go ? 72 : 58}px ${SERIF}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const y = narrowTouch ? 32 : 262, height = narrowTouch ? 64 : 92;
+  ctx.fillStyle = 'rgba(20,16,12,.55)'; ctx.fillRect(-EDGE, y - height / 2, W + 2 * EDGE, height);
+  ctx.translate(W / 2, y);
+  const scale = narrowTouch ? 1 : 1.6 - 0.6 * k;
+  ctx.scale(scale, scale);
+  ctx.font = `800 ${narrowTouch ? 32 : go ? 72 : 58}px ${SERIF}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.lineWidth = 8; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.strokeText(word, 0, 0);
   ctx.fillStyle = go ? '#f2d38a' : '#f3e9d2'; ctx.fillText(word, 0, 0);
   ctx.restore();
@@ -1164,7 +1172,7 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false, kin
     }
     // KO: a white flash as it falls (the slow-down is the mount's)
     if (koEnd(s.end) && s.t - s.end.at >= KO_FALL_MS && s.t - s.end.at < KO_FALL_MS + 100 && !still) { ctx.fillStyle = `rgba(255,252,240,${0.35 * (1 - (s.t - s.end.at - KO_FALL_MS) / 100)})`; ctx.fillRect(-EDGE, 0, W + 2 * EDGE, H); }
-    if (s.intro && s.t < s.intro + 500) intro(ctx, s, lang, lv);
+    if (s.intro && s.t < s.intro + 500) intro(ctx, s, lang, lv, kind === 'touch' && canvas.getBoundingClientRect().width <= 380);
     lineBand(ctx, text);
     if (s.end) seal(ctx, say(won(s.end) ? lv.seal?.won : lv.seal?.lost, lang) || (lang === 'en' ? (won(s.end) ? 'Won' : 'Out') : (won(s.end) ? '胜' : '负')), s.t - s.end.at - (koEnd(s.end) ? KO_SEAL_MS : 300));
     // the 绝: its cut-in plays on the page's clock (the bout's is held through it)
