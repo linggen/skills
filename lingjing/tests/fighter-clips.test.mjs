@@ -1,6 +1,6 @@
 // 格斗's clips: every clip a state asks for (draw.js meClip / foeClip, CLIP_STATES) resolves to a painted clip on each of
 // the nine sheets, through each level's own `look.clips` (心魔 on 小满's sheet) — a state with its own clip on a sheet
-// shows it (小满's backdash and throw, 秦雁's 震), one without falls back to the clip it showed before.
+// shows it (小满's backdash and throw, 秦雁's and 卢方's 震), one without falls back to the clip it showed before.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -57,7 +57,7 @@ test('the painted gap clips show where the sheet has them, the old ones where it
   assert.deepEqual(resolveClip(lf, 'me', 'spin'), resolveClip(lf, 'me', 'heavy'));
   assert.equal(resolveClip(lf, 'me', 'backdash')[1], lf.clips.back);
   assert.equal(resolveClip(qy, 'foe', 'zhen')[1], qy.clips.zhen);
-  assert.equal(resolveClip(lf, 'foe', 'zhen')[1], lf.clips.idle);
+  assert.equal(resolveClip(lf, 'foe', 'zhen')[1], lf.clips.zhen);
   const xinmo = LEVELS.find((l) => l.foe?.look?.sheet?.endsWith('xiaoman'))?.foe.look.clips;
   assert.equal(resolveClip(xm, 'foe', 'throw', xinmo)[1], xm.clips.throw);
   for (const m of [xm, qy]) assert.ok(m.frames.cutin, 'a cut-in frame on the sheet');

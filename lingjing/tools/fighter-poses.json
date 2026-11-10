@@ -4404,7 +4404,13 @@
     ],
     "words": "lying flat on his back on the ground, knocked down, arms spread, legs out, the robe spread around him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
     "rot": -88,
-    "free": true
+    "free": true,
+    "seed": 3,
+    "fix": {
+     "s": 1.1,
+     "dy": 178,
+     "dx": -32
+    }
    },
    "getup1": {
     "lean": 20,
@@ -4528,7 +4534,7 @@
     ],
     "words": "a rising strike against a leaping foe: a rising hooked palm, the arm swept up high over and in front of his head, body stretched up and leaning back, up on the balls of his feet. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
     "fix": {
-     "s": 1.0
+     "s": 1.2
     }
    },
    "aa3": {
@@ -4690,7 +4696,10 @@
      140
     ],
     "words": "diving into a forward roll, ducking his head, the robe gathering, arms tucked in. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
-    "free": true
+    "free": true,
+    "fix": {
+     "dy": 53
+    }
    },
    "roll2": {
     "lean": 60,
@@ -4711,7 +4720,10 @@
      140
     ],
     "words": "curled tight rolling forward on the ground, head tucked, knees to chest, the robe wrapped round him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
-    "free": true
+    "free": true,
+    "fix": {
+     "dy": 167
+    }
    },
    "zhen1": {
     "lean": 10,
@@ -4771,7 +4783,10 @@
      30,
      140
     ],
-    "words": "settling back into his stance after a burst of force, sleeves still settling. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+    "words": "settling back into his stance after a burst of force, sleeves still settling. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "fix": {
+     "s": 1.15
+    }
    },
    "cutin": {
     "lean": 0,
@@ -7378,7 +7393,10 @@
     ],
     "words": "lying flat on his back on the ground, knocked down, arms spread, legs out, the robe spread around him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
     "rot": -88,
-    "free": true
+    "free": true,
+    "fix": {
+     "dy": 180
+    }
    },
    "getup1": {
     "lean": 20,
@@ -7664,7 +7682,10 @@
      140
     ],
     "words": "diving into a forward roll, ducking his head, the robe gathering, arms tucked in. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
-    "free": true
+    "free": true,
+    "fix": {
+     "dy": 56
+    }
    },
    "roll2": {
     "lean": 60,
@@ -7685,7 +7706,10 @@
      140
     ],
     "words": "curled tight rolling forward on the ground, head tucked, knees to chest, the robe wrapped round him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
-    "free": true
+    "free": true,
+    "fix": {
+     "dy": 165
+    }
    },
    "zhen1": {
     "lean": 10,
