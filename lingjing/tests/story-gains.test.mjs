@@ -103,7 +103,7 @@ test('wm-diyilu 牛骨头 and wm-luobo 萝卜: fixed pots of the book — its th
     for (const t of [bone, radish]) {
       assert.equal(t.game, 'kailu', `${t.id} is the 开炉`);
       assert.equal(t.deal.lv, undefined, `${t.id}: no 塔防 level`);
-      assert.deepEqual(t.grant, { table: 'task', progress: 5 }, `${t.id}: pay kept`);
+      assert.deepEqual(t.grant, { table: 'task', units: 2.5 }, `${t.id}: pay kept (a size since 2026-11-10)`);
     }
     const b = await storyPot('zh', bone.deal.story);
     assert.deepEqual(b.brief.inputs.map((i) => i.id), ['niu-gutou', 'chaihuo', 'shizi', 'kuye', 'huangqi-canzhu']);

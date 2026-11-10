@@ -23,6 +23,7 @@ import { hashOf } from './travel.mjs';
 import { stow, fullLine } from './pouch.mjs';
 import { allPlaces, atScene, creatureOf, huntable, ofJuan, placeName, placeOf, placeOpen, tierIndex, tooHard } from './world.mjs';
 import { herNear } from './companion.mjs';
+import { sizedUnits } from './playpay.mjs';
 
 import { describeWord } from '../games/drawguess-words.js';
 
@@ -284,12 +285,14 @@ const trimLink = l => ({
 
 /* ── The numbers: the rules' own ── */
 
-/* What each step and the finale pay: the tables' caps, and never more than
-   the whole tale's cap — a fifth step eats into the finale. */
+/* What each step and the finale pay: the step's size and the finale's (`play_pay.sized`, units at R where it is paid), and
+   never more than the whole tale's cap (rewards.json tale `cap`: units and 灵石) — a fifth step eats into the finale. */
 function grantsOf(content, steps) {
   const r = content.rewards, step = r.tables.tale, end = r.tables.tale_end, cap = r.tale.cap;
-  const left = k => Math.max(0, Math.min(end[k], cap[k] - steps * step[k]));
-  return { step: { table: 'tale', progress: step.progress, wealth: step.wealth }, end: { table: 'tale_end', progress: left('progress'), wealth: left('wealth') } };
+  const u = { step: sizedUnits(content, 'tale'), end: sizedUnits(content, 'tale_end') };
+  const units = Math.max(0, Math.min(u.end, (cap.units ?? 0) - steps * u.step));
+  const wealth = Math.max(0, Math.min(end.wealth, cap.wealth - steps * step.wealth));
+  return { step: { table: 'tale', units: u.step, wealth: step.wealth }, end: { table: 'tale_end', units, wealth } };
 }
 
 /* The finale's one drop: an entry of the highest tier at or below his realm

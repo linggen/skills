@@ -11,6 +11,7 @@ import { newState, stepName, threshold } from '../scripts/state.mjs';
 import { look, progress, resolve } from '../scripts/rules.mjs';
 import { pay } from '../scripts/rules/core.mjs';
 import { capOf, settleHeld } from '../scripts/rules/cap.mjs';
+import { storyPlay } from '../scripts/rules/playpay.mjs';
 import { earnedFor } from './earn.mjs';
 
 const content = loadContent();
@@ -115,9 +116,9 @@ test('古七: 四层 until 定风 is walked — each layer ground behind its gat
   const tt = { ...t, tasks: { ...t.tasks, 'shenshi-qingshen': { status: 'done' } } };
   const winter = resolve(tt, content, ctx, { exit: 'winter' });
   assert.equal(winter.result.ok, true, JSON.stringify(winter.result).slice(0, 200));
-  // 那年冬天 pays only the gate's declared lump into 09-dingfeng (2026-11-02, fixed pay; Hanli approved) — the rest is his own.
-  const lump = content.chapters['00-zhuji'].scenes['09-shenshi'].exits.find(e => e.id === 'winter').grant.progress;
-  assert.ok((winter.result.paid?.progress ?? 0) <= lump, '那年冬天 grants no 修为 but the gate\'s lump');
+  // 那年冬天 is a story step (2026-11-10, its 660 lump gone: a story scene pays about one small game) — the rest is his own.
+  assert.equal(content.chapters['00-zhuji'].scenes['09-shenshi'].exits.find(e => e.id === 'winter').grant.table, 'story');
+  assert.ok((winter.result.paid?.progress ?? 0) <= storyPlay(content, tt), '那年冬天 grants no 修为 but one story step');
   const v = { ...winter.state, place: 'houshan' };
   grind(v);
   assert.equal(named(v), '练气八层', 'held at 年七\'s 八层');
@@ -186,13 +187,15 @@ test('an old save already past its cap is never pulled down: it fills its own st
 // read 「练气一层圆满 · 485/470 · 候」 — h05's cap was 一层, a layer under the book.
 test('古四 past the 柴房 gate: the full 一层 steps to 二层 on load, as the book has it — before the gate it still waits', () => {
   const done = ['00-prologue'];
-  const his = at('00-waimen', 'wm-baoming', 'waimen', done, { step: 1, progress: 485,
+  // His bar stood 15 over 一层 (485 of 470 then; the curve's 一层 since 2026-11-10, so 15 over it).
+  const his = at('00-waimen', 'wm-baoming', 'waimen', done, { step: 1, progress: 0,
     done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian', 'wm-qingshi', 'wm-yaoyuan', 'wm-chaifang', 'wm-danlu', 'wm-diyilu', 'wm-xunye', 'wm-duizhang', 'wm-yan'], stages: ['wm-chaifang/count'] });
   const need = threshold(content, his);
+  his.progress = need + 15;
   const s = settleHeld(content, his);
   assert.notEqual(s, his, 'a held 圆满 whose door is open steps');
   assert.equal(named(s), '练气二层');
-  assert.equal(s.progress, 485 - need, 'the 修为 past the mark carried in');
+  assert.equal(s.progress, 15, 'the 修为 past the mark carried in');
   assert.equal(look(s, content, ctx).capped, undefined, 'no 候 seal');
   assert.equal(settleHeld(content, s), s, 'nothing more to step: the same object');
   // Before the 柴房 gate grinding still fills 一层 and waits there.

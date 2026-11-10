@@ -15,7 +15,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
-import { fitWorld, fullName, ladderOf14, migrate, stagesCarry, newState, nineToThree, paceLayer, peakName, phaseName, realmName, stepName, threeToNine } from '../scripts/state.mjs';
+import { curveCarry, fitWorld, fullName, ladderOf14, ladderOf17, migrate, stagesCarry, newState, nineToThree, paceLayer, peakName, phaseName, realmName, stepName, threeToNine } from '../scripts/state.mjs';
 import { boundOf, growTreasure, treasureBrief } from '../scripts/rules/arms.mjs';
 import { look, seclude } from '../scripts/rules.mjs';
 
@@ -45,8 +45,10 @@ test('练气 has 零层 and nine 层 above it in three phases; every realm above
     const was = t.thresholds_were['13'];
     assert.deepEqual(was, THREE[t.id], `${t.id}: the three steps`);
     assert.equal(t.thresholds_were['14'].length, 3, `${t.id}: the three steps a v14 save was played on`);
-    assert.ok(t.thresholds.every((n, k) => k % 3 === 0 || n > t.thresholds[k - 1]), `${t.id}: each 层 more than the one before inside its 段`);
-    for (let g = 0; g < 3; g += 1) assert.equal(t.thresholds.slice(g * 3, g * 3 + 3).reduce((a, b) => a + b), t.thresholds_were['14'][g], `${t.id} 段 ${g}: the old step's 修为 (the realm's pace kept)`);
+    // On the curve since 2026-11-10 (81 levels, 段 display only): each 层 more than the one before, its own threshold.
+    assert.ok(t.thresholds.every((n, k) => k === 0 || n > t.thresholds[k - 1]), `${t.id}: each 层 more than the one before`);
+    // Until then each 段 asked its old step's 修为 (the realm's pace kept, 2026-11-02): the ladder a v17 save was played on.
+    for (let g = 0; g < 3; g += 1) assert.equal(t.thresholds_were['18'].slice(g * 3, g * 3 + 3).reduce((a, b) => a + b), t.thresholds_were['14'][g], `${t.id} 段 ${g}: v17's 段 the old step's 修为`);
     // The nine 层 it had 10-03 → 10-09 sum, three by three, to those steps: a realm's whole never changed then.
     for (let p = 0; p < 3; p += 1) assert.equal(layers_were[t.id].slice(p * 3, p * 3 + 3).reduce((a, b) => a + b), was[p], `${t.id} step ${p}`);
   }
@@ -102,7 +104,8 @@ test('a save from the nine-层 ladder lands on the same 修为: 层 1–3 小成
   assert.equal(fitted.ladder9, undefined);
   // …v13 (paceLayer) reads that bar onto the master table's 结丹大成, as full as it stood; v15 walks it into 大成's 层.
   const core = content.ladder.tiers.find(t => t.id === 'core'), was14 = core.thresholds_were['14'][2];
-  const v13 = n => Math.round(n * was14 / core.thresholds_were['13'][2]), v15 = n => pos(stagesCarry(content, { tier: 'core', step: 2, progress: n, ladder_stages: true }));
+  // …and v18 (2026-11-10) reads the 层 it lands on by its percent onto the curve (stagesCarry on v17's ladder, then curveCarry).
+  const v13 = n => Math.round(n * was14 / core.thresholds_were['13'][2]), v15 = n => pos(curveCarry(content, stagesCarry(ladderOf17(content), { tier: 'core', step: 2, progress: n, ladder_stages: true })));
   assert.deepEqual(pos(fitted), v15(v13(384 + 300)), '结丹八层 · 300 is 结丹大成 · 七层 passed + 300, then its 层');
   assert.ok(fitted.step >= 6, '大成');
   assert.deepEqual(fitWorld(fitted, content), fitted, 'fitting again changes nothing');
@@ -118,7 +121,7 @@ test('a save from the three-step ladder (before 2026-10-03) needs nothing: its s
   assert.equal('ladder3' in fitted, false);
   const core = content.ladder.tiers.find(t => t.id === 'core');
   const was14 = core.thresholds_were['14'][2], v13 = Math.round(1100 * was14 / core.thresholds_were['13'][2]);
-  assert.deepEqual(pos(fitted), pos(stagesCarry(content, { tier: 'core', step: 2, progress: v13, ladder_stages: true })), 'its bar as full as it stood (v13), into 大成\'s 层 (v15)');
+  assert.deepEqual(pos(fitted), pos(curveCarry(content, stagesCarry(ladderOf17(content), { tier: 'core', step: 2, progress: v13, ladder_stages: true }))), 'its bar as full as it stood (v13), into 大成\'s 层 (v15), read onto the curve (v18)');
   assert.ok(fitted.step >= 6);
   assert.deepEqual(pos(threeToNine(ladderOf14(content), { tier: 'foundation', step: 1, progress: 250, ladder3: true })), { step: 1, progress: 250 });
 });

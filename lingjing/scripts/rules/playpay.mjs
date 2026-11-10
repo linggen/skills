@@ -2,17 +2,19 @@
 // 给.... 给太多了」 · 「我是说参考百分比的数值. 不能直接给百分比」 — supersedes 10-27's 「按照百分比奖励」; and the formula,
 // 「这套公式基本可以, 先记下来, 以后在调整吧」; doc/design.md § Pay, doc/games.md § Pay). An act pays
 //   R(content level) × its 体力 cost × difficulty × ★ × level gap × replay  (× 灵根 · 签 · 宜, core.mjs amountsOf)
-// — and a small game's (a board, a 秘境 room's boards, a 兽潮 night, a 切磋 bout) × `board` 1.5 on top (Hanli, confirmed
-// 2026-11-10: 「把小游戏奖励修为提高到1.5呗, 加快一点升级速度」); a card fight against a beast, 人间功课, an errand, a wall tag,
-// 闭关, a pill and what the book authors never.
+// — and a small game's (a board, a 秘境 room's boards, a 兽潮 night, a 切磋 bout) × `board` on top (Hanli, confirmed
+// 2026-11-10: 「把小游戏奖励修为提高到1.5呗, 加快一点升级速度」; raised so the games carry the layer again, the same day:
+// 「打一场才几点, 感觉不太匹配」), a card fight against a beast × `fight`; 人间功课, an errand, a wall tag, 闭关, a pill and what
+// the book authors never.
 // R(L) = 2 × 1.05^(L−1), × 1.2 a realm up (the 修为 a 体力 is worth at that level); 体力 ≈ minutes (1 体力 ≈ 1 分钟); difficulty
 // normal 1 · elite 1.5 · boss/副本 2, a first clear +50%; ★ 0.6 · 0.8 · 1.0; the gap −15% a level he stands above the
 // content (to 20%), +10% a level below it (to +30%); the replay 100 · 50 · 10% the same thing the same day. What has no
-// 体力 of its own (人间功课, a wall tag, an errand's work, a night's 闭关) is priced in 体力-units the same way. A level: each
-// 练气 层 one; past it a 段 of three 层-worth three, each of its 层 at the 段's level (nine 层 in 段 since 2026-11-02). The content level is where he stands unless the thing says its own
-// (`level`). Every knob is balance.json `play_pay.xiuwei`, derived from `master.xiuwei` (tools/master.mjs); % of the
-// layer survives only as the reference tools/numbers.mjs prints. What the book authors (a scene's, a pill's, a rumor's
-// 修为) is the number written. 灵石 by the kind, on the same ★ and replay. No daily cap; 修为 stops at the gate and turns
+// 体力 of its own (人间功课, a wall tag, an errand's work, a night's 闭关) is priced in 体力-units the same way. A level: L =
+// realm × 9 + 层, each 层 one (Hanli 2026-11-10: 81 levels; 段 are display only). The content level is where he stands unless
+// the thing says its own (`level`). Every knob is balance.json `play_pay.xiuwei`, derived from `master.xiuwei`
+// (tools/master.mjs); % of the layer survives only as the reference tools/numbers.mjs prints. What the book sizes (a scene's,
+// a board's, an errand's, a pill's `units`) is units × R where it is paid (Hanli 2026-11-10: 「所有和数值相关的都应该有公式推到」);
+// the one number written by hand is a master `told`. 灵石 by the kind, on the same ★ and replay. No daily cap; 修为 stops at the gate and turns
 // to 灵石 there (`play` converts, core.mjs pay). Nothing here names a board.
 import { boardCost, boardMinutes, dayKey, staminaCost } from '../state.mjs';
 import { sealedOf } from './world.mjs';
@@ -42,31 +44,18 @@ export function needOf(content, state) {
 }
 /* ── The formula ── */
 const X = content => content.balance?.play_pay?.xiuwei ?? null;
-/* His level on a ladder (`content.ladder.tiers`: 古's, or a line's world): the first realm one a 层 (零层 0); a realm of
-   three steps three a step, one of nine 层 one a 层 — but one shown in 段 (ladder.json `display: "stages"`, 筑基 and above
-   since 2026-11-02) is read by its 段, three a 段, every 层 of it the 段's level (筑基一至三层 L12, as 筑基小成 was): the realm's
-   pace kept. Its realm's index beside it. null off the ladder. */
+/* His level on a ladder (`content.ladder.tiers`: 古's, or a line's world): L = realm × 9 + 层 (Hanli 2026-11-10: 81 levels, L1
+   the first realm's 一层; 零层 L0) — a realm of nine 层 one level a 层, whether or not it is shown in 段 (段 are display only);
+   one of three steps (今 above 新生) three levels a step, read at its top. Its realm's index beside it. null off the ladder. */
 export function levelOf(content, tier, step = 0) {
   const tiers = content.ladder?.tiers ?? [], at = tiers.findIndex(t => t.id === tier);
   if (at < 0) return null;
-  const steps = t => (t.thresholds?.length ?? t.steps?.zh?.length ?? 3);
-  const per = t => (steps(t) >= 9 ? 1 : 3);
-  const first = tiers[0], top = first.zero ? steps(first) - 1 : steps(first);
-  if (at === 0) return { level: first.zero ? step : step + 1, realm: 0 };
-  let level = top;
-  for (let i = 1; i < at; i++) level += steps(tiers[i]) * per(tiers[i]);
-  const t = tiers[at], n = t.display === 'stages' ? content.ladder?.phases?.zh?.length : 0;
-  if (n) { const g = Math.ceil(steps(t) / n); return { level: level + (Math.floor(step / g) + 1) * g, realm: at }; }
-  return { level: level + (step + 1) * per(t), realm: at };
+  const t = tiers[at], n = (t.thresholds?.length ?? t.steps?.zh?.length ?? 3) - (t.zero ? 1 : 0), span = n >= 9 ? 1 : 9 / n;
+  return { level: at * 9 + (t.zero ? step : step + 1) * span, realm: at };
 }
 /* R(L): the 修为 one 体力 is worth at content level L of realm r. 0 at level 0 (零层 pays none). */
 export function rateAt(content, level, realm = 0) {
   const x = X(content)?.rate;
-  return x && level > 0 ? x.base * x.growth ** (level - 1) * (x.realm ?? 1) ** realm : 0;
-}
-/* S(L): sittings a level asks by the formula — the reference only (tools/numbers.mjs sets it beside the ladder's need). */
-export function sittingsAt(content, level, realm = 0) {
-  const x = X(content)?.sittings;
   return x && level > 0 ? x.base * x.growth ** (level - 1) * (x.realm ?? 1) ** realm : 0;
 }
 /* The gap: content below him pays less (−`below` a level, never under `floor`), above him more (+`above`, to `cap`). */
@@ -79,12 +68,14 @@ export function gapOf(content, mine, theirs) {
 /* What `units` 体力 of play is worth to him now: R at the content's level (his own unless `level` says) × units ×
    difficulty (`normal` · `elite` · `boss`; `first` a first clear's more) × the gap — and, `board` (the caller says: it is a
    small game's play), × `play_pay.xiuwei.board` (1 where the world declares none). Unrounded. */
-export function xiuweiOf(content, state, units, { level = null, difficulty = 'normal', first = false, board = false } = {}) {
+export function xiuweiOf(content, state, units, { level = null, difficulty = 'normal', first = false, board = false, fight = false } = {}) {
   const x = X(content), me = levelOf(content, state?.tier, state?.step ?? 0);
   if (!x || !me || !units) return 0;
   const lc = level ?? me.level, realm = me.realm;
   const diff = (x.difficulty?.[difficulty] ?? 1) * (first ? 1 + (x.difficulty?.first_clear ?? 0) : 1);
-  return rateAt(content, lc, realm) * units * diff * gapOf(content, me.level, lc) * (board ? x.board ?? 1 : 1);
+  // `board`: a small game's factor; `fight`: a card fight's (play_pay.xiuwei.fight, Hanli 2026-11-10: 「打一场才几点」) — 1 where none.
+  const play = board ? x.board ?? 1 : fight ? x.fight ?? 1 : 1;
+  return rateAt(content, lc, realm) * units * diff * gapOf(content, me.level, lc) * play;
 }
 /* A fight won (the `haunt` table, a pool's beast; 兽潮's night with `play: 'tide'`): the 体力 it costs × the formula. A grant
    that says it is a small game's (`board`: 兽潮's night, a 塔防 board — shouchao.mjs) is paid as one; a card fight never. */
@@ -93,7 +84,7 @@ export function fightPlay(content, state, grant = {}) {
   // A night of 兽潮 its kit's minutes (`units`, shouchao.mjs: the 塔防 kits run 1 to 5 minutes), else the kind's.
   const units = grant.units ?? staminaCost(content, grant.play === 'tide' ? 'shouchao' : 'duel');
   // `star`: the night's ★ as play_pay.stars prices it (兽潮, shouchao.mjs); a pool's beast has none.
-  return Math.round(xiuweiOf(content, state, units, { difficulty: grant.boss ? 'boss' : grant.difficulty ?? 'normal', board: Boolean(grant.board) }) * (grant.star ?? 1));
+  return Math.round(xiuweiOf(content, state, units, { difficulty: grant.boss ? 'boss' : grant.difficulty ?? 'normal', board: Boolean(grant.board), fight: !grant.board }) * (grant.star ?? 1));
 }
 /* A story step's 修为 (the `story` table, Hanli 2026-11-09: 「剧情可以给修为, 但要给的和玩一场小游戏差不多」): one small game's
    worth where he stands — `play_pay.story.units` 体力 (a default board's, tools/master.mjs) × R. Never an authored number; a
@@ -107,14 +98,16 @@ export function storyPlay(content, state) {
 export function boardPlay(content, state, minutes) {
   return X(content) ? Math.round(xiuweiOf(content, state, minutes, { board: true })) : null;
 }
-/* An authored 修为 is the number the book wrote (2026-11-02): no table scales it by the layer any more — but a pill. A pill's
-   number (content.mjs pillPay: its 转's share of the 练气一层 the book is written against) is 体力-units at R(1): it rides
-   R as play does (R(L) ÷ R(1)), so its card's 「抵N日打坐」 holds against a night's 闭关 at every layer. */
-export function authoredScale(content, state, table) {
-  if (table !== 'pill') return 1;
-  const x = X(content), me = levelOf(content, state?.tier, state?.step ?? 0);
-  return x && me?.level > 0 ? rateAt(content, me.level, me.realm) / x.rate.base : 1;
+/* A size's 修为 (Hanli 2026-11-10: content declares a size, never a 修为 number): `units` 体力-units at R where he stands — the
+   same formula as play, so every grant grows with the layer it is paid on. */
+export function unitsPay(content, state, units) {
+  return units > 0 ? xiuweiOf(content, state, units) : 0;
 }
+/* The units a grant is sized at (`units`), else null (a legacy number: a made scene's, Ling's). */
+export const grantUnits = (content, grant) => grant?.units ?? null;
+/* The units a table pays where the rules build the grant from the table alone (今日传闻's step and end, a 奇遇, a 路遇):
+   `play_pay.sized` (from master.xiuwei.units.tables), 0 where none. */
+export const sizedUnits = (content, table) => content.balance?.play_pay?.sized?.[table] ?? 0;
 
 /* How many times this board was paid today (the replay's falling share). */
 const playsToday = (state, id, now) => (state.plays?.day === dayKey(now) ? state.plays.ids?.[id] ?? 0 : 0);

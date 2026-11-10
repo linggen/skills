@@ -36,16 +36,16 @@ test('the report weighs every source in the layer\'s units, and reads a text tha
 test('the master table and balance.json agree: node tools/numbers.mjs --apply is a dry run with nothing to change', async () => {
   const { applied } = await import('../tools/numbers.mjs');
   const { diff: all, next } = applied();
-  // The fitted hours (master hours.fit) move with the book — a scene or a board added shifts a 回's days: they are held by
-  // the bands (balance.test.mjs), and --apply --write re-fits them. Every other derived number is held exactly.
-  const diff = all.filter(d => d.path !== 'play_pay.hours.qi');
+  // Every derived number held exactly (2026-11-10): no fit any more — the hours are the curve's T(L), its one free constant
+  // solved apart (tools/balance.mjs --solve), never by a dry run.
+  const diff = all;
   assert.deepEqual(diff, [], diff.map(d => `${d.path}: ${JSON.stringify(d.was)} → ${JSON.stringify(d.now)}`).join('\n'));
   for (const o of next.overrides ?? []) assert.ok(o.path && o.why && 'value' in o, `an override says its path, value and why: ${JSON.stringify(o)}`);
 });
 
-test('the 层 climb across realms: every step asks more than the one before it, 筑基小成 more than 练气九层', () => {
-  // A realm in 段 (2026-11-02) climbs by its 段 — each the old step's 修为 — and by 层 inside one; its 一层 alone may ask less
-  // than the 层 below it (balance.json `master.lines.gu._need_stages`).
+test('the 层 climb across realms: every step asks more than the one before it, 筑基一层 more than 练气九层', () => {
+  // On the curve (2026-11-10, 81 levels): every 层 asks more than the one before it, across realms too; a 段 more than the one
+  // before. Until then a realm in 段 climbed by its 段, each the old step's 修为 (`master.lines.gu._need_stages`).
   const c = loadContent(), per = t => (t.display === 'stages' ? t.thresholds.length / c.ladder.phases.zh.length : 1);
   const all = c.ladder.tiers.flatMap(t => {
     const row = t.thresholds.filter((n, k) => !(t.zero && k === 0)), p = per(t);
@@ -53,8 +53,9 @@ test('the 层 climb across realms: every step asks more than the one before it, 
     return Array.from({ length: row.length / p }, (_, g) => row.slice(g * p, g * p + p).reduce((a, b) => a + b, 0));
   });
   for (let k = 1; k < all.length; k++) assert.ok(all[k] > all[k - 1], `step ${k}: ${all[k]} over ${all[k - 1]}`);
-  // Each 段 asks what the realm's step asked on three (the pace kept): 筑基 4,330 in all, not 17,800.
-  for (const t of c.ladder.tiers.slice(1)) assert.deepEqual([0, 1, 2].map(g => t.thresholds.slice(g * 3, g * 3 + 3).reduce((a, b) => a + b, 0)), t.thresholds_were['14'], t.id);
+  // Every 层 its own (81 levels): strictly above the one before, 练气九层 → 筑基一层 included.
+  const flat = c.ladder.tiers.flatMap(t => t.thresholds.filter((n, k) => !(t.zero && k === 0)));
+  for (let k = 1; k < flat.length; k++) assert.ok(flat[k] > flat[k - 1], `level ${k + 1}: ${flat[k]} over ${flat[k - 1]}`);
 });
 
 // 2026-11-02 (Hanli 「不要按照百分比给」): a pill is a fixed number at R, not a share of the layer — its % is the reference only;
@@ -78,4 +79,37 @@ test('开炉 with 灵石: weighed up to the cap, and never a farm', async () => 
   assert.ok(stoned.every(x => Number.isFinite(x.gain)), 'each with what its stones add');
   const red = r.red.filter(x => x.src === 'kailu');
   assert.deepEqual(red.map(x => x.say), []);
+});
+
+// 2026-11-10 (Hanli: 「所有和数值相关的都应该有公式推到, 不能手动定」): the book declares sizes, never a 修为 number — one written in
+// is a hard error (the master's one `told` aside). Each source is weighed against its own declared size (the same evening: the
+// rule 「one source over 3 small games」 was red on 95 designed rows — every night's 闭关, the pills from 三转 up): a designed one
+// (a night's 闭关, a 功课 period, a day's wall, the sized tables, a family pill by its 转) red only when the rules pay it more than
+// its size; an authored one-off red only above its class's ceiling (balance.json master.xiuwei.classes). No list of ids.
+test('an authored 修为 number is a hard error; a source is red only above its own declared size — an authored one over its class', async () => {
+  const c = loadContent();
+  c.tasks = structuredClone(c.tasks);
+  c.tasks.tasks[0].grant = { table: 'task', progress: 5 };
+  assert.ok(hardErrors(c).some(e => /authored 修为 number \(progress 5\)/.test(e.say)), 'a progress in the book');
+  assert.deepEqual(hardErrors(loadContent()).filter(e => /authored 修为/.test(e.say)), [], 'the shipped book holds none');
+  const r = await measure(loadContent());
+  assert.ok(r.sources.length > 0 && r.sources.every(x => x.game > 0), 'every source weighed against a small game where it is met (the reference)');
+  // Designed: never red where the rules pay what the size says.
+  for (const x of r.sources.filter(y => ['闭关', '功课', 'wall', 'tale', 'tale_end', 'chance', 'meet'].includes(y.kind) || (y.kind === 'pill' && y.want != null))) {
+    assert.ok(x.want != null && x.over === false, `${x.id}: ${x.xw} against its size ${x.want}`);
+  }
+  assert.ok(r.sources.some(x => x.kind === '闭关' && x.x > 0) && r.sources.filter(x => x.kind === '闭关').every(x => !r.red.some(y => y.src === 'sources' && y.id === x.id)), 'a night\'s 闭关 is never red');
+  // The told 760: the one authored number, weighed as a scene's way on — over its class, red by design (its why in the master).
+  const told = r.sources.find(x => x.kind === 'told');
+  assert.equal(told?.id, 'wm-mingpai/over');
+  assert.ok(told.over && r.red.some(x => x.src === 'sources' && x.id === 'wm-mingpai/over'), 'the told 760 is red: no exceptions list');
+  for (const x of r.sources.filter(y => y.over)) assert.ok(r.red.some(y => y.src === 'sources' && y.id === x.id), x.id);
+  // An authored one-off over its class is red: an errand sized past master.xiuwei.classes.errand.
+  const big = loadContent();
+  big.quests = structuredClone(big.quests);
+  const q = big.quests.find(x => x.id === 'guan-xiqiang-xiong');
+  q.grant.units = big.balance.master.xiuwei.classes.errand + 10;
+  const rb = await measure(big);
+  assert.ok(rb.red.some(y => y.src === 'sources' && y.id === q.id), 'an oversize errand is red');
+  assert.ok(!r.red.some(y => y.src === 'sources' && y.id === q.id), 'the shipped one is not');
 });

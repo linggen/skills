@@ -51,12 +51,14 @@ test('a v13 save (古五 二层, the builder\'s) keeps its 古 exactly and start
   delete old.lines;
   const m = migrate(old, content);
   assert.equal(m.version, STATE_VERSION);
-  assert.deepEqual(gu(m), gu(old), 'the 古 exactly as it stood');
+  // The 古 as it stood — its 层, and its bar read by its percent onto the curve (v18, 2026-11-10: v17's ladder → the curve's).
+  const qi = content.ladder.tiers[0], two = n => Math.round((n * qi.thresholds[2]) / qi.thresholds_were['18'][2]);
+  assert.deepEqual(gu(m), { ...gu(old), progress: two(462), stretch: { 'qi:2': two(8) } }, 'the 古 as it stood');
   assert.deepEqual(m.lines, { jin: { tier: 'xinsheng', step: 0, progress: 0 } });
   assert.deepEqual(migrate(m, content), m, 'fitted once: the same again');
   // Look's 古 reads as it read: the bar, its need, its name.
   const l = lookOf(m);
-  assert.deepEqual([l.tier.name, l.progress, l.next], ['练气二层', 462, content.ladder.tiers[0].thresholds[2] + 8]);
+  assert.deepEqual([l.tier.name, l.progress, l.next], ['练气二层', two(462), content.ladder.tiers[0].thresholds[2] + two(8)]);
   // A held 今 place is kept; one on a tier the line no longer has starts over.
   assert.deepEqual(migrate({ ...m, lines: { jin: { tier: 'xinsheng', step: 1, progress: 40 } } }, content).lines.jin, { tier: 'xinsheng', step: 1, progress: 40 });
   assert.deepEqual(migrate({ ...m, lines: { jin: { tier: 'gone', step: 4, progress: 9 } } }, content).lines.jin, { tier: 'xinsheng', step: 0, progress: 0 });
@@ -85,7 +87,8 @@ test('the 今 counts from its first board, before the 古\'s 入门 too', () => 
   assert.equal(s.scene, 'j01-track');
   s = throughJin(s, content, NOW);
   assert.equal(s.scene, '00-gate');
-  assert.ok(s.lines.jin.progress > 0, 'the 古\'s gate is the 古\'s: 沈芒\'s line counts');
+  // (Climbed, not only filled: 新生一层 52 off the curve since 2026-11-10, and 今 · 一 at ★3 lands on 二层 · 0.)
+  assert.ok(s.lines.jin.step > 0 || s.lines.jin.progress > 0, 'the 古\'s gate is the 古\'s: 沈芒\'s line counts');
   assert.deepEqual([s.tier, s.step, s.progress, s.wealth], ['qi', 0, 0, 0], 'the 古 still a mortal\'s');
 });
 
@@ -116,5 +119,5 @@ test('the numbers\' 今 column: 卷一\'s 今 takes a reader from 新生一层 i
   assert.match(jin.huis.at(-1).at, /^新生二层 /);
   assert.ok(jin.end_best >= jin.end);
   assert.equal(jin.layers[0].name, '新生一层');
-  assert.ok(jin.layers[0].hours >= content.balance.master.lines.jin.hours.fit.floor);
+  assert.equal(jin.layers[0].hours, content.balance.master.lines.jin.time.first, '新生一层: T₁ on the curve (2026-11-10, no fit)');
 });

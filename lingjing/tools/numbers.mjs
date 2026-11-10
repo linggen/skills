@@ -21,14 +21,16 @@
 import fs from 'node:fs';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { loadContent, pillShare, withBalance } from '../scripts/content.mjs';
+import { authoredXiuwei, loadContent, pillNights, withBalance } from '../scripts/content.mjs';
 import { paysOf } from '../scripts/rules/core.mjs';
-import { chorePlay, errandGrant, pillBelow, playGrant, secludeHour, wallGrant, workGrant } from '../scripts/rules/playpay.mjs';
+import { chorePlay, errandGrant, pillBelow, playGrant, secludeHour, sizedUnits, storyPlay, unitsPay, wallGrant, workGrant } from '../scripts/rules/playpay.mjs';
+import { effectGrant } from '../scripts/rules/errands.mjs';
+import { ownXiuwei } from '../scripts/rules/chores.mjs';
 import { wallOf } from '../scripts/rules/rotation.mjs';
 import { huiOrder, huiLabel, huiOf, chapterHuis } from '../scripts/rules/hui.mjs';
 import { chances, lingshiCap, realmOf } from '../scripts/rules/fantong.mjs';
 import { BALANCE_FILE, balanceText, bookWalk, grindLayers, play, sealedBeat, table as paceTable } from './balance.mjs';
-import { derive, diffOf, fitHours, fitLine, lineWalk, setPath } from './master.mjs';
+import { derive, diffOf, lineWalk } from './master.mjs';
 import { boardLine, lineGrant, linePay, linesOf, lineWorld } from '../scripts/rules/lines.mjs';
 import { lineStart, lockedOf } from '../scripts/state.mjs';
 
@@ -56,6 +58,8 @@ export const LIMITS = {
   shop_wait: 2, // a shop's thing the typical player has earned only this many 古 回 after it is sold // a minion's 攻+血 this far over its cost's median
   fight_slack: 0.08, // a fight's bot win rate outside its band by more than this (the deals' noise)
   gate_wait: 40, // a stage quest's wait, minutes of play — about one sitting (Hanli 2026-10-27, 古五's 渡口)
+  // (`source_x`, any source over 3 small games, retired 2026-11-10: it was red on 95 designed rows — a night's 闭关, the pills
+  // from 三转 up. A source is weighed against its own declared size now: sources() and master.xiuwei.classes.)
 };
 
 const round = (x, d = 0) => (Number.isFinite(x) ? Math.round(x * 10 ** d) / 10 ** d : null);
@@ -275,14 +279,15 @@ function inUnits(row, L) {
 function pills(ctx) {
   const { content, layerAt, met, saveFor } = ctx;
   const later = laterOnly(content);
-  return content.items.items.filter(i => i.kind === 'pill' && i.effect?.progress && (i.juan ?? 1) <= 1 && !(later.has(i.id) && !met(i.id))).map(i => {
+  return content.items.items.filter(i => i.kind === 'pill' && (i.effect?.units || i.effect?.progress) && (i.juan ?? 1) <= 1 && !(later.has(i.id) && !met(i.id))).map(i => {
     const where = met(i.id), at = where ? paying(content, layerAt(where.hui)) : null;
-    const xw = at ? paysOf(content, saveFor(at), NOW, { table: i.effect.table, progress: i.effect.progress, tier: i.effect.tier })?.progress ?? 0 : i.effect.progress;
+    const xw = at ? paysOf(content, saveFor(at), NOW, effectGrant(i.effect))?.progress ?? 0 : null;
     const L = at ? ctx.layer(at) : null;
     const price = i.buy ?? 0;
-    const share = i.of ? pillShare(content.balance, i) : null; // 仙丹: its 阶's (by_tier), no 转
-    const want_pct = share != null && at ? share * pillBelow(content, saveFor(at), i.tier) : null;
-    return { ...inUnits({ id: i.id, name: zh(i.name), hui: where?.hui ?? null, how: where?.how ?? null, sources: where?.all ?? [], xw, raw: i.effect.progress, table: i.effect.table, zhuan: i.zhuan ?? null, buy: price || null }, L), want_pct, price_min: price && L?.ls_min ? round(price / L.ls_min, 1) : null };
+    // A family pill is its 转's nights of 闭关 (balance.json pills, from the master table): it should pay that many nights there.
+    const nights = i.of ? pillNights(content.balance, i) : null; // 仙丹: its 阶's (by_tier), no 转
+    const want_xw = nights != null && L?.night ? round(nights * L.night * pillBelow(content, saveFor(at), i.tier)) : null;
+    return { ...inUnits({ id: i.id, name: zh(i.name), hui: where?.hui ?? null, how: where?.how ?? null, sources: where?.all ?? [], xw, units: i.effect.units ?? null, table: i.effect.table, zhuan: i.zhuan ?? null, nights, buy: price || null }, L), want_xw, price_min: price && L?.ls_min ? round(price / L.ls_min, 1) : null };
   });
 }
 
@@ -308,7 +313,77 @@ function boards(ctx) {
 /* What a pill pays eaten on this save's layer (0 for a thing that is not a 修为 pill). */
 function pillAt(content, s, id) {
   const e = content.items.items.find(i => i.id === id)?.effect;
-  return e?.progress ? paysOf(content, s, NOW, { table: e.table, progress: e.progress, tier: e.tier })?.progress ?? 0 : 0;
+  return e?.units || e?.progress ? paysOf(content, s, NOW, effectGrant(e))?.progress ?? 0 : 0;
+}
+
+/* Every single 修为 source, each at the layer it is met on, weighed against its own declared size (Hanli 2026-11-10: a rule red
+   on designed things is noise). Two kinds of row:
+   - designed — a night's 闭关, a day's · week's · month's 功课, a day's wall tags, the sized tables (今日传闻's step and end, a
+     奇遇, a 路遇), a family pill by its 转's nights: its size is the master table's, so it is weighed against that size as the
+     rules pay it (`want`), red only when they pay more (`over`);
+   - authored — a scene's way on, a board's own grant, an errand's, a thing's, a 人间功课 meaning, a trial win, an 对子 mark, the
+     签's 应验, a pill outside the families: its `units` against its class's ceiling (balance.json master.xiuwei.classes;
+     a pill's in nights of 闭关), red when it declares more; the master's `told` number weighed as a scene's way on (it is
+     the one authored number, red by design, with its why).
+   `x`: the 修为 in small games there (one story step's pay, rules/playpay.mjs storyPlay) — the reference, never the rule. */
+function sources(ctx) {
+  const { content, layerAt, saveFor } = ctx, out = [];
+  const C = content.balance?.master?.xiuwei?.classes ?? {}, night = content.balance?.play_pay?.seclusion?.night ?? 0;
+  const put = (kind, id, name, at, xw, size = {}) => {
+    if (!at || !(xw > 0)) return;
+    const L = ctx.layer(at), game = storyPlay(content, saveFor(at));
+    const row = { kind, id, name, layer: L?.name ?? null, xw: Math.round(xw), game, x: game ? round(xw / game, 1) : null, ...size };
+    if (size.want != null) row.over = row.xw > Math.round(size.want) + 1;
+    else if (size.units != null && size.cap != null) row.over = size.units > size.cap + 1e-9;
+    out.push(row);
+  };
+  const authored = (cls, units) => ({ class: cls, units, cap: C[cls] ?? null });
+  for (const ch of Object.values(content.chapters)) for (const sc of Object.values(ch.scenes)) for (const e of sc.exits ?? []) {
+    const g = e.grant;
+    if (!g || g.table === 'story' || !(g.units > 0 || g.progress > 0)) continue;
+    // A way on past 卷一 (卷二–卷八's cauldrons: no 卷一 layer) is weighed at 练气一层 — the ratio to a small game holds at every layer.
+    const at = sc.hui && layerAt(sc.hui) ? paying(content, layerAt(sc.hui)) : paying(content, { tier: content.ladder.tiers[0].id, step: 1 });
+    // A told number as written (what lands may stop at the layer's mark; the size is what is weighed), in units at R there.
+    const xw = at ? (g.told ? g.progress : unitsPay(content, saveFor(at), g.units)) : 0, r = at ? unitsPay(content, saveFor(at), 1) : 0;
+    put(g.told ? 'told' : 'story', `${sc.id}/${e.id}`, `${sc.id}/${e.id}`, at, xw, authored('scene', g.told ? (r ? round(g.progress / r, 1) : null) : g.units));
+  }
+  const first = paying(content, { tier: content.ladder.tiers[0].id, step: 1 });
+  for (const t of content.tasks.tasks.filter(x => x.grant?.units > 0)) put('board', t.id, zh(t.title), first, paysOf(content, saveFor(first), NOW, t.grant)?.progress, authored('board', t.grant.units));
+  // Every thing with a 修为 size that is not a weighed pill (a 龙须草, a 犀珠, a 筑基丹 met past 卷一), the 对子 marks, the 签's 应验:
+  // at 练气一层. A pill outside the families is authored: its units in nights of 闭关 against the class's.
+  const weighed = new Set((ctx.pills ?? []).filter(p => p.layer).map(p => p.id)), s1 = saveFor(first);
+  for (const i of content.items.items.filter(x => x.effect?.units > 0 && !weighed.has(x.id))) {
+    const family = i.kind === 'pill' && i.of && content.balance?.pills?.families?.includes(i.of);
+    const size = family ? { class: 'pill', want: unitsPay(content, s1, i.effect.units) } : i.kind === 'pill' ? { class: 'pill_nights', units: night ? round(i.effect.units / night, 2) : null, cap: C.pill_nights ?? null } : authored('item', i.effect.units);
+    put('item', i.id, zh(i.name), first, paysOf(content, s1, NOW, effectGrant(i.effect))?.progress, size);
+  }
+  for (const [k, m] of Object.entries(content.aigames?.duizi?.marks ?? {})) if (m?.pay?.units > 0) put('duizi', `duizi:${m.id ?? k}`, `对对子 ${m.id ?? k}`, first, unitsPay(content, s1, m.pay.units), authored('mark', m.pay.units));
+  const yy = content.qian?.yingyan?.pay;
+  if (yy?.units > 0) put('yingyan', 'yingyan', '应验', first, unitsPay(content, s1, yy.units), authored('mark', yy.units));
+  for (const r of ctx.errands ?? []) if (r.xw > 0) {
+    const q = content.quests.find(x => x.id === r.id);
+    out.push({ kind: 'errand', id: r.id, name: r.name, layer: r.layer, xw: r.xw, game: null, x: null, ...(q?.grant?.units > 0 ? authored('errand', q.grant.units) : { class: 'errand', want: r.xw }), over: q?.grant?.units > 0 ? q.grant.units > (C.errand ?? Infinity) : false });
+  }
+  for (const l of ctx.layers.filter(x => !x.zero && x.need)) {
+    const at = { tier: l.tier, step: l.step }, s = saveFor(at), want = u => ({ want: unitsPay(content, s, u) });
+    put('闭关', `night:${l.key}`, `a night's 闭关 · ${l.name}`, at, l.night, { class: '闭关', ...want(night) });
+    for (const k of ['day', 'week', 'month']) put('功课', `chore_${k}:${l.key}`, `a ${k}'s 功课 · ${l.name}`, at, chorePlay(content, s, k), { class: '功课', ...want(content.balance?.play_pay?.chore?.[k] ?? 0) });
+    put('wall', `wall:${l.key}`, `a day's wall tags · ${l.name}`, at, l.wall_day, { class: 'wall', ...want(content.balance?.play_pay?.wall?.day ?? 0) });
+    for (const [k, m] of Object.entries(content.gongke?.kinds ?? {})) if (m.units) put('gongke', `${k}:${l.key}`, `${k} · ${l.name}`, at, unitsPay(content, s, m.units), authored('gongke', m.units));
+    // A chore's own pay (gongke.json `own`, 传音): in small games against its class (master.xiuwei.classes.share_games).
+    for (const [k, m] of Object.entries(content.gongke?.kinds ?? {})) if (m.own) put('own', `${k}:${l.key}`, `${k} (own) · ${l.name}`, at, ownXiuwei(content, s, m.own), m.own.games ? authored('share_games', m.own.games) : authored('gongke', m.own.units));
+    for (const t of ['chance', 'meet', 'tale', 'tale_end']) put(t, `${t}:${l.key}`, `${t} · ${l.name}`, at, unitsPay(content, s, sizedUnits(content, t)), { class: t, ...want(sizedUnits(content, t)) });
+    for (const [d, w] of Object.entries(content.meets?.trial?.win ?? {})) put('trial', `trial-${d}:${l.key}`, `trial ${d} · ${l.name}`, at, unitsPay(content, s, w.units), authored('trial', w.units));
+  }
+  // A family pill (its 转's nights of 闭关, content.mjs pillPay) where it is met: against those nights there.
+  // A pill outside the families met in 卷一 (筑基丹 …): authored, its units in nights of 闭关 against the class's.
+  for (const p of ctx.pills ?? []) if (p.xw > 0 && p.layer) {
+    const own = p.want_xw == null && p.units != null ? { class: 'pill_nights', units: night ? round(p.units / night, 2) : null, cap: C.pill_nights ?? null } : null;
+    out.push({ kind: 'pill', id: p.id, name: p.name, layer: p.layer, xw: p.xw, game: null, x: null, ...(own ? { ...own, over: own.units != null && own.cap != null && own.units > own.cap + 1e-9 } : { class: 'pill', want: p.want_xw, over: p.want_xw != null && p.xw > p.want_xw + 1 }) });
+  }
+  // A row with no small game of its own (an errand, a pill: weighed at their 回's layer) takes that layer's.
+  for (const r of out.filter(x => x.game == null)) { const L = ctx.layers.find(l => l.name === r.layer); const g = L ? storyPlay(content, saveFor({ tier: L.tier, step: L.step })) : 0; r.game = g; r.x = g ? round(r.xw / g, 1) : null; }
+  return out;
 }
 
 function errands(ctx) {
@@ -446,8 +521,11 @@ function gates(ctx) {
   const mapOf = sceneId => sealedBeat(content, sceneId)?.places ?? Object.values(content.chapters).find(c => c.scenes?.[sceneId])?.map?.places ?? [];
   const reach = sceneId => {
     const all = new Map(Object.values(content.places).flatMap(d => d.places).map(p => [p.id, p]));
-    // A day's boards at a place: its fixed and the day's of its pool (rules/rotation.mjs).
-    const nGames = p => (p.has?.games ?? []).length + (p.has?.games_pool?.today ?? 0);
+    // A day's boards at a place: its fixed and the day's of its pool (rules/rotation.mjs) — a fixed one that stands only after a
+    // scene (`after`, rules/tasks.mjs hostedOpen: 山门's 主力 from 古八) once the walk has passed it.
+    const order = bookWalk(content).map(w => w.id), here = order.indexOf(sceneId);
+    const standing = id => { const a = content.tasks.tasks.find(t => t.id === id)?.after; return !a || (order.indexOf(a) >= 0 && order.indexOf(a) < here); };
+    const nGames = p => (p.has?.games ?? []).filter(standing).length + (p.has?.games_pool?.today ?? 0);
     const posts = p => (content.walls ?? []).filter(w => w.at === p.id).reduce((n, w) => n + Math.min(w.posts ?? 3, (w.pool ?? []).length), 0);
     return mapOf(sceneId).map(id => all.get(id)).filter(p => p && (p.has?.pool || nGames(p) || posts(p)))
       .map(p => `${zh(p.name) || p.id}${p.has?.pool ? ' 斗法' : ''}${nGames(p) ? ` ${nGames(p)} 局` : ''}${posts(p) ? ` 墙上 ${posts(p)} 牌` : ''}`);
@@ -552,11 +630,12 @@ function claims(ctx) {
 function claimRow(ctx, t, subject, days, said) {
   const where = t.item ? ctx.met(t.item) : null, at = where ? paying(ctx.content, ctx.layerAt(where.hui)) : null, L = at ? ctx.layer(at) : null;
   const pill = ctx.content.items.items.find(i => i.id === subject);
-  const xw = pill?.effect?.progress && at ? paysOf(ctx.content, ctx.saveFor(at), NOW, { table: pill.effect.table, progress: pill.effect.progress, tier: pill.effect.tier })?.progress ?? null : null;
+  const sized = pill?.effect?.units || pill?.effect?.progress;
+  const xw = sized && at ? paysOf(ctx.content, ctx.saveFor(at), NOW, effectGrant(pill.effect))?.progress ?? null : null;
   const claimed = L ? days * L.night : null;
   // The same claim read on every 练气 layer: 闭关 grows with the layer (layer_pay), a pill does not.
-  const drift = pill?.effect?.progress ? ctx.layers.filter(l => l.tier === ctx.content.ladder.tiers[0].id && l.need).map(l => {
-    const x = paysOf(ctx.content, ctx.saveFor(l), NOW, { table: pill.effect.table, progress: pill.effect.progress, tier: pill.effect.tier })?.progress ?? 0;
+  const drift = sized ? ctx.layers.filter(l => l.tier === ctx.content.ladder.tiers[0].id && l.need).map(l => {
+    const x = paysOf(ctx.content, ctx.saveFor(l), NOW, effectGrant(pill.effect))?.progress ?? 0;
     return { layer: l.name, ratio: l.night ? round(x / (days * l.night), 2) : null };
   }) : [];
   return { drift, where: t.where, id: t.id, field: t.field, lang: t.lang, said, subject, days, layer: L?.name ?? null, night: L?.night ?? null, claimed, actual: xw, ratio: claimed && xw != null ? round(xw / claimed, 2) : null, text: t.text };
@@ -574,6 +653,15 @@ export function hardErrors(content) {
   for (const k of ['layers', 'pay', 'prices', 'pills', 'play_pay', 'cooldowns', 'convert', 'boards', 'layer_pay', 'dandu', 'kailu']) walkNumbers(b[k], `balance.${k}`, out);
   for (const i of content.items.items) walkNumbers({ effect: i.effect, buy: i.buy, sell: i.sell }, `item ${i.id}`, out);
   for (const c of content.creatures.creatures) if (c.hp != null && !(c.hp > 0)) out.push({ where: `creature ${c.id}`, say: `hp ${c.hp}` });
+  // No 修为 number in the book (Hanli 2026-11-10): a size (`units`) only, save a master told (content.mjs authoredXiuwei).
+  for (const e of authoredXiuwei(content)) out.push(e);
+  // The master's told numbers (master.xiuwei.told): each with its why, each an exit that says `told: true`.
+  const toldAt = new Set(Object.values(content.chapters).flatMap(ch => Object.values(ch.scenes).flatMap(sc => (sc.exits ?? []).filter(e => e.grant?.told).map(e => `${sc.id}/${e.id}`))));
+  for (const [k, v] of Object.entries(b.master?.xiuwei?.told ?? {})) {
+    if (!(typeof v?.why === 'string' && v.why.trim().length > 10)) out.push({ where: `balance.master.xiuwei.told.${k}`, say: 'a told number says why' });
+    if (!(v?.progress > 0)) out.push({ where: `balance.master.xiuwei.told.${k}`, say: 'a told number is a 修为 above 0' });
+    if (!toldAt.has(k)) out.push({ where: `balance.master.xiuwei.told.${k}`, say: `no exit ${k} says told: true` });
+  }
   for (const id of Object.keys(b.prices ?? {})) if (!items.has(id)) out.push({ where: `balance.prices.${id}`, say: `a price for ${id}, which items.json does not hold` });
   for (const [id, p] of Object.entries(b.prices ?? {})) if (p.buy && p.sell > p.buy) out.push({ where: `balance.prices.${id}`, say: `sells back for ${p.sell}, over its price ${p.buy}` });
   // A realm in 段 (筑基 and above since 2026-11-02): each 层 more than the one below inside its 段, each 段 more than the one
@@ -597,7 +685,7 @@ const offLayers = r => (r.drift ?? []).filter(d => d.ratio != null && Math.abs(M
 const RED = {
   pills: [
     // A 修为 pill is its 转's share of the layer (balance.json pills, from the master table): red where it is not.
-    [r => r.want_pct != null && r.pct != null && Math.abs(r.pct / r.want_pct - 1) > 0.1, r => `${r.name}: 修为 ${r.xw} = ${pct(r.pct)} of ${r.layer}, its ${r.zhuan}转's share is ${pct(r.want_pct)}`],
+    [r => r.want_xw && r.xw != null && Math.abs(r.xw / r.want_xw - 1) > 0.1, r => `${r.name}: 修为 ${r.xw} at ${r.layer}, its ${r.zhuan ?? ''}转's ${r.nights} nights of 闭关 there are ${r.want_xw}`],
     [r => r.price_min != null && r.play_min != null && r.price_min < r.play_min, r => `${r.name}: buys ${r.play_min} min of play's 修为 for ${r.price_min} min of 灵石 — faster than playing`],
     [r => !r.hui, r => `${r.name}: met nowhere in 卷一 that the validator finds`],
   ],
@@ -633,6 +721,8 @@ const RED = {
   // A gate he comes to well short, or below its layer, waits longer than a sitting where only the pool and a few boards stand.
   gates: [[r => [r.typical, r.session].some(x => x && (x.wait ?? 0) > LIMITS.gate_wait), r => `${r.label} ${r.scene} (${r.layer}): ${[['typical', r.typical], ['straight through', r.session]].filter(([, x]) => x).map(([w, x]) => `${w} comes ${x.below ? 'a layer short' : `${pct(x.pct)} full`}, ~${x.wait} min of play`).join(' · ')} — reachable: ${r.reach.join(' · ') || 'nothing'}`]],
   paces: [[r => r.later && r.held && r.typical != null && (r.typical < r.band[0] || r.typical > r.band[1]), r => `${r.label}: typical ${r.typical} days, band ${r.band[0]}–${r.band[1]}${r.own ? ' (its own, balance.json model.bands.except)' : ''}`]],
+  // A source above its own size (2026-11-10): an authored one-off over its class's ceiling, a designed one the rules pay more than declared.
+  sources: [[r => r.over === true, r => (r.want != null ? `${r.name} (${r.kind}, ${r.layer}): pays ${r.xw}, its declared size ${Math.round(r.want)}` : `${r.name} (${r.kind}, ${r.layer}): ${r.units} ${r.class === 'pill_nights' ? 'nights' : 'units'} — over its class ${r.class}'s ${r.cap} (修为 ${r.xw}, ${r.x}× a small game there)`)]],
   claims: [
     [r => r.ratio != null && Math.abs(Math.log(r.ratio)) <= Math.log(1 + LIMITS.claim_off) && offLayers(r).length, r => `${r.id} says 「${r.said}」 of ${r.subject}: true at ${r.layer}, but 闭关 grows with the layer — ${offLayers(r).map(d => `${d.layer} ×${d.ratio}`).join(' · ')}`],
     [r => r.ratio != null && Math.abs(Math.log(r.ratio)) > Math.log(1 + LIMITS.claim_off), r => `${r.id} says 「${r.said}」 of ${r.subject}: ${r.days} × a night's 闭关 at ${r.layer} (${r.night}) = ${r.claimed}, it pays ${r.actual}`]],
@@ -703,13 +793,13 @@ export async function measure(content = loadContent(), { deals = 0, keep = null 
     return row ? { ...row, tier: at.tier, step: at.step } : null;
   };
   const ctx = { content, layers, met: itemsMet(content), layerAt: h => hl[h] ?? null, saveFor: at => saveAt(base, at), layer: at => (at ? byKey.get(keyOf(at)) ?? null : null), lineLayer };
-  const P = pills(ctx);
+  const P = pills(ctx), E = errands(ctx);
   const F = deals ? await fights(ctx, deals) : keep?.fights ?? [];
   const report = {
     stamp: { date: new Date().toISOString().slice(0, 10), commit: commit(), deals: deals || keep?.stamp?.deals || 0, target: { ...TARGET, games: gamesOf(content) }, limits: LIMITS },
     defs: { night_h: content.rewards.seclusion.rest_hours, caveats: ['The model plays practice boards only while a stage quest holds him (balance.json model.practice): its days per 回 run long.', 'The model plays no 杂役 errands and no 开府: 灵石 earned is low, affordability pessimistic. It takes a share of the day\'s wall tags (balance.json `walls`), the rest while a gate holds him (a gate\'s wait counts them).', 'A 回 holds him on its stage quest\'s layer (else its cap); a 今 interlude takes the 古 before it.', 'A day of sitting = one night of 闭关 (rewards.json seclusion rest_hours) at the layer, as the rules pay it.'] },
     layers, huis: Object.entries(hl).map(([h, at]) => ({ hui: h, label: huiLabel(content, h, 'zh', 'short') ?? h, layer: ctx.layer(at)?.name ?? layerName(content, at.tier, at.step), earned: null })),
-    paces: paces(content), gates: gates(ctx), kailu: kailu(ctx), pills: P, boards: boards(ctx), errands: errands(ctx), shops: shops(ctx), gear: gear(ctx), cards: cards(ctx),
+    paces: paces(content), gates: gates(ctx), kailu: kailu(ctx), pills: P, boards: boards(ctx), errands: E, sources: sources({ ...ctx, pills: P, errands: E }), shops: shops(ctx), gear: gear(ctx), cards: cards(ctx),
     fights: F, creatures: creatures(ctx, F), claims: claims(ctx), errors: hardErrors(content),
     // The master table's knobs and the overrides laid on what it derives (tools/master.mjs; the 数值 page's 总表).
     master: masterOf(content),
@@ -747,19 +837,10 @@ const WORLD = new URL('../worlds/jiuding/', import.meta.url);
 export function applied() {
   const read = f => JSON.parse(fs.readFileSync(new URL(f, WORLD), 'utf8'));
   const raw = JSON.parse(fs.readFileSync(BALANCE_FILE, 'utf8'));
+  // Every number from the master's knobs (tools/master.mjs derive) — no fit any more (2026-11-10): the hours are the curve's
+  // T(L), and its one free constant is solved apart (tools/balance.mjs --solve), never moved by a dry run.
   const next = derive(raw, { ladder: read('ladder.json'), items: read('items.json').items });
-  // The pace fit plays the model on the derived world (master.mjs fitHours): the hours of the layers a 回 holds.
-  const world = withBalance({ ...loadContent(), balance: structuredClone(next) });
-  const fit = fitHours(world, { grindLayers, table: paceTable, play });
-  next.play_pay.hours.qi = fit.qi;
-  // Each other line's pace (master.mjs fitLine): its boards in the book's order, on its own ladder.
-  const lines = {};
-  for (const line of linesOf(world).filter(l => world.balance.master.lines[l]?.hours?.fit)) {
-    lines[line] = fitLine(world, line, bookWalk(world), LINE_RULES);
-    next.play_pay.hours[world.ladder.lines[line].tiers[0].id] = lines[line].row;
-  }
-  for (const o of next.overrides ?? []) if (o.path.startsWith('play_pay.hours')) setPath(next, o.path, structuredClone(o.value));
-  return { raw, next, fit, lines, diff: diffOf(raw, next) };
+  return { raw, next, diff: diffOf(raw, next) };
 }
 
 const arg = (name, d) => { const i = process.argv.indexOf(name); return i < 0 ? null : Number(process.argv[i + 1]) || d; };
@@ -774,11 +855,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   }
   const write = process.argv.includes('--write');
   if (process.argv.includes('--apply')) {
-    const { next, diff, fit, lines: applied_lines } = applied();
-    for (const f of fit.fitted) console.log(`fit ${f.hui}: 层 ${f.layers.join('·')} ${f.curve.join('·')} h → ${f.hours.join('·')} h (typical ${round(f.days_were, 1)} → ${round(f.days, 1)} days)${f.gate ? ' — cut for its gates' : ''}${f.out ? ` — OUT of its band ${f.out.join('–')}` : ''}`);
-    for (const w of fit.waits) console.log(`gate ${w.hui}: ${w.say}`);
-    for (const [line, f] of Object.entries(applied_lines ?? {})) console.log(`fit ${line}: ${f.row.slice(0, 3).join('·')} h (×${f.k}) → 卷一 ends ${f.climbed} layers up${f.out ? ` — ${f.out}: out of the fit's range` : ''}`);
-    for (const f of fit.unfit) console.log(f.short ? `short ${f.hui}: 层 ${f.layers.join('·')} — typical ${round(f.days, 1)} days, under its band; kept at the curve (dearer layers would only lengthen its gates)` : `unfit ${f.hui}: 层 ${f.layers.join('·')} at ${round(f.days, 1)} days; no hours reach the band (${f.reach.map(x => round(x, 1)).join(' – ')})`);
+    const { next, diff } = applied();
     for (const d of diff) console.log(`${d.path}: ${JSON.stringify(d.was)} → ${JSON.stringify(d.now)}`);
     console.log(diff.length ? `${diff.length} rows ${write ? 'written' : 'would change (dry run: --write to write)'}` : 'the master table and balance.json agree');
     for (const o of next.overrides ?? []) console.log(`override ${o.path} = ${JSON.stringify(o.value)} — ${o.why}`);

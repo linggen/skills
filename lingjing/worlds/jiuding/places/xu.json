@@ -515,7 +515,8 @@
    "line": {
     "zh": "三百级石阶顶上一座旧山门，瞿老守在门里，谁进谁出都要过他那一关。",
     "en": "An old gate at the top of three hundred steps. Elder Qu keeps it; no one comes or goes without passing him."
-   }
+   },
+   "has": {"games": ["shanmen-qinyan", "shanmen-qingshen", "shanmen-shouqiang"], "_games": "2026-11-10 (Hanli: 「小游戏目前靠后山刷斗法, 也可以加一个地点刷其他主力游戏」): the 主力 as practice at the 山门 — 秦雁's 格斗 (she comes up by these steps), 轻身's 几何冲刺, a 守墙关 night — each from 古八 on (its task's `after`, rules/tasks.mjs hostedOpen), beside the 后山's 斗法 and 兽潮. (演武场 holds the pedlar's visiting stall, which stands alone: content.mjs lintVisitor.)"}
   },
   {
    "id": "zhengdian",
@@ -797,6 +798,7 @@
    "has": {
     "creature": "zheng",
     "furnace": true,
+    "games": ["yaoyuan-kanlu"],
     "games_pool": {"from": ["yaoyuan-zhuochong", "huarong"], "today": 1}
    },
    "line": {

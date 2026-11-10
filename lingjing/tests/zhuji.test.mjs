@@ -141,12 +141,12 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
   assert.equal(step, 0);
   assert.equal(autumn.step, 9, '九层');
   assert.equal(autumn.scene, '09-qulao');
-  // The lump on 入秋 (the gate table) lands under 九层's share hold, the rest banked; standing at 瞿老's door it comes back: full.
-  assert.equal(autumn.progress, Math.floor(0.7 * threshold(content, autumn)), 'at 九层\'s share until 瞿老');
-  assert.ok(autumn.banked > 0, 'the rest of the lump waits in the 丹田');
+  // 入秋 is a story step since 2026-11-10 (its 750 lump gone — a story scene pays about one small game): what lands stays under
+  // 九层's share hold, and standing at 瞿老's door whatever waited comes back; the rest of 九层 is his own, ground at the door.
+  assert.ok(autumn.progress <= Math.floor(0.7 * threshold(content, autumn)), 'under 九层\'s share until 瞿老');
   const there = settleHeld(content, autumn);
   assert.equal(there.banked, undefined, 'standing at 瞿老\'s door: all of it back');
-  assert.ok(there.progress > autumn.progress && there.progress < threshold(content, there), 'the rest of 九层 his own, ground at the door (the gate)');
+  assert.ok(there.progress >= autumn.progress && there.progress < threshold(content, there), 'the rest of 九层 his own, ground at the door (the gate)');
 });
 
 test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached for before the 一转, and 古十 opens at once', () => {

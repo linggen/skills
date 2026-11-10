@@ -12,7 +12,7 @@
    "who": { "zh": "坊市的榜文", "en": "the notice at the market" },
    "say": { "zh": "{place}的{target}又出来伤人。降了它的，凭此榜领赏。", "en": "The {target} of {place} is hurting travellers again. Whoever subdues it is paid on this notice." },
    "work": "cultivation",
-   "grant": { "table": "quest", "progress": 40, "wealth": 15 }
+   "grant": { "table": "quest", "units": 20, "wealth": 15 }
   },
   {
    "id": "patrol",

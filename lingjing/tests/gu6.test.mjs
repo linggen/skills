@@ -59,7 +59,7 @@ test('古六 runs in the book\'s order on the `next` chain — 19 scenes, every 
 
 test('every board pays what the plan names: 修为 for cultivation, 灵石 for the lesson, the mark or the 恩仇簿 for the rest', () => {
   const t = (id) => content.tasks.tasks.find((x) => x.id === id);
-  for (const id of ['qianye-qiajue', 'zhaojing-mirror', 'dabi-sneeze', 'laoyin-zhuqingting', 'heluo-kaipian']) assert.equal(t(id).grant.progress, 5, id);
+  for (const id of ['qianye-qiajue', 'zhaojing-mirror', 'dabi-sneeze', 'laoyin-zhuqingting', 'heluo-kaipian']) assert.equal(t(id).grant.units, 2.5, id); // a size (2026-11-10): 5 at 练气一层, × R where it is paid
   assert.equal(t('qianye-xiangke').grant.wealth, 3);
   assert.equal(t('laba-diche').marks.kept, 'diche');
   assert.equal(t('jiaxin-letter').ledger[0].who, 'sunergou');

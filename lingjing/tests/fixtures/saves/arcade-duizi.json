@@ -1,7 +1,7 @@
 {
  "_about": "游戏厅 stage save for duizi (tools/arcade-saves.mjs, from its games.json row)",
  "state": {
-  "version": 17,
+  "version": 18,
   "world": "jiuding",
   "lang": "zh",
   "name": "沈小满",
@@ -15,16 +15,16 @@
   ],
   "tier": "qi",
   "step": 5,
-  "progress": 276,
-  "wealth": 570,
+  "progress": 284,
+  "wealth": 666,
   "lines": {
    "jin": {
     "tier": "xinsheng",
     "step": 2,
-    "progress": 42,
+    "progress": 143,
     "stretch": {
-     "xinsheng:1": 1,
-     "xinsheng:2": 6
+     "xinsheng:1": 4,
+     "xinsheng:2": 21
     }
    }
   },
@@ -688,8 +688,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 1459,
-   "wealth": 573
+   "progress": 2659,
+   "wealth": 669
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -1247,8 +1247,8 @@
   ],
   "furnace_name": "饭桶",
   "stretch": {
-   "qi:2": 5,
-   "qi:3": 260
+   "qi:2": 15,
+   "qi:3": 338
   },
   "hunted": {
    "mijing-xiongya": 1

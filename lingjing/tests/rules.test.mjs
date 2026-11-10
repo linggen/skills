@@ -16,10 +16,11 @@ import { beforeChapterOne, TO_WAIMEN, TO_HALL, TO_VALLEY, V1_BIRTH, walk } from 
 import { starterFor } from '../scripts/rules/roots.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
-import { authoredScale, chorePlay } from '../scripts/rules/playpay.mjs';
+import { chorePlay, sizedUnits, unitsPay } from '../scripts/rules/playpay.mjs';
 import { paysOf } from '../scripts/rules/core.mjs';
 // What the book authors is a share of 练气一层, read at the layer he stands on (play_pay.authored, 2026-10-27).
-const atLayer = (s, n, table = 'scene') => Math.round(n * authoredScale(content, s, table));
+// A size's 修为 where he stands (2026-11-10: the book declares units, paid units × R there — rules/playpay.mjs unitsPay).
+const atLayer = (s, units) => Math.round(unitsPay(content, s, units));
 // A story step (`story`, Hanli 2026-11-09): one small game's 修为 where he stands, as the rules pay it.
 const storyAt = (s, ctx) => paysOf(content, s, ctx.now, { table: 'story' }).progress;
 
@@ -951,12 +952,12 @@ test('no day cap: a day full of play pays every time — 灵气 is the only limi
 
 test('a later realm pays more for the same task; the day counts base', () => {
   const s = joined();
-  s.tier = 'deity'; s.step = 0; s.progress = 0; // 化神, pay ×3
+  s.tier = 'deity'; s.step = 0; s.progress = 0; // 化神: L37, R's realm ×1.2⁴ (the one realm multiplier since 2026-11-10)
   offerWon(s);
   const out = must(task, s, { action: 'done', id: 'alchemy-first' });
-  // The grant's 20 as written (2026-11-02: no layer scales an authored number), × 3 for the realm; the board's play on top
-  const base = atLayer(s, 20, 'task'), grant = base * 3, play = out.result.paid.progress - grant;
-  assert.equal(base, 20, 'the number the book wrote');
+  // The grant's size (10 units, 20 at 练气一层) × R where he stands; the board's play on top
+  const base = atLayer(s, content.tasks.tasks.find(t => t.id === 'alchemy-first').grant.units), grant = base, play = out.result.paid.progress - grant;
+  assert.ok(base > 20 * 3, `the size at 化神's R: ${base}`);
   assert.ok(play >= 0, String(out.result.paid.progress));
   assert.equal(out.state.progress, grant + play);
   assert.ok(out.state.day.progress >= base && out.state.day.progress <= base + play, 'the day counts base');
@@ -1534,7 +1535,7 @@ test('no market away from one; a pill is used anywhere; a wear waits for her', (
   assert.equal(refused(trade, away, { action: 'buy', id: 'ginseng' }, 'no-market').say, '这里没有坊市。');
   const withPill = must(trade, s, { action: 'buy', id: 'qi-pill' }).state;
   const used = must(trade, must(move, withPill, { place: 'sishui' }).state, { action: 'use', id: 'qi-pill' });
-  assert.equal(used.result.paid.progress, Math.round(content.balance.pills.share[0] * TH(s.tier)[s.step]), 'a 一转 is 5% of the layer he stands on');
+  assert.equal(used.result.paid.progress, atLayer(s, content.items.items.find(i => i.id === 'qi-pill').effect.units), 'a 一转 is its 0.3 nights of 闭关 at R where he stands');
   assert.deepEqual(used.state.bag, { 'fox-token': 1, 'tuna-jing': 1, 'old-bow': 1, 'grey-robe': 1 }); // what the prologue gave is carried on
   refused(trade, s, { action: 'use', id: 'qi-pill' }, 'not-in-bag');
   const withSword = must(trade, s, { action: 'buy', id: 'bamboo-sword' }).state;
@@ -2262,7 +2263,7 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   r = answerN(resolve, s, { exit: 'take' });
   assert.deepEqual(btOf(r.result.breakthrough), { from: '筑基圆满', to: '结丹 · 小成', tier: 'core', success: true });
   assert.equal(r.state.tier, 'core'); assert.equal(r.state.step, 0);
-  assert.equal(r.state.progress, atLayer(r.state, 60)); // the way on's 60, read at 结丹小成 (play_pay.authored)
+  assert.equal(r.state.progress, atLayer(r.state, 30)); // the way on's size (30 units: 60 at 练气一层), at 结丹一层's R
   assert.equal(r.state.scene, '02-end');
   r = answerN(resolve, r.state, { exit: 'rest' });
   assert.deepEqual(r.state.ended, ['00-prologue', '01-ji', '02-yan']);
@@ -2344,7 +2345,7 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   r = answerD(resolve, s, { exit: 'take' });
   assert.deepEqual(btOf(r.result.breakthrough), { from: '结丹圆满', to: '元婴 · 小成', tier: 'nascent', success: true });
   assert.equal(r.state.tier, 'nascent'); assert.equal(r.state.step, 0);
-  assert.equal(r.state.progress, atLayer(r.state, 60) * content.ladder.tiers.find(t => t.id === 'nascent').pay); // read at 元婴, × the realm's pay
+  assert.equal(r.state.progress, atLayer(r.state, 30)); // at 元婴一层's R — its realm step is R's (no tier `pay` since 2026-11-10)
   assert.equal(r.state.scene, '03-end');
   r = answerD(resolve, r.state, { exit: 'rest' });
   assert.deepEqual(r.state.ended, ['00-prologue', '01-ji', '02-yan', '03-qing']);
@@ -2551,7 +2552,7 @@ test('遇: no arrival is empty — a find, a traveller\'s riddle or a beast on t
   assert.equal(wrong.result.refused, 'wrong-answer');
   assert.ok(wrong.result.hint && !wrong.result.choices.includes(wrongChoice));
   const answered = must(meet, wrong.state, { action: 'answer', answer: right }, rd);
-  assert.equal(answered.result.paid.progress, atLayer(wrong.state ?? asked.state, 20, 'meet'));
+  assert.equal(answered.result.paid.progress, atLayer(wrong.state ?? asked.state, sizedUnits(content, 'meet')));
   assert.ok(answered.state.riddles_seen.includes(key));
   assert.equal(askOf(content, answered.state, rd, answered.result), null, 'answered, the chat asks nothing — the roads are on the page (2026-09-25)');
 
@@ -3796,13 +3797,16 @@ test('论道 costs a hosted game\'s 体力 at the door, and a game under way is 
 
 test('the card fight pays the most 修为 per 体力 — every hosted game pays less for what it costs', () => {
   const { tables, stamina } = content.rewards;
+  // The grant side re-banded 2026-11-10 (a size, units × R at 练气一层); the fight side reads the haunt table's 30 as before — a
+  // cap no fight has paid since 2026-11-02 (a fight pays its 体力 × R, rules/playpay.mjs fightPlay): this compares a cap.
+  const s1 = { tier: 'qi', step: 1 }, R1 = unitsPay(content, s1, 1);
   const fight = tables.haunt.progress / staminaCost(content, 'duel'); // an elite is a fight like any other
-  const hosted = content.tasks.tasks.filter(x => x.hosted);
+  const hosted = content.tasks.tasks.filter(x => x.hosted && x.grant?.units);
   for (const t of hosted) {
-    const perPoint = Math.min(t.grant.progress, tables[t.grant.table].progress) / staminaCost(content, 'game');
+    const perPoint = (t.grant.units * R1) / staminaCost(content, 'game');
     assert.ok(perPoint < fight, `${t.id} pays ${perPoint.toFixed(2)} a point, the fight ${fight.toFixed(2)}`);
   }
   // …and even at the gate's win rate (~85%) a fight still out-earns any game.
-  const board = Math.max(...hosted.map(t => t.grant.progress)) / staminaCost(content, 'game');
+  const board = Math.max(...hosted.map(t => t.grant.units * R1)) / staminaCost(content, 'game');
   assert.ok(0.85 * tables.haunt.progress / staminaCost(content, 'duel') > board);
 });

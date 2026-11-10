@@ -173,7 +173,7 @@ test('places: a road to nowhere, a road that does not come back, a tier off the 
   assert.ok(has(lint(d), 'place xushan: no road reaches it from the start'));
 });
 
-test('the catalog: a price below its sell, a missing picture, a pill over its table, a bag that names no item', () => {
+test('the catalog: a price below its sell, a missing picture, a pill with a 修为 number, a bag that names no item', () => {
   const c = fresh();
   const item = id => c.items.items.find(i => i.id === id);
   item('qi-pill').buy = 10;
@@ -186,7 +186,8 @@ test('the catalog: a price below its sell, a missing picture, a pill over its ta
   const problems = lint(c);
   assert.ok(has(problems, `item qi-pill: buys for 10, below its sell price ${item('qi-pill').sell}`));
   assert.ok(has(problems, 'item ginseng: art art/items/nothing.svg is missing'));
-  assert.ok(has(problems, 'item lingzhi: progress 99 is over the puzzle cap of 20'));
+  // A 修为 number in the book is an error (2026-11-10: a size, `units`, × R where it is paid); a size over nothing too.
+  assert.ok(has(problems, 'item lingzhi: progress 99: an authored 修为 number'));
   assert.ok(has(problems, 'item moon-bell: cannot wear on hat'));
   assert.ok(has(problems, 'item jade-fish: unknown kind relic'));
   assert.ok(has(problems, 'unknown item unicorn-horn'));

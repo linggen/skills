@@ -90,16 +90,20 @@ test('gates climb (the lint): no gate asks the layer the highest gate before it 
 
 // ── 剧情-游戏-剧情 (Hanli 2026-11-10: 「不一定是两段式的剧情-游戏到圆满-剧情, 可以是剧情-游戏-剧情-游戏-剧情-游戏到圆满-剧情突破」 ·
 // 「可以，按 2 天来」): inside a layer the story comes out in stretches, each opened by a share of the bar (a gate's `share`),
-// the last 圆满. The typical player plays only small games at most MAX_WAIT model days between two stretches — 七层 aside:
-// two scenes from 六层's gate to its own, too few to split under 2 days (a proposal, not forced).
+// the last 圆满. The typical player plays only small games at most MAX_WAIT model days between two beats of story.
+// A beat is a scene of the book — or, since 2026-11-10 (Hanli: 「短剧情你要补的话, 放差事里吧, 可以设计一个连环多步骤差事, 给些
+// 奖励.」), a step of a 连环差事 (quests' `chain`) taken and handed in: the rule counts it as a beat, and nothing else changed —
+// a gate's wait is split only where such a step lands inside it (tools/balance.mjs play: `gap`). 七层's exception is gone:
+// 九节菖蒲's two steps a layer break 七 · 八 · 九层's waits.
 const MAX_WAIT = 2;
-const LONG = { '09-shenshi': '七层: 09-dabi is its only scene before its gate' };
-test('the typical player waits at most MAX_WAIT days of only small games between two stretches of story, 七层 aside (named)', () => {
+test('the typical player waits at most MAX_WAIT days of only small games between two beats of story (a scene, or a 连环差事\'s step)', () => {
   for (const g of runs.typical.gates) {
-    if (LONG[g.scene]) continue;
-    assert.ok((g.days ?? 0) <= MAX_WAIT, `${g.scene} (${g.layer.step}层): ${g.days?.toFixed(2)} days of play before the story goes on — add a share gate earlier in the layer`);
+    assert.ok((g.gap ?? g.days ?? 0) <= MAX_WAIT, `${g.scene} (${g.layer.step}层): ${(g.gap ?? g.days)?.toFixed(2)} days of play between beats — add a share gate earlier in the layer, or a chain step`);
   }
-  assert.ok(runs.typical.gates.find(g => g.scene === '09-shenshi').days > MAX_WAIT, '七层 still waits long: the exception is real (drop it when it is fixed)');
+  // The chain's steps are beats the walk takes, in order, two a layer through 七 · 八 · 九层.
+  const chain = runs.typical.beats.filter(b => b.kind === 'chain');
+  assert.deepEqual(chain.map(b => b.id), ['guan-jiujie-1', 'guan-jiujie-2', 'guan-jiujie-3', 'guan-jiujie-4', 'guan-jiujie-5', 'guan-jiujie-6']);
+  assert.deepEqual(chain.map(b => b.step), [7, 7, 8, 8, 9, 9]);
 });
 
 test('the share gates as data (2026-11-10, a proposal for Hanli): 一层 at 点卯 and the 执事房, 五层 at the 丹房 and 这一年, 六层 at 鯥 and 碾药 — each before its layer\'s 圆满, never at the door that 圆满 is held at', () => {

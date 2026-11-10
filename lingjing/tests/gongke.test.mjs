@@ -64,11 +64,13 @@ test('a chore of a known kind pays its meaning on top: 灵石, its thing in the 
   const out = turn(s, quests, 'x-workout');
   assert.equal(out.result.ok, true);
   const m = out.result.meaning;
-  assert.deepEqual([m.kind, m.name, m.paid.wealth, m.paid.item], ['body', '练功', 3, 'chenlian-fu']);
+  // 练功's 灵石: 6 since 2026-11-10 (app-linked chores pay double, Hanli 「…app联动的任务, 奖励都翻倍」; was 3).
+  assert.deepEqual([m.kind, m.name, m.paid.wealth, m.paid.item], ['body', '练功', content.gongke.kinds.body.wealth, 'chenlian-fu']);
+  assert.equal(content.gongke.kinds.body.wealth, 6);
   assert.equal(m.paid.item_name, '晨练符');
   assert.match(m.about, /挑着担子/);
   assert.equal(out.state.bag['chenlian-fu'], 1);
-  assert.equal(out.state.wealth, s.wealth + out.result.paid.wealth + 3);
+  assert.equal(out.state.wealth, s.wealth + out.result.paid.wealth + content.gongke.kinds.body.wealth);
 });
 
 test('paid once per occurrence: the same chore again today is refused; tomorrow it pays again', () => {
@@ -199,7 +201,7 @@ test('the board shows facts only: the meaning, the app\'s title, a stamp with th
   const board = gongkeBoard(content, s, quests, NOW, 'zh', questDone);
   const by = Object.fromEntries(board.rows.map(r => [r.id, r]));
   assert.deepEqual([by['x-workout'].done, by['x-workout'].paid, by['x-workout'].adds.item], [true, false, '晨练符']);
-  assert.deepEqual([by['x-workout'].adds.wealth, by['x-workout'].adds.progress], [3, 0], 'what lands: 零层 takes no 修为');
+  assert.deepEqual([by['x-workout'].adds.wealth, by['x-workout'].adds.progress], [6, 0], 'what lands: 零层 takes no 修为 (练功 6 灵石 since 2026-11-10: app-linked chores double)');
   assert.deepEqual([by['x-sweep'].done, by['x-sweep'].done_at], [false, null]);
   assert.equal(by['x-paid'].paid, true);
   assert.ok(by['x-paid'].paid_at);

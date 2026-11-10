@@ -12,6 +12,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { everyJuan } from './prologue.mjs';
 import { migrate, newState, STATE_VERSION, staminaCost } from '../scripts/state.mjs';
 import { deckFor, look, VERBS } from '../scripts/rules.mjs';
+import { sizedUnits, unitsPay } from '../scripts/rules/playpay.mjs';
 
 // The engine on the old spine, every 卷 open (prologue.mjs everyJuan); tests/juan.test.mjs walls 卷一.
 const content = everyJuan(loadContent());
@@ -44,7 +45,7 @@ test('a save from before the cut migrates: what is held stays, what only the cut
   const old = oldSave();
   const m = migrate(old, content);
   assert.equal(m.version, STATE_VERSION);
-  assert.equal(STATE_VERSION, 17); // v17 (2026-11-04): read_whole, the 年 pools read through their boards
+  assert.equal(STATE_VERSION, 18); // v18 (2026-11-10): the curve, the bar read by its percent (v17, 11-04: read_whole)
   // Kept: the bag (an old 回春丹 and 妖丹 are goods now), the cards, the cast,
   // the treasure and its 重, her joining, the realm.
   assert.deepEqual(m.bag, old.bag);
@@ -57,8 +58,9 @@ test('a save from before the cut migrates: what is held stays, what only the cut
   const fd = content.ladder.tiers[1];
   // v15 (2026-11-02, nine 层 shown in 段): 中成 is 段 中成, the 修为 walked through its 层 — the same point of the 段.
   const v14 = Math.round(40 * fd.thresholds_were['14'][1] / fd.thresholds_were['13'][1]);
-  assert.ok(v14 < fd.thresholds[3]);
-  assert.deepEqual([m.tier, m.step, m.progress], ['foundation', 3, v14]);
+  // …then v18 (2026-11-10, the curve) reads it by its percent of 四层 (thresholds_were["18"] → the curve's).
+  assert.ok(v14 < fd.thresholds_were['18'][3]);
+  assert.deepEqual([m.tier, m.step, m.progress], ['foundation', 3, Math.round((v14 * fd.thresholds[3]) / fd.thresholds_were['18'][3])]);
   assert.equal('ladder9' in m, false, 'a three-step save is never carried as a nine-层 one');
   assert.equal('ladder3' in m, false, 'the mark is spent once the save meets its world');
   // Gone: the wound, the bond and its marks, her tending, the day's 温养 and 写符.
@@ -156,11 +158,14 @@ test('the day resets three things: 今日传闻, the day\'s 人间功课 pick, �
 
 test('the economy after the cuts: a fight still pays best per 体力, and a normal day lands near the day before', () => {
   const { tables: t, tale } = content.rewards, cost = { duel: staminaCost(content, 'duel'), game: staminaCost(content, 'game'), move: staminaCost(content, 'move') };
-  const fight = t.haunt.progress / cost.duel, step = t.tale.progress / (cost.game + cost.move);
+  // The rumor's side re-banded 2026-11-10 (its step and end are sizes, units × R at 练气一层); the fight side reads the haunt
+  // table's 30 as before — a cap no fight has paid since 2026-11-02 (rules/playpay.mjs fightPlay): this compares a cap.
+  const s1 = { tier: 'qi', step: 1 }, at1 = u => unitsPay(content, s1, u);
+  const fight = t.haunt.progress / cost.duel, step = at1(sizedUnits(content, 'tale')) / (cost.game + cost.move);
   assert.ok(fight > step, `a fight ${fight.toFixed(2)} a point, a rumor's step ${step.toFixed(2)}`);
   assert.ok(0.85 * fight > step, 'even at the gate\'s win rate');
   // _economy's normal 练气 day: ~2.5 fights won, story and errands ~20, a 4-step rumor.
   const before = 64 + 30 + 20 + 65;
-  const after = 2.5 * t.haunt.progress + 20 + Math.min(tale.cap.progress, 3 * t.tale.progress + t.tale_end.progress);
+  const after = 2.5 * t.haunt.progress + 20 + at1(Math.min(tale.cap.units, 3 * sizedUnits(content, 'tale') + sizedUnits(content, 'tale_end')));
   assert.ok(Math.abs(after - before) / before < 0.1, `after ${after}, before ${before}`);
 });

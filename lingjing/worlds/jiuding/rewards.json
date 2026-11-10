@@ -72,7 +72,7 @@
   "_tale": "今日传闻 (design.md § 今日传闻): Ling writes no number. Each step pays the `tale` table and the finale the `tale_end` table, both capped; the whole tale never pays more than `cap` (a fifth step eats into the finale), and pay() scales it by the roots and the realm like any grant. One finale `drop`: the highest-tier entry at or below the player's realm (an item, or a card not held and of a root the player has), picked by the tale's id — and the finale also leaves a 符 and raises the 本命法宝 one 重 (`growth`). Raised 2026-09-24 (redesign-v2: the rumor is the day's main dish, the daily boards are gone): 15 a step, 30 the finale, 90 the cap — see `_economy`.",
   "tale": {
     "cap": {
-      "progress": 90,
+      "units": 45,
       "wealth": 22
     },
     "drops": [

@@ -7,7 +7,7 @@ import { gainCard, ownedCards } from './cards.mjs';
 import { companionOf, hasCompanion } from './companion.mjs';
 import { clone, offerTasks, pay, paysOf, refuse, spendStamina } from './core.mjs';
 import { capLook, capPillSay } from './cap.mjs';
-import { advance, bookOf, directorBrief, itemBrief, itemOf, onStoryRoad, questOf, settleErrands } from './errands.mjs';
+import { advance, bookOf, directorBrief, effectGrant, itemBrief, itemOf, onStoryRoad, questOf, settleErrands } from './errands.mjs';
 import { arriveOnRoad } from './road.mjs';
 import { forSale, sceneBrief, shelfOf, shopOf, wordsOf } from './look.mjs';
 import { buyBack, visitorAway, visitorHere } from './visiting.mjs';
@@ -297,17 +297,17 @@ export function trade(state, content, ctx, args) {
       if (worn.result) return worn;
       return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), ...(worn.swapped ? { swapped: worn.swapped } : {}), pouch: pouchBrief(content, s) } };
     }
-    if (e.progress) {
+    if (e.units || e.progress) {
       // 圆满 (Hanli 11-03: 「修为圆满, 聚气丹无法起作用」): a pill would pay nothing and still owe 丹毒 — kept in the bag,
       // the reason said. A 九转 that clears 丹毒 owed still goes down.
       const clears = (item.zhuan ?? 0) >= 9 && (s.dandu ?? 0) > 0;
-      if (!clears && paysOf(content, clone(s), ctx.now ?? new Date(), { table: e.table, progress: e.progress, tier: e.tier })?.full) {
+      if (!clears && paysOf(content, clone(s), ctx.now ?? new Date(), effectGrant(e))?.full) {
         // At the 回's cap the way on is the story (Hanli 11-03); elsewhere (a 段 door, a realm's peak) the generic line.
         return refuse('xw-full', capLook(content, s, lang) ? capPillSay(content, lang) : pick({ zh: '你现在修为圆满，服下也不长修为；破境之后再服。', en: 'Your cultivation is full; it would do nothing now. Take it after you break through.' }, lang));
       }
       s.bag[item.id] = held - 1;
       if (s.bag[item.id] <= 0) delete s.bag[item.id];
-      const paid = pay(content, s, ctx, { table: e.table, progress: e.progress, tier: e.tier });
+      const paid = pay(content, s, ctx, effectGrant(e));
       // 丹毒: the turns its furnace left out, owed until 闭关 (rules/dandu.mjs); a 九转 clears them.
       const dandu = eatPill(content, s, item.id);
       return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), paid, ...(dandu ? { dandu: { ...dandu, now: danduBrief(content, s) } } : {}) } };

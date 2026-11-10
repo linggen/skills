@@ -38,7 +38,7 @@
       },
       "grant": {
         "table": "task",
-        "progress": 5
+        "units": 2.5
       },
       "marks": {
         "tight": "qiajue-tight",
@@ -82,7 +82,7 @@
       "how": { "zh": "守住铺口：点一张符，再点一格畦地布下去；剑符守一路，聚灵阵攒灵气。", "en": "Hold the bunk door: tap a talisman, then a patch of bed, to set it; sword talismans hold a lane, spirit arrays gather qi." },
       "period": "once",
       "title": { "zh": "藏息 · 镜光扫过来", "en": "Hide the breath · The mirror's light" },
-      "grant": { "table": "task", "progress": 5 },
+      "grant": { "table": "task", "units": 2.5 },
       "marks": { "still": "mirror-still", "shaky": "mirror-shaky" },
       "done_line": { "zh": "木牌凉了下去，凉得像一块冰。", "en": "The token cools, cold as ice." },
       "deal": { "lv": "zl-zhaojing-mirror" },
@@ -120,7 +120,7 @@
       "how": {"zh": {"desk": "何七一拳当胸打过来——背向他按住是挡，或让开。U 符文：喷嚏符落在他脚下，他打着喷嚏站不住；打空他的「稳」，他自己下台。WASD 走跳蹲，K 轻拳 · L 轻腿 · O 重拳 · ; 重腿。", "touch": "何七一拳当胸打过来——背向他按住是挡，或让开。点「符」：喷嚏符落在他脚下；打空他的「稳」，他自己下台。"}, "en": {"desk": "He Qi throws a fist at your chest: hold away to guard, or step aside. U talisman: the sneezing charm at his feet and he can't stand still; empty his footing and he walks off the stage. WASD walk, jump, crouch; K light punch · L light kick · O heavy punch · ; heavy kick.", "touch": "He Qi throws a fist at your chest: hold away to guard, or step aside. Tap 符: the sneezing charm at his feet; empty his footing and he walks off the stage."}},
       "period": "once",
       "title": { "zh": "喷嚏符 · 让一拳", "en": "The sneezing charm · Let the punch go by" },
-      "grant": { "table": "task", "progress": 5 },
+      "grant": { "table": "task", "units": 2.5 },
       "marks": { "clean": "sneeze-clean", "clumsy": "sneeze-clumsy" },
       "done_line": { "zh": "「沈小满，胜。」", "en": "\"Shen Xiaoman wins.\"" },
       "_zhuli2": "2026-10-28 (Hanli: 「尽力让主力游戏多吧, 除非剧情需要其他类型」; doc/zhuli-placement-2026-10-28.md): a 主力 塔防 board — the story level `zl-dabi-sneeze` of sadoushou (`story: wm-dabi`; 兽潮 never deals it, the 游戏厅 keeps it off the ladder). Was rain. Id, pay and done line kept.",
@@ -139,7 +139,7 @@
       },
       "grant": {
         "table": "task",
-        "progress": 5
+        "units": 2.5
       },
       "marks": {
         "caught": "zqt-caught",
@@ -197,7 +197,7 @@
       },
       "grant": {
         "table": "task",
-        "progress": 5
+        "units": 2.5
       },
       "done_line": {
         "zh": "「戴九履一，左三右七，二四为肩，六八为足，五居中央。」",

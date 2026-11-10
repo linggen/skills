@@ -98,13 +98,9 @@
     "task": "yanceng-sunergou"
    },
    "grant": {
-    "table": "gate",
-    "progress": 750,
-    "narrated": {
-     "line": "九层圆满，他已经到了"
-    }
+    "table": "story"
    },
-   "_gate": "2026-11-09 (Hanli 2026-11-09: 「不要白给修为, 除了像秘境埋土里那次, 剧情里明确写了突破的」 · 「剧情可以给修为, 但要给的和玩一场小游戏差不多, 然后有动画显示剧情奖励」): kept — the story tells this gain: 「九层圆满，他已经到了」. The autumn of year eight. The lint (content.mjs lintEarned) finds the line in the text.",
+   "_gate": "2026-11-10 (Hanli: 「所有和数值相关的都应该有公式推到, 不能手动定」 · a story scene pays about what one small game pays, never a lump): an ordinary story step now — one small game's 修为 where he stands (playpay.mjs storyPlay). Was the `gate` lump 750 (2026-11-09, kept then because the story tells the gain: 「九层圆满，他已经到了」).",
    "refuse": {
     "zh": "这一年的事还没完。",
     "en": "This year isn't done yet."

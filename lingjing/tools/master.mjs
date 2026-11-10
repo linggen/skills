@@ -5,65 +5,52 @@
 // balance.json they make, with `overrides` (`{path, value, why}`) laid on last. tools/numbers.mjs --apply prints the diff and,
 // with --write, writes it. Nothing here names a board, a beast or a 回.
 //
-// The knobs, per line (`master.lines.<line>`: a line is a ladder of its own — 古 now; 今 and 未来 get their own rows when
-// they are built, each with its own pace):
-//   need       the 层's 修为 numbers: 练气一层 `first`, ×`layer` a layer, ×`realm` into the next realm (one size a realm's
-//              steps); display only — every pay is a share of the layer, so the numbers set no pace;
-//   hours      a layer's play hours (the games' rate): 练气 `qi` by 层, each realm above `realm_first` + `realm_step` a realm;
-//   games      the small games' and fights' share of a layer's 修为 over their share of its time;
-//   errand     an errand's share over its share of the time;
-//   wall       a wall's posted 杂役 (quests/wall.json): a day's tags together as a share of the layer, each tag it over
-//              the wall's `posts` (rules/playpay.mjs wallGrant) — lighter than an errand: a short fetch-and-deliver chore;
-//   chore      人间功课 (古-line income, Hanli 「算古线吧」): a day's and a week's chore as a share of the layer;
-//   seclusion  a night of 闭关 (rewards.json seclusion `rest_hours`) as a share of the layer;
-//   pills      a 修为 pill's share of the layer by 转 (named 转 between them run straight), `below` a realm past its 阶,
-//              `xian` a 仙丹's (仙阶, no 转).
-// `difficulty`: the fight bands (story · pool), the bot's slack. `economy`: 灵石 a minute of play (`income`), a 修为 pill's
-// price in minutes of income per 1% of a layer, gear's per point by kind, the buy-back share, the 圆满 → 灵石 rate.
+// The curve (Hanli 2026-11-10: 「所有和数值相关的都应该有公式推到, 不能手动定」): a line climbs 81 levels — L = realm × 9 + 层,
+// L1 its first realm's 一层 (古's 练气一层; 零层 is L0 and asks nothing) — and every 修为 number is read off three curves:
+//   T(L) = time.first × time.growth^(L−1)          a layer's hours of play (no step at a realm);
+//   R(L) = rate.base × rate.growth^(L−1) × rate.realm^realm   the 修为 one 体力-unit (≈ a minute) is worth (master.xiuwei.rate);
+//   need(L) = R(L) × mix × 60 × T(L)               the 层's threshold: what an hour of the play mix pays, × its hours.
+// `mix`: the units a minute of the modelled play mix is worth — a small game's (`xiuwei.board`, × R) carries the games' `share`
+// of a layer's 修为 over their `time` of it, so a minute of all play is board × time ÷ share. `time.first` is the one free
+// constant: solved (tools/balance.mjs --solve) so 卷一's typical player keeps the designed pace. A realm of three steps (今
+// above 新生) is three levels a step, its step the sum of their need. Content declares sizes (`units`), never a 修为 number:
+// every grant is units × R at the layer it is paid on (rules/playpay.mjs). Nothing here names a board, a beast or a 回.
+// Beside it, per line (`master.lines.<line>`): `games`, `errand` (shares over time), `pills` (a 修为 pill by 转, in nights of
+// 闭关 — named 转 between them run straight, `below` a realm past its 阶, `xian` a 仙丹's). `difficulty`: the fight bands (story
+// · pool), the bot's slack. `economy`: 灵石 a minute of play (`income`), a 修为 pill's price in minutes of income for each night
+// of 闭关 it is worth, gear's per point by kind, the buy-back share, the 圆满 → 灵石 rate.
 
 const round10 = (x, r = 10) => Math.round(x / r) * r;
 
-/* The 修为 each step asks, tier by tier along the line's ladder: a first realm with 零层 (古's 练气, `zero`) from 0, one
-   without (今's 新生) from its 一层; one size a realm above it. */
-export function needsOf(line, tiers) {
-  const N = line.need, out = {};
-  let last = null;
-  for (const t of tiers) {
-    if (t.id === tiers[0].id) {
-      const z = t.zero ? 1 : 0, row = z ? [0] : [];
-      for (let l = 1; l <= t.steps - z; l++) row.push(round10(N.first * N.layer ** (l - 1), N.round));
-      out[t.id] = row; last = N.first * N.layer ** (t.steps - z - 1);
-      continue;
+/* The units a minute of the line's play mix is worth: a small game's (`board`) over the games' share of the 修为 per share of
+   the time. */
+export const mixOf = (M, line) => (M.xiuwei.board ?? 1) * line.games.time / line.games.share;
+/* R(L) at level L of realm r (the master's knobs: the rules read the same from play_pay.xiuwei, playpay.mjs rateAt). */
+export const rateOf = (M, L, r) => (L > 0 ? M.xiuwei.rate.base * M.xiuwei.rate.growth ** (L - 1) * (M.xiuwei.rate.realm ?? 1) ** r : 0);
+/* T(L): a layer's hours of play. */
+export const timeOf = (line, L) => (L > 0 ? line.time.first * line.time.growth ** (L - 1) : 0);
+/* need(L), unrounded. */
+export const needAt = (M, line, L, r) => rateOf(M, L, r) * mixOf(M, line) * 60 * timeOf(line, L);
+
+/* Each realm's steps on the curve: its thresholds and hours, step by step. `tiers`: the line's, in order, each {id, zero, steps}
+   (零层 among the first realm's steps); a realm of nine 层 one level a step, of three steps three. */
+export function curveOf(M, line, tiers) {
+  const layers = {}, hours = {}, r10 = x => round10(x, line.need?.round ?? 10);
+  tiers.forEach((t, r) => {
+    const z = t.zero ? 1 : 0, n = t.steps - z, span = 9 / n, need = [], time = [];
+    if (z) { need.push(0); time.push(0); }
+    for (let k = 0; k < n; k++) {
+      const Ls = Array.from({ length: span }, (_, j) => r * 9 + k * span + j + 1);
+      need.push(r10(Ls.reduce((a, L) => a + needAt(M, line, L, r), 0)));
+      time.push(Math.round(Ls.reduce((a, L) => a + timeOf(line, L), 0) * 1000) / 1000);
     }
-    // A realm shown in 段 (`stages`, ladder.json `display: "stages"`): each 段 asks what its step asked when the realm had
-    // three (the realm's pace kept, Hanli's call delegated 2026-11-02), split over its 层 by `stage_split` (stagesSplit).
-    const n = t.stages ?? t.steps, first = last * N.realm, row = [];
-    for (let k = 0; k < n; k++) row.push(round10(first * N.layer ** k, N.round));
-    out[t.id] = t.stages ? row.flatMap(total => stagesSplit(total, t.steps / n, N.stage_split ?? N.layer, N.round)) : row;
-    last = first * N.layer ** (n - 1);
-  }
-  return out;
+    layers[t.id] = need; hours[t.id] = time;
+  });
+  return { layers, hours };
 }
 
-/* A 段's 修为 over its `per` 层: shaped ×`shape` a 层, rounded, the last 层 taking the rest — so the three add up to the 段
-   exactly (筑基小成 1310 → 400 · 440 · 470). */
-export function stagesSplit(total, per, shape, r = 10) {
-  const w = Array.from({ length: per }, (_, k) => shape ** k), sum = w.reduce((a, b) => a + b, 0);
-  const row = w.slice(0, -1).map(x => round10(total * x / sum, r));
-  return [...row, total - row.reduce((a, b) => a + b, 0)];
-}
-
-/* A layer's play hours: the first realm by 层 (its row keyed by its id — 古's `qi`, 零层 0; 今's `xinsheng`), each realm
-   above one number, +`realm_step` a realm. */
-export function hoursOf(line, tiers) {
-  const H = line.hours, out = {};
-  tiers.forEach((t, r) => { out[t.id] = r === 0 ? [...H[t.id]] : H.realm_first + H.realm_step * (r - 1); });
-  out.default = H.realm_first + H.realm_step * (tiers.length - 1);
-  return out;
-}
-
-/* A pill's share by 转 (一至九): the named 转, and straight between them. */
-export function pillShares(P) {
+/* A pill's nights of 闭关 by 转 (一至九): the named 转, and straight between them. */
+export function pillNights(P) {
   const named = Object.entries(P).filter(([k]) => /^\d$/.test(k)).map(([k, v]) => [Number(k), v]).sort((a, b) => a[0] - b[0]);
   const out = [];
   for (let z = 1; z <= 9; z++) {
@@ -77,13 +64,13 @@ export function pillShares(P) {
 const points = e => (e?.atk ?? 0) + (e?.def ?? 0) + Object.values(e?.ward ?? {}).reduce((a, b) => a + b, 0);
 const GEAR = new Set(['weapon', 'robe', 'pendant', 'shoes']);
 
-/* Every shop price: a 修为 pill's by its share, gear's by its points, the buy-back of all; the rest as written. */
-export function pricesOf(raw, items, shares) {
+/* Every shop price: a 修为 pill's by its nights of 闭关, gear's by its points, the buy-back of all; the rest as written. */
+export function pricesOf(raw, items, nights) {
   const E = raw.master.economy, out = {};
   for (const [id, p] of Object.entries(raw.prices ?? {})) {
     const i = items.find(x => x.id === id), q = { ...p };
-    const share = i?.kind === 'pill' && i.of && raw.master.pills_families?.includes(i.of) ? shares[(i.zhuan ?? 1) - 1] : null;
-    if (q.buy > 0 && share != null) q.buy = Math.round(share * 100 * E.pill_minutes * E.income);
+    const n = i?.kind === 'pill' && i.of && raw.master.pills_families?.includes(i.of) ? nights[(i.zhuan ?? 1) - 1] : null;
+    if (q.buy > 0 && n != null) q.buy = Math.round(n * E.pill_night_minutes * E.income);
     else if (q.buy > 0 && GEAR.has(i?.kind) && E.gear_minutes?.[i.kind] && points(i.effect)) q.buy = Math.round(points(i.effect) * E.gear_minutes[i.kind] * E.income);
     // The buy-back: a share of the price — where the shop buys it back at all (`sell` 0 or none: it never does).
     if (q.buy > 0 && q.sell > 0) q.sell = Math.max(1, Math.floor(q.buy * E.sell_back + 1e-6));
@@ -115,50 +102,50 @@ export function getPath(obj, path) { return path.split('.').reduce((o, k) => (o 
 /* The world's balance.json as the master table makes it. `ladder`: ladder.json's tiers (ids, 零层, how many steps); `items`:
    items.json's (kind, 转, family, effect) — read, never written. */
 export function derive(raw0, { ladder, items }) {
-  const raw = structuredClone(raw0), M = raw.master, gu = M.lines.gu;
-  // The step count is the ladder's own (`steps`, 零层 among 练气's): since 2026-11-02 every realm past 练气 counts nine 层 (Hanli
-  // approved: 「9层用于计算, 小, 中, 大成用于显示」), each one threshold — never the row balance.json held before; a realm in 段
-  // (`stages`) keeps its three steps' 修为, each 段 split over its 层.
-  const tiers = ladder.tiers.filter(t => gu.tiers.includes(t.id)).map(t => ({ id: t.id, zero: Boolean(t.zero), steps: t.steps?.zh?.length ?? raw.layers?.[t.id]?.length ?? (t.zero ? 10 : 3), ...(t.display === 'stages' ? { stages: ladder.phases.zh.length } : {}) }));
-  raw.layers = { ...raw.layers, ...needsOf(gu, tiers) };
-  const pp = raw.play_pay;
-  pp.hours = hoursOf(gu, tiers);
-  // Every other line's ladder (ladder.json `lines`, Hanli 2026-10-27: each line its own 修为): its layers and hours beside
-  // 古's (its tier ids are its own), its games' share in `play_pay.lines.<line>` (rules/lines.mjs reads it on that line).
+  const raw = structuredClone(raw0), M = raw.master, gu = M.lines.gu, pp = raw.play_pay;
+  // Every realm counts nine 层 (Hanli 2026-11-02: 「9层用于计算, 小, 中, 大成用于显示」) — one level each since 2026-11-10 (L =
+  // realm × 9 + 层): a realm shown in 段 is display only, each of its 层 its own threshold on the curve.
+  const tiers = ladder.tiers.filter(t => gu.tiers.includes(t.id)).map(t => ({ id: t.id, zero: Boolean(t.zero), steps: t.steps.zh.length }));
+  const c = curveOf(M, gu, tiers);
+  raw.layers = { ...raw.layers, ...c.layers };
+  pp.hours = { ...c.hours };
+  // Every other line's ladder (ladder.json `lines`, Hanli 2026-10-27: each line its own 修为): the same curve on its own
+  // `time.first` and its own games' share (`play_pay.lines.<line>`, rules/lines.mjs reads it on that line).
   for (const [id, L] of Object.entries(M.lines).filter(([k]) => k !== 'gu' && !k.startsWith('_'))) {
-    const own = ladder.lines?.[id]?.tiers ?? [];
-    const lt = own.filter(t => L.tiers.includes(t.id)).map(t => ({ id: t.id, steps: t.steps.zh.length }));
+    const lt = (ladder.lines?.[id]?.tiers ?? []).filter(t => L.tiers.includes(t.id)).map(t => ({ id: t.id, zero: false, steps: t.steps.zh.length }));
     if (!lt.length) continue;
-    raw.layers = { ...raw.layers, ...needsOf(L, lt) };
-    const { default: _, ...h } = hoursOf(L, lt);
-    Object.assign(pp.hours, h);
+    const lc = curveOf(M, L, lt);
+    raw.layers = { ...raw.layers, ...lc.layers };
+    Object.assign(pp.hours, lc.hours);
     pp.lines = { ...pp.lines, [id]: { games: { share: L.games.share, time: L.games.time } } };
   }
   pp.games = { share: gu.games.share, time: gu.games.time };
   pp.errand = { ...pp.errand, share: gu.errand.share, time: gu.errand.time };
-  // 修为 a fixed number (Hanli 2026-11-02: 「不要按照百分比给」, and the formula 「这套公式基本可以」): R · S · difficulty · gap,
-  // and what has no 体力 of its own priced in 体力-units (rules/playpay.mjs xiuweiOf).
+  // 修为 a fixed number (Hanli 2026-11-02: 「不要按照百分比给」, and the formula 「这套公式基本可以」): R · units · difficulty · gap
+  // (rules/playpay.mjs xiuweiOf). `board`: a small game's on top (Hanli, confirmed 2026-11-10: ×1.5).
   const X = M.xiuwei;
-  // `board`: a small game's 修为 on top of the formula (Hanli, confirmed 2026-11-10: ×1.5) — only where the master declares it.
-  pp.xiuwei = { rate: { ...X.rate }, sittings: { ...X.sittings }, difficulty: { ...X.difficulty }, gap: { ...X.gap }, ...(X.board != null ? { board: X.board } : {}) };
+  pp.xiuwei = { rate: { ...X.rate }, difficulty: { ...X.difficulty }, gap: { ...X.gap }, ...(X.board != null ? { board: X.board } : {}), ...(X.fight != null ? { fight: X.fight } : {}) };
   pp.wall = { day: X.units.wall_day };
   pp.chore = { ...X.units.chore };
   pp.seclusion = { night: X.units.seclusion_night };
   // A story step's 修为 (rules/playpay.mjs storyPlay, Hanli 2026-11-09): one small game's 体力 at R.
   pp.story = { units: X.units.story };
-  // `authored.base` stays the book's yardstick (the 练气一层 its grants were written against, 470): never `need.first`, which is
-  // display only — moving it must not move what a story grant is worth.
-  for (const t of ['pill']) if (!pp.authored.tables.includes(t)) pp.authored.tables.push(t);
-  // 闭关 is a share now (ruling a, 2026-10-27): `layer_pay` scaled it by the layer; nothing does any more.
+  // What a table pays where the rules build the grant from the table alone (今日传闻's step and end, a 奇遇, a 路遇): its units.
+  pp.sized = { ...X.units.tables };
+  // The one 修为 number written by hand (`told`, each with its why): a lump the book tells, paid as written (content.mjs toldOf).
+  pp.told = structuredClone(X.told ?? {});
+  delete pp.authored;
+  // 闭关 is units at R now: nothing scales by the layer any more.
   delete raw.layer_pay; delete raw._layer_pay;
-  const shares = pillShares(gu.pills);
-  // 仙阶 (`xian`, a 阶 off the ladder: no 转): its own share, read by content.mjs pillShare.
-  raw.pills = { families: M.pills_families, table: 'pill', share: shares, ...(gu.pills.xian != null ? { by_tier: { xian: gu.pills.xian } } : {}), below: gu.pills.below };
-  // A share pays what it is: the tables it rides on cap nothing.
+  const nights = pillNights(gu.pills);
+  // A 修为 pill is its 转's nights of 闭关 (× `play_pay.seclusion.night` units at R, content.mjs pillPay) — the cards'
+  // 「抵N日打坐」 true at every layer by construction. 仙阶 (`xian`, a 阶 off the ladder: no 转): its own, by `by_tier`.
+  raw.pills = { families: M.pills_families, table: 'pill', nights, ...(gu.pills.xian != null ? { by_tier: { xian: gu.pills.xian } } : {}), below: gu.pills.below };
+  // A size pays what it is: the tables it rides on cap nothing.
   raw.pay.pill = { progress: 100000, wealth: 0 };
   raw.pay.seclusion = { progress: 100000, wealth: 0 };
   raw.convert = { ...raw.convert, rate: M.economy.convert };
-  raw.prices = pricesOf(raw, items, shares);
+  raw.prices = pricesOf(raw, items, nights);
   if (M.mijing) raw.mijing = mijingOf(M.mijing, M.economy);
   // 冷却事件 (rules/events.mjs): a completion pays `batch_plays` plays of its table, spread over its `batch` fights.
   for (const [id, E] of Object.entries(M.events ?? {}).filter(([k]) => !k.startsWith('_'))) {
@@ -177,78 +164,10 @@ export function diffOf(a, b, path = '', out = []) {
   return out;
 }
 
-/* The pace fit (`hours.fit`): every 修为 is a share of the layer, so a 回's days are the book's reading and the hours of
-   the layers it holds. In the book's order, each 回 that holds layers (its stage quests' — and the ones just below them
-   it grinds through; balance.mjs grindLayers) keeps the curve's hours where the fit player's days already sit inside
-   its band (`model.bands`, a 回's own in `except`); else those layers' hours are scaled together until the days reach
-   the near edge, `inset` inside it, and never under `floor` hours a layer. A 回 no hours can bring in (its reading alone is past the band) keeps the curve and is told.
-   `content`: the world on this balance; `table`: balance.mjs's days per 回. Returns { qi, fitted, unfit }. */
-export function fitHours(content, { grindLayers, table, play }) {
-  const gu = content.balance.master.lines.gu, F = gu.hours.fit, M = content.balance.model, bands = M.bands;
-  const qi = [...gu.hours.qi], fitted = [], unfit = [], waits = [];
-  const hours = content.balance.play_pay.hours;
-  const groups = [];
-  let below = 1;
-  for (const g of grindLayers(content)) {
-    // A 回 whose gates ask only layers an earlier 回 already holds (古六's eve on 四层圆满, ground in 古五's 石室) grinds none.
-    if (!g.layers.length) continue;
-    const top = Math.max(...g.layers), layers = [];
-    for (let l = below; l <= top; l++) layers.push(l);
-    below = top + 1;
-    if (layers.length) groups.push({ hui: g.hui, layers });
-  }
-  const daysOf = hui => table(content).find(r => r.hui === hui)?.[F.player] ?? null;
-  /* The gate rule (Hanli 2026-10-27, at 古五's 渡口: 「渡口前应该让玩家接近2层圆满, 这样渡口这里不用等太久」): the player who plays
-     the book straight through (`model.session`: no nights, no 功课) comes to each gate `fit.gates` names at least `arrive`
-     full of the layer it asks. Every gate's wait is on the red list (tools/numbers.mjs); this fits the ones decided. */
-  const gatesOk = hui => {
-    const ses = M.session ? play(content, M.session).gates.filter(g => g.hui === hui && (F.gates ?? []).includes(g.scene)) : [];
-    return ses.every(g => !g.below && g.pct >= F.arrive);
-  };
-  for (const { hui, layers } of groups) {
-    // A 回's own band where one is decided (`bands.except`), else the player's.
-    const [lo, hi] = bands.except?.[hui]?.[F.player] ?? bands[F.player], want = [lo + F.inset, hi - F.inset];
-    let k0 = 1;
-    // The floor (`fit.floor`, Hanli 2026-10-28): no layer under it however the fit scales — a layer of a few minutes makes one
-    // board half of it. Inside `set`, so the band fit and the gate rule both see the floored hours.
-    const set = k => { for (const l of layers) qi[l] = Math.max(F.floor ?? 0, Math.round(gu.hours.qi[l] * k * 1000) / 1000); hours.qi = [...qi]; };
-    set(1);
-    const d = daysOf(hui);
-    let a = F.range[0], b = F.range[1];
-    // Never dearer than the curve: a 回 short of its band is short on the book, and stretching its layers would only keep
-    // him waiting at its gates (Hanli 10-27: no gate may keep him where there is little to do) — told, not fitted.
-    if (d != null && d < lo) unfit.push({ hui, layers, days: d, short: true, reach: [d, d] });
-    else if (d != null && d > hi) {
-      set(a); const da = daysOf(hui); set(b); const db = daysOf(hui);
-      // The inset edge, else the band's own edge where the inset is out of reach.
-      const goal = [d < want[0] ? want[0] : want[1], d < want[0] ? lo : hi].find(g => (da - g) * (db - g) <= 0);
-      if (goal == null) unfit.push({ hui, layers, days: d, reach: [da, db] });
-      else {
-        for (let k = 0; k < 24; k++) { const m = Math.sqrt(a * b); set(m); if ((daysOf(hui) - goal) * (da - goal) > 0) a = m; else b = m; }
-        k0 = Math.sqrt(a * b);
-      }
-    }
-    set(k0);
-    // …then the gate rule: the layers' hours cut further, the least that keeps every gate of the 回 short.
-    let k1 = k0;
-    if (!gatesOk(hui)) {
-      let lo2 = F.range[0], hi2 = k0;
-      set(lo2);
-      if (gatesOk(hui)) { for (let k = 0; k < 20; k++) { const m = Math.sqrt(lo2 * hi2); set(m); if (gatesOk(hui)) lo2 = m; else hi2 = m; } k1 = lo2; }
-      else { k1 = lo2; waits.push({ hui, layers, say: 'no hours keep its gates short: the gate waits on the book, not the pay' }); }
-    }
-    set(k1);
-    const dn = daysOf(hui);
-    if (k1 !== 1) fitted.push({ hui, layers, curve: layers.map(l => gu.hours.qi[l]), hours: layers.map(l => qi[l]), days_were: d, days: dn, gate: k1 < k0, out: dn < lo || dn > hi ? [lo, hi] : null });
-  }
-  return { qi, fitted, unfit, waits };
-}
-
 /* A line beside the book's own (今, Hanli 2026-10-27: each line its own 修为): its boards are its whole 修为, so its pace is
    the book's 今 boards played in order. `lineWalk(content, line, stars)` plays them (each at `stars`, its first play, on the
-   line's own ladder) and says where he ends and where each 回 leaves him. `fitLine` scales the first realm's hours of the
-   layers that walk reaches (`hours.fit.end`: 1.4 = 一层 filled and 二层 four tenths) until a reader at `fit.stars` ends
-   there, never under `fit.floor` hours a layer. `walk`: tools/balance.mjs bookWalk. Returns { row, k, end, huis }. */
+   line's own ladder) and says where he ends and where each 回 leaves him — the walk the line's `time.first` is solved on
+   (tools/balance.mjs --solve: a reader at `solve.stars` ends `solve.end` layers up). `walk`: tools/balance.mjs bookWalk. */
 export function lineWalk(content, line, walk, stars, { lineGrant, linePay, lineStart, now }) {
   const tasks = walk.filter(w => w.line === line);
   const s = { lang: 'zh', plays: null, lines: { [line]: lineStart(content, line) } }, huis = [];
@@ -267,17 +186,4 @@ export function lineWalk(content, line, walk, stars, { lineGrant, linePay, lineS
     Object.assign(row, { at: { ...s.lines[line] }, climbed: Math.round(climbed() * 100) / 100 });
   }
   return { end: { ...s.lines[line] }, climbed: Math.round(climbed() * 1000) / 1000, huis };
-}
-export function fitLine(content, line, walk, rules) {
-  const L = content.balance.master.lines[line], F = L.hours.fit, first = content.ladder.lines[line].tiers[0].id;
-  const curve = L.hours[first], hours = content.balance.play_pay.hours, reach = Math.ceil(F.end);
-  const set = k => { hours[first] = curve.map((h, i) => (i < reach ? Math.max(F.floor ?? 0, Math.round(h * k * 1000) / 1000) : h)); };
-  const at = k => { set(k); return lineWalk(content, line, walk, F.stars, rules).climbed; };
-  let a = F.range[0], b = F.range[1];
-  // Dearer layers climb less: the end falls as k grows. Out of reach, the nearer edge (and it is told).
-  const out = at(a) < F.end ? 'short' : at(b) > F.end ? 'over' : null;
-  if (!out) for (let i = 0; i < 40; i++) { const m = Math.sqrt(a * b); if (at(m) > F.end) a = m; else b = m; }
-  const k = out === 'short' ? a : out === 'over' ? b : Math.sqrt(a * b);
-  set(k);
-  return { row: [...hours[first]], k: Math.round(k * 1000) / 1000, out, ...lineWalk(content, line, walk, F.stars, rules) };
 }

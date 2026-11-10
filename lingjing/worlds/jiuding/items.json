@@ -262,7 +262,7 @@
       },
       "sold": [],
       "effect": {
-        "progress": 40,
+        "units": 20,
         "table": "task"
       }
     },
@@ -288,7 +288,7 @@
       },
       "sold": [],
       "effect": {
-        "progress": 120,
+        "units": 60,
         "table": "play"
       }
     },
@@ -311,7 +311,7 @@
         "兖"
       ],
       "effect": {
-        "progress": 40,
+        "units": 20,
         "table": "task"
       },
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-15, from the description."
@@ -1354,7 +1354,7 @@
       },
       "sold": [],
       "effect": {
-        "progress": 40,
+        "units": 20,
         "table": "task"
       },
       "_about": "古五 (the author, 2026-10-02; 《史记·封禅书》「龙髯拔，堕」, 鲁泥鳅's rope): only in the 秘境's dry underground river, bared the year the Si fell lowest. 冲开经脉 → 修为, the 筑基丹's own table (task).",
@@ -1374,7 +1374,7 @@
       },
       "sold": [],
       "effect": {
-        "progress": 60,
+        "units": 30,
         "table": "scene"
       },
       "_about": "古五 (the author, 2026-10-02): 「河底下有东西在呼吸」 made a thing — 冯九 shows one at the door (「息珠。十年一口气，就凝这么几粒」). The 九转回春丹's table (scene).",
@@ -2971,7 +2971,7 @@
       },
       "sold": [],
       "effect": {
-        "progress": 8,
+        "units": 4,
         "table": "puzzle"
       },
       "_about": "人间功课 (gongke.json `body`): a chore of the body kept (a workout) leaves one; used, a little 修为 off the puzzle table. Never sold, never needed by the story.",

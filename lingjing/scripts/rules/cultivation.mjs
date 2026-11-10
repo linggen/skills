@@ -15,7 +15,7 @@ const KEY = 'scene_xiuwei';
 export const FLOOR = Object.freeze({ table: 'story' });
 
 /* A grant that pays the stretch's 修为 by itself: a story step, or a gain its words tell (`narrated`). */
-const paysXiuwei = grant => Boolean(grant && (grant.table === 'story' || grant.narrated || grant.progress > 0));
+const paysXiuwei = grant => Boolean(grant && (grant.table === 'story' || grant.narrated || grant.told || grant.progress > 0 || grant.units > 0));
 const tallyOf = (s, sceneId) => (s[KEY]?.scene === sceneId ? s[KEY] : null);
 
 /* A board of `sceneId` paid: what landed, and what a cap turned to 灵石 (paid all the same — the floor never pays again). */

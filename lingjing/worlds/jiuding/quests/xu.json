@@ -155,7 +155,7 @@
       "work": "cultivation",
       "grant": {
         "table": "quest",
-        "progress": 60,
+        "units": 30,
         "wealth": 20
       },
       "opens": {
@@ -277,7 +277,7 @@
       "work": "cultivation",
       "grant": {
         "table": "quest",
-        "progress": 30,
+        "units": 15,
         "wealth": 10
       }
     },

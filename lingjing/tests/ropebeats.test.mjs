@@ -222,7 +222,7 @@ test('luoborope: the task luobo-rope plays it in wm-luobo after 「吃！你吃�
   const RG = await import('../scripts/games/rope-gen.js');
   const t = content.tasks.tasks.find((x) => x.id === 'luobo-rope');
   assert.notEqual(t.game, 'luoborope', 'the board is the fixed 开炉 now (2026-10-28; was a 塔防 level)');
-  assert.deepEqual(t.grant, { table: 'task', progress: 5 });
+  assert.deepEqual(t.grant, { table: 'task', units: 2.5 });
   const row = content.games.games.find((g) => g.id === 'luoborope');
   assert.deepEqual([row.task ?? null, row.scene ?? null, row.mechanic, row.replaced], [null, null, '割绳子', 'cut'], '旧版: the 游戏厅 only');
   const level = row.levels[0];

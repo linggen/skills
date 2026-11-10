@@ -14,6 +14,7 @@
 import { dayKey, periodKey, pick, weekKey, zeroAt } from '../state.mjs';
 import { paysOf } from './core.mjs';
 import { choreGrant, choreHow, choreOpen, isOnce } from './chores.mjs';
+import { unitsPay } from './playpay.mjs';
 
 const kindOf = q => (typeof q?.kind === 'string' ? q.kind : null);
 
@@ -27,7 +28,7 @@ export function meaningOf(content, q) {
 /* What the meanings paid today (state.gongke.day), a fresh one on a new local day. */
 function today(state, now) {
   const d = state.gongke?.day;
-  return d?.key === dayKey(now) ? d : { key: dayKey(now), wealth: 0, progress: 0, items: 0 };
+  return d?.key === dayKey(now) ? { units: 0, ...d } : { key: dayKey(now), wealth: 0, progress: 0, units: 0, items: 0 };
 }
 
 /* The week's record of a kind: the days it was handed in, and whether its 月俸 was paid. */
@@ -36,21 +37,22 @@ function weekOf(state, kind, now) {
   return w?.key === weekKey(now) ? w : { key: weekKey(now), days: [], paid: false };
 }
 
-/* What the meaning would add now, under the day's cap: {kind, wealth, progress, item, capped, week}. */
+/* What the meaning would add now, under the day's cap: {kind, wealth, units, item, capped, week} — its 修为 a size (`units`, at R
+   where it is paid; the day's cap `per_day.units` too, Hanli 2026-11-10). */
 export function meaningGrant(content, state, q, now) {
   const m = meaningOf(content, q);
   if (!m) return null;
   const cap = content.gongke.per_day ?? {}, d = today(state, now);
   const room = k => Math.max(0, (cap[k] ?? Infinity) - (d[k] ?? 0));
-  const wealth = Math.min(m.wealth ?? 0, room('wealth')), progress = Math.min(m.progress ?? 0, room('progress'));
+  const wealth = Math.min(m.wealth ?? 0, room('wealth')), units = Math.min(m.units ?? 0, room('units'));
   const item = m.item && room('items') > 0 ? m.item : null;
-  const capped = wealth < (m.wealth ?? 0) || progress < (m.progress ?? 0) || Boolean(m.item && !item);
+  const capped = wealth < (m.wealth ?? 0) || units < (m.units ?? 0) || Boolean(m.item && !item);
   let week = null;
   if (m.week) {
     const w = weekOf(state, kindOf(q), now), days = new Set([...w.days, dayKey(now)]);
     week = { days: days.size, of: m.week.days, due: !w.paid && days.size >= m.week.days };
   }
-  return { kind: kindOf(q), wealth, progress, item, capped, week };
+  return { kind: kindOf(q), wealth, units, item, capped, week };
 }
 
 /* Pay the meaning into `s` (a clone, after the chore's own pay): returns the facts for the result. */
@@ -58,9 +60,9 @@ export function payMeaning(content, s, ctx, q, payFn) {
   const g = meaningGrant(content, s, q, ctx.now);
   if (!g) return null;
   const m = meaningOf(content, q), lang = s.lang;
-  const paid = payFn(content, s, ctx, { table: 'chore_kind', progress: g.progress, wealth: g.wealth, ...(g.item ? { item: g.item } : {}) });
+  const paid = payFn(content, s, ctx, { table: 'chore_kind', units: g.units, wealth: g.wealth, ...(g.item ? { item: g.item } : {}) });
   const d = today(s, ctx.now);
-  s.gongke = { ...s.gongke, day: { key: d.key, wealth: d.wealth + paid.wealth, progress: d.progress + g.progress, items: d.items + (g.item ? 1 : 0) } };
+  s.gongke = { ...s.gongke, day: { key: d.key, wealth: d.wealth + paid.wealth, progress: d.progress + paid.progress, units: d.units + g.units, items: d.items + (g.item ? 1 : 0) } };
   let week = null;
   if (m.week) {
     const w = weekOf(s, g.kind, ctx.now), days = [...new Set([...w.days, dayKey(ctx.now)])];
@@ -80,7 +82,7 @@ const itemName = (content, id, lang) => pick(content.items.items.find(i => i.id 
 
 /* What a meaning would land now (paysOf: the table, the roots, the tier, the gates) — 零层 takes no 修为. */
 function landsOf(content, state, now, g) {
-  const p = paysOf(content, state, now, { table: 'chore_kind', progress: g.progress, wealth: g.wealth }) ?? { progress: 0, wealth: 0 };
+  const p = paysOf(content, state, now, { table: 'chore_kind', units: g.units, wealth: g.wealth }) ?? { progress: 0, wealth: 0 };
   return { wealth: p.wealth, progress: zeroAt(content, state.tier, state.step) ? 0 : p.progress };
 }
 
@@ -111,5 +113,7 @@ export function gongkeBoard(content, state, chores, now, lang, questDone) {
   const wardIds = new Set(Object.values(content.gongke.kinds ?? {}).map(m => m.item).filter(Boolean));
   const abode = state.wear?.abode;
   const ward = abode && wardIds.has(abode) ? { id: abode, name: itemName(content, abode, lang) } : null;
-  return { rows, day: { wealth: d.wealth, progress: d.progress, items: d.items, cap }, weeks, ...(ward ? { ward } : {}) };
+  // The cap as it reads where he stands: its units at R (and the units, for the count).
+  const capNow = { ...cap, ...(cap.units != null ? { progress: Math.round(unitsPay(content, state, cap.units)) } : {}) };
+  return { rows, day: { wealth: d.wealth, progress: d.progress, units: d.units, items: d.items, cap: capNow }, weeks, ...(ward ? { ward } : {}) };
 }

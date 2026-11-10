@@ -3,7 +3,7 @@
 import { afterParts, parseAfter, readThrough, sceneBoards } from './rules/parts.mjs';
 import { herSlotsCarry, slotsCarry } from './rules/wear.mjs';
 
-export const STATE_VERSION = 17;
+export const STATE_VERSION = 18;
 export const FIRST_WORLD = 'jiuding'; // the world every save before worlds was playing
 
 export function firstChapter(content) {
@@ -544,11 +544,6 @@ export function speedOf(content, state) {
   return content.traits.speed[String(state.traits?.length ?? 4)] ?? 1;
 }
 
-/* The tier's reward multiplier: tables and caps are base progress; a task
-   high on the ladder pays like one. Applied last. */
-export function payOf(content, state) {
-  return tierOf(content, state.tier).pay ?? 1;
-}
 
 /* 修为 that grows with the layer (Hanli 2026-10-16, option A: higher monsters and practice give
    more): balance.json `layer_pay` — the routine tables it scales (功课, a haunt's or a pool's fight,
@@ -668,6 +663,11 @@ const MIGRATIONS = [
   // board k. A save standing in a scene so cut whose passage it already read whole is marked (`read_whole`, carried by
   // fitWorld): it owes none of the parts again — no replay. Fitted where the world is known (readWhole).
   [17, m => { m.read_whole_check = true; }],
+  // v18 (2026-11-10, Hanli: 「所有和数值相关的都应该有公式推到, 不能手动定」): every 层's threshold comes off the curve (need = R ×
+  // mix × T, 81 levels — tools/master.mjs curveOf). Marked, carried by fitWorld (curveCarry): every older carry runs first on
+  // the ladder it was written against (ladder.json `thresholds_were["18"]`, ladderOf17), then the bar is read by its percent
+  // of its 层 — the 层 kept, the bar as full as it stood, the stretch and the 丹田's bank with it, each line's too.
+  [18, m => { m.ladder_curve = true; }],
 ];
 
 /* v17: had a save in a scene now read through its boards read its passage whole? Told, and either the scene was one
@@ -776,6 +776,34 @@ export function paceLayer(content, saved) {
   return { ...s, progress: Math.round((s.progress ?? 0) * k), ...(st ? { stretch: { ...s.stretch, [key]: Math.round(st * k) } } : {}) };
 }
 
+/* The world as a v17 save knew it: every tier's thresholds as they stood before the curve (ladder.json `thresholds_were["18"]`),
+   each line's too — the older carries read a save on it, curveCarry carries it onto the curve after. */
+export function ladderOf17(content) {
+  const was = t => (t.thresholds_were?.['18'] ? { ...t, thresholds: [...t.thresholds_were['18']] } : t);
+  const lines = content.ladder.lines ? Object.fromEntries(Object.entries(content.ladder.lines).map(([id, L]) => [id, L?.tiers ? { ...L, tiers: L.tiers.map(was) } : L])) : null;
+  return { ...content, ladder: { ...content.ladder, tiers: content.ladder.tiers.map(was), ...(lines ? { lines } : {}) } };
+}
+
+/* A save from before the curve (marked by v18, 2026-11-10): on every ladder it climbs (古's own `tier` · `step`, each line's
+   `lines.<line>`) its 层 is kept and its bar read by its percent of the 层 — progress × new need ÷ old need, rounded; a full
+   bar (圆满, or past the mark at a cap) stays as full or as far past, so a save waiting at a gate or a cliff still stands
+   there. The stretch over each step's mark and the 丹田's bank (a share hold's, rules/cap.mjs) by the same measure of the step
+   they belong to. A step that held nothing (零层) or a tier with no old ladder is left as it was. Run once: the mark goes. */
+export function curveCarry(content, saved) {
+  const { ladder_curve, ...s } = saved;
+  const kOf = (tiers, tier, step) => { const t = tiers?.find(x => x.id === tier), was = t?.thresholds_were?.['18']?.[step], now = t?.thresholds?.[step]; return was > 0 && now > 0 ? now / was : null; };
+  const by = (n, k) => (k == null || !Number.isFinite(n) ? n : Math.round(n * k));
+  const stretchOf = (tiers, st) => (st ? Object.fromEntries(Object.entries(st).map(([key, n]) => { const [tier, step] = key.split(':'); return [key, by(n, kOf(tiers, tier, Number(step)))]; })) : st);
+  const one = (tiers, v) => {
+    const k = kOf(tiers, v.tier, v.step);
+    return { ...v, ...(v.progress != null ? { progress: by(v.progress, k) } : {}), ...(v.stretch ? { stretch: stretchOf(tiers, v.stretch) } : {}) };
+  };
+  const out = one(content.ladder.tiers, s);
+  if (s.banked) out.banked = by(s.banked, kOf(content.ladder.tiers, s.tier, s.step));
+  if (s.lines) out.lines = Object.fromEntries(Object.entries(s.lines).map(([id, v]) => [id, v && lineTiers(content, id) ? one(lineTiers(content, id), v) : v]));
+  return out;
+}
+
 /* The world as a v14 save knew it: every realm shown in 段 on its three steps again (ladder.json `thresholds_were["14"]`,
    named by `phases`), so the carries written before 2026-11-02 read the save on the ladder they were written against. */
 export function ladderOf14(content) {
@@ -871,12 +899,15 @@ export function fitWorld(saved, content) {
   // The book set aside at a scene the save no longer stands on (rules/aside.mjs): let go, so Move is never kept shut.
   if (state.aside && state.aside.scene !== state.scene) state = (({ aside, ...r }) => r)(state);
   // A save from before the nine 层 (v15) is carried by the older steps on the three-step ladder it knew, then into 段.
-  const was = 'ladder_stages' in state ? ladderOf14(content) : content;
+  // …and every carry older than the curve (v18) on the ladder of v17 (ladder.json `thresholds_were["18"]`), the curve's after.
+  const at17 = 'ladder_curve' in state ? ladderOf17(content) : content;
+  const was = 'ladder_stages' in state ? ladderOf14(at17) : at17;
   if ('ladder3' in state) state = threeToNine(was, state);
   if ('ladder9' in state) state = nineToThree(was, state);
   if ('ladder_zero' in state) state = zeroLayer(was, state);
   if ('ladder_pace' in state) state = paceLayer(was, state);
-  if ('ladder_stages' in state) state = stagesCarry(content, state);
+  if ('ladder_stages' in state) state = stagesCarry(at17, state);
+  if ('ladder_curve' in state) state = curveCarry(content, state);
   // Also unmarked: an older rules bundle (the phone's, before it carries v16) may still write her one slot on a v16 save.
   if ('her_slots' in state || typeof state.wear?.[content.world?.companion?.id] === 'string') state = herSlotsCarry(content, state);
   // A thing worn in a slot its kind no longer goes in (顺风溜, a 法衣 until the 鞋 slot, 11-07) moves to its own (rules/wear.mjs).

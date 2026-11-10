@@ -129,9 +129,13 @@ function hostedHere(content, state, id, now = new Date()) {
   const t = taskOf(content, id);
   // Open as practice wherever a place hosts it once boards pay by their minutes (rules/playpay.mjs, Hanli 2026-10-27:
   // 「玩的多应该走的快」) — an errand that wants it still takes the win; the replay's falling share is the only limit.
-  return Boolean(t?.hosted) && hostsNow(content, state, id, now)
+  return Boolean(t?.hosted) && hostsNow(content, state, id, now) && hostedOpen(content, state, t)
     && (errandWants(content, state, id, state.place) || (Boolean(content.balance?.play_pay) && t.kind === 'board' && !t.stall));
 }
+/* A hosted board that stands only once the story is there (`after`: a scene, Hanli 2026-11-10: 「也可以加一个地点刷其他主力游戏」 —
+   演武场's 主力 practice from 古八 on): that scene behind him, or its chapter ended. Open always where it names none. */
+const hostedOpen = (content, state, t) => !t?.after || (state.done_scenes ?? []).includes(t.after)
+  || Object.values(content.chapters).some(c => c.scenes?.[t.after] && (state.ended ?? []).includes(c.id));
 /* The place he stands hosts it now: what stands there (rules/rotation.mjs standingToday: its fixed boards, and the
    plate's one deal when it is here — 2026-11-04, 「只有之前的玩了才发新的」) — or a board an errand in the book asks for:
    the day's of its pool, as before the deal, or any of its pool the errand names at this very place (a wall tag sends him

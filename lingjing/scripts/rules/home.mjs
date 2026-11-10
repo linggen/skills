@@ -23,12 +23,15 @@ const floorAt = content => (content.balance?.play_pay?.replay ?? [1]).length - 1
 
 /* The practice boards the open map hosts on a day (a place's fixed `has.games` and the day's of its pool,
    rules/rotation.mjs — a hosted board that is no stall). */
-function practiceIds(content, kept, now) {
+/* A board that stands only after a scene (`after`, rules/tasks.mjs hostedOpen) once that scene is behind him. */
+const openFor = (content, state, t) => !t?.after || (state?.done_scenes ?? []).includes(t.after)
+  || Object.values(content.chapters).some(c => c.scenes?.[t.after] && (state?.ended ?? []).includes(c.id));
+function practiceIds(content, kept, now, state = null) {
   const open = new Set([kept.place?.id, ...(kept.place?.places ?? []).filter(p => !p.closed).map(p => p.id)].filter(Boolean));
   const ids = new Set();
   for (const p of allPlaces(content)) if (open.has(p.id)) for (const id of gamesToday(content, p, now)) {
     const t = taskOf(content, id);
-    if (t?.hosted && t.kind === 'board' && !t.stall) ids.add(id);
+    if (t?.hosted && t.kind === 'board' && !t.stall && openFor(content, state, t)) ids.add(id);
   }
   return [...ids];
 }
@@ -37,7 +40,7 @@ function practiceIds(content, kept, now) {
    the best left is at the floor share — and the next day's boards are that day's. Returns the plays, or null when no board pays. */
 export function playsFor(content, state, kept, need, now) {
   if (need <= 0) return 0;
-  let day = 0, ids = practiceIds(content, kept, now);
+  let day = 0, ids = practiceIds(content, kept, now, state);
   if (!ids.length || !content.balance?.play_pay) return null;
   const today = dayKey(now), floor = floorAt(content);
   let counts = state.plays?.day === today ? { ...state.plays.ids } : {};
@@ -48,7 +51,7 @@ export function playsFor(content, state, kept, need, now) {
     if (!best?.g) return null;
     if (best.at >= floor) { // a new day: every board fresh again, and the day's own
       counts = {}; day += 1;
-      ids = practiceIds(content, kept, new Date(now.getTime() + day * 864e5));
+      ids = practiceIds(content, kept, new Date(now.getTime() + day * 864e5), state);
       if (!ids.length) return null;
       continue;
     }

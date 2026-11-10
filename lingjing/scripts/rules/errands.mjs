@@ -277,12 +277,15 @@ function offersOf(content, state, lang, now) {
 
 const TIERS_ORDER = content => content.ladder.tiers.map(t => t.id);
 /* A layer the errand asks (`opens.layer: {tier, step}`): that realm at that 层 or past it —
-   古七: 「打妖的红牌，五层以下，不许揭」 (林子里的蠪侄, 2026-10-15). */
+   古七: 「打妖的红牌，五层以下，不许揭」 (林子里的蠪侄, 2026-10-15). With `share` (a 连环差事's step, Hanli 2026-11-10:
+   「短剧情你要补的话, 放差事里吧」): that 层 at least that share full, as a share gate asks it (rules/gates.mjs) — or past it. */
 function layerMet(content, state, q) {
   const want = q?.opens?.layer;
   if (!want) return true;
   const order = TIERS_ORDER(content), have = order.indexOf(state.tier), need = order.indexOf(want.tier);
-  return have > need || (have === need && (state.step ?? 0) >= want.step);
+  if (have !== need) return have > need;
+  const step = state.step ?? 0;
+  return step > want.step || (step === want.step && (want.share == null || (state.progress ?? 0) >= Math.floor(want.share * threshold(content, state))));
 }
 
 /* Where work is to be had — the nearest place, by road, that offers an errand
@@ -638,6 +641,9 @@ function filler(content, state, said) {
   return pair.find(f => f.label !== last) ?? pair[0];
 }
 const taskOf = (content, id) => content.tasks.tasks.find(t => t.id === id);
+/* The grant a thing's 修为 effect pays: its size (`units`, at R where he stands), its table, its 阶 (a pill's, playpay.mjs
+   pillBelow). */
+export const effectGrant = e => ({ table: e.table, ...(e.units != null ? { units: e.units } : { progress: e.progress }), tier: e.tier });
 const itemOf = (content, id) => content.items.items.find(i => i.id === id);
 
 /* One effect, as the card tells it. Arms carry the fight's own numbers: 攻
@@ -648,11 +654,13 @@ const EFFECT_BRIEF = {
   // What lands at the layer he stands on (数值系统 phase 2: a pill is a share of the layer), never the authored number.
   // Where nothing lands (零层, before 入门) it says 0: the card never promises what eating it would not pay.
   // 圆满: nothing lands (`full`), and the card says why (Hanli 11-03).
+  // A size (`units`, Hanli 2026-11-10): the 修为 it lands is units × R where he stands — told as `progress`, the card's number.
+  units: (e, content, lang, state) => EFFECT_BRIEF.progress(e, content, lang, state),
   progress: (e, content, lang, state) => {
-    const p = state ? paysOf(content, state, new Date(), { table: e.table, progress: e.progress, tier: e.tier }) : null;
+    const p = state ? paysOf(content, state, new Date(), effectGrant(e)) : null;
     // …and at the 回's cap, `capped`: the card points to the story (Hanli 11-03), not to a breakthrough of his own.
     const full = p?.full && !p.progress;
-    return { progress: p?.progress ?? Math.round(e.progress), ...(full ? { full: true } : {}), ...(full && capLook(content, state, lang) ? { capped: true } : {}) };
+    return { progress: p?.progress ?? Math.round(e.progress ?? 0), ...(full ? { full: true } : {}), ...(full && capLook(content, state, lang) ? { capped: true } : {}) };
   },
   learn: e => ({ learn: e.learn, level: e.level, tier: e.tier }),
   wear: e => ({ wear: e.wear, ...(e.lift ? { lift: e.lift } : {}) }),
@@ -738,7 +746,7 @@ function gearBrief(content, state, now = new Date()) {
     // `slot`: where it goes on him (or the abode); `wear_on` / `worn_on` as above.
     const slot = e.wear === 'abode' ? 'abode' : e.wear ? null : armSlot(item), on = wearOn(state, item, her), off = wornOn(state, id, her);
     return { ...itemBrief(content, state, item), n, ...(shop?.buys ? { sell: buyBack(shop, item) } : {}), ...(slot ? { slot } : {}),
-      ...(on.length ? { wear_on: on } : {}), ...(off.length ? { worn_on: off } : {}), ...(e.progress || e.learn || e.pouch ? { usable: true } : {}) };
+      ...(on.length ? { wear_on: on } : {}), ...(off.length ? { worn_on: off } : {}), ...(e.units || e.progress || e.learn || e.pouch ? { usable: true } : {}) };
   });
   // Each slot named as the world names it (items.json `slots`), so a page or the phone needs no table of its own.
   const slotName = slot => pick((content.items.slots ?? []).find(x => x.id === slot)?.name, state.lang) ?? null;

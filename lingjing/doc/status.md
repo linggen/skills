@@ -26,11 +26,33 @@ None.
 
 Checked 11-10, already done before (were on old lists): the kept card's 丹囊/换一只, 回气丹's effect line, the 饥啸 cover, the playbot's 储物袋 (`e22bbe9ab`, 11-07); 当康's hidden ×2.5 shown as 凶 ×N (`5c27d0748`, 11-09); a carried pill no longer holds the turn (`afb9911f0`, 11-09); 石室 gate and 格斗 大比 (10-31).
 
+## The numbers system (batch 1, 2026-11-10 — branch wt/pay-by-layer)
+
+**Derived now** (balance.json `master` → tools/master.mjs derive; `node tools/numbers.mjs --apply` holds the dry run empty):
+- The ladder: 81 levels, need(L) = R(L) × mix × 60 × T(L); R(L) = 2 × 1.05^(L−1) × 1.2^realm; T(L) = T₁ × 1.015^(L−1); mix =
+  `board` × games.time ÷ games.share. T₁ solved (`node tools/balance.mjs --solve`, each 回 on its own band): 古 1.564 h
+  (练气一层 550 … 九层 910), 今 0.572 h.
+- Every 修为 grant: a size (`units`) × R where it lands — a small game's play × `board` 5, a card fight × `fight` 5, 闭关 a night 10
+  units, 人间功课 10 · 20 · 30 a day · week · month (app-linked chores doubled, meanings and caps too — the meanings are not in
+  the pace model yet), a pill its 转's nights; 传音 three small games where he stands (`own.games` 3: 90 · 109 · 133 at 练气一 · 五 · 九层; its own class `share_games`; not in the pace model — no player knob shares daily); the
+  one hand number the told 760 (wm-mingpai). Saves carry by percent (state v18).
+- Mix (typical, tools/balance.mjs `byLayer`): small games + fights 52–67% of 练气五–九层 (七层 66 · 八层 62 · 九层 52), errands
+  13–17% in 七–九层, 闭关 + 功课 the rest. 卷一 typical 44.5 days (h09 12.5 on its own row, the rest in 5–7.5 or their rows).
+- 七 · 八 · 九层 between gates: the 连环差事 九节菖蒲 (quests/guan.json `chain`, six steps, two a layer; a step is a beat —
+  tests/pacing.test.mjs) and three 西墙 red tags; 山门 hosts 格斗 · 几何冲刺 · 守墙关 practice and 药园 a 守炉 from 古八 on
+  (tasks `after`). Longest games-only stretch ≤ 1.63 days at every gate.
+- Validator: a source is red only above its own declared size (designed ones against their size, authored ones against
+  master.xiuwei.classes); red 15, of which sources 2 (the told 760; 九转筑基丹's 60 units, 6 nights against the class's 3).
+
+**Batches 2–3 still hold:** 灵石 (batch 2: the economy's `income`, pill prices — a pill night costs 50 minutes of income and now
+pays a fifth of a board; gear, the 传音's 15, the 功课 灵石); fights' difficulty and the 秘境 run pay against the new board rate
+(batch 3); 筑基+ pacing with 卷二; the 今 line's own mix.
+
 ## Open after 11-10
 
 - **Not seen on a device or a live page:** everything landed after the morning verify run (cultivation floor, full bar, holds, share gates, 画猜 hint, the three page fixes, the phone's 在 Mac 上玩). The morning run's playbot review opened 12 of 79 shots and must be redone before a release gate.
 - **九层 stays** (Hanli: 「九层保持现状」): 圆满 at 瞿老's door, the night 09-qulao → 09-shijie → 09-cliff is the 筑基 beat.
-- **七层** takes the typical player 5.6 days in one block (one scene before its gate). Options on record: one more story beat, or a 五成 gate at 09-dabi with the threshold near 600. Hanli: 「先不动」. 六层's second stretch sits at 1.9 days.
+- **七层** took the typical player 5.6 days in one block (one scene before its gate); on wt/pay-by-layer the 连环差事 九节菖蒲 breaks it (≤ 1.4 days, § The numbers system) — Hanli reviews its text.
 - **格斗 repaint paused** (Hanli: 「先这样吧. 以后有时间, 让gpt画吧」): the silhouette + FLUX method gives extra limbs; tools at tag `wip/2026-11-10-fighter-pose`. Five fighters still at 33 frames. Candidates later: GPT over a colour-coded pose sheet, or Blender renders.
 - 画猜: a 「看图鉴」 help button was offered, not built; the hint's layout at 375 not looked at.
 - Phone: 问签 is told apart from 银月's talking games by its opener name in Dart (`macChatOnly`); the rules should say which rows are the Mac chat's.

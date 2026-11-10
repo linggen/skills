@@ -8,7 +8,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { boardCost, newState, staminaCost } from '../scripts/state.mjs';
 import { playTo } from '../scripts/rules/progress.mjs';
 import { look, move, task, win, VERBS } from '../scripts/rules.mjs';
-import { chorePlay, fightPlay, gapOf, levelOf, playGrant, rateAt, secludeHour, sittingsAt, xiuweiOf } from '../scripts/rules/playpay.mjs';
+import { chorePlay, fightPlay, gapOf, levelOf, playGrant, rateAt, secludeHour, xiuweiOf } from '../scripts/rules/playpay.mjs';
 import { gamesToday, plateDealt, plateKey } from '../scripts/rules/rotation.mjs';
 import { placeOf } from '../scripts/rules/world.mjs';
 
@@ -19,18 +19,17 @@ const PP = content.balance.play_pay, X = PP.xiuwei;
 const BOARD = staminaCost(content, 'game');
 const R = (L, realm = 0) => X.rate.base * X.rate.growth ** (L - 1) * X.rate.realm ** realm;
 
-test('the formula\'s knobs: R and S by level, a 层 one level (筑基 in nine 层 since 2026-11-02), the gap both ways', () => {
+test('the formula\'s knobs: R by level, a 层 one level (L = realm × 9 + 层, 2026-11-10), the gap both ways', () => {
   assert.equal(X.rate.base, 2, 'xw_per_stamina: 2 修为 a 体力 at level 1');
   assert.deepEqual([BOARD, staminaCost(content, 'duel'), staminaCost(content, 'shouchao')], [3, 2, 3], 'the default board, a card fight, a 兽潮 night with no kit named');
   assert.deepEqual(levelOf(content, 'qi', 0), { level: 0, realm: 0 });
   assert.deepEqual(levelOf(content, 'qi', 4), { level: 4, realm: 0 });
-  // In 段 (2026-11-02) every 层 is its 段's level, as the step was: 筑基一至三层 L12, 四至六层 15, 七至九层 18.
-  assert.deepEqual([0, 2, 3, 8].map(k => levelOf(content, 'foundation', k).level), [12, 12, 15, 18], '筑基小成: three levels past 练气九层');
-  assert.deepEqual(levelOf(content, 'foundation', 0), { level: 12, realm: 1 });
+  // 81 levels (Hanli 2026-11-10): every 层 its own, 段 display only — 筑基一层 L10 … 九层 L18 (until 11-10 each 层 at its 段's).
+  assert.deepEqual([0, 2, 3, 8].map(k => levelOf(content, 'foundation', k).level), [10, 12, 13, 18], '筑基: one level a 层 past 练气九层');
+  assert.deepEqual(levelOf(content, 'foundation', 0), { level: 10, realm: 1 });
   assert.deepEqual(levelOf(content, 'core', 8), { level: 27, realm: 2 });
   assert.equal(rateAt(content, 1), 2);
   assert.ok(Math.abs(rateAt(content, 12, 1) - R(12, 1)) < 1e-9);
-  assert.ok(Math.abs(sittingsAt(content, 1) - X.sittings.base) < 1e-9);
   assert.equal(gapOf(content, 5, 5), 1);
   assert.ok(Math.abs(gapOf(content, 5, 3) - (1 - 2 * X.gap.below)) < 1e-9, 'two levels below him: −30%');
   assert.equal(gapOf(content, 20, 1), X.gap.floor, 'never under the floor');
@@ -118,13 +117,17 @@ test('a board lost costs its 体力 in full (it was played; the coordinator for 
   assert.equal(task(s, content, ctx, { action: 'lost', id: story.id }).state.stamina, 100, `${story.id}: free`);
 });
 
-test('only small games gain the board factor', () => {
+test('only small games gain the board factor; a card fight its own (fight)', () => {
   const s = { tier: 'qi', step: 1 };
   const old = structuredClone(content);
   old.balance.play_pay.xiuwei.board = 1;
-  assert.equal(X.board, 1.5);
-  assert.equal(xiuweiOf(content, s, 3, { board: true }), 1.5 * xiuweiOf(old, s, 3, { board: true }));
-  assert.equal(fightPlay(content, s), fightPlay(old, s));
+  // 1.5 (Hanli 2026-11-10 「把小游戏奖励修为提高到1.5呗」), 5 the same evening: the games carry the layer again (master._board).
+  assert.equal(X.board, content.balance.master.xiuwei.board);
+  assert.equal(xiuweiOf(content, s, 3, { board: true }), X.board * xiuweiOf(old, s, 3, { board: true }));
+  assert.equal(fightPlay(content, s), fightPlay(old, s), 'a card fight never takes the board factor');
+  const plain = structuredClone(content);
+  plain.balance.play_pay.xiuwei.fight = 1;
+  assert.equal(fightPlay(content, s), Math.round(X.fight * xiuweiOf(plain, s, 2)), 'a card fight takes its own (play_pay.xiuwei.fight, 「打一场才几点」)');
   assert.equal(chorePlay(content, s, 'day'), chorePlay(old, s, 'day'));
   assert.equal(secludeHour(content, s), secludeHour(old, s));
 });

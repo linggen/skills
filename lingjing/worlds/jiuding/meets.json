@@ -12,7 +12,7 @@
   "die": 20,
   "companion": 2,
   "marks": { "easy": 6, "fair": 11, "hard": 15 },
-  "win": { "easy": { "progress": 10 }, "fair": { "progress": 20, "wealth": 10 }, "hard": { "progress": 30, "wealth": 20 } },
+  "win": { "easy": { "units": 5 }, "fair": { "units": 10, "wealth": 10 }, "hard": { "units": 15, "wealth": 20 } },
   "lose": { "wound": { "easy": 0.1, "fair": 0.2, "hard": 0.35 }, "coin": { "easy": 5, "fair": 10, "hard": 20 } },
   "options": { "min": 2, "max": 3, "label": 16, "line": 120 }
  },

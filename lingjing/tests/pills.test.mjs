@@ -82,10 +82,14 @@ test('bought at the stall, carried in, one eaten: 灵石 and the bag both drop',
   assert.equal(out.state.bag['mend-pill'], 1, 'the 回春丹 not eaten stays');
 });
 
-test('九转筑基丹 pays 30% of 筑基一层 without filling it', () => {
+test('九转筑基丹 pays its size at 筑基一层 without filling it', () => {
   const s = { ...newState(content, 'zh', NOW), tier: 'foundation', step: 0, progress: 0, ended: ['00-prologue', '00-waimen', '00-zhuji'], chapter: '01-ji', bag: { 'foundation-pill-9': 1 }, stamina: 100, stamina_at: NOW.toISOString() };
   const r = trade(s, content, { now: NOW, quests: [] }, { action: 'use', id: 'foundation-pill-9' });
   assert.equal(r.result.ok, true, JSON.stringify(r.result));
-  assert.ok(Math.abs(r.state.progress - 120) <= 1, `got ${r.state.progress}`);
+  // A size since 2026-11-10 (60 units — 120 at 练气一层 — × R at 筑基一层, L10): about 30% of the layer when a small game paid
+  // × 1.5; about 19% since the games carry the layer (× 5, the same evening: need rides the mix, a size does not).
+  const need = content.ladder.tiers[1].thresholds[0], X = content.balance.play_pay.xiuwei;
+  assert.equal(r.state.progress, Math.round(60 * X.rate.base * X.rate.growth ** 9 * X.rate.realm), `got ${r.state.progress} of ${need}`);
+  assert.ok(r.state.progress < need && r.state.progress / need > 0.15, `got ${r.state.progress} of ${need}`);
   assert.equal(r.state.step, 0);
 });

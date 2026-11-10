@@ -63,6 +63,8 @@ Left: the story's 炼丹 herb board has no shell frame, so no 🔊 of its own (i
 
 ## Pacing proposal — rewards by kind, hours per layer (10-27, numbers only, for Hanli)
 
+> **Superseded 2026-11-10 (numbers batch 1).** The thresholds below (470 …, the flat 修为 per kind, the fitted hours) are history. Today every layer is the curve need(L) = R(L) × mix × 60 × T(L) with T₁ solved, and every pay a size × R where it lands — a small game × `board`, a fight × `fight` (5 · 5 since 11-10's evening). doc/status.md § numbers system; design.md § Pay.
+
 Hanli 10-27 (ling-mem 3m6p5mNIpx): every board, errand, fight and 调息 pays 修为 and 灵石 by its kind, ★ scales it (0.6 ·
 0.8 · 1.0), a skip pays nothing, no daily cap (replays pay 100% · 50% · 10%), 修为 stops at the 回's gate. Then: 「练气1层
 比如要玩2小时 … 这个时间应该是递增的, 每一层多比如1个小时」 — the target is play time per layer, reading (~60%) inside it.
@@ -156,6 +158,8 @@ for a higher layer, the same coin for the same minutes, which a player can learn
 练气 108 typical days at +1 h a layer, 72 at +0.5 h.)
 
 ## Pay as a share of the layer — in the rules 10-27 · superseded 11-02
+
+> History (the 470 base, `authored.base`, the share pay): gone since 11-02 and 11-10 — see the note at § Pacing proposal above.
 
 **Superseded 2026-11-02** (Hanli: 「不要按照百分比给.... 给太多了」 · 「我是说参考百分比的数值. 不能直接给百分比」): every play pays
 a fixed 修为 by the formula — R(content level) × its 体力 × difficulty × ★ × gap × replay (design.md § Pay — fixed numbers by

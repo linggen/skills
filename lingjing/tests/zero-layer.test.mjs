@@ -65,7 +65,8 @@ test('an old save heals on load: before the 小周天 零层, past it 一层, pa
   const heal = s => migrate(s, content);
   const name = s => realmName(content, s, 'zh');
   // The bar as full as it stood on the ladder it was played on (ladder.json thresholds_were, state.mjs paceLayer).
-  const was = (step, p) => Math.round(p * content.ladder.tiers[0].thresholds[step] / content.ladder.tiers[0].thresholds_were['9'][step]);
+  // Read against the ladder it was played on, onto v17's (thresholds_were["18"]), then by its percent onto the curve (v18, 2026-11-10).
+  const Q = content.ladder.tiers[0], was = (step, p) => Math.round((Math.round((p * Q.thresholds_were['18'][step]) / Q.thresholds_were['9'][step]) * Q.thresholds[step]) / Q.thresholds_were['18'][step]);
   // Before the 小周天, at the gate's step 0: 零层, the 修为 it held kept unseen for the rise.
   const before = heal(v7({ scene: 'wm-zhoutian', done_scenes: ['wm-ahe', 'wm-jiangtang'], step: 0, progress: 20 }));
   assert.deepEqual([name(before), before.progress, 'ladder_zero' in before], ['练气零层', 20, false]);
@@ -88,7 +89,7 @@ test('an old save heals on load: before the 小周天 零层, past it 一层, pa
   // 筑基 kept, its bar read onto the master table's 筑基 as full as it stood (v13, 2026-10-27).
   // …and v15 (nine 层 in 段, 2026-11-02): walked into 小成's 层 — 328 is inside 一层.
   const fd = content.ladder.tiers[1], v14 = Math.round(100 * fd.thresholds_were['14'][0] / fd.thresholds_were['13'][0]);
-  assert.deepEqual([zhuji.tier, zhuji.step, zhuji.progress], ['foundation', 0, v14]);
+  assert.deepEqual([zhuji.tier, zhuji.step, zhuji.progress], ['foundation', 0, Math.round((v14 * fd.thresholds[0]) / fd.thresholds_were['18'][0])]);
 });
 
 test('a healed save before the 小周天 plays on: the night lifts it to 一层 like a new one', () => {

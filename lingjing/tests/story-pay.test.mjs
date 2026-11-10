@@ -23,16 +23,17 @@ test('a story step pays one small game: R × a default board\'s 体力 at his la
   for (let step = 1; step <= 9; step++) {
     const st = { tier: 'qi', step };
     const n = storyPlay(content, st);
-    assert.ok(n > 0 && n <= 18, `练气${step}层: ${n}`);
+    // One small game: 3 体力 × R × play_pay.xiuwei.board (× 5 since 2026-11-10, × 1.5 before: ≤ 18 then).
+    assert.ok(n > 0 && n <= 3 * content.balance.play_pay.xiuwei.board * 2 * 1.05 ** 8 + 1, `练气${step}层: ${n}`);
     assert.equal(n, boardPlay(content, st, content.balance.play_pay.story.units), 'the same as a board of that many minutes');
   }
-  assert.equal(storyPlay(content, { tier: 'qi', step: 7 }), 12, '练气七层: 12 (09-dabi\'s way on was 570)');
+  assert.equal(storyPlay(content, { tier: 'qi', step: 7 }), Math.round(3 * 2 * 1.05 ** 6 * content.balance.play_pay.xiuwei.board), '练气七层: one small game (40 at × 5; 12 at × 1.5; 09-dabi\'s way on was 570)');
 });
 
 test('paying {table: \'story\'} lands one small game\'s 修为, whatever progress it claims, and its 所得 says so', () => {
   const s = { ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: '09-dabi', place: 'waimen', ended: ['00-prologue'], tier: 'qi', step: 7, progress: 100 };
   const paid = pay(content, s, { now: NOW, quests: [] }, { table: 'story' });
-  assert.ok(paid.progress > 0 && paid.progress <= 18, `paid ${paid.progress}`);
+  assert.ok(paid.progress > 0 && paid.progress === storyPlay(content, s), `paid ${paid.progress}`);
   assert.equal(s.progress, 100 + paid.progress);
   assert.deepEqual(gainsOf({ table: 'story' }, paid), { items: [], progress: paid.progress }, '所得 carries the 修为 (the page\'s 「剧情所得」)');
 });
@@ -42,12 +43,16 @@ test('the shipped book: every story 修为 is a `story` step, or a gain its word
   for (const { sc } of scenes()) for (const e of sc.exits ?? []) {
     const g = e.grant;
     if (!g) continue;
-    if (g.table === 'story') assert.equal(g.progress, undefined, `${sc.id}/${e.id}: a story step authors no progress`);
-    if (g.progress > 0) { assert.ok(g.narrated?.line, `${sc.id}/${e.id}: ${g.progress} 修为 with no line that tells it`); told.push(`${sc.id}/${e.id}`); }
+    if (g.table === 'story') assert.equal(g.progress ?? g.units, undefined, `${sc.id}/${e.id}: a story step authors no progress`);
+    if (g.progress > 0 || g.units > 0) { assert.ok(g.narrated?.line, `${sc.id}/${e.id}: 修为 with no line that tells it`); told.push(`${sc.id}/${e.id}`); }
+    // A lump (`gate`) only as the master's told number (2026-11-10), never written here.
+    if (g.table === 'gate') assert.ok(g.told && g.progress === content.balance.play_pay.told[`${sc.id}/${e.id}`]?.progress, `${sc.id}/${e.id}: a lump is a master told`);
   }
-  // 卷一's three (the 秘境's 埋土 night, 八层, 九层圆满) and 卷二–卷八's seven cauldrons.
-  for (const id of ['wm-mingpai/over', '09-shenshi/winter', '09-yanceng/ruqiu']) assert.ok(told.includes(id), id);
-  for (const id of ['09-dabi/on', '09-nianyao/on', '09-suifeng/on']) {
+  // 卷一's one told lump (the 秘境's 埋土 night, Hanli's own, master.xiuwei.told) and 卷二–卷八's seven cauldrons (sized, told).
+  assert.ok(told.includes('wm-mingpai/over'));
+  assert.deepEqual(told.filter(id => content.balance.play_pay.told[id]), ['wm-mingpai/over'], 'the one told number');
+  // 八层 and 九层圆满 are story steps since 2026-11-10 (their 660 · 750 lumps gone: a story scene pays about one small game).
+  for (const id of ['09-shenshi/winter', '09-yanceng/ruqiu', '09-dabi/on', '09-nianyao/on', '09-suifeng/on']) {
     const [sc, ex] = id.split('/'), e = content.chapters['00-zhuji'].scenes[sc].exits.find(x => x.id === ex);
     assert.equal(e.grant.table, 'story', `${id}: one small game now`);
   }
@@ -64,8 +69,11 @@ test('the lint holds it: an untold lump, a line not in the words, a story step w
   assert.match(problems({ table: 'gate', progress: 570, narrated: { line: '他过了九层' } }, own).join(), /not in x's words/);
   assert.match(problems({ table: 'story', progress: 570 }, own).join(), /authors no progress/);
   assert.match(problems({ table: 'gate', progress: 760, narrated: { scene: 'wm-kaikai', line: '二层圆满' } }, own, 'wm-xiqi', of).join(), /not where this way leads/);
-  assert.match(problems({ table: 'gate', narrated: { line: '那年冬天，他过了八层' } }, own).join(), /needs progress/);
-  assert.deepEqual(problems({ table: 'gate', progress: 660, narrated: { line: '那年冬天，他过了八层' } }, own), []);
-  assert.deepEqual(problems({ table: 'gate', progress: 760, narrated: { scene: 'wm-kaikai', line: '二层圆满' } }, own, 'wm-kaikai', of), []);
+  assert.match(problems({ table: 'scene', narrated: { line: '那年冬天，他过了八层' } }, own).join(), /needs units/);
+  // A `gate` lump the story tells is still refused unless it is the master's told (2026-11-10: no lump path in the lint).
+  assert.match(problems({ table: 'gate', progress: 660, narrated: { line: '那年冬天，他过了八层' } }, own).join(), /master told/);
+  assert.match(problems({ table: 'gate', told: true, narrated: { line: '那年冬天，他过了八层' } }, own).join(), /no row for this exit/);
+  assert.deepEqual(problems({ table: 'scene', units: 30, narrated: { line: '那年冬天，他过了八层' } }, own), []);
+  assert.deepEqual(problems({ table: 'gate', told: true, progress: 760, narrated: { scene: 'wm-kaikai', line: '二层圆满' } }, own, 'wm-kaikai', of), []);
   assert.deepEqual(problems({ table: 'story', wealth: 20 }, own), []);
 });

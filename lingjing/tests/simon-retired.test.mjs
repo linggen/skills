@@ -18,7 +18,7 @@ test('no board deals 照着走; each of its boards is a live Dash row with the s
     const t = content.tasks.tasks.find((x) => x.id === id);
     assert.equal(t.game, 'dash', id);
     // 照着走 paid play_pay's 记忆 5 灵石 a play; 几何冲刺 pays 调息's 0, so the board's 5 灵石 rides in its grant.
-    assert.deepEqual(t.grant, { table: 'task', progress: 5, wealth: 5 }, `${id}: the same pay`);
+    assert.deepEqual(t.grant, { table: 'task', units: 2.5, wealth: 5 }, `${id}: the same pay`);
     const live = content.games.games.filter((g) => g.task === id && !g.cut && !g.replaced);
     assert.deepEqual(live.map((g) => g.id), ['dash'], `${id}: one live row, the Dash`);
     assert.ok(live[0].levels[0].things.length >= 5);

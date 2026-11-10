@@ -374,19 +374,23 @@ prints.** (rules/playpay.mjs; balance.json `master.xiuwei` → `play_pay.xiuwei`
   Hanli: 「满了后的下一场剧情是突破」 — a held full bar receives and shows no cultivation floor.
 - **Levels.** Each 层 is one level (零层 0, pays none) — past 练气 too since the nine 层 (2026-11-02: 筑基一层 L10 … 九层
   L18, 结丹九层 L27; levelOf); before, a realm's step of three 层 counted three (筑基小成 L12, 中成 15, 大成 18). A realm up: ×`sittings.realm` 1.3 to S and ×`rate.realm` 1.2 to R.
-- **Sittings per level** S(L) = 2 × 1.1^(L−1); a sitting is 100 体力 ≈ 100 minutes. **修为 per 体力** R(L) = 2 × 1.05^(L−1).
-  **Need** need(L) = R(L) × 100 × S(L) — the reference the ladder is read against (练气一层 400 by the formula, 470 on the
-  ladder; 九层 1267 against 1010). The ladder's thresholds are not moved by this.
+- **The curve (2026-11-10, batch 1; tools/master.mjs curveOf).** L = realm × 9 + 层, 81 levels. **修为 per 体力** R(L) =
+  2 × 1.05^(L−1) × 1.2^realm; **hours** T(L) = T₁ × 1.015^(L−1); **need** need(L) = R(L) × mix × 60 × T(L), mix =
+  `board` × games.time ÷ games.share. T₁ is solved (tools/balance.mjs --solve: every 回 the curve moves `inset` under its own
+  band's top), never picked. The ladder's thresholds are this curve (the hand curve 470 ×1.1, the S(L) sittings and the
+  hours fit are gone). Values today: status.md § numbers system.
 - **Reward** = R(content level) × 体力 cost × difficulty (normal 1 · elite 1.5 · boss/副本 2; a first clear +50%) × ★ (0.6 ·
   0.8 · 1.0) × level gap (−15% a level he stands above it, floor 20%; +10% a level below, cap +30%) × replay (the same thing
   the same day 100 · 50 · 10%) × 灵根 · 签 ×1.2 · 宜 ×1.3 (core.mjs amountsOf), × the realm's `pay` (ladder.json, 元婴 ×2 up).
-  At 练气一层: a board (3 体力) 9, a fight (4) 8, a 兽潮 night (5) 15; a story board's first clear rounds to 14.
+  A small game's play × `board`, a card fight's × `fight` (5 and 5 since 2026-11-10's evening: the games carry ~60% of a
+  练气 layer again). At 练气一层: a board (3 体力) 30, a fight (2) 20, a story step 30.
 - **Content level** is his own unless the thing declares `level` (a task, a grant): place `tier` (0–2) is too coarse to be a
   level and beasts carry none, so routine play stands at his level (gap 1); none is assigned by hand yet.
-- **No 体力 of its own**, priced in 体力-units at the same R (`master.xiuwei.units`): 人间功课 a day 5 (≈10), a week 10, a
-  month 15; a day's east-wall tags 5 together; a night's 闭关 23.5 (47 at 练气一层); an errand's work its 5 minutes. A pill is
-  its 转's share of 470 as units at R(1) (一转 ≈ 14 at 一层), riding R so 「抵N日打坐」 holds; what the book authors (a scene's,
-  a quest's, a rumor's) is the number written. 切磋 a bout's 体力 × R × ★; 圆满 → 灵石 flat (`convert.rate`).
+- **No 体力 of its own**, priced in 体力-units at the same R (`master.xiuwei.units`): 人间功课 a day 10, a week 20, a month 30
+  (doubled 2026-11-10 with the app-linked meanings); a day's east-wall tags 5 together; a night's 闭关 10 (20 at 练气一层);
+  an errand's work its 5 minutes. A pill is its 转's nights of 闭关 (× the night's units), so 「抵N日打坐」 holds at every
+  layer; what the book authors is a size in `units` (the master's one `told` aside). 切磋 a bout's 体力 × R × ★ × `board`;
+  圆满 → 灵石 flat (`convert.rate`).
 - **The story's 圆满 gates** (agent's pick, Hanli approved 2026-11-02 「可以, 按你说的做」): fixed pay made each gate days of
   grinding (第五回 ~40 typical days). A `gate` lump (`grant: {table: 'gate', progress}`, balance.json `pay.gate`) on the way
   into each gate scene — the only 修为 the story grants (content.mjs lintEarned) — and no replay falloff inside a sealed
@@ -431,12 +435,8 @@ Hanli: 「所有物品, 任务的数值请写一个工具进行校验 … 全局
   - `lines.gu` — a line is a ladder of its own (古 · 今 · 未来 each their own 修为 and realms, Hanli 10-27). 古 and 今
     are built (`lines.jin`, 2026-10-28: its own `need`, `hours` and `games`, below § each line its own 修为); 未来 gets a
     row of its own, with its own pace, when its pay is built.
-    - `need`: 练气一层 470, ×1.1 a layer, ×1.3 into the next realm. Every pay is a share of the layer, so these are the
-      numbers he reads, never the pace. 筑基一层 (1310) is above 练气九层 (1010); nine 层 a realm past 练气 since 2026-11-02.
-    - `hours`: a layer's play hours (the games' rate), a curve (练气 2 h +0.5 h a layer; 筑基 4 h, +2 h a realm), then
-      **fitted**: in the book's order a 回 whose typical days fall outside its band has the hours of the layers it grinds
-      scaled until it lands (master.mjs fitHours). Today 古六's 三–四层 fit to ~1.0–1.2 h and 古八's 七–九层 to ~1.4–1.6 h:
-      those 回 are long on reading, so their layers must go fast.
+    - `need` and `time` (2026-11-10): the curve above — need(L) = R(L) × mix × 60 × T(L), T₁ solved. The hand curve
+      (练气一层 470 ×1.1 …) and the hours fit (`hours.fit`, fitHours, its gate pins and overrides) are retired.
     - `games` 60% over 35% · `errand` 15% over 10% · `chore` (人间功课, 古-line income — Hanli 「算古线吧」) a day's 10%, a
       week's 20% · `seclusion.night` a night's 闭关 = 10% of the layer (ruling a: it was 40 × `layer_pay`, 23% at 四层;
       `layer_pay` is gone) · `pills` 一转 5% · 三转 15% · 九转 30% of the layer, ¼ a realm past its 阶.
@@ -452,9 +452,8 @@ Hanli: 「所有物品, 任务的数值请写一个工具进行校验 … 全局
   「抵半日打坐」 · 「抵三日」 are ratios that now hold at every layer (a pill and a night are both shares), and the test
   holds each at every 练气 layer.
 - **The gate rule** (Hanli 10-27, at 古五's 渡口: 「渡口前应该让玩家接近2层圆满」): a 修为 gate never keeps him where there
-  is little to do — the grind belongs in the content before it. `hours.fit.gates` (now wm-mijing) is fitted so the player
-  who plays the book straight through (`model.session`: long sittings, no nights, no 功课) comes to it ≥ 88% full (二层
-  0.77 h). Every gate is on the red list where its wait — the 修为 still owed on arrival ÷ a minute of what is reachable
+  is little to do — the grind belongs in the content before it (until 2026-11-10 `hours.fit.gates` fitted the hours to it;
+  now the curve stands and the share gates and 连环差事 steps break the waits, tests/pacing.test.mjs). Every gate is on the red list where its wait — the 修为 still owed on arrival ÷ a minute of what is reachable
   there — passes `LIMITS.gate_wait` (40 min), with what is reachable listed. The fit never makes a layer dearer than the
   curve: a 回 short of its band (古七, 4.5 days) is short on its book, and dearer layers would only lengthen its gates.
 - **The model**: at 圆满 a 秘境 rerun is all 灵石, so the model runs one only while its 修为 lands (`model.rerun.at_full`);

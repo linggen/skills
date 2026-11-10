@@ -554,7 +554,7 @@ function tasksBrief(content, state, ctx) {
         ...(hosted[id]?.practice && state.plays?.day === dayKey(ctx.now) && (state.plays.ids?.[id] ?? 0) > 0 ? { played_today: state.plays.ids[id] } : {}),
         // …and what its next play pays of the full (`share`: .5, .1 — the page's 「今日已玩 · 只给一成」, before he plays it).
         ...(hosted[id]?.practice && replayShare(content, state, id, ctx.now) < 1 ? { share: replayShare(content, state, id, ctx.now) } : {}),
-        pays: hosted[id]?.practice ? paysOf(content, state, ctx.now, playGrant(content, state, id, task, ctx.now)) : again.has(id) ? null : task.grant?.progress ?? null, gives: !again.has(id) && task.gives?.bag ? pick(itemOf(content, task.gives.bag)?.name, lang) : null,
+        pays: hosted[id]?.practice ? paysOf(content, state, ctx.now, playGrant(content, state, id, task, ctx.now)) : again.has(id) ? null : task.grant ? paysOf(content, state, ctx.now, task.grant)?.progress ?? null : null, gives: !again.has(id) && task.gives?.bag ? pick(itemOf(content, task.gives.bag)?.name, lang) : null,
       };
     });
   // Today's 人间功课 only — the fixed ones and the day's pick — and a 开府

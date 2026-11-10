@@ -140,7 +140,7 @@
     "after_hour": 17,
     "pay": {
       "table": "game",
-      "progress": 3,
+      "units": 1.5,
       "wealth": 5
     }
   },

@@ -79,11 +79,12 @@ test('the east wall posts three a day from its pool, all at once — never a tag
     assert.equal(o.who, '执事堂 · 东墙杂役', 'its own giver, apart from the authored errands of the same wall');
     assert.ok(o.pays.progress > 0 && o.pays.wealth > 0, `${o.id} pays the wall share and 灵石: ${JSON.stringify(o.pays)}`);
   }
-  // A day's three together pay about a day's 功课 (master xiuwei.units: the wall's day 5 体力-units, a 功课's day 5; Hanli
-  // 10-27: the full errand rate was half a layer a day) — fixed numbers at R since 2026-11-02.
+  // A day's three together pay the wall's day (master xiuwei.units.wall_day 5 体力-units; Hanli 10-27: the full errand rate was
+  // half a layer a day) — fixed numbers at R since 2026-11-02. Until 2026-11-10 that was about a day's 功课 (its 5 units too);
+  // the app-linked chores pay double since (Hanli 「…app联动的任务, 奖励都翻倍」), so the wall is half a day's 功课 now.
   const s0 = at('zhishi'), day3 = offers.reduce((n, o) => n + o.pays.progress, 0), chore = chorePlay(content, s0, 'day');
   assert.equal(offers.length, 3);
-  assert.ok(Math.abs(day3 - chore) <= 3, `a day's tags ${day3} against a day's 功课 ${chore}`);
+  assert.ok(Math.abs(day3 - chore / 2) <= 3, `a day's tags ${day3} against half a day's 功课 ${chore}`);
   assert.ok(offers.every((o) => o.pays.progress === Math.round(xiuweiOf(content, s0, content.balance.play_pay.wall.day / WALL.posts))), 'each tag a third of the day');
   assert.equal((look(at('cangjing'), content, ctx(day(0))).offers ?? []).filter((o) => o.id.startsWith('wall-')).length, 0, 'only at the wall');
 });

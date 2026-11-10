@@ -10,8 +10,8 @@ them first.
 
 - **Scene:** **Make** with nothing (the template and its rules) → write one
   scene in exactly that shape: their language, one to four exits with plain
-  `means`, labelled buttons, **grants of progress and wealth only, from the
-  `branch` table — each exit pays once**, one exit that `ends: "made"`. →
+  `means`, labelled buttons, **grants of `units` (修为 as minutes of play's worth,
+  up to 10) and wealth only, from the `branch` table — each exit pays once**, one exit that `ends: "made"`. →
   **Make** with it; `not-playable` lists what to fix — fix it silently and
   Make again. → **Enter** and play it like any scene; write the next scene
   only when an exit needs it. A scene not yet entered is changed by Make with

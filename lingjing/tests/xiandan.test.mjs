@@ -34,17 +34,19 @@ test('仙丹 is 仙阶: off the ladder, no 转, a 修为 pill of the 聚气 fami
 });
 
 test('its pay: its own share (by_tier.xian), above a 九转; never below him, 练气 or 筑基', () => {
-  const P = content.balance.pills, base = content.balance.play_pay.authored.base;
-  assert.ok(P.by_tier.xian > P.share[8], 'above 九转');
-  assert.equal(pillPay(content.balance, XIAN), Math.round(P.by_tier.xian * base * 10) / 10);
-  assert.equal(XIAN.effect.progress, pillPay(content.balance, XIAN));
+  // In nights of 闭关 (2026-11-10): units = nights × a night's, × R where it is eaten.
+  const P = content.balance.pills, night = content.balance.play_pay.seclusion.night;
+  assert.ok(P.by_tier.xian > P.nights[8], 'above 九转');
+  assert.equal(pillPay(content.balance, XIAN), Math.round(P.by_tier.xian * night * 1000) / 1000);
+  assert.equal(XIAN.effect.units, pillPay(content.balance, XIAN));
   for (const tier of ['qi', 'foundation', 'core']) assert.equal(pillBelow(content, { tier }, 'xian'), 1, tier);
   const e = XIAN.effect;
   // A fixed number at R (2026-11-02): the whole of it at every realm, never below him.
   const X = content.balance.play_pay.xiuwei;
-  for (const [tier, step, L, realm] of [['qi', 3, 3, 0], ['foundation', 0, 12, 1]]) {
-    const got = paysOf(content, save({ tier, step }), T0, { table: e.table, progress: e.progress, tier: e.tier }).progress;
-    assert.equal(got, Math.round(e.progress * X.rate.growth ** (L - 1) * X.rate.realm ** realm), `${tier} ${step}: the whole of it`);
+  // 筑基一层 is L10 (81 levels, 2026-11-10).
+  for (const [tier, step, L, realm] of [['qi', 3, 3, 0], ['foundation', 0, 10, 1]]) {
+    const got = paysOf(content, save({ tier, step }), T0, { table: e.table, units: e.units, tier: e.tier }).progress;
+    assert.equal(got, Math.round(e.units * X.rate.base * X.rate.growth ** (L - 1) * X.rate.realm ** realm), `${tier} ${step}: the whole of it`);
   }
 });
 

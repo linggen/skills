@@ -3,6 +3,7 @@
   "province": "徐",
   "_about": "沉鼎观里的差事 (Hanli, 2026-10-15: 外门在观内走动，下山凭执事堂的令). Chores — the 执事堂's east-wall tags (「杂役，外门也揭得」, 07-第七回) and 周衡's ledger — pay 灵石 (`work: labor`); the night watch and the beasts pay 修为 (`work: cultivation`). The numbers in `grant` are placeholders the economy owner sets (rewards.json's `labor` and `quest` tables). The tags for work below the mountain are in xu.json, each with its `pass`.",
   "_thread": "`thread` (design.md § 剧情 × 开放世界): the colour the 事 book and the map draw it in — `person` (silver, 人物线: an errand of someone's own life — 阿禾, 孙二狗, 周衡's game, 古九's people of 邺城), `chore` (grey, 杂务: a wall tag, a steward's job, a notice), `main` (gold, 主线: an errand the story itself waits on; none yet — the goal line and the 阶段任务 are gold without it).",
+  "_chain": "`chain` (Hanli 2026-11-10: 「短剧情你要补的话, 放差事里吧, 可以设计一个连环多步骤差事, 给些奖励.」): a 连环差事's steps share its id; each step opens after the one before it (`opens.after`) at a share of its layer (`opens.layer.share`, errands.mjs layerMet), and is put in his book the moment the one before is handed in if its share is already reached (`then`, errands.mjs complete) — else its giver offers it when it is — 九节菖蒲 runs 闵丹师's 九节聚气 through 七 · 八 · 九层, two steps a layer, the story's own people and places, nothing of the plot changed. tools/balance.mjs plays each step the moment it opens and counts it a beat between the story's scenes (tests/pacing.test.mjs). The 西墙 red tags (`guan-xiqiang-*`) are 七 · 八 · 九层's 降妖, each opened by its layer as 古七's 凫丽山 tag is.",
   "quests": [
     {
       "id": "guan-chaifang-wood",
@@ -221,7 +222,7 @@
       "work": "cultivation",
       "grant": {
         "table": "quest",
-        "progress": 30,
+        "units": 15,
         "wealth": 0
       }
     },
@@ -264,6 +265,408 @@
       "grant": {
         "table": "labor",
         "wealth": 10
+      }
+    },
+    {
+      "id": "guan-jiujie-1",
+      "title": {
+        "zh": "九节菖蒲 · 石缝里的菖蒲",
+        "en": "Nine-node calamus · The calamus in the crack"
+      },
+      "thread": "person",
+      "from": {
+        "place": "yaoyuan",
+        "who": {
+          "zh": "闵丹师",
+          "en": "Pill-master Min"
+        }
+      },
+      "opens": {
+        "done": "09-dabi",
+        "layer": {
+          "tier": "qi",
+          "step": 7,
+          "share": 0.3
+        }
+      },
+      "say": {
+        "zh": "闵丹师把那张黄纸又摊开，指头在「臣，九节菖蒲」那一行上敲了两下：「丹房里存的，三根。一炉要九根。后山崖下那几道石缝，往年长得有；开春我去看了一眼，缝口叫一头狼刨成了窝。」他眼睛没离炉口，「你去。狼赶走，草别踩。」",
+        "en": "Pill-master Min spreads the yellow paper again and taps twice on the line \"Minister: nine-node calamus.\" \"The pill house keeps three. A batch wants nine. In the cracks under the back-hill cliff it used to grow; I looked in spring, and a wolf has dug the mouth of the crack into a den.\" His eyes never leave the furnace mouth. \"You go. Run the wolf off; don't tread on the plants.\""
+      },
+      "done": {
+        "zh": "那头狼夹着尾巴蹿下了崖。石缝里那一丛菖蒲细得像筷子，小满拿指甲顺着比了比：一寸之内，九个节。他一根一根掐下来，兜在衣襟里，一根也没折。",
+        "en": "The wolf bolts down the cliff with its tail between its legs. The clump of calamus in the crack is as thin as chopsticks; Xiaoman measures one along his thumbnail: nine nodes to an inch. He pinches them off one by one and carries them in the fold of his robe, not one broken."
+      },
+      "need": [
+        {
+          "kind": "subdue",
+          "creature": "lang",
+          "n": 1
+        }
+      ],
+      "work": "cultivation",
+      "grant": {
+        "table": "quest",
+        "units": 8,
+        "wealth": 5
+      },
+      "chain": "jiujie",
+      "then": "guan-jiujie-2"
+    },
+    {
+      "id": "guan-jiujie-2",
+      "title": {
+        "zh": "九节菖蒲 · 架子底下的虫",
+        "en": "Nine-node calamus · Grubs under the racks"
+      },
+      "thread": "person",
+      "from": {
+        "place": "yaoyuan",
+        "who": {
+          "zh": "闵丹师",
+          "en": "Pill-master Min"
+        }
+      },
+      "opens": {
+        "after": "guan-jiujie-1",
+        "layer": {
+          "tier": "qi",
+          "step": 7,
+          "share": 0.65
+        }
+      },
+      "say": {
+        "zh": "菖蒲要阴干，摊在药园的竹架上，见不得日头。闵丹师背着手绕架子走了一圈，弯腰看了看架子底下：「有虫。一夜工夫，九个节能叫它啃成三个。今夜你守着。」",
+        "en": "Calamus must dry in the shade, spread on the herb garden's bamboo racks, out of the sun. Pill-master Min walks once round the racks with his hands behind his back and stoops to look underneath. \"Grubs. In one night they'd chew nine nodes down to three. You keep watch tonight.\""
+      },
+      "done": {
+        "zh": "天亮的时候，竹篓里半篓虫，架上的菖蒲一根没少。闵丹师拈起一根闻了闻，没说好，也没说不好，只道：「再阴七天。」",
+        "en": "At daybreak the basket is half full of grubs and not one stalk is missing from the racks. Pill-master Min picks one up and sniffs it; he says neither good nor bad, only: \"Seven more days in the shade.\""
+      },
+      "need": [
+        {
+          "kind": "board",
+          "task": "yaoyuan-zhuochong",
+          "n": 1,
+          "at": "yaoyuan"
+        }
+      ],
+      "work": "labor",
+      "grant": {
+        "table": "labor",
+        "wealth": 5
+      },
+      "chain": "jiujie",
+      "then": "guan-jiujie-3"
+    },
+    {
+      "id": "guan-jiujie-3",
+      "title": {
+        "zh": "九节菖蒲 · 十年黄精",
+        "en": "Nine-node calamus · Ten-year Solomon's seal"
+      },
+      "thread": "person",
+      "from": {
+        "place": "yaoyuan",
+        "who": {
+          "zh": "闵丹师",
+          "en": "Pill-master Min"
+        }
+      },
+      "opens": {
+        "after": "guan-jiujie-2",
+        "layer": {
+          "tier": "qi",
+          "step": 8,
+          "share": 0.3
+        }
+      },
+      "say": {
+        "zh": "年七开春，闵丹师又提起那一方：「臣齐了，君还差。上回那一截给了你，丹房里一截也没剩。十年的黄精，药园里种不出来，得是野的。后山北坡有一片老根，这两年叫猴子盯上了——猴子精，专刨老的。」他顿了一顿，「它刨它的，你别跟它比爬树。」",
+        "en": "In the spring of the seventh year Pill-master Min brings up the recipe again. \"The ministers are here; the sovereign is still missing. The piece I gave you was the last; the pill house hasn't one left. Ten-year Solomon's seal won't grow in a garden; it has to be wild. On the north slope of the back hill there's a stand of old roots, and these two years a monkey has had its eye on them — a clever one, it digs only the old ones.\" He pauses. \"Let it dig. Don't race it up a tree.\""
+      },
+      "done": {
+        "zh": "那只猕猴蹲在崖边，龇着牙跟他对看了半天，扔下半截黄精，翻过山梁走了。小满捡起来，黑得发亮，掂一掂，沉手。埋在土里的那半截，他连土刨出来，拿衣裳包好。",
+        "en": "The macaque crouches at the cliff edge, baring its teeth at him a long while, then drops half a root and goes over the ridge. Xiaoman picks it up — black and glossy, heavy in the hand. The other half is still in the ground; he digs it out, soil and all, and wraps it in his robe."
+      },
+      "need": [
+        {
+          "kind": "subdue",
+          "creature": "mihou",
+          "n": 1
+        }
+      ],
+      "work": "cultivation",
+      "grant": {
+        "table": "quest",
+        "units": 8,
+        "wealth": 5
+      },
+      "chain": "jiujie",
+      "then": "guan-jiujie-4"
+    },
+    {
+      "id": "guan-jiujie-4",
+      "title": {
+        "zh": "九节菖蒲 · 秦雁问剑",
+        "en": "Nine-node calamus · Qin Yan asks after the sword"
+      },
+      "thread": "person",
+      "from": {
+        "place": "shanmen",
+        "who": {
+          "zh": "秦雁",
+          "en": "Qin Yan"
+        }
+      },
+      "opens": {
+        "after": "guan-jiujie-3",
+        "layer": {
+          "tier": "qi",
+          "step": 8,
+          "share": 0.65
+        }
+      },
+      "say": {
+        "zh": "秦雁在山门的石阶底下拦住他，抱着剑把他从头看到脚：「这一个月，你往北坡跑了七趟，崖顶一趟也没上。」小满道：「替丹房挖黄精。」秦雁道：「黄精不会跑，剑会荒。就在这儿，走三十招再去。」",
+        "en": "Qin Yan stops him at the foot of the mountain-gate steps, sword in her arms, and looks him over head to foot. \"This month you've run to the north slope seven times and not once up to the clifftop.\" Xiaoman says, \"Digging Solomon's seal for the pill house.\" Qin Yan says, \"The roots won't run off. A sword goes rusty. Right here — thirty moves, then go.\""
+      },
+      "done": {
+        "zh": "三十招走完，秦雁收了剑：「没荒。」走出两步，又回过头来：「下个月，崖顶见。」",
+        "en": "When the thirty moves are done, Qin Yan sheathes her sword. \"Not rusty.\" Two steps off she turns back: \"Next month, the clifftop.\""
+      },
+      "need": [
+        {
+          "kind": "board",
+          "task": "shanmen-qinyan",
+          "n": 1,
+          "at": "shanmen"
+        }
+      ],
+      "work": "labor",
+      "grant": {
+        "table": "labor",
+        "wealth": 5
+      },
+      "chain": "jiujie",
+      "then": "guan-jiujie-5"
+    },
+    {
+      "id": "guan-jiujie-5",
+      "title": {
+        "zh": "九节菖蒲 · 看炉",
+        "en": "Nine-node calamus · Watching the furnace"
+      },
+      "thread": "person",
+      "from": {
+        "place": "yaoyuan",
+        "who": {
+          "zh": "闵丹师",
+          "en": "Pill-master Min"
+        }
+      },
+      "opens": {
+        "after": "guan-jiujie-4",
+        "layer": {
+          "tier": "qi",
+          "step": 9,
+          "share": 0.3
+        }
+      },
+      "say": {
+        "zh": "年八开春，菖蒲阴够了，黄精也晒透了。闵丹师把那张黄纸压在炉台上，挑了个没风的日子开正炉，叫小满搬了矮凳守在丹房门外：「九节聚气的药香，飘得出十里去。头三夜最要紧，鬿雀闻着味儿就来——你守门，我看火。」",
+        "en": "In the spring of the eighth year the calamus has dried long enough and the Solomon's seal is sun-dried through. Pill-master Min weights the yellow paper on the furnace ledge, picks a windless day to light the main furnace, and has Xiaoman bring his stool outside the pill-house door. \"The smell of a nine-node batch carries ten li. The first three nights matter most; the qique come at the scent. You keep the door; I'll mind the fire.\""
+      },
+      "done": {
+        "zh": "第三夜过去，丹房门口一根鸟毛也没落进去。闵丹师在炉子那头闻了闻，头也没回，道：「火稳。」又道：「还有四夜。」",
+        "en": "The third night passes and not one feather has got past the pill-house door. Pill-master Min sniffs at the far side of the furnace without turning round. \"Steady fire.\" Then: \"Four nights to go.\""
+      },
+      "need": [
+        {
+          "kind": "board",
+          "task": "yaoyuan-kanlu",
+          "n": 1,
+          "at": "yaoyuan"
+        }
+      ],
+      "work": "labor",
+      "grant": {
+        "table": "labor",
+        "wealth": 5
+      },
+      "chain": "jiujie",
+      "then": "guan-jiujie-6"
+    },
+    {
+      "id": "guan-jiujie-6",
+      "title": {
+        "zh": "九节菖蒲 · 开炉那一夜",
+        "en": "Nine-node calamus · The night the furnace opens"
+      },
+      "thread": "person",
+      "from": {
+        "place": "yaoyuan",
+        "who": {
+          "zh": "闵丹师",
+          "en": "Pill-master Min"
+        }
+      },
+      "opens": {
+        "after": "guan-jiujie-5",
+        "layer": {
+          "tier": "qi",
+          "step": 9,
+          "share": 0.6
+        }
+      },
+      "say": {
+        "zh": "第七夜，炉要开了。闵丹师把丹房的门闩上，只留一扇窗：「开炉那一下，药香最浓。墙头上要是蹲着东西，别等它下来。」",
+        "en": "The seventh night, and the furnace is about to open. Pill-master Min bars the pill-house door and leaves one window open. \"The moment the furnace opens the smell is strongest. If something is crouched on the wall, don't wait for it to come down.\""
+      },
+      "done": {
+        "zh": "后半夜，墙头上蹲着一只山狸，两点绿光冲着窗口一眨不眨。小满一剑把它撵下了墙。天亮开炉，九颗丹，七颗一道纹，两颗是两道。闵丹师数了两遍，把那两颗推到他跟前：「这两颗是你的。料是你挖的。」他看了小满一眼，「十炉里出一炉好的——这是今年那一炉。」",
+        "en": "Past midnight a mountain cat crouches on the wall, two points of green fixed on the window, unblinking. Xiaoman drives it off the wall with one stroke. At dawn the furnace opens: nine pills, seven one-ringed and two two-ringed. Pill-master Min counts twice and pushes those two across to him. \"These two are yours. You dug the herbs.\" He looks at Xiaoman. \"One good batch in ten — this is this year's.\""
+      },
+      "need": [
+        {
+          "kind": "subdue",
+          "creature": "shanli",
+          "n": 1
+        }
+      ],
+      "work": "cultivation",
+      "grant": {
+        "table": "quest",
+        "units": 12,
+        "wealth": 10,
+        "item": "qi-pill"
+      },
+      "chain": "jiujie"
+    },
+    {
+      "id": "guan-xiqiang-xiegou",
+      "title": {
+        "zh": "崖下的絜钩",
+        "en": "The xiegou under the cliff"
+      },
+      "thread": "chore",
+      "from": {
+        "place": "zhishi",
+        "who": {
+          "zh": "执事堂 · 西墙的红牌",
+          "en": "a red tag on the stewards' hall's west wall"
+        }
+      },
+      "opens": {
+        "layer": {
+          "tier": "qi",
+          "step": 7
+        }
+      },
+      "say": {
+        "zh": "西墙一块红牌：「后山崖下那几棵老松上，夜里蹲着一只絜钩，野鸭的身子，老鼠的尾巴。它蹲到哪棵树上，底下的草就黄到哪里，药园的苗也跟着黄。」底下周衡一行小字：打妖的红牌，七层以下，不许揭。",
+        "en": "A red tag on the west wall: \"In the old pines under the back-hill cliff a xiegou perches at night — a wild duck's body, a rat's tail. Whichever tree it sits in, the grass yellows beneath it, and the herb garden's seedlings with it.\" Beneath, a line in Zhou Heng's small hand: a red tag for beasts; none under the seventh layer may take it."
+      },
+      "done": {
+        "zh": "絜钩扑棱着翅膀，拖着那条老鼠尾巴翻过崖去了。周衡在牌子背面画了个圈：「药园的苗，下个月看。」",
+        "en": "The xiegou flaps off over the cliff, its rat's tail trailing. Zhou Heng draws a circle on the back of the tag: \"The garden's seedlings — we'll see next month.\""
+      },
+      "need": [
+        {
+          "kind": "subdue",
+          "creature": "xiegou",
+          "n": 1
+        }
+      ],
+      "work": "cultivation",
+      "grant": {
+        "table": "quest",
+        "units": 8,
+        "wealth": 10
+      }
+    },
+    {
+      "id": "guan-xiqiang-congcong",
+      "title": {
+        "zh": "北坡的从从",
+        "en": "The congcong on the north slope"
+      },
+      "thread": "chore",
+      "from": {
+        "place": "zhishi",
+        "who": {
+          "zh": "执事堂 · 西墙的红牌",
+          "en": "a red tag on the stewards' hall's west wall"
+        }
+      },
+      "opens": {
+        "layer": {
+          "tier": "qi",
+          "step": 8
+        }
+      },
+      "say": {
+        "zh": "西墙一块红牌：「北坡下来一只从从，六只脚的狗，夜里绕着柴房叫，叫的是它自己的名字。伙房的人一连三夜没睡好。」底下一行小字：八层以下，不许揭。",
+        "en": "A red tag on the west wall: \"A congcong has come down off the north slope — a dog with six feet. At night it circles the woodshed barking, and what it barks is its own name. The kitchen hands haven't slept three nights running.\" A line beneath: none under the eighth layer may take it."
+      },
+      "done": {
+        "zh": "从从叫着自己的名字，六只脚倒腾得数不过来，钻回北坡的林子里去了。那天夜里，伙房的人睡了个囫囵觉。",
+        "en": "Barking its own name, six feet going faster than you can count, the congcong dives back into the north-slope woods. That night the kitchen hands sleep straight through."
+      },
+      "need": [
+        {
+          "kind": "subdue",
+          "creature": "congcong",
+          "n": 1
+        }
+      ],
+      "work": "cultivation",
+      "grant": {
+        "table": "quest",
+        "units": 8,
+        "wealth": 10
+      }
+    },
+    {
+      "id": "guan-xiqiang-xiong",
+      "title": {
+        "zh": "拍断篱笆的熊",
+        "en": "The bear that broke the fence"
+      },
+      "thread": "chore",
+      "from": {
+        "place": "zhishi",
+        "who": {
+          "zh": "执事堂 · 西墙的红牌",
+          "en": "a red tag on the stewards' hall's west wall"
+        }
+      },
+      "opens": {
+        "layer": {
+          "tier": "qi",
+          "step": 9
+        }
+      },
+      "say": {
+        "zh": "西墙一块红牌，墨迹还新：「北坡下来一头熊，人立起来比门框还高，一掌拍断了药园东边两根篱笆桩。」底下一行小字：九层以下，不许揭。",
+        "en": "A red tag on the west wall, the ink still fresh: \"A bear has come down off the north slope; standing up it's taller than a door frame, and one swipe snapped two fence posts on the herb garden's east side.\" A line beneath: none under the ninth layer may take it."
+      },
+      "done": {
+        "zh": "那头熊挨了一剑，掉头钻回了北坡。第二天，周衡叫人把篱笆桩补上，在牌子背面画了个圈。",
+        "en": "The bear takes one stroke, turns and crashes back up the north slope. The next day Zhou Heng has the fence posts replaced and draws a circle on the back of the tag."
+      },
+      "need": [
+        {
+          "kind": "subdue",
+          "creature": "xiong",
+          "n": 1
+        }
+      ],
+      "work": "cultivation",
+      "grant": {
+        "table": "quest",
+        "units": 10,
+        "wealth": 15
       }
     }
   ]

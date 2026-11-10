@@ -125,7 +125,8 @@ test('a human-like hand (200 ms reaction, tools/board-bots.mjs) clears every lev
 });
 
 test('the story\'s boards: each task plays its own row\'s level, its how first in the row and on the task, the pay as 调息\'s', () => {
-  const rows = reg.games.filter((g) => g.id === 'dash' && g.task && !g.replaced); // a board the story cut (旧版) plays no more
+  // A board the story cut (旧版) plays no more; a place's practice row (2026-11-10, 山门) plays a story row's level by its id (`data.level`), no level of its own.
+  const rows = reg.games.filter((g) => g.id === 'dash' && g.task && !g.replaced && g.levels?.length);
   assert.ok(rows.length >= 1);
   const ids = new Set();
   for (const r of rows) {
@@ -168,7 +169,8 @@ test('comic and clear (Hanli 10-28: 「做成漫画风格就行. 背景简单一
 
 test('the story\'s runs climb: their kinds come in one by one in reading order, each where its speed can clear it', () => {
   const ORDER = ['s', 'b', 'pit', 'bb', 'ss', 'pad', 'ceil', 'sss', 'orb'];
-  const rows = reg.games.filter((g) => g.id === 'dash' && g.task && !g.replaced); // a board the story cut (旧版) plays no more
+  // A board the story cut (旧版) plays no more; a place's practice row (2026-11-10, 山门) plays a story row's level by its id (`data.level`), no level of its own.
+  const rows = reg.games.filter((g) => g.id === 'dash' && g.task && !g.replaced && g.levels?.length);
   const TABLE = JSON.parse(fs.readFileSync(new URL('../worlds/jiuding/levels/rhythm.json', import.meta.url), 'utf8'));
   const order = TABLE.chapters.flatMap((c) => c.huis.flatMap((h) => h.items)).filter((x) => x.kind === 'board' && x.game === 'dash').map((x) => x.id);
   assert.equal(order.length, rows.length);
@@ -184,7 +186,7 @@ test('the story\'s runs climb: their kinds come in one by one in reading order, 
 });
 
 test('the climb (form `climb`, 上崖 2026-10-31): the run turned up a cliff face — the same rules and bots, a standing board', () => {
-  const rows = reg.games.filter((g) => g.id === 'dash' && g.task && !g.replaced && g.levels[0].form === 'climb');
+  const rows = reg.games.filter((g) => g.id === 'dash' && g.task && !g.replaced && g.levels?.[0]?.form === 'climb');
   assert.ok(rows.some((r) => r.task === 'cliff-shangya'), '上崖 climbs');
   for (const r of rows) {
     const L = r.levels[0];
@@ -204,4 +206,11 @@ test('the climb (form `climb`, 上崖 2026-10-31): the run turned up a cliff fac
   assert.match(h, new RegExp(`class="g-dash-runner" transform="translate\\(${d.FACE} `), 'the runner against the face');
   // a run's board stays as it was
   assert.match(d.html(d.newGame('t', 1, { levels: [flat([[2, 's']])] }), 'zh'), new RegExp(`viewBox="0 0 ${d.W} ${d.H}"[^]*class="g-dash-world" transform="translate\\(`));
+});
+
+test('a place\'s practice run (山门, 2026-11-10: 「也可以加一个地点刷其他主力游戏」) plays a story run\'s own level, by its id', () => {
+  const levels = new Set(reg.games.filter((g) => g.id === 'dash' && !g.replaced).flatMap((g) => (g.levels ?? []).map((l) => l.id)));
+  const practice = reg.games.filter((g) => g.id === 'dash' && g.task && !g.replaced && !g.levels?.length);
+  assert.ok(practice.some((g) => g.task === 'shanmen-qingshen'));
+  for (const g of practice) assert.ok(levels.has(g.data?.level), `${g.task}: plays ${g.data?.level}`);
 });

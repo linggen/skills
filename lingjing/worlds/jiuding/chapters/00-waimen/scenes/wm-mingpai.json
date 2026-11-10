@@ -86,13 +86,13 @@
    },
    "grant": {
     "table": "gate",
-    "progress": 760,
+    "told": true,
     "narrated": {
      "scene": "wm-kaikai",
      "line": "第一天夜里，二层圆满，跟着第三层的关口在他身子里「咯」地一响"
     }
    },
-   "_gate": "2026-11-09 (Hanli 2026-11-09: 「不要白给修为, 除了像秘境埋土里那次, 剧情里明确写了突破的」 · 「剧情可以给修为, 但要给的和玩一场小游戏差不多, 然后有动画显示剧情奖励」): kept — the story tells this gain: 「第一天夜里，二层圆满，跟着第三层的关口在他身子里「咯」地一响」 (wm-kaikai, the scene it leads into). The 息壤 night — Hanli's own example (秘境埋土里那次): the 修为 lands as the burial is told. The lint (content.mjs lintEarned) finds the line in the text."
+   "_gate": "2026-11-10: its 修为 is the master's one told number (balance.json master.xiuwei.told[\"wm-mingpai/over\"], 760, with its why), laid on at load — never written here. 2026-11-09 (Hanli 2026-11-09: 「不要白给修为, 除了像秘境埋土里那次, 剧情里明确写了突破的」 · 「剧情可以给修为, 但要给的和玩一场小游戏差不多, 然后有动画显示剧情奖励」): kept — the story tells this gain: 「第一天夜里，二层圆满，跟着第三层的关口在他身子里「咯」地一响」 (wm-kaikai, the scene it leads into). The 息壤 night — Hanli's own example (秘境埋土里那次): the 修为 lands as the burial is told. The lint (content.mjs lintEarned) finds the line in the text."
   }
  ]
 }

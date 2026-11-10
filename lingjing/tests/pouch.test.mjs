@@ -329,7 +329,7 @@ test('a pill from 银月\'s furnace is its own 九转 item — more 修为 than 
   const item = id => content.items.items.find(i => i.id === id);
   for (const [nine, market] of [['mend-pill-9', 'mend-pill'], ['qi-pill-9', 'qi-pill']]) {
     assert.equal(item(nine).zhuan, 9, nine);
-    assert.ok((item(nine).effect?.progress ?? 0) > (item(market).effect?.progress ?? 0), `${nine} does more than ${market}`);
+    assert.ok((item(nine).effect?.units ?? 0) > (item(market).effect?.units ?? 0), `${nine} does more than ${market}`);
     assert.match(item(nine).name.zh, /^九转/);
     assert.equal(item(nine).sell, 0, '九转丹不能卖');
     assert.deepEqual(item(nine).sold, []);

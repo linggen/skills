@@ -21,7 +21,7 @@ import { duanOdds, duanPass } from '../scripts/rules/breakthrough.mjs';
 import { duanOf } from '../scripts/stage.mjs';
 import { hpMaxOf } from '../scripts/rules/cards.mjs';
 import { levelOf } from '../scripts/rules/playpay.mjs';
-import { stagesSplit } from '../tools/master.mjs';
+import { curveOf } from '../tools/master.mjs';
 
 process.env.LINGJING_STAMINA_LIMIT ??= '1';
 
@@ -143,15 +143,17 @@ test('the trial stands at 六层 too; 一层 → 二层 inside a 段 throws noth
   assert.deepEqual(content.ladder.caps.hui.h09.story, { tier: 'foundation', layer: 3 });
 });
 
-test('the pace kept: each 段 asks the old step\'s 修为, split ×1.1 over its 层; its 层 pay at the 段\'s level; 气血 by the realm as before', () => {
+test('the curve: every 层 of a realm in 段 its own threshold and level (2026-11-10, 81 levels — 段 display only); 气血 by the realm as before', () => {
+  // need(L) = R(L) × mix × 60 × T(L) (tools/master.mjs curveOf): each 层 more than the one below, the realm's first above the
+  // last realm's 九层 (×1.2 on R). Until 2026-11-10 each 段 asked its old step's 修为 split over its 层, each 层 at the 段's level.
+  const M = content.balance.master, steps = t => ({ id: t.id, zero: Boolean(t.zero), steps: t.steps.zh.length });
+  const c = curveOf(M, M.lines.gu, content.ladder.tiers.map(steps));
   for (const t of content.ladder.tiers.slice(1)) {
-    const was = t.thresholds_were['14'];
-    assert.deepEqual([0, 1, 2].map(g => t.thresholds.slice(g * 3, g * 3 + 3).reduce((a, b) => a + b, 0)), was, `${t.id}: a realm's whole as on three steps`);
-    assert.deepEqual(t.thresholds, was.flatMap(n => stagesSplit(n, 3, content.balance.master.lines.gu.need.stage_split, 10)), `${t.id}: derived, never typed`);
+    assert.deepEqual(t.thresholds, c.layers[t.id], `${t.id}: derived, never typed`);
+    for (let k = 1; k < 9; k++) assert.ok(t.thresholds[k] > t.thresholds[k - 1], `${t.id} 层 ${k + 1}`);
   }
-  assert.deepEqual(FD.thresholds, [400, 440, 470, 440, 480, 520, 480, 530, 570]);
-  assert.equal(FD.thresholds.slice(0, 3).reduce((a, b) => a + b), 1310, '古九\'s grind to 三层: 1310, as 筑基小成 was');
-  assert.deepEqual([0, 1, 2, 3, 5, 6, 8].map(k => levelOf(content, 'foundation', k).level), [12, 12, 12, 15, 15, 18, 18]);
+  assert.ok(FD.thresholds[0] > content.ladder.tiers[0].thresholds.at(-1), '筑基一层 above 练气九层');
+  assert.deepEqual([0, 1, 2, 3, 5, 6, 8].map(k => levelOf(content, 'foundation', k).level), [10, 11, 12, 13, 15, 16, 18]);
   // 气血: half a point a step on three → a sixth a 层 on nine; 九层 is the old 大成's +1 … plus the 层 inside it.
   assert.deepEqual([0, 3, 6].map(k => hpStep(content, 'foundation', k)), [0, 1, 2], 'each 段\'s first 层 is its old step');
   assert.equal(hpStep(content, 'qi', 4), 4, '练气 as it was');
@@ -161,25 +163,28 @@ test('the pace kept: each 段 asks the old step\'s 修为, split ×1.1 over its 
 
 test('old saves: v14\'s 小成 · 中成 · 大成 are those 段, the 修为 walked to the same point of the 段 — once', () => {
   const was = FD.thresholds_were['14'];
+  // Walked on the ladder it was written for (v17's, thresholds_were["18"]), then read by its percent onto the curve (v18,
+  // state.mjs curveCarry, 2026-11-10) — the same point of the 层 it lands on.
+  const W = FD.thresholds_were['18'], on = (step, p, t = FD) => Math.round((p * t.thresholds[step]) / t.thresholds_were['18'][step]);
   const v14 = (step, progress, extra = {}) => ({ ...gujiu(), version: 14, step, progress, lines: { jin: { tier: 'xinsheng', step: 0, progress: 0 } }, ...extra });
   const pos = s => [s.tier, s.step, s.progress];
   assert.deepEqual(pos(migrate(v14(0, 0), content)), ['foundation', 0, 0], '小成 · 0: 一层 · 0 — no 层 given');
-  assert.deepEqual(pos(migrate(v14(0, 655), content)), ['foundation', 1, 655 - 400], '655 of 1310: mid-段, 二层 · 255');
+  assert.deepEqual(pos(migrate(v14(0, 655), content)), ['foundation', 1, on(1, 655 - W[0])], '655 of 1310: mid-段, 二层 · 255 of 440 — its share of 二层 on the curve');
   assert.deepEqual(pos(migrate(v14(1, 0), content)), ['foundation', 3, 0], '中成 · 0: 四层 · 0');
-  assert.deepEqual(pos(migrate(v14(0, 1500), content)), ['foundation', 2, 1500 - 840], 'past the mark at the cap: 三层, as far past');
+  assert.deepEqual(pos(migrate(v14(0, 1500), content)), ['foundation', 2, on(2, 1500 - W[0] - W[1])], 'past the mark at the cap: 三层, as far past');
   const peak = migrate(v14(2, was[2]), content);
   assert.deepEqual(pos(peak), ['foundation', 8, FD.thresholds[8]], '筑基圆满 waits at the cliff still');
   assert.equal(realmName(content, peak, 'zh'), '筑基 · 大成圆满');
   // The stretch over the step's mark shared by the 层's size (31 · 34 · 36 of 100): the 段 asks what the step did.
   const st = migrate(v14(0, 1400, { stretch: { 'foundation:0': 100, 'qi:9': 7 } }), content);
-  assert.deepEqual(pos(st), ['foundation', 2, 1400 - (400 + 31) - (440 + 34)]);
-  assert.deepEqual(st.stretch, { 'qi:9': 7, 'foundation:2': 36 }, 'the stretch on its new key');
+  assert.deepEqual(pos(st), ['foundation', 2, on(2, 1400 - (W[0] + 31) - (W[1] + 34))]);
+  assert.deepEqual(st.stretch, { 'qi:9': on(9, 7, content.ladder.tiers[0]), 'foundation:2': on(2, 36) }, 'the stretch on its new key');
   const m = migrate(v14(1, 700), content);
   assert.equal(m.version, STATE_VERSION);
   assert.equal('ladder_stages' in m, false, 'the mark goes once carried');
   assert.deepEqual(migrate(m, content), m, 'fitted once: the same again');
-  // 练气 untouched; a new save at 筑基一层 is never carried.
-  assert.deepEqual(pos(migrate({ ...v14(0, 0), tier: 'qi', step: 4, progress: 300 }, content)), ['qi', 4, 300]);
+  // 练气 by its percent only; a new save at 筑基一层 is never carried.
+  assert.deepEqual(pos(migrate({ ...v14(0, 0), tier: 'qi', step: 4, progress: 300 }, content)), ['qi', 4, on(4, 300, content.ladder.tiers[0])]);
   const fresh = gujiu({ step: 0, progress: 10 });
   assert.deepEqual(pos(migrate(fresh, content)), ['foundation', 0, 10]);
 });

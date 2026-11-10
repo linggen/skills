@@ -79,12 +79,12 @@ function hoursChart(r) {
   const L = r.layers.filter((l) => l.target_h);
   const xs = L.map((l) => l.name.replace('练气', ''));
   const body = chart({ xs, unit: 'h', series: [
-    { name: '曲线', color: 'var(--muted)', values: L.map((l) => l.curve_h ?? null), dash: true },
+    // 2026-11-10: the curve is the target — T(L) = T₁ × 1.015^(L−1) (master time, T₁ solved by tools/balance.mjs --solve); no fit.
     { name: '目标', color: 'var(--s1)', values: L.map((l) => l.target_h), dash: true },
     { name: '每日一功课', color: 'var(--s2)', values: L.map((l) => l.chore_h) },
     { name: '无功课', color: 'var(--s3)', values: L.map((l) => l.rule_h) },
   ] });
-  return `<section class="card"><h2>每层要玩几小时</h2>${body}${legend([['总表曲线 (master hours)', 'var(--muted)'], ['目标 (play_pay.hours, 按每回目标带拟合)', 'var(--s1)'], ['每日交一功课, 30 分/日', 'var(--s2)'], ['无功课 (只玩小游戏)', 'var(--s3)']])}</section>`;
+  return `<section class="card"><h2>每层要玩几小时</h2>${body}${legend([['目标 T(L) = T₁ × 1.015^(L−1) (play_pay.hours, 总表曲线; T₁ 解出)', 'var(--s1)'], ['每日交一功课, 30 分/日', 'var(--s2)'], ['无功课 (只玩小游戏)', 'var(--s3)']])}</section>`;
 }
 
 function pacesChart(r) {

@@ -1,7 +1,7 @@
 // rules/core.mjs — Changing it: refusals, pay, riddles, stamina, resolve and judge.
 // Part of the rules engine; rules.mjs is its one door.
 import { gameOf, MADE_GRANT } from '../content.mjs';
-import { addProgress, layerPayOf, dayKey, fill, fitValue, fullName, lockedOf, normalizeAnswer, payOf, personOf, pick, rollDay, settleStamina, speedOf, staminaCost, staminaLimited, staminaRest, staminaReturnsAt, stepName, peakName, phaseName, threshold, tierOf, seedOf, stepOfLayer, stepUp, zeroAt } from '../state.mjs';
+import { addProgress, layerPayOf, dayKey, fill, fitValue, fullName, lockedOf, normalizeAnswer, personOf, pick, rollDay, settleStamina, speedOf, staminaCost, staminaLimited, staminaRest, staminaReturnsAt, stepName, peakName, phaseName, threshold, tierOf, seedOf, stepOfLayer, stepUp, zeroAt } from '../state.mjs';
 import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, grantFrom } from './cards.mjs';
@@ -24,7 +24,7 @@ import { capLook, pastCapSay, rebank, shareRoom, storyAllows, underCap } from '.
 import { entryGate, stageBrief, stageGate, stageSay } from './gates.mjs';
 import { fightStuck } from './skips.mjs';
 import { atScene, inMade, placeName, placeOf, placeOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
-import { authoredScale, convertRate, fightPlay, pillBelow, storyPlay } from './playpay.mjs';
+import { convertRate, fightPlay, grantUnits, pillBelow, storyPlay, unitsPay } from './playpay.mjs';
 import { closeStretch, endsStretch, floorOf, joinPaid, landedOnly, stretchShown, tallyTold } from './cultivation.mjs';
 
 /* ── Changing it ── */
@@ -62,20 +62,25 @@ export function meets(state, needs, now = new Date(), sceneId = state.scene) {
    `state.day` still counts what the day paid. */
 function amountsOf(content, state, now, grant) {
   const table = content.rewards.tables[grant.table];
-  // 修为 a fixed number (rules/playpay.mjs, 2026-11-02): a fight (兽潮's night too) by its 体力 × the formula; what the book
-  // authors as written. Capped by its table as authored.
+  // 修为 by formula (rules/playpay.mjs; Hanli 2026-11-10: 「所有和数值相关的都应该有公式推到, 不能手动定」): a fight (兽潮's night
+  // too) by its 体力; a story step one small game's (playpay.mjs storyPlay), whatever the exit says; a size (`units` — the
+  // book's every grant, a pill's nights of 闭关 too) × R where he stands. A number written by hand is a master `told`
+  // (content.mjs toldOf) or a made scene's (Ling's, capped by its table), paid as written.
   const fight = grant.table === 'haunt' && grant.progress ? fightPlay(content, state, grant) : null;
-  // A pill (`pill`, its 阶 in `tier`): its 转's share of the layer at its own realm, less past it (playpay.mjs pillBelow).
-  // A story step (`story`): one small game's worth at his level (playpay.mjs storyPlay), whatever the exit says.
   const story = grant.table === 'story' ? storyPlay(content, state) : null;
-  const authored = fight ?? story ?? Math.min(grant.progress ?? 0, table.progress) * authoredScale(content, state, grant.table) * (grant.table === 'pill' ? pillBelow(content, state, grant.tier) : 1);
+  // A fight's `units` are its 体力 (fightPlay reads them), never a size: on the haunt table only the fight pays.
+  const units = fight == null && story == null && grant.table !== 'haunt' ? grantUnits(content, grant) : null;
+  // A pill (`pill`, its 阶 in `tier`): less past its own 阶 (playpay.mjs pillBelow).
+  const below = grant.table === 'pill' ? pillBelow(content, state, grant.tier) : 1;
+  const authored = fight ?? story ?? (units != null ? unitsPay(content, state, units) : Math.min(grant.progress ?? 0, table.progress)) * below;
   // `share`: a replay's falling share (tasks.mjs duel, playpay.mjs fightReplay) — 修为 and 灵石 alike.
   const share = grant.share ?? 1;
   // 问签 (fortune.mjs qianPayOf): the day's 签 speed, and its 宜 kind's ×pay — 1 before the draw, never below.
   const want = Math.round(authored * speedOf(content, state) * share * qianPayOf(content, state, now, grant));
   const base = Math.max(0, want);
   const wealth = Math.max(0, Math.round(Math.min(grant.wealth ?? 0, table.wealth) * share));
-  return { base, progress: Math.round(base * payOf(content, state) * layerPayOf(content, state, grant.table)), wealth };
+  // One realm multiplier (2026-11-10): R's own (`rate.realm`) — the ladder's per-realm `pay` is gone.
+  return { base, progress: Math.round(base * layerPayOf(content, state, grant.table)), wealth };
 }
 
 /* What a grant would pay him now — the table's cap, his roots, the day's

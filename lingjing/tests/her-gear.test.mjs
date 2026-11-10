@@ -97,7 +97,7 @@ test('a v15 save: her one slot moves to the slot her thing goes in — the bell 
   const v15 = (wear, bag) => ({ ...at(bag), version: 15, wear });
   const bell = migrate(v15({ yinyue: 'moon-bell', weapon: 'iron-sword' }, { 'moon-bell': 1, 'iron-sword': 1 }), content);
   assert.equal(bell.version, STATE_VERSION);
-  assert.equal(STATE_VERSION, 17); // v17 (2026-11-04): read_whole, the 年 pools read through their boards
+  assert.equal(STATE_VERSION, 18); // v18 (2026-11-10): the curve, the bar read by its percent (v17, 11-04: read_whole)
   assert.deepEqual(bell.wear, { weapon: 'iron-sword', 'yinyue.pendant': 'moon-bell' });
   assert.equal(bell.her_slots, undefined, 'the mark is carried and gone');
   assert.deepEqual(migrate(v15({ yinyue: 'qi-silk' }, { 'qi-silk': 1 }), content).wear, { 'yinyue.robe': 'qi-silk' });

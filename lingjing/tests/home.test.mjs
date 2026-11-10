@@ -28,6 +28,8 @@ function gate146(at = 'waimen') {
   if (at !== 'yaoyuan') s = move(s, content, ctx(), { place: at }).state;
   return told({ ...s, progress: 146, stamina: 100, stamina_at: NOW.toISOString(), ...dealtAt(at) });
 }
+/* 练气一层's threshold (off the curve since 2026-11-10: 370; it was 470 when Hanli's save stood at 146/470). */
+const NEED1 = content.ladder.tiers[0].thresholds[1], SHORT = NEED1 - 146;
 /* The plate deals one practice board at a time (rules/rotation.mjs, 2026-11-04): here, the day's first of this place's pool. */
 function dealtAt(at) {
   const p = placeOf(content, at), g = p?.has?.games_pool ? poolToday(p, NOW).find((x) => !(p.has.games ?? []).includes(x)) : null;
@@ -49,28 +51,30 @@ test('the gate short: the bar, what it still asks with today\'s 功课 counted, 
   const g = l.home.gate;
   // The day's 功课: its 体力-units × R (2026-11-02: a fixed number, ≈10 at 练气一层 — was 10% of the layer, 47).
   const ch = chorePlay(content, s, 'day');
-  assert.deepEqual([g.step, g.progress, g.of, g.short, g.chores], ['练气一层圆满', 146, 470, 324, ch]);
-  assert.equal(g.plays, playsFor(content, s, l, 324 - ch, NOW), 'the boards for what the 功课 leaves');
-  assert.ok(g.plays >= 30, `${g.plays} boards for ${324 - ch} 修为: sittings of play now (Hanli's formula), not one`);
+  assert.deepEqual([g.step, g.progress, g.of, g.short, g.chores], ['练气一层圆满', 146, NEED1, SHORT, ch]);
+  assert.equal(g.plays, playsFor(content, s, l, SHORT - ch, NOW), 'the boards for what the 功课 leaves');
+  // More than a sitting's boards (the typical 30 minutes ≈ ten 3-minute boards): ≥ 30 while a board paid × 1.5, 18 since the
+  // games carry the layer (× 5, 2026-11-10) — still sittings, not one.
+  assert.ok(g.plays > 10, `${g.plays} boards for ${SHORT - ch} 修为: sittings of play now (Hanli's formula), not one`);
   const b = bestHere(s, l);
   assert.deepEqual(l.home.next, { kind: 'board', id: b.id, title: l.tasks.find((t) => t.id === b.id).title, progress: b.progress });
   assert.ok(l.home.todo.some((r) => r.kind === 'gongke' && r.progress === ch && r.means === '练功'));
   const h = html(l);
   assert.match(h, /class="card next home"/);
-  assert.match(h, new RegExp(`146/470 · 还差 324 修为 · 功课 \\+${ch} · 再约 ${g.plays} 局`));
+  assert.match(h, new RegExp(`146/${NEED1} · 还差 ${SHORT} 修为 · 功课 \\+${ch} · 再约 ${g.plays} 局`));
   assert.match(h, new RegExp(`data-play="${b.id}"[^>]*>开局 · ${b.name}[^<]*· 修为 \\+${b.progress}<`));
   assert.match(h, new RegExp(`练功 · 修为 \\+${ch}`));
   assert.doesNotMatch(h, /undefined|\{\w+\}/);
   // No 功课 today: the boards alone, the replay's falling share counted (17 at 古四, tests/play-pay).
   const bare = look(s, content, ctx());
   assert.equal(bare.home.gate.chores, undefined);
-  assert.equal(bare.home.gate.plays, playsFor(content, s, bare, 324, NOW));
-  assert.match(html(bare), new RegExp(`还差 324 修为 · 约 ${bare.home.gate.plays} 局`));
+  assert.equal(bare.home.gate.plays, playsFor(content, s, bare, SHORT, NOW));
+  assert.match(html(bare), new RegExp(`还差 ${SHORT} 修为 · 约 ${bare.home.gate.plays} 局`));
 });
 
 test('「约 N 局」 is the boards\' honest count: best first, each the replay share it pays that play, a day rolled when all are at the floor', () => {
   const s = gate146(), l = look(s, content, ctx());
-  const need = 324, n = playsFor(content, s, l, need, NOW);
+  const need = SHORT, n = playsFor(content, s, l, need, NOW);
   // One board less leaves it short: the count is the least that fills it.
   assert.ok(n > 1);
   // The best board here at its full share (each pays its own minutes since 2026-11-04).
@@ -105,7 +109,7 @@ test('an errand ready here: 交差 first, the stage quest met too', () => {
   assert.deepEqual(l.home.next, { kind: 'turnin', id: 'xu-waimen-roof', title: '修屋顶' });
   assert.match(html(l), /data-do="turn" data-id="xu-waimen-roof"[^>]*>交差 · 修屋顶</);
   assert.ok(l.home.todo.some((r) => r.kind === 'ready' && r.n === 1));
-  const met = look({ ...s, progress: 470 }, content, ctx());
+  const met = look({ ...s, progress: NEED1 }, content, ctx());
   assert.equal(met.home.gate, null, 'met: no bar to fill');
   // The story's way open again comes first (rank 1); the stage quest waits in 待办's 可交.
   assert.deepEqual(met.home.next, { kind: 'way', place: { id: 'yaoyuan', name: '沉鼎观 · 药园' } });
@@ -185,13 +189,13 @@ test('short by what one thing pays: that thing is the button, named as enough �
   const LEDGER = { id: 'cfo-import', app: 'cfo', kind: 'ledger', period: 'week', pool: true, due: true, title: { zh: '导入账单', en: 'Import' } };
   // A week's 功课 (its 体力-units × R, 2026-11-02): short by just that.
   const wk = chorePlay(content, gate146(), 'week');
-  let s = { ...gate146(), progress: 470 - wk, hunt_losses: { houshan: 1 }, bag: { ...gate146().bag, 'old-bow': 1 }, wear: {} };
+  let s = { ...gate146(), progress: NEED1 - wk, hunt_losses: { houshan: 1 }, bag: { ...gate146().bag, 'old-bow': 1 }, wear: {} };
   const l = look(s, content, ctx([LEDGER]));
   assert.equal(l.home.gate.short, wk);
   assert.deepEqual(l.home.next, { kind: 'gongke', id: 'cfo-import', title: '导入账单', means: '算账', progress: wk, enough: true });
   assert.match(html(l), new RegExp(`data-book[^>]*>算账 · 修为 \\+${wk} · 够了<`));
   // No 功课 that covers it: the best board here today, when it does (a board's +6 for 4 short).
-  const near = look({ ...s, progress: 466 }, content, ctx()), b = bestHere({ ...s, progress: 466 }, near);
+  const near = look({ ...s, progress: NEED1 - 4 }, content, ctx()), b = bestHere({ ...s, progress: NEED1 - 4 }, near);
   assert.deepEqual([near.home.next.kind, near.home.next.id, near.home.next.enough], ['board', b.id, true]);
   assert.match(html(near), new RegExp(`data-play="${b.id}"[^>]*>开局 · ${b.name}[^<]*· 修为 \\+${Math.min(b.progress, near.home.gate.short)} · 够了<`)); // past the mark it is 灵石 (paysOf, 10-28): the button names what lands
   // Short by more than either: the plain ranking.
@@ -207,7 +211,7 @@ test('the page: the 主页 replaces 下一步, the bar grows from where it stood
   assert.match(page, /const homeWayOf = \(at\) => \(at === 'todo' \? look\?\.home\?\.todo\?\.find\(\(r\) => r\.kind === 'strengthen'\)\?\.way : look\?\.home\?\.next\?\.way\)/);
   const s = gate146(), l = look(s, content, ctx());
   const grown = cardHtml({ card: 'next' }, { look: l, words: WORDS.zh, lang: 'zh', homeFrom: 10 });
-  assert.match(grown, /<i style="width:10%" data-to="31"><\/i>/, 'drawn where it stood, moved to now');
+  assert.match(grown, new RegExp(`<i style="width:10%" data-to="${Math.round((146 / NEED1) * 100)}"></i>`), 'drawn where it stood, moved to now');
 });
 
 test('an errand done away from its giver stays in 待办, pointing at where it is handed in (后山的野猪 won, 周衡 at 药园)', () => {

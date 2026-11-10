@@ -61,7 +61,7 @@
    ],
    "grant": {
     "table": "scene",
-    "progress": 60,
+    "units": 30,
     "wealth": 20,
     "narrated": {
      "line": "元婴了。"

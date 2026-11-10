@@ -1,19 +1,19 @@
 {
   "version": 1,
-  "_balance": "Thresholds are balance.json's (`layers`, folded in by content.mjs withBalance; tools/balance.mjs --fit re-derives 练气's from the stage quests, design.md § Pacing). `pay` scales every reward in that realm. `thresholds_were` keeps the ladders old saves were played on (state.mjs paceLayer).",
-  "_about": "The ladder: tiers (this world's realms) with their steps and the progress each step asks for; `pay` scales rewards in that tier; `gate` names the chapter a tier waits for. 练气 has nine 层 above 零层 (our one exception to 凡人, story DESIGN § 道统; 零层 is `zero`): `phases` names them three by three — 一至三层 小成, 四至六层 中成, 七至九层 大成. Every realm past 练气 has no 层: its three steps are 小成, 中成, 大成 themselves (Hanli, 2026-10-09; 小成/中成/大成 is the Daoist word, 《钟吕传道集》, replacing 初期/中期/后期). `full` is the word for a step filled — 练气二层圆满, 筑基中成圆满, 筑基大成圆满 — nothing more goes in until the next step; only the realm's last step filled, its 圆满 (筑基圆满, 练气圆满), is tried for a breakthrough. 巅峰 is the spoken word for the same point (外门's 「九层巅峰」); 圆满 is the formal one, and only it stands in a table. Past 练气 each realm had three steps until 2026-10-03, nine 层 from then to 2026-10-09, and three steps again from then to 2026-11-02, each the sum of its three 层 (state.mjs v6 threeToNine, v7 nineToThree; the thresholds are the pre-10-03 ones, so the realm's whole never changed). Since 2026-11-02 (Hanli approved: 「以后可以仍然按层数算1-3=小成, 4-6=中, 7-9=大」 · 「9层用于计算, 小, 中, 大成用于显示」 · 「练气的UI不改了, 保持现在这样吧. 筑基以后再分3段UI吧」) every realm past 练气 counts nine 层 again (`steps`, one threshold each) and shows them as three 段 (`display: \"stages\"`): 一至三层 小成, 四至六层 中成, 七至九层 大成 (`phases`, ids `stage_ids`), read 「筑基 · 中成」 — the 层 is the bar's and the tooltip's, never a name (state.mjs stepName, stageOf). Into 四层 and 七层 a light 段 trial is thrown (`breakthrough.duan`); 九层圆满 is the realm's breakthrough as ever. 练气 is unchanged: its 层 named, no 段 trial. Each 段 asks what its step asked on three (balance.json `master.lines.gu._need_stages`: the realm's pace kept), and its 层 pay at the 段's level. A save from the three steps is carried by state v15 (state.mjs stagesCarry: step k is 段 k, the 修为 it held walked through its 层 — the same point of the 段; `thresholds_were[\"14\"]` is the three-step ladder it was played on).",
+  "_balance": "Thresholds are balance.json's (`layers`, folded in by content.mjs withBalance; tools/balance.mjs --fit re-derives 练气's from the stage quests, design.md § Pacing). One realm multiplier only (2026-11-10): R's own (balance.json master.xiuwei.rate.realm) — the tiers carry no `pay` any more. `thresholds_were` keeps the ladders old saves were played on (state.mjs paceLayer).",
+  "_about": "The ladder: tiers (this world's realms) with their steps and the progress each step asks for; `gate` names the chapter a tier waits for. 练气 has nine 层 above 零层 (our one exception to 凡人, story DESIGN § 道统; 零层 is `zero`): `phases` names them three by three — 一至三层 小成, 四至六层 中成, 七至九层 大成. Every realm past 练气 has no 层: its three steps are 小成, 中成, 大成 themselves (Hanli, 2026-10-09; 小成/中成/大成 is the Daoist word, 《钟吕传道集》, replacing 初期/中期/后期). `full` is the word for a step filled — 练气二层圆满, 筑基中成圆满, 筑基大成圆满 — nothing more goes in until the next step; only the realm's last step filled, its 圆满 (筑基圆满, 练气圆满), is tried for a breakthrough. 巅峰 is the spoken word for the same point (外门's 「九层巅峰」); 圆满 is the formal one, and only it stands in a table. Past 练气 each realm had three steps until 2026-10-03, nine 层 from then to 2026-10-09, and three steps again from then to 2026-11-02, each the sum of its three 层 (state.mjs v6 threeToNine, v7 nineToThree; the thresholds are the pre-10-03 ones, so the realm's whole never changed). Since 2026-11-02 (Hanli approved: 「以后可以仍然按层数算1-3=小成, 4-6=中, 7-9=大」 · 「9层用于计算, 小, 中, 大成用于显示」 · 「练气的UI不改了, 保持现在这样吧. 筑基以后再分3段UI吧」) every realm past 练气 counts nine 层 again (`steps`, one threshold each) and shows them as three 段 (`display: \"stages\"`): 一至三层 小成, 四至六层 中成, 七至九层 大成 (`phases`, ids `stage_ids`), read 「筑基 · 中成」 — the 层 is the bar's and the tooltip's, never a name (state.mjs stepName, stageOf). Into 四层 and 七层 a light 段 trial is thrown (`breakthrough.duan`); 九层圆满 is the realm's breakthrough as ever. 练气 is unchanged: its 层 named, no 段 trial. Each 段 asks what its step asked on three (balance.json `master.lines.gu._need_stages`: the realm's pace kept), and its 层 pay at the 段's level. A save from the three steps is carried by state v15 (state.mjs stagesCarry: step k is 段 k, the 修为 it held walked through its 层 — the same point of the 段; `thresholds_were[\"14\"]` is the three-step ladder it was played on).",
   "stage_ids": ["xiao", "zhong", "da"],
   "tiers": [
     {
       "id": "qi",
-      "pay": 1,
       "_thresholds_were": "练气's thresholds a save older than each state version was played on (with 零层, by step): \"9\" before 2026-10-15's first re-derivation, \"10\" before the stage quests (2026-10-16, balance.json), \"11\" before the story stopped raising 层 (2026-10-16, the re-fit after), \"12\" the ladder of 2026-10-27 before the raise for 人间功课, which was taken back the same day (pay became a share of the layer, balance.json `_play_pay`): the same numbers, so a v12 save reads as it stood. A save from then keeps its 层 and its bar's fill (state.mjs paceLayer). \"13\" the ladder before the master table (2026-10-27, 数值系统 phase 2: 练气一层 470 ×1.1 a layer; v13 carries the bar as full as it stood).",
       "thresholds_were": {
         "9": [0, 50, 60, 70, 80, 90, 100, 110, 120, 130],
         "10": [0, 200, 350, 480, 660, 720, 820, 920, 1020, 1120],
         "11": [0, 270, 480, 500, 520, 540, 560, 1150, 1170, 1190],
         "12": [0, 470, 490, 510, 530, 1040, 1060, 1080, 1100, 1120],
-        "13": [0, 470, 490, 510, 530, 1040, 1060, 1080, 1100, 1120]
+        "13": [0, 470, 490, 510, 530, 1040, 1060, 1080, 1100, 1120],
+        "18": [0, 470, 520, 570, 630, 690, 760, 830, 920, 1010]
       },
       "_zero": "`zero`: this tier counts from 零层 (story DESIGN: 主角零层入门; 古四's one night of 小周天 → 一层, Hanli 2026-10-15). steps[0] is 零层, its threshold 0: entered with no 修为 and no bar, nothing fills it, and only a story's `rise` (wm-zhoutian's 小周天) leaves it. Its layer N is step N (state.mjs layerNo/stepOfLayer), so a `rise` or a cap's `layer` names the 层 as the book does. Before 2026-10-15 step 0 was 一层 (state.mjs v8 zeroLayer carries the save).",
       "zero": true,
@@ -52,9 +52,8 @@
       "id": "foundation",
       "gate": 1,
       "_thresholds_were": "筑基's (and every realm's above it, each its own) thresholds a save older than state v13 was played on (2026-10-27, 数值系统 phase 2: the master table's numbers; state.mjs paceLayer).",
-      "thresholds_were": { "13": [400, 500, 600], "14": [1310, 1440, 1580] },
+      "thresholds_were": { "13": [400, 500, 600], "14": [1310, 1440, 1580] , "18": [400, 440, 470, 440, 480, 520, 480, 530, 570] },
       "display": "stages",
-      "pay": 1,
       "name": {
         "zh": "筑基",
         "en": "Foundation Establishment"
@@ -67,9 +66,8 @@
     {
       "id": "core",
       "gate": 2,
-      "thresholds_were": { "13": [800, 1000, 1200], "14": [2060, 2270, 2490] },
+      "thresholds_were": { "13": [800, 1000, 1200], "14": [2060, 2270, 2490] , "18": [620, 680, 760, 690, 750, 830, 750, 830, 910] },
       "display": "stages",
-      "pay": 1,
       "name": {
         "zh": "结丹",
         "en": "Core Formation"
@@ -82,9 +80,8 @@
     {
       "id": "nascent",
       "gate": 3,
-      "thresholds_were": { "13": [1600, 2000, 2400], "14": [3240, 3560, 3920] },
+      "thresholds_were": { "13": [1600, 2000, 2400], "14": [3240, 3560, 3920] , "18": [980, 1080, 1180, 1080, 1180, 1300, 1180, 1300, 1440] },
       "display": "stages",
-      "pay": 2,
       "name": {
         "zh": "元婴",
         "en": "Nascent Soul"
@@ -97,9 +94,8 @@
     {
       "id": "deity",
       "gate": 4,
-      "thresholds_were": { "13": [3000, 3600, 4200], "14": [5100, 5610, 6170] },
+      "thresholds_were": { "13": [3000, 3600, 4200], "14": [5100, 5610, 6170] , "18": [1540, 1690, 1870, 1690, 1860, 2060, 1860, 2050, 2260] },
       "display": "stages",
-      "pay": 3,
       "name": {
         "zh": "化神",
         "en": "Deity Transformation"
@@ -112,9 +108,8 @@
     {
       "id": "void",
       "gate": 5,
-      "thresholds_were": { "13": [5000, 6000, 7000], "14": [8020, 8820, 9700] },
+      "thresholds_were": { "13": [5000, 6000, 7000], "14": [8020, 8820, 9700] , "18": [2420, 2670, 2930, 2660, 2930, 3230, 2930, 3220, 3550] },
       "display": "stages",
-      "pay": 6,
       "name": {
         "zh": "炼虚",
         "en": "Void Refinement"
@@ -127,9 +122,8 @@
     {
       "id": "body",
       "gate": 6,
-      "thresholds_were": { "13": [8000, 9500, 11000], "14": [12610, 13870, 15260] },
+      "thresholds_were": { "13": [8000, 9500, 11000], "14": [12610, 13870, 15260] , "18": [3810, 4190, 4610, 4190, 4610, 5070, 4610, 5070, 5580] },
       "display": "stages",
-      "pay": 9,
       "name": {
         "zh": "合道",
         "en": "Union with the Dao"
@@ -142,9 +136,8 @@
     {
       "id": "maha",
       "gate": 7,
-      "thresholds_were": { "13": [12500, 14500, 16500], "14": [19840, 21820, 24010] },
+      "thresholds_were": { "13": [12500, 14500, 16500], "14": [19840, 21820, 24010] , "18": [5990, 6590, 7260, 6590, 7250, 7980, 7250, 7980, 8780] },
       "display": "stages",
-      "pay": 14,
       "name": {
         "zh": "归真",
         "en": "Return to Truth"
@@ -157,9 +150,8 @@
     {
       "id": "tribulation",
       "gate": 8,
-      "thresholds_were": { "13": [19000, 22000, 25000], "14": [31210, 34330, 37760] },
+      "thresholds_were": { "13": [19000, 22000, 25000], "14": [31210, 34330, 37760] , "18": [9430, 10370, 11410, 10370, 11410, 12550, 11410, 12550, 13800] },
       "display": "stages",
-      "pay": 20,
       "name": {
         "zh": "渡劫",
         "en": "Tribulation Transcendence"
@@ -176,15 +168,15 @@
       "_about": "今 (沈芒's line): the social ladder — 新生 初来乍到 · 立身 站住脚 · 成器 一门本事 · 立业 自己一摊事 · 通达 读得懂人 · 担当 替人扛事 · 有容 容得下人 · 知命 不慌 · 从心 不逾矩 (宇宙.md). Thresholds are balance.json's (`master.lines.jin`).",
       "hero": "jin-shenmang",
       "tiers": [
-        {"id": "xinsheng", "name": {"zh": "新生", "en": "Newcomer"}, "steps": {"zh": ["一层", "二层", "三层", "四层", "五层", "六层", "七层", "八层", "九层"], "en": ["Layer 1", "Layer 2", "Layer 3", "Layer 4", "Layer 5", "Layer 6", "Layer 7", "Layer 8", "Layer 9"]}},
-        {"id": "lishen", "name": {"zh": "立身", "en": "Footing"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
-        {"id": "chengqi", "name": {"zh": "成器", "en": "Craft"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
-        {"id": "liye", "name": {"zh": "立业", "en": "Enterprise"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
-        {"id": "tongda", "name": {"zh": "通达", "en": "Insight"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
-        {"id": "dandang", "name": {"zh": "担当", "en": "Bearing"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
-        {"id": "yourong", "name": {"zh": "有容", "en": "Breadth"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
-        {"id": "zhiming", "name": {"zh": "知命", "en": "Knowing Fate"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
-        {"id": "congxin", "name": {"zh": "从心", "en": "Following the Heart"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}}
+        {"id": "xinsheng", "thresholds_were": {"18": [50, 60, 60, 70, 70, 80, 90, 100, 110]}, "name": {"zh": "新生", "en": "Newcomer"}, "steps": {"zh": ["一层", "二层", "三层", "四层", "五层", "六层", "七层", "八层", "九层"], "en": ["Layer 1", "Layer 2", "Layer 3", "Layer 4", "Layer 5", "Layer 6", "Layer 7", "Layer 8", "Layer 9"]}},
+        {"id": "lishen", "thresholds_were": {"18": [140, 150, 170]}, "name": {"zh": "立身", "en": "Footing"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
+        {"id": "chengqi", "thresholds_were": {"18": [220, 240, 270]}, "name": {"zh": "成器", "en": "Craft"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
+        {"id": "liye", "thresholds_were": {"18": [340, 380, 420]}, "name": {"zh": "立业", "en": "Enterprise"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
+        {"id": "tongda", "thresholds_were": {"18": [540, 600, 660]}, "name": {"zh": "通达", "en": "Insight"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
+        {"id": "dandang", "thresholds_were": {"18": [850, 940, 1030]}, "name": {"zh": "担当", "en": "Bearing"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
+        {"id": "yourong", "thresholds_were": {"18": [1340, 1480, 1620]}, "name": {"zh": "有容", "en": "Breadth"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
+        {"id": "zhiming", "thresholds_were": {"18": [2110, 2320, 2550]}, "name": {"zh": "知命", "en": "Knowing Fate"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}},
+        {"id": "congxin", "thresholds_were": {"18": [3320, 3650, 4020]}, "name": {"zh": "从心", "en": "Following the Heart"}, "steps": {"zh": ["小成", "中成", "大成"], "en": ["Lesser Attainment", "Middle Attainment", "Greater Attainment"]}}
       ]
     }
   },

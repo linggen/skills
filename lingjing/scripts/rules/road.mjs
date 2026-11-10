@@ -31,6 +31,7 @@ import { itemOf, offersOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
 import { bagFull, hasFound, roomFor } from './pouch.mjs';
 import { mainRoot } from './roots.mjs';
+import { sizedUnits } from './playpay.mjs';
 import { visitorHere } from './visiting.mjs';
 import { allPlaces, atScene, creatureOf, huntable, inMade, sealedOf, ofJuan, placeOf, placeOpen, poolBeast, tooHard } from './world.mjs';
 
@@ -267,7 +268,7 @@ function settleTrial(content, s, ctx, here, n) {
   const success = here.rolls[n] + TRIAL_BONUS(content, here) >= t.marks[o.difficulty];
   if (success) {
     const win = t.win[o.difficulty];
-    const paid = pay(content, s, ctx, { table: 'trial', progress: win.progress ?? 0, wealth: win.wealth ?? 0 });
+    const paid = pay(content, s, ctx, { table: 'trial', units: win.units ?? 0, wealth: win.wealth ?? 0 });
     return { success, line: o.win, paid };
   }
   return { success, line: o.lose, ...STAKES[o.stake](content, s, ctx, t.lose[o.stake][o.difficulty]) };
@@ -297,7 +298,7 @@ const ROAD = {
     s.chance = { ...s.chance, taken: ctx.now.toISOString() };
     const t = content.rewards.tables.chance;
     const card = winCard(content, s, { id: `chance:${s.place}`, root: mainRoot(s) }, ctx.now, 'chance', { how: 'chance' });
-    const paid = pay(content, s, ctx, { table: 'chance', progress: t.progress, wealth: t.wealth });
+    const paid = pay(content, s, ctx, { table: 'chance', units: sizedUnits(content, 'chance'), wealth: t.wealth });
     close(s, unveiled(here));
     return { state: s, result: { ok: true, took: null, ...(card ? { card } : {}), paid, chance: true } };
   },
@@ -324,7 +325,7 @@ const ROAD = {
       return { state: s, result: { ok: false, refused: 'wrong-answer', hint: left.hint, choices: left.choices } };
     }
     s.riddles_seen = [...new Set([...(s.riddles_seen ?? []), open.key])];
-    const paid = pay(content, s, ctx, { table: 'meet', progress: content.rewards.tables.meet.progress });
+    const paid = pay(content, s, ctx, { table: 'meet', units: sizedUnits(content, 'meet') });
     close(s, open);
     return { state: s, result: { ok: true, answered: true, paid } };
   },

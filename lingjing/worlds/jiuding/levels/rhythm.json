@@ -1031,7 +1031,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "taiko",
-       "n": 314,
+       "n": 318,
        "level": "tiaoshui-gu",
        "zhuli": true
       },
@@ -1383,7 +1383,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 302,
+       "n": 306,
        "level": "zl-jin-lunkong",
        "zhuli": true
       },
@@ -1676,7 +1676,7 @@
        "mechanic": "几何冲刺",
        "variety": "几何冲刺",
        "game": "dash",
-       "n": 313,
+       "n": 317,
        "level": "anhe-dash",
        "zhuli": true
       },
@@ -2304,7 +2304,7 @@
        "mechanic": "塔防",
        "variety": "塔防·sadoushou",
        "game": "sadoushou",
-       "n": 303,
+       "n": 307,
        "level": "zl-jin-daoxing",
        "zhuli": true
       },
@@ -2613,7 +2613,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "fuqin",
-       "n": 305,
+       "n": 309,
        "level": "yezi-qin",
        "zhuli": true
       },
@@ -2717,7 +2717,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "taiko",
-       "n": 306,
+       "n": 310,
        "level": "niannian-gu",
        "zhuli": true
       },
@@ -2947,7 +2947,7 @@
        "mechanic": "节奏",
        "variety": "节奏",
        "game": "fuqin",
-       "n": 308,
+       "n": 312,
        "level": "zhique-qin",
        "zhuli": true
       },

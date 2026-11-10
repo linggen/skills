@@ -50,7 +50,7 @@
         "id": "wade",
         "label": { "zh": "涉水进苇荡", "en": "Wade into the reeds" },
         "means": "goes into the marsh, follows the song, leaves the boat",
-        "grant": { "table": "branch", "progress": 10 },
+        "grant": { "table": "branch", "units": 5 },
         "beat": [{ "who": "ling", "text": { "zh": "水没到膝。芦苇在身后合拢，渡口不见了。", "en": "The water reaches your knees. The reeds close behind you; the ford is gone." } }],
         "ends": "made"
       }
