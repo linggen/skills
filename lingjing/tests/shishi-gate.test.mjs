@@ -78,6 +78,21 @@ test('through the rooms before the 石室 the bar holds at 二层 (wm-xirang, wm
   assert.deepEqual([over.step, over.progress], [3, 100]);
 });
 
+test('a save made before wm-mingpai was cut into the line (2026-10-31) stands at wm-kaikai without it: the 二层 holds let go (it is past them in the book\'s order), never stuck at the 石室\'s gate', () => {
+  const old = atShishi(2, th[2] + 100, { done_scenes: [...BEFORE, ...INSIDE] });
+  assert.ok(!old.done_scenes.includes('wm-mingpai'));
+  assert.equal(capOf(content, old).grind, rank(3), 'past wm-mingpai on the spine: 三层 open');
+  const up = settleHeld(content, old);
+  assert.deepEqual([up.step, up.progress], [3, 100], 'carried into 三层 as a save that walked it');
+  const noon = resolve({ ...up, progress: threshold(content, up) }, content, ctx, { exit: 'sit' });
+  assert.equal(noon.result.ok, true, JSON.stringify(noon.result).slice(0, 300));
+  // The normal path unchanged: before wm-mingpai (at wm-tama) the share still binds.
+  const tama = atShishi(2, th[2], { scene: 'wm-tama', place: 'mijing-yabi', done_scenes: [...BEFORE, ...INSIDE.slice(0, -1)] });
+  assert.equal(capOf(content, tama).grind, rank(2));
+  const early = settleHeld(content, atShishi(2, 0, { scene: 'wm-tama', place: 'mijing-yabi', done_scenes: [...BEFORE, ...INSIDE.slice(0, -1)], banked: th[2] }));
+  assert.deepEqual([early.step, early.progress], [2, Math.floor(0.85 * th[2])], 'at wm-tama: back only to 0.85');
+});
+
 test('at wm-kaikai short of 三层圆满, at wm-xiqi short of 四层圆满: refused in the room\'s own words; the 石室\'s boards stand as practice and pay 修为; full, the ways on open', () => {
   const short = resolve(atShishi(3, 100), content, ctx, { exit: 'sit' });
   assert.equal(short.result.refused, 'stage', JSON.stringify(short.result).slice(0, 300));

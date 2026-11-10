@@ -58,13 +58,42 @@ function heldBy(content, state, e) {
   const ahead = (e.gates ?? []).filter(g => !gatePassed(content, state, g)).map(g => rankAt(content, { tier: g.tier ?? first, layer: g.layer }));
   // …and a hold of the 回 (`holds`, 2026-10-31): until the story reaches its scene, no further than its layer — the 回's
   // cap opens mid-回 where the book climbs (古五: 二层 through the 秘境's rooms, 四层圆满 only in the 石室, wm-kaikai).
-  const holds = (e.holds ?? []).filter(h => !holdReached(state, h)).map(h => rankAt(content, { tier: h.tier ?? first, layer: h.layer }));
+  const holds = (e.holds ?? []).filter(h => !holdReached(state, h, content)).map(h => rankAt(content, { tier: h.tier ?? first, layer: h.layer }));
   const all = [...ahead, ...holds];
   return all.length ? Math.min(...all) : Infinity;
 }
 
-/* A hold (ladder.json caps.hui.<回>.holds `{layer, until}`) is let go once the story stands at its scene or past it. */
-export const holdReached = (state, h) => state.scene === h.until || (state.done_scenes ?? []).includes(h.until);
+/* Each scene's place on its chapter's spine: [chapter, steps from its first scene along the ways on (`next`)], the fewest. */
+const SPINE = new WeakMap();
+function spineOf(content) {
+  if (SPINE.has(content.chapters)) return SPINE.get(content.chapters);
+  const at = new Map();
+  for (const ch of Object.values(content.chapters ?? {})) {
+    const queue = ch.scenes?.[ch.first_scene] ? [[ch.first_scene, 0]] : [];
+    while (queue.length) {
+      const [id, n] = queue.shift();
+      if (at.has(id) || !ch.scenes[id]) continue;
+      at.set(id, [ch.id, n]);
+      for (const e of ch.scenes[id].exits ?? []) if (e.next && !at.has(e.next)) queue.push([e.next, n + 1]);
+    }
+  }
+  SPINE.set(content.chapters, at);
+  return at;
+}
+/* The save stands past `scene` on the book's line: a later chapter, or further along the same chapter's ways on. */
+function standsPast(content, state, scene) {
+  const spine = spineOf(content), here = state.scene != null ? spine.get(state.scene) : null, there = spine.get(scene);
+  if (!there || (state.chapter == null && !here)) return false;
+  const chapter = here?.[0] ?? state.chapter;
+  if (chapter !== there[0]) return chapter > there[0];
+  return Boolean(here) && here[1] > there[1];
+}
+
+/* A hold (ladder.json caps.hui.<回>.holds `{layer, until}`) is let go once the story stands at its scene or past it —
+   past it in the book's order too, not only by its id in `done_scenes`: a save made before a scene was cut into the
+   line (wm-mingpai, 2026-10-31) never walked it, and a hold until it would never let go. */
+export const holdReached = (state, h, content = null) => state.scene === h.until || (state.done_scenes ?? []).includes(h.until)
+  || Boolean(content && standsPast(content, state, h.until));
 
 /* A share hold (`{layer, share, until}`, Hanli 11-03: 「应该让玩家在破镜前的剧情刚好圆满」): until the story reaches its scene,
    the bar on that layer stops at `share` of it — 圆满 lands near the book's breakthrough, not scenes ahead of it. It holds
@@ -73,7 +102,7 @@ export function shareMark(content, state) {
   const e = entryOf(content, state);
   if (!e || !tierOf(content, state.tier) || zeroAt(content, state.tier, state.step)) return null;
   const first = content.ladder.tiers[0].id, now = rankOf(content, state.tier, state.step);
-  const shares = (e.holds ?? []).filter(h => h.share != null && !holdReached(state, h) && rankAt(content, { tier: h.tier ?? first, layer: h.layer }) === now).map(h => h.share);
+  const shares = (e.holds ?? []).filter(h => h.share != null && !holdReached(state, h, content) && rankAt(content, { tier: h.tier ?? first, layer: h.layer }) === now).map(h => h.share);
   return shares.length ? Math.floor(Math.min(...shares) * threshold(content, state)) : null;
 }
 
