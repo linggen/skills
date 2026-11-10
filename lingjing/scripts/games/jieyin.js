@@ -14,9 +14,14 @@
 // Contract (games/mount.js): mount(container, { lang, data, signal, shell }) → Promise<{ won, stars } | { won: false, left: true }>
 // A story board played this way where another stands behind it (`data.instead`: that board's title — caps.js, 古六's
 // 讲堂; Hanli 10-21: 「用户结印失败, 或者不愿意使用摄像头…也能正常完成, 不会影响剧情推进」) never dead-ends: no camera,
-// a camera refused or failing → `{ won: false, left: true, unable: 'camera' }` at once (no 'needs a camera' line); a
+// a camera refused or failing → `{ won: false, left: true, unable: 'camera' }` (no 'needs a camera' line) — at once, or
+// after the lesson has shown itself where the level declares `auto` (below); a
 // few seals missed (`swapAfter`, default 3) → a 「改用…」 button → `{ won: false, left: true, instead: true }`. The page
 // then deals the other board, same task and pay.
+// A teaching level that declares `auto` (levels/jieyin.json; 古六's 讲堂, Hanli 11-10: 「如果用户不开摄像头, 就改成自动演示
+// 给用户demo结印」) does not leave at once: with no camera, or the camera refused or failing, the lesson plays by itself
+// (games/jieyin/auto.js — each seal's icon, name and 褚先生's line, then the 火蛋 at the dummy; a tap goes on, one line
+// says why) and THEN leaves the same way (`unable`, or the 'needs a camera' line where no board stands behind it).
 // Which seals: games/jieyin/sets.js — a phone (coarse pointer, small) only one-hand seals, a Mac both; `?dev=1&hands=1|2` picks.
 // Dev only: `?dev=1&feed=1` runs without a camera, hands fed from the console (`window.jieyinFeed(hands, picture?)`) — the
 // live check's way to play it through; never a player's.
@@ -26,6 +31,8 @@ import { bonusOf, eyeFor, sealsFor, sequenceFor, setOf } from './jieyin/sets.js'
 import { expected, fits, progress, start, starsOf, step } from './jieyin/sequence.js';
 import { iconSvg } from './jieyin/pose.js';
 import { facingLine, handHint } from './jieyin/hint.js';
+import { autoOf, autoSteps, pace, panelHtml, whyLine } from './jieyin/auto.js';
+import { inputKind } from './kit/device.js';
 
 export const meta = {
   id: 'jieyin',
@@ -58,8 +65,8 @@ export const artOf = (level) => ({
 export const castOf = (level) => (level.mode === 'one' ? level.cast ?? null : level);
 
 const W = {
-  zh: { nocam: '结印要用摄像头，这里用不了。', fizzle: '噗——走火了。', hit: '中了！', won: '野猪跑了。', learned: '五个印都会了。', downed: '草人倒了。', demo: '转一转手——换个角度，让摄像头认出来', asking: '请允许使用摄像头……', loading: '……', next: '下一个', who: '小满' },
-  en: { nocam: 'Hand seals need a camera — none here.', fizzle: 'Pfft — it fizzled.', hit: 'Hit!', won: 'The boar runs off.', learned: 'All five seals learned.', downed: 'The dummy is down.', demo: 'Turn your hand a little — find the angle the camera reads', asking: 'Allow the camera…', loading: '…', next: 'Next', who: 'Xiaoman' },
+  zh: { autoSkip: '跳过演示', nocam: '结印要用摄像头，这里用不了。', fizzle: '噗——走火了。', hit: '中了！', won: '野猪跑了。', learned: '五个印都会了。', downed: '草人倒了。', demo: '转一转手——换个角度，让摄像头认出来', asking: '请允许使用摄像头……', loading: '……', next: '下一个', who: '小满' },
+  en: { autoSkip: 'Skip the demo', nocam: 'Hand seals need a camera — none here.', fizzle: 'Pfft — it fizzled.', hit: 'Hit!', won: 'The boar runs off.', learned: 'All five seals learned.', downed: 'The dummy is down.', demo: 'Turn your hand a little — find the angle the camera reads', asking: 'Allow the camera…', loading: '…', next: 'Next', who: 'Xiaoman' },
 };
 const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const tr = (o, lang) => o?.[lang] ?? o?.zh ?? '';
@@ -149,9 +156,11 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
   loadCss(doc);
   return new Promise((resolve) => {
     let done = false, eye = null, offPause = null, offHide = null, loop = 0;
+    let auto = null, showAuto = null; // the lesson shown by itself (auto.js): its clock once it runs; how to start it, once the stage stands
     const finish = (r) => {
       if (done) return;
       done = true;
+      auto?.stop();
       eye?.close();
       offPause?.();
       offHide?.();
@@ -161,10 +170,16 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       resolve(r);
     };
     const leave = () => finish({ won: false, left: true });
-    const nocam = () => {
+    const unable = () => {
       if (data.instead) return finish({ won: false, left: true, unable: 'camera' });
       container.innerHTML = unavailableHtml(lang);
       leave();
+    };
+    // No camera, refused, or failing (`reason`, eye.js): a level that shows itself does, once; then, and everywhere else, out.
+    const nocam = (reason = 'nocamera') => {
+      if (done || auto) return;
+      if (showAuto) return showAuto(reason);
+      unable();
     };
     const swap = () => finish({ won: false, left: true, instead: true });
     if (signal?.aborted) return leave();
@@ -177,9 +192,11 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       const asked = levelAsked(kit, data, win.location?.search ?? '');
       const level = { ...asked, set: set.id, sequence: sequenceFor(kit, asked, set) };
       const seals = sealsFor(kit, set);
-      if (!feedOnly && !(await available(win))) return nocam();
+      const seen = !data.demo && (feedOnly || (await available(win))), shows = autoOf(level);
+      if (data.demo && !shows) return nocam();
+      if (!seen && !shows) return nocam();
       if (done) return;
-      loadModel().catch(() => {}); // from disk while the lead card is read; the camera waits for 开始
+      if (seen) loadModel().catch(() => {}); // from disk while the lead card is read; the camera waits for 开始
       container.innerHTML = stageHtml(kit, level, lang);
       const box = container.querySelector('.jy');
       const $ = (s) => box.querySelector(s);
@@ -222,11 +239,11 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       };
       const say = (text) => (shell?.say ? shell.say(w.who, text, 1800) : ($('.jy-status').textContent = text));
 
-      const cast = async (used) => {
-        busy = true;
+      // The 火蛋 flies and lands: true when the foe is down (the cast's, and the demo's last step).
+      const strike = async (used) => {
         const foe = $('.jy-foe'), power = bonusOf(kit, level.move, used); // a two-hand finish stronger only when the move's bonus is on
         await fly(box, ART.egg, $('.jy-xm'), foe, reducedMotion ? 200 : 650, power.egg);
-        if (done) return;
+        if (done) return false;
         hp = Math.max(0, hp - power.hits);
         foe.querySelectorAll('.jy-hp i').forEach((el, i) => el.classList.toggle('is-gone', i >= hp));
         foe.querySelector('img').src = art.foe('hit');
@@ -235,10 +252,53 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         say(w.hit);
         await new Promise((r) => setTimeout(r, 420));
         foe.classList.remove('is-hit');
-        if (hp > 0) { foe.querySelector('img').src = art.foe('walk-1'); busy = false; return; }
+        if (hp > 0) { foe.querySelector('img').src = art.foe('walk-1'); return false; }
         foe.classList.add('is-gone');
         say(level.mode === 'one' ? w.downed : w.won);
+        return true;
+      };
+      const cast = async (used) => {
+        busy = true;
+        const down = await strike(used);
+        if (done) return;
+        if (!down) { busy = false; return; }
         setTimeout(() => finish({ won: true, stars: starsOf(taught + s.misses + s.fizzles, level.stars) }), 1200);
+      };
+
+      // The lesson shown by itself (auto.js): the camera let go, the hint's dock away, the steps on their clock.
+      const slots = (at) => box.querySelectorAll('.jy-slot').forEach((el, i) => { el.classList.toggle('is-done', i < at); el.classList.toggle('is-next', i === at); });
+      const shown = (id) => {
+        const seal = kit.seals[id];
+        $('.jy-auto-hand').innerHTML = seal ? iconSvg(seal, 84, { lang }) : '';
+        $('.jy-auto-name').textContent = seal ? tr(seal.name, lang) : '';
+        $('.jy-hint').textContent = seal ? `${tr(seal.hint, lang)}　${tr(seal.how, lang)}` : '';
+      };
+      const AUTO = {
+        show: (st) => { slots(st.at); shown(st.seal); if (st.at) shell?.sound?.('seal'); },
+        gather: () => {
+          const close = { ...level.cast, mode: 'sequence', sequence: sequenceFor(kit, level.cast, set) };
+          $('.jy-seq').innerHTML = seqHtml(kit, close, lang);
+          shown(null);
+          shell?.sound?.('done');
+          say(tr(level.cast.say, lang) || w.learned);
+        },
+        press: (st) => { slots(st.at + 1); shown(st.seal); shell?.sound?.('seal'); },
+        cast: (st) => { box.querySelector('.jy-auto-card')?.remove(); shell?.sound?.('cast'); return strike(st.used); },
+      };
+      showAuto = (reason) => {
+        win.cancelAnimationFrame?.(loop);
+        eye?.close();
+        eye = null;
+        for (const el of box.querySelectorAll('.jy-demo, .jy-swap, .jy-go')) el.remove();
+        box.dataset.auto = reason;
+        $('.jy-status').textContent = '';
+        $('.jy-face').textContent = '';
+        $('.jy-seq').innerHTML = seqHtml(kit, level, lang);
+        $('.jy-field').insertAdjacentHTML('beforeend', panelHtml(whyLine(reason, lang, inputKind(doc)), w.autoSkip));
+        auto = pace(autoSteps(kit, level, set), { apply: (st) => AUTO[st.kind]?.(st), paused: () => Boolean(shell?.paused?.()), env: win });
+        $('.jy-auto-skip').onclick = (e) => { e.stopPropagation(); auto.stop(); };
+        $('.jy-field').addEventListener('click', () => auto.next());
+        auto.done.then(() => { if (!done) unable(); });
       };
 
       // A teaching level's close (`cast`, 古六's 讲堂): the seals learned, the four at once at the dummy — its misses
@@ -273,7 +333,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       // Each frame: the judge on the hands last seen, the sequence on with the time passed (still while paused or a
       // 火蛋 is in the air).
       const tick = () => {
-        if (done) return;
+        if (done || auto) return;
         const now = win.performance.now(), dt = Math.min(100, now - last);
         last = now;
         if (!shell?.paused?.() && !busy) {
@@ -295,6 +355,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       if (shell?.lead) await shell.lead(tr(level.lead, lang));
       else await new Promise((r) => { const b = doc.createElement('button'); b.className = 'gshell-btn is-main jy-go'; b.textContent = lang === 'en' ? 'Start' : '开始'; b.onclick = () => { b.remove(); r(); }; box.append(b); });
       if (done) return;
+      if (!seen) return nocam();
       if (feedOnly) {
         win.jieyinFeed = (h, img = h, a = 4 / 3, which = []) => { hands = h ?? []; picture = img ?? []; aspect = a; handed = which; }; // img: the picture's points, 0…1 of the frame; which: 'Left' | 'Right' each
         loadModel().then(() => { box.dataset.model = 'ready'; }, () => { box.dataset.model = 'failed'; });
@@ -302,24 +363,24 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         eye = openEye({ video, onHands, env: win, ...eyeFor(kit, set, level.sequence, level.eye), handedSwap: kit.orient?.handedSwap ?? true });
         // Heard before the camera is asked for: a pause while the prompt is open keeps the camera off (eye.js).
         offPause = shell?.onPause?.((paused) => {
-          if (done) return;
-          if (paused) { eye.pause(); hands = []; picture = []; } else eye.start().catch(() => nocam());
+          if (done || auto) return;
+          if (paused) { eye.pause(); hands = []; picture = []; } else eye.start().catch((e) => nocam(e.reason));
         });
         // The page hidden (another tab, the window away): the camera off, its light with it; back in sight, on again
         // unless the shell holds it paused.
-        const seen = () => {
-          if (done) return;
-          if (doc.hidden) { eye.pause(); hands = []; picture = []; } else if (!shell?.paused?.()) eye.start().catch(() => nocam());
+        const sight = () => {
+          if (done || auto) return;
+          if (doc.hidden) { eye.pause(); hands = []; picture = []; } else if (!shell?.paused?.()) eye.start().catch((e) => nocam(e.reason));
         };
-        doc.addEventListener?.('visibilitychange', seen);
-        offHide = () => doc.removeEventListener?.('visibilitychange', seen);
+        doc.addEventListener?.('visibilitychange', sight);
+        offHide = () => doc.removeEventListener?.('visibilitychange', sight);
         $('.jy-status').textContent = w.asking;
-        try { await eye.start(); } catch (e) { console.warn('[jieyin]', e.reason ?? e); return nocam(); }
+        try { await eye.start(); } catch (e) { console.warn('[jieyin]', e.reason ?? e); return nocam(e.reason); }
         if (done) return;
         $('.jy-status').textContent = '';
       }
       last = win.performance.now();
       tick();
-    })().catch((e) => { console.warn('[jieyin]', e); if (!done) nocam(); });
+    })().catch((e) => { console.warn('[jieyin]', e); if (!done) nocam('failed'); });
   });
 }

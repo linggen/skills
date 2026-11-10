@@ -66,9 +66,14 @@ test('camera present → the teaching board (same id); absent → 讲堂试法, 
   assert.equal(cam.game, 'jieyin');
   assert.equal(cam.deal.lv, 'jiangtang');
   assert.equal(cam.title, '讲堂 · 一印一印');
-  for (const caps of [{}, { camera: false }, null]) assert.equal(chooseBoard(t, caps), t, 'no camera: the very row');
+  for (const caps of [{}, { camera: false }, null]) {
+    const demo = chooseBoard(t, caps);
+    assert.equal(demo.game, 'jieyin');
+    assert.equal(demo.deal.demo, true);
+  }
+  assert.equal(cam.deal.demo, undefined);
   const lk = { tasks: [t, { id: 'other', game: 'sneeze' }] };
-  assert.equal(withCaps(lk, {}).tasks[0], t);
+  assert.equal(withCaps(lk, {}).tasks[0].deal.demo, true);
   assert.equal(withCaps(lk, { camera: true }).tasks[0].game, 'jieyin');
   assert.equal(withCaps(lk, { camera: true }).tasks[1], lk.tasks[1]);
   const plain = { tasks: [{ id: 'x', game: 'zhazhai' }] };
@@ -206,7 +211,7 @@ test('the game leaves at once, with `unable`, when the camera is missing and a b
     return el;
   };
   const prevFetch = globalThis.fetch;
-  globalThis.fetch = async () => ({ json: async () => kit });
+  globalThis.fetch = async () => ({ json: async () => ({ ...kit, levels: kit.levels.map((l) => ({ ...l, auto: undefined })) }) });
   try {
     const story = await jieyinMod.mount(fakeDoc(), { lang: 'zh', data: { lv: 'jiangtang', instead: '讲堂试法' } });
     assert.deepEqual(story, { won: false, left: true, unable: 'camera' });

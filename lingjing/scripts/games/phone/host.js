@@ -224,7 +224,7 @@ async function mountBoard(spec) {
   const skip = ownSkip(r);
   post({
     t: 'end', won: Boolean(r?.won), stars: skip ? null : r?.stars ?? null, grade: skip ? 'skipped' : r?.grade ?? null, left: Boolean(r?.left), skipped: skip, next: r?.next ?? null,
-    stats: r?.stats ?? null, outcome: r?.outcome ?? null, ...(story ? { picks } : {}),
+    stats: r?.stats ?? null, outcome: r?.outcome ?? null, unable: r?.unable ?? null, instead: Boolean(r?.instead), ...(story ? { picks } : {}),
   });
 }
 

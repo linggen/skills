@@ -281,7 +281,7 @@ test('the vendored MediaPipe: every file eye.js loads is there, pinned, and phon
 
 test('the camera goes off when the page is hidden, and the probe for WebGL lets its context go', async () => {
   const src = read('../scripts/games/jieyin.js');
-  assert.match(src, /addEventListener\?\.\('visibilitychange', seen\)/, 'the page hidden is heard');
+  assert.match(src, /addEventListener\?\.\('visibilitychange', sight\)/, 'the page hidden is heard');
   assert.match(src, /if \(doc\.hidden\) \{ eye\.pause\(\)/, 'hidden: the camera off (eye.pause stops its tracks)');
   assert.match(src, /offHide\?\.\(\)/, 'the listener goes with the game');
   let lost = 0;

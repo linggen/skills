@@ -1400,6 +1400,8 @@ function lintAlt(where, task, alt, content, bad) {
   if (!needs.length || !needs.every(([k, v]) => BOARD_CAPS.includes(k) && typeof v === 'boolean')) bad(where, `alt needs one of ${BOARD_CAPS.join(', ')} (true / false)`);
   if (!(content.games?.games ?? []).some(g => g.id === alt?.game)) bad(where, `alt plays unknown game ${alt?.game}`);
   if (alt?.deal != null && (typeof alt.deal !== 'object' || Array.isArray(alt.deal))) bad(where, 'alt deal is an options object');
+  // `demo`: the alt is dealt where its needs are missing too — its game shows itself, then leaves for the row's own board (board-choice.js).
+  if (alt?.demo != null && typeof alt.demo !== 'boolean') bad(where, 'alt demo is true or false');
   for (const k of ['title', 'how']) if (alt?.[k] != null && !pair(alt[k])) bad(where, `alt ${k} is in zh and en`);
   // The same beat either way: a grade the alt gives is one the task's marks keep.
   for (const g of Object.values(alt?.deal?.grades ?? {})) if (!Object.hasOwn(task.marks ?? {}, g)) bad(where, `alt grade ${g} is not one of the task's marks`);

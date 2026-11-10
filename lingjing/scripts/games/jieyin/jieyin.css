@@ -81,6 +81,10 @@
 .jy-go { align-self: center; }
 .jy-swap { align-self: center; font-size: 13px; } /* 改用… (a story board's way out, never a dead end) */
 .jy-nocam { margin: 24px 0; text-align: center; color: var(--dim); }
+.jy-auto-why, .jy-auto-card, .jy-auto-skip { position: absolute; z-index: 4; }
+.jy-auto-why { top: 6px; left: 5%; right: 5%; margin: 0; padding: 6px; text-align: center; background: #f6eedd; color: #2b2620; border-radius: 8px; }
+.jy-auto-card { bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 10px; background: #f6eedd; color: #2b2620; }
+.jy-auto-skip { right: 8px; bottom: 8px; }
 
 @keyframes jy-bob { 50% { transform: translateY(-4%); } }
 @keyframes jy-shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }

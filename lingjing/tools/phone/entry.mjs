@@ -20,6 +20,7 @@
 //                                            text — the app keeps them in its own folder, never in the dumped save
 //
 // Nothing here is a rule: the rules are rules.mjs and rules/*.mjs, unchanged.
+import { chooseBoard } from '../../scripts/board-choice.js';
 import { parseArgs } from '../../scripts/rules/files.mjs';
 import { forLing, run } from '../../scripts/rules.mjs';
 import { drainSink } from '../../scripts/rules/analytics.mjs';
@@ -109,6 +110,7 @@ function her(kind, look = {}, { lang = 'zh', weight = 'full', what = null, resul
 
 let ENV_NOW = false;
 const api = {
+  chooseBoard: (task, caps) => JSON.stringify(chooseBoard(task, caps)),
   load: (json) => { seed(typeof json === 'string' ? JSON.parse(json) : json); return stats(); },
   call,
   env: (key, value) => { if (value == null) delete process.env[key]; else process.env[key] = String(value); if (key === 'LINGJING_NOW') ENV_NOW = value != null; },

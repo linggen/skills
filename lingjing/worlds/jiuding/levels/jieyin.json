@@ -384,6 +384,8 @@
       "mode": "one",
       "turnMs": 400,
       "demoMs": 3000,
+      "_auto": "Hanli 2026-11-10: 「如果用户不开摄像头, 就改成自动演示给用户demo结印」. Where the camera is missing, refused or failing, the level plays itself (games/jieyin/auto.js): each seal of `sequence` in turn — its hand icon, its name, 褚先生's line (`hint`) — `stepMs` each, a tap goes on; then `cast` (its line, its seals `castMs` each, the 火蛋 into the dummy). Then the board leaves `unable` and the row's own board is dealt (board-choice.js). A level without `auto` leaves at once, as before.",
+      "auto": { "stepMs": 2500, "castMs": 700, "endMs": 1400 },
       "_cues": "Hanli 10-21 on his camera: 「手印识别的时候, 需要转动一下手才能识别. 需要提示用户一下」 — the turn cue after 0.4 s here (`turnMs`; 0.7 s elsewhere), each seal's hand and facing shown before he tries (hint.js facingLine), and after 3 s without the seal a 「转一转」 (`demoMs`).",
       "title": { "zh": "讲堂 · 一印一印", "en": "The lecture hall · One seal at a time" },
       "_teach": "古六's teaching level, the board of wm-qianye's 讲堂 when a camera is there (h08 `qianye-qiajue`'s `alt`, 2026-10-21; Hanli: 「古6教学结手印那里可以做教学关卡」); without one the scene keeps 砸寨 · 讲堂试法. The seals in the passage's own order — 五指张开, then up the fingers to 巳 · 午 · 申, then 剑诀 — each with 褚先生's line (`hint`); a wrong seal is only tried again. Then `cast`: the four seals once (`forgive`: a wrong one is tried again, no 走火) and the 火蛋 goes into the straw dummy at the back of the hall. Stars from misses, both parts together. All one-hand and the book's, so the same on a phone and a Mac (no `sequences`; the cast is the lesson's four, not the Mac's 火蛋 move). No camera picture: the hand hint, large (teaching). 子文 and 雷局 (the thumb hidden) are left out.",

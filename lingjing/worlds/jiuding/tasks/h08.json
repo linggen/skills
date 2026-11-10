@@ -15,6 +15,8 @@
       "alt": [
         {
           "needs": { "camera": true },
+          "_demo": "2026-11-10 (Hanli: 「结印课堂…是很重要的课堂. 如果用户不开摄像头, 就改成自动演示给用户demo结印」): dealt on every device, the phone too. No camera, or the camera refused or failing: the level plays the lesson by itself (levels/jieyin.json `auto`), then leaves `unable` and 讲堂试法 is dealt — he still plays the beat and is paid by it.",
+          "demo": true,
           "game": "jieyin",
           "deal": { "lv": "jiangtang", "grades": { "3": "tight", "2": "tight", "1": "loose" } },
           "title": { "zh": "讲堂 · 一印一印", "en": "The lecture hall · One seal at a time" },

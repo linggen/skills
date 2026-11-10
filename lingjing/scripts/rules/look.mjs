@@ -605,7 +605,7 @@ function personBrief(content, state, creature) {
 /* A board's other way to be played, as Look hands it to the page (caps.js chooses): its needs, game and deal as
    written, its title and how in the reader's tongue. */
 const altOf = (a, lang) => ({
-  needs: a.needs, game: a.game, ...(a.deal ? { deal: a.deal } : {}),
+  needs: a.needs, ...(a.demo ? { demo: true } : {}), game: a.game, ...(a.deal ? { deal: a.deal } : {}),
   ...(a.title ? { title: pick(a.title, lang) } : {}), ...(a.how ? { how: pick(a.how, lang) } : {}),
 });
 
