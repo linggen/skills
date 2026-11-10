@@ -3,7 +3,7 @@
 // waits on 三层圆满 right before that noon, and since 2026-11-03 wm-xiqi asks nothing: 四层 is entered here and its bar held to
 // shares across 古六 (ladder caps.hui holds `share`), full by 定风. 「再吸半天，就五层了」 is 小满's own reach, which 银月 stops.
 // Through the rooms before it (wm-xirang, wm-tama) the book has him at 二层: 古五's cap holds there (`holds`) until the 石室, and
-// the bar on 二层 stops at 0.85 (巅峰, not 圆满) until wm-tama. Inside the 秘境 the world outside is frozen, so the 修为 is earned
+// the bar on 二层 stops at 0.85 (巅峰, not 圆满) until wm-mingpai (the scene before the 石室's night, 2026-11-10; was wm-tama). Inside the 秘境 the world outside is frozen, so the 修为 is earned
 // in the room: the 石室's own 主力 levels, hosted there as practice. A save that came through the 石室 before its gates (his, at
 // 古六's eve on 三层) is never pulled back: it stands at the eve, which asks 三层圆满, earns it, and steps into 褚先生's 「四层」.
 import test from 'node:test';
@@ -26,16 +26,16 @@ const INSIDE = ['wm-mijing', 'wm-kouzi', 'wm-shiting', 'wm-xiongya', 'wm-wangzuo
 const BEFORE = ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian', 'wm-qingshi', 'wm-chaifang', 'wm-danlu', 'wm-diyilu', 'wm-xunye', 'wm-duizhang', 'wm-yan', 'wm-baoming'];
 const base = extra => ({ ...newState(content, 'zh', NOW), chapter: '00-waimen', ended: ['00-prologue'], traits: ROOTS, stamina: 100, stamina_at: NOW.toISOString(), wealth: 20, ...extra });
 /* In the 石室 at wm-kaikai, the 息壤 board won, the bar where `step`/`progress` say. */
-const atShishi = (step, progress, extra = {}) => base({ scene: 'wm-kaikai', place: 'mijing-shishi', done_scenes: [...BEFORE, ...INSIDE], tier: 'qi', step, progress,
+const atShishi = (step, progress, extra = {}) => base({ scene: 'wm-kaikai', place: 'mijing-shishi', done_scenes: [...BEFORE, ...INSIDE, 'wm-mingpai'], tier: 'qi', step, progress,
   tasks: { 'xirang-wumen': { status: 'done', done_at: NOW.toISOString() } }, ...extra });
 /* …and on in wm-xiqi, the noon behind him. */
-const atXiqi = (step, progress, extra = {}) => atShishi(step, progress, { scene: 'wm-xiqi', done_scenes: [...BEFORE, ...INSIDE, 'wm-kaikai'], ...extra });
+const atXiqi = (step, progress, extra = {}) => atShishi(step, progress, { scene: 'wm-xiqi', done_scenes: [...BEFORE, ...INSIDE, 'wm-mingpai', 'wm-kaikai'], ...extra });
 const rank = step => rankOf(content, 'qi', step);
 
-test('the data: 古五 reaches 四层, held at 二层 until the 石室 (a share of it until wm-tama); wm-kaikai · sit on 三层圆满 with the room\'s own words; 四层 entered, held to 0.3 until 古六; 古六\'s eve on 三层圆满 (2026-11-03)', () => {
+test('the data: 古五 reaches 四层, held at 二层 until the 石室 (a share of it until wm-mingpai); wm-kaikai · sit on 三层圆满 with the room\'s own words; 四层 entered, held to 0.3 until 古六; 古六\'s eve on 三层圆满 (2026-11-03)', () => {
   const h07 = content.ladder.caps.hui.h07;
   assert.equal(h07.layer, 4);
-  assert.deepEqual(h07.holds, [{ layer: 2, share: 0.85, until: 'wm-tama' }, { layer: 2, until: 'wm-kaikai' }, { layer: 4, share: 0.3, until: 'wm-yaban' }]);
+  assert.deepEqual(h07.holds, [{ layer: 2, share: 0.85, until: 'wm-mingpai' }, { layer: 2, until: 'wm-kaikai' }, { layer: 4, share: 0.3, until: 'wm-yaban' }]);
   const by = gatesOf(content).filter(g => ['h07', 'h08'].includes(g.hui)).map(g => `${g.scene}/${g.exits.join('|')}@${g.layer}`);
   assert.deepEqual(by, ['wm-kaikai/sit@3', 'wm-qianye/eve@3']);
   assert.match(gatesOf(content).find(g => g.scene === 'wm-kaikai').say.zh, /石室/, 'inside, the refusal points at the room, not 功课');

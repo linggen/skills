@@ -154,7 +154,7 @@ test('real life: the workout is the day\'s 功课 (修为; a few 灵石 at 零�
 
 test('no daily thinning (Hanli, 2026-10-16): every pool win pays its share of the layer until the layer is full — then 灵石; 体力 is the day\'s limit', () => {
   assert.equal('pool' in B, false, 'balance.json declares no day\'s fight bands');
-  const s = { ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: null, place: 'houshan', ended: ['00-prologue', '00-waimen'], done_scenes: ['09-snow'], tier: 'qi', step: 4, progress: 0, wealth: 0, traits: ROOTS };
+  const s = { ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: null, place: 'houshan', ended: ['00-prologue', '00-waimen'], done_scenes: ['09-snow', '09-jiuge'], tier: 'qi', step: 4, progress: 0, wealth: 0, traits: ROOTS }; // past 古七's 0.8 hold (09-jiuge, 2026-11-10)
   // Each win its 体力 × R(四层) (2026-11-02): a card fight's 2 (measured, 2026-11-04) × 2 × 1.05³.
   const X = B.play_pay.xiuwei, each = fightPlay(content, s), want = [], paid = [], wins = Math.min(6, Math.floor(content.ladder.tiers[0].thresholds[4] / each));
   assert.equal(each, Math.round(staminaCost(content, 'duel') * X.rate.base * X.rate.growth ** 3));

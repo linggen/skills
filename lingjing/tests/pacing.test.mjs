@@ -120,7 +120,10 @@ test('the story reaches the hold\'s scene: the bank comes back on load, up to th
   assert.equal(settleHeld(content, held), held, 'still before wm-jiejing: nothing moves');
   const on = settleHeld(content, { ...held, scene: 'wm-jiejing' });
   assert.deepEqual([on.progress, on.banked], [mark8, mark6 + 300 - mark8], 'up to 0.8, the rest still banked');
-  const free = settleHeld(content, { ...held, scene: '09-snow', chapter: '00-zhuji', done_scenes: [...held.done_scenes, 'wm-jiejing', 'wm-heluo'] });
+  // 古七 holds 0.8 on to 09-jiuge, the scene before 定风 (2026-11-10, Hanli: 「满了后的下一场剧情是突破」; was let go at 09-snow).
+  const snow = settleHeld(content, { ...held, scene: '09-snow', chapter: '00-zhuji', done_scenes: [...held.done_scenes, 'wm-jiejing', 'wm-heluo'] });
+  assert.deepEqual([snow.step, snow.progress, snow.banked], [4, mark8, mark6 + 300 - mark8], 'at 09-snow: still 0.8, the rest banked');
+  const free = settleHeld(content, { ...snow, scene: '09-jiuge', done_scenes: [...snow.done_scenes, '09-snow'] });
   assert.deepEqual([free.step, free.progress, free.banked], [4, mark6 + 300, undefined], 'past every hold: all of it back, 四层 still (定风 ahead)');
   // An old save past the share keeps its bar; what comes now is banked.
   const old = atDabi(th[4] - 5);

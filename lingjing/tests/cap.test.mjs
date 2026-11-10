@@ -34,7 +34,7 @@ test('every 古 回 declares its cap, as the book\'s realm line stands', () => {
   assert.deepEqual(Object.fromEntries(Object.keys(caps).map(id => [id, row(id)])), {
     h04: ['qi0', null], // 古三: 入门 at 零层 (the book; the game's too since 2026-10-15)
     h05: ['qi2', null], // 古四: the 小周天 → 一层 (入门, the one rise); past the 柴房 gate 二层 ground (十月廿五 「自己坐上了二层」, 2026-10-27)
-    h07: ['qi4', null], // 古五: 二层 to a share (巅峰, not 圆满) through the rooms (`holds`, 2026-11-03), full by wm-tama; 三层 in the 石室, 四层 entered there (「冲开了第四层」)
+    h07: ['qi4', null], // 古五: 二层 to a share (巅峰, not 圆满) through the rooms (`holds`, 2026-11-03), full by wm-mingpai (the scene before the 石室's night, 2026-11-10; was wm-tama); 三层 in the 石室, 四层 entered there (「冲开了第四层」)
     h08: ['qi4', null], // 古六: 大比 on 四层, its bar held to shares across the 回 (0.45 · 0.6 · 0.8), full only by 定风 (2026-11-03)
     h11: ['qi6', null], // 古七 (its first half since 2026-10-07): 五层 and 六层 ground behind its stage quests
     h09: ['qi9', 'foundation3'], // 古八: 七层 to 九层圆满 ground (腊八 on 八层, 入秋 on 九层), the cliff → 筑基 by his throw
@@ -87,7 +87,7 @@ test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 throu
   s = x.state;
   grind(s);
   assert.equal(named(s), '练气二层', 'through the rooms before the 石室, still 二层 (the hold)');
-  s = { ...s, scene: 'wm-kaikai', place: 'mijing-shishi', done_scenes: [...s.done_scenes, 'wm-mijing', 'wm-xirang', 'wm-anhe', 'wm-tama'] };
+  s = { ...s, scene: 'wm-kaikai', place: 'mijing-shishi', done_scenes: [...s.done_scenes, 'wm-mijing', 'wm-xirang', 'wm-anhe', 'wm-tama', 'wm-mingpai'] };
   grind(s);
   assert.equal(named(s), '练气三层', '古五: the 石室\'s first night, 三层 — 「第二天晌午，他冲开了第四层」 waits on it');
   s = { ...s, scene: 'wm-xiqi', done_scenes: [...s.done_scenes, 'wm-kaikai'] };
