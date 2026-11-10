@@ -4152,9 +4152,7 @@
      -14
     ],
     "words": "struck: he reels backward to the left, head and shoulders thrown back, arms flung out. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
-    "fix": {
-     "s": 0.95
-    }
+    "seed": 2
    },
    "hit2": {
     "lean": -10,
@@ -4302,6 +4300,501 @@
      -6
     ],
     "words": "standing with his shoulders lowered, both hands hanging, his sour face turned away. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "jump1": {
+    "lean": 14,
+    "legF": [
+     50,
+     -10
+    ],
+    "legB": [
+     10,
+     -50
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     10,
+     30
+    ],
+    "words": "crouched to spring, about to leap up, knees deeply bent, both arms drawn back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "jump2": {
+    "lean": 8,
+    "legF": [
+     100,
+     10
+    ],
+    "legB": [
+     60,
+     -60
+    ],
+    "armF": [
+     70,
+     100
+    ],
+    "armB": [
+     60,
+     150
+    ],
+    "words": "leaping high in the air, his feet far off the ground, knees drawn up, the robe flaring below him. No ground under him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "air": true
+   },
+   "jump3": {
+    "lean": 4,
+    "legF": [
+     30,
+     8
+    ],
+    "legB": [
+     -10,
+     -24
+    ],
+    "armF": [
+     60,
+     100
+    ],
+    "armB": [
+     50,
+     130
+    ],
+    "words": "coming down through the air after a leap, legs hanging down together, toes pointed, the robe streaming up. No ground under him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "air": true
+   },
+   "knock1": {
+    "lean": -50,
+    "legF": [
+     60,
+     40
+    ],
+    "legB": [
+     30,
+     10
+    ],
+    "armF": [
+     -80,
+     -90
+    ],
+    "armB": [
+     -100,
+     -120
+    ],
+    "words": "knocked off his feet, flying backward through the air to the left, body tilted back nearly flat, arms and legs flung forward, the robe and sleeves flying. No ground under him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "air": true
+   },
+   "knock2": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -6,
+     0
+    ],
+    "armF": [
+     150,
+     160
+    ],
+    "armB": [
+     -150,
+     -160
+    ],
+    "words": "lying flat on his back on the ground, knocked down, arms spread, legs out, the robe spread around him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "rot": -88,
+    "free": true
+   },
+   "getup1": {
+    "lean": 20,
+    "legF": [
+     90,
+     -10
+    ],
+    "legB": [
+     10,
+     -90
+    ],
+    "armF": [
+     40,
+     60
+    ],
+    "armB": [
+     40,
+     30
+    ],
+    "words": "getting up from the ground: kneeling on one knee, one hand pushing off the knee, the other hand low, rising. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "air1": {
+    "lean": 10,
+    "legF": [
+     70,
+     30
+    ],
+    "legB": [
+     20,
+     -40
+    ],
+    "armF": [
+     110,
+     120
+    ],
+    "armB": [
+     -30,
+     20
+    ],
+    "words": "in mid-air after a leap, driving a hooked palm down and forward to the right, the other arm back, knees drawn up, the robe flaring. No ground under him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "air": true
+   },
+   "sweep1": {
+    "lean": 20,
+    "legF": [
+     56,
+     -10
+    ],
+    "legB": [
+     0,
+     -60
+    ],
+    "armF": [
+     20,
+     160
+    ],
+    "armB": [
+     40,
+     140
+    ],
+    "words": "sinking low on deeply bent knees, both hands drawn back, about to sweep a leg low. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "sweep2": {
+    "lean": 24,
+    "legF": [
+     76,
+     74
+    ],
+    "legB": [
+     -26,
+     -100
+    ],
+    "armF": [
+     100,
+     100
+    ],
+    "armB": [
+     -30,
+     20
+    ],
+    "words": "a low sweeping kick: dropped into a deep crouch on the back leg, the front leg swept out straight along the ground to the right at ankle height, a hooking foot just above the ground, one hand braced down beside him, the robe flaring. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "dx": 20
+   },
+   "sweep3": {
+    "lean": 18,
+    "legF": [
+     50,
+     -10
+    ],
+    "legB": [
+     -20,
+     -50
+    ],
+    "armF": [
+     60,
+     80
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "rising out of a low sweep, still on bent knees, both hands coming back up to guard. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "aa2": {
+    "lean": -14,
+    "legF": [
+     24,
+     0
+    ],
+    "legB": [
+     -24,
+     -20
+    ],
+    "armF": [
+     150,
+     160
+    ],
+    "armB": [
+     -20,
+     30
+    ],
+    "words": "a rising strike against a leaping foe: a rising hooked palm, the arm swept up high over and in front of his head, body stretched up and leaning back, up on the balls of his feet. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "fix": {
+     "s": 1.0
+    }
+   },
+   "aa3": {
+    "lean": 4,
+    "legF": [
+     28,
+     -4
+    ],
+    "legB": [
+     -12,
+     -28
+    ],
+    "armF": [
+     80,
+     110
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "after a rising strike, the arm coming back down to guard, knees bent. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "throw1": {
+    "lean": 12,
+    "legF": [
+     34,
+     0
+    ],
+    "legB": [
+     -24,
+     -36
+    ],
+    "armF": [
+     80,
+     80
+    ],
+    "armB": [
+     70,
+     90
+    ],
+    "words": "stepping in close and seizing the opponent: both lean hands reaching forward to grab at chest height, knees bent. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "throw2": {
+    "lean": -12,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -30,
+     -20
+    ],
+    "armF": [
+     -30,
+     10
+    ],
+    "armB": [
+     -60,
+     -20
+    ],
+    "words": "throwing the opponent past him: his body turned back to the left, both arms swung hard back and down in a heave. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "lowblock1": {
+    "lean": 22,
+    "legF": [
+     72,
+     -6
+    ],
+    "legB": [
+     24,
+     -74
+    ],
+    "armF": [
+     30,
+     100
+    ],
+    "armB": [
+     40,
+     130
+    ],
+    "words": "crouching low on bent knees, both forearms crossed in front of his shins, guarding low. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "run1": {
+    "lean": 24,
+    "legF": [
+     56,
+     6
+    ],
+    "legB": [
+     -44,
+     -40
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, leaning forward, arms trailing, sleeves streaming. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "run2": {
+    "lean": 26,
+    "legF": [
+     10,
+     -40
+    ],
+    "legB": [
+     -20,
+     -70
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, mid-stride, one foot driving past the other, arms trailing, sleeves streaming. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "run3": {
+    "lean": 24,
+    "legF": [
+     -44,
+     -40
+    ],
+    "legB": [
+     56,
+     6
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, the other foot reaching forward, arms trailing, sleeves streaming. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "roll1": {
+    "lean": 50,
+    "legF": [
+     100,
+     -30
+    ],
+    "legB": [
+     70,
+     -60
+    ],
+    "armF": [
+     90,
+     140
+    ],
+    "armB": [
+     70,
+     140
+    ],
+    "words": "diving into a forward roll, ducking his head, the robe gathering, arms tucked in. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "free": true
+   },
+   "roll2": {
+    "lean": 60,
+    "legF": [
+     110,
+     -40
+    ],
+    "legB": [
+     80,
+     -60
+    ],
+    "armF": [
+     90,
+     150
+    ],
+    "armB": [
+     70,
+     140
+    ],
+    "words": "curled tight rolling forward on the ground, head tucked, knees to chest, the robe wrapped round him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "free": true
+   },
+   "zhen1": {
+    "lean": 10,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -20,
+     -30
+    ],
+    "armF": [
+     20,
+     140
+    ],
+    "armB": [
+     60,
+     150
+    ],
+    "words": "gathering force: both fists drawn in close before his chest, knees bent, sleeves stirring. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "zhen2": {
+    "lean": 0,
+    "legF": [
+     40,
+     0
+    ],
+    "legB": [
+     -40,
+     -10
+    ],
+    "armF": [
+     80,
+     100
+    ],
+    "armB": [
+     -80,
+     -60
+    ],
+    "words": "a burst of force outward: both arms flung wide, robe and sleeves blasted outward, hair flying, a ring of wind around him. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "zhen3": {
+    "lean": 4,
+    "legF": [
+     28,
+     -4
+    ],
+    "legB": [
+     -14,
+     -30
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "settling back into his stance after a burst of force, sleeves still settling. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "cutin": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     60,
+     150
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "a close-up bust from the chest up, heavy-lidded cold eyes, two fingers of his right hand raised beside his face, wisps of grey hair across his cheek, a single dramatic still. Only his head, shoulders and the raised hand.",
+    "free": true,
+    "cutin": true,
+    "seed": 1
    }
   },
   "clips": {
@@ -4468,6 +4961,125 @@
     ],
     "fps": 1,
     "loop": true
+   },
+   "jump": {
+    "frames": [
+     "jump1",
+     "jump2",
+     "jump3"
+    ],
+    "fps": 6,
+    "calm": [
+     "jump2"
+    ]
+   },
+   "knock": {
+    "frames": [
+     "knock1",
+     "knock2",
+     "getup1"
+    ],
+    "fps": 4,
+    "calm": [
+     "knock2"
+    ]
+   },
+   "air": {
+    "frames": [
+     "jump2",
+     "air1"
+    ],
+    "hit": 1,
+    "fps": 10,
+    "calm": [
+     "air1"
+    ]
+   },
+   "sweep": {
+    "frames": [
+     "sweep1",
+     "sweep2",
+     "sweep3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "sweep2"
+    ]
+   },
+   "aa": {
+    "frames": [
+     "poke1",
+     "aa2",
+     "aa3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "aa2"
+    ]
+   },
+   "throw": {
+    "frames": [
+     "throw1",
+     "throw2"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "throw2"
+    ]
+   },
+   "lowblock": {
+    "frames": [
+     "lowblock1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "getup": {
+    "frames": [
+     "getup1"
+    ],
+    "fps": 1
+   },
+   "run": {
+    "frames": [
+     "run1",
+     "run2",
+     "run3"
+    ],
+    "fps": 12,
+    "loop": true,
+    "calm": [
+     "run1"
+    ]
+   },
+   "roll": {
+    "frames": [
+     "roll1",
+     "roll2",
+     "getup1"
+    ],
+    "fps": 10
+   },
+   "zhen": {
+    "frames": [
+     "zhen1",
+     "zhen2",
+     "zhen3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "zhen2"
+    ]
+   },
+   "cutin": {
+    "frames": [
+     "cutin"
+    ],
+    "fps": 1
    }
   }
  },
@@ -4839,7 +5451,8 @@
      120
     ],
     "dx": 14,
-    "words": "drawing the back foot up after the strike, rising back into his rooted stance. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+    "words": "drawing the back foot up after the strike, rising back into his rooted stance. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "seed": 2
    },
    "ice1": {
     "lean": 0,
@@ -4860,9 +5473,7 @@
      60
     ],
     "words": "raising the right knee to stamp, the right palm lifted high, looking down at the ground. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
-    "fix": {
-     "s": 1.15
-    }
+    "seed": 2
    },
    "ice2": {
     "lean": 24,
@@ -5173,6 +5784,501 @@
      -6
     ],
     "words": "standing quietly with his shoulders lowered, both hands at his sides, a small nod. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "jump1": {
+    "lean": 14,
+    "legF": [
+     50,
+     -10
+    ],
+    "legB": [
+     10,
+     -50
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     10,
+     30
+    ],
+    "words": "crouched to spring, about to leap up, knees deeply bent, both arms drawn back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "jump2": {
+    "lean": 8,
+    "legF": [
+     100,
+     10
+    ],
+    "legB": [
+     60,
+     -60
+    ],
+    "armF": [
+     70,
+     100
+    ],
+    "armB": [
+     60,
+     150
+    ],
+    "words": "leaping high in the air, his feet far off the ground, knees drawn up, the robe flaring below him. No ground under him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "air": true
+   },
+   "jump3": {
+    "lean": 4,
+    "legF": [
+     30,
+     8
+    ],
+    "legB": [
+     -10,
+     -24
+    ],
+    "armF": [
+     60,
+     100
+    ],
+    "armB": [
+     50,
+     130
+    ],
+    "words": "coming down through the air after a leap, legs hanging down together, toes pointed, the robe streaming up. No ground under him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "air": true
+   },
+   "knock1": {
+    "lean": -50,
+    "legF": [
+     60,
+     40
+    ],
+    "legB": [
+     30,
+     10
+    ],
+    "armF": [
+     -80,
+     -90
+    ],
+    "armB": [
+     -100,
+     -120
+    ],
+    "words": "knocked off his feet, flying backward through the air to the left, body tilted back nearly flat, arms and legs flung forward, the robe and sleeves flying. No ground under him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "air": true
+   },
+   "knock2": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -6,
+     0
+    ],
+    "armF": [
+     150,
+     160
+    ],
+    "armB": [
+     -150,
+     -160
+    ],
+    "words": "lying flat on his back on the ground, knocked down, arms spread, legs out, the robe spread around him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "rot": -88,
+    "free": true
+   },
+   "getup1": {
+    "lean": 20,
+    "legF": [
+     90,
+     -10
+    ],
+    "legB": [
+     10,
+     -90
+    ],
+    "armF": [
+     40,
+     60
+    ],
+    "armB": [
+     40,
+     30
+    ],
+    "words": "getting up from the ground: kneeling on one knee, one hand pushing off the knee, the other hand low, rising. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "air1": {
+    "lean": 10,
+    "legF": [
+     70,
+     30
+    ],
+    "legB": [
+     20,
+     -40
+    ],
+    "armF": [
+     110,
+     120
+    ],
+    "armB": [
+     -30,
+     20
+    ],
+    "words": "in mid-air after a leap, driving a heavy palm down and forward to the right, the other arm back, knees drawn up, the robe flaring. No ground under him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "air": true
+   },
+   "sweep1": {
+    "lean": 20,
+    "legF": [
+     56,
+     -10
+    ],
+    "legB": [
+     0,
+     -60
+    ],
+    "armF": [
+     20,
+     160
+    ],
+    "armB": [
+     40,
+     140
+    ],
+    "words": "sinking low on deeply bent knees, both hands drawn back, about to sweep a leg low. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "sweep2": {
+    "lean": 24,
+    "legF": [
+     76,
+     74
+    ],
+    "legB": [
+     -26,
+     -100
+    ],
+    "armF": [
+     100,
+     100
+    ],
+    "armB": [
+     -30,
+     20
+    ],
+    "words": "a low sweeping kick: dropped into a deep crouch on the back leg, the front leg swept out straight along the ground to the right at ankle height, a heavy boot just above the ground, one hand braced down beside him, the robe flaring. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "dx": 20
+   },
+   "sweep3": {
+    "lean": 18,
+    "legF": [
+     50,
+     -10
+    ],
+    "legB": [
+     -20,
+     -50
+    ],
+    "armF": [
+     60,
+     80
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "rising out of a low sweep, still on bent knees, both hands coming back up to guard. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "aa2": {
+    "lean": -14,
+    "legF": [
+     24,
+     0
+    ],
+    "legB": [
+     -24,
+     -20
+    ],
+    "armF": [
+     150,
+     160
+    ],
+    "armB": [
+     -20,
+     30
+    ],
+    "words": "a rising strike against a leaping foe: a rising heavy palm, the arm swept up high over and in front of his head, body stretched up and leaning back, up on the balls of his feet. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "fix": {
+     "s": 1.0
+    }
+   },
+   "aa3": {
+    "lean": 4,
+    "legF": [
+     28,
+     -4
+    ],
+    "legB": [
+     -12,
+     -28
+    ],
+    "armF": [
+     80,
+     110
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "after a rising strike, the arm coming back down to guard, knees bent. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "throw1": {
+    "lean": 12,
+    "legF": [
+     34,
+     0
+    ],
+    "legB": [
+     -24,
+     -36
+    ],
+    "armF": [
+     80,
+     80
+    ],
+    "armB": [
+     70,
+     90
+    ],
+    "words": "stepping in close and seizing the opponent: both thick hands reaching forward to grab at chest height, knees bent. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "throw2": {
+    "lean": -12,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -30,
+     -20
+    ],
+    "armF": [
+     -30,
+     10
+    ],
+    "armB": [
+     -60,
+     -20
+    ],
+    "words": "throwing the opponent past him: his body turned back to the left, both arms swung hard back and down in a heave. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "lowblock1": {
+    "lean": 22,
+    "legF": [
+     72,
+     -6
+    ],
+    "legB": [
+     24,
+     -74
+    ],
+    "armF": [
+     30,
+     100
+    ],
+    "armB": [
+     40,
+     130
+    ],
+    "words": "crouching low on bent knees, both forearms crossed in front of his shins, guarding low. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "run1": {
+    "lean": 24,
+    "legF": [
+     56,
+     6
+    ],
+    "legB": [
+     -44,
+     -40
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, leaning forward, arms swinging, the earth-yellow hem flying. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "run2": {
+    "lean": 26,
+    "legF": [
+     10,
+     -40
+    ],
+    "legB": [
+     -20,
+     -70
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, mid-stride, one foot driving past the other, arms swinging, the earth-yellow hem flying. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "run3": {
+    "lean": 24,
+    "legF": [
+     -44,
+     -40
+    ],
+    "legB": [
+     56,
+     6
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, the other foot reaching forward, arms swinging, the earth-yellow hem flying. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "roll1": {
+    "lean": 50,
+    "legF": [
+     100,
+     -30
+    ],
+    "legB": [
+     70,
+     -60
+    ],
+    "armF": [
+     90,
+     140
+    ],
+    "armB": [
+     70,
+     140
+    ],
+    "words": "diving into a forward roll, ducking his head, the robe gathering, arms tucked in. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "free": true
+   },
+   "roll2": {
+    "lean": 60,
+    "legF": [
+     110,
+     -40
+    ],
+    "legB": [
+     80,
+     -60
+    ],
+    "armF": [
+     90,
+     150
+    ],
+    "armB": [
+     70,
+     140
+    ],
+    "words": "curled tight rolling forward on the ground, head tucked, knees to chest, the robe wrapped round him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "free": true
+   },
+   "zhen1": {
+    "lean": 10,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -20,
+     -30
+    ],
+    "armF": [
+     20,
+     140
+    ],
+    "armB": [
+     60,
+     150
+    ],
+    "words": "gathering force: both fists drawn in close before his chest, knees bent, sleeves stirring. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "zhen2": {
+    "lean": 0,
+    "legF": [
+     40,
+     0
+    ],
+    "legB": [
+     -40,
+     -10
+    ],
+    "armF": [
+     80,
+     100
+    ],
+    "armB": [
+     -80,
+     -60
+    ],
+    "words": "a burst of force outward: both arms flung wide, robe and sleeves blasted outward, hair flying, a ring of wind around him. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "zhen3": {
+    "lean": 4,
+    "legF": [
+     28,
+     -4
+    ],
+    "legB": [
+     -14,
+     -30
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "settling back into his stance after a burst of force, sleeves still settling. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "cutin": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     60,
+     150
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "a close-up bust from the chest up, half-closed eyes, short beard, a heavy open palm raised before his face, a single dramatic still. Only his head, shoulders and the raised palm.",
+    "free": true,
+    "cutin": true,
+    "seed": 1
    }
   },
   "clips": {
@@ -5339,6 +6445,125 @@
     ],
     "fps": 1,
     "loop": true
+   },
+   "jump": {
+    "frames": [
+     "jump1",
+     "jump2",
+     "jump3"
+    ],
+    "fps": 6,
+    "calm": [
+     "jump2"
+    ]
+   },
+   "knock": {
+    "frames": [
+     "knock1",
+     "knock2",
+     "getup1"
+    ],
+    "fps": 4,
+    "calm": [
+     "knock2"
+    ]
+   },
+   "air": {
+    "frames": [
+     "jump2",
+     "air1"
+    ],
+    "hit": 1,
+    "fps": 10,
+    "calm": [
+     "air1"
+    ]
+   },
+   "sweep": {
+    "frames": [
+     "sweep1",
+     "sweep2",
+     "sweep3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "sweep2"
+    ]
+   },
+   "aa": {
+    "frames": [
+     "poke1",
+     "aa2",
+     "aa3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "aa2"
+    ]
+   },
+   "throw": {
+    "frames": [
+     "throw1",
+     "throw2"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "throw2"
+    ]
+   },
+   "lowblock": {
+    "frames": [
+     "lowblock1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "getup": {
+    "frames": [
+     "getup1"
+    ],
+    "fps": 1
+   },
+   "run": {
+    "frames": [
+     "run1",
+     "run2",
+     "run3"
+    ],
+    "fps": 12,
+    "loop": true,
+    "calm": [
+     "run1"
+    ]
+   },
+   "roll": {
+    "frames": [
+     "roll1",
+     "roll2",
+     "getup1"
+    ],
+    "fps": 10
+   },
+   "zhen": {
+    "frames": [
+     "zhen1",
+     "zhen2",
+     "zhen3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "zhen2"
+    ]
+   },
+   "cutin": {
+    "frames": [
+     "cutin"
+    ],
+    "fps": 1
    }
   }
  },
@@ -5369,7 +6594,11 @@
      20,
      100
     ],
-    "words": "a low boxer's stance, feet planted wide, both fists raised before his chest, the right fist forward. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+    "words": "a low boxer's stance, feet planted wide, both fists raised before his chest, the right fist forward. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "seed": 2,
+    "fix": {
+     "s": 1.04
+    }
    },
    "idle2": {
     "lean": 5,
@@ -6045,6 +7274,501 @@
      -6
     ],
     "words": "standing quietly with his shoulders lowered, both hands at his sides, a small nod. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "jump1": {
+    "lean": 14,
+    "legF": [
+     50,
+     -10
+    ],
+    "legB": [
+     10,
+     -50
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     10,
+     30
+    ],
+    "words": "crouched to spring, about to leap up, knees deeply bent, both arms drawn back. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "jump2": {
+    "lean": 8,
+    "legF": [
+     100,
+     10
+    ],
+    "legB": [
+     60,
+     -60
+    ],
+    "armF": [
+     70,
+     100
+    ],
+    "armB": [
+     60,
+     150
+    ],
+    "words": "leaping high in the air, his feet far off the ground, knees drawn up, the robe flaring below him. No ground under him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "air": true
+   },
+   "jump3": {
+    "lean": 4,
+    "legF": [
+     30,
+     8
+    ],
+    "legB": [
+     -10,
+     -24
+    ],
+    "armF": [
+     60,
+     100
+    ],
+    "armB": [
+     50,
+     130
+    ],
+    "words": "coming down through the air after a leap, legs hanging down together, toes pointed, the robe streaming up. No ground under him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "air": true
+   },
+   "knock1": {
+    "lean": -50,
+    "legF": [
+     60,
+     40
+    ],
+    "legB": [
+     30,
+     10
+    ],
+    "armF": [
+     -80,
+     -90
+    ],
+    "armB": [
+     -100,
+     -120
+    ],
+    "words": "knocked off his feet, flying backward through the air to the left, body tilted back nearly flat, arms and legs flung forward, the robe and sleeves flying. No ground under him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "air": true
+   },
+   "knock2": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -6,
+     0
+    ],
+    "armF": [
+     150,
+     160
+    ],
+    "armB": [
+     -150,
+     -160
+    ],
+    "words": "lying flat on his back on the ground, knocked down, arms spread, legs out, the robe spread around him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "rot": -88,
+    "free": true
+   },
+   "getup1": {
+    "lean": 20,
+    "legF": [
+     90,
+     -10
+    ],
+    "legB": [
+     10,
+     -90
+    ],
+    "armF": [
+     40,
+     60
+    ],
+    "armB": [
+     40,
+     30
+    ],
+    "words": "getting up from the ground: kneeling on one knee, one hand pushing off the knee, the other hand low, rising. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "air1": {
+    "lean": 10,
+    "legF": [
+     70,
+     30
+    ],
+    "legB": [
+     20,
+     -40
+    ],
+    "armF": [
+     110,
+     120
+    ],
+    "armB": [
+     -30,
+     20
+    ],
+    "words": "in mid-air after a leap, driving a heavy fist down and forward to the right, the other arm back, knees drawn up, the robe flaring. No ground under him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "air": true
+   },
+   "sweep1": {
+    "lean": 20,
+    "legF": [
+     56,
+     -10
+    ],
+    "legB": [
+     0,
+     -60
+    ],
+    "armF": [
+     20,
+     160
+    ],
+    "armB": [
+     40,
+     140
+    ],
+    "words": "sinking low on deeply bent knees, both hands drawn back, about to sweep a leg low. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "sweep2": {
+    "lean": 24,
+    "legF": [
+     76,
+     74
+    ],
+    "legB": [
+     -26,
+     -100
+    ],
+    "armF": [
+     100,
+     100
+    ],
+    "armB": [
+     -30,
+     20
+    ],
+    "words": "a low sweeping kick: dropped into a deep crouch on the back leg, the front leg swept out straight along the ground to the right at ankle height, a stamping boot just above the ground, one hand braced down beside him, the robe flaring. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "dx": 20
+   },
+   "sweep3": {
+    "lean": 18,
+    "legF": [
+     50,
+     -10
+    ],
+    "legB": [
+     -20,
+     -50
+    ],
+    "armF": [
+     60,
+     80
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "rising out of a low sweep, still on bent knees, both hands coming back up to guard. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "aa2": {
+    "lean": -14,
+    "legF": [
+     24,
+     0
+    ],
+    "legB": [
+     -24,
+     -20
+    ],
+    "armF": [
+     150,
+     160
+    ],
+    "armB": [
+     -20,
+     30
+    ],
+    "words": "a rising strike against a leaping foe: a rising uppercut of the right fist, the arm swept up high over and in front of his head, body stretched up and leaning back, up on the balls of his feet. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "fix": {
+     "s": 1.2
+    }
+   },
+   "aa3": {
+    "lean": 4,
+    "legF": [
+     28,
+     -4
+    ],
+    "legB": [
+     -12,
+     -28
+    ],
+    "armF": [
+     80,
+     110
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "after a rising strike, the arm coming back down to guard, knees bent. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "throw1": {
+    "lean": 12,
+    "legF": [
+     34,
+     0
+    ],
+    "legB": [
+     -24,
+     -36
+    ],
+    "armF": [
+     80,
+     80
+    ],
+    "armB": [
+     70,
+     90
+    ],
+    "words": "stepping in close and seizing the opponent: both big hands reaching forward to grab at chest height, knees bent. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "throw2": {
+    "lean": -12,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -30,
+     -20
+    ],
+    "armF": [
+     -30,
+     10
+    ],
+    "armB": [
+     -60,
+     -20
+    ],
+    "words": "throwing the opponent past him: his body turned back to the left, both arms swung hard back and down in a heave. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "lowblock1": {
+    "lean": 22,
+    "legF": [
+     72,
+     -6
+    ],
+    "legB": [
+     24,
+     -74
+    ],
+    "armF": [
+     30,
+     100
+    ],
+    "armB": [
+     40,
+     130
+    ],
+    "words": "crouching low on bent knees, both forearms crossed in front of his shins, guarding low. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "run1": {
+    "lean": 24,
+    "legF": [
+     56,
+     6
+    ],
+    "legB": [
+     -44,
+     -40
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, leaning forward, fists pumping at his sides. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "run2": {
+    "lean": 26,
+    "legF": [
+     10,
+     -40
+    ],
+    "legB": [
+     -20,
+     -70
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, mid-stride, one foot driving past the other, fists pumping at his sides. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "run3": {
+    "lean": 24,
+    "legF": [
+     -44,
+     -40
+    ],
+    "legB": [
+     56,
+     6
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, the other foot reaching forward, fists pumping at his sides. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "roll1": {
+    "lean": 50,
+    "legF": [
+     100,
+     -30
+    ],
+    "legB": [
+     70,
+     -60
+    ],
+    "armF": [
+     90,
+     140
+    ],
+    "armB": [
+     70,
+     140
+    ],
+    "words": "diving into a forward roll, ducking his head, the robe gathering, arms tucked in. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "free": true
+   },
+   "roll2": {
+    "lean": 60,
+    "legF": [
+     110,
+     -40
+    ],
+    "legB": [
+     80,
+     -60
+    ],
+    "armF": [
+     90,
+     150
+    ],
+    "armB": [
+     70,
+     140
+    ],
+    "words": "curled tight rolling forward on the ground, head tucked, knees to chest, the robe wrapped round him. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "free": true
+   },
+   "zhen1": {
+    "lean": 10,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -20,
+     -30
+    ],
+    "armF": [
+     20,
+     140
+    ],
+    "armB": [
+     60,
+     150
+    ],
+    "words": "gathering force: both fists drawn in close before his chest, knees bent, sleeves stirring. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "zhen2": {
+    "lean": 0,
+    "legF": [
+     40,
+     0
+    ],
+    "legB": [
+     -40,
+     -10
+    ],
+    "armF": [
+     80,
+     100
+    ],
+    "armB": [
+     -80,
+     -60
+    ],
+    "words": "a burst of force outward: both arms flung wide, robe and sleeves blasted outward, hair flying, a ring of wind around him. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "zhen3": {
+    "lean": 4,
+    "legF": [
+     28,
+     -4
+    ],
+    "legB": [
+     -14,
+     -30
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "settling back into his stance after a burst of force, sleeves still settling. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "cutin": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     60,
+     150
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "a close-up bust from the chest up, his round sunburnt face fierce and set, eyes blazing, a big fist raised beside his face, a single dramatic still. Only his head, shoulders and the raised fist.",
+    "free": true,
+    "cutin": true,
+    "seed": 1
    }
   },
   "clips": {
@@ -6211,6 +7935,125 @@
     ],
     "fps": 1,
     "loop": true
+   },
+   "jump": {
+    "frames": [
+     "jump1",
+     "jump2",
+     "jump3"
+    ],
+    "fps": 6,
+    "calm": [
+     "jump2"
+    ]
+   },
+   "knock": {
+    "frames": [
+     "knock1",
+     "knock2",
+     "getup1"
+    ],
+    "fps": 4,
+    "calm": [
+     "knock2"
+    ]
+   },
+   "air": {
+    "frames": [
+     "jump2",
+     "air1"
+    ],
+    "hit": 1,
+    "fps": 10,
+    "calm": [
+     "air1"
+    ]
+   },
+   "sweep": {
+    "frames": [
+     "sweep1",
+     "sweep2",
+     "sweep3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "sweep2"
+    ]
+   },
+   "aa": {
+    "frames": [
+     "poke1",
+     "aa2",
+     "aa3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "aa2"
+    ]
+   },
+   "throw": {
+    "frames": [
+     "throw1",
+     "throw2"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "throw2"
+    ]
+   },
+   "lowblock": {
+    "frames": [
+     "lowblock1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "getup": {
+    "frames": [
+     "getup1"
+    ],
+    "fps": 1
+   },
+   "run": {
+    "frames": [
+     "run1",
+     "run2",
+     "run3"
+    ],
+    "fps": 12,
+    "loop": true,
+    "calm": [
+     "run1"
+    ]
+   },
+   "roll": {
+    "frames": [
+     "roll1",
+     "roll2",
+     "getup1"
+    ],
+    "fps": 10
+   },
+   "zhen": {
+    "frames": [
+     "zhen1",
+     "zhen2",
+     "zhen3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "zhen2"
+    ]
+   },
+   "cutin": {
+    "frames": [
+     "cutin"
+    ],
+    "fps": 1
    }
   }
  },
@@ -6582,7 +8425,8 @@
      120
     ],
     "dx": 14,
-    "words": "drawing the back foot up after the strike, rising back into his planted stance. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+    "words": "drawing the back foot up after the strike, rising back into his planted stance. EMPTY HANDS: no sword, no weapon, nothing in his hands.",
+    "seed": 2
    },
    "ice1": {
     "lean": 0,
@@ -6603,9 +8447,7 @@
      60
     ],
     "words": "lifting a round palm-sized bronze mirror in both hands before his face toward the right, his cheeks flushing red. He holds ONLY the small round bronze mirror, nothing else.",
-    "fix": {
-     "s": 1.15
-    }
+    "seed": 2
    },
    "ice2": {
     "lean": 24,
@@ -6809,9 +8651,7 @@
      40
     ],
     "words": "raising a round palm-sized bronze mirror high above his head in both hands, its face turned to the right, his face blotched red. He holds ONLY the small round bronze mirror, nothing else.",
-    "fix": {
-     "s": 0.88
-    }
+    "seed": 2
    },
    "jianqi2": {
     "lean": 30,
@@ -6916,6 +8756,501 @@
      -6
     ],
     "words": "standing quietly with his shoulders lowered, both hands at his sides, a small nod. EMPTY HANDS: no sword, no weapon, nothing in his hands."
+   },
+   "jump1": {
+    "lean": 14,
+    "legF": [
+     50,
+     -10
+    ],
+    "legB": [
+     10,
+     -50
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     10,
+     30
+    ],
+    "words": "crouched to spring, about to leap up, knees deeply bent, both arms drawn back. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash."
+   },
+   "jump2": {
+    "lean": 8,
+    "legF": [
+     100,
+     10
+    ],
+    "legB": [
+     60,
+     -60
+    ],
+    "armF": [
+     70,
+     100
+    ],
+    "armB": [
+     60,
+     150
+    ],
+    "words": "leaping high in the air, his feet far off the ground, knees drawn up, the robe flaring below him. No ground under him. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash.",
+    "air": true
+   },
+   "jump3": {
+    "lean": 4,
+    "legF": [
+     30,
+     8
+    ],
+    "legB": [
+     -10,
+     -24
+    ],
+    "armF": [
+     60,
+     100
+    ],
+    "armB": [
+     50,
+     130
+    ],
+    "words": "coming down through the air after a leap, legs hanging down together, toes pointed, the robe streaming up. No ground under him. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash.",
+    "air": true
+   },
+   "knock1": {
+    "lean": -50,
+    "legF": [
+     60,
+     40
+    ],
+    "legB": [
+     30,
+     10
+    ],
+    "armF": [
+     -80,
+     -90
+    ],
+    "armB": [
+     -100,
+     -120
+    ],
+    "words": "knocked off his feet, flying backward through the air to the left, body tilted back nearly flat, arms and legs flung forward, the robe and sleeves flying. No ground under him. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash.",
+    "air": true
+   },
+   "knock2": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -6,
+     0
+    ],
+    "armF": [
+     150,
+     160
+    ],
+    "armB": [
+     -150,
+     -160
+    ],
+    "words": "lying flat on his back on the ground, knocked down, arms spread, legs out, the robe spread around him. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash.",
+    "rot": -88,
+    "free": true
+   },
+   "getup1": {
+    "lean": 20,
+    "legF": [
+     90,
+     -10
+    ],
+    "legB": [
+     10,
+     -90
+    ],
+    "armF": [
+     40,
+     60
+    ],
+    "armB": [
+     40,
+     30
+    ],
+    "words": "getting up from the ground: kneeling on one knee, one hand pushing off the knee, the other hand low, rising. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash."
+   },
+   "air1": {
+    "lean": 10,
+    "legF": [
+     70,
+     30
+    ],
+    "legB": [
+     20,
+     -40
+    ],
+    "armF": [
+     110,
+     120
+    ],
+    "armB": [
+     -30,
+     20
+    ],
+    "words": "in mid-air after a leap, driving a flat palm down and forward to the right, the other arm back, knees drawn up, the robe flaring. No ground under him. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash.",
+    "air": true
+   },
+   "sweep1": {
+    "lean": 20,
+    "legF": [
+     56,
+     -10
+    ],
+    "legB": [
+     0,
+     -60
+    ],
+    "armF": [
+     20,
+     160
+    ],
+    "armB": [
+     40,
+     140
+    ],
+    "words": "sinking low on deeply bent knees, both hands drawn back, about to sweep a leg low. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash."
+   },
+   "sweep2": {
+    "lean": 24,
+    "legF": [
+     76,
+     74
+    ],
+    "legB": [
+     -26,
+     -100
+    ],
+    "armF": [
+     100,
+     100
+    ],
+    "armB": [
+     -30,
+     20
+    ],
+    "words": "a low sweeping kick: dropped into a deep crouch on the back leg, the front leg swept out straight along the ground to the right at ankle height, a round boot just above the ground, one hand braced down beside him, the robe flaring. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash.",
+    "dx": 20
+   },
+   "sweep3": {
+    "lean": 18,
+    "legF": [
+     50,
+     -10
+    ],
+    "legB": [
+     -20,
+     -50
+    ],
+    "armF": [
+     60,
+     80
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "rising out of a low sweep, still on bent knees, both hands coming back up to guard. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash."
+   },
+   "aa2": {
+    "lean": -14,
+    "legF": [
+     24,
+     0
+    ],
+    "legB": [
+     -24,
+     -20
+    ],
+    "armF": [
+     150,
+     160
+    ],
+    "armB": [
+     -20,
+     30
+    ],
+    "words": "a rising strike against a leaping foe: a rising palm, the arm swept up high over and in front of his head, body stretched up and leaning back, up on the balls of his feet. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash.",
+    "fix": {
+     "s": 1.0
+    }
+   },
+   "aa3": {
+    "lean": 4,
+    "legF": [
+     28,
+     -4
+    ],
+    "legB": [
+     -12,
+     -28
+    ],
+    "armF": [
+     80,
+     110
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "after a rising strike, the arm coming back down to guard, knees bent. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash."
+   },
+   "throw1": {
+    "lean": 12,
+    "legF": [
+     34,
+     0
+    ],
+    "legB": [
+     -24,
+     -36
+    ],
+    "armF": [
+     80,
+     80
+    ],
+    "armB": [
+     70,
+     90
+    ],
+    "words": "stepping in close and seizing the opponent: both plump hands reaching forward to grab at chest height, knees bent. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash."
+   },
+   "throw2": {
+    "lean": -12,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -30,
+     -20
+    ],
+    "armF": [
+     -30,
+     10
+    ],
+    "armB": [
+     -60,
+     -20
+    ],
+    "words": "throwing the opponent past him: his body turned back to the left, both arms swung hard back and down in a heave. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash."
+   },
+   "lowblock1": {
+    "lean": 22,
+    "legF": [
+     72,
+     -6
+    ],
+    "legB": [
+     24,
+     -74
+    ],
+    "armF": [
+     30,
+     100
+    ],
+    "armB": [
+     40,
+     130
+    ],
+    "words": "crouching low on bent knees, both forearms crossed in front of his shins, guarding low. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash."
+   },
+   "run1": {
+    "lean": 24,
+    "legF": [
+     56,
+     6
+    ],
+    "legB": [
+     -44,
+     -40
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, leaning forward, arms flapping, the brocade robe flying. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash."
+   },
+   "run2": {
+    "lean": 26,
+    "legF": [
+     10,
+     -40
+    ],
+    "legB": [
+     -20,
+     -70
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, mid-stride, one foot driving past the other, arms flapping, the brocade robe flying. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash."
+   },
+   "run3": {
+    "lean": 24,
+    "legF": [
+     -44,
+     -40
+    ],
+    "legB": [
+     56,
+     6
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, the other foot reaching forward, arms flapping, the brocade robe flying. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash."
+   },
+   "roll1": {
+    "lean": 50,
+    "legF": [
+     100,
+     -30
+    ],
+    "legB": [
+     70,
+     -60
+    ],
+    "armF": [
+     90,
+     140
+    ],
+    "armB": [
+     70,
+     140
+    ],
+    "words": "diving into a forward roll, ducking his head, the robe gathering, arms tucked in. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash.",
+    "free": true
+   },
+   "roll2": {
+    "lean": 60,
+    "legF": [
+     110,
+     -40
+    ],
+    "legB": [
+     80,
+     -60
+    ],
+    "armF": [
+     90,
+     150
+    ],
+    "armB": [
+     70,
+     140
+    ],
+    "words": "curled tight rolling forward on the ground, head tucked, knees to chest, the robe wrapped round him. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash.",
+    "free": true
+   },
+   "zhen1": {
+    "lean": 10,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -20,
+     -30
+    ],
+    "armF": [
+     20,
+     140
+    ],
+    "armB": [
+     60,
+     150
+    ],
+    "words": "gathering force: both fists drawn in close before his chest, knees bent, sleeves stirring. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash."
+   },
+   "zhen2": {
+    "lean": 0,
+    "legF": [
+     40,
+     0
+    ],
+    "legB": [
+     -40,
+     -10
+    ],
+    "armF": [
+     80,
+     100
+    ],
+    "armB": [
+     -80,
+     -60
+    ],
+    "words": "a burst of force outward: both arms flung wide, robe and sleeves blasted outward, hair flying, a ring of wind around him. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash."
+   },
+   "zhen3": {
+    "lean": 4,
+    "legF": [
+     28,
+     -4
+    ],
+    "legB": [
+     -14,
+     -30
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "settling back into his stance after a burst of force, sleeves still settling. EMPTY HANDS: no sword, no weapon, nothing in his hands; the small bronze mirror stays hanging from his sash."
+   },
+   "cutin": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     60,
+     150
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "a close-up bust from the chest up, his smug face blotched bright red, the small round bronze mirror held up in his right hand beside his face, its face turned outward, a single dramatic still. Only his head, shoulders, the raised hand and the mirror.",
+    "free": true,
+    "cutin": true,
+    "seed": 1
    }
   },
   "clips": {
@@ -7082,6 +9417,125 @@
     ],
     "fps": 1,
     "loop": true
+   },
+   "jump": {
+    "frames": [
+     "jump1",
+     "jump2",
+     "jump3"
+    ],
+    "fps": 6,
+    "calm": [
+     "jump2"
+    ]
+   },
+   "knock": {
+    "frames": [
+     "knock1",
+     "knock2",
+     "getup1"
+    ],
+    "fps": 4,
+    "calm": [
+     "knock2"
+    ]
+   },
+   "air": {
+    "frames": [
+     "jump2",
+     "air1"
+    ],
+    "hit": 1,
+    "fps": 10,
+    "calm": [
+     "air1"
+    ]
+   },
+   "sweep": {
+    "frames": [
+     "sweep1",
+     "sweep2",
+     "sweep3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "sweep2"
+    ]
+   },
+   "aa": {
+    "frames": [
+     "poke1",
+     "aa2",
+     "aa3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "aa2"
+    ]
+   },
+   "throw": {
+    "frames": [
+     "throw1",
+     "throw2"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "throw2"
+    ]
+   },
+   "lowblock": {
+    "frames": [
+     "lowblock1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "getup": {
+    "frames": [
+     "getup1"
+    ],
+    "fps": 1
+   },
+   "run": {
+    "frames": [
+     "run1",
+     "run2",
+     "run3"
+    ],
+    "fps": 12,
+    "loop": true,
+    "calm": [
+     "run1"
+    ]
+   },
+   "roll": {
+    "frames": [
+     "roll1",
+     "roll2",
+     "getup1"
+    ],
+    "fps": 10
+   },
+   "zhen": {
+    "frames": [
+     "zhen1",
+     "zhen2",
+     "zhen3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "zhen2"
+    ]
+   },
+   "cutin": {
+    "frames": [
+     "cutin"
+    ],
+    "fps": 1
    }
   }
  },
@@ -7636,7 +10090,8 @@
      -46,
      -14
     ],
-    "words": "struck: he rocks backward to the left, head and shoulders thrown back, arms out. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+    "words": "struck: he rocks backward to the left, head and shoulders thrown back, arms out. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword.",
+    "seed": 2
    },
    "hit2": {
     "lean": -10,
@@ -7676,7 +10131,8 @@
      20,
      40
     ],
-    "words": "raising the small red-copper gourd high above his head in his right hand, its open mouth tilted to the right, the shield arm across his chest, smiling widely. He holds ONLY the small red-copper gourd; the round shield stays strapped on his left forearm."
+    "words": "raising the small red-copper gourd high above his head in his right hand, its open mouth tilted to the right, the shield arm across his chest, smiling widely. He holds ONLY the small red-copper gourd; the round shield stays strapped on his left forearm.",
+    "seed": 2
    },
    "jianqi2": {
     "lean": 30,
@@ -7720,7 +10176,8 @@
      90,
      140
     ],
-    "words": "his front heel skidding out from under him on slippery oil, losing his balance backward, arms flung up. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+    "words": "his front heel skidding out from under him on slippery oil, losing his balance backward, arms flung up. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword.",
+    "seed": 2
    },
    "slip2": {
     "lean": -48,
@@ -7781,6 +10238,501 @@
      -6
     ],
     "words": "standing quietly with his shoulders lowered, both hands at his sides, a small nod. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm; no sword."
+   },
+   "jump1": {
+    "lean": 14,
+    "legF": [
+     50,
+     -10
+    ],
+    "legB": [
+     10,
+     -50
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     10,
+     30
+    ],
+    "words": "crouched to spring, about to leap up, knees deeply bent, both arms drawn back. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm."
+   },
+   "jump2": {
+    "lean": 8,
+    "legF": [
+     100,
+     10
+    ],
+    "legB": [
+     60,
+     -60
+    ],
+    "armF": [
+     70,
+     100
+    ],
+    "armB": [
+     60,
+     150
+    ],
+    "words": "leaping high in the air, his feet far off the ground, knees drawn up, the robe flaring below him. No ground under him. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm.",
+    "air": true
+   },
+   "jump3": {
+    "lean": 4,
+    "legF": [
+     30,
+     8
+    ],
+    "legB": [
+     -10,
+     -24
+    ],
+    "armF": [
+     60,
+     100
+    ],
+    "armB": [
+     50,
+     130
+    ],
+    "words": "coming down through the air after a leap, legs hanging down together, toes pointed, the robe streaming up. No ground under him. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm.",
+    "air": true
+   },
+   "knock1": {
+    "lean": -50,
+    "legF": [
+     60,
+     40
+    ],
+    "legB": [
+     30,
+     10
+    ],
+    "armF": [
+     -80,
+     -90
+    ],
+    "armB": [
+     -100,
+     -120
+    ],
+    "words": "knocked off his feet, flying backward through the air to the left, body tilted back nearly flat, arms and legs flung forward, the robe and sleeves flying. No ground under him. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm.",
+    "air": true
+   },
+   "knock2": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -6,
+     0
+    ],
+    "armF": [
+     150,
+     160
+    ],
+    "armB": [
+     -150,
+     -160
+    ],
+    "words": "lying flat on his back on the ground, knocked down, arms spread, legs out, the robe spread around him. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm.",
+    "rot": -88,
+    "free": true
+   },
+   "getup1": {
+    "lean": 20,
+    "legF": [
+     90,
+     -10
+    ],
+    "legB": [
+     10,
+     -90
+    ],
+    "armF": [
+     40,
+     60
+    ],
+    "armB": [
+     40,
+     30
+    ],
+    "words": "getting up from the ground: kneeling on one knee, one hand pushing off the knee, the other hand low, rising. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm."
+   },
+   "air1": {
+    "lean": 10,
+    "legF": [
+     70,
+     30
+    ],
+    "legB": [
+     20,
+     -40
+    ],
+    "armF": [
+     110,
+     120
+    ],
+    "armB": [
+     -30,
+     20
+    ],
+    "words": "in mid-air after a leap, driving an open palm down and forward to the right, the other arm back, knees drawn up, the robe flaring. No ground under him. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm.",
+    "air": true
+   },
+   "sweep1": {
+    "lean": 20,
+    "legF": [
+     56,
+     -10
+    ],
+    "legB": [
+     0,
+     -60
+    ],
+    "armF": [
+     20,
+     160
+    ],
+    "armB": [
+     40,
+     140
+    ],
+    "words": "sinking low on deeply bent knees, both hands drawn back, about to sweep a leg low. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm."
+   },
+   "sweep2": {
+    "lean": 24,
+    "legF": [
+     76,
+     74
+    ],
+    "legB": [
+     -26,
+     -100
+    ],
+    "armF": [
+     100,
+     100
+    ],
+    "armB": [
+     -30,
+     20
+    ],
+    "words": "a low sweeping kick: dropped into a deep crouch on the back leg, the front leg swept out straight along the ground to the right at ankle height, a boot just above the ground, one hand braced down beside him, the robe flaring. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm.",
+    "dx": 20
+   },
+   "sweep3": {
+    "lean": 18,
+    "legF": [
+     50,
+     -10
+    ],
+    "legB": [
+     -20,
+     -50
+    ],
+    "armF": [
+     60,
+     80
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "rising out of a low sweep, still on bent knees, both hands coming back up to guard. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm."
+   },
+   "aa2": {
+    "lean": -14,
+    "legF": [
+     24,
+     0
+    ],
+    "legB": [
+     -24,
+     -20
+    ],
+    "armF": [
+     150,
+     160
+    ],
+    "armB": [
+     -20,
+     30
+    ],
+    "words": "a rising strike against a leaping foe: a rising palm, the arm swept up high over and in front of his head, body stretched up and leaning back, up on the balls of his feet. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm.",
+    "fix": {
+     "s": 1.0
+    }
+   },
+   "aa3": {
+    "lean": 4,
+    "legF": [
+     28,
+     -4
+    ],
+    "legB": [
+     -12,
+     -28
+    ],
+    "armF": [
+     80,
+     110
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "after a rising strike, the arm coming back down to guard, knees bent. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm."
+   },
+   "throw1": {
+    "lean": 12,
+    "legF": [
+     34,
+     0
+    ],
+    "legB": [
+     -24,
+     -36
+    ],
+    "armF": [
+     80,
+     80
+    ],
+    "armB": [
+     70,
+     90
+    ],
+    "words": "stepping in close and seizing the opponent: his free hand and the shield arm reaching forward to grab at chest height, knees bent. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm."
+   },
+   "throw2": {
+    "lean": -12,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -30,
+     -20
+    ],
+    "armF": [
+     -30,
+     10
+    ],
+    "armB": [
+     -60,
+     -20
+    ],
+    "words": "throwing the opponent past him: his body turned back to the left, both arms swung hard back and down in a heave. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm."
+   },
+   "lowblock1": {
+    "lean": 22,
+    "legF": [
+     72,
+     -6
+    ],
+    "legB": [
+     24,
+     -74
+    ],
+    "armF": [
+     30,
+     100
+    ],
+    "armB": [
+     40,
+     130
+    ],
+    "words": "crouching low on bent knees, both forearms crossed in front of his shins, guarding low. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm."
+   },
+   "run1": {
+    "lean": 24,
+    "legF": [
+     56,
+     6
+    ],
+    "legB": [
+     -44,
+     -40
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, leaning forward, the gourd held close, the ochre robe flying. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm."
+   },
+   "run2": {
+    "lean": 26,
+    "legF": [
+     10,
+     -40
+    ],
+    "legB": [
+     -20,
+     -70
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, mid-stride, one foot driving past the other, the gourd held close, the ochre robe flying. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm."
+   },
+   "run3": {
+    "lean": 24,
+    "legF": [
+     -44,
+     -40
+    ],
+    "legB": [
+     56,
+     6
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, the other foot reaching forward, the gourd held close, the ochre robe flying. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm."
+   },
+   "roll1": {
+    "lean": 50,
+    "legF": [
+     100,
+     -30
+    ],
+    "legB": [
+     70,
+     -60
+    ],
+    "armF": [
+     90,
+     140
+    ],
+    "armB": [
+     70,
+     140
+    ],
+    "words": "diving into a forward roll, ducking his head, the robe gathering, arms tucked in. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm.",
+    "free": true
+   },
+   "roll2": {
+    "lean": 60,
+    "legF": [
+     110,
+     -40
+    ],
+    "legB": [
+     80,
+     -60
+    ],
+    "armF": [
+     90,
+     150
+    ],
+    "armB": [
+     70,
+     140
+    ],
+    "words": "curled tight rolling forward on the ground, head tucked, knees to chest, the robe wrapped round him. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm.",
+    "free": true
+   },
+   "zhen1": {
+    "lean": 10,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -20,
+     -30
+    ],
+    "armF": [
+     20,
+     140
+    ],
+    "armB": [
+     60,
+     150
+    ],
+    "words": "gathering force: both fists drawn in close before his chest, knees bent, sleeves stirring. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm."
+   },
+   "zhen2": {
+    "lean": 0,
+    "legF": [
+     40,
+     0
+    ],
+    "legB": [
+     -40,
+     -10
+    ],
+    "armF": [
+     80,
+     100
+    ],
+    "armB": [
+     -80,
+     -60
+    ],
+    "words": "a burst of force outward: both arms flung wide, robe and sleeves blasted outward, hair flying, a ring of wind around him. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm."
+   },
+   "zhen3": {
+    "lean": 4,
+    "legF": [
+     28,
+     -4
+    ],
+    "legB": [
+     -14,
+     -30
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "settling back into his stance after a burst of force, sleeves still settling. He holds ONLY the small red-copper calabash gourd (double-bulbed, narrow-waisted) in his right hand; the small round red-copper shield stays strapped on his left forearm."
+   },
+   "cutin": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     60,
+     150
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "a close-up bust from the chest up, narrow smiling eyes, the small red-copper calabash gourd held up in his right hand beside his face, its mouth tipped, the round copper shield at his shoulder, a single dramatic still. Only his head, shoulders, the gourd and the shield.",
+    "free": true,
+    "cutin": true,
+    "seed": 1
    }
   },
   "clips": {
@@ -7947,6 +10899,125 @@
     ],
     "fps": 1,
     "loop": true
+   },
+   "jump": {
+    "frames": [
+     "jump1",
+     "jump2",
+     "jump3"
+    ],
+    "fps": 6,
+    "calm": [
+     "jump2"
+    ]
+   },
+   "knock": {
+    "frames": [
+     "knock1",
+     "knock2",
+     "getup1"
+    ],
+    "fps": 4,
+    "calm": [
+     "knock2"
+    ]
+   },
+   "air": {
+    "frames": [
+     "jump2",
+     "air1"
+    ],
+    "hit": 1,
+    "fps": 10,
+    "calm": [
+     "air1"
+    ]
+   },
+   "sweep": {
+    "frames": [
+     "sweep1",
+     "sweep2",
+     "sweep3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "sweep2"
+    ]
+   },
+   "aa": {
+    "frames": [
+     "poke1",
+     "aa2",
+     "aa3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "aa2"
+    ]
+   },
+   "throw": {
+    "frames": [
+     "throw1",
+     "throw2"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "throw2"
+    ]
+   },
+   "lowblock": {
+    "frames": [
+     "lowblock1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "getup": {
+    "frames": [
+     "getup1"
+    ],
+    "fps": 1
+   },
+   "run": {
+    "frames": [
+     "run1",
+     "run2",
+     "run3"
+    ],
+    "fps": 12,
+    "loop": true,
+    "calm": [
+     "run1"
+    ]
+   },
+   "roll": {
+    "frames": [
+     "roll1",
+     "roll2",
+     "getup1"
+    ],
+    "fps": 10
+   },
+   "zhen": {
+    "frames": [
+     "zhen1",
+     "zhen2",
+     "zhen3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "zhen2"
+    ]
+   },
+   "cutin": {
+    "frames": [
+     "cutin"
+    ],
+    "fps": 1
    }
   }
  },
@@ -8551,7 +11622,8 @@
      20,
      40
     ],
-    "words": "both hands pressed together flat and raised high above his head like one great blade, his whole body drawn up and back, eyes fierce. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+    "words": "both hands pressed together flat and raised high above his head like one great blade, his whole body drawn up and back, eyes fierce. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "seed": 2
    },
    "jianqi2": {
     "lean": 30,
@@ -8573,9 +11645,7 @@
     ],
     "width": 1088,
     "words": "a long lunge to the right, both hands together chopping down and forward at arm's length like one great blade, robe flying. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
-    "fix": {
-     "s": 0.85
-    }
+    "seed": 2
    },
    "slip1": {
     "lean": -30,
@@ -8595,7 +11665,8 @@
      90,
      140
     ],
-    "words": "his front heel skidding out from under him on slippery oil, losing his balance backward, arms flung up. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+    "words": "his front heel skidding out from under him on slippery oil, losing his balance backward, arms flung up. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand.",
+    "seed": 2
    },
    "slip2": {
     "lean": -48,
@@ -8659,6 +11730,501 @@
      -6
     ],
     "words": "standing quietly with his shoulders lowered, both hands at his sides, a small nod. BOTH HANDS EMPTY AND OPEN: no knife, no dagger, no sword, no stick, nothing held in either hand."
+   },
+   "jump1": {
+    "lean": 14,
+    "legF": [
+     50,
+     -10
+    ],
+    "legB": [
+     10,
+     -50
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     10,
+     30
+    ],
+    "words": "crouched to spring, about to leap up, knees deeply bent, both arms drawn back. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands."
+   },
+   "jump2": {
+    "lean": 8,
+    "legF": [
+     100,
+     10
+    ],
+    "legB": [
+     60,
+     -60
+    ],
+    "armF": [
+     70,
+     100
+    ],
+    "armB": [
+     60,
+     150
+    ],
+    "words": "leaping high in the air, his feet far off the ground, knees drawn up, the robe flaring below him. No ground under him. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands.",
+    "air": true
+   },
+   "jump3": {
+    "lean": 4,
+    "legF": [
+     30,
+     8
+    ],
+    "legB": [
+     -10,
+     -24
+    ],
+    "armF": [
+     60,
+     100
+    ],
+    "armB": [
+     50,
+     130
+    ],
+    "words": "coming down through the air after a leap, legs hanging down together, toes pointed, the robe streaming up. No ground under him. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands.",
+    "air": true
+   },
+   "knock1": {
+    "lean": -50,
+    "legF": [
+     60,
+     40
+    ],
+    "legB": [
+     30,
+     10
+    ],
+    "armF": [
+     -80,
+     -90
+    ],
+    "armB": [
+     -100,
+     -120
+    ],
+    "words": "knocked off his feet, flying backward through the air to the left, body tilted back nearly flat, arms and legs flung forward, the robe and sleeves flying. No ground under him. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands.",
+    "air": true
+   },
+   "knock2": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -6,
+     0
+    ],
+    "armF": [
+     150,
+     160
+    ],
+    "armB": [
+     -150,
+     -160
+    ],
+    "words": "lying flat on his back on the ground, knocked down, arms spread, legs out, the robe spread around him. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands.",
+    "rot": -88,
+    "free": true
+   },
+   "getup1": {
+    "lean": 20,
+    "legF": [
+     90,
+     -10
+    ],
+    "legB": [
+     10,
+     -90
+    ],
+    "armF": [
+     40,
+     60
+    ],
+    "armB": [
+     40,
+     30
+    ],
+    "words": "getting up from the ground: kneeling on one knee, one hand pushing off the knee, the other hand low, rising. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands."
+   },
+   "air1": {
+    "lean": 10,
+    "legF": [
+     70,
+     30
+    ],
+    "legB": [
+     20,
+     -40
+    ],
+    "armF": [
+     110,
+     120
+    ],
+    "armB": [
+     -30,
+     20
+    ],
+    "words": "in mid-air after a leap, driving the edge of his open hand down and forward to the right, the other arm back, knees drawn up, the robe flaring. No ground under him. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands.",
+    "air": true
+   },
+   "sweep1": {
+    "lean": 20,
+    "legF": [
+     56,
+     -10
+    ],
+    "legB": [
+     0,
+     -60
+    ],
+    "armF": [
+     20,
+     160
+    ],
+    "armB": [
+     40,
+     140
+    ],
+    "words": "sinking low on deeply bent knees, both hands drawn back, about to sweep a leg low. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands."
+   },
+   "sweep2": {
+    "lean": 24,
+    "legF": [
+     76,
+     74
+    ],
+    "legB": [
+     -26,
+     -100
+    ],
+    "armF": [
+     100,
+     100
+    ],
+    "armB": [
+     -30,
+     20
+    ],
+    "words": "a low sweeping kick: dropped into a deep crouch on the back leg, the front leg swept out straight along the ground to the right at ankle height, a hard boot just above the ground, one hand braced down beside him, the robe flaring. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands.",
+    "dx": 20
+   },
+   "sweep3": {
+    "lean": 18,
+    "legF": [
+     50,
+     -10
+    ],
+    "legB": [
+     -20,
+     -50
+    ],
+    "armF": [
+     60,
+     80
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "rising out of a low sweep, still on bent knees, both hands coming back up to guard. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands."
+   },
+   "aa2": {
+    "lean": -14,
+    "legF": [
+     24,
+     0
+    ],
+    "legB": [
+     -24,
+     -20
+    ],
+    "armF": [
+     150,
+     160
+    ],
+    "armB": [
+     -20,
+     30
+    ],
+    "words": "a rising strike against a leaping foe: a rising edge-of-hand strike, the arm swept up high over and in front of his head, body stretched up and leaning back, up on the balls of his feet. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands.",
+    "fix": {
+     "s": 1.0
+    }
+   },
+   "aa3": {
+    "lean": 4,
+    "legF": [
+     28,
+     -4
+    ],
+    "legB": [
+     -12,
+     -28
+    ],
+    "armF": [
+     80,
+     110
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "after a rising strike, the arm coming back down to guard, knees bent. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands."
+   },
+   "throw1": {
+    "lean": 12,
+    "legF": [
+     34,
+     0
+    ],
+    "legB": [
+     -24,
+     -36
+    ],
+    "armF": [
+     80,
+     80
+    ],
+    "armB": [
+     70,
+     90
+    ],
+    "words": "stepping in close and seizing the opponent: both long hands reaching forward to grab at chest height, knees bent. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands."
+   },
+   "throw2": {
+    "lean": -12,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -30,
+     -20
+    ],
+    "armF": [
+     -30,
+     10
+    ],
+    "armB": [
+     -60,
+     -20
+    ],
+    "words": "throwing the opponent past him: his body turned back to the left, both arms swung hard back and down in a heave. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands."
+   },
+   "lowblock1": {
+    "lean": 22,
+    "legF": [
+     72,
+     -6
+    ],
+    "legB": [
+     24,
+     -74
+    ],
+    "armF": [
+     30,
+     100
+    ],
+    "armB": [
+     40,
+     130
+    ],
+    "words": "crouching low on bent knees, both forearms crossed in front of his shins, guarding low. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands."
+   },
+   "run1": {
+    "lean": 24,
+    "legF": [
+     56,
+     6
+    ],
+    "legB": [
+     -44,
+     -40
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, leaning forward, arms driving, robe streaming back. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands."
+   },
+   "run2": {
+    "lean": 26,
+    "legF": [
+     10,
+     -40
+    ],
+    "legB": [
+     -20,
+     -70
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, mid-stride, one foot driving past the other, arms driving, robe streaming back. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands."
+   },
+   "run3": {
+    "lean": 24,
+    "legF": [
+     -44,
+     -40
+    ],
+    "legB": [
+     56,
+     6
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, the other foot reaching forward, arms driving, robe streaming back. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands."
+   },
+   "roll1": {
+    "lean": 50,
+    "legF": [
+     100,
+     -30
+    ],
+    "legB": [
+     70,
+     -60
+    ],
+    "armF": [
+     90,
+     140
+    ],
+    "armB": [
+     70,
+     140
+    ],
+    "words": "diving into a forward roll, ducking his head, the robe gathering, arms tucked in. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands.",
+    "free": true
+   },
+   "roll2": {
+    "lean": 60,
+    "legF": [
+     110,
+     -40
+    ],
+    "legB": [
+     80,
+     -60
+    ],
+    "armF": [
+     90,
+     150
+    ],
+    "armB": [
+     70,
+     140
+    ],
+    "words": "curled tight rolling forward on the ground, head tucked, knees to chest, the robe wrapped round him. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands.",
+    "free": true
+   },
+   "zhen1": {
+    "lean": 10,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -20,
+     -30
+    ],
+    "armF": [
+     20,
+     140
+    ],
+    "armB": [
+     60,
+     150
+    ],
+    "words": "gathering force: both fists drawn in close before his chest, knees bent, sleeves stirring. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands."
+   },
+   "zhen2": {
+    "lean": 0,
+    "legF": [
+     40,
+     0
+    ],
+    "legB": [
+     -40,
+     -10
+    ],
+    "armF": [
+     80,
+     100
+    ],
+    "armB": [
+     -80,
+     -60
+    ],
+    "words": "a burst of force outward: both arms flung wide, robe and sleeves blasted outward, hair flying, a ring of wind around him. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands."
+   },
+   "zhen3": {
+    "lean": 4,
+    "legF": [
+     28,
+     -4
+    ],
+    "legB": [
+     -14,
+     -30
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "settling back into his stance after a burst of force, sleeves still settling. EMPTY HANDS: no knife, no sword, no weapon, nothing in his hands."
+   },
+   "cutin": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     60,
+     150
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "a close-up bust from the chest up, a hard cold glare, thin moustache, the edge of his open right hand raised upright beside his face like a blade, a single dramatic still. Only his head, shoulders and the raised hand; no knife.",
+    "free": true,
+    "cutin": true,
+    "seed": 1
    }
   },
   "clips": {
@@ -8825,6 +12391,125 @@
     ],
     "fps": 1,
     "loop": true
+   },
+   "jump": {
+    "frames": [
+     "jump1",
+     "jump2",
+     "jump3"
+    ],
+    "fps": 6,
+    "calm": [
+     "jump2"
+    ]
+   },
+   "knock": {
+    "frames": [
+     "knock1",
+     "knock2",
+     "getup1"
+    ],
+    "fps": 4,
+    "calm": [
+     "knock2"
+    ]
+   },
+   "air": {
+    "frames": [
+     "jump2",
+     "air1"
+    ],
+    "hit": 1,
+    "fps": 10,
+    "calm": [
+     "air1"
+    ]
+   },
+   "sweep": {
+    "frames": [
+     "sweep1",
+     "sweep2",
+     "sweep3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "sweep2"
+    ]
+   },
+   "aa": {
+    "frames": [
+     "poke1",
+     "aa2",
+     "aa3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "aa2"
+    ]
+   },
+   "throw": {
+    "frames": [
+     "throw1",
+     "throw2"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "throw2"
+    ]
+   },
+   "lowblock": {
+    "frames": [
+     "lowblock1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "getup": {
+    "frames": [
+     "getup1"
+    ],
+    "fps": 1
+   },
+   "run": {
+    "frames": [
+     "run1",
+     "run2",
+     "run3"
+    ],
+    "fps": 12,
+    "loop": true,
+    "calm": [
+     "run1"
+    ]
+   },
+   "roll": {
+    "frames": [
+     "roll1",
+     "roll2",
+     "getup1"
+    ],
+    "fps": 10
+   },
+   "zhen": {
+    "frames": [
+     "zhen1",
+     "zhen2",
+     "zhen3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "zhen2"
+    ]
+   },
+   "cutin": {
+    "frames": [
+     "cutin"
+    ],
+    "fps": 1
    }
   }
  },
@@ -9084,7 +12769,8 @@
     ],
     "dx": 20,
     "width": 1088,
-    "words": "a quick straight jab of one right forefinger forward to the right at chest height, leaning in, the bronze mirror face up on his left palm. He holds ONLY the round bronze mirror; no sword."
+    "words": "a quick straight jab of one right forefinger forward to the right at chest height, leaning in, the bronze mirror face up on his left palm. He holds ONLY the round bronze mirror; no sword.",
+    "seed": 2
    },
    "poke3": {
     "lean": 10,
@@ -9376,7 +13062,8 @@
      -46,
      -14
     ],
-    "words": "struck: he rocks backward to the left, head and shoulders thrown back, arms out. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+    "words": "struck: he rocks backward to the left, head and shoulders thrown back, arms out. He holds ONLY the round bronze mirror face up on his left palm; no sword.",
+    "seed": 2
    },
    "hit2": {
     "lean": -10,
@@ -9477,7 +13164,8 @@
      100,
      142
     ],
-    "words": "falling backward, both feet sliding out forward, arms flailing. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+    "words": "falling backward, both feet sliding out forward, arms flailing. He holds ONLY the round bronze mirror face up on his left palm; no sword.",
+    "seed": 2
    },
    "win1": {
     "lean": 0,
@@ -9518,6 +13206,501 @@
      -6
     ],
     "words": "standing quietly with his shoulders lowered, both hands at his sides, a small nod. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "jump1": {
+    "lean": 14,
+    "legF": [
+     50,
+     -10
+    ],
+    "legB": [
+     10,
+     -50
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     10,
+     30
+    ],
+    "words": "crouched to spring, about to leap up, knees deeply bent, both arms drawn back. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "jump2": {
+    "lean": 8,
+    "legF": [
+     100,
+     10
+    ],
+    "legB": [
+     60,
+     -60
+    ],
+    "armF": [
+     70,
+     100
+    ],
+    "armB": [
+     60,
+     150
+    ],
+    "words": "leaping high in the air, his feet far off the ground, knees drawn up, the robe flaring below him. No ground under him. He holds ONLY the round bronze mirror face up on his left palm; no sword.",
+    "air": true
+   },
+   "jump3": {
+    "lean": 4,
+    "legF": [
+     30,
+     8
+    ],
+    "legB": [
+     -10,
+     -24
+    ],
+    "armF": [
+     60,
+     100
+    ],
+    "armB": [
+     50,
+     130
+    ],
+    "words": "coming down through the air after a leap, legs hanging down together, toes pointed, the robe streaming up. No ground under him. He holds ONLY the round bronze mirror face up on his left palm; no sword.",
+    "air": true
+   },
+   "knock1": {
+    "lean": -50,
+    "legF": [
+     60,
+     40
+    ],
+    "legB": [
+     30,
+     10
+    ],
+    "armF": [
+     -80,
+     -90
+    ],
+    "armB": [
+     -100,
+     -120
+    ],
+    "words": "knocked off his feet, flying backward through the air to the left, body tilted back nearly flat, arms and legs flung forward, the robe and sleeves flying. No ground under him. He holds ONLY the round bronze mirror face up on his left palm; no sword.",
+    "air": true
+   },
+   "knock2": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -6,
+     0
+    ],
+    "armF": [
+     150,
+     160
+    ],
+    "armB": [
+     -150,
+     -160
+    ],
+    "words": "lying flat on his back on the ground, knocked down, arms spread, legs out, the robe spread around him. He holds ONLY the round bronze mirror face up on his left palm; no sword.",
+    "rot": -88,
+    "free": true
+   },
+   "getup1": {
+    "lean": 20,
+    "legF": [
+     90,
+     -10
+    ],
+    "legB": [
+     10,
+     -90
+    ],
+    "armF": [
+     40,
+     60
+    ],
+    "armB": [
+     40,
+     30
+    ],
+    "words": "getting up from the ground: kneeling on one knee, one hand pushing off the knee, the other hand low, rising. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "air1": {
+    "lean": 10,
+    "legF": [
+     70,
+     30
+    ],
+    "legB": [
+     20,
+     -40
+    ],
+    "armF": [
+     110,
+     120
+    ],
+    "armB": [
+     -30,
+     20
+    ],
+    "words": "in mid-air after a leap, driving an open palm down and forward to the right, the other arm back, knees drawn up, the robe flaring. No ground under him. He holds ONLY the round bronze mirror face up on his left palm; no sword.",
+    "air": true
+   },
+   "sweep1": {
+    "lean": 20,
+    "legF": [
+     56,
+     -10
+    ],
+    "legB": [
+     0,
+     -60
+    ],
+    "armF": [
+     20,
+     160
+    ],
+    "armB": [
+     40,
+     140
+    ],
+    "words": "sinking low on deeply bent knees, both hands drawn back, about to sweep a leg low. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "sweep2": {
+    "lean": 24,
+    "legF": [
+     76,
+     74
+    ],
+    "legB": [
+     -26,
+     -100
+    ],
+    "armF": [
+     100,
+     100
+    ],
+    "armB": [
+     -30,
+     20
+    ],
+    "words": "a low sweeping kick: dropped into a deep crouch on the back leg, the front leg swept out straight along the ground to the right at ankle height, a white cloth shoe just above the ground, one hand braced down beside him, the robe flaring. He holds ONLY the round bronze mirror face up on his left palm; no sword.",
+    "dx": 20
+   },
+   "sweep3": {
+    "lean": 18,
+    "legF": [
+     50,
+     -10
+    ],
+    "legB": [
+     -20,
+     -50
+    ],
+    "armF": [
+     60,
+     80
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "rising out of a low sweep, still on bent knees, both hands coming back up to guard. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "aa2": {
+    "lean": -14,
+    "legF": [
+     24,
+     0
+    ],
+    "legB": [
+     -24,
+     -20
+    ],
+    "armF": [
+     150,
+     160
+    ],
+    "armB": [
+     -20,
+     30
+    ],
+    "words": "a rising strike against a leaping foe: a rising palm, the arm swept up high over and in front of his head, body stretched up and leaning back, up on the balls of his feet. He holds ONLY the round bronze mirror face up on his left palm; no sword.",
+    "fix": {
+     "s": 1.0
+    }
+   },
+   "aa3": {
+    "lean": 4,
+    "legF": [
+     28,
+     -4
+    ],
+    "legB": [
+     -12,
+     -28
+    ],
+    "armF": [
+     80,
+     110
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "after a rising strike, the arm coming back down to guard, knees bent. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "throw1": {
+    "lean": 12,
+    "legF": [
+     34,
+     0
+    ],
+    "legB": [
+     -24,
+     -36
+    ],
+    "armF": [
+     80,
+     80
+    ],
+    "armB": [
+     70,
+     90
+    ],
+    "words": "stepping in close and seizing the opponent: his right hand reaching forward to grab at chest height, knees bent. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "throw2": {
+    "lean": -12,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -30,
+     -20
+    ],
+    "armF": [
+     -30,
+     10
+    ],
+    "armB": [
+     -60,
+     -20
+    ],
+    "words": "throwing the opponent past him: his body turned back to the left, both arms swung hard back and down in a heave. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "lowblock1": {
+    "lean": 22,
+    "legF": [
+     72,
+     -6
+    ],
+    "legB": [
+     24,
+     -74
+    ],
+    "armF": [
+     30,
+     100
+    ],
+    "armB": [
+     40,
+     130
+    ],
+    "words": "crouching low on bent knees, both forearms crossed in front of his shins, guarding low. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "run1": {
+    "lean": 24,
+    "legF": [
+     56,
+     6
+    ],
+    "legB": [
+     -44,
+     -40
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, leaning forward, the wide sleeves and white robe streaming back. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "run2": {
+    "lean": 26,
+    "legF": [
+     10,
+     -40
+    ],
+    "legB": [
+     -20,
+     -70
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, mid-stride, one foot driving past the other, the wide sleeves and white robe streaming back. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "run3": {
+    "lean": 24,
+    "legF": [
+     -44,
+     -40
+    ],
+    "legB": [
+     56,
+     6
+    ],
+    "armF": [
+     40,
+     70
+    ],
+    "armB": [
+     -30,
+     10
+    ],
+    "words": "running fast forward to the right, the other foot reaching forward, the wide sleeves and white robe streaming back. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "roll1": {
+    "lean": 50,
+    "legF": [
+     100,
+     -30
+    ],
+    "legB": [
+     70,
+     -60
+    ],
+    "armF": [
+     90,
+     140
+    ],
+    "armB": [
+     70,
+     140
+    ],
+    "words": "diving into a forward roll, ducking his head, the robe gathering, arms tucked in. He holds ONLY the round bronze mirror face up on his left palm; no sword.",
+    "free": true
+   },
+   "roll2": {
+    "lean": 60,
+    "legF": [
+     110,
+     -40
+    ],
+    "legB": [
+     80,
+     -60
+    ],
+    "armF": [
+     90,
+     150
+    ],
+    "armB": [
+     70,
+     140
+    ],
+    "words": "curled tight rolling forward on the ground, head tucked, knees to chest, the robe wrapped round him. He holds ONLY the round bronze mirror face up on his left palm; no sword.",
+    "free": true
+   },
+   "zhen1": {
+    "lean": 10,
+    "legF": [
+     30,
+     -4
+    ],
+    "legB": [
+     -20,
+     -30
+    ],
+    "armF": [
+     20,
+     140
+    ],
+    "armB": [
+     60,
+     150
+    ],
+    "words": "gathering force: both fists drawn in close before his chest, knees bent, sleeves stirring. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "zhen2": {
+    "lean": 0,
+    "legF": [
+     40,
+     0
+    ],
+    "legB": [
+     -40,
+     -10
+    ],
+    "armF": [
+     80,
+     100
+    ],
+    "armB": [
+     -80,
+     -60
+    ],
+    "words": "a burst of force outward: both arms flung wide, robe and sleeves blasted outward, hair flying, a ring of wind around him. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "zhen3": {
+    "lean": 4,
+    "legF": [
+     28,
+     -4
+    ],
+    "legB": [
+     -14,
+     -30
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "settling back into his stance after a burst of force, sleeves still settling. He holds ONLY the round bronze mirror face up on his left palm; no sword."
+   },
+   "cutin": {
+    "lean": 0,
+    "legF": [
+     10,
+     0
+    ],
+    "legB": [
+     -10,
+     0
+    ],
+    "armF": [
+     60,
+     150
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "words": "a close-up bust from the chest up, calm heavy-lidded eyes, the round bronze mirror lifted in his left hand beside his face with its face turned outward, a single dramatic still. Only his head, shoulders, the raised hand and the mirror.",
+    "free": true,
+    "cutin": true,
+    "seed": 1
    }
   },
   "clips": {
@@ -9684,6 +13867,125 @@
     ],
     "fps": 1,
     "loop": true
+   },
+   "jump": {
+    "frames": [
+     "jump1",
+     "jump2",
+     "jump3"
+    ],
+    "fps": 6,
+    "calm": [
+     "jump2"
+    ]
+   },
+   "knock": {
+    "frames": [
+     "knock1",
+     "knock2",
+     "getup1"
+    ],
+    "fps": 4,
+    "calm": [
+     "knock2"
+    ]
+   },
+   "air": {
+    "frames": [
+     "jump2",
+     "air1"
+    ],
+    "hit": 1,
+    "fps": 10,
+    "calm": [
+     "air1"
+    ]
+   },
+   "sweep": {
+    "frames": [
+     "sweep1",
+     "sweep2",
+     "sweep3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "sweep2"
+    ]
+   },
+   "aa": {
+    "frames": [
+     "poke1",
+     "aa2",
+     "aa3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "aa2"
+    ]
+   },
+   "throw": {
+    "frames": [
+     "throw1",
+     "throw2"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "throw2"
+    ]
+   },
+   "lowblock": {
+    "frames": [
+     "lowblock1"
+    ],
+    "fps": 1,
+    "loop": true
+   },
+   "getup": {
+    "frames": [
+     "getup1"
+    ],
+    "fps": 1
+   },
+   "run": {
+    "frames": [
+     "run1",
+     "run2",
+     "run3"
+    ],
+    "fps": 12,
+    "loop": true,
+    "calm": [
+     "run1"
+    ]
+   },
+   "roll": {
+    "frames": [
+     "roll1",
+     "roll2",
+     "getup1"
+    ],
+    "fps": 10
+   },
+   "zhen": {
+    "frames": [
+     "zhen1",
+     "zhen2",
+     "zhen3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "zhen2"
+    ]
+   },
+   "cutin": {
+    "frames": [
+     "cutin"
+    ],
+    "fps": 1
    }
   }
  }
