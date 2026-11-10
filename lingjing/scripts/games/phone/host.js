@@ -214,7 +214,8 @@ async function mountBoard(spec) {
   post({ t: 'stuck' });
   const stage = document.getElementById('stage');
   const r = await mount(stage, {
-    lang, data: dealt, seed, level, reducedMotion, lines, signal: abort.signal, shell, story, onEvent: (f) => post({ t: 'event', f }),
+    // A deal with its own seed (a 秘境 room's, rules/mijing.mjs mijingRow) mixed into the app's: each run's board its own.
+    lang, data: dealt, seed: data?.seed ? `${seed ?? ''}|${data.seed}` : seed, level, reducedMotion, lines, signal: abort.signal, shell, story, onEvent: (f) => post({ t: 'event', f }),
     peek: (look) => { state = look; },
   });
   clearInterval(toolTimer);

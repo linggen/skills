@@ -1535,7 +1535,8 @@ thing lands in the 饭桶图鉴 (录). 古七's 方子, three 方子残页 → �
 rules/fantong-roll.mjs (pure); the Phaser play tools/kailu/ → games/kailu/; the pane fantong-kailu.js.
 
 炼丹 (pair herbs) · 押宝 (four doors, three bets) · 华容道 (秘境) · 拼图 (七巧 until 10-27) · 五子 ·
-残局. 守夜 (药园) and 下崖 (秘境) cut 10-19 (the sweep); 拾遗 (秘境,
+残局. The 秘境探险 run deals its rooms from one pool, each game once a run (2026-11-10, design.md § 秘境探险:
+mijing.json `deals` — 斗法 · 格斗 · the four 塔防 · 华容道 · 拼图 · 五子 · 残局 · 太鼓 · 抚琴 · 几何冲刺). 守夜 (药园) and 下崖 (秘境) cut 10-19 (the sweep); 拾遗 (秘境,
 and the rerun's) was a 割藤 10-19 → 10-20; now 撒豆成兵 (the story's) and a short 守炉 (the rerun's), § Pruned 10-20.
 洛书 was the same square three times (二试, 困阵, daily); since 10-19 it is played once, at 洛书门 —
 the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ below).

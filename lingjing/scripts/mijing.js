@@ -109,7 +109,7 @@ function roomHtml(m, t, yieldPct) {
     return `<div class="mj-room">${lines ? `<div class="say">${esc(lines)}</div>` : ''}${gotLine(r?.got, t)}<div class="small dim">${esc(t.pickRoom)}</div></div>`;
   }
   if (r.phase === 'fight') return `<div class="mj-room"><div class="say">${esc(fill(t.fight, { kind: r.kind_name, name: r.foe?.name ?? '', room: r.name ?? '' }))}</div></div>`;
-  if (r.phase === 'board') return `<div class="mj-room"><div class="small">${esc(fill(t.board, { kind: r.kind_name, room: r.name ?? '' }))}</div><div class="acts"><button class="act quiet" data-mijing="yield">${esc(fill(t.yield, { pct: `${Math.round(yieldPct * 100)}%` }))}</button></div></div>`;
+  if (r.phase === 'board') return `<div class="mj-room"><div class="small">${esc(fill(t.board, { kind: r.kind_name, room: r.name ?? '' }) + (r.beast?.name ? ` · ${r.beast.name}` : ''))}</div><div class="acts"><button class="act quiet" data-mijing="yield">${esc(fill(t.yield, { pct: `${Math.round(yieldPct * 100)}%` }))}</button></div></div>`;
   if (r.phase === 'reward') {
     const head = r.outcome?.line ? `<div class="say">${esc([r.outcome.line, hpLine(r.outcome.hp ?? 0, t)].filter(Boolean).join(' · '))}</div>` : '';
     const boons = (r.offer ?? []).map((b) => `<button class="act mj-boon" data-mijing="boon" data-boon="${esc(b.id)}">${esc(b.name)}<small>${esc(b.does)}</small></button>`).join('');

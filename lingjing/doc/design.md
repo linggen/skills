@@ -1865,11 +1865,22 @@ itself untouched). `worlds/jiuding/mijing.json` (the nine 重, rooms, beasts, bo
 card `scripts/mijing.js` · numbers `balance.json master.mijing`.
 - **The key:** one 秘境令 a run. It drops from wins in the cooldown events (兽潮 a night, a pool's beast now and then,
   比武切磋 once built: `keyDrop(content, s, ctx, 'qiecuo')`), under the day's cap. The 秘境 has no cooldown of its own.
-- **The map:** 3–4 rows of 6–8 rooms with branches, a 大妖 at the head; every room on a way to it. First row 妖兽, a 灵泉
-  before the 大妖, a 守关 in the second row, a 奇遇 past the first. Rooms: 妖兽 / 凶兽 / 大妖 (the card 斗法, the
-  page's own room), 守关 (守墙关 · 撒豆成兵 · 守山门 · 守炉 levels), 机关 (华容道 · 拼图 of the 重's painting), 奇遇 (data decides,
-  银月 says it), 灵泉 (rest or temper a 功法), 宝箱, 心魔 (10-31: 格斗 against 沈小满's own shadow, level `xinmo` — his sheet
-  washed dark, his clips for a foe's moves (`look.clips`), his own moves turned on him: 掌心火, the 绝's fire, the 飞剑; weight 6).
+- **The map:** 3–4 rows of 6–8 rooms with branches, a 大妖 at the head; every room on a way to it (since 2026-11-10 every
+  重 has four: 一重 · 二重 went 3 → 4 rows, 8 rooms, so a run of the shorter new games stays 15–25 minutes — 17.3 each). A room has something
+  to play (`deals.weight` 80) or is a pick — 奇遇 (data decides, 银月 says it), 灵泉 (rest or temper a 功法), 宝箱 — by
+  their weights; the first row all play, a 灵泉 before the 大妖, a 奇遇 past the first.
+- **Every play room a different game (2026-11-10, Hanli: 「秘境里面每一步随机游戏类型吧, 每次都玩不同的游戏」):** each is
+  dealt from one pool (`mijing.json deals.pool`: the card duel, 格斗, the four 塔防 kits, 华容道, 拼图, 五子, 残局, 太鼓, 抚琴,
+  几何冲刺), each game once a run, seeded by the run (the deal is on the map, so a reload never changes a room); a run longer
+  than the pool draws it again, never the game of the room before. The level by the 重: each deal's nine cells (`lv` ·
+  `level` · `ai`); a 塔防 room's made by its kit's tide maker. The room takes the game's flavour as its kind: 妖兽 (the card
+  斗法, the page's own room; a 凶兽 at `elite` 0.2 past the first row), 心魔 (格斗 against 沈小满's own shadow, level `xinmo`
+  — his sheet washed dark, his own moves turned on him), 守关 (a 塔防 wave; names the 重's 妖兽 it meets), 机关 (华容道 ·
+  拼图 of the 重's painting), 阵 (五子 · 残局), 古乐 (太鼓 · 抚琴), 险道 (几何冲刺, a 古 run's level with the story's lines
+  off). The 大妖 stays the 重's card duel, outside the pool. Out: 洛书 (one square turned), 药园捉虫 (its lines are the herb
+  garden's), 结印 alone (needs a camera; it is the 塔防 boards' dock). A run begun on the phone draws no `phone: false`
+  deal (rules/chores.mjs hostOf). A lost board is played again in place or left by 撤 (a quarter of 气血), as 守关's
+  always was; only a lost card duel ends the run. tests/mijing-deals.test.mjs.
 - **The run:** 气血 carries (a fight's door takes it as `wounds`, a board costs it by its stars, never below 1; 撤 off a
   board costs a quarter). Boons lie on what each game reads. The 大妖 clears it: all the loot, 灵石, pills, an arm, its
   card (the 大妖's gift, else a beast of the 重's he lacks), the next 重 open. Death or leaving keeps the loot by the depth reached. 修为 is the minutes cleared at a low

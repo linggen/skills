@@ -290,11 +290,13 @@ function dealtBoard(taskId) {
     // while its own win is on its way: onWin holds `winning` until Look has caught up.
     const spent = spentBoard(old, task, day);
     // …and a task whose game changed (兽潮: each night a 主力 塔防 kit in turn) is dealt by its new game.
-    if (!old || old.day !== day || spent || old.mod !== mod) {
+    // …and a board whose deal carries its own seed (a 秘境 room's, rules/mijing.mjs mijingRow) is dealt again when that seed changes.
+    const own = task.deal?.seed ?? null;
+    if (!old || old.day !== day || spent || old.mod !== mod || (old.own ?? null) !== own) {
       const round = spent ? (old.round ?? 0) + 1 : 0;
       // A game that keeps only the mount() contract (beat-host.js) is dealt by its own mount, not here.
-      if (mountOnly(mod)) boards.set(taskId, { taskId, mod, day, round, data: mountData(task), state: { won: false } });
-      else boards.set(taskId, { taskId, mod, day, round, state: mod.newGame(`${day}|${look.seed ?? ''}|${taskId}${round ? `|${round}` : ''}`, task.level ?? 1, { ...(task.deal ?? {}), ...(task.done_line ? { solved: task.done_line } : {}) }) });
+      if (mountOnly(mod)) boards.set(taskId, { taskId, mod, day, round, own, data: mountData(task), state: { won: false } });
+      else boards.set(taskId, { taskId, mod, day, round, own, state: mod.newGame(`${day}|${look.seed ?? ''}|${taskId}${own ? `|${own}` : ''}${round ? `|${round}` : ''}`, task.level ?? 1, { ...(task.deal ?? {}), ...(task.done_line ? { solved: task.done_line } : {}) }) });
     }
     return boards.get(taskId);
   }

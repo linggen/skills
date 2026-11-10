@@ -1,7 +1,7 @@
 {
   "version": 1,
   "_about": "秘境探险 (Hanli 2026-10-28, option A 秘境令; 「每个秘境给个名字? 和故事对应上?」): a roguelite map run in the classic Slay the Spire / Hades shape — an ink map of layers with branches, the player picks the path, 气血 carries room to room, run-only boons (秘境加持), a 大妖 at the end; death ends the run with part of the loot by the depth reached. Entered at a `doors` place (the stone door, 沉鼎秘境 · 石门) for one `key` (秘境令, a key item that drops from wins in the cooldown events: rules/mijing.mjs keyDrop, its chances and the day's cap balance.json `mijing`). The story's own 秘境 passage (古五) is untouched. rules/mijing.mjs reads this table and names nothing in it; the numbers (pay, loot, hurt, the cap) are balance.json `master.mijing`, derived into `mijing`.",
-  "_tiers": "The nine 重, in order. `name` from the book's own 秘境 and places; `source` the 回 and the scene the name is taken from (a read of story/jiuding-lu/, kept so a reader can check it); `after` the scene that opens it (rules/world.mjs passed: the story has reached that place) — and every 重 past the first also waits on the one before it cleared. `layers` the rows before the 大妖 (3–4), `rooms` how many rooms in them (6–8); a run walks one room a row and the 大妖 (Slay the Spire's act). `beasts`: the 妖兽 rooms' (each its `hp` on the mode's share and its own `deck` where it fights other than its creatures.json row, as a pool's entry does), `xiong` the 凶兽 rooms' (their harder deck: an elite is only that, redesign-v2 § 四), `boss` the 大妖 — every one a beast of that 回 or before (tests/mijing.test.mjs checks it against creatures.json `hui` and the book's fights). `guan` the 守关 boards (a TD task and the level it deals), `jiguan` the 机关 boards, `xinmo` the 心魔 room's (格斗 against 沈小满's own shadow, level `xinmo`), `qiyu` the 奇遇 that may come up, `scale` what a 重 deeper lays on the foes' 气血 and the TD levels' difficulty. `backdrop` the room painting (worlds/jiuding/art/places), `rooms_named` the names the map's rooms are drawn from.",
+  "_tiers": "The nine 重, in order. `name` from the book's own 秘境 and places; `source` the 回 and the scene the name is taken from (a read of story/jiuding-lu/, kept so a reader can check it); `after` the scene that opens it (rules/world.mjs passed: the story has reached that place) — and every 重 past the first also waits on the one before it cleared. `layers` the rows before the 大妖 (3–4), `rooms` how many rooms in them (6–8); a run walks one room a row and the 大妖 (Slay the Spire's act). `beasts`: the 妖兽 rooms' (each its `hp` on the mode's share and its own `deck` where it fights other than its creatures.json row, as a pool's entry does), `xiong` the 凶兽 rooms' (their harder deck: an elite is only that, redesign-v2 § 四), `boss` the 大妖 — every one a beast of that 回 or before (tests/mijing.test.mjs checks it against creatures.json `hui` and the book's fights). (what a room plays, and at which level by the 重, is `deals`), `qiyu` the 奇遇 that may come up, `scale` what a 重 deeper lays on the foes' 气血 and the TD levels' difficulty. `backdrop` the room painting (worlds/jiuding/art/places), `rooms_named` the names the map's rooms are drawn from.",
   "doors": [
     "shimen"
   ],
@@ -24,8 +24,8 @@
         "en": "Of the seven or eight mouths off the hall, he takes the one cut with 凶 again."
       },
       "after": "wm-hetan",
-      "layers": 3,
-      "rooms": 6,
+      "layers": 4,
+      "rooms": 8,
       "backdrop": "art/places/mijing-cliff.webp",
       "rooms_named": [
         {
@@ -103,39 +103,6 @@
         "creature": "gui",
         "hp": 2.0
       },
-      "guan": [
-        {
-          "task": "mijing-guan-shouqiang",
-          "lv": "shouchao-1"
-        },
-        {
-          "task": "mijing-guan-sadou",
-          "lv": "shandao"
-        },
-        {
-          "task": "mijing-guan-shoulu",
-          "lv": "mijing-1"
-        },
-        {
-          "task": "mijing-guan-sadoushou",
-          "lv": "yaoyuan"
-        }
-      ],
-      "jiguan": [
-        {
-          "task": "mijing-jiguan-huarong"
-        },
-        {
-          "task": "mijing-jiguan-pintu",
-          "lv": 1
-        }
-      ],
-      "xinmo": [
-        {
-          "task": "mijing-xinmo",
-          "lv": "xinmo"
-        }
-      ],
       "qiyu": [
         "bones",
         "lamp",
@@ -162,8 +129,8 @@
         "en": "The riverbed is dry, and something in the dark is crying like a baby."
       },
       "after": "wm-hetan",
-      "layers": 3,
-      "rooms": 7,
+      "layers": 4,
+      "rooms": 8,
       "backdrop": "art/places/yingu-cave-night.webp",
       "rooms_named": [
         {
@@ -246,39 +213,6 @@
         "creature": "heyu",
         "hp": 2.4
       },
-      "guan": [
-        {
-          "task": "mijing-guan-shouqiang",
-          "lv": "shouchao-2"
-        },
-        {
-          "task": "mijing-guan-sadou",
-          "lv": "shandao-ye"
-        },
-        {
-          "task": "mijing-guan-shoulu",
-          "lv": "mijing-2"
-        },
-        {
-          "task": "mijing-guan-sadoushou",
-          "lv": "yaoyuan"
-        }
-      ],
-      "jiguan": [
-        {
-          "task": "mijing-jiguan-huarong"
-        },
-        {
-          "task": "mijing-jiguan-pintu",
-          "lv": 2
-        }
-      ],
-      "xinmo": [
-        {
-          "task": "mijing-xinmo",
-          "lv": "xinmo"
-        }
-      ],
       "qiyu": [
         "bones",
         "lamp",
@@ -361,39 +295,6 @@
         "creature": "longzhi",
         "hp": 2.6
       },
-      "guan": [
-        {
-          "task": "mijing-guan-shouqiang",
-          "lv": "shouchao-3"
-        },
-        {
-          "task": "mijing-guan-sadou",
-          "lv": "houshan"
-        },
-        {
-          "task": "mijing-guan-shoulu",
-          "lv": "mijing-3"
-        },
-        {
-          "task": "mijing-guan-sadoushou",
-          "lv": "yaoyuan"
-        }
-      ],
-      "jiguan": [
-        {
-          "task": "mijing-jiguan-huarong"
-        },
-        {
-          "task": "mijing-jiguan-pintu",
-          "lv": 2
-        }
-      ],
-      "xinmo": [
-        {
-          "task": "mijing-xinmo",
-          "lv": "xinmo"
-        }
-      ],
       "qiyu": [
         "bones",
         "carving",
@@ -488,39 +389,6 @@
           "chunsheng"
         ]
       },
-      "guan": [
-        {
-          "task": "mijing-guan-shouqiang",
-          "lv": "shouchao-3"
-        },
-        {
-          "task": "mijing-guan-sadou",
-          "lv": "yaoyuan"
-        },
-        {
-          "task": "mijing-guan-shoulu",
-          "lv": "mijing-3"
-        },
-        {
-          "task": "mijing-guan-sadoushou",
-          "lv": "yaoyuan"
-        }
-      ],
-      "jiguan": [
-        {
-          "task": "mijing-jiguan-huarong"
-        },
-        {
-          "task": "mijing-jiguan-pintu",
-          "lv": 3
-        }
-      ],
-      "xinmo": [
-        {
-          "task": "mijing-xinmo",
-          "lv": "xinmo"
-        }
-      ],
       "qiyu": [
         "bones",
         "moss",
@@ -601,39 +469,6 @@
         "creature": "gui",
         "hp": 2.8
       },
-      "guan": [
-        {
-          "task": "mijing-guan-shouqiang",
-          "lv": "shouchao-4"
-        },
-        {
-          "task": "mijing-guan-sadou",
-          "lv": "yaoyuan"
-        },
-        {
-          "task": "mijing-guan-shoulu",
-          "lv": "mijing-3"
-        },
-        {
-          "task": "mijing-guan-sadoushou",
-          "lv": "yaoyuan"
-        }
-      ],
-      "jiguan": [
-        {
-          "task": "mijing-jiguan-huarong"
-        },
-        {
-          "task": "mijing-jiguan-pintu",
-          "lv": 3
-        }
-      ],
-      "xinmo": [
-        {
-          "task": "mijing-xinmo",
-          "lv": "xinmo"
-        }
-      ],
       "qiyu": [
         "bones",
         "carving",
@@ -714,39 +549,6 @@
         "creature": "qique",
         "hp": 3.6
       },
-      "guan": [
-        {
-          "task": "mijing-guan-shouqiang",
-          "lv": "shouchao-4"
-        },
-        {
-          "task": "mijing-guan-sadou",
-          "lv": "heisong"
-        },
-        {
-          "task": "mijing-guan-shoulu",
-          "lv": "mijing-3"
-        },
-        {
-          "task": "mijing-guan-sadoushou",
-          "lv": "heisong"
-        }
-      ],
-      "jiguan": [
-        {
-          "task": "mijing-jiguan-huarong"
-        },
-        {
-          "task": "mijing-jiguan-pintu",
-          "lv": 4
-        }
-      ],
-      "xinmo": [
-        {
-          "task": "mijing-xinmo",
-          "lv": "xinmo"
-        }
-      ],
       "qiyu": [
         "bones",
         "lamp",
@@ -826,39 +628,6 @@
       "boss": {
         "creature": "foe-shuanglong"
       },
-      "guan": [
-        {
-          "task": "mijing-guan-shouqiang",
-          "lv": "shouchao-4"
-        },
-        {
-          "task": "mijing-guan-sadou",
-          "lv": "heisong"
-        },
-        {
-          "task": "mijing-guan-shoulu",
-          "lv": "mijing-3"
-        },
-        {
-          "task": "mijing-guan-sadoushou",
-          "lv": "heisong"
-        }
-      ],
-      "jiguan": [
-        {
-          "task": "mijing-jiguan-huarong"
-        },
-        {
-          "task": "mijing-jiguan-pintu",
-          "lv": 4
-        }
-      ],
-      "xinmo": [
-        {
-          "task": "mijing-xinmo",
-          "lv": "xinmo"
-        }
-      ],
       "qiyu": [
         "bones",
         "puddle",
@@ -933,39 +702,6 @@
       "boss": {
         "creature": "leishen"
       },
-      "guan": [
-        {
-          "task": "mijing-guan-shouqiang",
-          "lv": "shouchao-4"
-        },
-        {
-          "task": "mijing-guan-sadou",
-          "lv": "heisong"
-        },
-        {
-          "task": "mijing-guan-shoulu",
-          "lv": "mijing-3"
-        },
-        {
-          "task": "mijing-guan-sadoushou",
-          "lv": "heisong"
-        }
-      ],
-      "jiguan": [
-        {
-          "task": "mijing-jiguan-huarong"
-        },
-        {
-          "task": "mijing-jiguan-pintu",
-          "lv": 4
-        }
-      ],
-      "xinmo": [
-        {
-          "task": "mijing-xinmo",
-          "lv": "xinmo"
-        }
-      ],
       "qiyu": [
         "bones",
         "puddle",
@@ -1040,39 +776,6 @@
       "boss": {
         "creature": "taifeng"
       },
-      "guan": [
-        {
-          "task": "mijing-guan-shouqiang",
-          "lv": "shouchao-4"
-        },
-        {
-          "task": "mijing-guan-sadou",
-          "lv": "heisong"
-        },
-        {
-          "task": "mijing-guan-shoulu",
-          "lv": "mijing-3"
-        },
-        {
-          "task": "mijing-guan-sadoushou",
-          "lv": "heisong"
-        }
-      ],
-      "jiguan": [
-        {
-          "task": "mijing-jiguan-huarong"
-        },
-        {
-          "task": "mijing-jiguan-pintu",
-          "lv": 4
-        }
-      ],
-      "xinmo": [
-        {
-          "task": "mijing-xinmo",
-          "lv": "xinmo"
-        }
-      ],
       "qiyu": [
         "bones",
         "puddle",
@@ -1083,7 +786,7 @@
       "drops": "mijing-outer"
     }
   ],
-  "_kinds": "The rooms, Slay the Spire's: `fight` ones are the card 斗法 (rules/tasks.mjs duel, the run's door), `board` ones a small game of the 主力 kits (the room's task, dealt by the run), `pick` ones a choice on the run's own card. `weight` the draw in rows past the first (the first row is all 妖兽, the last before the 大妖 always holds a 灵泉; a 凶兽 never in the first row); `minutes` about how long it plays (the run's 修为 is the minutes cleared, balance.json master.mijing). `mark` the one glyph the ink map draws. A fight room whose foe is a person (creatures.json `person`, or a `gender`) is named by `person` instead (七重's 老井 is no 凶兽).",
+  "_kinds": "The rooms, Slay the Spire's: `fight` ones are the card 斗法 (rules/tasks.mjs duel, the run's door), `board` ones a small game (the room's task, dealt by the run), `pick` ones a choice on the run's own card. A room's kind is drawn in two steps (rules/mijing.mjs mapOf): something to play (`deals.weight`) or a pick kind by its `weight` (the first row is all play, the last before the 大妖 always holds a 灵泉, one 奇遇 past the first row); a play room's kind is then the flavour of the game it is dealt (`deals`: a card duel is a 妖兽's room — a 凶兽's now and then past the first row, `deals.elite` — 格斗 a 心魔's, a 塔防 a 守关, a puzzle a 机关 or a 阵, a tune a 古乐, a run a 险道). `beast`: a board room of a beast's flavour names the 重's 妖兽 it meets (rules/mijing.mjs goRoom). `minutes` about how long it plays (the run's 修为 is the minutes cleared, balance.json master.mijing). `mark` the one glyph the ink map draws. A fight room whose foe is a person (creatures.json `person`, or a `gender`) is named by `person` instead (七重's 老井 is no 凶兽).",
   "kinds": {
     "yao": {
       "name": {
@@ -1092,7 +795,6 @@
       },
       "mark": "妖",
       "play": "fight",
-      "weight": 40,
       "minutes": 4,
       "person": {
         "zh": "对手",
@@ -1106,7 +808,6 @@
       },
       "mark": "凶",
       "play": "fight",
-      "weight": 10,
       "minutes": 5,
       "person": {
         "zh": "强敌",
@@ -1120,8 +821,8 @@
       },
       "mark": "关",
       "play": "board",
-      "weight": 16,
-      "minutes": 4
+      "minutes": 4,
+      "beast": true
     },
     "xinmo": {
       "name": {
@@ -1130,7 +831,6 @@
       },
       "mark": "魔",
       "play": "board",
-      "weight": 6,
       "minutes": 3
     },
     "jiguan": {
@@ -1140,7 +840,33 @@
       },
       "mark": "机",
       "play": "board",
-      "weight": 8,
+      "minutes": 3
+    },
+    "zhen": {
+      "name": {
+        "zh": "阵",
+        "en": "Ward"
+      },
+      "mark": "阵",
+      "play": "board",
+      "minutes": 3
+    },
+    "yue": {
+      "name": {
+        "zh": "古乐",
+        "en": "Old music"
+      },
+      "mark": "乐",
+      "play": "board",
+      "minutes": 2
+    },
+    "xian": {
+      "name": {
+        "zh": "险道",
+        "en": "Hard road"
+      },
+      "mark": "险",
+      "play": "board",
       "minutes": 3
     },
     "qiyu": {
@@ -1187,6 +913,249 @@
         "en": "The keeper"
       }
     }
+  },
+  "_deals": "What a room with something to play plays (Hanli 2026-11-10: 「秘境里面每一步随机游戏类型吧, 每次都玩不同的游戏」). `weight` (top) the play rooms' share against the pick kinds' weights; `elite` the chance a card duel past the first row is a 凶兽's (the 重's `xiong`). `pool`: one row a game — `room` its flavour (a kind above), `task` the 秘境 board it deals (a `mijing` task; the card duel has none: the room's beast is the 重's `beasts`/`xiong`), `weight`, and the level by the 重 (nine, 一重 first; a list in a cell is drawn by the run's seed): `lv` (the kit's level id, a ladder rung, or the games.json level), `level` (the module's own level, 残局's), `ai` (五子's rival). A 塔防 room's level is made by its kit's tide maker (rules/mijing.mjs madeBoard); `lv` is its fallback. `phone: false` keeps a game out of a run begun on the phone (tools/phone/board-kit.json lists what the phone hosts; tests/mijing-deals.test.mjs checks the two agree). A run deals each game once, seeded by the run (a reload never changes a room); a run longer than the pool draws it again, never the game of a room just before. The 大妖 is the 重's card duel, outside the pool. 洛书 is not a deal: every 九宫 is the one square turned (Hanli 10-19: 「9宫格出现一次就可以了」 — played once, at 洛书门). 药园捉虫 (rain) is not a deal: its board speaks the herb garden throughout (闵丹师, the hens, the seedlings — the level's `lines`); a 秘境 form needs lines of its own. 结印 is not a deal: alone it needs a camera (games/jieyin.js leaves without one); in the 塔防 boards it is their dock, offered only where a camera is.",
+  "deals": {
+    "weight": 80,
+    "elite": 0.2,
+    "pool": [
+      {
+        "id": "duel",
+        "room": "yao",
+        "game": "duel",
+        "weight": 1
+      },
+      {
+        "id": "gedou",
+        "room": "xinmo",
+        "task": "mijing-xinmo",
+        "lv": [
+          "xinmo",
+          "xinmo",
+          "xinmo",
+          "xinmo",
+          "xinmo",
+          "xinmo",
+          "xinmo",
+          "xinmo",
+          "xinmo"
+        ],
+        "weight": 1
+      },
+      {
+        "id": "shouqiang",
+        "room": "guan",
+        "task": "mijing-guan-shouqiang",
+        "lv": [
+          "shouchao-1",
+          "shouchao-2",
+          "shouchao-3",
+          "shouchao-3",
+          "shouchao-4",
+          "shouchao-4",
+          "shouchao-4",
+          "shouchao-4",
+          "shouchao-4"
+        ],
+        "weight": 1
+      },
+      {
+        "id": "sadou",
+        "room": "guan",
+        "task": "mijing-guan-sadou",
+        "lv": [
+          "shandao",
+          "shandao-ye",
+          "houshan",
+          "yaoyuan",
+          "yaoyuan",
+          "heisong",
+          "heisong",
+          "heisong",
+          "heisong"
+        ],
+        "weight": 1
+      },
+      {
+        "id": "shoulu",
+        "room": "guan",
+        "task": "mijing-guan-shoulu",
+        "lv": [
+          "mijing-1",
+          "mijing-2",
+          "mijing-3",
+          "mijing-3",
+          "mijing-3",
+          "mijing-3",
+          "mijing-3",
+          "mijing-3",
+          "mijing-3"
+        ],
+        "weight": 1
+      },
+      {
+        "id": "sadoushou",
+        "room": "guan",
+        "task": "mijing-guan-sadoushou",
+        "lv": [
+          "yaoyuan",
+          "yaoyuan",
+          "yaoyuan",
+          "yaoyuan",
+          "yaoyuan",
+          "heisong",
+          "heisong",
+          "heisong",
+          "heisong"
+        ],
+        "weight": 1
+      },
+      {
+        "id": "huarong",
+        "room": "jiguan",
+        "task": "mijing-jiguan-huarong",
+        "lv": [
+          1,
+          1,
+          1,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ],
+        "weight": 1
+      },
+      {
+        "id": "pintu",
+        "room": "jiguan",
+        "task": "mijing-jiguan-pintu",
+        "lv": [
+          1,
+          2,
+          2,
+          3,
+          3,
+          4,
+          4,
+          4,
+          4
+        ],
+        "weight": 1
+      },
+      {
+        "id": "wuziqi",
+        "room": "zhen",
+        "task": "mijing-zhen-wuziqi",
+        "ai": [
+          1,
+          2,
+          2,
+          2,
+          3,
+          3,
+          3,
+          4,
+          4
+        ],
+        "weight": 1
+      },
+      {
+        "id": "xiangqi",
+        "room": "zhen",
+        "task": "mijing-zhen-xiangqi",
+        "level": [
+          1,
+          1,
+          2,
+          2,
+          2,
+          3,
+          3,
+          3,
+          3
+        ],
+        "weight": 1
+      },
+      {
+        "id": "taiko",
+        "room": "yue",
+        "task": "mijing-yue-taiko",
+        "lv": [
+          "manchang",
+          "manchang",
+          "sijitou",
+          "sijitou",
+          "miaohui",
+          "miaohui",
+          "jijifeng",
+          "jijifeng",
+          "jijifeng"
+        ],
+        "weight": 1
+      },
+      {
+        "id": "fuqin",
+        "room": "yue",
+        "task": "mijing-yue-fuqin",
+        "lv": [
+          "moli-1",
+          "moli-1",
+          "moli-2",
+          "moli-2",
+          "songbie",
+          "songbie",
+          "moli-kuai",
+          "moli-kuai",
+          "moli-kuai"
+        ],
+        "weight": 1
+      },
+      {
+        "id": "dash",
+        "room": "xian",
+        "task": "mijing-xian-dash",
+        "lv": [
+          [
+            "sanbai-dash",
+            "houshan-dash"
+          ],
+          [
+            "houshan-dash",
+            "anhe-dash"
+          ],
+          [
+            "anhe-dash",
+            "tama-dash"
+          ],
+          [
+            "tama-dash",
+            "songzhi-dash"
+          ],
+          [
+            "songzhi-dash",
+            "qingshen-dash"
+          ],
+          [
+            "qingshen-dash",
+            "futian-dash"
+          ],
+          [
+            "futian-dash",
+            "suifeng-dash"
+          ],
+          [
+            "suifeng-dash",
+            "qianshui-dash"
+          ],
+          [
+            "qianshui-dash"
+          ]
+        ],
+        "weight": 1
+      }
+    ]
   },
   "_boons": "秘境加持 — run-only, Hades' boons and the Spire's relics: picked from a reward of three (a 凶兽 won, a chest, a 奇遇's way), gone when the run ends. Each lays only on what a game already reads: a 斗法's door (`fight`: `extra` cards in the opening hand, `power` on 主灵根一击, `armor`, `insight` 望气 — battle.js sideOf), the TD level's own fields by kit (`td`: 守墙关's `wall` times, 撒豆成兵's `start` plus), the run's 气血 (`hp_max` a share more; `heal` a share after each fight won), a board room's hurt (`hurt` times).",
   "boons": [

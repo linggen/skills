@@ -27,6 +27,7 @@ import { creatureOf, foeOf, meetBeast, passed, placeName, placeOf } from './worl
 import { boardPlay } from './playpay.mjs';
 import { duelBrief } from './look.mjs';
 import { beastOpen, kitOf } from './reveal.mjs';
+import { hostOf } from './chores.mjs';
 import { TIDES } from '../games/tide.js';
 
 const tableOf = content => content.mijing ?? null;
@@ -76,23 +77,24 @@ export function rowsOf(layers, rooms) {
 /* A 重's map from a seed: rows of rooms, each with its kind and its name, the ways from each to the next row, and the
    大妖 past the last. Every room reaches the next row and every room of a row past the first is reached from the one
    before (each room links to the nearest of the next row, every room of the next row takes a link from its nearest, and
-   a second link now and then is the branch), so every room is on a way from the first row to the 大妖. The kinds:
-   the first row all 妖兽 (the Spire's), a 凶兽 never there, a 灵泉 always in the last row before the 大妖, at least
-   one 守关 in the second row and one 奇遇 past the first. */
-export function mapOf(content, tier, seed) {
+   a second link now and then is the branch), so every room is on a way from the first row to the 大妖. The kinds, in
+   two steps: a room has something to play (`deals.weight`) or is a pick (奇遇 · 灵泉 · 宝箱, by their `weight`) — the
+   first row all play, a 灵泉 always in the last row before the 大妖, one 奇遇 past the first; then each play room is
+   dealt its game (dealRooms) and takes that game's flavour as its kind. `host` 'phone': no game the phone cannot host. */
+export function mapOf(content, tier, seed, { host = 'mac' } = {}) {
   const kinds = tableOf(content)?.kinds ?? {}, rows = rowsOf(tier.layers, tier.rooms), key = `${seed}|map`;
   const names = tier.rooms_named ?? [];
   const layers = rows.map((n, li) => {
     const named = drawN(names, Math.min(n, names.length), `${key}|${li}|names`);
     return Array.from({ length: n }, (_, i) => ({ id: `${li + 1}${String.fromCharCode(97 + i)}`, row: li, at: n === 1 ? 0.5 : i / (n - 1), name: named[i % Math.max(1, named.length)] ?? null }));
   });
-  // The kinds.
-  const drawable = row => Object.entries(kinds).filter(([k, r]) => (r.weight ?? 0) > 0 && k !== 'boss' && !(k === 'xiong' && row === 0)).map(([k, r]) => ({ k, weight: r.weight }));
-  for (const [li, row] of layers.entries()) for (const room of row) room.kind = li === 0 ? 'yao' : byWeight(drawable(li), u(`${key}|${room.id}|kind`)).k;
+  // The kinds: play, or a pick kind.
+  const drawable = [{ k: PLAY, weight: dealsOf(content)?.weight ?? 0 }, ...Object.entries(kinds).filter(([, r]) => r.play === 'pick' && (r.weight ?? 0) > 0).map(([k, r]) => ({ k, weight: r.weight }))];
+  for (const [li, row] of layers.entries()) for (const room of row) room.kind = li === 0 ? PLAY : byWeight(drawable, u(`${key}|${room.id}|kind`)).k;
   const last = layers.at(-1);
   if (!last.some(r => r.kind === 'quan')) last[Math.floor(u(`${key}|quan`) * last.length)].kind = 'quan';
-  // What every map holds (a TD room in the second row, a 奇遇 past the first): laid on a room no other need holds.
-  const needs = [['guan', [1]], ['qiyu', layers.slice(1).map((_, i) => i + 1)]], held = new Set();
+  // What every map holds (a 奇遇 past the first row): laid on a room no other need holds.
+  const needs = [['qiyu', layers.slice(1).map((_, i) => i + 1)]], held = new Set();
   for (const [kind, at] of needs) {
     if (!kinds[kind] || layers.length < 2) continue;
     const have = at.flatMap(li => layers[li]).find(r => r.kind === kind && !held.has(r));
@@ -124,8 +126,38 @@ export function mapOf(content, tier, seed) {
     }
   }
   for (const r of last) ways[r.id] = ['boss'];
+  dealRooms(content, layers, ways, key, host);
   const boss = { id: 'boss', row: layers.length, at: 0.5, kind: 'boss', name: null };
-  return { layers: layers.map(row => row.map(({ id, row: r, at, kind, name }) => ({ id, row: r, at, kind, name }))), boss, ways };
+  return { layers: layers.map(row => row.map(({ id, row: r, at, kind, name, deal }) => ({ id, row: r, at, kind, name, ...(deal ? { deal } : {}) }))), boss, ways };
+}
+/* ── What a play room plays (mijing.json `deals`; Hanli 2026-11-10: 「秘境里面每一步随机游戏类型吧, 每次都玩不同的游戏」) ── */
+const PLAY = 'play';
+const dealsOf = content => tableOf(content)?.deals ?? null;
+export const dealRow = (content, id) => (dealsOf(content)?.pool ?? []).find(d => d.id === id) ?? null;
+/* The deals a run may draw: weighed in, and on the phone only what it hosts (`phone: false` is the Mac's alone). */
+export const dealPool = (content, host = 'mac') => (dealsOf(content)?.pool ?? []).filter(d => (d.weight ?? 1) > 0 && !(host === 'phone' && d.phone === false));
+/* A deal's cell at a 重: nine cells, 一重 first (a scalar: every 重); a list in a cell is drawn by `key`. */
+export function atTier(v, n, key) {
+  const cell = Array.isArray(v) ? v[Math.min(v.length, Math.max(1, Number(n) || 1)) - 1] : v;
+  return Array.isArray(cell) ? cell[Math.floor(u(key) * cell.length)] ?? null : cell ?? null;
+}
+/* The play rooms dealt their games, row by row: the pool in a seeded weighted order (Efraimidis–Spirakis), each game
+   once; a map with more play rooms than the pool draws it again, never the game of a room that leads into this one. A
+   card duel past the first row is a 凶兽's now and then (`elite`). Mutates the rooms. */
+function dealRooms(content, layers, ways, key, host) {
+  const d = dealsOf(content), pool = dealPool(content, host);
+  const rooms = layers.flat().filter(r => r.kind === PLAY);
+  if (!pool.length) { for (const r of rooms) r.kind = 'yao'; return; }
+  const orderOf = round => pool.map(x => ({ x, k: u(`${key}|deal|${round}|${x.id}`) ** (1 / (x.weight ?? 1)) })).sort((a, b) => b.k - a.k || a.x.id.localeCompare(b.x.id)).map(e => e.x);
+  let round = 0, order = orderOf(0), used = new Set();
+  for (const room of rooms) {
+    const before = new Set(layers.flat().filter(r => (ways[r.id] ?? []).includes(room.id)).map(r => r.deal).filter(Boolean));
+    let next = order.find(x => !used.has(x.id) && !before.has(x.id));
+    if (!next) { round += 1; order = orderOf(round); used = new Set(); next = order.find(x => !before.has(x.id)) ?? order[0]; }
+    used.add(next.id);
+    room.deal = next.id;
+    room.kind = next.room === 'yao' && room.row > 0 && u(`${key}|${room.id}|elite`) < (d?.elite ?? 0) ? 'xiong' : next.room;
+  }
 }
 const roomOf = (map, id) => (id === 'boss' ? map.boss : map.layers.flat().find(r => r.id === id) ?? null);
 /* The rooms he may walk to next: the first row before any, else the ways from where he stands. */
@@ -193,17 +225,18 @@ function foeFor(content, run, tier, room) {
   const hp = Math.round((pickd.hp ?? c?.hp ?? 1) * grow * 100) / 100;
   return { creature: pickd.creature, hp, ...(pickd.deck ? { deck: pickd.deck } : {}) };
 }
-/* A board room's board: one of the 重's `guan` (守关) or `jiguan` (机关), avoiding the one the run played last. A 塔防
-   kit's board is a level of its own, made by the kit's tide maker (games/<kit>/tide.js — as the story's 主力 boards and
-   兽潮's nights are) from the run's seed and the room, its tier the 重's depth, of the beasts he has met; the deal is kept
-   on the room (a maker proves its layout by playing it, so Look never makes it again). The row's `lv` stays the fallback
-   when the maker has nothing to make. */
+/* A board room's board: the task of the deal the map gave the room, at the 重's level (`lv` · `level` · `ai`, the deal's
+   cell for this 重). A room of a map drawn before the deals (no `deal`: a run begun before 2026-11-10) takes a deal of its
+   kind's flavour. A 塔防 kit's board is a level of its own, made by the kit's tide maker (games/<kit>/tide.js — as the
+   story's 主力 boards and 兽潮's nights are) from the run's seed and the room, its tier the 重's depth, of the beasts he
+   has met; the deal is kept on the room (a maker proves its layout by playing it, so Look never makes it again). The
+   deal's `lv` stays the fallback when the maker has nothing to make. */
 function boardFor(content, state, run, tier, room) {
-  const list = room.kind === 'guan' ? tier.guan : room.kind === 'jiguan' ? tier.jiguan : tier.xinmo ?? [];
-  const fresh = list.filter(b => b.task !== run.last_board);
-  const from = fresh.length ? fresh : list;
-  if (!from.length) return null;
-  const b = { ...from[Math.floor(u(`${run.seed}|${room.id}|board`) * from.length)] };
+  const flavour = dealPool(content).filter(d => d.task && d.room === room.kind);
+  const row = (room.deal ? dealRow(content, room.deal) : null) ?? (flavour.length ? flavour[Math.floor(u(`${run.seed}|${room.id}|board`) * flavour.length)] : null);
+  if (!row?.task || !content.tasks.tasks.some(t => t.id === row.task)) return null;
+  const b = { task: row.task };
+  for (const f of ['lv', 'level', 'ai']) { const v = atTier(row[f], tier.n, `${run.seed}|${room.id}|${f}`); if (v != null) b[f] = v; }
   const made = madeBoard(content, state, run, tier, room, b.task);
   return made ? { ...b, lv: made.deal.lv ?? b.lv, made: made.deal, sig: made.sig } : b;
 }
@@ -272,7 +305,9 @@ function enterRun(state, content, ctx, args) {
   if (!s.bag[key]) delete s.bag[key];
   const runs = (s.mijing?.runs ?? 0) + 1, seed = `${seedOf(s)}|mijing|${n}|${runs}|${args.seed ?? ''}`;
   const hp = hpCap(content, s, []);
-  s.mijing = { ...s.mijing, runs, run: { tier: n, seed, map: mapOf(content, t, seed), at: null, done: [], hp, hp_max: hp, boons: [], stars: {}, loot: { items: {}, wealth: 0 }, minutes: 0, met: [], room: null, started: ctx.now.toISOString() } };
+  // The map is drawn for the device the run begins on (rules/chores.mjs hostOf: the phone's bundle says 'phone'): a run
+  // begun on the phone deals no game it cannot host. One resumed on the other device keeps its map (撤 is the way past).
+  s.mijing = { ...s.mijing, runs, run: { tier: n, seed, map: mapOf(content, t, seed, { host: hostOf() }), at: null, done: [], hp, hp_max: hp, boons: [], stars: {}, loot: { items: {}, wealth: 0 }, minutes: 0, met: [], room: null, started: ctx.now.toISOString() } };
   delete s.mijing.last;
   return { state: s, result: { ok: true, entered: n, name: pick(t.name, s.lang), say: pick(t.say, s.lang) } };
 }
@@ -291,6 +326,8 @@ function goRoom(state, content, ctx, args) {
   const here = { id, kind: room.kind, phase: play === 'fight' ? 'fight' : play === 'board' ? 'board' : 'pick' };
   if (play === 'fight') here.foe = foeFor(content, r, t, room);
   if (play === 'board') { here.board = boardFor(content, s, r, t, room); if (!here.board) here.phase = 'done'; }
+  // A board of a beast's flavour (`beast`: 守关's wave) names who is met: the 重's 妖兽, drawn as a fight room's is.
+  if (play === 'board' && kindRow(content, room.kind)?.beast && t.beasts?.length) here.beast = byWeight(t.beasts, u(`${r.seed}|${id}|foe`)).creature;
   if (room.kind === 'qiyu') { here.qiyu = qiyuFor(content, r, t, room); if (here.qiyu) r.met = [...(r.met ?? []), here.qiyu]; else here.phase = 'done'; }
   if (room.kind === 'quan') here.temper = temperable(content, s, r);
   if (room.kind === 'bao') {
@@ -579,10 +616,29 @@ export function mijingRow(content, state, id) {
     if (typeof was === 'number') over[field] = field === 'wall' ? Math.round(was * v) : was + v;
   }
   const name = roomOf(run.map, room.id)?.name;
-  const title = `${pick(kindRow(content, room.kind)?.name, state.lang)} · ${pick(name, state.lang) ?? pick(task?.title, state.lang)}`;
-  if (row) over.title = { zh: `${pick(t.name, 'zh')} · ${pick(name, 'zh') ?? ''}`, en: `${pick(t.name, 'en')} · ${pick(name, 'en') ?? ''}` };
-  const deal = { ...(b.lv != null ? { lv: b.lv } : {}), ...(Object.keys(over).length ? { over } : {}), ...(task?.game === 'pintu' && t.backdrop ? { pics: [{ src: `worlds/jiuding/${t.backdrop}`, a: 1.5 }] } : {}) };
-  return { mijing: true, title, ...(Object.keys(deal).length ? { deal } : {}) };
+  const title = roomTitle(content, state, run, room, task, t);
+  const both = { zh: `${pick(t.name, 'zh')} · ${pick(name, 'zh') ?? ''}`, en: `${pick(t.name, 'en')} · ${pick(name, 'en') ?? ''}` };
+  if (row) over.title = both;
+  // The room's own seed (the page deals a board by it, lingjing.js dealtBoard): each run's 洛书 its own, never the day's.
+  const deal = { ...(b.lv != null ? { lv: b.lv } : {}), ...(b.ai != null ? { ai: b.ai } : {}), ...(Object.keys(over).length ? { over } : {}),
+    ...(task?.game === 'pintu' && t.backdrop ? { pics: [{ src: `worlds/jiuding/${t.backdrop}`, a: 1.5 }] } : {}),
+    ...(kit ? {} : levelsDeal(content, task, b.lv, both)), seed: `${run.seed}|${room.id}` };
+  // `level`: the module's own (洛书's givens, 残局's ladder), over Look's realm level.
+  return { mijing: true, title, ...(b.level != null ? { level: b.level } : {}), deal };
+}
+/* The level a board without a kit plays (Look's dealOf hands a game's first games.json row when the task has none of its
+   own — a story row's level, 华容道's 刻痕): the deal's `lv` where a games.json row of the game holds it, else none
+   (`levels: null` — the module's own, by `lv`). A level a story or practice row owns (`task`) reads as the room: its
+   title and name the room's, its `book` the task's how, no `say` or `end` (the story's lines); a ladder row's (no `task`:
+   太鼓 · 抚琴's tunes) is dealt as it stands. A row of this very task (格斗's 心魔) is the task's own: left to dealOf. */
+function levelsDeal(content, task, lv, both) {
+  const rows = (content.games?.games ?? []).filter(g => g.id === task?.game && !g.cut && Array.isArray(g.levels));
+  if (rows.some(g => g.task === task.id)) return {};
+  const src = lv == null ? null : rows.find(g => g.levels.some(l => l.id === lv)), level = src?.levels.find(l => l.id === lv);
+  if (!level) return { levels: null };
+  if (!src.task) return { levels: [level] };
+  const { say, end, ...rest } = level;
+  return { levels: [{ ...rest, ...('title' in level ? { title: both } : {}), ...('name' in level ? { name: both } : {}), ...('book' in level ? { book: task.how ?? null } : {}) }] };
 }
 const roomTitle = (content, state, run, room, task, t) => {
   const name = roomOf(run.map, room.id)?.name;
@@ -640,6 +696,7 @@ function roomBrief(content, state, run) {
   const out = { id: room.id, kind: room.kind, phase: room.phase, name: pick(roomOf(run.map, room.id)?.name, lang) ?? null, kind_name: kindName(content, room.kind, room.foe?.creature, lang) };
   if (room.foe) out.foe = { creature: room.foe.creature, name: pick(creatureOf(content, room.foe.creature)?.name, lang), id: mijingFightId(room.id) };
   if (room.board) out.board = room.board.task;
+  if (room.beast) out.beast = { creature: room.beast, name: pick(creatureOf(content, room.beast)?.name, lang) ?? null };
   if (room.kind === 'qiyu' && room.qiyu) {
     const q = tableOf(content).qiyu[room.qiyu];
     out.qiyu = { id: room.qiyu, frame: pick(q.frame, lang), ways: q.ways.map((w, i) => ({ i, label: pick(w.label, lang), ...(w.chance != null ? { chance: w.chance } : {}) })) };

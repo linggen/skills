@@ -1,5 +1,5 @@
-// 心魔 — 秘境探险's heart-demon room (rules/mijing.mjs, worlds/jiuding/mijing.json `xinmo`; 2026-10-31): 格斗 against
-// 沈小满's own shadow. Its weight in the room draw, a board in every 重, the room hosting the 格斗 level `xinmo` (the
+// 心魔 — 秘境探险's heart-demon room (rules/mijing.mjs, worlds/jiuding/mijing.json `deals` · gedou; 2026-10-31): 格斗 against
+// 沈小满's own shadow. Its weight in the deal draw, a board in every 重, the room hosting the 格斗 level `xinmo` (the
 // mirror: his sheet washed dark, his clips for her moves, his own moves turned on him), and the bout won by a
 // human-like hand while a masher, a wall of blocks and an idle hand go down.
 import test from 'node:test';
@@ -22,10 +22,13 @@ const call = (verb, s, args) => VERBS[verb](s, content, ctx(), args);
 const row = content.games.games.find((g) => g.id === 'fighter' && g.task === 'mijing-xinmo');
 const L = row.levels[0];
 
-test('心魔 is drawn: its weight is above 0, every 重 holds its board, and the board is the 格斗 level `xinmo`', () => {
-  assert.ok(M.kinds.xinmo.weight > 0);
+test('心魔 is drawn: 格斗 is a deal of the 秘境 (weight above 0) at level `xinmo` in every 重, its room the 心魔\'s', () => {
+  const deal = M.deals.pool.find((d) => d.id === 'gedou');
+  assert.ok(deal.weight > 0);
+  assert.equal(deal.room, 'xinmo');
   assert.equal(M.kinds.xinmo.play, 'board');
-  for (const t of M.tiers) assert.deepEqual(t.xinmo, [{ task: 'mijing-xinmo', lv: 'xinmo' }], t.id);
+  assert.equal(deal.task, 'mijing-xinmo');
+  assert.deepEqual(deal.lv, M.tiers.map(() => 'xinmo'), 'level xinmo in all nine 重');
   const tk = content.tasks.tasks.find((t) => t.id === 'mijing-xinmo');
   assert.deepEqual([tk.kind, tk.game, tk.mijing, tk.period], ['board', 'fighter', true, 'day']);
   assert.equal(L.id, 'xinmo');

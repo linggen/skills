@@ -33,6 +33,7 @@ function atDoor(keys = 3) {
   return s;
 }
 const run = s => s.mijing?.run;
+const dealOfTask = task => M.deals.pool.find(d => d.task === task).id;
 
 /* Walk one room: go in, play what it holds (a fight to a win, a board won with `stars`, a pick's first way), take no boon. */
 function playRoom(s, id, { stars = 3, way = 0 } = {}) {
@@ -83,7 +84,7 @@ test('the table: nine 重, each named from the book with its source, 3–4 rows 
       // A 重 of a 卷 not yet written (its scene has no 回) only checks the beast is one of the world's fights or 回.
       if (Number.isFinite(at)) assert.ok(firstMet(b.creature) <= at, `${t.id}: ${b.creature} is met by ${sceneHui(content, t.after)}`);
     }
-    for (const b of [...t.guan, ...t.jiguan]) assert.ok(content.tasks.tasks.find(x => x.id === b.task)?.mijing, `${t.id}: ${b.task} is a 秘境 board`);
+    for (const d of M.deals.pool.filter(x => x.task)) assert.ok(content.tasks.tasks.find(x => x.id === d.task)?.mijing, `${t.id}: ${d.task} is a 秘境 board`);
     for (const q of t.qiyu) assert.ok(M.qiyu[q]?.ways?.length >= 2, `${t.id}: 奇遇 ${q} has two ways or three`);
   });
   for (const k of Object.keys(M.kinds)) assert.ok(M.kinds[k].minutes > 0 && M.kinds[k].mark, k);
@@ -100,20 +101,32 @@ test('the map: connected, the 大妖 reached from every first room, the room mix
       assert.ok(map.ways[r.id]?.length >= 1, `${r.id} leads on`);
       if (li > 0) assert.ok(map.layers[li - 1].some(p => map.ways[p.id].includes(r.id)), `${r.id} is reached`);
     }
-    assert.ok(map.layers[0].every(r => r.kind === 'yao'), 'the first row: 妖兽');
+    assert.ok(map.layers[0].every(r => r.deal && M.kinds[r.kind].play !== 'pick'), 'the first row: all play, each dealt its game');
     assert.ok(map.layers.at(-1).some(r => r.kind === 'quan'), 'a 灵泉 before the 大妖');
     assert.ok(!map.layers[0].some(r => r.kind === 'xiong'), 'no 凶兽 in the first row');
-    assert.ok(map.layers[1].some(r => r.kind === 'guan'), 'a 守关 in the second row');
+    const dealt = map.layers.flat().filter(r => r.deal).map(r => r.deal);
+    assert.equal(new Set(dealt).size, dealt.length, 'no game twice in a run');
+    for (const r of map.layers.flat()) assert.equal(Boolean(r.deal), M.kinds[r.kind].play !== 'pick', `${r.id}: a play room has its game, a pick room none`);
     assert.ok(map.layers.slice(1).flat().some(r => r.kind === 'qiyu'), 'a 奇遇 past the first row');
     assert.deepEqual(map, mapOf(content, t, `seed-${t.id}-${k}`), 'the same seed, the same map');
   }
 });
 
+/* A room's mean minutes past the first row, and a first row's (all play): a play room by its game's flavour (a card duel a
+   凶兽's at `elite`), against the pick kinds by their weights. */
+function roomMinutes(M) {
+  const K = M.kinds, pool = M.deals.pool, all = pool.reduce((t, d) => t + (d.weight ?? 1), 0);
+  const play = pool.reduce((t, d) => t + (d.weight ?? 1) * (d.room === 'yao' ? (1 - M.deals.elite) * K.yao.minutes + M.deals.elite * K.xiong.minutes : K[d.room].minutes), 0) / all;
+  const first = pool.reduce((t, d) => t + (d.weight ?? 1) * K[d.room].minutes, 0) / all;
+  const picks = Object.values(K).filter(r => r.play === 'pick' && r.weight > 0);
+  const mean = (M.deals.weight * play + picks.reduce((t, r) => t + r.weight * r.minutes, 0)) / (M.deals.weight + picks.reduce((t, r) => t + r.weight, 0));
+  return { mean, first };
+}
+
 test('a run is 15–25 minutes: a way through, by the rooms\' minutes', () => {
-  const K = M.kinds, w = Object.entries(K).filter(([k, r]) => r.weight > 0 && k !== 'boss');
-  const mean = w.reduce((t, [, r]) => t + r.weight * r.minutes, 0) / w.reduce((t, [, r]) => t + r.weight, 0);
+  const K = M.kinds, { mean, first } = roomMinutes(M);
   for (const t of M.tiers) {
-    const minutes = K.yao.minutes + (t.layers - 1) * mean + K.boss.minutes;
+    const minutes = first + (t.layers - 1) * mean + K.boss.minutes;
     assert.ok(minutes >= 15 && minutes <= 25, `${t.id}: ${minutes.toFixed(1)} min`);
   }
 });
@@ -169,12 +182,14 @@ test('秘境令 drops: a 兽潮 night always, a pool\'s beast now and then — n
 
 test('a run: 气血 carried from fight to fight, a board\'s stars cost it, a 灵泉 heals, the 大妖 clears it and pays', () => {
   let s = call('mijing', atDoor(), { action: 'enter', tier: 1, seed: 'clear' }).state;
+  // A card duel on the way (a map deals it once at most, anywhere): the first row's rooms, for the fight's 气血 to carry.
+  for (const r of run(s).map.layers[0]) Object.assign(r, { kind: 'yao', deal: 'duel' });
   const r0 = run(s);
   assert.equal(r0.hp, r0.hp_max);
   let hpSeen = [];
   for (let guard = 0; guard < 12 && run(s); guard++) {
     const next = nextRooms(run(s));
-    const id = next.find(n => n === 'boss') ?? next.find(n => ['guan', 'jiguan'].includes(run(s).map.layers.flat().find(r => r.id === n)?.kind)) ?? next[0];
+    const id = next.find(n => n === 'boss') ?? next.find(n => M.kinds[run(s).map.layers.flat().find(r => r.id === n)?.kind]?.play === 'board') ?? next[0];
     const before = run(s).hp;
     if (id !== 'boss') {
       const kind = run(s).map.layers.flat().find(r => r.id === id).kind;
@@ -185,7 +200,7 @@ test('a run: 气血 carried from fight to fight, a board\'s stars cost it, a 灵
         // The next fight's door hands it back as wounds.
         hpSeen.push(run(s).hp);
       }
-      if (['guan', 'jiguan'].includes(kind)) assert.equal(run(s).hp, Math.max(1, before - Math.round(run(s).hp_max * content.balance.mijing.hurt['1'])), 'one ★: a fifth of 气血');
+      if (M.kinds[kind].play === 'board') assert.equal(run(s).hp, Math.max(1, before - Math.round(run(s).hp_max * content.balance.mijing.hurt['1'])), 'one ★: a fifth of 气血');
       if (kind === 'quan') assert.ok(run(s).hp >= before);
       continue;
     }
@@ -222,6 +237,7 @@ test('boons lie on what the fight reads; death ends the run with loot by the dep
   s.mijing.run.boons = ['li', 'hu', 'tuna', 'gu'];
   s.mijing.run.hp_max = 30; s.mijing.run.hp = 2;
   const first = nextRooms(run(s))[0];
+  Object.assign(run(s).map.layers[0][0], { kind: 'yao', deal: 'duel' }); // the room a card duel
   s = call('mijing', s, { action: 'go', room: first }).state;
   const door = call('duel', s, { id: `mijing:${first}` });
   const you = door.state.fight.setup.you;
@@ -272,7 +288,8 @@ test('a 奇遇 is decided by the data, a reward\'s boon picked, a board room may
 test('a board room: hosted while he stands in it, dealt the run\'s level, its 气血 by its stars, never paid by its grant', () => {
   let s = call('mijing', atDoor(), { action: 'enter', tier: 1, seed: 'board' }).state;
   s.mijing.run.at = '1a'; s.mijing.run.room = { id: '1a', kind: 'yao', phase: 'done' };
-  const map = run(s).map, g = map.layers[1].find(r => r.kind === 'guan');
+  const map = run(s).map, g = map.layers[1][0];
+  Object.assign(g, { kind: 'guan', deal: 'shouqiang' });
   s.mijing.run.map.ways['1a'] = [g.id];
   s = call('mijing', s, { action: 'go', room: g.id }).state;
   const id = run(s).room.board.task, row = look(s, content, ctx()).tasks.find(t => t.id === id);
@@ -294,12 +311,10 @@ test('a 塔防 room\'s level is made by its kit\'s tide maker, seeded per room, 
     for (const room of ['2a', '2b']) {
       const s = structuredClone(base);
       s.mijing.run.tier = 1;
-      // the room's board as boardFor deals it: the only guan of the 重 is this kit's
-      const t = content.mijing.tiers.find(x => x.n === 1), keep = t.guan;
-      t.guan = keep.filter(b => b.task === task);
-      try {
+      // the room's board as boardFor deals it: the room dealt this kit
+      {
         s.mijing.run.at = '1a'; s.mijing.run.room = { id: '1a', kind: 'yao', phase: 'done' };
-        s.mijing.run.map.layers[1][0] = { ...s.mijing.run.map.layers[1][0], id: room, kind: 'guan' };
+        s.mijing.run.map.layers[1][0] = { ...s.mijing.run.map.layers[1][0], id: room, kind: 'guan', deal: dealOfTask(task) };
         s.mijing.run.map.ways['1a'] = [room];
         const out = call('mijing', s, { action: 'go', room });
         assert.ok(out.result.ok, JSON.stringify(out.result));
@@ -309,22 +324,21 @@ test('a 塔防 room\'s level is made by its kit\'s tide maker, seeded per room, 
         sigs.add(b.sig);
         const row = look(out.state, content, ctx()).tasks.find(x => x.id === task);
         assert.ok(row.deal?.tide && row.deal.lv === b.lv, `${task}: Look deals the made level (no 下一关)`);
-      } finally { t.guan = keep; }
+      }
     }
   }
   assert.equal(sigs.size, 8, 'every room its own layout');
   // 阵 (zhen) widens 守墙关's wall on the made layout
-  const s = structuredClone(base), t = content.mijing.tiers.find(x => x.n === 1), keep = t.guan;
-  t.guan = keep.filter(b => b.task === 'mijing-guan-shouqiang');
-  try {
+  const s = structuredClone(base);
+  {
     s.mijing.run.at = '1a'; s.mijing.run.room = { id: '1a', kind: 'yao', phase: 'done' };
-    s.mijing.run.map.layers[1][0] = { ...s.mijing.run.map.layers[1][0], id: '2z', kind: 'guan' };
+    s.mijing.run.map.layers[1][0] = { ...s.mijing.run.map.layers[1][0], id: '2z', kind: 'guan', deal: 'shouqiang' };
     s.mijing.run.map.ways['1a'] = ['2z'];
     const plain = call('mijing', s, { action: 'go', room: '2z' }).state;
     const wall = look(plain, content, ctx()).tasks.find(x => x.id === 'mijing-guan-shouqiang').deal.over.wall;
     plain.mijing.run.boons = ['zhen'];
     assert.equal(look(plain, content, ctx()).tasks.find(x => x.id === 'mijing-guan-shouqiang').deal.over.wall, Math.round(wall * 1.25));
-  } finally { t.guan = keep; }
+  }
 });
 
 test('a made 塔防 room is winnable at the first 重 and the last, and reads as the room (its title, the task\'s how — no 兽潮 words)', async () => {
@@ -336,12 +350,11 @@ test('a made 塔防 room is winnable at the first 重 and the last, and reads as
     const game = content.tasks.tasks.find(x => x.id === task).game;
     const table = kitOf(content, game) ?? content.games.games.find(g => g.id === game && Array.isArray(g.levels));
     for (const tier of [1, 9]) {
-      const s = structuredClone(base), t = content.mijing.tiers.find(x => x.n === tier), keep = t.guan;
+      const s = structuredClone(base);
       s.mijing.run.tier = tier;
-      t.guan = keep.filter(b => b.task === task);
-      try {
+      {
         s.mijing.run.at = '1a'; s.mijing.run.room = { id: '1a', kind: 'yao', phase: 'done' };
-        s.mijing.run.map.layers[1][0] = { ...s.mijing.run.map.layers[1][0], id: '2a', kind: 'guan' };
+        s.mijing.run.map.layers[1][0] = { ...s.mijing.run.map.layers[1][0], id: '2a', kind: 'guan', deal: dealOfTask(task) };
         s.mijing.run.map.ways['1a'] = ['2a'];
         const out = call('mijing', s, { action: 'go', room: '2a' });
         const deal = look(out.state, content, ctx()).tasks.find(x => x.id === task).deal;
@@ -351,7 +364,7 @@ test('a made 塔防 room is winnable at the first 重 and the last, and reads as
         const said = JSON.stringify([row.lead, row.title ?? row.name]);
         assert.ok(!/兽潮|沉鼎观/.test(said), `${task}: ${said}`);
         assert.equal(row.lead[0].zh, deal.title.zh);
-      } finally { t.guan = keep; }
+      }
     }
   }
 });
@@ -376,10 +389,8 @@ test('the card: the ink map with the lit rooms a tap, 气血, the room\'s busine
 
 test('a day\'s 秘境 never breaks the pace: the day\'s cap of runs, cleared, is under a fifth of a layer at every 练气 layer and above', async () => {
   const { boardPlay, needOf } = await import('../scripts/rules/playpay.mjs');
-  const k = content.balance.mijing, K = M.kinds;
-  const w = Object.entries(K).filter(([x, r]) => r.weight > 0 && x !== 'boss');
-  const mean = w.reduce((t, [, r]) => t + r.weight * r.minutes, 0) / w.reduce((t, [, r]) => t + r.weight, 0);
-  const min = K.yao.minutes + 3 * mean + K.boss.minutes; // the longest run, four rows
+  const k = content.balance.mijing, K = M.kinds, { mean, first } = roomMinutes(M);
+  const min = first + 3 * mean + K.boss.minutes; // the longest run, four rows
   for (const s of [...Array.from({ length: 9 }, (_, i) => ({ tier: 'qi', step: i + 1 })), { tier: 'foundation', step: 0 }, { tier: 'core', step: 0 }]) {
     const day = k.cap_day * boardPlay(content, s, min) * k.pay.rate / needOf(content, s);
     assert.ok(day < 0.2, `${s.tier} ${s.step}: a day's 秘境 is ${(day * 100).toFixed(1)}% of the layer`);
