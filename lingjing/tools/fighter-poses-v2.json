@@ -393,18 +393,41 @@
     "strike": "legF",
     "words": "rising out of the low sweep on bent knees, the right leg drawing back in, the sword coming back to her side. ONE sword only, in her right hand, no scabbard; two arms and two legs only.",
     "seed": 3
+   },
+   "idle1n": {
+    "src": "experiment: idle1 with the master's own narrow stance and bent guard (canvas 896, not 1120) — does the wide canvas widen the painted body? Painted s2: width/height at the hips 0.28, against idle1's 0.36 and the master's 0.21 — narrower, still a little wider than the master.",
+    "lean": 6,
+    "legF": [
+     12,
+     -2
+    ],
+    "legB": [
+     -6,
+     -12
+    ],
+    "armF": [
+     0,
+     125
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "sword": 92,
+    "words": "a martial guard stance, knees bent, weight low, sword held forward level toward the right, left hand raised open by her chest. ONE sword only, a single straight blade.",
+    "seed": 2
    }
   },
   "clips": {
    "idle": {
     "frames": [
-     "idle1",
+     "idle1n",
      "idle2"
     ],
     "fps": 4,
     "loop": true,
     "calm": [
-     "idle1"
+     "idle1n"
     ],
     "fade": true
    },
