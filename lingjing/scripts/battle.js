@@ -1107,8 +1107,12 @@ export function view(st) {
 /* Nothing left but to end the turn — no card affordable, no body that may
    strike, no 主灵根一击. The page shows it and, after a beat, ends the turn by
    itself: a turn with an empty purse is not a decision, and he read one as the
-   fight having hung (2026-09-18). */
-export const idle = st => st.outcome === 'open' && st.whose === 'you' && !offers(st).some(o => o.ok && o.action.kind !== 'end');
+   fight having hung (2026-09-18). A pill (丹囊) is never a reason to wait: it is free, one a turn, and stays in the
+   pouch till taken, so a turn ended without it loses nothing — the next turn offers it again (Hanli 11-09: 「斗法不自动结束回合了,
+   带了回春丹后」; the pouch, 10-16, came after this rule and had held every turn open for good). Read off the page's own
+   offers (playerOffers): a card greyed there as landing on nothing is never played by the room, so it is no reason either. */
+const waits = o => o.ok && o.action.kind !== 'end' && o.action.kind !== 'pill';
+export const idle = st => st.outcome === 'open' && st.whose === 'you' && !playerOffers(st).some(waits);
 
 /* ── The buttons ── */
 

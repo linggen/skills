@@ -460,3 +460,20 @@ test('the player\'s page greys a card whose every verb would land on nothing, an
   assert.ok(st.foe.board.length === 0 || st.foe.board[0].hp < 3, 'the sweep landed');
   assert.ok(st.log.some(e => e.from === 'sweep'), 'and the animator has its hit to play');
 });
+
+test('a turn with nothing left but a pill ends itself: the 丹囊 never holds it open (Hanli 11-09: 「斗法不自动结束回合了, 带了回春丹后」)', async () => {
+  const { idle } = await import('../scripts/battle.js');
+  const st = begin(setupOf({ you: { ...setupOf().you, pouch: [{ id: 'mend-pill', heal: 6 }, { id: 'qi-pill', mana: 2 }] } }), CARDS);
+  st.you.hand = ['kui5']; st.you.mana = 0; st.you.board = []; st.you.powerUsed = true;
+  assert.ok(offers(st).some(o => o.ok && o.action.kind === 'pill'), 'the pills are there to take');
+  assert.equal(idle(st), true, 'no card, no body, no 一击: the turn ends, the pills wait in the pouch');
+  assert.equal(st.you.pouch.length, 2);
+  // A card he can still afford keeps the turn his.
+  st.you.hand = ['cub']; st.you.mana = 1;
+  assert.equal(idle(st), false);
+  // …but not a card the page greys as landing on nothing (a heal at full 气血): the room never plays it.
+  const CARDS5 = { ...CARDS, mend: { id: 'mend', kind: 'spell', name: '回春', cost: 1, element: 'wood', effect: { heal: 3 } } };
+  const full = begin(setupOf(), CARDS5);
+  full.you.hand = ['mend']; full.you.mana = 1; full.you.board = []; full.you.powerUsed = true;
+  assert.equal(idle(full), true);
+});

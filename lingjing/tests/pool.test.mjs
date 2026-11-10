@@ -151,10 +151,36 @@ test('played: out of the row for the rest of its 时辰, the others unmoved; bac
   // Inside the cooldown, later 时辰 never draw it; past it, it is in the pool again.
   for (let h = 15; h < 19; h += 2) assert.ok(!drawPool(content, played, pool, FAKE, AT(h, 10)).drawn.some(e => e.id === first), `${h}:10`);
   assert.ok(Array.from({ length: 30 }, (_, d) => drawPool(content, played, pool, FAKE, new Date(2026, 9, 21 + d, 9, 10)).drawn.some(e => e.id === first)).some(Boolean), 'back after the cooldown');
-  // The verb that plays it stamps the save (rules/locks.mjs gated): 闭关 entered.
+  // The verb that plays it stamps the save (rules/locks.mjs gated): 饭桶 fed. 闭关 is no member (Hanli 11-09): never stamped.
   const sec = VERBS.seclude(s, content, { now: AT(13, 30), quests: [] }, { action: 'enter', focus: 'progress' });
   assert.equal(sec.result.ok, true, JSON.stringify(sec.result).slice(0, 200));
-  assert.equal(sec.state.pool_played?.seclusion, AT(13, 30).toISOString());
+  assert.equal(sec.state.pool_played?.seclusion, undefined);
+});
+
+test('a hold whose draw and the 时辰 after it are all played walks on to a draw with a game unplayed (Hanli\'s phone 11-05 → 11-09: an empty row)', () => {
+  const s = at('waimen'), pool = rows(8), sc = shichenOf(AT(13, 5));
+  const d = drawAt(content, s, pool, FAKE, sc), after = shichenOf(sc.end);
+  const a = drawAt(content, s, pool, FAKE, after);
+  // Everything either draw holds played two days later: each reads all played (a play counts in every draw since its 时辰).
+  const later = new Date(2026, 9, 22, 9, 30);
+  const played = Object.fromEntries([...d.drawn, ...a.drawn].map((x, i) => [x.id, new Date(later.getTime() + i * 60_000).toISOString()]));
+  const held = { ...s, pool_hold: { draw: sc.start.toISOString(), game: null }, pool_played: played };
+  const now = new Date(2026, 9, 22, 13, 10), out = heldPool(content, held, pool, FAKE, now);
+  assert.ok(out.shown, `a game stands (${JSON.stringify(out.drawn)})`);
+  assert.ok(!played[out.shown], 'one not played');
+  assert.ok(out.shichen.start > after.start && out.shichen.start <= shichenOf(now).start, 'a later draw, never past the present');
+});
+
+test('闭关 stands in 全部 all day, whatever the 时辰 draws; never in the strip (Hanli 11-09: 「手机上闭关不用放主页面常驻, 全部里有就行」)', () => {
+  const s = at('waimen');
+  for (let h = 1; h < 24; h += 2) {
+    const l = lookAt(s, AT(h, 10));
+    const row = (l.tray ?? []).find(e => e.id === 'seclusion');
+    assert.ok(row?.standing, `${h}:10 in the tray as a standing row`);
+    const item = (l.agenda ?? []).find(i => i.key === 'tray:seclusion');
+    assert.ok(item && !item.tray, `${h}:10 in 全部, not the strip`);
+  }
+  assert.equal(PLAY_KINDS.find(k => k.kind === 'seclusion').pool, undefined, 'no 小游戏池 member');
 });
 
 test('the world\'s events and 问卦 are never drawn: they keep their own clocks, in the row as before', () => {

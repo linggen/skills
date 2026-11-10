@@ -103,10 +103,21 @@ export function drawPool(content, state, rows, kinds, now) {
   const base = shichenOf(at), d = drawAt(content, state, rows, kinds, base);
   const pinned = hold?.draw && hold.game ? d.members.has(hold.game) && !playedSince(state, hold.game, base.start) ? hold.game : null : null;
   if (pinned || d.drawn.some(x => !x.played)) return shownOf(d, pinned, cur);
-  // All of it played: the draw of the 时辰 after it (its own, once that 时辰 has come) — still the draw he is shown till then.
-  const after = shichenOf(base.end);
-  if (after.start > now || base.start >= cur.start) return shownOf(d, null, cur);
-  return shownOf(drawAt(content, state, rows, kinds, after), null, cur);
+  return shownOf(...walkOn(content, state, rows, kinds, base, d, cur, now), cur);
+}
+/* All of a held draw played: the draw of the 时辰 after it (its own, once that 时辰 has come) — and on, while that one is all
+   played too, to the first with a game unplayed, or the present 时辰's. (Until 2026-11-09 it stopped at the one after: a play
+   counts in every draw since its 时辰 began, so a hold days old with no pool game since stood on a draw all played — the row
+   empty, nothing for the hold to move on. Hanli's phone from 11-05.) Bounded by WALK_MAX 时辰, then the present's. */
+const WALK_MAX = 7 * 12;
+function walkOn(content, state, rows, kinds, base, d, cur, now) {
+  for (let n = 0; n < WALK_MAX; n++) {
+    const after = shichenOf(base.end);
+    if (after.start > now || base.start >= cur.start) return [d, null];
+    base = after; d = drawAt(content, state, rows, kinds, base);
+    if (d.drawn.some(x => !x.played)) return [d, null];
+  }
+  return [drawAt(content, state, rows, kinds, cur), null];
 }
 const playedSince = (state, id, start) => { const t = playedAt(state, id); return Boolean(t && t >= start); };
 const shownOf = (d, pinned, cur) => ({ ...d, shown: pinned ?? d.drawn.find(x => !x.played)?.id ?? null, ...(d.shichen.start < cur.start ? { held: true } : {}) });

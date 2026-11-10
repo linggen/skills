@@ -10,7 +10,7 @@
 // what may be played — ASIDE_KINDS, each only when its own system has it open now (its cooldown, 体力,
 // the story gates) — and every other verb that writes is refused in the world's words. Never inside a
 // key beat's lock (world.mjs lockOf: the map is shut there anyway).
-import { dayKey, pick } from '../state.mjs';
+import { dayKey, pick, poolSpent } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
 import { taskOf } from './errands.mjs';
 import { fantongBrief } from './fantong.mjs';
@@ -49,6 +49,9 @@ export const skippedHere = (content, state) => (state.kept ?? []).filter(e => e.
      notice?: nothing to open }`. A new timed game joins the tray by declaring this — the page draws whatever comes. */
 const tasksOf = view => view?.tasks ?? [];
 const lockedIn = (view, system) => (view?.locked ?? []).includes(system);
+/* 闭关 may be entered: not in one, and not shut by a story gate — or shut with 体力 spent (rules/locks.mjs lockedVerb: no gate
+   strands him at 0). */
+const secludable = (content, state, view) => Boolean(view) && !state.seclusion && (!lockedIn(view, 'seclusion') || poolSpent(content, state));
 /* 对对子's teachers whose scene is behind him: each one's brief as it reads standing at his place (rules/duizi.mjs). */
 const duiziTray = (content, state, now) => (content.aigames?.duizi?.teachers ?? []).flatMap((t) => {
   const b = duiziBrief(content, { ...state, place: t.at }, now);
@@ -115,12 +118,14 @@ export const PLAY_KINDS = [
     takes: (verb, args, content) => ['win', 'task'].includes(verb) && (isTide(content, String(args.id ?? '')) || isBout(content, String(args.id ?? ''))),
     tray: (content, state, view, now) => [...shouchaoTray(content, state, now), ...qiecuoTray(content, state, now)] },
   { kind: 'seclusion', // 闭关, where the story has opened it (rules/seclusion.mjs)
-    open: (content, state, view) => (view && !lockedIn(view, 'seclusion') && !state.seclusion ? [{ id: 'seclusion' }] : []),
+    open: (content, state, view) => (secludable(content, state, view) ? [{ id: 'seclusion' }] : []),
     takes: verb => verb === 'seclude',
     // `standing`: on hand all day, nothing new (Hanli 11-05: 「这个闭关卡一直这么显示吗? 可以折叠进全部dialog里」) — 全部 holds it,
     // never the strip (rules/agenda.mjs). Spent 体力 still brings it to the strip as the one way on (cards.js trayRestHtml).
-    tray: (content, state, view) => (view && !lockedIn(view, 'seclusion') && !state.seclusion ? [{ id: 'seclusion', left: { unit: 'today' }, opens: 'seclude', stage: 'seclude', standing: true }] : []),
-    pool: { row: () => ({ cooldown_min: 240, when: ['hai', 'zi'], cost: null }), plays: (verb, args) => (verb === 'seclude' && args.action === 'enter' ? 'seclusion' : null) } },
+    // Never a 小游戏池 member (Hanli 11-09: 「手机上闭关不用放主页面常驻, 全部里有就行」): a member stands only while the 时辰's
+    // draw shows it, so a standing row in the pool was out of 全部 the rest of the day — and a drawn 闭关 held a strip slot
+    // the strip never shows (rules/agenda.mjs `standing`).
+    tray: (content, state, view) => (secludable(content, state, view) ? [{ id: 'seclusion', left: { unit: 'today' }, opens: 'seclude', stage: 'seclude', standing: true }] : []) },
   { kind: 'her', // 银月's games open to him, 今日传闻 and 问卦 (rules/aigames.mjs, kao.mjs, duizi.mjs, tale.mjs, fortune.mjs)
     open: (content, state, view) => [
       ...['duizi'].filter(k => view?.[k]).map(id => ({ id })),
