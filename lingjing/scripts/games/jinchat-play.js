@@ -210,7 +210,7 @@ export async function riddleGame(ctx) {
       const input = el.querySelector('.g-jc-in');
       input.value = typed;
       input.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter' && e.isComposing) e.preventDefault(); });
-      el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); guess(input.value); });
+      el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); const said = input.value; input.value = ''; guess(said); });
       for (const b of el.querySelectorAll('[data-pick]')) b.addEventListener('click', () => guess(b.dataset.pick));
       el.querySelector('.is-hint').addEventListener('click', () => { showHint(); draw(); });
       focusIn(ctx, input);
@@ -464,7 +464,7 @@ export async function coupletGame(ctx) {
       const input = el.querySelector('.g-jc-in');
       input.value = typed;
       input.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter' && e.isComposing) e.preventDefault(); });
-      el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); guess(input.value); });
+      el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); const said = input.value; input.value = ''; guess(said); });
       for (const b of el.querySelectorAll('[data-pick]')) b.addEventListener('click', () => guess(b.dataset.pick));
       el.querySelector('.is-hint').addEventListener('click', () => { showHint(); draw(); });
       focusIn(ctx, input);
@@ -655,7 +655,7 @@ export async function chainGame(ctx) {
       const input = el.querySelector('.g-jc-in');
       input.value = typed;
       input.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter' && e.isComposing) e.preventDefault(); });
-      el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); link(input.value); });
+      el.querySelector('form').addEventListener('submit', (e) => { e.preventDefault(); const said = input.value; input.value = ''; link(said); });
       for (const b of el.querySelectorAll('[data-pick]')) b.addEventListener('click', () => { st.choices = true; link(b.dataset.pick); });
       el.querySelector('.is-hint').addEventListener('click', () => { showHint(); draw(); });
       el.querySelector('.is-help')?.addEventListener('click', () => { help(); });
