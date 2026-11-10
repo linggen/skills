@@ -8,6 +8,7 @@ import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { look, resolve } from '../scripts/rules.mjs';
 import { storyPlay } from '../scripts/rules/playpay.mjs';
+import { threshold } from '../scripts/state.mjs';
 import { floorOf, tallyBoard } from '../scripts/rules/cultivation.mjs';
 import { crawlRules, prepare } from './crawl.mjs';
 
@@ -55,6 +56,24 @@ test('(1) marked, no board: the way on pays exactly one story step, and 所得 s
   assert.equal(r.state.gained.progress, step);
   assert.equal(gainedOf(r.state, now).progress, step, 'Look: 剧情所得 · 修为 +n');
   assert.equal(gainedOf(r.state, now).earlier, undefined, 'all of it landed on this step');
+});
+
+test('marked, no board: a held full bar gets no floor, while the same scene below full does', () => {
+  const base = at('00-zhuji/09-qulao', { exit: 'listen', boards: 'play' });
+  const world = structuredClone(content);
+  for (const cap of Object.values(world.ladder.caps.hui)) if (cap?.gates) cap.gates = cap.gates.filter(g => g.scene !== '09-qulao');
+  delete world.chapters['00-zhuji'].scenes['09-qulao'].exits.find(e => e.id === 'listen').grant;
+  const full = { ...base.s, progress: threshold(content, base.s), gained: undefined, scene_xiuwei: undefined };
+  const r = must(resolve, full, base.now, { exit: 'listen' }, world);
+  assert.equal(r.state.progress, full.progress);
+  assert.equal(r.state.wealth, full.wealth);
+  assert.equal(r.result.paid, null);
+  assert.equal(r.state.gained?.progress, undefined);
+  // The stage gate was removed in this test world so the below-full case can leave too.
+  const below = { ...full, progress: full.progress - 100 };
+  const next = must(resolve, below, base.now, { exit: 'listen' }, world);
+  assert.equal(next.state.progress - below.progress, storyPlay(content, below));
+  assert.equal(next.state.gained.progress, storyPlay(content, below));
 });
 
 test('(2) marked, its board won: nothing more — the end card shows the board\'s 修为', () => {
@@ -145,11 +164,6 @@ test('(8) at the 回\'s cap the floor pays what a story step pays there today', 
   const today = must(resolve, s, now, { exit: 'fight' }, world);
   assert.deepEqual([marked.state.progress, marked.state.step, marked.state.wealth], [today.state.progress, today.state.step, today.state.wealth]);
   assert.ok(marked.state.progress >= control.state.progress);
-  // At the cap: the bar full where the 回 holds him — what lands, what is held, and any 灵石, as a story step's today.
-  const full = { ...s, progress: 1e6 };
-  const capped = must(resolve, full, now, { exit: 'fight' });
-  const cappedToday = must(resolve, full, now, { exit: 'fight' }, world);
-  assert.deepEqual([capped.state.progress, capped.state.step, capped.state.wealth, capped.result.paid.progress], [cappedToday.state.progress, cappedToday.state.step, cappedToday.state.wealth, cappedToday.result.paid.progress]);
   // …and a stretch whose board was turned to 灵石 at a cap counts as paid (the tally reads the converted part).
   const t = {};
   tallyBoard(t, 'x', { progress: 0, converted: { progress: 12, wealth: 4 } });

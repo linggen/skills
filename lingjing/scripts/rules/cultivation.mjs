@@ -5,7 +5,8 @@
 // stands in it to the exit that leaves it (`next` or `ends`). Its boards' 修为 is tallied as it lands (`scene_xiuwei`,
 // tasks.mjs taskDone). Leaving, a stretch that paid none — no board, or its board skipped, lost, put down — pays one story
 // step (`story`, playpay.mjs storyPlay) at the layer he stands on after the exit's own rise (零层 pays 0: before 入门,
-// nothing). A stretch that paid — a board, a story step, a gain the words tell — gets nothing more: never twice.
+// nothing). Hanli: 「满了后的下一场剧情是突破」 — at a held full bar the floor pays nothing and shows nothing.
+// A stretch that paid — a board, a story step, a gain the words tell — gets nothing more: never twice.
 // Its 所得 carries the stretch's whole 修为 once (core.mjs resolve → Look gained.progress; `earlier`: what was already on
 // the bar). A leaf: no imports. No scene is named here.
 

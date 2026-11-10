@@ -625,7 +625,7 @@ export function resolve(state, content, ctx, args) {
   // A marked scene's stretch ends here (rules/cultivation.mjs, Hanli 2026-11-10): nothing of it paid 修为, one story step —
   // priced where he stands now, after the exit's own rise (wm-zhoutian's 小周天 night: 一层), as a story step on the exit would be.
   const stretch = endsStretch(scene, exit, !inMade(s) && !replaying(content, s, scene));
-  const floor = stretch && storyPlay(content, s) > 0 ? floorOf(s, scene, grant) : null;
+  const floor = stretch && storyPlay(content, s) > 0 && !pastMark(content, s, 1, ctx.now) ? floorOf(s, scene, grant) : null;
   const floorPaid = floor ? landedOnly(pay(content, s, ctx, floor, landing)) : null;
   const own = grant ? pay(content, s, ctx, grant, landing) : null;
   const paid = joinPaid(own, floorPaid);

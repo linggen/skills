@@ -371,6 +371,7 @@ prints.** (rules/playpay.mjs; balance.json `master.xiuwei` → `play_pay.xiuwei`
   A scene marked `cultivation: true` (its `_cultivation` quotes the line; 17 in 卷一) is a stretch: left by an exit with no 修为 paid
   in it (no board, or its board skipped), it pays one story step at the layer after the exit's rise (rules/cultivation.mjs);
   a board, a told gain or a story step already paid it — never twice. Its 所得 shows the stretch's whole 修为 once; 零层 pays 0.
+  Hanli: 「满了后的下一场剧情是突破」 — a held full bar receives and shows no cultivation floor.
 - **Levels.** Each 层 is one level (零层 0, pays none) — past 练气 too since the nine 层 (2026-11-02: 筑基一层 L10 … 九层
   L18, 结丹九层 L27; levelOf); before, a realm's step of three 层 counted three (筑基小成 L12, 中成 15, 大成 18). A realm up: ×`sittings.realm` 1.3 to S and ×`rate.realm` 1.2 to R.
 - **Sittings per level** S(L) = 2 × 1.1^(L−1); a sitting is 100 体力 ≈ 100 minutes. **修为 per 体力** R(L) = 2 × 1.05^(L−1).
