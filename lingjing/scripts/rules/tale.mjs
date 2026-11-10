@@ -24,6 +24,8 @@ import { stow, fullLine } from './pouch.mjs';
 import { allPlaces, atScene, creatureOf, huntable, ofJuan, placeName, placeOf, placeOpen, tierIndex, tooHard } from './world.mjs';
 import { herNear } from './companion.mjs';
 
+import { describeWord } from '../games/drawguess-words.js';
+
 const WORD_GAMES = new Set(['riddle', 'lundao']);
 /* A game that needs her (tale.json `needs: "her"` — 画猜, 银月 reads the picture) stands only once
    she is met and on her own line — asleep in the 木牌 too: its round wakes her (rules/hergame.mjs).
@@ -492,7 +494,7 @@ function drawDeal(content, state, t, link, g) {
   const words = drawWords(content, g);
   const named = link.word != null ? namedWord(words, link.word) : null;
   const word = named ?? (words.length ? words[hashOf(`${t.id}|${t.n}|word`) % words.length] : null);
-  return { ...g.deal, ...(word ? { word } : {}), context: `今日传闻：${String(link.line ?? '').slice(0, 60)}` };
+  return { ...g.deal, ...(word ? { word: describeWord(word, content.creatures?.creatures) } : {}), context: `今日传闻：${String(link.line ?? '').slice(0, 60)}` };
 }
 
 /* The step before him: its game and place, who gives it, the line — and

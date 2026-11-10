@@ -605,6 +605,26 @@ function lintPlayedRows(content, bad) {
   }
 }
 
+function lintDrawWords(content, ids, bad) {
+  const check = (word, where) => {
+    if (!word || typeof word !== 'object') return;
+    if (word.creature != null && !ids.creatures.has(word.creature)) bad(where, `unknown creature ${word.creature}`);
+    if (word.hint != null && !pair(word.hint)) bad(where, 'hint needs both zh and en');
+  };
+  for (const game of content.games?.games ?? []) {
+    if (game.id !== 'drawguess') continue;
+    const data = game.data ?? {};
+    for (const key of ['words', 'met', 'mijing']) for (const [i, w] of (data[key] ?? []).entries()) check(w, `drawguess ${key}[${i}]`);
+    for (const [id, set] of Object.entries(data.sets ?? {})) for (const [i, w] of (set.words ?? []).entries()) check(w, `drawguess set ${id}[${i}]`);
+    check(data.word, 'drawguess word');
+    for (const [i, round] of (data.rounds ?? []).entries()) check(round.word, `drawguess round[${i}]`);
+  }
+  for (const task of content.tasks.tasks.filter(t => t.game === 'drawguess')) {
+    check(task.deal?.word, `task ${task.id} word`);
+    for (const [i, w] of (task.deal?.words ?? []).entries()) check(w, `task ${task.id} words[${i}]`);
+  }
+}
+
 export function lint(content) {
   const problems = [];
   const bad = (where, msg) => problems.push(`${where}: ${msg}`);
@@ -619,6 +639,7 @@ export function lint(content) {
   lintFrom(content, bad);
   lintArts(content, bad);
   lintPlayedRows(content, bad);
+  lintDrawWords(content, ids, bad);
   bilingual(content, 'content', bad);
   for (const [part, node] of Object.entries(content)) {
     if (!['dir', 'world', 'names'].includes(part)) refusedNames(node, content, part, bad);

@@ -53,6 +53,7 @@ const fill = (s, o) => s.replace(/\{(\w+)\}/g, (_, k) => o[k] ?? '');
 
 const STYLE = `.g-dg{gap:8px}.g-dg-head{display:flex;align-items:baseline;gap:10px;width:100%;font-family:var(--serif)}
 .g-dg-word{font-size:15px;color:var(--dim)}.g-dg-word b{font-size:26px;color:var(--text);letter-spacing:.1em;margin-left:4px}
+.g-dg-reading{font-size:12px;color:var(--faint);margin-left:6px}.g-dg-hint{width:100%;font-size:13px;line-height:1.4;color:var(--dim);font-family:var(--serif);overflow-wrap:anywhere}.g-dg-hint:empty{display:none}
 .g-dg-left{margin-left:auto;font-size:12px;color:var(--faint);font-family:var(--ui)}.g-dg-sec{font-size:18px;font-variant-numeric:tabular-nums;color:var(--ling);min-width:2.2em;text-align:right}
 .g-dg-time{width:100%;height:3px;border-radius:2px;background:var(--line);overflow:hidden}.g-dg-time i{display:block;height:100%;background:var(--ling);transform-origin:left;transition:transform .25s linear}
 .g-dg-say{width:100%;box-sizing:border-box;min-height:52px;padding:8px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--line);position:relative}
@@ -111,9 +112,10 @@ async function wordsOf(data) {
 }
 /** A set's rounds (`data.set`, games.json drawguess `data.sets`): the 家信's lines, each with its word. */
 async function setOf(data) {
+  if (data?.rounds?.length) return data.rounds;
   if (!data?.set) return null;
-  const row = await rowData();
-  const rounds = roundsOf(row.sets?.[data.set], row.words ?? []);
+  const row = data.sets ? data : await rowData();
+  const rounds = roundsOf(row.sets?.[data.set], data.words ?? row.words ?? []);
   return rounds.length ? rounds : null;
 }
 
@@ -259,6 +261,16 @@ function log(row) {
 
 // ── the game ───────────────────────────────────────────────────────────────────────────────
 
+export function wordCard(word, lang = 'zh') {
+  if (!word) return { name: '', reading: '', hint: '' };
+  const enriched = Boolean(word.pinyin || word.hint);
+  return {
+    name: lang === 'en' ? (enriched ? word.en : `${word.zh} · ${word.en}`) : word.zh,
+    reading: lang === 'en' && enriched ? [word.zh, word.pinyin].filter(Boolean).join(' · ') : word.pinyin ?? '',
+    hint: word.hint?.[lang === 'en' ? 'en' : 'zh'] ?? '',
+  };
+}
+
 export function mount(container, { data = {}, lang = 'zh', signal, shell } = {}) {
   const doc = container.ownerDocument;
   const w = T[lang] ?? T.zh;
@@ -282,8 +294,8 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   root.className = `g-ink g-dg${fixed ? ' is-fixed' : ''}`;
   const names = w.names;
   const whoBtns = GUESSERS.map((k) => `<button type="button" data-who="${k}">${names[k]}</button>`).join('');
-  root.innerHTML = `<div class="g-dg-who"><span>${w.who}</span>${whoBtns}</div><div class="g-dg-head"><span class="g-dg-word">${w.draw}<b></b></span><span class="g-dg-left"></span><span class="g-dg-sec"></span></div>`
-    + '<div class="g-dg-time"><i></i></div>'
+  root.innerHTML = `<div class="g-dg-who"><span>${w.who}</span>${whoBtns}</div><div class="g-dg-head"><span class="g-dg-word">${w.draw}<b></b><small class="g-dg-reading"></small></span><span class="g-dg-left"></span><span class="g-dg-sec"></span></div>`
+    + '<div class="g-dg-hint"></div><div class="g-dg-time"><i></i></div>'
     + '<div class="g-dg-letter"></div>'
     + `<div class="g-dg-say is-wait"><b></b><span class="g-dg-line"></span><span class="g-dg-other"></span></div>`
     + '<div class="g-dg-chips" aria-label="guessed"></div>'
@@ -302,6 +314,12 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
   let finish = () => {};
   const wake = () => (typeof data.wake === 'function' ? Promise.resolve(data.wake(g.who)).catch(() => {}) : Promise.resolve());
   root.dataset.phase = g.phase;
+  const showWord = (word) => {
+    const card = wordCard(word, lang);
+    $('.g-dg-word b').textContent = card.name;
+    $('.g-dg-reading').textContent = card.reading;
+    $('.g-dg-hint').textContent = card.hint;
+  };
   const CHOOSE = new Set(['ready', 'blind', 'far', 'absent']); // the guesser may change only before a round
   const CANT = new Set(['blind', 'far', 'absent', 'off']); //     she cannot be asked: a 家信 may still be written (`data.fallback`)
   const setPhase = (p) => {
@@ -314,7 +332,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     // Free play: the word is dealt on fresh paper, so he sees what to draw before the first stroke.
     if (p === 'ready' && !g.rounds && !data.word && typeof data.begin !== 'function') {
       g.next = pickWord(g.words, Math.random, lastWord);
-      $('.g-dg-word b').textContent = lang === 'en' ? `${g.next.zh} · ${g.next.en}` : g.next.zh;
+      showWord(g.next);
     }
   };
   const sub = (s) => fill(s, { who: names[g.who] });
@@ -345,7 +363,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     n.textContent = `${g.i + 1} / ${g.rounds.length}`;
     el.append(n);
     // A line's word is his own, not a secret: shown before 开始 (Hanli 10-19: 「这个是让画什么?」).
-    if (r.word) $('.g-dg-word b').textContent = lang === 'en' ? `${r.word.zh} · ${r.word.en}` : r.word.zh;
+    if (r.word) showWord(r.word);
   };
   const tools = (on) => root.querySelectorAll('[data-k]').forEach((b) => { b.disabled = !on; });
   /* Her wrong guesses this round, crossed out under her bubble: he sees she tries different things. */
@@ -571,7 +589,7 @@ export function mount(container, { data = {}, lang = 'zh', signal, shell } = {})
     g.word = word ?? g.next ?? pickWord(g.words, Math.random, lastWord);
     g.next = null;
     lastWord = g.word.zh;
-    $('.g-dg-word b').textContent = lang === 'en' ? `${g.word.zh} · ${g.word.en}` : g.word.zh;
+    showWord(g.word);
     // A new word always starts on blank paper, her guesses gone, and is announced before the clock runs.
     g.strokes = [];
     g.cur = null;

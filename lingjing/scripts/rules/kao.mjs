@@ -18,6 +18,7 @@ import { herNear } from './companion.mjs';
 import { isLocked } from './locks.mjs';
 import { hashOf } from './travel.mjs';
 import { passed } from './world.mjs';
+import { describeWord } from '../games/drawguess-words.js';
 
 const kaoTask = content => (content.tasks?.tasks ?? []).find(t => t.kao) ?? null;
 const metWords = content => (content.games?.games ?? []).find(g => g.id === 'drawguess' && g.data?.met)?.data.met ?? [];
@@ -86,7 +87,7 @@ function open(state, content, ctx, args = {}) {
   // `next`: the page's 下一题 after a round it ended unwon — that round is over, a new one begins.
   const next = ['1', 'true', 1, true].includes(args.next);
   const held = !next && k?.open?.word ? metWords(content).find(w => w.zh === k.open.word) : null;
-  if (held) return { state: null, result: { ok: true, opened: k.n, left: cap - k.n, word: held, resumed: true } };
+  if (held) return { state: null, result: { ok: true, opened: k.n, left: cap - k.n, word: describeWord(held, content.creatures?.creatures), resumed: true } };
   if ((k?.n ?? 0) >= cap) return refuse('cap', pick({ zh: `今天考够了（${cap} 回）。`, en: `Enough for today (${cap} rounds).` }, lang));
   const n = (k?.n ?? 0) + 1, word = nextWord(content, state, day, n);
   if (!word) return refuse('no-words', null);
@@ -95,7 +96,7 @@ function open(state, content, ctx, args = {}) {
   const empty = spendStamina(content, s, ctx, 'game', 1, boardCost(content, 'game', (content.games?.games ?? []).find(g => g.id === 'drawguess' && !g.cut && !g.replaced)));
   if (empty) return empty;
   s.kao = { day, n, drawn: [...(k?.drawn ?? []), word.zh], open: { word: word.zh, at: ctx.now.toISOString() } };
-  return { state: s, result: { ok: true, opened: n, left: cap - n, word } };
+  return { state: s, result: { ok: true, opened: n, left: cap - n, word: describeWord(word, content.creatures?.creatures) } };
 }
 
 /* Its win handed in (tasks.mjs taskDone): the round closed, a word's first clear paid by its looks. */

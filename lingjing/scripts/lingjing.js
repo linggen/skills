@@ -12,6 +12,7 @@ import * as sharedApi from '/shared/api.js';
 import { verb, content, SCRATCH, worldPath } from './rules.js';
 import { charsOf, createTracker, trackSender } from './track.js';
 import { arcadeGameOf, arcadeRow, arcadeRowOf, arcadeTitle, isArcadeBoard, keptAdd, withArcade } from './arcade-board.js';
+import { describeDeal } from './games/drawguess-words.js';
 /// A test save with no chat at all (`&chat=off`): the crawlers' opt-out (tools/playtest.mjs,
 /// page-crawl.mjs, play-human.mjs) — no Ling, no 银月, a word from the stage only shown. Without it a
 /// test save plays like the real game, its chat bound to that save (SKILL.md session-params).
@@ -5755,11 +5756,16 @@ if (SCRATCH) {
 
 /* 试玩: the game's registry row (its deal) and its name, before the first Look stands it. */
 async function arcadeBoot() {
-  const [reg, mod] = await Promise.all([
+  const [reg, mod, bestiary] = await Promise.all([
     fetch('../worlds/jiuding/games.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
     import(`./games/${ARCADE_GAME}.js`).catch(() => null),
+    ARCADE_GAME === 'drawguess' ? fetch('../worlds/jiuding/creatures.json').then(r => r.ok ? r.json() : null).catch(() => null) : null,
   ]);
-  const row = arcadeRow(reg, ARCADE_GAME, ARCADE_ROW);
+  let row = arcadeRow(reg, ARCADE_GAME, ARCADE_ROW);
+  if (row && ARCADE_GAME === 'drawguess') {
+    const source = arcadeRow(reg, 'drawguess')?.data ?? {};
+    row = { ...row, data: describeDeal({ words: source.words, sets: source.sets, ...row.data }, bestiary?.creatures) };
+  }
   arcadeDeal = { row, title: arcadeTitle(row, mod?.meta, ARCADE_GAME, lang()) };
 }
 

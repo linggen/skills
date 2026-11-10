@@ -11,6 +11,9 @@ import { dayKey, newState } from '../scripts/state.mjs';
 import { look, playTo, tale, task, win, VERBS } from '../scripts/rules.mjs';
 import { letterGrade, matches, normalize, roundsOf, stubReply } from '../scripts/games/drawguess-rules.js';
 import { kaoWords } from '../scripts/rules/kao.mjs';
+import { describeWord, describeDeal } from '../scripts/games/drawguess-words.js';
+import { wordCard, askGuess } from '../scripts/games/drawguess.js';
+import { lookTurn } from '../scripts/games/drawguess-ling.js';
 import { stageCards } from '../scripts/stage.mjs';
 import { WORDS, trayHtml } from '../scripts/cards.js';
 import { PLAY_KINDS } from '../scripts/rules/aside.mjs';
@@ -74,6 +77,27 @@ test('the scratch seam: a stub that misses once, then names the word — no mode
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   // A 测试存档 asks the real her (its chat is bound to that save); the stub is opt-in, and `&chat=off` asks no one.
   assert.match(page, /if \(HER_SEAM === 'stub' \|\| CHATLESS\) deal\.seam = HER_SEAM === 'stub' \? 'stub' : 'off';/);
+});
+
+test('creature descriptions travel to the card, never to a guess turn', () => {
+  const beasts = content.creatures.creatures;
+  const beast = beasts.find(c => c.id === 'gui');
+  const original = { zh: beast.name.zh, en: beast.name.en, creature: beast.id };
+  const word = describeWord(original, beasts);
+  assert.deepEqual(wordCard(word, 'zh'), { name: '蛫', reading: 'guǐ', hint: beast.look.zh });
+  assert.deepEqual(wordCard(word, 'en'), { name: 'Gui', reading: '蛫 · guǐ', hint: beast.look.en });
+  const plain = DATA.words.find(w => w.zh === '盆');
+  assert.deepEqual(describeWord(plain, beasts), plain);
+  assert.deepEqual(wordCard(plain, 'zh'), { name: '盆', reading: '', hint: '' });
+  const deal = describeDeal({ words: [original], rounds: [{ word: original }], sets: { s: { words: [original] } } }, beasts);
+  assert.equal(deal.words[0].hint.en, beast.look.en);
+  assert.equal(deal.rounds[0].word.pinyin, 'guǐ');
+  assert.equal(deal.sets.s.words[0].hint.zh, beast.look.zh);
+  for (const lang of ['zh', 'en']) {
+    const turn = lookTurn({ sid: 's', agent: 'yinyue', png: 'picture', text: askGuess('yinyue', 1, null, lang) });
+    assert.ok(!JSON.stringify(turn).includes(beast.look.zh));
+    assert.ok(!JSON.stringify(turn).includes(beast.look.en));
+  }
 });
 
 /* ── 今日传闻 ── */
@@ -192,6 +216,17 @@ test('本王考考你: each round counted as it begins, `per_day` a calendar day
   const again = task(t, content, at(next), { action: 'done', id: K });
   assert.equal(again.result.first, false);
   assert.equal(again.state.wealth, t0, 'a word cleared before pays nothing');
+});
+
+test('本王考考你 returns a bestiary description on open and resume', () => {
+  const c = structuredClone(content), now = night();
+  const row = c.games.games.find(g => g.id === 'drawguess' && g.data?.met);
+  row.data.met = [{ zh: '蛫', en: 'Gui', creature: 'gui' }];
+  const first = VERBS.kao(past(), c, at(now), { action: 'open' });
+  assert.equal(first.result.word.pinyin, 'guǐ');
+  assert.deepEqual(first.result.word.hint, c.creatures.creatures.find(x => x.id === 'gui').look);
+  const resumed = VERBS.kao(first.state, c, at(now), { action: 'open' });
+  assert.deepEqual(resumed.result.word, first.result.word);
 });
 
 test('本王考考你: the day\'s last round missed is closed (`kao miss`) — never resumed for fresh looks; the tray lets it go', () => {

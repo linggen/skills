@@ -889,15 +889,15 @@
      {"zh": "牙签", "also": ["签子", "竹签", "木签"], "en": "toothpick", "enAlso": ["stick", "skewer"], "after": "wm-diyilu"},
      {"zh": "火锅", "also": ["锅", "铁锅", "汤锅", "锅子"], "en": "hotpot", "enAlso": ["pot", "wok", "cooking pot"], "after": "wm-jiaxin"},
      {"zh": "镜子", "also": ["铜镜", "镜", "圆镜"], "en": "mirror", "enAlso": ["looking glass"], "after": "wm-jiaxin"},
-     {"zh": "狰", "also": ["小狰", "豹", "豹子", "花豹"], "en": "zheng", "enAlso": ["leopard"], "cast": "zheng"},
-     {"zh": "犰狳", "also": ["穿山甲"], "en": "armadillo", "enAlso": ["pangolin"], "after": "09-lingcao"},
+     {"zh": "狰", "creature": "zheng", "also": ["小狰", "豹", "豹子", "花豹"], "en": "zheng", "enAlso": ["leopard"], "cast": "zheng"},
+     {"zh": "犰狳", "creature": "qiuyu", "also": ["穿山甲"], "en": "armadillo", "enAlso": ["pangolin"], "after": "09-lingcao"},
      {"zh": "鯥", "also": ["鱼", "飞鱼", "牛鱼", "怪鱼"], "en": "lu fish", "enAlso": ["fish", "flying fish"], "after": "09-xie"}
     ],
     "mijing": [
      {"zh": "鼎", "also": ["香炉", "炉", "丹炉", "炉子", "三足鼎", "铜鼎"], "en": "cauldron", "enAlso": ["tripod", "censer", "furnace"]},
      {"zh": "灵芝", "also": ["蘑菇", "菌子", "芝"], "en": "lingzhi", "enAlso": ["mushroom", "reishi", "fungus"]},
      {"zh": "人参", "also": ["参", "山参", "萝卜"], "en": "ginseng", "enAlso": ["root", "radish"]},
-     {"zh": "犰狳", "also": ["穿山甲"], "en": "armadillo", "enAlso": ["pangolin"]},
+     {"zh": "犰狳", "creature": "qiuyu", "also": ["穿山甲"], "en": "armadillo", "enAlso": ["pangolin"]},
      {"zh": "蛇", "also": ["长虫", "小蛇", "毒蛇"], "en": "snake", "enAlso": ["serpent"]},
      {"zh": "钥匙", "also": ["铜钥匙", "锁匙"], "en": "key", "enAlso": []}
     ]

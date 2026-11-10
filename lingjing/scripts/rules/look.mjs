@@ -1,6 +1,7 @@
 // rules/look.mjs — The reading: the shelf, the briefs, Look, and what is on the stage.
 // Part of the rules engine; rules.mjs is its one door.
 import { afterParts, boardStaged, readThrough, sceneBoards } from './parts.mjs';
+import { describeDeal } from '../games/drawguess-words.js';
 import { gearHint } from './gearhint.mjs';
 import { linesLook, linesOf } from './lines.mjs';
 import { playGrant, replayShare } from './playpay.mjs';
@@ -640,7 +641,10 @@ function dealOf(content, task, state, now) {
   // those whose mark he holds, in his tongue; the board reads them on its lead card.
   const marks = new Set(state.marks ?? []), held = m => [m].flat().some(x => marks.has(x));
   const hints = (levels?.[0]?.hints ?? []).filter(h => held(h.mark)).map(h => pick(h.say, state.lang));
-  return { deal: { ...own, ...item, ...(levels ? { levels } : {}), ...(hints.length ? { hints } : {}), ...(art ? { art } : {}), ...(row?.words ? { words: row.words } : {}) } };
+  const deal = { ...own, ...item, ...(levels ? { levels } : {}), ...(hints.length ? { hints } : {}), ...(art ? { art } : {}), ...(row?.words ? { words: row.words } : {}) };
+  if (task.game !== 'drawguess') return { deal };
+  const source = games.find(g => g.id === 'drawguess' && g.data?.words)?.data ?? {};
+  return { deal: describeDeal({ words: source.words, sets: source.sets, ...deal }, content.creatures?.creatures) };
 }
 
 /* The 段 of a realm shown in 段, as the strip draws it (stage.mjs duanOf): `realm` its name, `duan` the 段 — `id`, `name`,

@@ -14,6 +14,16 @@ test('every shipped world lints clean', () => {
   for (const id of listWorlds()) assert.deepEqual(lint(loadWorld(id)), [], id);
 });
 
+test('drawguess creature references and bilingual hints are checked', () => {
+  const c = fresh();
+  const data = c.games.games.find(g => g.id === 'drawguess' && g.data?.met).data;
+  data.met[0].creature = 'not-a-creature';
+  data.met[0].hint = { zh: '一幅画' };
+  const problems = lint(c);
+  assert.ok(has(problems, 'unknown creature not-a-creature'));
+  assert.ok(has(problems, 'hint needs both zh and en'));
+});
+
 test('scene cultivation must be a boolean', () => {
   const c = fresh();
   c.chapters['00-prologue'].scenes['00-halfyear'].cultivation = 'yes';
