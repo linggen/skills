@@ -22,7 +22,8 @@
      140
     ],
     "sword": 88,
-    "words": "a martial guard stance, knees bent, weight low, sword held forward level toward the right, left hand raised open by her chest. ONE sword only, a single straight blade."
+    "words": "a martial guard stance, knees bent, weight low, sword held forward level toward the right, left hand raised open by her chest. ONE sword only, a single straight blade.",
+    "seed": 2
    },
    "idle2": {
     "src": "authored: her guard breathing in",
@@ -45,7 +46,8 @@
     ],
     "sword": 86,
     "dx": 0,
-    "words": "the same guard stance, breathing in, sword held forward toward the right, left hand open by her chest. ONE sword only, a single straight blade."
+    "words": "the same guard stance, breathing in, sword held forward toward the right, left hand open by her chest. ONE sword only, a single straight blade.",
+    "seed": 2
    },
    "punch1": {
     "lean": 7,
@@ -80,7 +82,8 @@
     "src": "CMU 135_09 (Oiduki) frame 288: stepping in, the fist drawn back",
     "strike": "armB",
     "sword": -35,
-    "words": "stepping forward into a punch: her left fist drawn back by her ribs, about to punch toward the right, her right hand holding the sword low by her hip with the point down behind her. ONE sword only, held in her right hand; her left hand a single bare fist; two arms and two hands only."
+    "words": "stepping forward into a punch: her left fist drawn back by her ribs, about to punch toward the right, her right hand holding the sword low by her hip with the point down behind her. ONE sword only, held in her right hand; her left hand a single bare fist; two arms and two hands only.",
+    "seed": 3
    },
    "punch2": {
     "lean": 5,
@@ -117,7 +120,8 @@
     "move": "hpunch",
     "hitFrame": true,
     "sword": -35,
-    "words": "a long straight punch: her left arm fully extended forward to the right at shoulder height, the fist closed, the long front stance, her right hand holding the sword low by her hip with the point down behind her. ONE sword only, held in her right hand; her left hand a single bare fist; two arms and two hands only."
+    "words": "a long straight punch: her left arm fully extended forward to the right at shoulder height, the fist closed, the long front stance, her right hand holding the sword low by her hip with the point down behind her. ONE sword only, held in her right hand; her left hand a single bare fist; two arms and two hands only.",
+    "seed": 2
    },
    "punch3": {
     "lean": 0,
@@ -152,7 +156,8 @@
     "src": "CMU 135_09 (Oiduki) frame 304, played backward: the fist coming back",
     "strike": "armB",
     "sword": -35,
-    "words": "pulling the punch back: her left arm half bent, the fist coming back toward her, the long front stance, her right hand holding the sword low by her hip. ONE sword only, held in her right hand; her left hand a single bare fist; two arms and two hands only."
+    "words": "pulling the punch back: her left arm half bent, the fist coming back toward her, the long front stance, her right hand holding the sword low by her hip. ONE sword only, held in her right hand; her left hand a single bare fist; two arms and two hands only.",
+    "seed": 2
    },
    "kick1": {
     "lean": -22,
@@ -187,7 +192,8 @@
     "src": "CMU 135_11 (Yokogeri) frame 588: the knee rising",
     "strike": "legF",
     "sword": -125,
-    "words": "lifting her right knee up in front of her to kick, standing on her left leg, the sword held back behind her. ONE sword only, in her right hand; two arms, two legs, her left hand open behind her."
+    "words": "lifting her right knee up in front of her to kick, standing on her left leg, the sword held back behind her. ONE sword only, in her right hand; two arms, two legs, her left hand open behind her.",
+    "seed": 1
    },
    "kick2": {
     "lean": -31,
@@ -222,7 +228,8 @@
     "src": "CMU 135_11 (Yokogeri) frame 596: the knee chambered high",
     "strike": "legF",
     "sword": -125,
-    "words": "the right knee drawn up high and tucked, the foot by the other knee, ready to kick to the right, standing on her left leg, leaning back a little, the sword held back. ONE sword only, in her right hand; two arms, two legs, her left hand open behind her."
+    "words": "the right knee drawn up high and tucked, the foot by the other knee, ready to kick to the right, standing on her left leg, leaning back a little, the sword held back. ONE sword only, in her right hand; two arms, two legs, her left hand open behind her.",
+    "seed": 1
    },
    "kick3": {
     "lean": -39,
@@ -270,7 +277,8 @@
     "hitFrame": true,
     "legFFoot": 165,
     "sword": -125,
-    "words": "a side kick: her right leg fully straight and level, kicking out to the right at waist height with the edge of the foot, the robe falling back off the leg, her body leaning back, standing on her left leg, the sword held back behind her. ONE sword only, in her right hand; two arms, two legs, her left hand open behind her."
+    "words": "a side kick: her right leg fully straight and level, kicking out to the right at waist height with the edge of the foot, the robe falling back off the leg, her body leaning back, standing on her left leg, the sword held back behind her. ONE sword only, in her right hand; two arms, two legs, her left hand open behind her.",
+    "seed": 3
    },
    "kick4": {
     "lean": -27,
@@ -305,7 +313,8 @@
     "src": "CMU 135_11 (Yokogeri) frame 628: the leg folding back",
     "strike": "legF",
     "sword": -125,
-    "words": "after the kick: the right knee folding back in, the foot coming down, standing on her left leg, the sword held back. ONE sword only, in her right hand; two arms, two legs, her left hand open behind her."
+    "words": "after the kick: the right knee folding back in, the foot coming down, standing on her left leg, the sword held back. ONE sword only, in her right hand; two arms, two legs, her left hand open behind her.",
+    "seed": 1
    },
    "sweep1": {
     "src": "authored: dropping onto the back leg",
@@ -328,7 +337,8 @@
     ],
     "sword": -110,
     "strike": "legF",
-    "words": "dropping low into a crouch on her left leg, her right leg starting to sweep forward low, her left hand reaching down in front, the sword swung back behind her. ONE sword only, in her right hand, no scabbard; two arms and two legs only."
+    "words": "dropping low into a crouch on her left leg, her right leg starting to sweep forward low, her left hand reaching down in front, the sword swung back behind her. ONE sword only, in her right hand, no scabbard; two arms and two legs only.",
+    "seed": 3
    },
    "sweep2": {
     "src": "authored: 仆步 — the full squat on the back leg, the front leg straight along the floor",
@@ -357,7 +367,8 @@
     "words": "a low leg sweep: dropped into a deep crouch on her bent left leg, her right leg stretched fully straight out forward to the right just above the ground, leaning forward, her left hand down near the floor, the sword held back behind her. ONE sword only, in her right hand, no scabbard; two arms and two legs only.",
     "planted": [
      "legB"
-    ]
+    ],
+    "seed": 3
    },
    "sweep3": {
     "src": "authored: rising out of the sweep",
@@ -380,7 +391,8 @@
     ],
     "sword": -120,
     "strike": "legF",
-    "words": "rising out of the low sweep on bent knees, the right leg drawing back in, the sword coming back to her side. ONE sword only, in her right hand, no scabbard; two arms and two legs only."
+    "words": "rising out of the low sweep on bent knees, the right leg drawing back in, the sword coming back to her side. ONE sword only, in her right hand, no scabbard; two arms and two legs only.",
+    "seed": 3
    }
   },
   "clips": {

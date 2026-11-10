@@ -387,20 +387,20 @@ def cmd_paint(who, raw, only, seeds, master):
   wait_quiet()
   print(who, len(jobs), 'paintings', flush=True)
   r = subprocess.run(['nice', '-n', '15', str(FF.PY), str(HERE / 'fighter-flux.py')], input=json.dumps({'model': FF.MODEL, 'jobs': jobs}),
-                     text=True, env=env, stdout=subprocess.PIPE)
+                     text=True, env=env, stdout=subprocess.PIPE, cwd=HERE)  # its own cwd: transformers resolves one on import
   print(r.stdout[-300:])
   if r.returncode:
     raise SystemExit(r.returncode)
 
 
-def wait_quiet(poll=5):
+def wait_quiet(poll=1):
   """Never two FLUX at once on this Mac, and never under a heavy load: wait for any fighter-flux to end and the load to
-  fall under 75 % of the cores."""
+  fall under the core count. Polled each second: another agent's queue of batches leaves gaps of seconds."""
   import time
   while True:
     busy = subprocess.run(['pgrep', '-f', 'fighter-flux'], stdout=subprocess.PIPE, text=True).stdout.split()
     load = os.getloadavg()[0]
-    if not busy and load < (os.cpu_count() or 8) * 0.75:
+    if not busy and load < (os.cpu_count() or 8):
       return
     if int(time.time()) % 300 < poll:
       print(time.strftime('%H:%M'), 'waiting: flux', busy, 'load', round(load, 1), flush=True)
