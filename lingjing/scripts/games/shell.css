@@ -117,7 +117,7 @@
   .focus .card.gamecard:has(> .gshell .g-xiangqi) { --board-ar: .9; --board-rows: 64px; --board-min: 480px; }
   .focus .card.gamecard .g-xiangqi-board { width: min(100%, max(280px, calc((100dvh - var(--game-reserve) - var(--board-rows)) * .9))); }
   /* 华容道: its arrows, the count and the keys beside the board, so the board takes the height (Hanli 11-03) */
-  .focus .card.gamecard:has(> .gshell .g-huarong-board) { --board-rows: 40px; max-width: min(96%, calc((100dvh - var(--game-reserve) - var(--board-rows)) * .8 + 300px)); }
+  .focus .card.gamecard:has(> .gshell .g-huarong-board) { --board-rows: 56px; max-width: min(96%, calc((100dvh - var(--game-reserve) - var(--board-rows)) * .8 + 300px)); }
   .focus .card.gamecard .g-huarong:not(.is-won) { display: grid; grid-template-columns: auto minmax(180px, 220px); column-gap: 24px; row-gap: 10px; align-items: center; justify-content: center; align-content: center; }
   .focus .card.gamecard .g-huarong:not(.is-won) > * { grid-column: 2; justify-self: center; margin-top: 0; }
   .focus .card.gamecard .g-huarong:not(.is-won) > .g-huarong-board { grid-column: 1; grid-row: 1 / span 8; }

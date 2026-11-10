@@ -67,7 +67,7 @@
   /* The boards fit the screen's height as well as its width: the header, footer, bar and the card's own
      title and controls are ~320–400px of a phone, the board gets the rest — no scrolling inside a game. */
   .g-luoshu-board { max-width: min(340px, calc(100dvh - 460px)); }
-  .g-huarong-board { width: min(100%, 320px, calc((100dvh - 340px) * .8)); }
+  .g-huarong-board { width: min(100%, 320px, calc((100dvh - 356px) * .8)); }
   .g-xiangqi-board { width: min(100%, 360px, calc((100dvh - 350px) * .9)); }
   .g-wuziqi-board { width: min(100%, 560px, calc(100dvh - 330px)); }
   .g-pintu-board { width: min(100%, 340px, calc(100dvh - 380px)); }
