@@ -61,7 +61,20 @@ export function qianClosed(host, keep, view) {
   return { qianOpen: false, qianFriend: null, qianBookOpen: false, qianShown: null };
 }
 
-export function createQianPage({ write, refresh, show, keep, view, herLine, herHere, lang, refusal, failed, tellHer, saveKey = () => '', playerName = () => null }) {
+/* The three ways a picture leaves (分享 · 拷贝图片 · 保存图片), and the one rule of 传音: a way that finished is a share, said
+   once to `shared` (the page hands it to the rules: quest share) — a sheet cancelled, a copy refused, a save a sandboxed
+   frame blocks is not. `act` is qian-share.js's three (a test hands its own); `done` and `fail` paint what happened. */
+export function shareRun(kind, p, who, { act = { sharePng, copyPng, savePng }, canSave = true, shared = () => {}, done = () => {}, fail = () => {} } = {}) {
+  const finish = (what) => { try { shared(what); } catch { /* the picture is out all the same */ } done(what); };
+  try {
+    if (kind === 'share') act.sharePng(p.blob, p.d, who === 'friend').then(() => finish('shared'), fail);
+    else if (kind === 'copy') act.copyPng(p.blob).then(() => finish('copied'), fail);
+    else if (!canSave) done('saveBlocked');
+    else { act.savePng(p.blob, p.d, who === 'friend'); finish('saved'); }
+  } catch (e) { fail(e); }
+}
+
+export function createQianPage({ write, refresh, show, keep, view, herLine, herHere, lang, refusal, failed, tellHer, saveKey = () => '', playerName = () => null, onShared = () => {} }) {
   let motionOn = false, jolts = [];
   const store = {
     get: (k) => { try { return localStorage.getItem(`${saveKey()}|${k}`); } catch { return null; } },
@@ -176,13 +189,7 @@ export function createQianPage({ write, refresh, show, keep, view, herLine, herH
     if (!p) return;
     const done = (what) => show({ qianShareNote: { who, what }, qianShown: { who, url: shownUrl(p.blob) } });
     const fail = (e) => { if (e?.name !== 'AbortError') { console.warn('[lingjing] qian share', e); done('shareFail'); } };
-    try {
-      if (kind === 'share') sharePng(p.blob, p.d, who === 'friend').then(() => done('shared'), fail);
-      else if (kind === 'copy') copyPng(p.blob).then(() => done('copied'), fail);
-      // A sandboxed frame without allow-downloads (the launcher's, Linggen.app's) saves nothing: say so, show the picture.
-      else if (!downloadsAllowed()) done('saveBlocked');
-      else { savePng(p.blob, p.d, who === 'friend'); done('saved'); }
-    } catch (e) { fail(e); }
+    shareRun(kind, p, who, { canSave: downloadsAllowed(), shared: onShared, done, fail });
   }
   function downloadsAllowed() {
     try { const sb = window.frameElement?.sandbox; return !sb || !sb.length || sb.contains('allow-downloads'); } catch { return true; }

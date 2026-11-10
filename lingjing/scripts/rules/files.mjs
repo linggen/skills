@@ -69,6 +69,9 @@ function freshState(content, lang, now, was = null, by = 'init') {
 const scratchQuests = () => (scratchName() ? path.join(scratchDir(scratchName()), 'quests') : null);
 const questsDir = () => process.env.LINGJING_QUESTS
   || (scratchQuests() && fs.existsSync(scratchQuests()) ? scratchQuests() : path.join(os.homedir(), '.linggen', 'quests'));
+/* Where the game's own menu may be written (quest.mjs): the dir the reads use — but a scratch save without a menu dir of
+   its own has none, never the real ~/.linggen/quests it only reads. */
+const questsWriteDir = () => (process.env.LINGJING_QUESTS || (scratchName() ? (fs.existsSync(scratchQuests()) ? scratchQuests() : null) : path.join(os.homedir(), '.linggen', 'quests')));
 /* A scratch save may live some days ahead (`shift --days=N`, the page's
    `&days=N`): its clock.json moves the clock for its own reads and writes
    only — the 大比's real day, 体力's return — so a live check need not wait a
@@ -202,4 +205,4 @@ export function parseArgs(argv) {
   return args;
 }
 
-export { addDays, holderGone, clock, dataDir, newRun, withRun, shiftDays, shiftFile, freshState, homeDir, SAVE_NAME, scratchDir, scratchName, LOCK, readQuests, savedFile, savedFor, savesDir, skillDir, userTurn, userWords, withLock, writeAtomic, writeMadeWorld };
+export { questsWriteDir, addDays, holderGone, clock, dataDir, newRun, withRun, shiftDays, shiftFile, freshState, homeDir, SAVE_NAME, scratchDir, scratchName, LOCK, readQuests, savedFile, savedFor, savesDir, skillDir, userTurn, userWords, withLock, writeAtomic, writeMadeWorld };

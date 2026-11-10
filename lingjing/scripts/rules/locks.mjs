@@ -20,6 +20,10 @@ const choreSystem = (ctx, id) => {
   return q ? (isOnce(q) ? 'kaifu' : 'chores') : null;
 };
 
+/* A quest action that names its system outright: 开府's read, a share (a chore's, 传音), the game's own menu (shut to none — it
+   is only put out, so the row is there the day 入门 comes). */
+const QUEST_ACTION_SYSTEM = { kaifu: 'kaifu', share: 'chores', menu: null };
+
 /* The system each verb belongs to — given its arguments — or null for a verb
    every save may use (Look, Resolve, the story's own boards and fights …). */
 const VERB_SYSTEM = {
@@ -29,7 +33,7 @@ const VERB_SYSTEM = {
   tale: () => 'errands',
   trade: () => 'wealth',
   haggle: () => 'wealth', //   砍价 (rules/aigames.mjs): a shelf's, like Trade
-  quest: (args, ctx) => (args.action === 'kaifu' ? 'kaifu' : choreSystem(ctx, String(args.id ?? '')) ?? 'errands'),
+  quest: (args, ctx) => (QUEST_ACTION_SYSTEM[args.action] !== undefined ? QUEST_ACTION_SYSTEM[args.action] : choreSystem(ctx, String(args.id ?? '')) ?? 'errands'),
   task: (args, ctx) => (args.action === 'check' ? choreSystem(ctx, String(args.id ?? '')) ?? 'chores' : null),
 };
 

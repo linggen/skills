@@ -151,7 +151,7 @@
     "labor": {"progress": 0, "wealth": 20},
     "gongke": {"progress": 100000, "wealth": 0},
     "gongke_zero": {"progress": 0, "wealth": 5},
-    "life": {"progress": 100000, "wealth": 10},
+    "life": {"progress": 100000, "wealth": 15},
     "stage": {"progress": 0, "wealth": 60},
     "pill": {"progress": 100000, "wealth": 0},
     "gate": {"progress": 100000, "wealth": 0},

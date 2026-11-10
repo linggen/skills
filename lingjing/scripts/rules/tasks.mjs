@@ -10,7 +10,7 @@ import { drop } from './arms.mjs';
 import { cardCatalog, fightPill, fightSetup, grantFrom, readOf, winCard } from './cards.mjs';
 import { POUCH_MAX } from '../battle.js';
 import { clone, gainsOf, pay, refuse, replaying, spendStamina } from './core.mjs';
-import { choreCounts, choreGrant, isOnce, questDone } from './chores.mjs';
+import { choreCounts, choreGrant, isOnce, ownOf, questDone } from './chores.mjs';
 import { payMeaning } from './gongke.mjs';
 import { advance, countsOf, questDoneBefore, questOf, taskOf, TIERS_ORDER } from './errands.mjs';
 import { errandLine } from './errand-line.mjs';
@@ -300,7 +300,8 @@ function questCheck(state, content, ctx, id) {
   if (!choreCounts(state, quests, q, ctx.now, content)) return refuse(isOnce(q) ? 'not-open' : 'not-today', null, { app: q.app });
   if (!questDone(q, ctx.now)) return refuse('not-done', null, { app: q.app });
   const s = clone(state);
-  s.chores[id] = { period, paid_at: ctx.now.toISOString() };
+  // `apart`: a chore paid on its own (chores.mjs ownOf) took no 修为 share of the day and counts in none.
+  s.chores[id] = { period, paid_at: ctx.now.toISOString(), ...(ownOf(content, q) ? { apart: true } : {}) };
   const grant = choreGrant(content, q, state, ctx.now);
   const paid = pay(content, s, ctx, grant);
   // 开府 may open before the 灵石 are his (chapter `locks`, Hanli 2026-10-22: 开府 on meeting 银月):

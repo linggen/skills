@@ -17,7 +17,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { chorePlay } from './playpay.mjs';
+import { chorePlay, xiuweiOf } from './playpay.mjs';
 import { dayKey, lockedOf, periodKey, periodStart, pick, questStamina, seedOf, zeroAt } from '../state.mjs';
 
 const isOnce = q => q.period === 'once';
@@ -137,9 +137,29 @@ function dayShareLeft(content, q, state, now) {
   const n = content.gongke?.shares_per_day;
   if (!now || !state || q.period !== 'day' || !Number.isFinite(n)) return true;
   const today = periodKey('day', now);
-  return Object.entries(state.chores ?? {}).filter(([id, c]) => id !== q.id && c?.period === today).length < n;
+  // A chore paid on its own (`apart`, ownOf) neither took a slot nor counts toward the day's.
+  return Object.entries(state.chores ?? {}).filter(([id, c]) => id !== q.id && c?.period === today && !c?.apart).length < n;
 }
+
+/* A chore that pays on its own (gongke.json `kinds.<kind>.own`, Hanli 2026-11-10: a share is paid by the act): `units` 体力
+   of play at the layer he stands on, and `wealth` 灵石, on the table `own.table` — outside the day's meaning cap (the kind
+   carries no meaning pay) and outside the day's `shares_per_day`. Null for any other chore, a 开府 step included. */
+export function ownOf(content, q) {
+  if (!q || isOnce(q) || typeof q.kind !== 'string') return null;
+  const own = content.gongke?.kinds?.[q.kind]?.own;
+  return own && content.rewards.tables[own.table] ? own : null;
+}
+/* What it pays: 修为 only with a save (a layer to stand on) and never at 练气零层 (the formula reads 0 there). */
+const ownGrant = (content, own, q, state) => ({
+  table: own.table,
+  progress: state ? Math.round(xiuweiOf(content, state, own.units)) : 0,
+  wealth: own.wealth ?? 0,
+  stamina: questStamina(content, q),
+});
+
 export function choreGrant(content, q, state = null, now = null) {
+  const own = ownOf(content, q);
+  if (own) return ownGrant(content, own, q, state);
   const table = choreTable(content, q, state), cap = content.rewards.tables[table] ?? {};
   // The day's and the week's chores pay a share of the layer (rules/playpay.mjs chorePlay, 2026-10-27).
   // A share of the save's layer (play_pay.chore); with no save, none (a world declaring no `chore` pays the chore's `reward`).
@@ -170,7 +190,8 @@ function appEntry(app) {
   } catch { return null; }
 }
 const onHost = open => typeof open === 'string' && /^\/(?!\/)[^\s\\:]*$/.test(open) && !open.includes('..');
-export const choreOpen = q => (onHost(q.open) ? q.open : appEntry(q.app));
+/* `open: false` on a row: no button — the place is the app the row is already shown in (传音, 2026-11-10). */
+export const choreOpen = q => (q.open === false ? null : onHost(q.open) ? q.open : appEntry(q.app));
 
 /* ── 开府: the first steps, for the devices the player has ──
    (Hanli, 2026-11-02: 「任务设计可以, 按你说的做」.) The list holds only the

@@ -6,6 +6,7 @@ import { artBrief, artOf, refine } from './arms.mjs';
 import { deck } from './cards.mjs';
 import { clone, judge, paysOf, refuse, resolve, setRiddleAside } from './core.mjs';
 import { choreGrant, kaifuList, kaifuReady } from './chores.mjs';
+import { publishMenu, shareRow } from './share.mjs';
 import { greet } from './daily.mjs';
 import { afterMet, layerMet, awayLine, BOOK_MAX, bookOf, complete, countsOf, gearBrief, HANDED_KEEP, handedOne, itemOf, mootQuest, noticeAt, noticeOf, questDoneBefore, questOf, questReady, withGiver } from './errands.mjs';
 import { meet } from './road.mjs';
@@ -127,6 +128,8 @@ export function quest(state, content, ctx, args) {
   if (action === 'info') return { state: null, result: questInfo(state, content, ctx, id) };
   // 开府 in full, for the page's own section — a read, never on Look.
   if (action === 'kaifu') return { state: null, result: { ok: true, kaifu: kaifuList(state, ctx.quests ?? [], ctx.now, lang, content) } };
+  // 传音 (rules/share.mjs): the page's alone — a share made, and the game's own menu put out.
+  if (action === 'menu' || action === 'share') return ctx.reader ? refuse('page-only', null) : action === 'menu' ? { state: null, result: publishMenu() } : shareTurn(state, content, ctx);
   // 开府 handed in all at once (Hanli, 2026-11-02): every done row, one tap.
   if (action === 'turn' && id === 'kaifu') return kaifuTurnAll(state, content, ctx);
   // A 功课 is handed in with the same word as any errand; its app is the witness.
@@ -225,6 +228,13 @@ function kaifuTurnAll(state, content, ctx) {
   }
   if (!turned.length) return refuse('not-done', null);
   return { state: s, result: { ok: true, turned: 'kaifu', title: turned.map(t => t.title).join(' · '), quests: turned, paid, stamina, book: bookOf(content, s, state.lang, ctx), kaifu: kaifuList(s, ctx.quests ?? [], ctx.now, state.lang, content) } };
+}
+
+/* 传音: the share stamped, then handed in at once (choreTurn). Before 入门 the verb itself is shut (locks.mjs). */
+function shareTurn(state, content, ctx) {
+  const row = shareRow(ctx.now);
+  const out = choreTurn(state, content, { ...ctx, quests: [...(ctx.quests ?? []).filter(x => x.id !== row.id), row] }, row.id);
+  return out.state ? { ...out, result: { ...out.result, shared: true } } : out;
 }
 
 function choreTurn(state, content, ctx, id) {

@@ -4,6 +4,7 @@
   "per_day": { "wealth": 15, "progress": 10, "items": 2 },
   "_shares": "`shares_per_day`: how many of a day's daily chores (period `day`) pay their own share of the layer in 修为 (playpay.mjs chorePlay); the rest pay their 灵石, 体力 and meaning (rules/chores.mjs choreGrant). 2026-11-02 (Hanli 「任务设计可以, 按你说的做」): six dailies replaced one fixed workout; one share keeps a day's chore 修为 near where it was (one daily's 10%, plus the pick — now always a weekly or monthly, 20–30%, where the old pick was 10–30%). Waits on Hanli's word.",
   "shares_per_day": 1,
+  "_own": "`own` on a kind (Hanli, 2026-11-10: 「分享动作就给奖励」, in 灵境: 「给修为和灵石奖励, 加进每日任务」): the chore's own pay, outside everything above — not the meaning (no `progress`/`wealth` on the kind, so `per_day` never touches it), not a `shares_per_day` slot (it neither takes one nor counts toward the day's; the paid record carries `apart`), not the chore's own `reward`. It pays `units` 体力 of play at the layer he stands on (rules/playpay.mjs xiuweiOf, no small-game factor: 9 × R(1) = 18 at 练气一层 — three small games' worth, Hanli 2026-11-10: 「分享任务给3倍奖励」) and `wealth` 灵石, capped by `table`. The one declaration of the share's pay. Paid once a day, as any daily (the chore's period).",
   "kinds": {
     "body": {
       "name": { "zh": "练功", "en": "Practice" },
@@ -45,6 +46,11 @@
       "name": { "zh": "琴心", "en": "Music" },
       "about": { "zh": "听了一曲、唱了一段，心里松快。", "en": "A song heard, a verse sung; the heart eases." },
       "wealth": 2, "progress": 2
+    },
+    "share": {
+      "name": { "zh": "传音", "en": "Sending word" },
+      "about": { "zh": "把今日的签、近况传给山外的朋友。银月说：道不孤，必有邻。", "en": "Today's fortune and how things stand, sent to friends beyond the mountains. Yinyue says: the Way does not walk alone; it will have neighbours." },
+      "own": { "table": "life", "units": 9, "wealth": 15 }
     }
   }
 }

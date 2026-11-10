@@ -3437,7 +3437,8 @@ function shortNudge() {
 
 /* 人间功课 handed in: the facts to her — the chore, its meaning in the book, what landed — never a line of ours. */
 function tellGongke(r) {
-  const m = r.meaning, p = m.paid ?? {};
+  // What landed: the meaning's pay and the chore's own (a share is paid wholly by its own).
+  const m = r.meaning, p = { ...(m.paid ?? {}), wealth: (m.paid?.wealth ?? 0) + (r.paid?.wealth ?? 0), progress: (m.paid?.progress ?? 0) + (r.paid?.progress ?? 0) };
   const got = (zh) => [p.wealth ? (zh ? `灵石 +${p.wealth}` : `+${p.wealth} spirit stones`) : '', p.progress ? (zh ? `修为 +${p.progress}` : `+${p.progress} cultivation`) : '',
     p.item_name ?? '', m.week?.paid ? (zh ? `${m.week.name}（灵石 +${m.week.paid.wealth}）` : `${m.week.name} (+${m.week.paid.wealth} stones)`) : ''].filter(Boolean).join(zh ? '，' : ', ');
   const zh = `玩家在人间做完了一件功课「${r.title ?? ''}」，在书里算${m.name}：${m.about}${got(true) ? ` 得了：${got(true)}。` : ''}`;
@@ -3445,6 +3446,15 @@ function tellGongke(r) {
   // Walking with him, she hears the facts and says it her way; asleep in the 木牌, its drowsy word (hersay.js), once a chore a day.
   if (herHere()) tellYinyue('gongke', zh, en, { mood: 'happy' });
   else herSay.say('gongke', lang() === 'en' ? en : zh, { key: `${r.quest ?? ''}|${new Date().toDateString()}` });
+}
+/* 传音 (rules/share.mjs): a picture of the 签 shared, copied or saved is a share — the rules stamp it and hand it in at once
+   (once a day; a second pays nothing and says nothing). Its pay tops the 事 book as any 交差's does, and she hears the facts. */
+async function sharedOut() {
+  const r = await write('quest', { action: 'share' }).catch(failed);
+  if (!r.ok || !r.turned) return;
+  await refresh();
+  showTurned(r.turned, r);
+  if (r.meaning) tellGongke(r);
 }
 let handedTimer = null;
 /* A 交差 seen where it was tapped: its pay (and a 修为 the cap held) tops the 事 book a moment. */
@@ -5083,7 +5093,7 @@ async function mountChat() {
 /* ── 银月 on the stage: the cast, the rise, her body ── */
 
 /// 问签 (qian-page.js): the shake, the draw through the rules, 银月's reading as facts, the evening's 应验 question.
-const qianPage = createQianPage({ write, refresh: () => refresh(), show, keep, view, herLine: herReadingLine, tellHer: tellYinyue, herHere, lang, refusal, failed, saveKey: () => herKey(), playerName: () => look?.name ?? null });
+const qianPage = createQianPage({ write, refresh: () => refresh(), show, keep, view, herLine: herReadingLine, tellHer: tellYinyue, herHere, lang, refusal, failed, saveKey: () => herKey(), playerName: () => look?.name ?? null, onShared: () => run('shared', sharedOut) });
 
 /* A 层 risen inside one 段 (Look's tier.duan, 筑基 and above): the same realm and 段, a later place in it. */
 const layerStep = (a, b) => Boolean(a?.duan && b?.duan && a.id === b.id && a.duan.id === b.duan.id && b.duan.at > a.duan.at);
@@ -5650,6 +5660,8 @@ async function enter() {
   } catch (e) {
     console.warn('[lingjing] sync on open', e);
   }
+  // The game's own chore (传音) is put in the apps' menus before the first Look reads them (rules/share.mjs).
+  await verb('quest', { action: 'menu' }).catch(() => null);
   await refresh();
   const fresh = await mountChat();
   // In 闭关: 出关 is the first thing on the stage, and the opening waits for

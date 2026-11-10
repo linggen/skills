@@ -1886,6 +1886,14 @@ function lintGongke(content, bad) {
     if (!m.about?.zh || !m.about?.en) bad(where, 'needs her facts (`about`) in zh and en');
     if ((m.wealth ?? 0) > (tables.chore_kind?.wealth ?? 0) || (m.progress ?? 0) > (tables.chore_kind?.progress ?? 0)) bad(where, 'pays over the chore_kind table');
     if (m.item && !items.has(m.item)) bad(where, `leaves unknown item ${m.item}`);
+    // `own` (rules/chores.mjs ownOf): the chore's own pay — units of play and 灵石 on a table; a kind that has it adds no meaning pay.
+    if (m.own) {
+      const t = tables[m.own.table];
+      if (!t) bad(where, `own pays on an unknown table ${m.own.table}`);
+      else if ((m.own.wealth ?? 0) > t.wealth) bad(where, 'own pays over its table');
+      if (!(m.own.units > 0)) bad(where, 'own needs `units`, a positive number');
+      if (m.wealth || m.progress || m.item || m.week) bad(where, 'a kind with `own` adds no meaning pay (it would meet the day\'s cap)');
+    }
     if (m.week && (!Number.isInteger(m.week.days) || m.week.days < 1 || m.week.days > 7 || !m.week.name?.zh || !m.week.name?.en)) bad(where, 'a week is 1–7 days, named in zh and en');
     if (m.week && !tables.chore_week) bad(where, 'a week pays off the chore_week table, which is missing');
   }

@@ -88,6 +88,12 @@ place:
       `companion.away` (今): SILENT. `companion.asleep`: half asleep in the
       木牌 — murmurs, 「……」. `capped`: once a day, point to the story.
     absent_until: {file: data/state.json, session_file: "data/saves/{{session.save}}/state.json", path: companion.here}
+# 传音 (Hanli 2026-11-10: 「分享动作就给奖励」): a paired phone's share is a fact (`lingjing-share`); the engine hands it to
+# the game's one writer of quests/lingjing.json (scripts/quest.mjs), which never moves a done time back.
+quests:
+  stamp: bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/quest.mjs stamp {id} {at}
+  facts:
+    lingjing-share: lingjing-share
 permission:
   paths:
     # `edit`: a tool's tier is checked against the session's CWD — this
@@ -98,7 +104,9 @@ permission:
     own folder, and reads only whether your other Linggen apps marked a task
     done — and, if you give it a city, the weather there. It keeps a small
     play log there too (times and results, never your words; off in
-    Settings). It writes nothing anywhere else.
+    Settings). Beside the other apps' quest files it keeps one of its own
+    (a line saying you shared a picture today). It writes nothing else
+    outside its folder.
 tools:
   - name: Look
     description: >-
