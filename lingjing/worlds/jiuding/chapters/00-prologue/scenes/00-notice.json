@@ -2,6 +2,8 @@
  "version": 1,
  "id": "00-notice",
  "chapter": "00-prologue",
+ "cultivation": true,
+ "_cultivation": "Hanli 2026-11-10 (rules/cultivation.mjs): a stretch of cultivation — 「那是他在柴垛上的最后一夜。他坐了一个时辰，数了一回：九十六。」",
  "hui": "h02",
  "at": "shiao",
  "place": {

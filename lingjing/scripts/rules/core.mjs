@@ -25,6 +25,7 @@ import { entryGate, stageBrief, stageGate, stageSay } from './gates.mjs';
 import { fightStuck } from './skips.mjs';
 import { atScene, inMade, placeName, placeOf, placeOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
 import { authoredScale, convertRate, fightPlay, pillBelow, storyPlay } from './playpay.mjs';
+import { closeStretch, endsStretch, floorOf, joinPaid, landedOnly, stretchShown, tallyTold } from './cultivation.mjs';
 
 /* ── Changing it ── */
 
@@ -621,12 +622,22 @@ export function resolve(state, content, ctx, args) {
   // A riddle left (`pass`) pays nothing (his: 「跳过没有奖励」); the story goes on as after an answer.
   const grant = passedRiddle || leftFight ? null : grantOf(s, scene, exit);
   const landing = exit.ends ? { ...s, scene: null } : exit.next && !inMade(s) ? { ...s, scene: exit.next } : s;
-  const paid = grant ? pay(content, s, ctx, grant, landing) : null;
+  // A marked scene's stretch ends here (rules/cultivation.mjs, Hanli 2026-11-10): nothing of it paid 修为, one story step —
+  // priced where he stands now, after the exit's own rise (wm-zhoutian's 小周天 night: 一层), as a story step on the exit would be.
+  const stretch = endsStretch(scene, exit, !inMade(s) && !replaying(content, s, scene));
+  const floor = stretch && storyPlay(content, s) > 0 ? floorOf(s, scene, grant) : null;
+  const floorPaid = floor ? landedOnly(pay(content, s, ctx, floor, landing)) : null;
+  const own = grant ? pay(content, s, ctx, grant, landing) : null;
+  const paid = joinPaid(own, floorPaid);
+  // Any way out closes the scene's tally; only a marked one shows it.
+  const tallied = exit.next || exit.ends ? closeStretch(s, scene) : 0, earlier = stretch ? tallied : 0;
+  if (exit.next) tallyTold(s, grant, own, exit.next);
   // 所得, shown big on the page one after another (lingjing.js revealQueue; Hanli 2026-10-27, the 饭桶's first meeting:
   // 「只显示了获得这张牌的动画, 应该还有其他的」): what this step put in his hands and the 灵石 — counted, so the page
   // shows each step's once, whoever took it (a tap, or Ling from the chat). The cards it gave have their own (cards_new).
-  const gained = paid ? gainsOf(grant, paid) : null;
-  if (gained) s.gained = { n: (state.gained?.n ?? 0) + 1, scene: scene.id, ...gained };
+  // A stretch's end carries its whole 修为, its boards' (`earlier`, already on the bar) with this step's.
+  const gained = paid || earlier ? gainsOf(grant ?? {}, stretchShown(paid, earlier)) : null;
+  if (gained) s.gained = { n: (state.gained?.n ?? 0) + 1, scene: scene.id, ...gained, ...(earlier && gained.progress ? { earlier } : {}) };
   const beat = spoken(content, s, exit.beat);
 
   let waiting = null, grew = null, node = null;

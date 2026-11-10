@@ -2,6 +2,8 @@
  "version": 1,
  "id": "09-shijie",
  "chapter": "00-zhuji",
+ "cultivation": true,
+ "_cultivation": "Hanli 2026-11-10 (rules/cultivation.mjs): a stretch of cultivation — 「他在石阶上盘腿坐好，数着气，学那「什么也不想」。」",
  "hui": "h09",
  "at": "shanmen",
  "place": {

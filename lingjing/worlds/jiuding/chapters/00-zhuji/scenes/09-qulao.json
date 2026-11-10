@@ -2,6 +2,8 @@
  "version": 1,
  "id": "09-qulao",
  "chapter": "00-zhuji",
+ "cultivation": true,
+ "_cultivation": "Hanli 2026-11-10 (rules/cultivation.mjs): a stretch of cultivation — 「练气靠的是丹药和苦功，筑基这一关，却要先查你的心。」",
  "hui": "h09",
  "at": "houshan",
  "place": {

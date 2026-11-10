@@ -2,6 +2,8 @@
  "version": 1,
  "id": "09-yanceng",
  "chapter": "00-zhuji",
+ "cultivation": true,
+ "_cultivation": "Hanli 2026-11-10 (rules/cultivation.mjs): a stretch of cultivation — 「筑基课一季只开一讲，七层往上才许进门」",
  "hui": "h09",
  "at": "jiangtang",
  "season": "winter",

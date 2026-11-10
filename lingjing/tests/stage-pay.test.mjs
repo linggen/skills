@@ -15,6 +15,7 @@ import { newState, stepOfLayer, threshold } from '../scripts/state.mjs';
 import { look, quest, resolve } from '../scripts/rules.mjs';
 import { gateKey, gatesOf, settleStages, stageBack, stageNow } from '../scripts/rules/gates.mjs';
 import { huiOrder } from '../scripts/rules/hui.mjs';
+import { storyPlay } from '../scripts/rules/playpay.mjs';
 import { WORDS, bookPopHtml } from '../scripts/cards.js';
 
 process.env.LINGJING_STAMINA_LIMIT = '0';
@@ -81,7 +82,9 @@ test('入秋 walks on; 九层圆满 waits at 瞿老\'s door (09-qulao, since 202
   const full = atQulao({ progress: threshold(content, his()) });
   const on = resolve(full, content, ctx, { exit: 'listen' });
   assert.equal(on.result.ok, true, JSON.stringify(on.result).slice(0, 300));
-  assert.deepEqual([on.state.tier, on.state.step, on.state.progress], [full.tier, full.step, full.progress], 'the story moved nothing');
+  // No 层 moves; 瞿老's lesson is a stretch of cultivation (Hanli 2026-11-10, rules/cultivation.mjs): its one story step lands
+  // over the full mark, as any story step there does (carried whole into 筑基, state.mjs stepUp).
+  assert.deepEqual([on.state.tier, on.state.step, on.state.progress], [full.tier, full.step, full.progress + storyPlay(content, full)], 'the story moved no 层');
 });
 
 test('a stage quest met is 可交: 交差 pays 灵石 once and moves it to 已交', () => {

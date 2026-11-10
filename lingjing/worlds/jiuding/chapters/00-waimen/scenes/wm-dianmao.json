@@ -2,6 +2,8 @@
  "version": 1,
  "id": "wm-dianmao",
  "chapter": "00-waimen",
+ "cultivation": true,
+ "_cultivation": "Hanli 2026-11-10 (rules/cultivation.mjs): a stretch of cultivation — 「那天夜里，小满在柴堆上学那孩子：不去拽那股暖，念头来了也不赶」",
  "hui": "h05",
  "at": "jiangtang",
  "place": {

@@ -37,7 +37,7 @@ function skipsFor(content, s, exit) {
 
 /* Make what the exit waits on true, the page's way first; what only forcing can do is named.
    `boards`: 'play' wins each board (with the grade the exit wants), 'skip' leaves each. */
-function prepare(content, s, exit, now, forced, boards = 'play', marked = new Set()) {
+export function prepare(content, s, exit, now, forced, boards = 'play', marked = new Set()) {
   const sc = sceneOf(content, s);
   if (sc?.at && s.place !== sc.at) {
     let r = move(s, content, { now, quests: [] }, { place: sc.at });

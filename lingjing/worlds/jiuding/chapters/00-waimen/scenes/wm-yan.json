@@ -2,6 +2,8 @@
  "version": 1,
  "id": "wm-yan",
  "chapter": "00-waimen",
+ "cultivation": true,
+ "_cultivation": "Hanli 2026-11-10 (rules/cultivation.mjs): a stretch of cultivation — 「十月廿五夜里，你自己坐上了二层。」",
  "hui": "h05",
  "at": "waimen",
  "place": {

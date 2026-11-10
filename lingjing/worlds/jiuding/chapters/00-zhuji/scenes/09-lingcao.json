@@ -2,6 +2,8 @@
  "version": 1,
  "id": "09-lingcao",
  "chapter": "00-zhuji",
+ "cultivation": true,
+ "_cultivation": "Hanli 2026-11-10 (rules/cultivation.mjs): a stretch of cultivation — 「《吐纳经》上那一口气，一层换一副样子。」",
  "hui": "h11",
  "at": "shanmen",
  "season": "autumn",

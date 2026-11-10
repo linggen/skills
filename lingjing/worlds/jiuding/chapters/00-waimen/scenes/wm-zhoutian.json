@@ -2,6 +2,8 @@
  "version": 1,
  "id": "wm-zhoutian",
  "chapter": "00-waimen",
+ "cultivation": true,
+ "_cultivation": "Hanli 2026-11-10 (rules/cultivation.mjs): a stretch of cultivation — 「九月十七夜里，你的气在身子里转了一个圈——一夜通了小周天。」",
  "hui": "h05",
  "at": "chaifang",
  "place": {

@@ -2,6 +2,8 @@
  "version": 1,
  "id": "09-yishui",
  "chapter": "00-zhuji",
+ "cultivation": true,
+ "_cultivation": "Hanli 2026-11-10 (rules/cultivation.mjs): a stretch of cultivation — 「那天夜里，他在西廊那张铺上盘腿坐着吐纳。」",
  "hui": "h11",
  "at": "shanmen",
  "place": {

@@ -913,5 +913,5 @@ function gainedBrief(content, state) {
     const slot = armSlot(it) ?? (it?.effect?.wear ? (it.slot ?? 'pendant') : null);
     return { id, n, name: itemName(it, state, lang) ?? id, kind: it?.kind ?? null, art: it?.art ?? null, hint: pick(it?.hint, lang) ?? null, ...(slot ? { slot, effect: it.effect ?? null } : {}) };
   });
-  return { n: g.n, scene: g.scene ?? null, items, ...(g.wealth ? { wealth: g.wealth } : {}), ...(g.progress ? { progress: g.progress } : {}) };
+  return { n: g.n, scene: g.scene ?? null, items, ...(g.wealth ? { wealth: g.wealth } : {}), ...(g.progress ? { progress: g.progress } : {}), ...(g.earlier ? { earlier: g.earlier } : {}) };
 }

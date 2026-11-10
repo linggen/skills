@@ -14,6 +14,15 @@ test('every shipped world lints clean', () => {
   for (const id of listWorlds()) assert.deepEqual(lint(loadWorld(id)), [], id);
 });
 
+test('scene cultivation must be a boolean', () => {
+  const c = fresh();
+  c.chapters['00-prologue'].scenes['00-halfyear'].cultivation = 'yes';
+  assert.ok(has(lint(c), 'scene 00-halfyear: cultivation must be a boolean'));
+  c.chapters['00-prologue'].scenes['00-halfyear'].cultivation = true;
+  delete c.chapters['00-prologue'].scenes['00-halfyear']._cultivation;
+  assert.ok(has(lint(c), 'scene 00-halfyear: cultivation needs its line quoted in _cultivation'));
+});
+
 test('the arts name an effect the bout knows and a tier on the ladder', () => {
   const c = loadWorld('jiuding');
   assert.deepEqual(c.arts.arts.map(a => a.id), ['fushui', 'wulei', 'yujian']);

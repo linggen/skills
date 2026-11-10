@@ -20,6 +20,7 @@ import { poolToday, standingToday } from './rotation.mjs';
 import { stow, fullLine } from './pouch.mjs';
 import { dropKept, keepBoard, leaveBoard, leaveOf, owePart, playKept, sceneBoards, skipBoard, storyBoard } from './skips.mjs';
 import { sideLine } from './hui.mjs';
+import { tallyBoard } from './cultivation.mjs';
 import { boardLine, lineGrant, linePay } from './lines.mjs';
 import { writeLedger } from './ledger.mjs';
 import { creatureOf, encounterOf, foeOf, huntKey, meetBeast, placeOf, poolOf, poolTally, rememberAt, restAfter, sceneOf } from './world.mjs';
@@ -272,6 +273,9 @@ function taskDone(state, content, ctx, id) {
     if (more.converted) paid.converted = more.converted;
     playCounted(s, id, ctx.now);
   }
+  // A board of the scene he stands in, its 修为 tallied to the scene's stretch (rules/cultivation.mjs): a marked scene's exit
+  // pays no floor on top of it, and its 所得 shows it.
+  if (here && !paid.line && sceneBoards(here).includes(id)) tallyBoard(s, here.id, paid);
   // A board's own 恩仇簿 line (`ledger`, as an exit writes it — 古六's 写信: 孙二狗's letter).
   const wrote = t.ledger ? writeLedger(content, s, t, ctx) : [];
   const handed = advance(content, s, { kind: 'board', task: id }, ctx);

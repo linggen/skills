@@ -2,6 +2,8 @@
  "version": 1,
  "id": "00-halfyear",
  "chapter": "00-prologue",
+ "cultivation": true,
+ "_cultivation": "Hanli 2026-11-10 (rules/cultivation.mjs): a stretch of cultivation — 「娘在油灯底下念那卷竹简，把行气铭每一级打头的字抄在账本最末一页」",
  "hui": "h02",
  "at": "shiao",
  "season": "winter",

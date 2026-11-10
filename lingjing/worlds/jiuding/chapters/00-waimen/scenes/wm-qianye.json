@@ -2,6 +2,8 @@
  "version": 1,
  "id": "wm-qianye",
  "chapter": "00-waimen",
+ "cultivation": true,
+ "_cultivation": "Hanli 2026-11-10 (rules/cultivation.mjs): a stretch of cultivation — 「头一天，他教掐诀。」",
  "hui": "h08",
  "at": "waimen",
  "place": {

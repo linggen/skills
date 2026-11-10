@@ -681,7 +681,12 @@ function gainedThings(was, now) {
   pieceSoon = true;
   // 修为 the step paid (Hanli 2026-11-09: 「剧情可以给修为…然后有动画显示剧情奖励」): the bar's rise on this read says where it
   // came from — the gain burst reads 「剧情所得 · 修为 +n」 (gainBurst).
-  if (g.progress) storyGainDue = { n: g.n, at: Date.now() };
+  // A cultivation stretch's end (rules/cultivation.mjs, Hanli 2026-11-10) carries its whole 修为, the boards' part already on the
+  // bar (`earlier`): the burst says the whole once — at once when nothing new rose or the realm changed (the bar's rise is not
+  // read across realms: 09-cliff's 筑基), else on the bar's rise.
+  const direct = g.progress <= (g.earlier ?? 0) || (was.tier?.id && now.tier?.id !== was.tier.id);
+  if (g.progress && direct) queueMicrotask(() => gainBurst({ progress: g.progress }, true));
+  else if (g.progress) storyGainDue = { n: g.n, at: Date.now(), total: g.progress };
   // Gear first (Hanli 11-03 at 古七's 09-snow: 「以为只拿到一张牌, 没看到剑」): a thing to wear before the rest.
   const items = [...(g.items ?? [])].sort((a, b) => Number(Boolean(b.slot)) - Number(Boolean(a.slot)));
   for (const it of items) revealQueue.push({ thing: it });
@@ -1103,17 +1108,18 @@ function playTravel(stops) {
    saw one (2026-09-23: 还是没看到动画). */
 /* A story step's 修为 just landed (gainedThings): the next burst of 修为 is the story's. */
 let storyGainDue = null;
-async function gainBurst(g) {
+async function gainBurst(g, fromStory = false) {
   // After the book and the moments: a gain never floats over her memory or a seal.
   for (let k = 0; k < 720 && (boxAhead() || momentUp() || momentPending.size); k += 1) await pause(250);
   // 所得 already says these numbers (a won fight, a board's pay): no burst over its text (live 11-05).
   if (view.spoils?.paid || spoilsUp()) return;
   // Taken from the step just read (gainedThings), not a stale one: 「剧情所得」 heads the burst.
-  const story = Boolean(g.progress && storyGainDue && Date.now() - storyGainDue.at < 200_000);
-  if (story) storyGainDue = null;
+  const due = g.progress && storyGainDue && Date.now() - storyGainDue.at < 200_000 ? storyGainDue : null;
+  if (due) storyGainDue = null;
+  const story = fromStory || Boolean(due), xw = Math.max(due?.total ?? 0, g.progress ?? 0);
   const w = words(), bits = [];
   if (story) bits.push(`<span class="from">${esc(w.storyGain)}</span>`);
-  if (g.progress) bits.push(`<span>${esc(w.xw)} <b>+${g.progress}</b></span>`);
+  if (g.progress) bits.push(`<span>${esc(w.xw)} <b>+${xw}</b></span>`);
   if (g.wealth) bits.push(`<span>${esc(w.ls)} <b>+${g.wealth}</b></span>`);
   const el = document.createElement('div');
   el.className = 'gainburst';

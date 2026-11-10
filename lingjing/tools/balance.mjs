@@ -19,8 +19,8 @@
 //   - every fight win pays the haunt table's 修为 — at the full mark of a layer he may not grind
 //     past (the 回's cap, a stage quest ahead), 灵石 instead (at `convert.rate`); the day's limit is 体力 alone;
 //   - then the story, minute by minute: a scene's passages at `chars_per_min`, its boards, its
-//     fight; its boards' and its way on's grants, its pills, its rises (no story floor), the
-//     sealed rooms' play, the 回's errands (`errands_at`); a way on behind a stage quest
+//     fight; its boards' and its way on's grants, its pills, its rises (no story floor), a stretch of
+//     cultivation's one story step where its boards paid none (rules/cultivation.mjs), the sealed rooms' play, the 回's errands (`errands_at`); a way on behind a stage quest
 //     (ladder.json caps.hui gates) waits until the layer is full;
 //   - minutes left while it waits go to more pool fights, as the pool's rest allows;
 //   - inside a sealed instance (a key beat that declares `sealed`, world.mjs sealedOf: from the scene after its entry
@@ -123,6 +123,9 @@ export function bookWalk(content, model = content.balance.model) {
         ...(side ? { line: side, line_tasks: boards } : {}), tasks: side ? [] : boards,
         wealth: wealthCap(content, e?.grant) + (side ? 0 : boards.reduce((n, t) => n + wealthCap(content, t.grant), 0) + boardFirst(content, ch, sc, boards)),
         // A story step (`story`, Hanli 2026-11-09) pays one small game's 修为 where he stands — priced when it lands.
+        // A stretch of cultivation (`cultivation`, Hanli 2026-11-10, rules/cultivation.mjs) whose way on pays no 修为 of its own:
+        // one story step on leaving, when its boards paid none (`floor`; priced after the rise, in play below).
+        floor: Boolean(!side && sc.cultivation === true && (e?.next || e?.ends) && !(e?.grant?.table === 'story' || e?.grant?.narrated || e?.grant?.progress > 0)),
         story: e?.grant?.table === 'story', grant: tableCap(content, e?.grant), pill: pillOf(content, e?.grant?.item), pill9: itemOf(content, e?.grant?.item)?.fill === 'full',
         rise, breakthrough: Boolean(e?.breakthrough), fight,
         gate: e ? gates.find(g => g.scene === sc.id && g.exits.includes(e.id)) ?? null : null,
@@ -384,7 +387,13 @@ export function play(content, player, { model = content.balance.model, ladder = 
             gain(w.boards);
             // …and each board's play pay, its minutes at the layer he stands on (rules/playpay.mjs playGrant; ★ `model.story_stars`):
             // the story's boards are where most of a layer's 修为 comes from before its gate (数值系统 phase 2).
-            for (const t of w.tasks ?? []) gain(playGrant(content, { ...s, need: need(), plays: null }, t.id, t, NOW, model.story_stars ?? 2)?.progress ?? 0, false, 'play', 'boards');
+            // What they paid is kept (`boards_xw`): a stretch of cultivation they paid owes no floor.
+            w.boards_xw = w.boards;
+            for (const t of w.tasks ?? []) {
+              const n = playGrant(content, { ...s, need: need(), plays: null }, t.id, t, NOW, model.story_stars ?? 2)?.progress ?? 0;
+              w.boards_xw += n;
+              gain(n, false, 'play', 'boards');
+            }
             // A grinder's side play at each scene (`scene_share` of the layer, tests/pacing.test.mjs: his real rate, Hanli 11-02:
             // about +110 an action at 四层) — the player who fills a layer the moment its door opens.
             if (player.scene_share) gain(player.scene_share * need(), false, 'play', 'grind');
@@ -407,6 +416,8 @@ export function play(content, player, { model = content.balance.model, ladder = 
           }
           gain(w.grant + w.pill);
           if (w.story) gain(storyPlay(content, { ...s, need: need() }), false, 'play');
+          // The floor of a stretch of cultivation its boards left unpaid (zero at 零层; after the rise: 小周天's night at 一层).
+          if (w.floor && !(w.boards_xw > 0)) gain(storyPlay(content, { ...s, need: need() }), false, 'play');
           earn(w.wealth);
           // A story fight on the way takes its pills too.
           if (w.fight) takePills(1 / model.fight_win_rate);

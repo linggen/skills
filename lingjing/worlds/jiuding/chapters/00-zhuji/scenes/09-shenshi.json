@@ -2,6 +2,8 @@
  "version": 1,
  "id": "09-shenshi",
  "chapter": "00-zhuji",
+ "cultivation": true,
+ "_cultivation": "Hanli 2026-11-10 (rules/cultivation.mjs): a stretch of cultivation — 「七层往上，褚先生的讲堂上添了两样：神识，和轻身。」",
  "hui": "h09",
  "at": "jiangtang",
  "place": {

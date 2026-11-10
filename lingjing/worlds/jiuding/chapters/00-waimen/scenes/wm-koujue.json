@@ -2,6 +2,8 @@
  "version": 1,
  "id": "wm-koujue",
  "chapter": "00-waimen",
+ "cultivation": true,
+ "_cultivation": "Hanli 2026-11-10 (rules/cultivation.mjs): a stretch of cultivation — 「第三天，褚先生教的是扣。」",
  "hui": "h08",
  "at": "waimen",
  "place": {

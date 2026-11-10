@@ -1559,6 +1559,9 @@ export const LOOK_GIVES = new Set(['mark']);
 
 function lintScene(scene, chapter, content, ids, bad) {
   const where = `scene ${scene.id}`;
+  // A stretch of cultivation (rules/cultivation.mjs, Hanli 2026-11-10) is marked in data, with the line that makes it so.
+  if (scene.cultivation != null && typeof scene.cultivation !== 'boolean') bad(where, 'cultivation must be a boolean');
+  if (scene.cultivation === true && !/「.+」/.test(scene._cultivation ?? '')) bad(where, 'cultivation needs its line quoted in _cultivation');
   if (scene.chapter !== chapter.id) bad(where, `says chapter ${scene.chapter}, lives in ${chapter.id}`);
   const places = content.places[chapter.province]?.places ?? [];
   if (scene.at && !places.some(p => p.id === scene.at)) bad(where, `at ${scene.at}, which is not a place of ${chapter.province}`);

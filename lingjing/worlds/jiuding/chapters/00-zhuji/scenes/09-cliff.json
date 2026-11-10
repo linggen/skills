@@ -2,6 +2,8 @@
  "version": 1,
  "id": "09-cliff",
  "chapter": "00-zhuji",
+ "cultivation": true,
+ "_cultivation": "Hanli 2026-11-10 (rules/cultivation.mjs): a stretch of cultivation — 「九月初三，崖顶上扣着一团锅盖云——你筑基了。」",
  "hui": "h09",
  "at": "houshan",
  "place": {

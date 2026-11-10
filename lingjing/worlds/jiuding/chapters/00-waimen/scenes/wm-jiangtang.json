@@ -2,6 +2,8 @@
  "version": 1,
  "id": "wm-jiangtang",
  "chapter": "00-waimen",
+ "cultivation": true,
+ "_cultivation": "Hanli 2026-11-10 (rules/cultivation.mjs): a stretch of cultivation — 「天地之间，灵气充盈。凡人不能纳，修士能纳。」",
  "hui": "h05",
  "at": "jiangtang",
  "place": {

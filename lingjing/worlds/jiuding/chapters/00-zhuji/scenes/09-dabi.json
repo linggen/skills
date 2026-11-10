@@ -2,6 +2,8 @@
  "version": 1,
  "id": "09-dabi",
  "chapter": "00-zhuji",
+ "cultivation": true,
+ "_cultivation": "Hanli 2026-11-10 (rules/cultivation.mjs): a stretch of cultivation — 「他打坐到第二天晌午，才把那口气压实。」",
  "hui": "h09",
  "at": "yaoyuan",
  "place": {
