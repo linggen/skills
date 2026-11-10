@@ -4,11 +4,22 @@ The one list of what is in flight, parked, not started, and waiting on Hanli.
 Every agent reads it before starting and edits its own row when it lands (hash or tag, date).
 Systems themselves live in `design.md` (【已建】 · 【在建】 · 【远景】); this file is only the work.
 
-Updated 2026-11-03.
+Updated 2026-11-10.
+
+Shipped: Linggen 2.0 (ling-mem 1.13.0 · engine 2.0.1 · App 2.0, 11-08/09); iOS 2.0.0 (27) in App Store review since 11-09. What follows rides iOS 2.0.1 and the next skills install.
 
 ## In flight
 
-None.
+Started 2026-11-10 (Hanli: 「先把灵境剩下的修完」), four agents, each on its own files:
+
+- **结印课堂 on the phone + the no-camera demo** (Hanli 11-10: 「那个是很重要的课堂…如果用户不开摄像头, 就改成自动演示」). Finding: never cut — the phone never chose a task's `alt` (only the Mac's caps.js did), so `qianye-qiajue` was dealt as 砸寨 · 讲堂试法. Build: the phone deals the alt by the same rule; no camera / refused → the lesson demonstrates its seals itself (Mac and phone), then the row's own board, same pay; the camera asked on 开始. Files: games/jieyin*, caps.js, levels/jieyin.json, tools/phone, linggen-mobile.
+- **格斗 layers 2 and 5, what is really left** (plan 11-05): audit first — dash, hop, roll, throw, low guard, 绝, intro and KO slow-mo are in; missing by grep: a round timer and best of three (for 切磋 · 演武场 only, as level knobs; story bouts keep their own endings), thumbs check of every move at 375/430, 小满's painted 旋踢 with no move.
+- **格斗 layer 4, the other seven fighters** (Hanli 11-10: 「格斗帧重画, 做吧」): heqi · lufang · qichangsong · zouqingsong · jiuceng · laojing · maxiaobao from 33 frames to the 秦雁/小满 standard, local FLUX, one fighter a commit.
+- **小游戏 修为 ×1.5** (Hanli 11-10, first asked a session earlier, never built: 「把小游戏奖励修为提高到1.5呗, 加快一点升级速度」): one declared factor on boards, 秘境 rooms and 兽潮 nights; not 斗法 beasts, 人间功课, errands, 闭关, pills.
+
+Then, one batch: Mac install + phone repack, playtest run + review, his phone.
+
+Checked 11-10, already done (were on old lists): the kept card's 丹囊/换一只, 回气丹's effect line, the 饥啸 cover, the playbot's 储物袋 (`e22bbe9ab`, 11-07); 当康's hidden ×2.5 shown as 凶 ×N (`5c27d0748`, 11-09); a carried pill no longer holds the turn (`afb9911f0`, 11-09); 石室 gate and 格斗 大比 (10-31).
 
 ## Play bot — how to run (tools/playbot, not in check.sh: minutes)
 
