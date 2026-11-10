@@ -15,15 +15,16 @@
   ],
   "tier": "qi",
   "step": 5,
-  "progress": 4,
+  "progress": 5,
   "wealth": 570,
   "lines": {
    "jin": {
     "tier": "xinsheng",
-    "step": 1,
-    "progress": 46,
+    "step": 2,
+    "progress": 42,
     "stretch": {
-     "xinsheng:1": 1
+     "xinsheng:1": 1,
+     "xinsheng:2": 6
     }
    }
   },
@@ -687,7 +688,7 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 1269,
+   "progress": 1459,
    "wealth": 573
   },
   "stamina": 100,
@@ -1076,7 +1077,7 @@
    "huochai-jian": 1
   },
   "gained": {
-   "n": 18,
+   "n": 24,
    "scene": "09-furnace",
    "items": [
     {
@@ -1246,8 +1247,8 @@
   ],
   "furnace_name": "饭桶",
   "stretch": {
-   "qi:2": 3,
-   "qi:3": 224
+   "qi:2": 5,
+   "qi:3": 260
   },
   "hunted": {
    "mijing-xiongya": 1
