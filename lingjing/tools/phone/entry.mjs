@@ -13,7 +13,8 @@
 //                                            has nothing to say); `short` builds its facts from the Look's shelf
 //                                            and `mijing` from the rules' answer (opts.result: hersay.js mijingWhat);
 //                                            and `gear` from the door's gear_hint (hersay.js gearFacts; `key`: game|losses);
-//                                            `qian` / `qian_friend` (问签 v2): the 签 card's one line, qian-facts.js
+//                                            `qian` / `qian_friend` (问签 v2): the 签 card's one line, qian-facts.js;
+//                                            `emerge` (出关): opts.result is `seclude leave`'s answer, seclude-facts.js
 //   Lingjing.quests({app: doc})             the apps' menus (/quests/<app>.json) the host hands in; null drops one
 //   Lingjing.drainTrack()                    the play log's lines since the last drain (rules/analytics.mjs), as JSON
 //                                            text — the app keeps them in its own folder, never in the dumped save
@@ -24,6 +25,7 @@ import { forLing, run } from '../../scripts/rules.mjs';
 import { drainSink } from '../../scripts/rules/analytics.mjs';
 import { MOMENTS, REGISTER, REGISTER_ASLEEP, gearFacts, herMode, mijingWhat, momentFacts, poolOf, shortFacts } from '../../scripts/hersay.js';
 import { friendFacts, qianFacts } from '../../scripts/qian-facts.js';
+import { emergeFacts } from '../../scripts/seclude-facts.js';
 import fs, { dump, restore, seed, stats } from './shims/fs.mjs';
 import { process } from './shims/process.mjs';
 
@@ -69,19 +71,26 @@ function call(verb = 'look', args = {}, { reader = null, save = null, now = null
   }
 }
 
+/* The moments told off the rules' answer, each its facts or null (nothing to say):
+   问签 v2 (`qian`: his, from Look's divination; `qian_friend`: a friend's, the rules' answer to 替人求签) — the Mac's
+   qian-facts.js; 出关 (`emerge`: `seclude leave`'s `emerged`) — the Mac's seclude-facts.js. */
+const TOLD = {
+  qian: (r, l, zh) => { const d = r ?? l.divination; return d?.poem ? qianFacts(d, zh) : null; },
+  qian_friend: (r, l, zh) => { const d = r?.friend ?? r; return d?.poem ? friendFacts(d, zh) : null; },
+  emerge: (r, l, zh) => emergeFacts(r?.emerged ?? r, zh),
+};
+
 /* 银月 at a page moment, as the Mac's hersay.js says it: the phone keeps the once-limits (its own prefs), asks its model
    with `facts`, and falls back to `pool`. `short` takes its facts from the Look itself (shortFacts). */
 function her(kind, look = {}, { lang = 'zh', weight = 'full', what = null, result = null } = {}) {
   const l = typeof look === 'string' ? JSON.parse(look) : look;
   const mode = herMode(l), zh = lang !== 'en';
-  // 问签 v2: her one line on the 签 card (`qian`: his, from Look's divination; `qian_friend`: a friend's, the rules'
-  // answer to 替人求签) — the Mac's qian-facts.js; no pool: without her the card shows without her line.
-  if (kind === 'qian' || kind === 'qian_friend') {
-    const r = typeof result === 'string' ? JSON.parse(result) : result;
-    const d = kind === 'qian' ? r ?? l.divination : r?.friend ?? r;
-    if (mode === 'absent' || !d?.poem) return JSON.stringify(null);
-    const facts = (kind === 'qian' ? qianFacts : friendFacts)(d, zh) + (mode === 'asleep' ? REGISTER_ASLEEP : REGISTER)[zh ? 'zh' : 'en'];
-    return JSON.stringify({ mode, id: null, facts, pool: [] });
+  // A moment told off the rules' answer (`result`), with no pool: without her model the card stands without her line.
+  const told = TOLD[kind];
+  if (told) {
+    const facts = mode === 'absent' ? null : told(typeof result === 'string' ? JSON.parse(result) : result, l, zh);
+    if (!facts) return JSON.stringify(null);
+    return JSON.stringify({ mode, id: null, facts: facts + (mode === 'asleep' ? REGISTER_ASLEEP : REGISTER)[zh ? 'zh' : 'en'], pool: [] });
   }
   if (mode === 'absent' || !MOMENTS[kind]) return JSON.stringify(null);
   const short = kind === 'short' ? shortFacts(l, zh) : null;

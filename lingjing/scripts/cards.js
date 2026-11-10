@@ -19,6 +19,7 @@ import { gongkeBits, gongkeMarksHtml } from './gongke.js';
 import { qianCardHtml } from './qian-card.js';
 import { closeX, withCloseX } from './card-close.js';
 import { agendaLook, agendaReady } from './rules/agenda.mjs';
+import { SECLUDE_FOCI } from './seclude-facts.js';
 /// 秘境探险 (rules/mijing.mjs, Look's `mijing`): its own module draws it (scripts/mijing.js).
 const mijing = (card, ctx) => mijingCardHtml(card, ctx);
 
@@ -67,7 +68,7 @@ export const WORDS = {
     secludeRule: '按真实时间，至多{cap}小时；不足{min}小时不长；体力一路回，约{rest}小时回满。',
     secludeSpells: '法术 · 每 {h} 小时一星，至多三星', secludeProgress: '修为 · 每小时 +{n}', secludeTreasure: '本命法宝 · 每 {h} 小时长一重',
     secludePill: '服一粒{name}：时辰 ×{m}', secludeStarRule: '圆圈里是灵力。一星：灵力 −1；已是 1 的，改为威力 +1。', secludeNext: '{name} ★{from}→★{to} 还要 {h} 小时 · {what}', secludeNextCost: '灵力 {was}→{cost}', secludeNextPower: '威力 +1', secludeGo: '入关', secludeLater: '作罢', secludePick: '先选一样。',
-    secludeFoci: { card: '法术', progress: '修为', treasure: '本命法宝' },
+    secludeFoci: SECLUDE_FOCI.zh,
     secludingTitle: '闭关中 · {what}', secludeGate: '洞府石门紧闭', secludeRestAt: '约 {n} 分钟体力回满', secludeRestFull: '体力已满', secludeIfNow: '此刻出关：', emergeEarly: '出关', secludeTop: '已臻圆满', secludeBarStar: '下一星：{what}', secludeBarTreasure: '下一重', secludeBarXw: '每小时修为 +{n}', secludeAt: '约 {t} 成', hourUnit: '小时', secludeHours: '已闭关 {h} 小时（至多 {cap}）', secludeTooShort: '不足 {min} 小时：出关不长修行。',
     secludeStar: '{name} ★{from} → ★{to} · 灵力 {was}→{cost}', secludeStarLeft: '{name} 离下一星还差 {h} 小时',
     secludeGrowXw: '修为 +{n}', secludeGrowTreasure: '{name} {from}重 → {to}重', secludeTreasureLeft: '{name} 离下一重还差 {h} 小时',
@@ -134,7 +135,7 @@ export const WORDS = {
     secludeRule: 'Real hours count, up to {cap}; under {min}, nothing grows. Stamina comes back all along, full in about {rest} h.',
     secludeSpells: 'Spells · a star every {h} h, up to three', secludeProgress: 'Cultivation · +{n} an hour', secludeTreasure: 'Treasure · a layer every {h} h',
     secludePill: 'Take a {name}: hours ×{m}', secludeStarRule: 'The circle is Force. A star: Force −1; at 1 already, power +1.', secludeNext: '{name} ★{from}→★{to} in {h} h · {what}', secludeNextCost: 'Force {was}→{cost}', secludeNextPower: 'power +1', secludeGo: 'Go in', secludeLater: 'Not now', secludePick: 'Pick one first.',
-    secludeFoci: { card: 'a spell', progress: 'cultivation', treasure: 'the treasure' },
+    secludeFoci: SECLUDE_FOCI.en,
     secludingTitle: 'In seclusion · {what}', secludeGate: 'The cave gate, shut', secludeRestAt: 'stamina full in about {n} min', secludeRestFull: 'Stamina full', secludeIfNow: 'Out now:', emergeEarly: 'Come out', secludeTop: 'At the top', secludeBarStar: 'Next star: {what}', secludeBarTreasure: 'Next layer', secludeBarXw: 'Cultivation +{n} an hour', secludeAt: 'ready ~{t}', hourUnit: 'h', secludeHours: '{h} h in (up to {cap})', secludeTooShort: 'Under {min} h: coming out grows nothing.',
     secludeStar: '{name} ★{from} → ★{to} · Force {was}→{cost}', secludeStarLeft: '{name}: {h} h to the next star',
     secludeGrowXw: 'Cultivation +{n}', secludeGrowTreasure: '{name} layer {from} → {to}', secludeTreasureLeft: '{name}: {h} h to the next layer',

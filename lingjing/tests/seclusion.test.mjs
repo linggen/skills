@@ -15,6 +15,7 @@ import { migrate, newState, STATE_VERSION } from '../scripts/state.mjs';
 import { secludeHour } from '../scripts/rules/playpay.mjs';
 import { fightSetup, fightHold, look, seclusionHold, VERBS } from '../scripts/rules.mjs';
 import { MOMENTS } from '../scripts/voice.js';
+import { SECLUDE_FOCI, emergeFacts } from '../scripts/seclude-facts.js';
 
 const content = loadContent();
 const R = content.rewards.seclusion;
@@ -226,6 +227,20 @@ test('the page: the chooser, the running card with 出关, and 出关\'s count-u
   }
   assert.equal(MOMENTS.seclude.priority, 'asked');
   assert.equal(MOMENTS.emerge.priority, 'asked');
+});
+
+test("出关's facts for 银月 (seclude-facts.js, the Mac's page and the phone's bundle): the rules' numbers, never a line", () => {
+  const s = player();
+  const running = seclude(s, T0, { action: 'enter', focus: 'card', id: 'wulei' }).state;
+  const e = seclude(running, at(7), { action: 'leave' }).result.emerged;
+  const zh = emergeFacts(e, true), en = emergeFacts(e, false);
+  assert.ok(zh.startsWith(`玩家刚出关：闭关 7 小时，专心修${e.card.name}`), zh);
+  if (e.card.to > e.card.from) assert.match(zh, new RegExp(`${e.card.name}练到了${e.card.to}星`));
+  assert.ok(en.startsWith('The player has just come out of seclusion: 7 h'), en);
+  const short = emergeFacts({ focus: 'progress', hours: 0.5, grows: false }, true);
+  assert.equal(short, '玩家刚出关：闭关 0.5 小时，专心修修为，时辰太短，没长什么。');
+  assert.equal(emergeFacts(null, true), null);
+  assert.deepEqual(WORDS.zh.secludeFoci, SECLUDE_FOCI.zh, "the chooser's words are the facts' own");
 });
 
 test('a save from before 闭关 plays as it was: no stars, no seclusion, the same version', () => {

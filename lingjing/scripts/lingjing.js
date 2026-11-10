@@ -34,6 +34,7 @@ import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml } fro
 import { since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
+import { emergeFacts as seclusionFacts, focusName } from './seclude-facts.js';
 import { gameOpen, popX, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookPopHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, threadsAt, asideOpens, doorLine, trayHourChipHtml } from './cards.js';
 import { ownSkip } from './stuck.js';
 import { fullOfferHtml, pouchHtml, spoilGearHtml } from './pouch.js';
@@ -2550,7 +2551,7 @@ async function openSeclude() {
   show({ secludeOpen: true, seclude: r.choices, secludeFocus: null, secludePill: null, secludeNote: null, bookOpen: false, gearOpen: false });
 }
 
-const focusFacts = (e, zh) => (e.focus === 'card' ? e.card?.name : WORDS[zh ? 'zh' : 'en'].secludeFoci[e.focus]);
+const focusFacts = (e, zh) => focusName(e, zh);
 async function goSeclude() {
   const f = view.secludeFocus;
   if (!f) return show({ secludeNote: words().secludePick });
@@ -2582,17 +2583,8 @@ async function emerge() {
   if (herHere()) askHer('emerge', facts.zh, facts.en, 'happy');
 }
 
-/* What 出关 grew, as facts for her — the rules' numbers, never a line. */
-function emergeFacts(e) {
-  const zh = [`玩家刚出关：闭关 ${e.hours} 小时，专心修${focusFacts(e, true)}`], en = [`The player has just come out of seclusion: ${e.hours} h, working on ${focusFacts(e, false)}`];
-  const star = e.grows && e.card && e.card.to > e.card.from, layer = e.grows && e.treasure && e.treasure.to > e.treasure.from;
-  if (star) { zh.push(`${e.card.name}练到了${e.card.to}星`); en.push(`${e.card.name} reached ${e.card.to} star${e.card.to > 1 ? 's' : ''}`); }
-  if (e.grows && e.progress?.paid) { zh.push(`修为 +${e.progress.paid}`); en.push(`cultivation +${e.progress.paid}`); }
-  if (layer) { zh.push(`${e.treasure.name}长到了${e.treasure.to}重`); en.push(`${e.treasure.name} grew to layer ${e.treasure.to}`); }
-  if (!e.grows) { zh.push('时辰太短，没长什么'); en.push('too short for anything to grow'); }
-  if (e.rested) { zh.push('体力回满'); en.push('stamina full'); }
-  return { zh: `${zh.join('，')}。`, en: `${en.join('; ')}.` };
-}
+/* What 出关 grew, as facts for her — the rules' numbers, never a line (seclude-facts.js, the phone's too). */
+const emergeFacts = (e) => ({ zh: seclusionFacts(e, true), en: seclusionFacts(e, false) });
 
 /* 出关's numbers count up from 0 once (`[data-countup]`): each frame finds
    the elements there NOW, as the strip's rise does, so a redraw mid-count

@@ -186,6 +186,14 @@ test("银月's word at a page moment travels in the bundle: 灵石 short on the 
   assert.deepEqual(way.pool, poolOf('mijing', { mode: 'awake', lang: 'zh' }));
   assert.ok(her('mijing', look, { lang: 'zh', result: { ended: 'left', last: { name: '一重 · 凶崖', how: 'left', reached: 1 } } }).facts.startsWith('一重 · 凶崖，退了出来'));
   assert.equal(her('mijing', look, { lang: 'zh', result: { ok: true, room: '1a' } }), null);
+  // 出关: the facts from `seclude leave`'s own answer (seclude-facts.js, the Mac's emerge), no pool — no model, no line.
+  const leave = { ok: true, emerged: { focus: 'progress', hours: 6, grows: true, progress: { paid: 120 }, rested: true } };
+  const emerged = her('emerge', look, { lang: 'zh', result: leave });
+  assert.ok(emerged.facts.startsWith('玩家刚出关：闭关 6 小时，专心修修为，修为 +120，体力回满。'), emerged.facts);
+  assert.deepEqual(emerged.pool, [], 'no code-held line of hers');
+  assert.ok(her('emerge', { companion: { joined: true, asleep: true } }, { lang: 'en', result: leave }).facts.includes('half awake'));
+  assert.equal(her('emerge', { companion: null }, { lang: 'zh', result: leave }), null, 'not met: silent');
+  assert.equal(her('emerge', look, { lang: 'zh', result: { ok: false } }), null, 'a refusal: silent');
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 
