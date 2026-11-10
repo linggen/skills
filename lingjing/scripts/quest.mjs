@@ -18,11 +18,13 @@ import { fileURLToPath } from 'node:url';
 export const APP = 'lingjing';
 export const SHARE = 'lingjing-share';
 
-/* `reward` 0: the row pays by its kind's `own` (rules/chores.mjs ownOf), never by a number here. No `open`: the game is
-   the place; the phone's row has no button either. */
+/* `reward` 0: the row pays by its kind's `own` (rules/chores.mjs ownOf), never by a number here. `open: false`: no link
+   out — the game is the place. `go: 'qian'` names the page action the row's one button runs (rules/chores.mjs choreGo):
+   the page and the phone each map the word to opening today's 签 card, the place the 分享 is (Hanli 11-10: 「手机上今天的签
+   抽过了, 没有地方能分享了」). */
 export const MENU = [
   {
-    id: SHARE, kind: 'share', period: 'day', reward: 0, device: 'both', open: false,
+    id: SHARE, kind: 'share', period: 'day', reward: 0, device: 'both', open: false, go: 'qian',
     title: { zh: '传音 · 分享今日的签或近况', en: 'Send word · share today\'s fortune or health' },
     how: { zh: '分享今日的签，或健康里的卡片', en: 'Share your fortune, or a health card' },
   },

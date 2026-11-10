@@ -4247,7 +4247,7 @@ const CLICKS = [
   ['[data-value-go]', (el) => { if (!el.matches(':disabled')) run(`value:${el.dataset.valueGo}`, () => valueTap(el.dataset.valueGo)); }],
   ['[data-refine]', (el) => { if (el.dataset.refine) run('refine', () => refineTap(el.dataset.refine)); }],
   // 问签 from the tray or 先放一放: the 签 card opens over the stage — the shake is its own (never a draw with no ritual).
-  ['[data-divine]', () => show({ qianOpen: true, shelfOpen: false })],
+  ['[data-divine]', () => show({ qianOpen: true, shelfOpen: false, bookOpen: false })],
   ['[data-qian-shake]', (el) => { if (!el.matches(':disabled')) run('divine', () => qianPage.tap()); }],
   // 问签 v2: 替人求签 and the share picture.
   ['[data-qian-friend-go]', (el) => { if (!el.matches(':disabled')) run('qian-friend', () => qianPage.friendAsk()); }],

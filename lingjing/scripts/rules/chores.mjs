@@ -109,6 +109,11 @@ export const choreTalk = (q, lang) => ({
   ...(q?.ask ? { ask: pick(q.ask, lang) ?? '' } : {}),
   ...(AGENT_ID.test(q?.to ?? '') ? { to: q.to } : {}),
 });
+/* A row's page action (`go`, one lower-case word such as `qian`): the place its one button opens inside the game. The page
+   and the phone each map the word to their own opener; an unknown word has no button there. A word, never a link, and the
+   rules name no app by it (quest.mjs MENU sets it). */
+const GO_WORD = /^[a-z][a-z-]{0,23}$/;
+export const choreGo = q => (GO_WORD.test(q?.go ?? '') ? { go: q.go } : {});
 export const choreHow = (q, lang) => (q?.how && typeof q.how === 'object' ? pick(q.how, lang) ?? null : null);
 
 /* May it be handed in today: a fixed one, the pick, or a milestone that is

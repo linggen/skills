@@ -9,8 +9,9 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { lint, loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
-import { VERBS } from '../scripts/rules.mjs';
-import { choreGrant, ownOf } from '../scripts/rules/chores.mjs';
+import { VERBS, look } from '../scripts/rules.mjs';
+import { WORDS, agendaRowHtml } from '../scripts/cards.js';
+import { choreGo, choreGrant, ownOf } from '../scripts/rules/chores.mjs';
 import { MENU, SHARE, merged, publish, stamp, stampCli } from '../scripts/quest.mjs';
 import { TO_WAIMEN, walk } from './prologue.mjs';
 
@@ -213,4 +214,44 @@ test('the page hands every report to the rules once and tells her the facts of w
   assert.match(src, /verb\('quest', \{ action: 'menu' \}\)/);
   assert.match(src, /if \(r\.meaning\) tellGongke\(r\);/);
   assert.match(src, /\(r\.paid\?\.wealth \?\? 0\)/, 'what landed counts the chore\'s own pay');
+});
+
+/* 去分享: the row names a page action (`go`), set from the game's own menu; the page and the phone map the word. */
+test('the share row carries its page action in Look while it is not paid, and not once paid; the menu sets it, the rules name no app', () => {
+  assert.equal(MENU[0].go, 'qian');
+  assert.equal(MENU[0].open, false, 'no link out');
+  assert.deepEqual(choreGo({ go: 'qian' }), { go: 'qian' });
+  for (const bad of [undefined, '', 'Qian', 'qian page', '/x', 'a'.repeat(40), 7]) assert.deepEqual(choreGo({ go: bad }), {}, String(bad));
+  const s = { ...joined(), step: 1, progress: 0 };
+  const at = (state, quests) => look(state, content, ctxOf(quests)).book.find(q => q.id === SHARE);
+  const undone = at(s, [row(null)]);
+  assert.equal(undone.ready, false);
+  assert.equal(undone.chore.go, 'qian');
+  assert.equal(undone.chore.open, null);
+  const done = at(s, [row()]);
+  assert.deepEqual([done.ready, done.chore.go], [true, 'qian'], 'done and waiting: the page shows 交差 over it');
+  const paid = turn(s, [row()], SHARE).state;
+  assert.equal(at(paid, [row()]), undefined, 'paid: the row is gone, and with it the action');
+  assert.equal(at(s, [{ ...row(null), go: undefined }]).chore.go, undefined, 'a row without the word has none');
+});
+
+test('the page: the 传音 row shows 去分享 (opening the 签 card) only while undone and a 问签 is in the save; 交差 once done', () => {
+  const s = { ...joined(), step: 1, progress: 0 };
+  const page = (quests, lang = 'zh', mod = l => l) => {
+    const l = mod(look(s, content, ctxOf(quests)));
+    return agendaRowHtml({ kind: 'chore', id: SHARE }, { look: l, lang, words: WORDS[lang], qi: { st: 'full' } });
+  };
+  const withQian = l => ({ ...l, qian: { drawn: false } });
+  const zh = page([row(null)], 'zh', withQian);
+  assert.match(zh, /<button class="act" data-divine>去分享<\/button>/);
+  assert.doesNotMatch(zh, /data-do="turn"/);
+  assert.match(page([row(null)], 'en', withQian), /<button class="act" data-divine>Share<\/button>/);
+  assert.doesNotMatch(page([row(null)], 'zh', l => ({ ...l, qian: undefined })), /data-divine/, 'no 问签 in this save: no button');
+  assert.doesNotMatch(page([row(null)], 'zh', l => ({ ...withQian(l), locked: [...(l.locked ?? []), 'divine'] })), /data-divine/, 'locked: no button');
+  const ready = page([row()], 'zh', withQian);
+  assert.match(ready, /data-do="turn"/);
+  assert.doesNotMatch(ready, /data-divine/, '交差, not 去分享');
+  // A chore row that names no word has no such button.
+  const plain = page([{ ...row(null), go: undefined }], 'zh', withQian);
+  assert.doesNotMatch(plain, /data-divine/);
 });

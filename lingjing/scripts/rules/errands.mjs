@@ -17,7 +17,7 @@ export function questPays(content, state, now, q) {
 }
 import { nameOf, shopOf } from './look.mjs';
 import { buyBack, visitorHere } from './visiting.mjs';
-import { choreHow, choreOpen, choreTalk, isPool, questDone, todayChores } from './chores.mjs';
+import { choreGo, choreHow, choreOpen, choreTalk, isPool, questDone, todayChores } from './chores.mjs';
 import { canMakeTale, taleEvent, taleHanded, taleRow } from './tale.mjs';
 import { hashOf } from './travel.mjs';
 import { tideBegun } from './shouchao.mjs';
@@ -102,7 +102,7 @@ function choresOf(state, ctx, lang) {
       return { id: q.id, title: pick(q.title, lang), need: [{ kind: 'chore', have: done ? 1 : 0, n: 1 }], ready: done, where: null,
         // Where to do it: the app's own page, as the app declares it (`open`),
         // else its door. Only a path on this host — never a link out.
-        chore: { app: q.app, period: q.period, done_at: done ? q.done_at : null, open: choreOpen(q), how: choreHow(q, lang), device: q.device ?? null, kind: isPool(q) ? 'pick' : 'fixed', ...choreTalk(q, lang) } };
+        chore: { app: q.app, period: q.period, done_at: done ? q.done_at : null, open: choreOpen(q), how: choreHow(q, lang), device: q.device ?? null, kind: isPool(q) ? 'pick' : 'fixed', ...choreTalk(q, lang), ...choreGo(q) } };
     });
 }
 
