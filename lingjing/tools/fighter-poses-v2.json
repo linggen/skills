@@ -1,0 +1,438 @@
+{
+ "_about": "格斗's pose sketches, second cut (tools/fighter-pose2.py): per fighter the frames (angles in fighter-poses' terms on the 7.4-head mannequin; `take` a CMU mocap frame that tools/fighter-pose2.py mocap turns into the angles — subject 135 Oiduki = a stepping straight punch, Yokogeri = a side kick; `edit` a change laid on the take; frames without a take authored), `move` the rule the strike frame answers (core.js ME), `strike` its limb, and the clips. A sample of 秦雁's four clips, 2026-11-10.",
+ "qinyan": {
+  "frames": {
+   "idle1": {
+    "src": "authored: her own guard (fighter-poses idle1) on the new body",
+    "lean": 6,
+    "legF": [
+     24,
+     -4
+    ],
+    "legB": [
+     -10,
+     -30
+    ],
+    "armF": [
+     60,
+     88
+    ],
+    "armB": [
+     30,
+     140
+    ],
+    "sword": 88,
+    "words": "a martial guard stance, knees bent, weight low, sword held forward level toward the right, left hand raised open by her chest. ONE sword only, a single straight blade."
+   },
+   "idle2": {
+    "src": "authored: her guard breathing in",
+    "lean": 5,
+    "legF": [
+     23,
+     -3
+    ],
+    "legB": [
+     -10,
+     -29
+    ],
+    "armF": [
+     58,
+     86
+    ],
+    "armB": [
+     30,
+     138
+    ],
+    "sword": 86,
+    "dx": 0,
+    "words": "the same guard stance, breathing in, sword held forward toward the right, left hand open by her chest. ONE sword only, a single straight blade."
+   },
+   "punch1": {
+    "lean": 7,
+    "legF": [
+     20,
+     -46
+    ],
+    "legB": [
+     66,
+     -10
+    ],
+    "armF": [
+     28,
+     59
+    ],
+    "armB": [
+     2,
+     116
+    ],
+    "shF": 0.004,
+    "shB": -0.004,
+    "hpF": -0.003,
+    "hpB": 0.003,
+    "head": 2,
+    "take": {
+     "amc": "135_09.amc",
+     "frame": 288,
+     "axisFrame": 360,
+     "face": "rwrist",
+     "near": "l"
+    },
+    "src": "CMU 135_09 (Oiduki) frame 288: stepping in, the fist drawn back",
+    "strike": "armB",
+    "sword": -35,
+    "words": "stepping forward into a punch: her left fist drawn back by her ribs, about to punch toward the right, her right hand holding the sword low by her hip with the point down behind her. ONE sword only, held in her right hand; her left hand a single bare fist; two arms and two hands only."
+   },
+   "punch2": {
+    "lean": 5,
+    "legF": [
+     -24,
+     -50
+    ],
+    "legB": [
+     66,
+     -8
+    ],
+    "armF": [
+     -42,
+     58
+    ],
+    "armB": [
+     77,
+     95
+    ],
+    "shF": -0.063,
+    "shB": 0.063,
+    "hpF": -0.029,
+    "hpB": 0.029,
+    "head": -1,
+    "take": {
+     "amc": "135_09.amc",
+     "frame": 360,
+     "axisFrame": 360,
+     "face": "rwrist",
+     "near": "l"
+    },
+    "src": "CMU 135_09 (Oiduki) frame 360: the straight punch at full length",
+    "strike": "armB",
+    "move": "hpunch",
+    "hitFrame": true,
+    "sword": -35,
+    "words": "a long straight punch: her left arm fully extended forward to the right at shoulder height, the fist closed, the long front stance, her right hand holding the sword low by her hip with the point down behind her. ONE sword only, held in her right hand; her left hand a single bare fist; two arms and two hands only."
+   },
+   "punch3": {
+    "lean": 0,
+    "legF": [
+     3,
+     -50
+    ],
+    "legB": [
+     57,
+     19
+    ],
+    "armF": [
+     -35,
+     66
+    ],
+    "armB": [
+     80,
+     93
+    ],
+    "shF": -0.054,
+    "shB": 0.054,
+    "hpF": -0.028,
+    "hpB": 0.028,
+    "head": 2,
+    "take": {
+     "amc": "135_09.amc",
+     "frame": 304,
+     "axisFrame": 360,
+     "face": "rwrist",
+     "near": "l"
+    },
+    "src": "CMU 135_09 (Oiduki) frame 304, played backward: the fist coming back",
+    "strike": "armB",
+    "sword": -35,
+    "words": "pulling the punch back: her left arm half bent, the fist coming back toward her, the long front stance, her right hand holding the sword low by her hip. ONE sword only, held in her right hand; her left hand a single bare fist; two arms and two hands only."
+   },
+   "kick1": {
+    "lean": -22,
+    "legF": [
+     80,
+     -21
+    ],
+    "legB": [
+     20,
+     -5
+    ],
+    "armF": [
+     71,
+     138
+    ],
+    "armB": [
+     -28,
+     99
+    ],
+    "shF": 0.086,
+    "shB": -0.086,
+    "hpF": 0.052,
+    "hpB": -0.052,
+    "head": 24,
+    "take": {
+     "amc": "135_11.amc",
+     "frame": 588,
+     "axisFrame": 604,
+     "face": "rfoot",
+     "near": "r"
+    },
+    "src": "CMU 135_11 (Yokogeri) frame 588: the knee rising",
+    "strike": "legF",
+    "sword": -125,
+    "words": "lifting her right knee up in front of her to kick, standing on her left leg, the sword held back behind her. ONE sword only, in her right hand; two arms, two legs, her left hand open behind her."
+   },
+   "kick2": {
+    "lean": -31,
+    "legF": [
+     101,
+     34
+    ],
+    "legB": [
+     7,
+     6
+    ],
+    "armF": [
+     77,
+     99
+    ],
+    "armB": [
+     -18,
+     115
+    ],
+    "shF": 0.091,
+    "shB": -0.091,
+    "hpF": 0.044,
+    "hpB": -0.044,
+    "head": 32,
+    "take": {
+     "amc": "135_11.amc",
+     "frame": 596,
+     "axisFrame": 604,
+     "face": "rfoot",
+     "near": "r"
+    },
+    "src": "CMU 135_11 (Yokogeri) frame 596: the knee chambered high",
+    "strike": "legF",
+    "sword": -125,
+    "words": "the right knee drawn up high and tucked, the foot by the other knee, ready to kick to the right, standing on her left leg, leaning back a little, the sword held back. ONE sword only, in her right hand; two arms, two legs, her left hand open behind her."
+   },
+   "kick3": {
+    "lean": -39,
+    "legF": [
+     88,
+     90
+    ],
+    "legB": [
+     -4,
+     -2
+    ],
+    "armF": [
+     68,
+     85
+    ],
+    "armB": [
+     14,
+     125
+    ],
+    "shF": 0.087,
+    "shB": -0.087,
+    "hpF": 0.035,
+    "hpB": -0.035,
+    "head": 38,
+    "take": {
+     "amc": "135_11.amc",
+     "frame": 606,
+     "axisFrame": 604,
+     "face": "rfoot",
+     "near": "r"
+    },
+    "edit": {
+     "legF": [
+      88,
+      90
+     ],
+     "legB": [
+      -4,
+      -2
+     ]
+    },
+    "src": "CMU 135_11 (Yokogeri) frame 606, two edits: the head-high kick lowered to the waist (legF level), the support leg tilted so the hip rides over the planted foot",
+    "strike": "legF",
+    "move": "heavy",
+    "hitFrame": true,
+    "legFFoot": 165,
+    "sword": -125,
+    "words": "a side kick: her right leg fully straight and level, kicking out to the right at waist height with the edge of the foot, the robe falling back off the leg, her body leaning back, standing on her left leg, the sword held back behind her. ONE sword only, in her right hand; two arms, two legs, her left hand open behind her."
+   },
+   "kick4": {
+    "lean": -27,
+    "legF": [
+     151,
+     4
+    ],
+    "legB": [
+     4,
+     9
+    ],
+    "armF": [
+     53,
+     91
+    ],
+    "armB": [
+     38,
+     139
+    ],
+    "shF": 0.081,
+    "shB": -0.081,
+    "hpF": 0.044,
+    "hpB": -0.044,
+    "head": 27,
+    "take": {
+     "amc": "135_11.amc",
+     "frame": 628,
+     "axisFrame": 604,
+     "face": "rfoot",
+     "near": "r"
+    },
+    "src": "CMU 135_11 (Yokogeri) frame 628: the leg folding back",
+    "strike": "legF",
+    "sword": -125,
+    "words": "after the kick: the right knee folding back in, the foot coming down, standing on her left leg, the sword held back. ONE sword only, in her right hand; two arms, two legs, her left hand open behind her."
+   },
+   "sweep1": {
+    "src": "authored: dropping onto the back leg",
+    "lean": 28,
+    "legF": [
+     44,
+     20
+    ],
+    "legB": [
+     -50,
+     20
+    ],
+    "armF": [
+     -60,
+     -90
+    ],
+    "armB": [
+     30,
+     10
+    ],
+    "sword": -110,
+    "strike": "legF",
+    "words": "dropping low into a crouch on her left leg, her right leg starting to sweep forward low, her left hand reaching down in front, the sword swung back behind her. ONE sword only, in her right hand, no scabbard; two arms and two legs only."
+   },
+   "sweep2": {
+    "src": "authored: 仆步 — the full squat on the back leg, the front leg straight along the floor",
+    "lean": 36,
+    "legF": [
+     56,
+     56
+    ],
+    "legB": [
+     -82,
+     16
+    ],
+    "armF": [
+     -70,
+     -95
+    ],
+    "armB": [
+     16,
+     4
+    ],
+    "legFFoot": 130,
+    "sword": -100,
+    "strike": "legF",
+    "move": "cheavy",
+    "hitFrame": true,
+    "words": "a low leg sweep: dropped into a deep crouch on her bent left leg, her right leg stretched fully straight out forward to the right just above the ground, leaning forward, her left hand down near the floor, the sword held back behind her. ONE sword only, in her right hand, no scabbard; two arms and two legs only.",
+    "planted": [
+     "legB"
+    ]
+   },
+   "sweep3": {
+    "src": "authored: rising out of the sweep",
+    "lean": 18,
+    "legF": [
+     40,
+     26
+    ],
+    "legB": [
+     -40,
+     14
+    ],
+    "armF": [
+     -40,
+     -60
+    ],
+    "armB": [
+     40,
+     60
+    ],
+    "sword": -120,
+    "strike": "legF",
+    "words": "rising out of the low sweep on bent knees, the right leg drawing back in, the sword coming back to her side. ONE sword only, in her right hand, no scabbard; two arms and two legs only."
+   }
+  },
+  "clips": {
+   "idle": {
+    "frames": [
+     "idle1",
+     "idle2"
+    ],
+    "fps": 4,
+    "loop": true,
+    "calm": [
+     "idle1"
+    ],
+    "fade": true
+   },
+   "hpunch": {
+    "frames": [
+     "punch1",
+     "punch2",
+     "punch3"
+    ],
+    "hit": 1,
+    "fps": 10,
+    "calm": [
+     "punch2"
+    ]
+   },
+   "heavy": {
+    "frames": [
+     "kick1",
+     "kick2",
+     "kick3",
+     "kick4"
+    ],
+    "hit": 2,
+    "fps": 10,
+    "calm": [
+     "kick3"
+    ]
+   },
+   "cheavy": {
+    "frames": [
+     "sweep1",
+     "sweep2",
+     "sweep3"
+    ],
+    "hit": 1,
+    "fps": 8,
+    "calm": [
+     "sweep2"
+    ]
+   }
+  }
+ }
+}
