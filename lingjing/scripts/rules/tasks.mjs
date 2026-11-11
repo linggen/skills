@@ -1,6 +1,6 @@
 // rules/tasks.mjs — Tasks and quests: boards, errands handed in, win, duel, 论道.
 // Part of the rules engine; rules.mjs is its one door.
-import { fightReplay, hauntPlayId, namedRow, playCounted, playGrant, playedRow } from './playpay.mjs';
+import { fightReplay, hauntPlayId, namedRow, playCounted, playGrant, playedRow, stonesAt } from './playpay.mjs';
 import { festivalDone } from './festival.mjs';
 import { climbWon } from './climb.mjs';
 import { battle } from '../battle.js';
@@ -333,7 +333,9 @@ function questCheck(state, content, ctx, id) {
 
 /* 灵石 a grant would have paid, kept in `owed` while the gate keeps them shut. */
 function owe(content, s, grant) {
-  const n = Math.max(0, Math.round(Math.min(grant.wealth ?? 0, content.rewards.tables[grant.table]?.wealth ?? 0)));
+  // In minutes of income where it would have landed (batch 2: `ls` × I where he stands), or a number the rules built already.
+  const cap = content.rewards.tables[grant.table]?.ls ?? 0;
+  const n = Math.max(0, Math.round(grant.ls != null ? stonesAt(content, s, Math.min(grant.ls, cap)) : Math.min(grant.wealth ?? 0, stonesAt(content, s, cap))));
   if (n) s.owed = { ...s.owed, wealth: (s.owed?.wealth ?? 0) + n };
   return n;
 }
@@ -358,7 +360,8 @@ function boardPay(content, s, t, id, paid) {
   // 10-22, 今三's chat paid 灵石 +5, and so did every 今 board past 入门 since the small-game pay (10-16).
   if (lineOfBoard(content, s, id)) return;
   const rank = boardRank(t, s.grades?.[id] ?? null, s.stars?.[id]);
-  const amount = table[rank] ?? 0;
+  // Its rank's minutes of income × I where he stands (batch 2; balance.json `boards`, from master.economy.boards).
+  const amount = Math.round(stonesAt(content, s, table[rank] ?? 0));
   s.boards_paid = [...(s.boards_paid ?? []), id];
   if (!amount) return;
   s.wealth += amount; s.day.wealth += amount;
@@ -598,7 +601,7 @@ export function duel(state, content, ctx, args) {
   // The same beast beaten again the same day pays the play rules' falling share (balance.json play_pay.replay:
   // 100 · 50 · 10%) — a pool fought without end is never a farm (Hanli 2026-10-27).
   const replay = haunt && pays ? fightReplay(content, s, creature.id, ctx.now) * batchShare : 1;
-  const paid = haunt && pays ? pay(content, s, ctx, { table: 'haunt', progress: t.progress, wealth: t.wealth, share: replay }) : null;
+  const paid = haunt && pays ? pay(content, s, ctx, { table: 'haunt', progress: t.progress, ls: t.ls, share: replay }) : null;
   if (haunt && pays) playCounted(s, hauntPlayId(creature.id), ctx.now);
   const full = fullLine(s, dropped);
   // Not won: what beat him, and the ways to grow stronger now (rules/strengthen.mjs) — facts for 银月's
@@ -821,7 +824,7 @@ function yaoshouWaveDone(state, content, ctx, id) {
   const card = winCard(content, s, creature, now);
   if (card) dropped.push(card);
   const table = content.rewards.tables.haunt;
-  const paid = pay(content, s, ctx, { table: 'haunt', progress: table.progress, wealth: table.wealth, share: fightReplay(content, s, cid, now) * batchShare });
+  const paid = pay(content, s, ctx, { table: 'haunt', progress: table.progress, ls: table.ls, share: fightReplay(content, s, cid, now) * batchShare });
   playCounted(s, hauntPlayId(cid), now);
   s.tasks[id] = { status: 'done', period: day, done_at: now.toISOString() };
   const full = fullLine(s, dropped);

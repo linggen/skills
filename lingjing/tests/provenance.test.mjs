@@ -83,11 +83,12 @@ test("each beast leaves a card of itself (2026-10-27), the old card's numbers in
   assert.ok(!lang.deck.some(id => ['jinsuo', 'jianying'].includes(id)));
 });
 
-test('钱掌柜 sells the cards that name his stall; each costs what the card says', () => {
+test('钱掌柜 sells the cards that name his stall; each costs the master table\'s price (batch 2: a card carries none of its own)', () => {
   const shop = Object.values(content.places).flatMap(d => d.places).find(p => p.has?.shop?.name?.zh === '钱掌柜的摊子').has.shop;
   for (const c of cards) for (const f of (c.from ?? []).filter(x => x.kind === 'shop' && x.keeper?.zh === '钱掌柜')) {
     assert.ok(shop.goods.includes(f.item), `${c.id}: ${f.item} not on the stall`);
-    assert.equal(content.items.items.find(i => i.id === f.item).buy, f.price);
+    assert.equal(f.price, undefined, `${c.id}: no price on the card`);
+    assert.equal(content.items.items.find(i => i.id === f.item).buy, content.balance.prices[f.item].buy);
   }
 });
 

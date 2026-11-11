@@ -71,7 +71,7 @@
    },
    "grant": {
     "table": "story",
-    "wealth": 20
+    "ls": 6
    },
    "beat": [
     {
@@ -109,7 +109,7 @@
    ],
    "grant": {
     "table": "story",
-    "wealth": 10
+    "ls": 3
    },
    "beat": [
     {
@@ -143,7 +143,7 @@
    "means": "makes a dragon of mud in the shape of Yinglong, the old rain rite, to bring rain",
    "grant": {
     "table": "story",
-    "wealth": 10
+    "ls": 3
    },
    "beat": [
     {

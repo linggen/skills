@@ -17,7 +17,7 @@
 import { dayKey, lockedOf, pick, seedOf, staminaCost } from '../state.mjs';
 import { clone, pay, refuse, spendStamina } from './core.mjs';
 import { sideLine } from './hui.mjs';
-import { xiuweiOf } from './playpay.mjs';
+import { stonesAt, xiuweiOf } from './playpay.mjs';
 import { hashOf } from './travel.mjs';
 import { keyDrop } from './mijing.mjs';
 import { eventDone, eventOf, eventShare, eventWait } from './events.mjs';
@@ -189,7 +189,7 @@ export function boutGrant(content, state, now, stars = 3) {
   const star = pp.stars?.[String(stars)] ?? 1, f = star * boutShare(content, state, now);
   const units = staminaCost(content, boutTask(content)?.qiecuo?.cost ?? 'game');
   const progress = Math.round(xiuweiOf(content, state, units, { board: true }) * f); // a bout is a small game (2026-11-10)
-  const wealth = Math.round((pp.wealth?.['格斗'] ?? pp.wealth?.default ?? 0) * f);
+  const wealth = Math.round(stonesAt(content, state, pp.wealth?.['格斗'] ?? pp.wealth?.default ?? 0) * f);
   return { table: 'play', progress, wealth, share: boutShare(content, state, now) };
 }
 

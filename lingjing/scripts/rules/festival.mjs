@@ -11,6 +11,7 @@ import { dayOf, localDay, LUNAR, parseDay } from '../calendar.js';
 import { senseReading } from './weather.mjs';
 import { fill, lockedOf, pick, rollDay } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
+import { stonesAt } from './playpay.mjs';
 
 /* How many festival marks the save keeps (the newest). */
 const KEEP = 40;
@@ -47,7 +48,8 @@ export function todayBrief(content, state, ctx, args = {}) {
     ...(state.festival_told === day.date ? {} : { line: say(f.line) }),
     task: { id: 'festival', label: say(f.task.label), what: say(f.task.what), done },
     // Before the gate that opens 灵石, the day is kept without a gift.
-    ...(shut ? {} : { gift: { wealth: f.gift.wealth, given } }),
+    // Its 灵石: minutes of income (festivals.json gift `ls`, batch 2) × I where he stands.
+    ...(shut ? {} : { gift: { wealth: giftOf(content, state, f), given } }),
     dressing: f.dressing ?? {},
     // The festival's own painting (festivals.json `backdrop`): the stage's picture on its day, or on
     // the first `backdrop_days` of its span (春节: 初一 to 初七).
@@ -55,6 +57,9 @@ export function todayBrief(content, state, ctx, args = {}) {
   };
   return out;
 }
+
+/* A festival's gift in 灵石 where he stands (festivals.json gift `ls`: minutes of income, batch 2). */
+const giftOf = (content, state, f) => Math.round(stonesAt(content, state, f.gift?.ls ?? 0));
 
 /* Practice `done festival`: the day's task, done in the chat — marked, and
    the gift paid if this festival's has not been given this year. */
@@ -69,13 +74,13 @@ export function festivalDone(state, content, ctx) {
   const pays = !marks.includes(giftKey) && !lockedOf(content, state).includes('wealth');
   if (pays) {
     rollDay(s, ctx.now);
-    s.wealth += f.gift.wealth;
-    s.day.wealth += f.gift.wealth;
+    s.wealth += giftOf(content, state, f);
+    s.day.wealth += giftOf(content, state, f);
   }
   s.festivals = [...marks, day.festival.key, ...(pays ? [giftKey] : [])].slice(-KEEP);
   const lang = state.lang;
   return {
     state: s,
-    result: { ok: true, done: 'festival', festival: f.id, wealth: pays ? f.gift.wealth : 0, ...(pays ? { gift: fill(pick(f.gift.line, lang), s, content) } : {}) },
+    result: { ok: true, done: 'festival', festival: f.id, wealth: pays ? giftOf(content, state, f) : 0, ...(pays ? { gift: fill(pick(f.gift.line, lang), s, content) } : {}) },
   };
 }

@@ -52,10 +52,14 @@ function keeperHere(content, state, now, at = state.place) {
   const p = k.person ? personOf(content, state, k.person) : null;
   return { ...k, place: at, name: pick(p?.name ?? k.who, state.lang), art: p?.art ?? null };
 }
-const haggleToday = (state, now) => {
+const haggleToday = (state, now, content = null) => {
   const t = today(state.haggle, now);
   // An old save's haggle under way (the 讨价还价 card's: `used_reasons`, `turns`) is let go: its item is list price today.
   if (t?.open && !Array.isArray(t.open.used)) return { ...t, open: null, walked: [...new Set([...(t.walked ?? []), t.open.item])] };
+  // One opened at a list price the shelf no longer asks (batch 2: prices re-derived from the master table) is let go too, and
+  // not walked — he may open it again at today's price. (A price paid elsewhere, `paid`, is read only below the ask.)
+  const now$ = content && t?.open ? content.items.items.find(i => i.id === t.open.item)?.buy : null;
+  if (now$ != null && now$ !== t.open.list) return { ...t, open: null };
   return t;
 };
 const reasonOf = (content, id) => (haggleCfg(content)?.rubric ?? []).find(r => r.id === id) ?? null;
@@ -106,7 +110,7 @@ function lowest(content, state, k, item) {
 /* Whether haggling at `place` could bring `item` within his 灵石 (the 主页's 「差 X · 可砍价」, rules/strengthen.mjs):
    a keeper there, the thing not haggled over today, and the lowest he could reach. */
 export function haggleReach(content, state, place, item, now = new Date()) {
-  const k = keeperHere(content, state, now, place), t = haggleToday(state, now);
+  const k = keeperHere(content, state, now, place), t = haggleToday(state, now, content);
   if (!k || !(item?.buy > 0) || (t?.walked ?? []).includes(item.id) || (t?.haggled ?? []).includes(item.id)) return false;
   return lowest(content, state, k, item) <= (state.wealth ?? 0);
 }
@@ -114,7 +118,7 @@ export function haggleReach(content, state, place, item, now = new Date()) {
 /* Each shelf thing's mark where a keeper stands: `short` (灵石 short of the list price), `can` (a haggle open to it
    today), `reach` ('can' · 'far' — whether haggling could bring it within his 灵石 when he is short). */
 function shelfMarks(content, state, k, now) {
-  const t = haggleToday(state, now), here = placeOf(content, state.place), out = {};
+  const t = haggleToday(state, now, content), here = placeOf(content, state.place), out = {};
   for (const item of shelfOf(content, here, state, now)) {
     if (!(item.buy > 0)) continue;
     const short = Math.max(0, item.buy - (state.wealth ?? 0));
@@ -131,7 +135,7 @@ export function haggleBrief(content, state, now) {
   if (!cfg) return null;
   const k = keeperHere(content, state, now);
   if (!k) return null;
-  const t = haggleToday(state, now), o = t?.open && t.open.place === state.place ? t.open : null;
+  const t = haggleToday(state, now, content), o = t?.open && t.open.place === state.place ? t.open : null;
   const keeper = { name: k.name, ...(k.art ? { art: k.art } : {}) };
   const base = { keeper, marks: shelfMarks(content, state, k, now) };
   if (!o) return base;
@@ -186,7 +190,7 @@ export function haggle(state, content, ctx, args) {
   const k = keeperHere(content, state, now);
   if (!k) return refuse('not-here', pick({ zh: '这里没有可以讲价的铺子。', en: 'There is no shop here to haggle at.' }, lang));
   const s = clone(state);
-  const t = haggleToday(s, now);
+  const t = haggleToday(s, now, content);
   s.haggle = { deals: s.haggle?.deals ?? {}, paid: s.haggle?.paid ?? {}, ...(t ?? {}), day: dayKey(now), walked: t?.walked ?? [], haggled: t?.haggled ?? [], open: t?.open ?? null };
   const h = s.haggle;
   if (h.open && h.open.place !== s.place) h.open = null; // walked away from the shop with it open: it stands no more

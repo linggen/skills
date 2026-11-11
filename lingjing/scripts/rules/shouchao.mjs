@@ -32,6 +32,7 @@ import { beatOf, passed, sceneOf } from './world.mjs';
 import { keyDrop } from './mijing.mjs';
 import { TIDES } from '../games/tide.js';
 import { eventDone, eventRec, eventShare, eventWait } from './events.mjs';
+import { stonesAt } from './playpay.mjs';
 
 const tideTask = content => (content.tasks?.tasks ?? []).find(t => t.shouchao) ?? null;
 
@@ -262,9 +263,10 @@ export function shouchaoDone(state, content, ctx, id) {
   // night is a small game (a 塔防 board), paid × play_pay.xiuwei.board (2026-11-10).
   const star = content.balance?.play_pay?.stars?.[String(stars)] ?? 1;
   const paid = pay(content, s, ctx, { table: c.table ?? 'haunt', play: 'tide', board: true, units, progress: row.xiuwei ? 1 : 0, wealth: 0, star, ...(night.boss ? { boss: true } : {}), ...(share < 1 ? { share } : {}) }); // `play`: 问签's 宜 reads it (fortune.mjs)
-  // 灵石 by the small-game ranks (balance.json `boards`): every night, by the day's share.
+  // 灵石 by the small-game ranks (balance.json `boards`, minutes of income × I where he stands — batch 2): every night, by the
+  // day's share.
   if (!lockedOf(content, s).includes('wealth')) {
-    const amount = Math.round((content.balance?.boards?.[row.rank] ?? 0) * share);
+    const amount = Math.round(stonesAt(content, s, content.balance?.boards?.[row.rank] ?? 0) * share);
     if (amount) { s.wealth += amount; s.day.wealth += amount; paid.wealth = (paid.wealth ?? 0) + amount; paid.board = { rank: row.rank, wealth: amount }; }
   }
   // An herb the beasts were after, picked by the night (its day and number: two nights may share a day) — a full night's only.

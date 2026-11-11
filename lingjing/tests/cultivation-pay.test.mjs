@@ -160,7 +160,7 @@ test('(8) at the 回\'s cap the floor pays what a story step pays there today', 
   const control = must(resolve, s, now, { exit: 'fight' }, unmarked('09-lingcao'));
   // The same step with a story step on its exit, unmarked: what today's rules make of one story step there.
   const world = unmarked('09-lingcao');
-  world.chapters['00-zhuji'].scenes['09-lingcao'].exits.find(e => e.id === 'fight').grant = { table: 'story', wealth: 20 };
+  world.chapters['00-zhuji'].scenes['09-lingcao'].exits.find(e => e.id === 'fight').grant = { table: 'story', wealth: 20, wealth_told: true }; // its 二十 a master told (batch 2), laid on at load
   const today = must(resolve, s, now, { exit: 'fight' }, world);
   assert.deepEqual([marked.state.progress, marked.state.step, marked.state.wealth], [today.state.progress, today.state.step, today.state.wealth]);
   assert.ok(marked.state.progress >= control.state.progress);

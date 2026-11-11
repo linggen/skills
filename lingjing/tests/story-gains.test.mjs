@@ -27,7 +27,7 @@ test('the 饭桶\'s first meeting: the 九转回春丹 it put in his hands is ke
 });
 
 test('a step that pays its thing, the rest (`more`) and 灵石 keeps them all; the count moves on with each step', () => {
-  const exit = Object.values(content.chapters).flatMap((ch) => Object.values(ch.scenes ?? {})).flatMap((sc) => sc.exits ?? []).find((e) => e.grant?.more && e.grant?.wealth);
+  const exit = Object.values(content.chapters).flatMap((ch) => Object.values(ch.scenes ?? {})).flatMap((sc) => sc.exits ?? []).find((e) => e.grant?.more && (e.grant?.ls ?? e.grant?.wealth)); // its 灵石 a size (ls) since batch 2
   assert.ok(exit, 'a scene exit with `more` and 灵石');
   const s = { ...atDiyilu(), gained: { n: 4, scene: 'x', items: [] } };
   const r = VERBS.resolve(s, content, ctx, { exit: 'save' });
@@ -35,7 +35,7 @@ test('a step that pays its thing, the rest (`more`) and 灵石 keeps them all; t
   // gainsOf through the same door: an exit with all three, on a copy of the world where diyilu's way pays them.
   const world = structuredClone(content);
   const sc = world.chapters['00-waimen'].scenes['wm-diyilu'];
-  sc.exits.find((e) => e.id === 'save').grant = { table: 'scene', item: 'mend-pill-9', wealth: 3, more: { 'tama-defu': 1, guoba: 2 } };
+  sc.exits.find((e) => e.id === 'save').grant = { table: 'scene', item: 'mend-pill-9', ls: 1, more: { 'tama-defu': 1, guoba: 2 } };
   const r2 = VERBS.resolve(atDiyilu(), world, ctx, { exit: 'save' });
   assert.deepEqual(r2.state.gained.items, [{ id: 'mend-pill-9', n: 1 }, { id: 'tama-defu', n: 1 }, { id: 'guoba', n: 2 }]);
   assert.ok(r2.state.gained.wealth > 0, '灵石 too');

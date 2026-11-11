@@ -108,6 +108,9 @@ test('her loss facts lead with the step, so it survives the cap, in both languag
 
 /* Hanli 2026-10-27: 「去执事堂 · 买铁蒺藜, 如果是推荐玩家变强, 应该让yinyue解释一下, 为什么要买东西? 能增强什么」 — the
    step says what it is and does, which fight it is for, and the odds there before → after; 银月 is given the same. */
+// 灵石 for the 铁蒺藜 and not the 替身草人 (the master table's prices, batch 2).
+const priceOf = id => content.items.items.find(i => i.id === id).buy;
+const AFF = priceOf('tieji-bao');
 const lostAtHoushan = (extra = {}) => gateSave({ wear: { weapon: 'old-bow', robe: 'grey-robe' }, hunt_losses: { houshan: 1 }, duels: { 'hunt:houshan': { day: '2026-10-26', outcome: 'lost', n: 1, last: ['chihu'] } }, ...extra });
 
 test('each step says what it is and does: a card its cost, body, keywords and effect; gear its slot and what it lends; a pill its effect', () => {
@@ -118,7 +121,7 @@ test('each step says what it is and does: a card its cost, body, keywords and ef
   assert.deepEqual(caoren.does, { card_kind: 'minion', cost: 2, atk: 1, hp: 3, keywords: ['taunt'], element: 'wood' });
   assert.equal(caoren.line.split(' · ')[0], '替身草人');
   assert.match(caoren.line, /2 灵力 · 1\/3 · 护主/);
-  const tieji = strengthen(content, lostAtHoushan({ wealth: 45 }), { now: NOW }).find(o => o.card === 'tieji');
+  const tieji = strengthen(content, lostAtHoushan({ wealth: AFF }), { now: NOW }).find(o => o.card === 'tieji');
   assert.deepEqual(tieji.does.effect, { damage: 1, draw: 1 });
   const pill = way.find(o => o.kind === 'pills');
   assert.deepEqual(pill.does, { heal: 10 });
@@ -126,7 +129,7 @@ test('each step says what it is and does: a card its cost, body, keywords and ef
 
 test('the first step is for the fight he lost, and its odds there are weighed once and kept on the save', async () => {
   const { strongFit } = await import('../scripts/rules.mjs');
-  const s = lostAtHoushan({ wealth: 45 });
+  const s = lostAtHoushan({ wealth: AFF });
   const fitted = strongFit(content, s, NOW);
   assert.notEqual(fitted, s, 'weighed and written');
   assert.equal(fitted.strong_odds.for.creature, 'chihu', 'the beast he lost to, not the one standing now');
@@ -161,7 +164,7 @@ test('odds that do not rise are no reason: neither the line nor her facts carry 
 test('her loss facts keep the step, its odds (and in Chinese what it does) under the cap, in both languages', async () => {
   const { momentFacts, wayFacts } = await import('../scripts/hersay.js');
   const { strongFit } = await import('../scripts/rules.mjs');
-  const s = strongFit(content, lostAtHoushan({ wealth: 45 }), NOW);
+  const s = strongFit(content, lostAtHoushan({ wealth: AFF }), NOW);
   for (const zh of [true, false]) {
     const way = strengthen(content, { ...s, lang: zh ? 'zh' : 'en' }, { now: NOW, game: { hunt: 'houshan' } });
     const tail = zh ? '输给了赤狐，撑了9回合；它还剩气血3/20，叫出3个护主。' : ' Lost to Red Fox after 9 turns; it had 3/20 Life left, 3 guards called.';

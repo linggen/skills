@@ -5,6 +5,7 @@
 // hides, ores and gear → 兵器 · 法衣 · 佩, 符纸 and 朱砂 → 符, a mixed handful → 符 and odds and ends) and is worth
 // about what went in, by the grade (Hanli 2026-10-27); the tray is his 储物袋 and nothing else; the first of each thing
 // lands in the 饭桶图鉴.
+import { incomeAt } from '../scripts/rules/playpay.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
@@ -64,7 +65,7 @@ test('the table lints: every output an item with a name in both tongues and one 
   }
   for (const [g, rows] of Object.entries(T.pools)) for (const r of g === '_about' ? [] : rows) {
     assert.ok(r.w > 0, `${g}/${r.item} weight`);
-    assert.ok(r.item || Array.isArray(r.wealth), `${g}: an item or 灵石`);
+    assert.ok(r.item || Array.isArray(r.ls), `${g}: an item or 灵石 (ls: minutes of income at the pot's level, batch 2)`);
   }
   for (const [k, v] of Object.entries(T.kinds)) if (k !== '_about') for (const id of v.items ?? []) assert.ok(items.has(id), `${k}/${id}`);
   for (const [n, ids] of Object.entries(T.tiers)) if (n !== '_about') for (const id of ids) assert.ok(items.has(id), `tier ${n}/${id}`);
@@ -124,7 +125,9 @@ test('worth: what comes out is worth about what went in, by the grade — junk a
   const W = T.worth;
   assert.ok(W && W.grades.useful.x >= 1 && W.grades.junk.x < 1 && W.grades.best.x > W.grades.rare.x);
   assert.equal(worthOf(T, 'qi-pill', id => T.item_info[id]), content.items.items.find(i => i.id === 'qi-pill').sell, 'a shop thing: its sell');
-  assert.equal(worthOf(T, 'qi-pill-9', id => T.item_info[id]), W.tier[3], 'a story pill no shop buys: its 品阶');
+  // A story pill no shop buys: its 品阶's minutes × I(its level) (batch 2).
+  const q9 = content.items.items.find(i => i.id === 'qi-pill-9');
+  assert.equal(worthOf(T, 'qi-pill-9', id => T.item_info[id]), Math.round(W.tier[3] * incomeAt(content, q9.level)), 'a story pill no shop buys: its 品阶 at its level');
   for (const ids of [['huangjing', 'fuling', 'chaihu'], ['zhu-ya', 'chai-ya', 'lang-pi'], ['talisman', 'talisman', 'xionghuang']]) {
     const c = chances(T, { ids, realm: 1, content, state: gu7() });
     const r = c.value / c.worth;

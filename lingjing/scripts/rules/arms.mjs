@@ -7,6 +7,7 @@ import { fitWear } from './wear.mjs';
 import { hashOf } from './travel.mjs';
 import { ofJuan, tierIndex } from './world.mjs';
 import { hasFound, stow } from './pouch.mjs';
+import { stonesAt } from './playpay.mjs';
 
 /* ── 本命法宝: the treasure a cultivator binds at 结丹 ── */
 
@@ -55,7 +56,7 @@ function convertDup(content, state, row) {
   const item = itemOf(content, row.item), lang = state.lang, name = pick(item.name, lang);
   if (row.dup?.item && itemOf(content, row.dup.item)) return { ...stow(content, state, row.dup.item, row.dup.n ?? 1, 'fight'), instead_of: { id: item.id, name } };
   // Before the 灵石 are the story's (state.mjs lockedOf), a one-off had before is simply not found again.
-  const wealth = lockedOf(content, state).includes('wealth') ? 0 : Math.max(0, Math.round(row.dup?.wealth ?? item.sell ?? 0));
+  const wealth = lockedOf(content, state).includes('wealth') ? 0 : Math.max(0, Math.round(row.dup?.ls != null ? stonesAt(content, state, row.dup.ls) : item.sell ?? 0)); // a `dup` of 灵石: minutes of income (batch 2)
   state.wealth = (state.wealth ?? 0) + wealth;
   if (state.day) state.day.wealth = (state.day.wealth ?? 0) + wealth;
   return { id: 'wealth', name: pick({ zh: '灵石', en: 'spirit stones' }, lang), n: wealth, wealth, instead_of: { id: item.id, name } };

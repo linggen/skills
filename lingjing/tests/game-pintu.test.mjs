@@ -176,7 +176,7 @@ test('七巧 is gone from play: no task, place, errand or new 奇遇 / 传闻 de
     for (const lv of t.climb) assert.ok(LEVELS[lv], `${id}: level ${lv}`);
     for (const p of t.deal?.pics ?? []) assert.ok(fs.existsSync(new URL(`../${p.src}`, import.meta.url)), p.src);
   }
-  assert.deepEqual(TASKS.find((x) => x.id === 'pintu').grant, { table: 'game', units: 2.5, wealth: 10 }, '七巧\'s pay, kept (a size since 2026-11-10: 5 at 练气一层)');
+  assert.deepEqual(TASKS.find((x) => x.id === 'pintu').grant, { table: 'game', units: 2.5, ls: 3 }, '七巧\'s pay, kept (sizes: 修为 since 2026-11-10, 5 at 练气一层; 灵石 since batch 2, 10 then)');
   assert.equal(content.games.games.find((g) => g.id === 'pintu' && !g.replaced).mechanic, '解谜', 'the same kind, so the same share of the layer');
 });
 

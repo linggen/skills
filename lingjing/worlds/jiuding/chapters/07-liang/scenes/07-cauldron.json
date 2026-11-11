@@ -73,7 +73,7 @@
    "grant": {
     "table": "scene",
     "units": 30,
-    "wealth": 20,
+    "ls": 6,
     "narrated": {
      "line": "归真了。"
     }

@@ -4,6 +4,7 @@
 // then the 萝卜 (2026-09-30); the 蛫 guards the 秘境 wall; the 大比's eve is a scene
 // (wm-qianye) and no real day is waited; its three duels; 息壤 lifts the realm;
 // the chapter ends on 古九's 「第N回 · 即将开放」.
+import { stonesAt } from '../scripts/rules/playpay.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -632,7 +633,7 @@ test('杀人必摸尸 (古五, 2026-10-03): 邹青松 killed leaves his 储物�
   const card = winCard(content, { ...s, cards: [] }, zou, DAY1);
   assert.equal(card?.id, 'huoshe', 'the win deals the gourd\'s fire snake (火蛇, 2026-10-27; it was 火鸦)');
   const e = CH.scenes['wm-xirang'].exits.find(x => x.id === 'swallow');
-  assert.equal(e.grant.wealth, 9, 'the 钱袋: seven from the fat 公子, two from the underground river');
+  assert.equal(e.grant.ls, 2.7, 'the 钱袋 — nine 灵石 then (seven from the fat 公子, two from the underground river): its size in minutes of income since batch 2');
   // the 回气丹 bottle: its card is the scene's own (cards.json from: story wm-xirang), given as he leaves it
   assert.ok(content.cards.cards.find(c => c.id === 'huiqi').from.some(f => f.kind === 'story' && f.scene === 'wm-xirang'), 'the 回气丹 bottle');
   // 穷人家的孩子，见了宝，都拿走: the dead 九层's pills and map, the 鼎苔 scraped clean — all stowed by the exit.
@@ -695,7 +696,7 @@ test('药园巡夜 pays as 古四\'s boards: progress, and the board\'s 灵石 b
   for (const [stars, rank] of [[3, 'best'], [2, 'plain'], [1, 'plain']]) {
     const s = atYaoyuan();
     const done = must(task, must(win, s, { id: 'yaoyuan-xunye', stars }), { action: 'done', id: 'yaoyuan-xunye' });
-    assert.equal(done.wealth - s.wealth, B[rank], `${stars}★ → ${rank}`);
+    assert.equal(done.wealth - s.wealth, Math.round(stonesAt(content, s, B[rank])), `${stars}★ → ${rank} (minutes of income × I where he stands, batch 2)`);
     assert.ok(done.progress > s.progress || done.step > s.step, 'its 修为 lands');
     assert.ok(done.boards_paid.includes('yaoyuan-xunye'));
   }

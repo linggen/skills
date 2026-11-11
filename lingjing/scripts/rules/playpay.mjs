@@ -18,6 +18,7 @@
 // to 灵石 there (`play` converts, core.mjs pay). Nothing here names a board.
 import { boardCost, boardMinutes, dayKey, staminaCost } from '../state.mjs';
 import { sealedOf } from './world.mjs';
+import { incomeOf, realmOfLevel } from './income.mjs';
 
 /* The row of games.json actually played for a board, and so its mechanic (its 灵石 and minutes): `row` — the game the page
    played it as (an `alt`'s, a games.json row id, or one of its levels' ids) — else the task's own `game`; then the task's
@@ -135,7 +136,8 @@ export function playGrant(content, state, id, task, now, stars = null, { first =
   const f = star * share;
   const units = boardCost(content, 'game', played);
   const progress = Math.round(xiuweiOf(content, state, units, { level: task?.level ?? null, difficulty: task?.difficulty ?? 'normal', first, board: true }) * f);
-  const wealth = Math.round((pp.wealth?.[kind] ?? pp.wealth?.default ?? 0) * f);
+  // Its 灵石: its kind's minutes of income (play_pay.wealth, batch 2) × I at the board's level (its own, else where he stands).
+  const wealth = Math.round(stonesAt(content, state, pp.wealth?.[kind] ?? pp.wealth?.default ?? 0, { level: task?.level ?? null }) * f);
   return progress || wealth ? { table: 'play', progress, wealth, kind, minutes, stamina: units } : null;
 }
 
@@ -155,12 +157,14 @@ export function playCounted(state, id, now) {
   state.plays = { day, ids };
 }
 
-/* An errand's work: its minutes as 体力-units (`play_pay.errand.minutes`) × the formula; 灵石 its own. */
+/* An errand's work: its minutes as 体力-units (`play_pay.errand.minutes`) × the formula; 灵石 its own size (`ls`, minutes of
+   income × I where he stands, batch 2). */
+export const errandStones = (content, state) => Math.round(stonesAt(content, state, content.balance?.play_pay?.errand?.ls ?? 0));
 export function errandGrant(content, state) {
   const e = content.balance?.play_pay?.errand;
   if (!e) return null;
-  const progress = Math.round(xiuweiOf(content, state, e.minutes ?? 0));
-  return progress || e.wealth ? { table: 'play', progress, wealth: e.wealth ?? 0 } : null;
+  const progress = Math.round(xiuweiOf(content, state, e.minutes ?? 0)), wealth = errandStones(content, state);
+  return progress || wealth ? { table: 'play', progress, wealth } : null;
 }
 
 /* A wall's posted tag (rules/rotation.mjs: 执事堂's east wall): a fixed share of the layer — a day's posts together pay
@@ -171,7 +175,7 @@ export function wallGrant(content, state, q) {
   const day = content.balance?.play_pay?.wall?.day, wall = (content.walls ?? []).find(w => w.id === q?.wall);
   if (!day || !wall || !state) return null;
   const progress = Math.round(xiuweiOf(content, state, day / Math.max(1, wall.posts ?? 3)));
-  const wealth = content.balance?.play_pay?.errand?.wealth ?? 0;
+  const wealth = errandStones(content, state);
   return progress || wealth ? { table: 'play', progress, wealth } : null;
 }
 
@@ -190,16 +194,6 @@ export function chorePlay(content, state, period) {
   return Math.round(xiuweiOf(content, state, units));
 }
 
-/* A pill eaten past its own 阶 (a 练气 pill in 筑基) pays `pills.below` of its share for each realm between (数值系统 phase 2:
-   a pill is a share of the layer by its 转, at its own realm; one below is a lesser thing). 1 at or under its 阶. */
-export function pillBelow(content, state, tier) {
-  const below = content.balance?.pills?.below, tiers = content.ladder?.tiers ?? [];
-  // A 阶 off the ladder (仙阶, balance.json pills `by_tier`) is never below him: 仙气自己找路.
-  const own = tiers.findIndex(t => t.id === tier);
-  const gap = tiers.findIndex(t => t.id === state?.tier) - own;
-  return below != null && tier && own >= 0 && gap > 0 ? below ** gap : 1;
-}
-
 /* An hour's 闭关: a night's 体力-units (play_pay.seclusion.night) over rewards.json seclusion `rest_hours`, × the formula —
    as the 闭关 card says it. */
 export function secludeHour(content, state) {
@@ -207,8 +201,39 @@ export function secludeHour(content, state) {
   return night && r?.rest_hours ? xiuweiOf(content, state, night) / r.rest_hours : null;
 }
 
-/* 圆满 → 灵石 (balance.json `convert.rate`): 灵石 per 修为, flat — 修为 is a fixed number now (2026-11-02), so no layer
-   rescales it. */
+/* ── 灵石 (batch 2, Hanli 2026-11-10: 「所有和数值相关的都应该有公式推到」) ──
+   I(L) = income.first × income.growth^(L−1) × income.realm^realm: the 灵石 a minute of play is worth at level L, the same
+   shape as R(L) (balance.json `economy.income`, derived from master.economy). 零层 (L0) is read at L1 — it pays 灵石
+   (gongke_zero) though it takes no 修为. A level's realm is its own: L = realm × 9 + 层. Every 灵石 the book grants is a size
+   in minutes of income (`ls`) × I where it is paid (the content's `level` if it says one, else where he stands); every price
+   is minutes × I(the item's level) (tools/master.mjs pricesOf). */
+const INC = content => content.balance?.economy?.income ?? null;
+export { realmOfLevel };
+/* I(L), unrounded; 0 where the world declares no income (rules/income.mjs). */
+export const incomeAt = (content, level) => incomeOf(INC(content), level);
+/* His level for 灵石: where he stands on the 古 ladder (零层 read as L1). */
+export function stoneLevel(content, state) {
+  return Math.max(1, levelOf(content, state?.tier, state?.step ?? 0)?.level ?? 1);
+}
+/* `minutes` of income in 灵石 where it is paid: at the content's `level` if given, else where he stands. Unrounded. */
+export function stonesAt(content, state, minutes, { level = null } = {}) {
+  return minutes > 0 ? minutes * incomeAt(content, level ?? stoneLevel(content, state)) : 0;
+}
+/* A pay table's own 灵石 (balance.json `pay.<table>.ls`, minutes) where he stands — what a table pays by itself (labor,
+   once, stage, chore_week, life, gongke_zero, haunt), and what it caps a grant at. Rounded. */
+export function tableStones(content, state, table) {
+  return Math.round(stonesAt(content, state, content.rewards?.tables?.[table]?.ls ?? 0));
+}
+/* R(L) at a level of its own realm (a thing's level, never where he stands, and never the gap): a levelled pill's 修为. */
+export const rateOfLevel = (content, level) => rateAt(content, level, realmOfLevel(level));
+
+/* 圆满 → 灵石 (balance.json `convert`): 灵石 per 修为 past the mark = `share` × I(L) ÷ (R(L) × board) — a minute of small-game
+   play past the mark pays `share` of a minute's income on top (batch 2, 2026-11-10). R and I share their shape, so the rate is
+   the same at every level; `rate` (a fixed number) where the world declares no income. */
 export function convertRate(content, state, conv = content.rewards?.xiuwei_to_lingshi) {
+  if (conv?.share != null && INC(content)) {
+    const L = stoneLevel(content, state), r = rateOfLevel(content, L) * (X(content)?.board ?? 1);
+    return r ? (conv.share * incomeAt(content, L)) / r : 0;
+  }
   return conv?.rate ?? 0;
 }

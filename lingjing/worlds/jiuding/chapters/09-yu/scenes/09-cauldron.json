@@ -46,7 +46,7 @@
    "means": "carries the nine cauldrons to Luoyi and sets them on their footings, gives the breath back to the nine provinces",
    "grant": {
     "table": "story",
-    "wealth": 20
+    "ls": 6
    },
    "beat": [
     {

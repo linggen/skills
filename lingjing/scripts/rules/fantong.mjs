@@ -67,7 +67,7 @@ function rowOpen(content, state, t, row) {
   // `after`: a scene he has finished (仙丹: 卷一's last, 01-end — never in 卷一; design.md § 丹药).
   if (row.after && !(state.done_scenes ?? []).includes(row.after)) return false;
   if (row.beast && !(state.beasts?.[row.beast]?.won > 0)) return false;
-  if (row.wealth) return !isLocked(content, state, 'wealth'); // no 灵石 out while 灵石 are not his yet
+  if (row.ls) return !isLocked(content, state, 'wealth'); // no 灵石 out while 灵石 are not his yet
   if (!row.item) return true;
   const item = itemOf(content, row.item);
   if (!item || (item.juan ?? 1) > 1) return false;
@@ -89,7 +89,7 @@ const recipeFor = (t, ids, lingshi, found = null, content = null, state = null) 
 export function rollFeed(t, { ids, id, found = null, content = null, state = null, ...o }) {
   ids = ids ?? (id ? [id] : []);
   return roll(t, { ...o, ids, recipe: recipeFor(t, ids, o.lingshi ?? 0, found, content, state), story: storyFor(content, t, ids),
-    open: content && state ? (r) => rowOpen(content, state, t, r) : null});
+    open: content && state ? (r) => rowOpen(content, state, t, r) : null });
 }
 /* Its exact odds (fantong-roll.mjs odds), gated the same way. */
 export const chances = (t, { content = null, state = null, ...o }) => odds(t, { ...o, open: content && state ? (r) => rowOpen(content, state, t, r) : null });

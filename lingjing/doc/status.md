@@ -44,9 +44,30 @@ Checked 11-10, already done before (were on old lists): the kept card's 丹囊/�
 - Validator: a source is red only above its own declared size (designed ones against their size, authored ones against
   master.xiuwei.classes); red 15, of which sources 2 (the told 760; 九转筑基丹's 60 units, 6 nights against the class's 3).
 
-**Batches 2–3 still hold:** 灵石 (batch 2: the economy's `income`, pill prices — a pill night costs 50 minutes of income and now
-pays a fifth of a board; gear, the 传音's 15, the 功课 灵石); fights' difficulty and the 秘境 run pay against the new board rate
-(batch 3); 筑基+ pacing with 卷二; the 今 line's own mix.
+**Batch 2 (灵石 and items, 2026-11-10 — branch wt/numbers-2):**
+- I(L) = 2.5 × 1.05^(L−1) × 1.2^realm, the 灵石 a minute of play at level L (rules/income.mjs; master.economy.income). Every 灵石
+  the book grants is a size `ls` (minutes of income) × I where it is paid; the pay tables, a board's rank, a kind's play, an
+  errand's work, 功课 meanings (the doubling kept), festivals, meets, the tale, the stage quest, 秘境 rooms, the 饭桶's 灵石 rows,
+  传音 (three small games' 灵石 too) — none a hand number. Today's 灵石 × 0.3 are the sizes; I₁ keeps the typical 卷一's 灵石
+  earned as on main (2380 → 2354; 练气一层 pays 0.75 of before, 七层 1.0, 筑基一层 1.4). Told amounts the book states (外门's 一块,
+  马小宝's 两块, the 三块 allowance, 每人二十块, 周衡's 五块 · 十块) are master `economy.told` rows with their why; the rest reworded
+  to 「几块」.
+- Every item a `level` 1–81 (items.json; `_level` where it is not its first 回's) and its 阶 the realm of it (筑基丹 9 · 破境丹 18:
+  the realm they open). Prices: minutes by class × I(the item's level) (master.economy.prices, tools/master.mjs pricesOf) — a
+  修为 pill `pill_ratio` 10 × its minutes of board play (one who spends every 灵石 on 聚气丹 saves 2 of 卷一's 44.5 days —
+  tools/balance.mjs --qi-buy, tests/balance.test.mjs ≤ 5%), a heal pill a minute per ~2 气血, gear 8/7/8 a point, materials by their
+  饭桶 kind × 品阶, cards by cost, pouches a slot; 妖丹 sold back at two thirds (`sell_back_of`). 开炉 worth on I(level), the
+  pot's 灵石 rows at its own level, no reach past the realm after its own.
+- 丹药 by family at their own level (master.pills): 聚气 share × need(level) (today's nights re-expressed), 筑基 · 固基 ×1.5,
+  回春 heals (share × 气血 there: 一转 10 · 三转 15 · 九转 21 at 练气一层) and pays no 修为 — 九转回春丹's two nights a declared
+  exception; 回气 mana. No `below`. The breakthrough throw's numbers are the master's (base: 筑基 10, then 55 − 5 a realm, 体修
+  level with 炼虚; 转: 25 + 5 a 转 + 5 a 品 + 5 a 九转). Pace unchanged (every 回, every player).
+- Validator: no 灵石 number or price in the book (content.mjs authoredStones), every item levelled, claims read at the pill's
+  level; a haggle opened at a stale list price is let go on load; red 15 → 14 (九转筑基丹 resolved).
+
+**Batch 3 still holds:** fights' difficulty, gear's combat stats, cards and foes against the new board rate; the 秘境 run's 修为;
+maps' and places' level bands (卷一 = 1–9); 筑基+ pacing with 卷二; the 今 line's own mix; 饭桶 `lingshi.per_layer` (Hanli's own
+「层数*10」) and the arcade's stage wallet still stone numbers.
 
 ## Open after 11-10
 

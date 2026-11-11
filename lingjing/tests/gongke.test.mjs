@@ -4,6 +4,7 @@
 // top of the chore's own pay; capped per day, paid once per occurrence, a week row once a week; the
 // 净炉符 lifting the next 开炉; the two prologue gates (开府 on meeting 银月, the rest on 入门) and the
 // 灵石 a 开府 step earned between them landing at the second; a scratch save's own quests; no app named.
+import { stonesAt, tableStones } from '../scripts/rules/playpay.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -42,7 +43,7 @@ test('the table lints, names every kind in both languages, and every thing it le
   }
   const bad = structuredClone(content);
   bad.gongke.kinds.body.item = 'no-such-thing';
-  bad.gongke.kinds.ledger.wealth = 999;
+  bad.gongke.kinds.ledger.ls = 999;
   const problems = lint(bad).join('\n');
   assert.match(problems, /gongke body.*unknown item no-such-thing/);
   assert.match(problems, /gongke ledger.*over the chore_kind table/);
@@ -64,13 +65,15 @@ test('a chore of a known kind pays its meaning on top: 灵石, its thing in the 
   const out = turn(s, quests, 'x-workout');
   assert.equal(out.result.ok, true);
   const m = out.result.meaning;
-  // 练功's 灵石: 6 since 2026-11-10 (app-linked chores pay double, Hanli 「…app联动的任务, 奖励都翻倍」; was 3).
-  assert.deepEqual([m.kind, m.name, m.paid.wealth, m.paid.item], ['body', '练功', content.gongke.kinds.body.wealth, 'chenlian-fu']);
-  assert.equal(content.gongke.kinds.body.wealth, 6);
+  // 练功's 灵石: its size doubled since 2026-11-10 (app-linked chores pay double, Hanli 「…app联动的任务, 奖励都翻倍」): 1.8 minutes
+  // of income (6 灵石 then; 0.9 before the doubling), × I where he stands (batch 2).
+  const body = Math.round(stonesAt(content, s, content.gongke.kinds.body.ls));
+  assert.deepEqual([m.kind, m.name, m.paid.wealth, m.paid.item], ['body', '练功', body, 'chenlian-fu']);
+  assert.equal(content.gongke.kinds.body.ls, 1.8);
   assert.equal(m.paid.item_name, '晨练符');
   assert.match(m.about, /挑着担子/);
   assert.equal(out.state.bag['chenlian-fu'], 1);
-  assert.equal(out.state.wealth, s.wealth + out.result.paid.wealth + content.gongke.kinds.body.wealth);
+  assert.equal(out.state.wealth, s.wealth + out.result.paid.wealth + body);
 });
 
 test('paid once per occurrence: the same chore again today is refused; tomorrow it pays again', () => {
@@ -91,14 +94,17 @@ test('capped per day, all kinds together: 灵石 to per_day, things to per_day �
   let s = waimen(), got = 0;
   const caps = [];
   for (const q of quests) { const out = turn(s, quests, q.id); s = out.state; got += out.result.meaning.paid.wealth; caps.push(Boolean(out.result.meaning.capped)); }
-  assert.equal(got, cap.wealth, `${got} of the day's ${cap.wealth}`);
+  // The day's cap in minutes of income (`per_day.ls`, batch 2): what lands sums to it, each part rounded where it lands.
+  const capStones = stonesAt(content, s, cap.ls);
+  assert.ok(Math.abs(got - capStones) <= 1.5, `${got} of the day's ${capStones}`);
+  assert.equal(s.gongke.day.ls, cap.ls, 'the day\'s minutes are its cap exactly');
   assert.deepEqual(caps, [false, true, true]);
   const things = ['p', 'q', 'r'].map(x => chore(`s-${x}`, 'sweep'));
   let t = waimen();
   for (const q of things) t = turn(t, things, q.id).state;
   assert.equal(t.bag['jinglu-fu'], cap.items, 'no more things than the day allows');
   const later = new Date('2026-10-23T12:00:00');
-  assert.equal(meaningGrant(content, s, chore('l-a', 'ledger'), later).wealth, content.gongke.kinds.ledger.wealth);
+  assert.equal(meaningGrant(content, s, chore('l-a', 'ledger'), later).ls, content.gongke.kinds.ledger.ls);
 });
 
 test('宗门月俸: the ledger kept on enough days of a week pays once, that week', () => {
@@ -110,7 +116,7 @@ test('宗门月俸: the ledger kept on enough days of a week pays once, that wee
     const q = chore('l-week', 'ledger', { done_at: new Date(2026, 9, 19 + d, 9).toISOString() });
     const out = turn(s, [q], 'l-week', now);
     assert.equal(out.result.ok, true, `day ${d}`);
-    if (out.result.meaning.week?.paid) { stipends += 1; assert.equal(d, need - 1, 'paid the day the count is met'); assert.equal(out.result.meaning.week.paid.wealth, content.rewards.tables.chore_week.wealth); }
+    if (out.result.meaning.week?.paid) { stipends += 1; assert.equal(d, need - 1, 'paid the day the count is met'); assert.equal(out.result.meaning.week.paid.wealth, tableStones(content, s, 'chore_week')); }
     s = out.state;
   }
   assert.equal(stipends, 1);
@@ -183,7 +189,7 @@ test('a 开府 step handed in between the gates owes its 灵石; they land on th
       const out = VERBS.quest(s, content, ctxOf(quests), { action: 'turn', id: 'm-1' });
       assert.equal(out.result.ok, true, JSON.stringify(out.result));
       owed = out.result.owed;
-      assert.deepEqual(owed, { wealth: content.rewards.tables.once.wealth });
+      assert.deepEqual(owed, { wealth: tableStones(content, s, 'once') }, 'the once table\'s minutes of income where he stands (batch 2)');
       assert.equal(out.state.wealth, 0, 'no 灵石 shown before 入门');
       s = out.state;
     }
@@ -201,7 +207,7 @@ test('the board shows facts only: the meaning, the app\'s title, a stamp with th
   const board = gongkeBoard(content, s, quests, NOW, 'zh', questDone);
   const by = Object.fromEntries(board.rows.map(r => [r.id, r]));
   assert.deepEqual([by['x-workout'].done, by['x-workout'].paid, by['x-workout'].adds.item], [true, false, '晨练符']);
-  assert.deepEqual([by['x-workout'].adds.wealth, by['x-workout'].adds.progress], [6, 0], 'what lands: 零层 takes no 修为 (练功 6 灵石 since 2026-11-10: app-linked chores double)');
+  assert.deepEqual([by['x-workout'].adds.wealth, by['x-workout'].adds.progress], [Math.round(stonesAt(content, s, content.gongke.kinds.body.ls)), 0], 'what lands: 零层 takes no 修为 (练功\'s size doubled since 2026-11-10: app-linked chores double)');
   assert.deepEqual([by['x-sweep'].done, by['x-sweep'].done_at], [false, null]);
   assert.equal(by['x-paid'].paid, true);
   assert.ok(by['x-paid'].paid_at);

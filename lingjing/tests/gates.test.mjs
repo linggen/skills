@@ -97,7 +97,7 @@ test('the 事 book holds it: 阶段任务 · 练气一层圆满, where he stands
   const full = look({ ...away, progress: th[1] }, content, ctx);
   assert.equal(full.stage_quest.met, true);
   assert.equal(full.waypoint.gate, undefined, 'full: the road to the story again');
-  assert.match(bookPopHtml({ look: full, lang: 'zh', words: { ...WORDS.zh, xw: '修为', ls: '灵石', qi: '体力' } }), /已圆满 · 交差领赏[\s\S]*灵石 \+60[\s\S]*data-do="turn" data-id="stage"/);
+  assert.match(bookPopHtml({ look: full, lang: 'zh', words: { ...WORDS.zh, xw: '修为', ls: '灵石', qi: '体力' } }), new RegExp(`已圆满 · 交差领赏[\\s\\S]*灵石 \\+${full.stage_quest.pays.wealth}[\\s\\S]*data-do="turn" data-id="stage"`)); // its pay: the stage table's minutes × I where he stands (batch 2)
   // Past its scene, the 回 has no stage quest left.
   assert.equal(stageNow(content, { ...away, done_scenes: [...away.done_scenes, 'wm-chaifang'] }), null);
 });

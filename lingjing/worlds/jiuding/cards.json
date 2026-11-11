@@ -1395,7 +1395,6 @@
             "zh": "钱掌柜",
             "en": "Money Qian"
           },
-          "price": 60,
           "line": {
             "zh": "一拃来长，柳叶形",
             "en": "A hand-span long, willow-leaf shaped."
@@ -2110,7 +2109,6 @@
             "zh": "钱掌柜",
             "en": "Money Qian"
           },
-          "price": 40,
           "line": {
             "zh": "撒一把在地上，狼也得绕着走",
             "en": "Scatter a handful; even a wolf walks round."
@@ -2142,7 +2140,6 @@
             "zh": "钱掌柜",
             "en": "Money Qian"
           },
-          "price": 50,
           "line": {
             "zh": "外门弟子人人会的粗浅火诀",
             "en": "A crude fire art every outer disciple knows."
@@ -2177,7 +2174,6 @@
             "zh": "钱掌柜",
             "en": "Money Qian"
           },
-          "price": 60,
           "line": {
             "zh": "扎得结实，替你挨三下",
             "en": "Tied tight; it takes three blows for you."
@@ -2208,7 +2204,6 @@
             "zh": "钱掌柜",
             "en": "Money Qian"
           },
-          "price": 80,
           "line": {
             "zh": "一枚玉简：参悟",
             "en": "A jade slip: Contemplation."
@@ -2338,7 +2333,6 @@
             "zh": "货郎",
             "en": "the pedlar"
           },
-          "price": 20,
           "line": {
             "zh": "一道符，二十块",
             "en": "A charm, twenty stones."
@@ -2846,7 +2840,6 @@
             "zh": "钱掌柜",
             "en": "Money Qian"
           },
-          "price": 60,
           "line": {
             "zh": "秦雁那张雷符，她始终没掏",
             "en": "Qin Yan never drew her thunder charm."

@@ -167,16 +167,17 @@ test('a step\'s board left (「算了，往下走」, 2026-10-15): the tale goes
 test('the pay: the tables\' caps, a fifth step eating into the finale — nothing Ling wrote', () => {
   const r = content.rewards;
   const four = made().tale.grants;
-  // Sizes since 2026-11-10 (play_pay.sized: units × R where it is paid); the tables keep their 灵石.
+  // Sizes since 2026-11-10 (play_pay.sized: units × R where it is paid); 灵石 sizes too since batch 2 (the tables' `ls`, minutes
+  // of income × I where it is paid).
   const U = content.balance.play_pay.sized;
-  assert.deepEqual(four.step, { table: 'tale', units: U.tale, wealth: r.tables.tale.wealth });
+  assert.deepEqual(four.step, { table: 'tale', units: U.tale, ls: r.tables.tale.ls });
   assert.equal(four.end.units, U.tale_end);
   const t = example();
   t.steps.push({ game: 'huarong', at: 'sibei', giver: 'old-fisher', line: '把这堆石头挪开。', clue: '老祁说出了实话。' },
     { game: 'pintu', at: 'sishui', giver: 'xiucai', line: '拼回这道符。', clue: '符上写着河伯的名字。' });
   const five = made(open(), t).tale.grants;
   assert.equal(5 * five.step.units + five.end.units, r.tale.cap.units);
-  assert.ok(5 * five.step.wealth + five.end.wealth <= r.tale.cap.wealth);
+  assert.ok(5 * five.step.ls + five.end.ls <= r.tale.cap.ls + 1e-9);
 });
 
 test('the drop is the table\'s, never above the realm', () => {

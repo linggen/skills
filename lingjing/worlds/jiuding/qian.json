@@ -141,7 +141,7 @@
     "pay": {
       "table": "game",
       "units": 1.5,
-      "wealth": 5
+      "ls": 1.5
     }
   },
   "signs": [

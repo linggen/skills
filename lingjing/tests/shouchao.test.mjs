@@ -7,6 +7,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { boardCost, newState, staminaCost } from '../scripts/state.mjs';
+import { stonesAt } from '../scripts/rules/playpay.mjs';
 import { look, playTo, task, win } from '../scripts/rules.mjs';
 import { beastOpen, shouchaoHosted, shouchaoWaiting, tideRows, tonight, wallKit } from '../scripts/rules/shouchao.mjs';
 import { levelDealt } from '../scripts/games/shouqiang.js';
@@ -110,7 +111,7 @@ test('it costs 灵气 and pays by stars: 修为, 灵石 by the small-game ranks,
     assert.ok(r.result.ok, JSON.stringify(r.result));
     assert.equal(r.state.stamina, s.stamina - cost, `${stars}★ took ${cost} 灵气`);
     assert.equal(r.result.stars, stars);
-    assert.equal(r.result.paid.board.wealth, content.balance.boards[T.shouchao.pay[stars].rank]);
+    assert.equal(r.result.paid.board.wealth, Math.round(stonesAt(content, s, content.balance.boards[T.shouchao.pay[stars].rank])), 'its rank\'s minutes of income × I where he stands (batch 2)');
     paid[stars] = r.result.paid;
     const herbs = Object.keys(r.state.bag ?? {}).filter((id) => T.shouchao.herbs.includes(id) && (r.state.bag[id] ?? 0) > (s.bag?.[id] ?? 0));
     assert.equal(herbs.length, stars >= 2 ? 1 : 0, `${stars}★: herb ${herbs}`);

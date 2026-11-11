@@ -21,6 +21,7 @@ import { fullName, pick, stepName, stepOfLayer, threshold } from '../state.mjs';
 import { huiNow, huiOrder } from './hui.mjs';
 import { gatePassed, rankOf } from './cap.mjs';
 import { pay } from './core.mjs';
+import { tableStones } from './playpay.mjs';
 
 /* Every gate the world declares, with its 回: [{hui, tier, layer, step, scene, exits}]. Once per world. */
 const GATES = new WeakMap();
@@ -114,13 +115,14 @@ export function stageNow(content, state) {
   const gate = gatesOf(content).find(g => g.hui === hui && !paid.has(gateKey(g)) && !behind(content, state, g, hui) && (handsIn(g) || !gateMet(content, state, g)));
   if (!gate) return null;
   const b = stageBrief(content, state, gate);
-  return { ...b, key: gateKey(gate), ...(b.met ? { pays: { wealth: stagePay(content) } } : {}) };
+  return { ...b, key: gateKey(gate), ...(b.met ? { pays: { wealth: stagePay(content, state) } } : {}) };
 }
 
 /* A stage quest's pay (balance.json `pay.stage`): 灵石 — at 圆满 the 修为 cannot rise, so a
    hand-in that pays only 修为 would show nothing (Hanli, 2026-10-15: every hand-in visibly gains). */
-export const stagePay = content => content.rewards.tables.stage?.wealth ?? 0;
-const STAGE_GRANT = content => ({ table: 'stage', wealth: stagePay(content) });
+/* A stage quest's 灵石: the `stage` table's minutes of income (batch 2) × I where he stands. */
+export const stagePay = (content, state) => tableStones(content, state, 'stage');
+const STAGE_GRANT = content => ({ table: 'stage', ls: content.rewards.tables.stage?.ls ?? 0 });
 
 /* 交差 on the stage quest: the open one, met. Paid once — its key is kept on the save. */
 export function stageTurn(content, state, ctx) {

@@ -38,7 +38,7 @@
       "work": "labor",
       "grant": {
         "table": "labor",
-        "wealth": 5
+        "ls": 1.5
       }
     },
     {
@@ -74,7 +74,7 @@
       "work": "labor",
       "grant": {
         "table": "labor",
-        "wealth": 5
+        "ls": 1.5
       }
     },
     {
@@ -110,7 +110,7 @@
       "work": "labor",
       "grant": {
         "table": "labor",
-        "wealth": 5
+        "ls": 1.5
       }
     },
     {
@@ -147,7 +147,7 @@
       "work": "labor",
       "grant": {
         "table": "labor",
-        "wealth": 10
+        "ls": 3
       },
       "opens": {
         "done": "wm-diyilu"
@@ -186,7 +186,7 @@
       "work": "labor",
       "grant": {
         "table": "labor",
-        "wealth": 5
+        "ls": 1.5
       }
     },
     {
@@ -223,7 +223,7 @@
       "grant": {
         "table": "quest",
         "units": 15,
-        "wealth": 0
+        "ls": 0
       }
     },
     {
@@ -264,7 +264,7 @@
       "work": "labor",
       "grant": {
         "table": "labor",
-        "wealth": 10
+        "ls": 3
       }
     },
     {
@@ -308,7 +308,7 @@
       "grant": {
         "table": "quest",
         "units": 8,
-        "wealth": 5
+        "ls": 1.5
       },
       "chain": "jiujie",
       "then": "guan-jiujie-2"
@@ -354,7 +354,7 @@
       "work": "labor",
       "grant": {
         "table": "labor",
-        "wealth": 5
+        "ls": 1.5
       },
       "chain": "jiujie",
       "then": "guan-jiujie-3"
@@ -400,7 +400,7 @@
       "grant": {
         "table": "quest",
         "units": 8,
-        "wealth": 5
+        "ls": 1.5
       },
       "chain": "jiujie",
       "then": "guan-jiujie-4"
@@ -446,7 +446,7 @@
       "work": "labor",
       "grant": {
         "table": "labor",
-        "wealth": 5
+        "ls": 1.5
       },
       "chain": "jiujie",
       "then": "guan-jiujie-5"
@@ -492,7 +492,7 @@
       "work": "labor",
       "grant": {
         "table": "labor",
-        "wealth": 5
+        "ls": 1.5
       },
       "chain": "jiujie",
       "then": "guan-jiujie-6"
@@ -538,7 +538,7 @@
       "grant": {
         "table": "quest",
         "units": 12,
-        "wealth": 10,
+        "ls": 3,
         "item": "qi-pill"
       },
       "chain": "jiujie"
@@ -582,7 +582,7 @@
       "grant": {
         "table": "quest",
         "units": 8,
-        "wealth": 10
+        "ls": 3
       }
     },
     {
@@ -624,7 +624,7 @@
       "grant": {
         "table": "quest",
         "units": 8,
-        "wealth": 10
+        "ls": 3
       }
     },
     {
@@ -666,7 +666,7 @@
       "grant": {
         "table": "quest",
         "units": 10,
-        "wealth": 15
+        "ls": 4.5
       }
     }
   ]

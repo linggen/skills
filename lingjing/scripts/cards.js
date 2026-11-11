@@ -603,6 +603,8 @@ export function pouchSaid(e, w) {
 export function itemDoes(effect, ctx) {
   const e = effect ?? {}, w = ctx.words;
   const key = Object.keys(DOES).find((k) => e[k] != null);
+  // A pill that both heals and pays 修为 (the 九转回春丹, master.pills.exceptions — batch 2): both, its heal first.
+  if (key === 'progress' && e.fight) return [DOES.fight(e, w), DOES.progress(e, w)].filter(Boolean).join(' · ');
   return key ? DOES[key](e, w) : w.effNone;
 }
 

@@ -380,85 +380,41 @@
   },
   "_treasure": "The nine 重 of a 本命法宝, grown by 温养 and by what a fight leaves — design.md § 斗法.",
   "_breakthrough": "渡劫 is one throw that can fail (Hanli, 2026-09-28: 红检, you pick). The chance starts at `base` for the realm it opens and each factor adds to it, then it is held between `floor` and `cap`. `pill`: the realm's breakthrough pill carried in the bag, worth more the more 转 it has (eaten only by a throw that lands — a failed one keeps it, as the card promises: 境界与所藏不失). `body`: 伤势 is 体力 since 2026-09-24 — at least `share` of the pool is `whole`, under it `hurt`. `seclusion`: out of a 闭关 of at least its min_hours within `hours`. `her`: 银月 at the player's side, plus `per_gift` for each gift the cauldrons gave her. `element`: the realm's 五行; a root of it is `match`, a root that feeds it (相生) is `feeds`. A failure wounds (`fail.wound`, a share of the 体力 pool), takes `fail.progress` of the peak step's 修为 and shuts the cauldron for `fail.cooldown_hours` real hours; the realm, the save and every thing held — the pill too — are never lost; under the peak after a failure, 闭关 brings the 修为 back (the refusal says so). Under `low` a success is marked 逆天.",
-  "breakthrough": {
-    "base": {
-      "foundation": 10,
-      "core": 55,
-      "nascent": 50,
-      "deity": 45,
-      "void": 40,
-      "body": 40,
-      "maha": 35,
-      "tribulation": 30
-    },
-    "floor": 5,
-    "cap": 95,
-    "low": 50,
-    "pill": {
-      "bonus": 20,
-      "items": {
-        "foundation": [
-          "foundation-pill-9",
-          "foundation-pill",
-          "dingtai"
-        ],
-        "core": "firm-pill",
-        "*": "pojing-pill"
+    "breakthrough": {
+      "_numbers": "The throw's numbers — base by realm, the pill's by 转 and its bonus, body, seclusion, her, element, fail, the 段's base and cooldown — are the master's since 2026-11-10 (balance.json master.breakthrough → `breakthrough`, laid on here at load, content.mjs withBalance; tests/breakthrough-master.test.mjs holds them to what stood here). This file keeps which pills, which elements and the 段's factors.",
+      "pill": {
+        "items": {
+          "foundation": [
+            "foundation-pill-9",
+            "foundation-pill",
+            "dingtai"
+          ],
+          "core": "firm-pill",
+          "*": "pojing-pill"
+        },
+        "_items": "A list is reached for in order: the furnace's 九转 first, the sect's 一转 after (古八 — the 筑基 half of the old 古七, split 2026-10-07: he eats the 九转; the 官丹 he won at the year-five 大比 stays sealed in the 储物袋, unused). A pill's bonus is its own `bonus_of`, else by its 转 (`by_zhuan`, items.json `zhuan`: the 官丹 is 一转下品, +25; the furnace's 九转 +80, near-certain), else `bonus`. 鼎苔 (古五) is the last reached for: eaten raw it steadies the throw a little (bonus_of 10)."
       },
-      "bonus_of": {
-        "dingtai": 10
+      "element": {
+        "of": {
+          "foundation": "earth",
+          "core": "metal",
+          "nascent": "wood",
+          "deity": "fire",
+          "void": "water",
+          "body": "earth",
+          "maha": "metal",
+          "tribulation": "wood"
+        }
       },
-      "_items": "A list is reached for in order: the furnace's 九转 first, the sect's 一转 after (古八 — the 筑基 half of the old 古七, split 2026-10-07: he eats the 九转; the 官丹 he won at the year-five 大比 stays sealed in the 储物袋, unused). A pill's bonus is its own `bonus_of`, else by its 转 (`by_zhuan`, items.json `zhuan`: the 官丹 is 一转下品, +25; the furnace's 九转 +80, near-certain), else `bonus`. 鼎苔 (古五) is the last reached for: eaten raw it steadies the throw a little (bonus_of 10).",
-      "by_zhuan": {
-        "1": 25,
-        "2": 30,
-        "3": 35,
-        "4": 45,
-        "5": 50,
-        "6": 55,
-        "7": 65,
-        "8": 70,
-        "9": 80
-      }
-    },
-    "body": {
-      "share": 0.5,
-      "whole": 5,
-      "hurt": -10
-    },
-    "seclusion": {
-      "hours": 24,
-      "bonus": 10
-    },
-    "her": {
-      "joined": 5,
-      "per_gift": 3
-    },
-    "element": {
-      "match": 10,
-      "feeds": 5,
-      "of": {
-        "foundation": "earth",
-        "core": "metal",
-        "nascent": "wood",
-        "deity": "fire",
-        "void": "water",
-        "body": "earth",
-        "maha": "metal",
-        "tribulation": "wood"
-      }
-    },
-    "fail": {
-      "wound": 0.3,
-      "progress": 0.3,
-      "cooldown_hours": 6
-    },
-    "_duan": "The 段 trial (Hanli approved 2026-11-02, the nine-层 change): in a realm shown in 段 (`display: \"stages\"`) the step into 四层 and into 七层 — 小成 → 中成, 中成 → 大成 — is a light throw, no pill: `base` plus the realm throw's `body`, `seclusion`, `her` and `element` factors (`factors`), held between `floor` and `cap`. It is thrown where the 修为 carries him over the 段's last 层 (state.mjs addProgress's door, rules/breakthrough.mjs duanPass), seeded as the realm throw (the save, the realm, the 段, the try). A failure costs nothing but the hour: the 层 stays full, the 修为 keeps counting past its mark, and the trial waits `cooldown_hours` before the next pay throws again. 九层圆满 into the next realm is the realm throw above, unchanged; 练气 has none.",
-    "duan": {
-      "base": 75,
-      "factors": ["body", "seclusion", "her", "element"],
-      "cooldown_hours": 1
-    },
-    "_odds": "筑基 follows the book (story DESIGN § 定例 · 沉鼎观的数; 2026-10-03): without a pill about one in ten gets through (base 10), the sect's one 一转 lifts it to a few in ten, a 九转 makes it near-certain. `floor` 5: a throw is never hopeless."
-  }
+      "_duan": "The 段 trial (Hanli approved 2026-11-02, the nine-层 change): in a realm shown in 段 (`display: \"stages\"`) the step into 四层 and into 七层 — 小成 → 中成, 中成 → 大成 — is a light throw, no pill: `base` plus the realm throw's `body`, `seclusion`, `her` and `element` factors (`factors`), held between `floor` and `cap`. It is thrown where the 修为 carries him over the 段's last 层 (state.mjs addProgress's door, rules/breakthrough.mjs duanPass), seeded as the realm throw (the save, the realm, the 段, the try). A failure costs nothing but the hour: the 层 stays full, the 修为 keeps counting past its mark, and the trial waits `cooldown_hours` before the next pay throws again. 九层圆满 into the next realm is the realm throw above, unchanged; 练气 has none.",
+      "duan": {
+        "factors": [
+          "body",
+          "seclusion",
+          "her",
+          "element"
+        ]
+      },
+      "_odds": "筑基 follows the book (story DESIGN § 定例 · 沉鼎观的数; 2026-10-03): without a pill about one in ten gets through (base 10), the sect's one 一转 lifts it to a few in ten, a 九转 makes it near-certain. `floor` 5: a throw is never hopeless."
+    }
 }

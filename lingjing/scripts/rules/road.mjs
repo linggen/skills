@@ -31,7 +31,7 @@ import { itemOf, offersOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
 import { bagFull, hasFound, roomFor } from './pouch.mjs';
 import { mainRoot } from './roots.mjs';
-import { sizedUnits } from './playpay.mjs';
+import { sizedUnits, stonesAt } from './playpay.mjs';
 import { visitorHere } from './visiting.mjs';
 import { allPlaces, atScene, creatureOf, huntable, inMade, sealedOf, ofJuan, placeOf, placeOpen, poolBeast, tooHard } from './world.mjs';
 
@@ -208,7 +208,7 @@ const BRIEF = {
   chance: (content, meet, state, now) => ({ kind: 'chance', ...(chanceBrief(content, state, now) ?? {}) }),
   find: (content, meet, state) => {
     const f = findOf(content, meet), item = f.item ? itemOf(content, f.item) : null;
-    return { kind: 'find', line: pick(f.line, state.lang), ...(item ? { item: { id: item.id, name: pick(item.name, state.lang) } } : { wealth: f.wealth }) };
+    return { kind: 'find', line: pick(f.line, state.lang), ...(item ? { item: { id: item.id, name: pick(item.name, state.lang) } } : { wealth: Math.round(stonesAt(content, state, f.ls ?? 0)) }) };
   },
   riddle: (content, meet, state) => {
     const r = content.riddles[state.lang].riddles[meet.key], tried = new Set((meet.tried ?? []).map(normalizeAnswer));
@@ -231,8 +231,9 @@ function meetBrief(content, state, now) {
    here is ever accepted: an unknown one was once read as a wound (review,
    2026-09-24: `toString` passed the lint and took nothing, then NaN). */
 const STAKES = {
+  // A stake of 灵石: minutes of income (meets.json trial.lose.coin, batch 2) × I where he stands.
   coin: (content, s, ctx, n) => {
-    const lost = Math.min(s.wealth, n);
+    const lost = Math.min(s.wealth, Math.round(stonesAt(content, s, n)));
     s.wealth -= lost;
     return { lost: { wealth: lost } };
   },
@@ -268,7 +269,7 @@ function settleTrial(content, s, ctx, here, n) {
   const success = here.rolls[n] + TRIAL_BONUS(content, here) >= t.marks[o.difficulty];
   if (success) {
     const win = t.win[o.difficulty];
-    const paid = pay(content, s, ctx, { table: 'trial', units: win.units ?? 0, wealth: win.wealth ?? 0 });
+    const paid = pay(content, s, ctx, { table: 'trial', units: win.units ?? 0, ls: win.ls ?? 0 });
     return { success, line: o.win, paid };
   }
   return { success, line: o.lose, ...STAKES[o.stake](content, s, ctx, t.lose[o.stake][o.difficulty]) };
@@ -298,7 +299,7 @@ const ROAD = {
     s.chance = { ...s.chance, taken: ctx.now.toISOString() };
     const t = content.rewards.tables.chance;
     const card = winCard(content, s, { id: `chance:${s.place}`, root: mainRoot(s) }, ctx.now, 'chance', { how: 'chance' });
-    const paid = pay(content, s, ctx, { table: 'chance', units: sizedUnits(content, 'chance'), wealth: t.wealth });
+    const paid = pay(content, s, ctx, { table: 'chance', units: sizedUnits(content, 'chance'), ls: t.ls });
     close(s, unveiled(here));
     return { state: s, result: { ok: true, took: null, ...(card ? { card } : {}), paid, chance: true } };
   },
@@ -307,7 +308,7 @@ const ROAD = {
     // A full 储物袋 leaves it lying there, still to be taken (Hanli, 2026-09-25).
     if (f.item && !roomFor(content, s, f.item)) return bagFull(content, s);
     if (f.item) s.bag[f.item] = (s.bag[f.item] ?? 0) + 1;
-    const paid = f.item ? null : pay(content, s, ctx, { table: 'meet', wealth: f.wealth });
+    const paid = f.item ? null : pay(content, s, ctx, { table: 'meet', ls: f.ls });
     close(s, unveiled(here));
     return { state: s, result: { ok: true, took: f.item ? { id: f.item, name: pick(itemOf(content, f.item).name, s.lang) } : null, paid } };
   },

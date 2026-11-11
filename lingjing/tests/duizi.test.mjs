@@ -3,6 +3,7 @@
 // same place, no copying) and the outcome (marks, pay, the ladder, the day's limits);
 // Ling grades only the rubric, 0–2 each. These check what the RULES own — her taste
 // cannot be unit-tested: guide/duizi.md is her rubric, and the live check grades one.
+import { stonesAt } from '../scripts/rules/playpay.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -193,7 +194,7 @@ test('a round: open deals a 上联, submit checks the form, Ling grades, the rul
   const { s: graded, r: gr } = must(sent, { action: 'grade', pos: 2, sense: 2, art: 2 }, asLing());
   assert.equal(gr.mark.id, 'gong');
   assert.ok(gr.paid && graded.wealth > before, 'paid');
-  assert.ok(graded.wealth - before <= content.rewards.tables.game.wealth, 'capped by the game table');
+  assert.ok(graded.wealth - before <= Math.round(stonesAt(content, sent, content.rewards.tables.game.ls)), 'capped by the game table (its minutes of income where he stands, batch 2)');
   // graded: the classic 下联 and its source are the card's now
   const after = look(graded, content, ctx()).duizi.round;
   assert.equal(after.ref, round.ref);

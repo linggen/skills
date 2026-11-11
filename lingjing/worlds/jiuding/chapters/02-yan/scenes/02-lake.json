@@ -66,7 +66,7 @@
    },
    "grant": {
     "table": "story",
-    "wealth": 20
+    "ls": 6
    },
    "beat": [
     {
@@ -100,7 +100,7 @@
    ],
    "grant": {
     "table": "story",
-    "wealth": 10
+    "ls": 3
    },
    "beat": [
     {
@@ -130,7 +130,7 @@
    "means": "yields, steps back, sits down and waits in silence, does as Shun did at Lake Lei",
    "grant": {
     "table": "story",
-    "wealth": 10
+    "ls": 3
    },
    "beat": [
     {

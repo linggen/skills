@@ -83,8 +83,8 @@
       { "item": "pi-kanjian", "w": 2, "hui": "h07" },
       { "item": "shi-zhui", "w": 2, "hui": "h07" },
       { "item": "bamboo-sword", "w": 2 },
-      { "item": "pouch-low", "w": 2, "worth": 40 },
-      { "item": "baina-dai", "w": 2, "worth": 45 },
+      { "item": "pouch-low", "w": 2, "worth_ls": 12 },
+      { "item": "baina-dai", "w": 2, "worth_ls": 13.5 },
       { "item": "lipi-kanjian", "w": 2, "beast": "shanli" },
       { "item": "chaiya-zhui", "w": 2, "beast": "chai" },
       { "item": "qingtong-jian", "w": 2, "hui": "h07" },
@@ -123,10 +123,10 @@
       { "item": "yike-daya", "w": 2 },
       { "item": "yige-ge", "w": 2 },
       { "item": "ganliang", "w": 3 },
-      { "wealth": [1, 3], "w": 3 },
-      { "wealth": [10, 10], "w": 2 },
-      { "item": "baoge-ling", "w": 2, "worth": 40 },
-      { "item": "yinyue-lingdang", "w": 1, "worth": 60 }
+      { "ls": [0.3, 0.9], "w": 3 },
+      { "ls": [3, 3], "w": 2 },
+      { "item": "baoge-ling", "w": 2, "worth_ls": 12 },
+      { "item": "yinyue-lingdang", "w": 1, "worth_ls": 18 }
     ]
   },
   "pages": {

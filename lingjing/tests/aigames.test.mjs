@@ -80,6 +80,9 @@ const store = (extra = {}) => at('zhishi', { wealth: 500, bag: { ...base.bag }, 
 const hrun = (verb, state, args, c = hc()) => run(verb, state, args, c);
 const hmust = (verb, state, args, c = hc()) => must(verb, state, args, c);
 const argIds = r => r.haggle.open.args.map(a => a.id);
+// Prices are the master table's (batch 2: minutes of income × I(the thing's level), tools/master.mjs pricesOf).
+const price = id => content.items.items.find(i => i.id === id).buy;
+const CZ = price('caoren-zha'), MP = price('mend-pill');
 
 test('砍价: the floor reaches no one — Look, the answer, the keeper\'s hidden line; 周衡 keeps the 执事堂\'s store', () => {
   const s0 = store();
@@ -89,12 +92,12 @@ test('砍价: the floor reaches no one — Look, the answer, the keeper\'s hidde
   const { s, r } = must('haggle', s0, { action: 'open', id: 'caoren-zha' });
   // (a board's own art and lines elsewhere in Look may say `floor`: the haggle's part, and the answer, never do)
   for (const seen of [r, look(s, content, ctx()).haggle, forLing(look(s, content, ctx())).haggle]) assert.ok(!keysOf(seen).has('floor'));
-  const floor = Math.ceil(60 * content.aigames.haggle.keepers.zhishi.floor);
+  const floor = Math.ceil(CZ * content.aigames.haggle.keepers.zhishi.floor);
   assert.ok(!r.talk.line.includes(String(floor)), 'the line never names the floor');
   assert.match(r.talk.line, /^\[HIDDEN\] \[npc\] /);
   assert.match(r.talk.line, /周衡/);
-  assert.equal(r.haggle.open.ask, 60);
-  assert.ok(r.haggle.open.offer.min < floor && r.haggle.open.offer.max === 59, 'the slider never shows where the floor is');
+  assert.equal(r.haggle.open.ask, CZ);
+  assert.ok(r.haggle.open.offer.min < floor && r.haggle.open.offer.max === CZ - 1, 'the slider never shows where the floor is');
   // Every shop has someone to haggle with: a catalog market's 掌柜 (the `*` row).
   assert.ok(content.aigames.haggle.keepers['*']);
   // No stage card: the shelf is where it is played.
@@ -107,7 +110,7 @@ test('砍价: an argument is a button only while he holds it (`needs`)', () => {
   // 回春丹 (一转) with the stones for two: 这是一转的 · 买两件.
   assert.deepEqual(argIds(must('haggle', store(), { action: 'open', id: 'mend-pill' }).r), ['grade', 'bulk']);
   // Too poor for two: no 买两件.
-  assert.deepEqual(argIds(must('haggle', store({ wealth: 20 }), { action: 'open', id: 'mend-pill' }).r), ['grade']);
+  assert.deepEqual(argIds(must('haggle', store({ wealth: MP + 1 }), { action: 'open', id: 'mend-pill' }).r), ['grade']);
   // Bought here once at the list price: 我常来.
   const bought = must('trade', store(), { action: 'buy', id: 'huiqi-pill' }).s;
   assert.equal(bought.haggle.deals.zhishi, 1);
@@ -121,7 +124,7 @@ test('砍价: an argument is a button only while he holds it (`needs`)', () => {
   const there = must('haggle', { ...s, place: 'zhishi', scene: null }, { action: 'open', id: 'mend-pill' }).r;
   const cheaper = there.haggle.open.args.find(a => a.id === 'cheaper');
   assert.equal(cheaper.say, `别家才卖 ${paid}`);
-  assert.equal(cheaper.off, 15 - paid);
+  assert.equal(cheaper.off, MP - paid);
   // One he does not hold is refused, and changes nothing.
   assert.equal(run('haggle', must('haggle', store(), { action: 'open', id: 'caoren-zha' }).s, { action: 'argue', reason: 'regular' }).r.refused, 'not-held');
 });
@@ -129,37 +132,37 @@ test('砍价: an argument is a button only while he holds it (`needs`)', () => {
 test('砍价: each argument once, by its step, never under the floor', () => {
   let { s } = must('haggle', store({ haggle: { deals: { zhishi: 1 } } }), { action: 'open', id: 'caoren-zha' });
   const argue = reason => { const o = must('haggle', s, { action: 'argue', reason }); s = o.s; return o.r; };
-  assert.equal(argue('regular').came_down, Math.round(60 * 0.05));
+  assert.equal(argue('regular').came_down, Math.round(CZ * 0.05));
   assert.equal(run('haggle', s, { action: 'argue', reason: 'regular' }).r.refused, 'not-held', 'used once');
   const r = argue('flaw');
   assert.equal(r.haggle.open.args.every(a => a.used), true);
-  assert.ok(s.haggle.open.ask >= Math.ceil(60 * content.aigames.haggle.keepers.zhishi.floor));
+  assert.ok(s.haggle.open.ask >= Math.ceil(CZ * content.aigames.haggle.keepers.zhishi.floor));
   // At the floor he says it is as low as it goes (`firm`), and the line says so.
   const low = must('haggle', store({ haggle: { paid: { 'caoren-zha': { place: 'yanwu', price: 1 } } } }), { action: 'open', id: 'caoren-zha' }).s;
   const firm = must('haggle', low, { action: 'argue', reason: 'cheaper' }).r;
-  assert.equal(firm.haggle.open.ask, Math.ceil(60 * content.aigames.haggle.keepers.zhishi.floor));
+  assert.equal(firm.haggle.open.ask, Math.ceil(CZ * content.aigames.haggle.keepers.zhishi.floor));
   assert.equal(firm.haggle.open.firm, true);
   assert.equal(firm.talk.event, 'firm');
 });
 
 test('砍价: one counter-offer is taken within reach; lower costs a bead — three, and he will not haggle on', () => {
   let { s } = must('haggle', store(), { action: 'open', id: 'caoren-zha' });
-  const reach = Math.round(60 * content.aigames.haggle.counter.reach);
+  const reach = Math.round(CZ * content.aigames.haggle.counter.reach);
   // Too low: a bead, the ask stands, 「再低要翻脸了」 is his to say.
-  let r = run('haggle', s, { action: 'offer', price: 30 });
+  let r = run('haggle', s, { action: 'offer', price: Math.floor(CZ / 2) });
   assert.equal(r.r.too_low, true);
   assert.equal(r.r.haggle.open.mood, content.aigames.haggle.mood - 1);
-  assert.equal(r.r.haggle.open.ask, 60);
+  assert.equal(r.r.haggle.open.ask, CZ);
   assert.equal(r.r.talk.event, 'low');
   s = r.s;
   // Within reach: taken, once.
-  r = must('haggle', s, { action: 'offer', price: 60 - reach });
-  assert.equal(r.r.haggle.open.ask, 60 - reach);
+  r = must('haggle', s, { action: 'offer', price: CZ - reach });
+  assert.equal(r.r.haggle.open.ask, CZ - reach);
   assert.equal(r.r.haggle.open.offer, null);
-  assert.equal(run('haggle', r.s, { action: 'offer', price: 50 }).r.refused, 'countered');
+  assert.equal(run('haggle', r.s, { action: 'offer', price: CZ - reach - 1 }).r.refused, 'countered');
   // Three too low: soured — that thing is list price today.
   ({ s } = must('haggle', store(), { action: 'open', id: 'caoren-zha' }));
-  for (let i = 0; i < 3; i++) r = run('haggle', i ? r.s : s, { action: 'offer', price: 31 });
+  for (let i = 0; i < 3; i++) r = run('haggle', i ? r.s : s, { action: 'offer', price: Math.floor(CZ / 2) + 1 });
   assert.equal(r.r.soured, true);
   assert.equal(r.s.haggle.open, null);
   assert.equal(run('haggle', r.s, { action: 'open', id: 'caoren-zha' }).r.refused, 'walked-away');
@@ -167,14 +170,14 @@ test('砍价: one counter-offer is taken within reach; lower costs a bead — th
 
 test('砍价: the deal buys at the dealt price at once (a card into the hand, two of goods); walk-off is list price for the day', () => {
   // 替身草人 is a card: dealt, it is his, the stones off at the dealt price.
-  let { s } = must('haggle', store({ wealth: 57 }), { action: 'open', id: 'caoren-zha' });
+  let { s } = must('haggle', store({ wealth: CZ - 3 }), { action: 'open', id: 'caoren-zha' });
   ({ s } = must('haggle', s, { action: 'argue', reason: 'flaw' }));
   const ask = s.haggle.open.ask;
   const deal = must('haggle', s, { action: 'deal' });
   assert.equal(deal.r.price, ask);
-  assert.equal(deal.s.wealth, 57 - ask);
+  assert.equal(deal.s.wealth, CZ - 3 - ask);
   assert.ok(deal.s.cards.includes('caoren'));
-  assert.equal(deal.r.saved, 60 - ask);
+  assert.equal(deal.r.saved, CZ - ask);
   assert.equal(deal.r.talk.event, 'deal');
   assert.equal(deal.s.haggle.deals.zhishi, 1, 'a deal here: 我常来 from now on');
   assert.equal(run('haggle', deal.s, { action: 'open', id: 'caoren-zha' }).r.refused, 'walked-away', 'one haggle a thing a day');
@@ -190,18 +193,19 @@ test('砍价: the deal buys at the dealt price at once (a card into the hand, tw
   assert.equal(off.r.talk.event, 'walk');
   assert.equal(run('haggle', off.s, { action: 'open', id: 'bamboo-sword' }).r.refused, 'walked-away');
   assert.equal(must('haggle', off.s, { action: 'open', id: 'bamboo-sword' }, nextDay()).r.opened, true);
-  assert.equal(must('trade', off.s, { action: 'buy', id: 'bamboo-sword' }).r.paid.wealth, -51, 'the list price stands');
+  assert.equal(must('trade', off.s, { action: 'buy', id: 'bamboo-sword' }).r.paid.wealth, -price('bamboo-sword'), 'the list price stands');
   // Too poor for the ask: refused, nothing changes.
   const poor = must('haggle', store({ wealth: 1 }), { action: 'open', id: 'caoren-zha' }).s;
   assert.equal(run('haggle', poor, { action: 'deal' }).r.refused, 'no-stones');
 });
 
 test('砍价: the shelf\'s marks — 差 X, and whether haggling could close it', () => {
-  // 50 灵石, 替身草人 60: 差 10; 我常来 + 有瑕疵 + one counter-offer reach 50.
-  const can = look(store({ wealth: 50, haggle: { deals: { zhishi: 1 } } }), content, ctx()).haggle.marks['caoren-zha'];
-  assert.deepEqual(can, { short: 10, can: true, reach: 'can' });
-  // 40: under the floor — no haggle closes 20.
-  assert.equal(look(store({ wealth: 40 }), content, ctx()).haggle.marks['caoren-zha'].reach, 'far');
+  // 替身草人 at its price (the master table's, batch 2), a sixth short: 我常来 + 有瑕疵 + one counter-offer reach it.
+  const gap = Math.round(CZ / 6);
+  const can = look(store({ wealth: CZ - gap, haggle: { deals: { zhishi: 1 } } }), content, ctx()).haggle.marks['caoren-zha'];
+  assert.deepEqual(can, { short: gap, can: true, reach: 'can' });
+  // A third short: under the floor — no haggle closes it.
+  assert.equal(look(store({ wealth: CZ - Math.round(CZ / 3) }), content, ctx()).haggle.marks['caoren-zha'].reach, 'far');
   assert.deepEqual(look(store(), content, ctx()).haggle.marks['caoren-zha'], { can: true });
 });
 
@@ -232,7 +236,7 @@ test('断案 is cut (Hanli 10-27: 「紫玉参断案也不好玩, 删了吧, 改
   assert.ok(q, 'the errand');
   assert.deepEqual(q.opens, { done: 'wm-diyilu' });
   assert.deepEqual(q.need, [{ kind: 'board', task: 'zhishi-shen', n: 1, at: 'zhishi' }]);
-  assert.deepEqual(q.grant, { table: 'labor', wealth: 10 });
+  assert.deepEqual(q.grant, { table: 'labor', ls: 3 }); // 10 灵石 then; its size in minutes of income since batch 2
 });
 
 /* ════════ The door ════════ */

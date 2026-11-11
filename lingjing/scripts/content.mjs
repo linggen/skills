@@ -239,7 +239,10 @@ export function withBalance(content) {
     tiers: content.ladder.tiers.map(t => (b.layers?.[t.id] ? { ...t, thresholds: [...b.layers[t.id]] } : t)),
     // Each other line's ladder (ladder.json `lines`, rules/lines.mjs): its thresholds from the same `layers`, by its own tier ids.
     ...(content.ladder.lines ? { lines: Object.fromEntries(Object.entries(content.ladder.lines).map(([id, L]) => [id, !L?.tiers ? L
-      : { ...L, tiers: L.tiers.map(t => (b.layers?.[t.id] ? { ...t, thresholds: [...b.layers[t.id]] } : t)) }])) } : {}) };
+      : { ...L, tiers: L.tiers.map(t => (b.layers?.[t.id] ? { ...t, thresholds: [...b.layers[t.id]] } : t)) }])) } : {}),
+    // The breakthrough throw's numbers (balance.json `breakthrough`, from master.breakthrough — batch 2) laid onto ladder.json's
+    // (which pills, which elements, the 段's factors).
+    ...(b.breakthrough && content.ladder.breakthrough ? { breakthrough: deepLaid(content.ladder.breakthrough, b.breakthrough) } : {}) };
   const rewards = { ...content.rewards, ...(b.pay ? { tables: structuredClone(b.pay) } : {}), ...(b.convert ? { xiuwei_to_lingshi: structuredClone(b.convert) } : {}) };
   const fantong0 = content.fantong && c.fantong_min != null ? { ...content.fantong, limit: { ...content.fantong.limit, cooldown_min: c.fantong_min } } : content.fantong;
   // Shop prices (`prices`): every `buy` and `sell` lives here, folded onto its item; a pill's 修为 (`pills`) too.
@@ -248,40 +251,47 @@ export function withBalance(content) {
   // …and its worth (`kailu`: what a thing is worth to the pot, what each grade gives back) with what it knows of each
   // thing — its kind, its `sell` (rules/fantong-roll.mjs withWorth).
   const fantong = withWorth(fantong0, b, items?.items);
-  return { ...content, ladder, rewards, fantong, items, chapters: toldFolded(content.chapters, b) };
+  // An errand's 灵石 the book tells (master.economy.told `quests.<id>.grant`, batch 2): paid as written.
+  const stones = b.master?.economy?.told ?? {};
+  const quests = content.quests ? content.quests.map(q => (q.grant?.wealth > 0 && stones[`quests.${q.id}.grant`] ? { ...q, grant: { ...q.grant, wealth_told: true } } : q)) : content.quests;
+  return { ...content, ladder, rewards, fantong, items, quests, chapters: toldFolded(content.chapters, b) };
 }
 
-/* 丹药 (balance.json `pills`, 数值系统 phase 2): a pill of a family (`of`) is its 转's nights of 闭关 (`nights`, 一转 0.3 ·
-   三转 0.8 · 九转 3 — derived by tools/numbers.mjs --apply from the master table), on the `pill` table, in units: nights ×
-   a night's (`play_pay.seclusion.night`), × R where he eats it (core.mjs amountsOf, Hanli 2026-11-10) — so its card's
-   「抵N日打坐」 holds at every layer; past its own 阶 less (`below`, playpay.mjs pillBelow). A 仙丹 (a 阶 outside the ladder,
-   `by_tier`: 仙阶) has no 转: its nights are its 阶's. null for a pill of no family. */
-export const pillNights = (balance, item) => {
-  const P = balance?.pills;
-  return P?.by_tier?.[item?.tier] ?? P?.nights?.[(item?.zhuan ?? 1) - 1] ?? null;
+/* `over` laid onto `base`, object by object (arrays and numbers whole). */
+const deepLaid = (base, over) => {
+  if (!over || typeof over !== 'object' || Array.isArray(over) || !base || typeof base !== 'object' || Array.isArray(base)) return structuredClone(over);
+  const out = { ...base };
+  for (const [k, v] of Object.entries(over)) out[k] = k in base ? deepLaid(base[k], v) : structuredClone(v);
+  return out;
 };
-/* A 阶 outside the ladder that the pills know (balance.json pills `by_tier`: 仙阶) — no 转, no 纹, never below him. */
-export const offLadderTier = (content, tier) => Boolean(tier && content?.balance?.pills?.by_tier?.[tier] != null
+
+/* 丹药 (balance.json `pills`, batch 2 — Hanli 2026-11-10: 「丹药, 物品都给一个级别吧, 算数值的时候, 按照这个级别算」): a pill of a
+   family (`of`) carries what its family makes of it at its own `level` (tools/master.mjs pillsOf, derived by
+   tools/numbers.mjs --apply): a 修为 family's units at R of that level (`units` · `level`, rules/core.mjs amountsOf — never
+   where he eats it), a 回春 its heal in a fight, a 回气 its mana; an exception (九转回春丹) both. null for a pill of no family. */
+export const pillEffect = (balance, item) => (item?.of != null ? balance?.pills?.effects?.[item.id] ?? null : null);
+/* A 阶 outside the ladder that the pills know (balance.json pills `off_ladder`: 仙阶) — no 转, no 纹. */
+export const offLadderTier = (content, tier) => Boolean(tier && (content?.balance?.pills?.off_ladder ?? []).includes(tier)
   && !(content.ladder?.tiers ?? []).some(t => t.id === tier));
-/* A family pill's size in units (nights × a night's), or null. */
-export function pillPay(balance, item) {
-  const P = balance?.pills, n = pillNights(balance, item), night = balance?.play_pay?.seclusion?.night;
-  if (item?.of == null || !P?.families?.includes(item.of) || n == null || !night) return null;
-  return Math.round(n * night * 1000) / 1000;
-}
 const pillFolded = (b, i) => {
-  const units = i.kind === 'pill' ? pillPay(b, i) : null;
-  if (units == null) return i;
-  const { progress, ...e } = i.effect ?? {};
-  return { ...i, effect: { ...e, table: b.pills.table ?? i.effect?.table, units, tier: i.tier } };
+  // A 储物袋's room by its 品 (items.json `pin`; balance.json economy.pouch: base × step^(品−1), batch 2).
+  const P = b.economy?.pouch;
+  if (i.kind === 'pouch' && i.pin && P) return { ...i, effect: { ...(i.effect ?? {}), pouch: P.base * P.step ** (i.pin - 1) } };
+  const e = i.kind === 'pill' ? pillEffect(b, i) : null;
+  // Any other thing's 修为 size is paid at its own level too (batch 2): a 息珠, a 龙须草, a 晨练符.
+  if (e == null) return i.effect?.units > 0 && i.level ? { ...i, effect: { ...i.effect, level: i.level } } : i;
+  const { progress, units, table, fight, ...rest } = i.effect ?? {};
+  return { ...i, effect: { ...rest, ...structuredClone(e) } };
 };
 
 /* The one 修为 number written by hand (balance.json `play_pay.told`, from master.xiuwei.told — each with its why): an exit
    whose grant says `told: true` pays the master's number for `<scene>/<exit>`, laid on at load (never written in the book). */
 export const toldKey = (sceneId, exitId) => `${sceneId}/${exitId}`;
 function toldFolded(chapters, b) {
-  const told = b.play_pay?.told ?? {};
-  for (const ch of Object.values(chapters ?? {})) for (const sc of Object.values(ch.scenes ?? {})) for (const e of sc.exits ?? []) {
+  const told = b.play_pay?.told ?? {}, stones = b.master?.economy?.told ?? {};
+  for (const [cid, ch] of Object.entries(chapters ?? {})) for (const sc of Object.values(ch.scenes ?? {})) for (const e of sc.exits ?? []) {
+    // A 灵石 number the book tells (master.economy.told, batch 2): paid as written, never capped by its table (core.mjs amountsOf).
+    if (e.grant?.wealth > 0 && stones[`chapters.${cid}.scenes.${sc.id}.exits.${e.id}.grant`]) e.grant.wealth_told = true;
     if (!e.grant?.told) continue;
     const v = told[toldKey(sc.id, e.id)];
     if (v?.progress > 0) e.grant.progress = v.progress; else delete e.grant.progress;
@@ -564,7 +574,7 @@ const MADE_FORBIDDEN = ['set', 'value', 'key', 'game'];
 /* A made grant is progress and wealth from an allowed table, nothing more:
    an item, a beast, a card or an art named by the model would be a gift the
    model gave itself (review, 2026-09-24 — a well that handed out 息壤 and 应龙). */
-export const MADE_GRANT = new Set(['table', 'progress', 'units', 'wealth']);
+export const MADE_GRANT = new Set(['table', 'progress', 'units', 'wealth']); // (`wealth_told` is laid on at load, never a made scene's)
 
 /* A scene Ling wrote, checked the way authored ones are — against the
    player's other made scenes as its chapter — plus what a made scene may
@@ -657,6 +667,7 @@ export function lint(content) {
   lintWorld(content.world, bad);
   lintItems(content, bad);
   for (const e of authoredXiuwei(content)) bad(e.where, e.say);
+  for (const e of authoredStones(content)) bad(e.where, e.say);
   lintGongke(content, bad);
   lintFrom(content, bad);
   lintArts(content, bad);
@@ -737,8 +748,9 @@ function lintFestivals(content, bad) {
     seen.add(f.id);
     for (const key of ['name', 'line', 'her']) if (!pair(f[key])) bad(where, `${key} needs zh and en`);
     if (!pair(f.task?.label) || !pair(f.task?.what)) bad(where, 'the task needs its label and what, zh and en');
-    if (!pair(f.gift?.line) || !(f.gift?.wealth > 0)) bad(where, 'the gift needs a line and some 灵石');
-    else if (f.gift.wealth > content.rewards.tables.task.wealth) bad(where, `gift ${f.gift.wealth} is over a task's ${content.rewards.tables.task.wealth}`);
+    // Its 灵石 a size (`ls`, minutes of income × I where he stands — batch 2), no more than a task's.
+    if (!pair(f.gift?.line) || !(f.gift?.ls > 0)) bad(where, 'the gift needs a line and some 灵石 (ls, minutes of income)');
+    else if (f.gift.ls > content.rewards.tables.task.ls) bad(where, `gift ${f.gift.ls} is over a task's ${content.rewards.tables.task.ls}`);
     if (f.dressing?.frame != null && !FRAMES.includes(f.dressing.frame)) bad(where, `unknown frame ${f.dressing.frame}`);
     if (f.dressing?.particles != null && !PARTICLES.includes(f.dressing.particles)) bad(where, `unknown particles ${f.dressing.particles}`);
     if (f.backdrop != null && !fs.existsSync(path.join(content.dir, f.backdrop))) bad(where, `backdrop ${f.backdrop} is missing`);
@@ -1110,7 +1122,7 @@ function lintMeets(content, ids, bad) {
       if (!(t.marks[d] >= 1 && t.marks[d] <= t.die)) bad('meets', `trial mark ${d} is off the die`);
       if (!t.win[d]) bad('meets', `trial ${d} wins nothing`);
       for (const [stake, by] of Object.entries(t.lose)) if (by[d] == null) bad('meets', `trial ${d} has no ${stake} loss`);
-      if (!(t.win[d]?.units >= 0) || (t.win[d]?.wealth ?? 0) > content.rewards.tables.trial?.wealth) bad('meets', `trial ${d}: a size (units) and 灵石 under the trial table's`);
+      if (!(t.win[d]?.units >= 0) || (t.win[d]?.ls ?? 0) > content.rewards.tables.trial?.ls) bad('meets', `trial ${d}: a size (units) and 灵石 (ls) under the trial table's`);
     }
   }
   const story = new Set(Object.values(content.chapters).flatMap(c => Object.values(c.scenes)).flatMap(sc => sc.exits ?? []).flatMap(e => (e.key == null ? [] : [].concat(e.key))));
@@ -1125,8 +1137,8 @@ function lintMeets(content, ids, bad) {
     for (const f of finds) {
       const where = `meets find (${province})`;
       if (!pair(f.line)) bad(where, 'the line needs zh and en');
-      if (f.item ? !ids.items.has(f.item) : !(f.wealth > 0)) bad(where, 'names an item that exists, or a few stones');
-      if (f.wealth > content.rewards.tables.meet.wealth) bad(where, `pays ${f.wealth}, over the meet table's ${content.rewards.tables.meet.wealth}`);
+      if (f.item ? !ids.items.has(f.item) : !(f.ls > 0)) bad(where, 'names an item that exists, or a few stones (ls, minutes of income)');
+      if (f.ls > content.rewards.tables.meet.ls) bad(where, `pays ${f.ls}, over the meet table's ${content.rewards.tables.meet.ls}`);
       for (const id of f.at ?? []) {
         const at = Object.values(content.places).flatMap(d => d.places.map(p => ({ ...p, province: d.province }))).find(p => p.id === id);
         if (!at) bad(where, `lies at unknown place ${id}`);
@@ -1764,6 +1776,31 @@ export function authoredXiuwei(content) {
   }
   return out;
 }
+/* No 灵石 number in the book (batch 2, Hanli 2026-11-10: 「所有和数值相关的都应该有公式推到, 不能手动定」): a grant's 灵石 is a size
+   (`ls`, minutes of income × I where it is paid), a price is the master table's (balance.json `prices`, from each item's class
+   and level) — so a numeric `wealth`, or a `buy` · `sell` on a thing, is an error, save a master `economy.told` row (keyed by the
+   path printed here, with its why) and a made scene's (Ling's, capped by its table at the rules). A path names a row by its id. */
+export function authoredStones(content) {
+  const out = [], told = content.balance?.master?.economy?.told ?? {}, skip = new Set(['balance', 'ladder', 'dir', 'world', 'book', 'dictionary']);
+  const walk = (o, where) => {
+    if (!o || typeof o !== 'object') return;
+    if (typeof o.wealth === 'number' && o.wealth > 0 && !told[where]) out.push({ where, say: `an authored 灵石 number (wealth ${o.wealth}): declare a size (ls, minutes of income), or a master economy.told with its why` });
+    if (typeof o.price === 'number' && !told[where]) out.push({ where, say: `an authored price (${o.price}): prices are the master table's (balance.json prices)` });
+    for (const [k, v] of Object.entries(o)) if (!k.startsWith('_') && v && typeof v === 'object') walk(v, `${where}.${v.id && typeof v.id === 'string' ? v.id : k}`);
+  };
+  for (const [k, v] of Object.entries(content)) {
+    if (skip.has(k)) continue;
+    if (k === 'rewards') { const { tables, xiuwei_to_lingshi, ...rest } = v ?? {}; walk(rest, k); continue; }
+    // A made scene's grant is Ling's (MADE: capped by its table where it is paid) — its chapter and its templates.
+    if (k === 'templates') continue;
+    // A made scene's grant is Ling's (MADE: capped by its table where it is paid).
+    if (k === 'chapters') { for (const [id, ch] of Object.entries(v ?? {})) if (id !== MADE.chapter) walk(ch, `chapters.${id}`); continue; }
+    // A price on a thing the master table does not price (balance.json `prices` folds onto every thing it holds).
+    if (k === 'items') { for (const i of v?.items ?? []) for (const f of ['buy', 'sell']) if (i[f] > 0 && content.balance?.prices && content.balance.prices[i.id]?.[f] == null) out.push({ where: `items.${i.id}`, say: `a ${f} the master table never set: prices are balance.json's (tools/master.mjs pricesOf)` }); continue; }
+    walk(v, k);
+  }
+  return out;
+}
 function lintStoryPay(where, scene, exit, chapter, content, bad) {
   if (MADE.tables.includes(exit.grant?.table) && chapter.id !== MADE.chapter && hasWorld(content.world.id)) bad(where, `the ${exit.grant.table} table is a made scene's: the book's steps pay {table: 'story'}`);
   lintGrantTold(where, exit.grant, id => chapter.scenes[id] ?? null, scene, exit.next ?? null, bad);
@@ -1953,7 +1990,9 @@ function lintPill(content, item, where, bad) {
     if (!(Number.isInteger(item.zhuan) && item.zhuan >= 1 && item.zhuan <= 9)) bad(where, 'a pill\'s 转 (zhuan) is a whole number, 一 to 九');
   }
   if (item.of != null && !(content.balance?.pills?.families ?? []).includes(item.of)) bad(where, `of an unknown pill family ${item.of}`);
-  if (item.of != null && item.effect?.table == null) bad(where, 'a pill of a family pays 修为: it names its table');
+  // A family pill carries what its family makes of it at its level (balance.json pills.effects, batch 2): 修为 (units at R of its
+  // level), a heal or a mana in a fight — never a number of its own.
+  if (item.of != null && content.balance?.pills?.effects && !content.balance.pills.effects[item.id]) bad(where, `a pill of family ${item.of} the master table never priced (node tools/numbers.mjs --apply)`);
 }
 
 /* 人间功课's meanings (gongke.json, rules/gongke.mjs): each kind named in both languages, its facts for her,
@@ -1968,17 +2007,17 @@ function lintGongke(content, bad) {
     if (!/^[a-z][a-z-]*$/.test(kind)) bad(where, 'a kind is a plain lowercase word');
     if (!m.name?.zh || !m.name?.en) bad(where, 'needs a name in zh and en');
     if (!m.about?.zh || !m.about?.en) bad(where, 'needs her facts (`about`) in zh and en');
-    if ((m.wealth ?? 0) > (tables.chore_kind?.wealth ?? 0)) bad(where, 'pays over the chore_kind table');
+    if ((m.ls ?? 0) > (tables.chore_kind?.ls ?? 0)) bad(where, 'pays over the chore_kind table');
     if (m.units != null && !(m.units >= 0)) bad(where, 'its 修为 is a size: units ≥ 0');
     if (m.item && !items.has(m.item)) bad(where, `leaves unknown item ${m.item}`);
     // `own` (rules/chores.mjs ownOf): the chore's own pay — units of play and 灵石 on a table; a kind that has it adds no meaning pay.
     if (m.own) {
       const t = tables[m.own.table];
       if (!t) bad(where, `own pays on an unknown table ${m.own.table}`);
-      else if ((m.own.wealth ?? 0) > t.wealth) bad(where, 'own pays over its table');
+      else if ((m.own.ls ?? 0) > t.ls) bad(where, 'own pays over its table');
       // A size, never a 修为 number: `games` (small games where he stands) or `units` (体力 of play).
       if (!(m.own.games > 0 || m.own.units > 0)) bad(where, 'own needs `games` or `units`, a positive number');
-      if (m.wealth || m.progress || m.item || m.week) bad(where, 'a kind with `own` adds no meaning pay (it would meet the day\'s cap)');
+      if (m.ls || m.progress || m.item || m.week) bad(where, 'a kind with `own` adds no meaning pay (it would meet the day\'s cap)');
     }
     if (m.week && (!Number.isInteger(m.week.days) || m.week.days < 1 || m.week.days > 7 || !m.week.name?.zh || !m.week.name?.en)) bad(where, 'a week is 1–7 days, named in zh and en');
     if (m.week && !tables.chore_week) bad(where, 'a week pays off the chore_week table, which is missing');
@@ -1995,9 +2034,17 @@ function lintItems(content, bad) {
     if (!['atk', 'def', 'ward'].includes(sl?.arms)) bad(`slot ${sl?.id}`, 'a slot carries atk, def or ward');
     if (sl?.id && !ITEM_KINDS.has(sl.id)) bad(`slot ${sl.id}`, 'a slot is an item kind (content.mjs ITEM_KINDS)');
   }
+  const tiers = content.ladder.tiers.map(t => t.id), breakers = new Set(Object.values(content.ladder.breakthrough?.pill?.items ?? {}).flat());
   for (const item of content.items.items) {
     const where = `item ${item.id}`;
     if (seen.has(item.id)) bad(where, 'duplicate id');
+    // Its level (batch 2, Hanli 2026-11-10: 「丹药, 物品都给一个级别吧」): 1–81 (L = realm × 9 + 层), and its 阶 the realm of it — a pill
+    // a breakthrough reaches for (ladder.json breakthrough.pill.items) the realm it opens, at the top 层 of the one below (筑基丹 9).
+    if (!(Number.isInteger(item.level) && item.level >= 1 && item.level <= 81)) bad(where, 'a level 1–81 (L = realm × 9 + 层)');
+    else if (item.tier && tiers.includes(item.tier)) {
+      const r = tiers.indexOf(item.tier), at = Math.floor((item.level - 1) / 9);
+      if (at !== r && !(breakers.has(item.id) && at === r - 1 && item.level === r * 9)) bad(where, `its 阶 ${item.tier} is not the realm of level ${item.level}`);
+    }
     seen.add(item.id);
     if (!ITEM_KINDS.has(item.kind)) bad(where, `unknown kind ${item.kind}`);
     // A test-only thing (`test: true`) says in its `_about` that it goes before launch (doc/status.md § Before launch).
@@ -2024,7 +2071,9 @@ function lintItems(content, bad) {
     const arms = ['atk', 'def', 'ward'].filter(k => e[k] != null);
     // 伤势 and 强化 were cut (redesign-v2 § 四): no `mend`, no `temper`.
     const kinds = ['key', 'units', 'wear', 'charm', 'core', 'learn', 'pouch', 'card', 'fight', 'waive', 'kailu'].filter(k => e[k] != null);
-    if (kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, units (修为, a size), wear, charm, core, learn, pouch, card, fight, waive, kailu, or arms (atk, def, ward)');
+    // A pill the master declares an exception (master.pills.exceptions, with its why): its heal and its 修为 together.
+    const both = item.kind === 'pill' && content.balance?.master?.pills?.exceptions?.[item.id] && kinds.length === 2 && kinds.includes('fight') && kinds.includes('units');
+    if (!both && kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, units (修为, a size), wear, charm, core, learn, pouch, card, fight, waive, kailu, or arms (atk, def, ward)');
     // `kailu`: the next 开炉 a grade up, the thing spent with it (净炉符, rules/fantong.mjs liftOf).
     if (e.kailu != null && e.kailu !== 'lift') bad(where, 'kailu is lift');
     // `waive`: one cost of that kind not paid, the thing spent instead (饱嗝令, rules/core.mjs spendStamina) — a kind with a cost.

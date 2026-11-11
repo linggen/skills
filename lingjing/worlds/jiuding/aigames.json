@@ -155,8 +155,8 @@
     "need": 3,
     "free": "之乎者也而以于其兮",
     "marks": [
-      { "id": "gong", "name": { "zh": "工整", "en": "well matched" }, "min": 5, "form": true, "good": true, "pay": { "table": "game", "units": 3, "wealth": 8 } },
-      { "id": "dui", "name": { "zh": "对上了", "en": "it matches" }, "min": 3, "form": true, "good": true, "pay": { "table": "game", "units": 1.5, "wealth": 5 } },
+      { "id": "gong", "name": { "zh": "工整", "en": "well matched" }, "min": 5, "form": true, "good": true, "pay": { "table": "game", "units": 3, "ls": 2.4 } },
+      { "id": "dui", "name": { "zh": "对上了", "en": "it matches" }, "min": 3, "form": true, "good": true, "pay": { "table": "game", "units": 1.5, "ls": 1.5 } },
       { "id": "jin", "name": { "zh": "差一点", "en": "nearly" }, "min": 2 },
       { "id": "bu", "name": { "zh": "没对上", "en": "not a match" }, "min": 0 }
     ],

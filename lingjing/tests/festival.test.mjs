@@ -2,6 +2,7 @@
 // the device — the lunar table and the 节气 formula against published dates,
 // the festival of a day, festivals.json linted, Look's `today`, and the gift
 // paid once per festival per year.
+import { stonesAt } from '../scripts/rules/playpay.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -100,7 +101,7 @@ test('festivals.json: one entry per festival, words in both languages, dressing 
   assert.deepEqual(lint(content).filter((p) => p.startsWith('festival')), []);
   assert.deepEqual(content.festivals.festivals.map((f) => f.id).sort(), [...FESTIVAL_IDS].sort());
   const broken = structuredClone(content);
-  broken.festivals.festivals[0].gift.wealth = 99;
+  broken.festivals.festivals[0].gift.ls = 99;
   broken.festivals.festivals[1].dressing.frame = 'neon';
   broken.festivals.festivals[2].line = { zh: '只有中文' };
   broken.festivals.festivals.pop();
@@ -125,7 +126,9 @@ test('Look carries today: the date, a 节气 when one falls, the festival with i
   assert.match(t.festival.line, /春联/);
   assert.equal(t.festival.task.id, 'festival');
   assert.equal(t.festival.task.done, false);
-  assert.deepEqual(t.festival.gift, { wealth: 8, given: false });
+  // Its gift: minutes of income (festivals.json `ls`, batch 2) × I where he stands — 8 灵石 flat until 2026-11-10.
+  const gift = (st, id) => Math.round(stonesAt(content, st, content.festivals.festivals.find(f => f.id === id).gift.ls));
+  assert.deepEqual(t.festival.gift, { wealth: gift(s, 'chunjie'), given: false });
   assert.deepEqual(t.festival.dressing, { frame: 'chunlian', particles: 'sparks' });
   // Told once a day: the line is gone once the save says so.
   assert.equal(look({ ...s, festival_told: '2027-02-06' }, content, { now: at('2027-02-06'), quests: [] }).today.festival.line, undefined);
@@ -140,20 +143,20 @@ test('Look carries today: the date, a 节气 when one falls, the festival with i
 test('the festival task pays its gift once a year; 除夕 to 元宵 is one gift; before the gate there is none', () => {
   const now = at('2027-02-05');
   let s = open(now);
-  const w0 = s.wealth;
+  const w0 = s.wealth, G = Math.round(stonesAt(content, s, content.festivals.festivals.find(f => f.id === 'chuxi').gift.ls));
   const first = task(s, content, { now, quests: [] }, { action: 'done', id: 'festival' });
   assert.equal(first.result.ok, true);
-  assert.equal(first.result.wealth, 8);
+  assert.equal(first.result.wealth, G);
   assert.match(first.result.gift, /灵石/);
   s = first.state;
-  assert.equal(s.wealth, w0 + 8);
+  assert.equal(s.wealth, w0 + G);
   assert.deepEqual(s.festivals, ['chuxi-2027', 'gift:chunjie-2027']);
   assert.equal(task(s, content, { now, quests: [] }, { action: 'done', id: 'festival' }).result.refused, 'already-done');
   // 初一: its own task, the span's gift already given.
   const day1 = task(s, content, { now: at('2027-02-06'), quests: [] }, { action: 'done', id: 'festival' });
   assert.equal(day1.result.ok, true);
   assert.equal(day1.result.wealth, 0);
-  assert.equal(day1.state.wealth, w0 + 8);
+  assert.equal(day1.state.wealth, w0 + G);
   assert.equal(look(day1.state, content, { now: at('2027-02-06'), quests: [] }).today.festival.gift.given, true);
   // No festival, no task.
   assert.equal(task(s, content, { now: at('2027-03-30'), quests: [] }, { action: 'done', id: 'festival' }).result.refused, 'no-festival');

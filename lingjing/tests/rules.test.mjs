@@ -16,7 +16,7 @@ import { beforeChapterOne, TO_WAIMEN, TO_HALL, TO_VALLEY, V1_BIRTH, walk } from 
 import { starterFor } from '../scripts/rules/roots.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
-import { chorePlay, sizedUnits, unitsPay } from '../scripts/rules/playpay.mjs';
+import { chorePlay, sizedUnits, stonesAt, tableStones, unitsPay } from '../scripts/rules/playpay.mjs';
 import { paysOf } from '../scripts/rules/core.mjs';
 // What the book authors is a share of 练气一层, read at the layer he stands on (play_pay.authored, 2026-10-27).
 // A size's 修为 where he stands (2026-11-10: the book declares units, paid units × R there — rules/playpay.mjs unitsPay).
@@ -1509,21 +1509,23 @@ test('the market: the shelf on the place, buying, selling, the visit\'s stamina'
   const l = look(s, content, ctx());
   assert.equal(l.place.has.shop, true);
   assert.deepEqual(l.place.shelf.map(i => i.id), ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'mend-pill', 'huiqi-pill', 'wangqi-1', 'jade-ring', 'luobo']);
-  assert.equal(l.place.shelf[1].buy, 48);
+  // The price is the master table's (batch 2: a 修为 pill costs pill_ratio × its minutes of play × I(its level), tools/master.mjs).
+  const P = content.balance.prices['qi-pill'].buy;
+  assert.ok(P > 0 && l.place.shelf[1].buy === P);
   assert.deepEqual(l.place.show, [{ card: 'item', ids: ['lingzhi', 'qi-pill', 'ginseng', 'bamboo-sword', 'straw-cloak', 'jade-fish', 'ferry-token', 'mend-pill', 'huiqi-pill', 'wangqi-1', 'jade-ring', 'luobo'] }]);
   const bought = must(trade, s, { action: 'buy', id: 'qi-pill' });
-  assert.equal(bought.state.wealth, 52);
+  assert.equal(bought.state.wealth, s.wealth - P);
   assert.deepEqual(bought.state.bag, { 'fox-token': 1, 'tuna-jing': 1, 'old-bow': 1, 'grey-robe': 1, 'qi-pill': 1 }); // the token from 吴婆婆, the scroll from her, the bow from 爹, the robe from the 入门仪式
   assert.equal(bought.state.stamina, 100, 'the market costs nothing — a tap, no time (2026-09-23)');
   assert.equal(bought.result.item.held, 1);
   assert.deepEqual(look(bought.state, content, ctx()).bag.map(b => b.id), ['fox-token', 'tuna-jing', 'old-bow', 'grey-robe', 'qi-pill']);
   const sold = must(trade, bought.state, { action: 'sell', id: 'qi-pill' });
-  assert.equal(sold.state.wealth, 52 + content.items.items.find(i => i.id === 'qi-pill').sell, 'bought back a third (balance.json master economy)');
+  assert.equal(sold.state.wealth, s.wealth - P + content.items.items.find(i => i.id === 'qi-pill').sell, 'bought back a third (balance.json master economy)');
   assert.deepEqual(sold.state.bag, { 'fox-token': 1, 'tuna-jing': 1, 'old-bow': 1, 'grey-robe': 1 });
   refused(trade, sold.state, { action: 'sell', id: 'qi-pill' }, 'not-in-bag');
-  const poor = refused(trade, { ...s, wealth: 10 }, { action: 'buy', id: 'qi-pill' }, 'no-stones');
+  const poor = refused(trade, { ...s, wealth: P - 1 }, { action: 'buy', id: 'qi-pill' }, 'no-stones');
   assert.equal(poor.say, '灵石不够。');
-  assert.equal(poor.price, 48);
+  assert.equal(poor.price, P);
   assert.deepEqual(refused(trade, s, { action: 'buy', id: 'moon-bell' }, 'not-for-sale-here').shelf.length, 12, 'the shelf: its ten, and the 丹囊\'s 回春丹 and 回气丹 (2026-10-16)');
   refused(trade, s, { action: 'buy', id: 'nothing' }, 'unknown-item');
   assert.equal(must(trade, { ...s, stamina: 0 }, { action: 'buy', id: 'straw-cloak' }).result.ok, true, 'spent 体力 still shops');
@@ -2234,8 +2236,9 @@ test('chapter 2 opens in November: the road from Ye, the Pu, Puyang\'s market, t
   const town = look(s, content, nctx());
   assert.equal(town.scene.id, '02-town');
   assert.deepEqual(town.place.shelf.map(i => i.id), ['firm-pill', 'mend-pill', 'huiqi-pill', 'wangqi-2', 'sang-paper', 'leijimu', 'xirang', 'pouch-mid']);
+  const had = s.wealth;
   s = answerN(trade, s, { action: 'buy', id: 'sang-paper' }).state;
-  assert.equal(s.wealth, 370);
+  assert.equal(s.wealth, had - content.balance.prices['sang-paper'].buy, 'bought at the master table\'s price (batch 2)');
   s = answerN(resolve, s, { exit: 'lake' }).state;
   assert.equal(s.place, 'leize');
   const lake = look(s, content, nctx()).scene;
@@ -2316,8 +2319,9 @@ test('chapter 3 opens in December: the road from Fuli, the Wei, Linzi\'s market,
   assert.equal(town.scene.id, '03-town');
   // at 结丹 with her still to find and no bell in hand, the market sells one
   assert.deepEqual(town.place.shelf.map(i => i.id), ['pojing-pill', 'mend-pill', 'huiqi-pill', 'wangqi-2', 'qi-salt', 'qi-silk', 'jingjin', 'hanyu', 'pouch-high', 'moon-bell']);
+  const had = s.wealth;
   s = answerD(trade, s, { action: 'buy', id: 'qi-salt' }).state;
-  assert.equal(s.wealth, 380);
+  assert.equal(s.wealth, had - content.balance.prices['qi-salt'].buy, 'bought at the master table\'s price (batch 2)');
   s = answerD(resolve, s, { exit: 'shore' }).state;
   assert.equal(s.place, 'penglai');
   const shore = look(s, content, dctx()).scene;
@@ -2786,7 +2790,7 @@ test('精英 is its harder deck and nothing more: the same share of 气血, the 
   const won = fightOut({ ...base, tier: 'core', traits: ['metal', 'wood', 'water', 'fire', 'earth'], root_main: 'metal', cards: all }, 'haunt:leishen', { c: nov });
   assert.equal(won.result.outcome, 'won', JSON.stringify({ o: won.result.outcome, you: won.result.you?.hp, foe: won.result.foe?.hp, turns: won.result.turns }));
   assert.equal(won.result.elite, undefined);
-  assert.equal(won.result.paid.wealth, content.rewards.tables.haunt.wealth, 'a haunt\'s pay');
+  assert.equal(won.result.paid.wealth, tableStones(content, { ...base, tier: 'core', step: 0 }, 'haunt'), 'a haunt\'s pay: its table\'s minutes × I where he stands (batch 2)');
   // its own card if it names one (cards.json from: beast) — never one at random (cards.md, 2026-10-16)
   assert.ok((won.result.dropped ?? []).filter(d => d.card).length <= 1, JSON.stringify(won.result.dropped));
 });
@@ -2889,7 +2893,10 @@ test('抉择: the roll settles it — what was won or lost is the rules\', the w
   const worn = must(meet, at([14, 1, 1], { stamina: 5, stamina_at: c.now.toISOString() }), { action: 'choose', n: 0 }, c);
   assert.deepEqual([worn.state.stamina, worn.result.lost.stamina, worn.state.resting], [0, 5 - staminaCost(content, 'trial'), true]);
   const poorer = must(meet, at([1, 5, 1]), { action: 'choose', n: 1 }, c);
-  assert.deepEqual([poorer.result.success, poorer.result.lost.wealth, poorer.state.wealth], [false, 5, 45]);
+  // The easy stake: its minutes of income (meets.json trial.lose.coin) × I where he stands (batch 2).
+  const stake = Math.round(stonesAt(content, base, content.meets.trial.lose.coin.easy));
+  assert.ok(stake > 0);
+  assert.deepEqual([poorer.result.success, poorer.result.lost.wealth, poorer.state.wealth], [false, stake, 50 - stake]);
   // 银月 at his side: +2 — a 13 now reaches the hard mark of 15
   const beside = must(meet, at([13, 1, 1], { companion: { joined: '2026-10-01' } }), { action: 'choose', n: 0 }, c);
   assert.equal(beside.result.success, true);
@@ -3646,7 +3653,8 @@ test('an errand shows what it pays (`pays`), the tier and the roots counted — 
   assert.equal(offer.pays.progress, turned.result.paid.progress + (turned.result.paid.hold?.held ?? 0));
   assert.equal(offer.pays.wealth, turned.result.paid.wealth);
   // an errand pays 修为 too since 2026-10-27 (rules/playpay.mjs): the card shows what lands
-  assert.ok(offer.pays.progress > 0 && offer.pays.wealth >= offer.grant.wealth);
+  // …and its 灵石 at least its grant's size where he stands (batch 2: `ls` minutes × I there).
+  assert.ok(offer.pays.progress > 0 && offer.pays.wealth >= Math.round(stonesAt(content, s, offer.grant.ls ?? 0)));
 });
 
 test('a save the world no longer fits comes back fitted, and a bad 体力 clock never becomes NaN', async () => {

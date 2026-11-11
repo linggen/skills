@@ -21,6 +21,9 @@ const content = loadContent();
 // 体力 as small-game play, × R × play_pay.xiuwei.board — 90 at 练气一层 with today's knobs (18 when it was 9 units unfactored).
 const X = content.balance.play_pay.xiuwei, OWN = content.gongke.kinds.share.own, GAME = content.balance.play_pay.story.units;
 const XW = Math.round(OWN.games * GAME * X.rate.base * X.board);
+// …and three small games' 灵石 (batch 2): a small game's play 灵石 (play_pay.wealth.default, minutes of income) × I at 练气一层 —
+// 11 with today's knobs (15, a flat number, until 2026-11-10).
+const WS = Math.round(OWN.games * content.balance.play_pay.wealth.default * content.balance.economy.income.first);
 const ROOT = path.resolve(import.meta.dirname, '..');
 const NOW = new Date('2026-11-10T12:00:00');
 const T = id => ({ zh: `做${id}`, en: `Do ${id}` });
@@ -41,22 +44,22 @@ test('the table lints; the share is a daily kind that pays by its own, with no m
   const m = content.gongke.kinds.share;
   assert.deepEqual([m.name.zh, m.name.en], ['传音', 'Sending word']);
   assert.match(m.about.zh, /道不孤，必有邻/);
-  assert.equal(m.wealth ?? m.progress ?? m.item ?? m.week, undefined);
+  assert.equal(m.ls ?? m.wealth ?? m.progress ?? m.item ?? m.week, undefined);
   assert.equal(MENU[0].period, 'day');
   assert.equal(MENU[0].kind, 'share');
   assert.equal(ownOf(content, row()), m.own);
   assert.equal(ownOf(content, { ...row(), period: 'once' }), null, '开府 never');
   const bad = structuredClone(content);
-  bad.gongke.kinds.share.wealth = 2;
-  bad.gongke.kinds.share.own.wealth = 999;
+  bad.gongke.kinds.share.ls = 2;
+  bad.gongke.kinds.share.own.ls = 999;
   assert.match(lint(bad).join('\n'), /gongke share.*own pays over its table/);
   assert.match(lint(bad).join('\n'), /gongke share.*adds no meaning pay/);
 });
 
-test('a share pays three small games\' 修为 where he stands (90 at 练气一层) and 15 灵石, once a day: a second pays nothing, the next day pays again', () => {
+test('a share pays three small games\' 修为 where he stands (90 at 练气一层) and three small games\' 灵石, once a day: a second pays nothing, the next day pays again', () => {
   const s = { ...joined(), step: 1, progress: 0 };
   const g = choreGrant(content, row(), s, NOW);
-  assert.deepEqual([g.progress, g.wealth, g.stamina], [XW, 15, 0]);
+  assert.deepEqual([g.progress, g.wealth, g.stamina], [XW, WS, 0]);
   assert.equal(OWN.games, 3);
   assert.equal(XW, 90, 'three small games at 练气一层 (30 each) with today\'s knobs');
   // …at every layer: three times what one small game pays there (rules/playpay.mjs storyPlay), rising with the layer.
@@ -68,8 +71,8 @@ test('a share pays three small games\' 修为 where he stands (90 at 练气一�
   const quests = [row()];
   const one = turn(s, quests, SHARE);
   assert.equal(one.result.ok, true);
-  assert.deepEqual([one.result.paid.progress, one.result.paid.wealth], [XW, 15]);
-  assert.equal(one.state.wealth, s.wealth + 15);
+  assert.deepEqual([one.result.paid.progress, one.result.paid.wealth], [XW, WS]);
+  assert.equal(one.state.wealth, s.wealth + WS);
   assert.equal(one.state.progress, s.progress + XW);
   assert.equal(one.result.meaning.name, '传音');
   assert.deepEqual([one.result.meaning.paid.progress, one.result.meaning.paid.wealth], [0, 0], 'the pay is the chore\'s own, not the meaning\'s');
@@ -78,7 +81,7 @@ test('a share pays three small games\' 修为 where he stands (90 at 练气一�
   assert.equal(again.state, null);
   const next = new Date('2026-11-11T12:00:00');
   const tomorrow = turn(one.state, [row('2026-11-11T09:00:00')], SHARE, next);
-  assert.deepEqual([tomorrow.result.ok, tomorrow.result.paid.progress, tomorrow.result.paid.wealth], [true, XW, 15]);
+  assert.deepEqual([tomorrow.result.ok, tomorrow.result.paid.progress, tomorrow.result.paid.wealth], [true, XW, WS]);
 });
 
 test('it lands whole when the day\'s meaning cap is already spent', () => {
@@ -86,10 +89,10 @@ test('it lands whole when the day\'s meaning cap is already spent', () => {
   const cap = content.gongke.per_day;
   const quests = [chore('a-body', 'body'), chore('a-rest', 'rest'), chore('a-ledger', 'ledger'), chore('a-sweep', 'sweep'), row()];
   for (const id of ['a-body', 'a-rest', 'a-ledger', 'a-sweep']) s = turn(s, quests, id).state;
-  assert.ok(s.gongke.day.progress >= cap.progress || s.gongke.day.wealth >= cap.wealth, 'the cap is met');
+  assert.ok(s.gongke.day.progress >= cap.progress || (s.gongke.day.ls ?? 0) >= cap.ls, 'the cap is met');
   const seen = { ...s.gongke.day };
   const out = turn(s, quests, SHARE);
-  assert.deepEqual([out.result.paid.progress, out.result.paid.wealth], [XW, 15]);
+  assert.deepEqual([out.result.paid.progress, out.result.paid.wealth], [XW, WS]);
   assert.deepEqual(out.state.gongke.day, seen, 'it neither used the cap nor was held by it');
   assert.equal(out.state.chores[SHARE].apart, true);
 });
@@ -118,7 +121,7 @@ test('quest share (the page): stamps the game\'s menu and hands the row in at on
     const s = { ...joined(), step: 1, progress: 0 };
     const first = VERBS.quest(s, content, ctxOf([]), { action: 'share' });
     assert.equal(first.result.ok, true);
-    assert.deepEqual([first.result.shared, first.result.turned, first.result.paid.progress, first.result.paid.wealth], [true, SHARE, XW, 15]);
+    assert.deepEqual([first.result.shared, first.result.turned, first.result.paid.progress, first.result.paid.wealth], [true, SHARE, XW, WS]);
     const file = JSON.parse(fs.readFileSync(path.join(dir, 'lingjing.json'), 'utf8'));
     assert.equal(file.app, 'lingjing');
     assert.equal(file.quests[0].id, SHARE);
@@ -188,7 +191,7 @@ test('the board row: 传音, the app\'s words, and what it pays shown before it 
   const board = gongkeBoard(content, s, [row()], NOW, 'zh', questDone);
   const r = board.rows[0];
   assert.deepEqual([r.name, r.done, r.paid], ['传音', true, false]);
-  assert.deepEqual(r.pays, { progress: XW, wealth: 15 });
+  assert.deepEqual(r.pays, { progress: XW, wealth: WS });
   assert.deepEqual(r.adds, { progress: 0, wealth: 0 });
 });
 

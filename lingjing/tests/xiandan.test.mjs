@@ -1,15 +1,15 @@
 // 仙丹 (design.md § 丹药 【已建】; story DESIGN § 六·五: 九转之上是仙丹 — 不分境界，仙气自己找路；没有纹，自己发光):
-// 仙阶, a 阶 off the ladder with no 转; its own share of the layer (balance.json pills `by_tier`), never `below` him at any
+// 仙阶, a 阶 off the ladder with no 转; its own share of its level's need (master.pills `xian`, batch 2), the same at every
 // realm; it clears 丹毒 as a 九转; the 饭桶 gives one only once 卷一's last scene is done (a pool row with `after`).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loadContent, lint, offLadderTier, pillPay } from '../scripts/content.mjs';
+import { loadContent, lint, offLadderTier } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { trade } from '../scripts/rules.mjs';
 import { eatPill } from '../scripts/rules/dandu.mjs';
 import { fantongAll, rollFeed } from '../scripts/rules/fantong.mjs';
 import { paysOf } from '../scripts/rules/core.mjs';
-import { pillBelow } from '../scripts/rules/playpay.mjs';
+import { rateOfLevel } from '../scripts/rules/playpay.mjs';
 
 const content = loadContent();
 const T0 = new Date('2026-10-31T20:00:00');
@@ -33,20 +33,16 @@ test('仙丹 is 仙阶: off the ladder, no 转, a 修为 pill of the 聚气 fami
   assert.ok(lint(off).some(x => /qi-pill-3/.test(x)), 'an unknown 阶 off the ladder is still refused');
 });
 
-test('its pay: its own share (by_tier.xian), above a 九转; never below him, 练气 or 筑基', () => {
-  // In nights of 闭关 (2026-11-10): units = nights × a night's, × R where it is eaten.
-  const P = content.balance.pills, night = content.balance.play_pay.seclusion.night;
-  assert.ok(P.by_tier.xian > P.nights[8], 'above 九转');
-  assert.equal(pillPay(content.balance, XIAN), Math.round(P.by_tier.xian * night * 1000) / 1000);
-  assert.equal(XIAN.effect.units, pillPay(content.balance, XIAN));
-  for (const tier of ['qi', 'foundation', 'core']) assert.equal(pillBelow(content, { tier }, 'xian'), 1, tier);
-  const e = XIAN.effect;
-  // A fixed number at R (2026-11-02): the whole of it at every realm, never below him.
-  const X = content.balance.play_pay.xiuwei;
-  // 筑基一层 is L10 (81 levels, 2026-11-10).
-  for (const [tier, step, L, realm] of [['qi', 3, 3, 0], ['foundation', 0, 10, 1]]) {
-    const got = paysOf(content, save({ tier, step }), T0, { table: e.table, units: e.units, tier: e.tier }).progress;
-    assert.equal(got, Math.round(e.units * X.rate.base * X.rate.growth ** (L - 1) * X.rate.realm ** realm), `${tier} ${step}: the whole of it`);
+test('its pay: its own share (master.pills.xian) of its level\'s need, above a 九转\'s; the same wherever he eats it, 练气 or 筑基', () => {
+  const P = content.balance.master.pills, e = XIAN.effect;
+  assert.ok(P.xian > P.families.qi.share['9'], 'above 九转');
+  // At its level (筑基一层, L10: the 饭桶 row opens after 卷一's last scene): share × need(10), as units at R(10).
+  const need = content.ladder.tiers[1].thresholds[0];
+  assert.equal(e.level, 10);
+  assert.ok(Math.abs(e.units * rateOfLevel(content, 10) - P.xian * need) < 0.01);
+  for (const [tier, step] of [['qi', 3], ['foundation', 0], ['foundation', 5]]) {
+    const got = paysOf(content, save({ tier, step }), T0, { table: e.table, units: e.units, tier: e.tier, at_level: e.level }).progress;
+    assert.equal(got, Math.round(P.xian * need), `${tier} ${step}: the whole of it`);
   }
 });
 

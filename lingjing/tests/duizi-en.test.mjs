@@ -2,6 +2,7 @@
 // rules/duizi.mjs over aigames.json `duizi.english`, scripts/rhyme.js on rhymes.json).
 // The rules own the form (syllables, the rhyme, one word, not copied) and the outcome
 // (the same marks, pay, ladder and day as the Chinese); Ling grades the rubric.
+import { stonesAt } from '../scripts/rules/playpay.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent, rhymesTable } from '../scripts/content.mjs';
@@ -205,7 +206,7 @@ test('a round: an opposite dealt, sent, graded by Ling — the same marks and pa
   assert.equal(gr.mark.name, 'well matched');
   assert.equal(gr.mark.id, markFor(cfg, 5, true).id, 'the Chinese marks');
   assert.ok(graded.wealth > before, 'paid');
-  assert.ok(graded.wealth - before <= content.rewards.tables.game.wealth, 'capped by the game table');
+  assert.ok(graded.wealth - before <= Math.round(stonesAt(content, sent, content.rewards.tables.game.ls)), 'capped by the game table (its minutes of income where he stands, batch 2)');
   const after = look(graded, content, ctx()).duizi.round;
   assert.equal(after.ref, round.ref);
   assert.ok(after.src);

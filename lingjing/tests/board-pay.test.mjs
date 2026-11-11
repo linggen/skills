@@ -1,5 +1,6 @@
 // A small game's 灵石 (Hanli 2026-10-16; balance.json `boards`, rules/tasks.mjs boardPay):
-// after 入门 its first clear pays by grade — plain 5, good 10, best (or all three 灵光) 15 — on top of
+// after 入门 its first clear pays by grade — plain 1.5, good 3, best (or all three 灵光) 4.5 minutes of income × I where he
+// stands (batch 2, 2026-11-10; 5 · 10 · 15 灵石 before) — on top of
 // the task's own grant; a replay pays nothing; before 入门 nothing at all.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -7,6 +8,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { task, win } from '../scripts/rules.mjs';
 import { boardRank } from '../scripts/rules/tasks.mjs';
 import { crawlRules } from './crawl.mjs';
+import { stonesAt } from '../scripts/rules/playpay.mjs';
 
 const content = loadContent();
 const B = content.balance.boards;
@@ -29,8 +31,9 @@ function clear(s, now, id, grade, stars) {
 // 掐诀 at 千叶 (h08): its grant pays 修为 only, so every 灵石 is the board's.
 const ID = 'qianye-qiajue';
 
-test('the table is balance.json\'s: plain 5, good 10, best 15', () => {
-  assert.deepEqual(B, { plain: 5, good: 10, best: 15 });
+test('the table is balance.json\'s: plain 1.5, good 3, best 4.5 minutes of income (the master\'s, batch 2)', () => {
+  assert.deepEqual(B, { ...content.balance.master.economy.boards });
+  assert.deepEqual(B, { plain: 1.5, good: 3, best: 4.5 });
   assert.match(content.balance._boards ?? '', /Hanli 2026-10-16/);
 });
 
@@ -47,10 +50,10 @@ test('the rank: `ranks` outright; three 灵光 best; first mark best, last plain
 for (const [grade, rank] of [['loose', 'plain'], ['tight', 'best']]) {
   test(`after 入门 a first clear pays by grade: ${grade} → ${rank} ${B[rank]}`, () => {
     const { s, now } = at('00-waimen/wm-qianye');
-    const done = clear(s, now, ID, grade);
-    assert.equal(done.state.wealth - s.wealth, B[rank]);
-    assert.equal(done.result.paid.wealth, B[rank], 'the win line shows it');
-    assert.deepEqual(done.result.paid.board, { rank, wealth: B[rank] });
+    const done = clear(s, now, ID, grade), want = Math.round(stonesAt(content, s, B[rank]));
+    assert.equal(done.state.wealth - s.wealth, want);
+    assert.equal(done.result.paid.wealth, want, 'the win line shows it');
+    assert.deepEqual(done.result.paid.board, { rank, wealth: want });
     assert.ok(done.state.boards_paid.includes(ID));
   });
 }
@@ -58,7 +61,7 @@ for (const [grade, rank] of [['loose', 'plain'], ['tight', 'best']]) {
 test('a replay pays nothing: the board is paid once', () => {
   const { s, now } = at('00-waimen/wm-qianye');
   const first = clear(s, now, ID, 'loose').state;
-  assert.equal(first.wealth - s.wealth, B.plain);
+  assert.equal(first.wealth - s.wealth, Math.round(stonesAt(content, s, B.plain)));
   // Stood again as a replay stands a board, and won clean: still no 灵石.
   const again = { ...first, tasks: { ...first.tasks, [ID]: { ...first.tasks[ID], status: 'offered', replay: true } } };
   const done = clear(again, now, ID, 'tight');
@@ -75,7 +78,7 @@ test('a board left (skipped) pays nothing; won later on its replay day, that is 
   const tomorrow = new Date(now.getTime() + 864e5), n = left.state;
   const open = { ...n, tasks: { ...n.tasks, [ID]: { ...n.tasks[ID], status: 'offered', replay: true } } };
   const done = clear(open, tomorrow, ID, 'tight');
-  assert.equal(done.state.wealth - n.wealth, B.best);
+  assert.equal(done.state.wealth - n.wealth, Math.round(stonesAt(content, n, B.best)));
   const twice = clear({ ...done.state, tasks: { ...done.state.tasks, [ID]: { ...done.state.tasks[ID], status: 'offered', replay: true } } }, tomorrow, ID, 'tight');
   assert.equal(twice.state.wealth, done.state.wealth, 'and only once');
 });

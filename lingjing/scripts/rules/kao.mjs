@@ -18,6 +18,7 @@ import { herNear } from './companion.mjs';
 import { isLocked } from './locks.mjs';
 import { hashOf } from './travel.mjs';
 import { passed } from './world.mjs';
+import { stonesAt } from './playpay.mjs';
 import { describeWord } from '../games/drawguess-words.js';
 
 const kaoTask = content => (content.tasks?.tasks ?? []).find(t => t.kao) ?? null;
@@ -110,7 +111,7 @@ export function kaoDone(state, content, ctx, id) {
   if (first) {
     s.kao_cleared = [...(s.kao_cleared ?? []), word];
     const stars = s.stars?.[id] ?? 0, rank = stars >= 3 ? 'best' : stars === 2 ? 'good' : 'plain';
-    const amount = content.balance?.boards?.[rank] ?? 0;
+    const amount = Math.round(stonesAt(content, s, content.balance?.boards?.[rank] ?? 0)); // minutes of income × I where he stands (batch 2)
     if (amount) { s.wealth += amount; s.day.wealth += amount; paid.wealth = amount; paid.board = { rank, wealth: amount }; }
   }
   // Stars are this round's, not a best ever: the next word starts clean.

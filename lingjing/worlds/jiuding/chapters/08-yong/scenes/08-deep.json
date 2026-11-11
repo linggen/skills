@@ -47,7 +47,7 @@
    "key": "seal-yong",
    "grant": {
     "table": "story",
-    "wealth": 20
+    "ls": 6
    },
    "beat": [
     {

@@ -176,7 +176,7 @@ test('places: a road to nowhere, a road that does not come back, a tier off the 
 test('the catalog: a price below its sell, a missing picture, a pill with a 修为 number, a bag that names no item', () => {
   const c = fresh();
   const item = id => c.items.items.find(i => i.id === id);
-  item('qi-pill').buy = 10;
+  item('qi-pill').buy = item('qi-pill').sell - 1; // the master table's prices (batch 2): any buy under its sell is still refused
   item('ginseng').art = 'art/items/nothing.svg';
   item('lingzhi').effect = { progress: 99, table: 'puzzle' };
   item('moon-bell').effect = { wear: 'hat' };
@@ -184,7 +184,7 @@ test('the catalog: a price below its sell, a missing picture, a pill with a 修�
   prologue(c).scenes['00-rent'].exits.find(e => e.id === 'dumb').needs.bag = 'unicorn-horn';
   c.tasks.tasks[0].gives = { bag: 'unicorn-horn' };
   const problems = lint(c);
-  assert.ok(has(problems, `item qi-pill: buys for 10, below its sell price ${item('qi-pill').sell}`));
+  assert.ok(has(problems, `item qi-pill: buys for ${item('qi-pill').sell - 1}, below its sell price ${item('qi-pill').sell}`));
   assert.ok(has(problems, 'item ginseng: art art/items/nothing.svg is missing'));
   // A 修为 number in the book is an error (2026-11-10: a size, `units`, × R where it is paid); a size over nothing too.
   assert.ok(has(problems, 'item lingzhi: progress 99: an authored 修为 number'));
@@ -192,6 +192,20 @@ test('the catalog: a price below its sell, a missing picture, a pill with a 修�
   assert.ok(has(problems, 'item jade-fish: unknown kind relic'));
   assert.ok(has(problems, 'unknown item unicorn-horn'));
   assert.ok(has(problems, 'gives unknown item unicorn-horn'));
+});
+
+test('灵石 and levels (batch 2): a 灵石 number in the book is an error, a thing has a level 1–81 and its 阶 is the realm of it', () => {
+  const c = fresh();
+  const item = id => c.items.items.find(i => i.id === id);
+  c.festivals.festivals[0].gift = { ...c.festivals.festivals[0].gift, wealth: 8 };
+  item('ganliang').level = 0;
+  item('qi-pill-9').level = 12; // a 练气 pill at 筑基三层
+  const problems = lint(c);
+  assert.ok(has(problems, 'an authored 灵石 number (wealth 8)'));
+  assert.ok(has(problems, 'item ganliang: a level 1–81'));
+  assert.ok(has(problems, 'item qi-pill-9: its 阶 qi is not the realm of level 12'));
+  // 筑基丹 is a 筑基 pill at 练气九层 (its throw): allowed, as a pill a breakthrough reaches for.
+  assert.ok(!has(problems, 'item foundation-pill:'));
 });
 
 test('a shipped creature carries its pinyin, one syllable a character; the card reads it over the name', async () => {

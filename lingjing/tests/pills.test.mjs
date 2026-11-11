@@ -1,6 +1,7 @@
 // 丹囊 (Hanli 2026-10-16: 灵石 buys pills): up to three pills from the bag into a fight, each a free
 // action, one a turn — 回春丹 气血 to the member chosen, 回气丹 灵力 now; a pill taken leaves the bag;
 // the pick is remembered; a beast never has one; prices live in balance.json.
+import { incomeAt } from '../scripts/rules/playpay.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { act, actionOf, begin, legal, offers, tokenOf, view } from '../scripts/battle.js';
@@ -49,11 +50,13 @@ test('the wire: pill:0 and pill:0@a1 go and come back the same; offers list ever
 const content = loadContent();
 const NOW = new Date('2026-10-16T10:00:00Z');
 
-test('prices are one source (balance.json): 回春丹 15, 回气丹 10, folded onto the items; the lint holds', () => {
+test('prices are one source (balance.json, the master\'s): 回春丹 by the 气血 it heals, 回气丹 by its 灵力, folded onto the items; the lint holds', () => {
   const item = id => content.items.items.find(i => i.id === id);
+  const C = content.balance.master.economy.prices, I = l => incomeAt(content, l);
   assert.equal(item('mend-pill').buy, content.balance.prices['mend-pill'].buy);
-  assert.equal(item('mend-pill').buy, 15);
-  assert.equal(item('huiqi-pill').buy, 10);
+  // batch 2: minutes of income × I(its level) — a heal pill `heal` minutes a point of 气血, a mana pill `mana` a point (15 · 10 before).
+  assert.equal(item('mend-pill').buy, Math.round(C.heal * item('mend-pill').effect.fight.heal * I(item('mend-pill').level)));
+  assert.equal(item('huiqi-pill').buy, Math.round(C.mana * item('huiqi-pill').effect.fight.mana * I(item('huiqi-pill').level)));
   assert.deepEqual(lint(content).filter(x => /price|fight effect/.test(x)), []);
 });
 
@@ -68,7 +71,7 @@ test('bought at the stall, carried in, one eaten: 灵石 and the bag both drop',
   const c = { now: NOW, quests: [] };
   let s = { ...fitWorld({ ...newState(content, 'zh', NOW), traits: ['metal', 'wood', 'water', 'fire', 'earth'], chapter: '01-ji', scene: null, place: 'fangshi', wealth: 100, cards: ['niangbing', 'yijian', 'tuna', 'mucao', 'huodan', 'jinren'], ended: ['00-prologue', '00-waimen', '00-zhuji'] }, content), stamina: 100 };
   for (const id of ['mend-pill', 'huiqi-pill']) { const r = trade(s, content, c, { action: 'buy', id }); assert.equal(r.result.ok, true, JSON.stringify(r.result)); s = r.state; }
-  assert.equal(s.wealth, 100 - 15 - 10);
+  assert.equal(s.wealth, 100 - content.balance.prices['mend-pill'].buy - content.balance.prices['huiqi-pill'].buy);
   assert.deepEqual([s.bag['mend-pill'], s.bag['huiqi-pill']], [1, 1]);
   // a beast at the stall's road: any haunt will do — the door carries the two
   s = { ...s, place: 'fuli' };
@@ -82,14 +85,15 @@ test('bought at the stall, carried in, one eaten: 灵石 and the bag both drop',
   assert.equal(out.state.bag['mend-pill'], 1, 'the 回春丹 not eaten stays');
 });
 
-test('九转筑基丹 pays its size at 筑基一层 without filling it', () => {
+test('九转筑基丹 pays its family\'s share of its own level\'s need (筑基 = 聚气 × 1.5, at 练气九层), eaten at 筑基一层, without filling it', () => {
   const s = { ...newState(content, 'zh', NOW), tier: 'foundation', step: 0, progress: 0, ended: ['00-prologue', '00-waimen', '00-zhuji'], chapter: '01-ji', bag: { 'foundation-pill-9': 1 }, stamina: 100, stamina_at: NOW.toISOString() };
   const r = trade(s, content, { now: NOW, quests: [] }, { action: 'use', id: 'foundation-pill-9' });
   assert.equal(r.result.ok, true, JSON.stringify(r.result));
-  // A size since 2026-11-10 (60 units — 120 at 练气一层 — × R at 筑基一层, L10): about 30% of the layer when a small game paid
-  // × 1.5; about 19% since the games carry the layer (× 5, the same evening: need rides the mix, a size does not).
-  const need = content.ladder.tiers[1].thresholds[0], X = content.balance.play_pay.xiuwei;
-  assert.equal(r.state.progress, Math.round(60 * X.rate.base * X.rate.growth ** 9 * X.rate.realm), `got ${r.state.progress} of ${need}`);
-  assert.ok(r.state.progress < need && r.state.progress / need > 0.15, `got ${r.state.progress} of ${need}`);
+  // batch 2 (Hanli 2026-11-10: 「筑基丹份额高一档」): the 筑基 family's 九转 share (聚气's × step) × need(练气九层), wherever he eats it —
+  // 149 (it paid 60 units × R where he ate it, 223 at 筑基一层, until 2026-11-10).
+  const need = content.ladder.tiers[1].thresholds[0], P = content.balance.master.pills, nine = content.ladder.tiers[0].thresholds[9];
+  const want = Math.round(P.families.qi.share['9'] * P.families.foundation.step * nine);
+  assert.ok(Math.abs(r.state.progress - want) <= 1, `got ${r.state.progress}, want ${want}`);
+  assert.ok(r.state.progress < need && r.state.progress / need > 0.1, `got ${r.state.progress} of ${need}`);
   assert.equal(r.state.step, 0);
 });

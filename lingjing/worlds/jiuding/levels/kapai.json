@@ -72,6 +72,20 @@
     "en": "Qi-return pill"
    },
    "art": "art/cards/huiqi.webp"
+  },
+  "mend-pill-9": {
+   "name": {
+    "zh": "九转回春丹",
+    "en": "Nine-turn mending pill"
+   },
+   "art": "art/items/mend-pill.webp"
+  },
+  "mend-pill-3": {
+   "name": {
+    "zh": "三转回春丹",
+    "en": "Three-turn mending pill"
+   },
+   "art": "art/items/mend-pill.webp"
   }
  },
  "fights": [

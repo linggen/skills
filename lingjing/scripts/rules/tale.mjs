@@ -291,8 +291,9 @@ function grantsOf(content, steps) {
   const r = content.rewards, step = r.tables.tale, end = r.tables.tale_end, cap = r.tale.cap;
   const u = { step: sizedUnits(content, 'tale'), end: sizedUnits(content, 'tale_end') };
   const units = Math.max(0, Math.min(u.end, (cap.units ?? 0) - steps * u.step));
-  const wealth = Math.max(0, Math.min(end.wealth, cap.wealth - steps * step.wealth));
-  return { step: { table: 'tale', units: u.step, wealth: step.wealth }, end: { table: 'tale_end', units, wealth } };
+  // 灵石 in minutes of income (batch 2: the tables' `ls`, the tale's cap `ls`), × I where each is paid.
+  const ls = Math.max(0, Math.min(end.ls ?? 0, (cap.ls ?? 0) - steps * (step.ls ?? 0)));
+  return { step: { table: 'tale', units: u.step, ls: step.ls ?? 0 }, end: { table: 'tale_end', units, ls } };
 }
 
 /* The finale's one drop: an entry of the highest tier at or below his realm

@@ -58,16 +58,20 @@ test('the 层 climb across realms: every step asks more than the one before it, 
   for (let k = 1; k < flat.length; k++) assert.ok(flat[k] > flat[k - 1], `level ${k + 1}: ${flat[k]} over ${flat[k - 1]}`);
 });
 
-// 2026-11-02 (Hanli 「不要按照百分比给」): a pill is a fixed number at R, not a share of the layer — its % is the reference only;
-// what must hold is its card's 「抵N日打坐」 against N nights of 闭关, on every layer (both ride R).
-test('a pill\'s card\'s 「抵N日打坐」 holds against N nights of 闭关 there, on every 练气 layer', async () => {
+// Batch 2 (Hanli 2026-11-10: 「丹药, 物品都给一个级别吧, 算数值的时候, 按照这个级别算」): a pill is its level's number, 闭关 rides
+// where he stands — so a card's 「抵N日打坐」 holds at the pill's own level, and the card says so (「练气初层的人服一粒…层数高了，
+// 抵得就少」): above it the same pill is worth fewer nights, never more.
+test('a pill\'s card\'s 「抵N日打坐」 holds against N nights of 闭关 at its own level, and falls with the layer as its card says', async () => {
   const c = loadContent(), r = await measure(c);
   const said = r.claims.checked.filter(x => x.lang === 'zh' && x.ratio != null);
   assert.ok(said.length >= 3, 'the pills\' 「抵…日」 are weighed');
   for (const x of said) {
+    assert.ok(x.levelled, `${x.id}: a levelled pill`);
     assert.ok(Math.abs(x.ratio - 1) < 0.1, `${x.id} 「${x.said}」: ${x.actual} against ${x.claimed}`);
-    for (const d of x.drift) assert.ok(Math.abs(d.ratio - 1) < 0.1, `${x.id} 「${x.said}」 at ${d.layer}: ×${d.ratio}`);
+    assert.match(x.text, /层数高了/, `${x.id}: its card says it falls with the layer`);
+    for (let k = 1; k < x.drift.length; k++) assert.ok(x.drift[k].ratio <= x.drift[k - 1].ratio + 0.01, `${x.id} 「${x.said}」 at ${x.drift[k].layer}: ×${x.drift[k].ratio}`);
   }
+  assert.equal(r.red.filter(x => x.src === 'claims').length, 0);
 });
 
 // 开炉 with 灵石 (Hanli 11-04: the cap 10 a 层, 「多放可以提升出品品质」): each sample pot is weighed again with stones, up to

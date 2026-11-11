@@ -15,7 +15,7 @@
    "work": "labor",
    "grant": {
     "table": "labor",
-    "wealth": 5
+    "ls": 1.5
    },
    "pool": [
     {

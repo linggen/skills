@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { loadContent } from '../scripts/content.mjs';
 import { monthKey, newState, periodKey, periodStart } from '../scripts/state.mjs';
-import { chorePlay } from '../scripts/rules/playpay.mjs';
+import { chorePlay, tableStones } from '../scripts/rules/playpay.mjs';
 import { look, quest, task, progress } from '../scripts/rules.mjs';
 import { dailyPick, fitsDevices, phoneReady, playerDevices } from '../scripts/rules/chores.mjs';
 import { readQuests } from '../scripts/rules/files.mjs';
@@ -154,7 +154,7 @@ test('开府: done_at null is not done; a done one pays once ever — capped, on
   assert.equal(out.result.ok, true);
   const cap = content.rewards.tables.once;
   assert.equal(out.result.paid.progress, 0, '开府 pays stones, no 修为 (Hanli, 2026-10-15: 修为 comes from cultivation)');
-  assert.equal(out.result.paid.wealth, cap.wealth);
+  assert.equal(out.result.paid.wealth, tableStones(content, s, 'once'), 'the once table\'s minutes × I where he stands (batch 2), whatever the row\'s `reward`');
   assert.deepEqual(out.state.chores[m.id].period, 'once');
   // the synced save, a month on: still paid
   const synced = JSON.parse(JSON.stringify(out.state));
@@ -246,7 +246,10 @@ test('the book row carries the app\'s how; only shares_per_day dailies pay their
   const paidToday = Object.fromEntries([...Array(n).keys()].map(i => [`x-${i}`, { period: periodKey('day', day(0)), paid_at: day(0, 9).toISOString() }]));
   assert.ok(choreGrant(content, q, s, day(0)).progress > 0, 'the first pays its share');
   assert.equal(choreGrant(content, q, { ...s, chores: paidToday }, day(0)).progress, 0, 'past the day\'s shares, no 修为');
-  assert.ok(choreGrant(content, q, { ...s, chores: paidToday }, day(0)).wealth > 0, 'its 灵石 still');
+  // Its 灵石 still: a daily (the `gongke` table, none of its own) pays its meaning's (gongke.json kinds `ls`) — batch 2: the
+  // grant carries what lands, never an app's `reward` number (it was 20 raw, capped to 0 by the table).
+  const { meaningGrant } = await import('../scripts/rules/gongke.mjs');
+  assert.ok(meaningGrant(content, { ...s, chores: paidToday }, q, day(0)).ls > 0, 'its 灵石 still (its meaning\'s)');
   const week = { ...NEW_SET[6] };
   assert.ok(choreGrant(content, week, { ...s, chores: paidToday }, day(0)).progress > 0, 'a weekly is not a daily share');
 });

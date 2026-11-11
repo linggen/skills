@@ -641,9 +641,9 @@ function filler(content, state, said) {
   return pair.find(f => f.label !== last) ?? pair[0];
 }
 const taskOf = (content, id) => content.tasks.tasks.find(t => t.id === id);
-/* The grant a thing's 修为 effect pays: its size (`units`, at R where he stands), its table, its 阶 (a pill's, playpay.mjs
-   pillBelow). */
-export const effectGrant = e => ({ table: e.table, ...(e.units != null ? { units: e.units } : { progress: e.progress }), tier: e.tier });
+/* The grant a thing's 修为 effect pays: its size (`units`), its table — and a levelled pill's `level` (batch 2: its units at R
+   of its own level, core.mjs amountsOf), else at R where he stands. */
+export const effectGrant = e => ({ table: e.table, ...(e.units != null ? { units: e.units } : { progress: e.progress }), tier: e.tier, ...(e.level ? { at_level: e.level } : {}) });
 const itemOf = (content, id) => content.items.items.find(i => i.id === id);
 
 /* One effect, as the card tells it. Arms carry the fight's own numbers: 攻
@@ -678,6 +678,8 @@ const EFFECT_BRIEF = {
 function effectBrief(content, lang, effect, state = null, id = null) {
   const e = effect ?? {};
   const key = Object.keys(EFFECT_BRIEF).find(k => e[k] != null);
+  // A pill that heals and pays 修为 too (master.pills.exceptions: the 九转回春丹, batch 2): the card tells both.
+  if (key === 'units' && e.fight) return { ...EFFECT_BRIEF.units(e, content, lang, state, id), ...EFFECT_BRIEF.fight(e) };
   return key ? EFFECT_BRIEF[key](e, content, lang, state, id) : null;
 }
 

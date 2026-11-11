@@ -26,8 +26,8 @@
         "en": "An ebony tag on the east wall, the writing crooked — Du Shu had the vegetable carrier hang it: \"The flood is rising, the ferry needs hands to haul the boat.\" Beneath, in Zhou Heng's small hand: a chore, outer disciples may take it. Take it, and the tag is your leave down to the ferry."
       },
       "done": {
-        "zh": "船上了岸。渡叔把干粮和三块灵石塞进你手里，没再多说。",
-        "en": "The boat is up the bank. Du Shu presses the rations and the three stones into your hands and says nothing more."
+        "zh": "船上了岸。渡叔把干粮和几块灵石塞进你手里，没再多说。",
+        "en": "The boat is up the bank. Du Shu presses the rations and a few stones into your hands and says nothing more."
       },
       "need": [
         {
@@ -40,7 +40,7 @@
       "work": "labor",
       "grant": {
         "table": "labor",
-        "wealth": 3,
+        "ls": 0.9,
         "item": "ganliang"
       }
     },
@@ -119,7 +119,7 @@
       "work": "labor",
       "grant": {
         "table": "labor",
-        "wealth": 15,
+        "ls": 4.5,
         "item": "bamboo-sword"
       },
       "then": "xu-fuli-longzhi"
@@ -156,7 +156,7 @@
       "grant": {
         "table": "quest",
         "units": 30,
-        "wealth": 20
+        "ls": 6
       },
       "opens": {
         "after": "xu-elder-herb",
@@ -201,7 +201,7 @@
       "work": "labor",
       "grant": {
         "table": "labor",
-        "wealth": 15
+        "ls": 4.5
       }
     },
     {
@@ -236,7 +236,7 @@
       "work": "labor",
       "grant": {
         "table": "labor",
-        "wealth": 20,
+        "ls": 6,
         "item": "qi-pill"
       }
     },
@@ -315,7 +315,7 @@
       "work": "labor",
       "grant": {
         "table": "labor",
-        "wealth": 5,
+        "ls": 1.5,
         "item": "qi-pill-9",
         "more": {
           "huangjing-gen": 3,
@@ -361,7 +361,7 @@
       "work": "labor",
       "grant": {
         "table": "labor",
-        "wealth": 3
+        "ls": 0.9
       }
     },
     {
@@ -412,7 +412,7 @@
       "work": "labor",
       "grant": {
         "table": "labor",
-        "wealth": 0,
+        "ls": 0,
         "item": "talisman"
       }
     }

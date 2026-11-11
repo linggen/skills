@@ -17,7 +17,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { chorePlay, xiuweiOf } from './playpay.mjs';
+import { chorePlay, stonesAt, tableStones, xiuweiOf } from './playpay.mjs';
 import { dayKey, lockedOf, periodKey, periodStart, pick, questStamina, seedOf, zeroAt } from '../state.mjs';
 
 const isOnce = q => q.period === 'once';
@@ -147,7 +147,7 @@ function dayShareLeft(content, q, state, now) {
 }
 
 /* A chore that pays on its own (gongke.json `kinds.<kind>.own`, Hanli 2026-11-10: a share is paid by the act): `units` 体力
-   of play at the layer he stands on, and `wealth` 灵石, on the table `own.table` — outside the day's meaning cap (the kind
+   of play at the layer he stands on, and `ls` minutes of income in 灵石, on the table `own.table` — outside the day's meaning cap (the kind
    carries no meaning pay) and outside the day's `shares_per_day`. Null for any other chore, a 开府 step included. */
 export function ownOf(content, q) {
   if (!q || isOnce(q) || typeof q.kind !== 'string') return null;
@@ -164,7 +164,9 @@ const ownGrant = (content, own, q, state) => ({
   // `games`: so many small games where he stands (Hanli 2026-11-10: 「传音改成真正的3倍」) — each one story step's 体力
   // (play_pay.story.units) as small-game play, × play_pay.xiuwei.board, so it follows the knobs; else `units` of play.
   progress: state ? Math.round(ownXiuwei(content, state, own)) : 0,
-  wealth: own.wealth ?? 0,
+  // 灵石 the same size (batch 2: 「三倍」 in 灵石 too): `games` small games' play 灵石 (play_pay.wealth.default minutes each) × I where
+  // he stands; else `ls` minutes of income.
+  wealth: Math.round(stonesAt(content, state, own.games ? own.games * (content.balance?.play_pay?.wealth?.default ?? 0) : own.ls ?? 0)),
   stamina: questStamina(content, q),
 });
 
@@ -180,8 +182,10 @@ export function choreGrant(content, q, state = null, now = null) {
   return {
     table,
     progress: played,
-    // 开府 pays the row's own 灵石 (50, as its quest says — Hanli 2026-11-02), capped by the `once` table.
-    wealth: table === 'once' ? Math.min(q.reward ?? cap.wealth ?? 0, cap.wealth ?? 0) : FLAT.has(table) ? cap.wealth ?? 0 : q.reward ?? 0,
+    // 灵石 (batch 2): its table's own size in minutes of income × I where he stands (balance.json pay.<table>.ls, playpay.mjs
+    // tableStones) — 开府 `once`, the day's pick `life`, a 零层 功课 `gongke_zero`; the 功课 `gongke` none. An app's own `reward`
+    // number is never read as 灵石 (until 2026-11-10 the day's pick paid it, capped at 30).
+    wealth: tableStones(content, state, table),
     // No quest pays 体力 (rewards.json stamina.refill.quest false — Hanli 2026-11-02: 「完成任务不奖励体力」), whatever its row says.
     stamina: questStamina(content, q),
   };

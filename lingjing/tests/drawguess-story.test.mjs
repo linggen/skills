@@ -3,6 +3,7 @@
 // and only where she is: 第六回's 家信 (娘 cannot read: a picture beside each line), 本王考考你 at any
 // hour she is awake (after 入门, a capped few a day), and a 今日传闻 step (the 秘境 rerun's 奇遇 went with the rerun,
 // 2026-10-28; its pool and frames, worlds/jiuding/qiyu.json, wait for the roguelite) (never while she sleeps — the rules', not a prompt's).
+import { stonesAt } from '../scripts/rules/playpay.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -189,7 +190,7 @@ test('本王考考你: each round counted as it begins, `per_day` a calendar day
   const paid = task(s, content, at(now), { action: 'done', id: K });
   s = ok(paid);
   assert.equal(paid.result.first, true);
-  assert.equal(s.wealth - w0, content.balance.boards.best, 'one look: best');
+  assert.equal(s.wealth - w0, Math.round(stonesAt(content, s, content.balance.boards.best)), 'one look: best (its minutes of income × I where he stands, batch 2)');
   // Any rounds past the first (none at one a day): each a new word, never the same twice a day.
   for (let i = 1; i < CAP; i += 1) s = ok(VERBS.kao(s, content, at(now), { action: 'open', next: 1 }));
   assert.equal(new Set(s.kao.drawn).size, s.kao.drawn.length, 'never the same word twice a day');

@@ -24,7 +24,7 @@ import { cardCatalog, deckFor, fightPill, fightSetup, winCard } from './cards.mj
 import { hashOf } from './travel.mjs';
 import { stow, fullLine } from './pouch.mjs';
 import { creatureOf, foeOf, meetBeast, passed, placeName, placeOf } from './world.mjs';
-import { boardPlay } from './playpay.mjs';
+import { boardPlay, incomeAt, stoneLevel } from './playpay.mjs';
 import { duelBrief } from './look.mjs';
 import { beastOpen, kitOf } from './reveal.mjs';
 import { hostOf } from './chores.mjs';
@@ -307,7 +307,7 @@ function enterRun(state, content, ctx, args) {
   const hp = hpCap(content, s, []);
   // The map is drawn for the device the run begins on (rules/chores.mjs hostOf: the phone's bundle says 'phone'): a run
   // begun on the phone deals no game it cannot host. One resumed on the other device keeps its map (撤 is the way past).
-  s.mijing = { ...s.mijing, runs, run: { tier: n, seed, map: mapOf(content, t, seed, { host: hostOf() }), at: null, done: [], hp, hp_max: hp, boons: [], stars: {}, loot: { items: {}, wealth: 0 }, minutes: 0, met: [], room: null, started: ctx.now.toISOString() } };
+  s.mijing = { ...s.mijing, runs, run: { tier: n, seed, map: mapOf(content, t, seed, { host: hostOf() }), at: null, done: [], hp, hp_max: hp, boons: [], stars: {}, loot: { items: {}, wealth: 0 }, inc: incomeAt(content, stoneLevel(content, s)), minutes: 0, met: [], room: null, started: ctx.now.toISOString() } };
   delete s.mijing.last;
   return { state: s, result: { ok: true, entered: n, name: pick(t.name, s.lang), say: pick(t.say, s.lang) } };
 }
@@ -333,7 +333,7 @@ function goRoom(state, content, ctx, args) {
   if (room.kind === 'bao') {
     // A chest: its loot now, and a boon of three to pick (or none).
     here.got = rollLoot(content, r, t, `${id}|chest`, { elite: true, times: knobs(content).chest_rolls ?? 2 });
-    here.wealth = addWealth(r, between(knobs(content).wealth?.chest ?? [6, 10], u(`${r.seed}|${id}|chest|wealth`)) * wealthScale(content, t));
+    here.wealth = addWealth(r, between(knobs(content).wealth?.chest ?? [6, 10], u(`${r.seed}|${id}|chest|wealth`)) * wealthScale(content, t, r));
     here.offer = boonOffer(content, r, id);
     here.phase = 'reward';
     roomCleared(content, r, room.kind);
@@ -341,7 +341,9 @@ function goRoom(state, content, ctx, args) {
   r.room = here;
   return { state: s, result: { ok: true, room: id, kind: room.kind } };
 }
-const wealthScale = (content, t) => 1 + (knobs(content).wealth?.step ?? 0) * (t.n - 1);
+// 灵石 in minutes of income (balance.json mijing.wealth, batch 2): × the run's I (`inc`: where he stood when he went in,
+// rules/playpay.mjs incomeAt) — a run started before 2026-11-10 carries none and reads 练气一层's.
+const wealthScale = (content, t, run) => (1 + (knobs(content).wealth?.step ?? 0) * (t.n - 1)) * (run?.inc ?? incomeAt(content, 1));
 /* A room behind him: counted (its minutes toward the run's 修为, the depth he reached). */
 function roomCleared(content, run, kind) {
   if (run.done.includes(run.at)) return;
@@ -389,7 +391,7 @@ function applySide(content, run, tier, room, side) {
   const out = {};
   if (side.hp) { const was = run.hp; run.hp = Math.max(0, Math.min(run.hp_max, run.hp + Math.round(run.hp_max * side.hp))); out.hp = run.hp - was; }
   if (side.loot) out.got = rollLoot(content, run, tier, `${room.id}|qiyu`, { times: side.loot });
-  if (side.wealth) out.wealth = addWealth(run, side.wealth * wealthScale(content, tier));
+  if (side.ls) out.wealth = addWealth(run, side.ls * wealthScale(content, tier, run));
   if (side.item) { run.loot.items[side.item.id] = (run.loot.items[side.item.id] ?? 0) + (side.item.n ?? 1); out.got = [...(out.got ?? []), { id: side.item.id, n: side.item.n ?? 1 }]; }
   if (side.boon) out.offer = side.boon === 'any' ? boonOffer(content, run, room.id) : [side.boon];
   return out;
@@ -438,7 +440,7 @@ export function endRun(s, content, ctx, how, extra = {}) {
   const items = Object.entries(r.loot.items).map(([id, n]) => ({ id, n: how === 'clear' ? n : Math.floor(n * keep) })).filter(i => i.n > 0);
   let wealth = Math.round(r.loot.wealth * keep);
   if (how === 'clear') {
-    wealth += Math.round((k.wealth?.clear ?? 0) * wealthScale(content, t));
+    wealth += Math.round((k.wealth?.clear ?? 0) * wealthScale(content, t, r));
     for (const p of k.clear?.items ?? []) if ((p.from ?? 1) <= t.n && (p.to ?? 99) >= t.n) items.push({ id: p.item, n: between(p.n, u(`${r.seed}|clear|${p.item}`)) });
     const arm = rollLoot(content, r, t, 'clear', { elite: true, times: 1 }).find(g => content.items.items.find(i => i.id === g.id)?.rarity);
     if (arm && !items.some(i => i.id === arm.id)) items.push(arm);
@@ -585,7 +587,7 @@ export function mijingDuel(state, content, ctx, args) {
   if (heal) r.hp = Math.min(r.hp_max, r.hp + heal);
   if (here.kind === 'boss') return endRun(s, content, ctx, 'clear', { ...base, room: here.id });
   here.got = rollLoot(content, r, t, here.id, { elite: here.kind === 'xiong' });
-  here.wealth = addWealth(r, between(knobs(content).wealth?.room ?? [2, 4], u(`${r.seed}|${here.id}|wealth`)) * wealthScale(content, t) * (here.kind === 'xiong' ? 2 : 1));
+  here.wealth = addWealth(r, between(knobs(content).wealth?.room ?? [2, 4], u(`${r.seed}|${here.id}|wealth`)) * wealthScale(content, t, r) * (here.kind === 'xiong' ? 2 : 1));
   if (here.kind === 'xiong') { here.offer = boonOffer(content, r, here.id); here.phase = 'reward'; } else here.phase = 'done';
   return { state: s, result: { ...base, mijing: { room: here.id, hp: r.hp, ...(heal ? { healed: heal } : {}) } } };
 }
@@ -678,7 +680,7 @@ export function mijingBoardDone(state, content, ctx, id) {
   const hurt = Math.min(hurtOf(content, r, stars), Math.max(0, r.hp - 1));
   r.hp -= hurt;
   here.got = rollLoot(content, r, t, here.id, {});
-  here.wealth = addWealth(r, between(knobs(content).wealth?.room ?? [2, 4], u(`${r.seed}|${here.id}|wealth`)) * wealthScale(content, t));
+  here.wealth = addWealth(r, between(knobs(content).wealth?.room ?? [2, 4], u(`${r.seed}|${here.id}|wealth`)) * wealthScale(content, t, r));
   here.outcome = { stars, hp: -hurt };
   here.phase = 'done';
   r.last_board = here.board.task;

@@ -59,7 +59,7 @@
    "grant": {
     "table": "scene",
     "item": "duan-dao",
-    "wealth": 9,
+    "ls": 2.7,
     "more": {
      "qi-pill": 5,
      "dingtai": 3,

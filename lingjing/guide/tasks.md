@@ -33,7 +33,7 @@
   real life is handed in at once (`ready`; Quest `turn` with `id: "kaifu"`
   hands in all); only the hint of an undone one drips, one more a day
   (`rows`, `next`; `opens: "tomorrow"`). Each row says its 怎么做 (`how`) and
-  pays 50 灵石, once ever (no 体力: no quest pays it, 2026-11-02). **Never list them, never remind** — when
+  pays the `once` table's 灵石 (its row's `pays` says how many — minutes of income where he stands since 2026-11-10), once ever (no 体力: no quest pays it, 2026-11-02). **Never list them, never remind** — when
   the player asks what to do, you may offer `kaifu.next` and its `how`, that
   one only, once. `other`, once all is done on one device, is the page's
   card for the other device — never yours to push. You never list the apps'

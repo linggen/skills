@@ -4,6 +4,7 @@
 // 不要直接跳层」. So: a stage quest met is 可交 and pays 灵石 (balance.json pay.stage) once; one behind him never
 // handed in is settled once on the next load; the open row is the next gate where he stands, never a layer
 // he has passed; and no story choice raises 修为 or 层 — every rise the book had is a gate.
+import { tableStones } from '../scripts/rules/playpay.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -21,7 +22,6 @@ process.env.LINGJING_STAMINA_LIMIT = '0';
 const content = loadContent();
 const NOW = new Date('2026-10-16T12:00:00');
 const ctx = { now: NOW, quests: [] };
-const PAY = content.rewards.tables.stage.wealth;
 const scenesOf = id => Object.keys(content.chapters[id].scenes);
 
 /* His save's shape (10-16): 古八, 腊八 taken (y-dabi), 练气九层 with nothing in it; the 古七 scenes
@@ -36,11 +36,14 @@ const his = (extra = {}) => ({ ...newState(content, 'zh', NOW), chapter: '00-zhu
 /* …and on at 瞿老's door (09-qulao), where 入秋's 九层圆满 waits since 2026-11-03 (圆满 near the cliff), 瞿老's 丹 board played. */
 const atQulao = (extra = {}) => his({ scene: '09-qulao', place: content.chapters['00-zhuji'].scenes['09-qulao'].at, done_scenes: [...his().done_scenes, '09-yanceng'],
   tasks: { ...his().tasks, 'qulao-dan': { status: 'done' } }, ...extra });
+// A stage quest's 灵石: the `stage` table's minutes of income × I where he stands (batch 2; 60 flat until 2026-11-10) — 九层 here.
+const PAY = tableStones(content, his(), 'stage');
 const BEHIND = ['09-shenshi/winter', '09-dingfeng/laba']; // 古八's 七层 and 八层, behind a save at 九层
 const words = { ...WORDS.zh, xw: '修为', ls: '灵石', qi: '体力' };
 
 test('the pay is declared: balance.json pay.stage, 灵石 only (at 圆满 修为 cannot rise)', () => {
   assert.equal(content.rewards.tables.stage.progress, 0);
+  assert.equal(content.rewards.tables.stage.ls, content.balance.master.economy.tables.stage, 'its size the master\'s');
   assert.ok(PAY > 0);
 });
 

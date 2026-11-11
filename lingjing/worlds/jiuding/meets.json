@@ -12,8 +12,8 @@
   "die": 20,
   "companion": 2,
   "marks": { "easy": 6, "fair": 11, "hard": 15 },
-  "win": { "easy": { "units": 5 }, "fair": { "units": 10, "wealth": 10 }, "hard": { "units": 15, "wealth": 20 } },
-  "lose": { "wound": { "easy": 0.1, "fair": 0.2, "hard": 0.35 }, "coin": { "easy": 5, "fair": 10, "hard": 20 } },
+  "win": { "easy": { "units": 5 }, "fair": { "units": 10, "ls": 3 }, "hard": { "units": 15, "ls": 6 } },
+  "lose": { "wound": { "easy": 0.1, "fair": 0.2, "hard": 0.35 }, "coin": { "easy": 1.5, "fair": 3, "hard": 6 } },
   "options": { "min": 2, "max": 3, "label": 16, "line": 120 }
  },
  "riddles": [
@@ -57,14 +57,14 @@
     }
    },
    {
-    "wealth": 8,
+    "ls": 2.4,
     "line": {
      "zh": "路边一只破褡裢，里头滚出几块灵石。",
      "en": "A torn saddlebag by the road; a few spirit stones roll out."
     }
    },
    {
-    "wealth": 5,
+    "ls": 1.5,
     "line": {
      "zh": "浅水里有东西一闪——是两块灵石。",
      "en": "Something glints in the shallows — two spirit stones."
@@ -192,10 +192,10 @@
    }
   ],
   "冀": [
-    {"wealth": 6, "at": ["ye-sanlao"], "line": {"zh": "胖的那家后堂，红木匣子空了，匣底的缝里还卡着几块碎灵石——分钱的那一夜漏下的。", "en": "In the stout one's back hall the redwood box is empty; a few chips of spirit stone are still stuck in a crack at its bottom — dropped on some night of sharing out."}},
+    {"ls": 1.8, "at": ["ye-sanlao"], "line": {"zh": "胖的那家后堂，红木匣子空了，匣底的缝里还卡着几块碎灵石——分钱的那一夜漏下的。", "en": "In the stout one's back hall the redwood box is empty; a few chips of spirit stone are still stuck in a crack at its bottom — dropped on some night of sharing out."}},
     {"item": "ganliang", "at": ["ye-sanlao"], "line": {"zh": "厨房里还剩半袋干饼，三老走得急，没顾上。", "en": "Half a bag of flat cakes left in the kitchen; the Three Elders left in a hurry."}},
     {"item": "straw-cloak", "at": ["liuwan"], "line": {"zh": "老柳底下挂着一件蓑衣，渔家说：拿去吧，今年河里太平。", "en": "A straw cloak hangs under an old willow. The fishermen say: take it — the river is quiet this year."}},
-    {"wealth": 5, "at": ["liuwan"], "line": {"zh": "柳根底下的泥里，埋着一只烂了的船底板，板缝里嵌着两块灵石。", "en": "In the mud under the willow roots lies a rotted boat plank; two spirit stones are wedged in its seams."}},
+    {"ls": 1.5, "at": ["liuwan"], "line": {"zh": "柳根底下的泥里，埋着一只烂了的船底板，板缝里嵌着两块灵石。", "en": "In the mud under the willow roots lies a rotted boat plank; two spirit stones are wedged in its seams."}},
    {
     "item": "ginseng",
     "at": [
@@ -244,7 +244,7 @@
     }
    },
    {
-    "wealth": 8,
+    "ls": 2.4,
     "at": [
      "zhuolu"
     ],
@@ -254,7 +254,7 @@
     }
    },
    {
-    "wealth": 6,
+    "ls": 1.8,
     "at": [
      "jieshi"
     ],
@@ -264,7 +264,7 @@
     }
    },
    {
-    "wealth": 5,
+    "ls": 1.5,
     "line": {
      "zh": "道旁一座小石堆，是过路人垒的。最上面压着几块灵石。",
      "en": "A small cairn by the road, stacked by travellers. A few spirit stones weigh down the top."
@@ -319,7 +319,7 @@
     }
    },
    {
-    "wealth": 8,
+    "ls": 2.4,
     "at": [
      "leize",
      "leiyuan"
@@ -330,7 +330,7 @@
     }
    },
    {
-    "wealth": 5,
+    "ls": 1.5,
     "line": {
      "zh": "田埂上一只瓦罐，罐底躺着几块灵石，像是谁藏了又忘了。",
      "en": "A clay jar on the field bank, a few spirit stones at the bottom, hidden by someone and forgotten."
@@ -386,7 +386,7 @@
     }
    },
    {
-    "wealth": 8,
+    "ls": 2.4,
     "at": [
      "langya"
     ],
@@ -396,7 +396,7 @@
     }
    },
    {
-    "wealth": 6,
+    "ls": 1.8,
     "at": [
      "jixia",
      "weishui"
@@ -407,7 +407,7 @@
     }
    },
    {
-    "wealth": 5,
+    "ls": 1.5,
     "line": {
      "zh": "沙里有东西硌脚。挖出来，是两块灵石。",
      "en": "Something hard underfoot in the sand. Dug out: two spirit stones."
@@ -421,7 +421,7 @@
     ]
    },
    {
-    "wealth": 5,
+    "ls": 1.5,
     "line": {
      "zh": "路边的老槐树下，树根拱起一块石板。板下压着几块灵石。",
      "en": "Under an old scholar tree by the road a root has lifted a flagstone. A few spirit stones lie beneath it."
@@ -453,7 +453,7 @@
     }
    },
    {
-    "wealth": 8,
+    "ls": 2.4,
     "at": [
      "zhenze",
      "pengli"
@@ -475,7 +475,7 @@
     }
    },
    {
-    "wealth": 6,
+    "ls": 1.8,
     "at": [
      "guangling",
      "gusu"
@@ -510,7 +510,7 @@
     }
    },
    {
-    "wealth": 8,
+    "ls": 2.4,
     "at": [
      "yunmeng",
      "junshan"
@@ -521,7 +521,7 @@
     }
    },
    {
-    "wealth": 6,
+    "ls": 1.8,
     "at": [
      "xiangshui",
      "ying"
@@ -556,7 +556,7 @@
     }
    },
    {
-    "wealth": 8,
+    "ls": 2.4,
     "at": [
      "minjiang",
      "jiangzhou"
@@ -567,7 +567,7 @@
     }
    },
    {
-    "wealth": 6,
+    "ls": 1.8,
     "at": [
      "chengdu",
      "lidui"
@@ -602,7 +602,7 @@
     }
    },
    {
-    "wealth": 8,
+    "ls": 2.4,
     "at": [
      "weihe",
      "chencang"
@@ -613,7 +613,7 @@
     }
    },
    {
-    "wealth": 6,
+    "ls": 1.8,
     "at": [
      "yongcheng",
      "qishan"
@@ -648,7 +648,7 @@
     }
    },
    {
-    "wealth": 8,
+    "ls": 2.4,
     "at": [
      "luoshui",
      "hangu"
@@ -659,7 +659,7 @@
     }
    },
    {
-    "wealth": 6,
+    "ls": 1.8,
     "at": [
      "luoyi",
      "yique"
@@ -686,7 +686,7 @@
     }
    },
    {
-    "wealth": 6,
+    "ls": 1.8,
     "line": {
      "zh": "道旁石下压着几块灵石，像是谁的买路钱。",
      "en": "A few spirit stones under a roadside stone, like someone's toll."

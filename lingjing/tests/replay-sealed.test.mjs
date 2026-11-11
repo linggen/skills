@@ -37,5 +37,6 @@ test('a 3rd same-day play inside wm-xiongya pays as the first; outside the 秘�
   // The hand check (2026-11-02) read 7 · 10 inside, 1 · 1 outside on its own save (its ★ and 层); here, at 二层 with no ★, the
   // first play's numbers inside and a tenth of them outside.
   // ×5 board 修为 since 2026-11-10 (×1.5 read 2 · 1): the third play's tenth of the first; 灵石 unchanged.
-  assert.deepEqual(outside, [5, 1], '×5 board 修为: a tenth of the first play; 灵石 is unchanged');
+  // 灵石 a size since batch 2 (its kind's minutes × I where he stands): a tenth of the first play's too.
+  assert.deepEqual(outside, [5, Math.round(fresh[1] * PP.replay[2])], '×5 board 修为: a tenth of the first play; 灵石 a tenth of its own');
 });

@@ -107,7 +107,7 @@ test('「全部 ›」: what can be handed in rides on it — and 事 holds the 
   assert.doesNotMatch(html, /说说|bookdetail/, 'closed rows: nothing opened, and no row asks the model for what the page knows');
   // a row opened: the page reads the line from the rules and shows it — no model turn
   const info = quest(took.state, content, at, { action: 'info', id: 'xu-lvliang-look' }).result;
-  assert.deepEqual([info.who, info.taken, info.grant.wealth, info.where.id], ['执事堂 · 东墙的牌子', true, 15, 'lvliang']);
+  assert.deepEqual([info.who, info.taken, info.grant.ls, info.where.id], ['执事堂 · 东墙的牌子', true, 4.5, 'lvliang']); // its 灵石 a size since batch 2 (15 then)
   const opened = bookPopHtml({ ...page, bookRow: 'xu-lvliang-look', bookInfo: info });
   assert.match(opened, /bookdetail.*孔夫子.*酬<\/span> [^<]*灵石 \+\d+.*data-ask="说说吕梁洪的水声（到吕梁洪）".*data-drop="xu-lvliang-look"/s);
   // a chain names its next link as `next` — `then` is the wrapper's word to Ling on every result

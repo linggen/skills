@@ -39,7 +39,7 @@
    "key": "seal-yan",
    "grant": {
     "table": "story",
-    "wealth": 20
+    "ls": 6
    },
    "beat": [
     {

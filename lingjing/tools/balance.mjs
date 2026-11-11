@@ -38,7 +38,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadContent, withBalance } from '../scripts/content.mjs';
-import { boardPlay, chorePlay, convertRate, fightPlay, playGrant, secludeHour, storyPlay, unitsPay, wallGrant, workGrant } from '../scripts/rules/playpay.mjs';
+import { boardPlay, chorePlay, convertRate, fightPlay, playGrant, rateOfLevel, secludeHour, stonesAt, storyPlay, unitsPay, wallGrant, workGrant } from '../scripts/rules/playpay.mjs';
 const NOW = new Date('2026-10-27T12:00:00Z');
 import { gatesOf, roomWorks } from '../scripts/rules/gates.mjs';
 import { dayKey, lockedOf, staminaCost } from '../scripts/state.mjs';
@@ -55,12 +55,14 @@ const chars = x => (typeof x === 'string' ? x.length : Array.isArray(x) ? x.redu
    table as the rules cap it. */
 const unitsOf = grant => grant?.units ?? 0;
 const tableCap = (content, grant) => (grant?.units != null ? 0 : Math.min(grant?.progress ?? 0, content.rewards.tables[grant?.table]?.progress ?? 0));
-/* What a grant pays in 灵石, capped by its table as the rules cap it. */
-const wealthCap = (content, grant) => Math.min(grant?.wealth ?? 0, content.rewards.tables[grant?.table]?.wealth ?? 0);
+/* What a grant pays in 灵石, in minutes of income (batch 2: its `ls`, capped by its table's), priced where it lands (`ls` × I). */
+const wealthCap = (content, grant) => Math.min(grant?.ls ?? 0, content.rewards.tables[grant?.table]?.ls ?? 0);
 const itemOf = (content, id) => content.items.items.find(i => i.id === id);
 const breakPills = content => new Set(Object.values(content.ladder.breakthrough?.pill?.items ?? {}).flat());
 /* What a thing pays eaten, in units: a pill's size; a breakthrough pill is kept for the throw. */
 const pillOf = (content, id) => { const e = itemOf(content, id)?.effect; return id && e?.units && !breakPills(content).has(id) ? e.units : 0; };
+/* …and in 修为, where a levelled pill (batch 2) pays at R of its own level, wherever he eats it; else null (a size at R where he stands). */
+const pillXw = (content, id) => { const e = itemOf(content, id)?.effect; return pillOf(content, id) && e?.level ? e.units * rateOfLevel(content, e.level) : null; };
 /* What an errand pays toward 修为, in units: its grant's, and the pill it hands over. */
 export const errandPays = (content, q) => unitsOf(q.grant) + pillOf(content, q.grant?.item);
 const placeById = content => { const m = new Map(); for (const d of Object.values(content.places)) for (const p of d.places) m.set(p.id, p); return m; };
@@ -97,7 +99,7 @@ function wayOn(content, sc) {
    good pay, the expectation between a rough clear (plain) and a clean one (best). Nothing where
    wealth is still shut. */
 function boardFirst(content, ch, sc, boards) {
-  const pay = content.balance.boards?.good ?? 0;
+  const pay = content.balance.boards?.good ?? 0; // minutes of income (batch 2), priced where it lands
   if (!pay || lockedOf(content, { chapter: ch.id, scene: sc.id }).includes('wealth')) return 0;
   return boards.filter(t => t.game).length * pay;
 }
@@ -126,12 +128,15 @@ export function bookWalk(content, model = content.balance.model) {
         // A 今 board pays the 今 line (rules/lines.mjs): never the 古 ledger this walk keeps, nor 灵石 — `line` and its boards
         // (`line_tasks`) are for the 今 column (tools/numbers.mjs). Until 2026-10-28 the model paid them to the 古.
         ...(side ? { line: side, line_tasks: boards } : {}), tasks: side ? [] : boards,
-        wealth: wealthCap(content, e?.grant) + (side ? 0 : boards.reduce((n, t) => n + wealthCap(content, t.grant), 0) + boardFirst(content, ch, sc, boards)),
+        // 灵石 in minutes of income (batch 2), priced where it lands (rules/playpay.mjs stonesAt).
+        ls: wealthCap(content, e?.grant) + (side ? 0 : boards.reduce((n, t) => n + wealthCap(content, t.grant), 0) + boardFirst(content, ch, sc, boards)),
+        // …and a 灵石 number the book tells (master.economy.told: 09-lingcao's 二十), as written.
+        stones: e?.grant?.wealth_told ? e.grant.wealth : 0,
         // A story step (`story`, Hanli 2026-11-09) pays one small game's 修为 where he stands — priced when it lands.
         // A stretch of cultivation (`cultivation`, Hanli 2026-11-10, rules/cultivation.mjs) whose way on pays no 修为 of its own:
         // one story step on leaving, when its boards paid none (`floor`; priced after the rise, in play below).
         floor: Boolean(!side && sc.cultivation === true && (e?.next || e?.ends) && !(e?.grant?.table === 'story' || e?.grant?.narrated || e?.grant?.told || e?.grant?.progress > 0 || e?.grant?.units > 0)),
-        story: e?.grant?.table === 'story', grant: unitsOf(e?.grant), told: tableCap(content, e?.grant), pill: pillOf(content, e?.grant?.item), pill9: itemOf(content, e?.grant?.item)?.fill === 'full',
+        story: e?.grant?.table === 'story', grant: unitsOf(e?.grant), told: tableCap(content, e?.grant), pill: pillOf(content, e?.grant?.item), pill_xw: pillXw(content, e?.grant?.item), pill9: itemOf(content, e?.grant?.item)?.fill === 'full',
         rise, breakthrough: Boolean(e?.breakthrough), fight,
         gate: e ? gates.find(g => g.scene === sc.id && g.exits.includes(e.id)) ?? null : null,
       });
@@ -161,6 +166,8 @@ export function play(content, player, { model = content.balance.model, ladder = 
   const zero = () => tierAt(s.tier).zero && s.step === 0;
   /* A size's 修为 where he stands (rules/playpay.mjs unitsPay): units × R. */
   const U = units => unitsPay(content, s, units);
+  /* Minutes of income in 灵石 where he stands (rules/playpay.mjs stonesAt, batch 2). */
+  const LS = minutes => stonesAt(content, s, minutes);
   const up = (tier, step, carry, stretch = true) => { const c = Math.max(0, carry); s.tier = tier; s.step = step; s.progress = c; s.stretch = stretch ? Math.round(c * ratio) : 0; };
   let hui = walk[0].hui, capHui = hui, i = 0, done = new Set(), errandsPaid = new Set();
   // The cap where he stands: the 古 回's, a 今 interlude taking the one before it (rules/cap.mjs).
@@ -251,7 +258,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
   // Read at the layer he stands on (playpay.mjs convertRate: 灵石 per 修为 at 练气一层, the same 灵石 at every layer).
   const converts = (content.rewards.xiuwei_to_lingshi?.tables ?? []).includes('haunt');
   // `mult`: the 冷却事件's day share on top (妖兽出没's third batch of a day half, rules/events.mjs eventShare).
-  const win = (n, src = 'pool', mult = 1) => { for (let k = 0; k < n; k++) { const whole = Math.min(1, n - k); const rate = converts ? convertRate(content, { ...s, need: need() }) : 0; earn(rate * gain((fightPlay(content, { ...s, need: need() }) ?? pay.haunt.progress) * whole * mult, true, 'haunt', src), src); wins += whole; } earn((pay.haunt.wealth ?? 0) * n * mult, src); takePills(n / model.fight_win_rate); };
+  const win = (n, src = 'pool', mult = 1) => { for (let k = 0; k < n; k++) { const whole = Math.min(1, n - k); const rate = converts ? convertRate(content, { ...s, need: need() }) : 0; earn(rate * gain((fightPlay(content, { ...s, need: need() }) ?? pay.haunt.progress) * whole * mult, true, 'haunt', src), src); wins += whole; } earn(LS(pay.haunt.ls ?? 0) * n * mult, src); takePills(n / model.fight_win_rate); };
   /* 妖兽出没 (rules/yaoshou.mjs, balance.json `events.yaoshou`): on a chapter map whose pools are all the event's (卷一's
      外门 and 沉鼎观), the pool's fights come in batches of `batch`, the next `every_h` hours after the last is fought out;
      the sittings spread over the waking day (`waking_h`), each at its own hour. Elsewhere the old rest (`pool_rest_min`). */
@@ -356,13 +363,13 @@ export function play(content, player, { model = content.balance.model, ladder = 
   const errandMinutes = q => (q.need ?? []).reduce((n, x) => n + x.n * (['subdue', 'tame'].includes(x.kind) ? T.fight / model.fight_win_rate : x.kind === 'board' ? T.board : T.scene), 0);
   const payErrand = q => {
     errandsPaid.add(q.id); errandsDue.delete(q.id);
-    gain(U(unitsOf(q.grant)), false, null, 'errand'); gain(U(pillOf(content, q.grant?.item)), false, 'pill', 'errand');
-    gain(workGrant(content, { ...s, need: need() }, q)?.progress ?? 0, false, 'play', 'errand'); earn(wealthCap(content, q.grant), 'errand');
+    gain(U(unitsOf(q.grant)), false, null, 'errand'); gain(pillXw(content, q.grant?.item) ?? U(pillOf(content, q.grant?.item)), false, 'pill', 'errand');
+    gain(workGrant(content, { ...s, need: need() }, q)?.progress ?? 0, false, 'play', 'errand'); earn(LS(wealthCap(content, q.grant)) + (q.grant?.wealth_told ? q.grant.wealth : 0), 'errand');
   };
   /* A day's meanings of `n` app chores: the kinds' mean units and 灵石 (a kind with its own pay, 传音, is not one), capped per day. */
   const meaningDay = n => {
     const ks = Object.values(content.gongke?.kinds ?? {}).filter(m => !m.own), cap = content.gongke?.per_day ?? {}, mean = f => ks.reduce((t, m) => t + (m[f] ?? 0), 0) / Math.max(1, ks.length);
-    return { units: Math.min(cap.units ?? Infinity, n * mean('units')), wealth: Math.min(cap.wealth ?? Infinity, n * mean('wealth')) };
+    return { units: Math.min(cap.units ?? Infinity, n * mean('units')), ls: Math.min(cap.ls ?? Infinity, n * mean('ls')) };
   };
   /* The story's beats on the day's clock: a scene done, a 连环差事's step taken and handed in (Hanli 2026-11-10: 「短剧情你要补的话,
      放差事里吧」 — a step is a beat between the story's scenes, tests/pacing.test.mjs). */
@@ -406,11 +413,11 @@ export function play(content, player, { model = content.balance.model, ladder = 
       if (!zero()) {
         // The day's 功课: its share of the layer he stands on (rules/playpay.mjs chorePlay, 2026-10-27).
         if (k === 0 && !sealedNow) gain((chorePlay(content, { ...s, need: need() }, 'day') ?? 0) * player.gongke, false, 'gongke', 'gongke');
-        if (k === 0 && !sealedNow) earn((pay.gongke.wealth ?? 0) * player.gongke, 'gongke');
+        if (k === 0 && !sealedNow) earn(LS(pay.gongke.ls ?? 0) * player.gongke, 'gongke');
         // …and what the day's app chores mean (gongke.json kinds, rules/gongke.mjs): a player's `meanings` of them, each the kinds'
         // mean units and 灵石, under the day's cap (per_day). Declared by no model player yet (2026-11-10): at one a day the light
         // player's bank fills the 石室's gate on arrival and 古五 reads 6.5 days, under his band's 8 — Hanli's call (the report).
-        if (k === 0 && !sealedNow && player.meanings) { const m = meaningDay(player.meanings); gain(U(m.units) * player.gongke, false, 'chore_kind', 'gongke'); earn(m.wealth * player.gongke, 'gongke'); }
+        if (k === 0 && !sealedNow && player.meanings) { const m = meaningDay(player.meanings); gain(U(m.units) * player.gongke, false, 'chore_kind', 'gongke'); earn(LS(m.ls) * player.gongke, 'gongke'); }
         // 闭关 overnight (rules/seclusion.mjs, focus 修为): `seclude` hours a night, the rules' rate and cap.
         // 闭关 overnight (rules/seclusion.mjs, focus 修为): `seclude` hours a night at an hour's share of the layer (play_pay.seclusion).
         if (k === 0 && day > 0 && player.seclude && !sealedNow) gain(Math.floor(Math.min(player.seclude, content.rewards.seclusion.cap_hours) * (secludeHour(content, { ...s, need: need() }) ?? 0)), false, 'seclusion', 'seclusion');
@@ -482,11 +489,11 @@ export function play(content, player, { model = content.balance.model, ladder = 
               if (w.rise.full) s.progress = Math.max(s.progress, need());
             }
           }
-          gain(U(w.grant)); gain(w.told); gain(U(w.pill), false, 'pill');
+          gain(U(w.grant)); gain(w.told); gain(w.pill_xw ?? U(w.pill), false, 'pill');
           if (w.story) gain(storyPlay(content, { ...s, need: need() }), false, 'play');
           // The floor of a stretch of cultivation its boards left unpaid (zero at 零层; after the rise: 小周天's night at 一层).
           if (w.floor && !(w.boards_xw > 0)) gain(storyPlay(content, { ...s, need: need() }), false, 'play');
-          earn(w.wealth);
+          earn(LS(w.ls) + (w.stones ?? 0));
           // A story fight on the way takes its pills too.
           if (w.fight) takePills(1 / model.fight_win_rate);
           done.add(w.id);
@@ -533,6 +540,13 @@ export function play(content, player, { model = content.balance.model, ladder = 
         if (waiting) waiting.did.boards += 1;
         gain(Math.round((boardPlay(content, { ...s, need: need() }, P.minutes) ?? 0) * P.factor), false, 'play', 'boards');
       }
+    }
+    // A player who spends his 灵石 on 修为 (`qi_buy`: the share of the wallet that goes on the shelf's 聚气丹 at the day's end,
+    // eaten at once — tools/balance.mjs --qi-buy; no model player declares it): what buying 修为 does to the pace (batch 2).
+    if (player.qi_buy && !zero() && !inside()) {
+      const qi = content.items.items.find(x => x.id === 'qi-pill'), price = qi?.buy ?? 0, xw = pillXw(content, 'qi-pill') ?? 0;
+      const n = price > 0 ? Math.floor((W.now * player.qi_buy) / price) : 0;
+      if (n > 0) { W.now -= n * price; W.spent += n * price; gain(n * xw, false, 'pill', 'bought'); settle(); }
     }
     // Where the day ends (tools/numbers.mjs reads it): the layer, the 回, the wallet and all 灵石 earned so far.
     Object.assign(D, { at: { tier: s.tier, step: s.step }, hui, wallet: W.now, earned: W.earned });
@@ -615,7 +629,7 @@ export function worldAt(first, line = 'gu') {
   const read = f => JSON.parse(fs.readFileSync(path.join(HERE, '../worlds/jiuding', f), 'utf8'));
   const raw = read('balance.json');
   raw.master.lines[line].time.first = first;
-  return import('./master.mjs').then(({ derive }) => withBalance({ ...loadContent(), balance: derive(raw, { ladder: read('ladder.json'), items: read('items.json').items }) }));
+  return import('./master.mjs').then(({ derive, inputsOf }) => withBalance({ ...loadContent(), balance: derive(raw, inputsOf(read)) }));
 }
 /* `--solve` (Hanli 2026-11-10: T₁ is solved, never picked — balance.json master.lines.gu `solve`): the largest T₁ at which every
    回 the curve moves keeps the `solve.player`'s days `solve.inset` under its band's top (its own `bands.except` row where it has one) (its floor is not solved for: a 回 short of it is told, not fitted). A
@@ -686,6 +700,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     for (const r of rows) console.log(`${r.hui.padEnd(5)} ${[r.light, r.typical, r.heavy].map(x => String(x ?? '—').padStart(4)).join(' ')}`);
     const pct = x => `${(x * 100).toFixed(1)}%`;
     if (process.argv.includes('--events')) for (const e of eventTable(content)) console.log(`妖兽出没 ${e.who.padEnd(8)} ${e.days} days: 修为 ${Math.round(e.xw)}/day = ${pct(e.layer)} of the layer · ${pct(e.of_day)} of the day's 修为 · 灵石 ${Math.round(e.ls)}/day`);
+    // --qi-buy: the typical player spending all his 灵石 on 聚气丹 each night, against him spending none (batch 2's balance check).
+    if (process.argv.includes('--qi-buy')) {
+      const p = content.balance.model.players.typical, base = play(content, p).rows, buy = play(content, { ...p, qi_buy: 1 }).rows;
+      console.log(`聚气丹 (${content.items.items.find(i => i.id === 'qi-pill')?.buy} 灵石) bought with every 灵石, typical: ` + base.map(r => `${r.hui} ${round(r.days)}→${round(buy.find(x => x.hui === r.hui)?.days)}`).join(' · '));
+    }
     if (process.argv.includes('--wealth')) for (const w of wealthTable(content)) console.log(`灵石 ${w.who.padEnd(8)} ${w.days} days: in ${w.in}/day · pills out ${w.out}/day (${w.pills} pills) · end ${w.end} · lowest ${w.low}`);
   }
 }

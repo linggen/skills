@@ -73,7 +73,7 @@ test('errands: the east wall offers the 观\'s chores and the tags below the mou
   assert.ok(!ids.includes('xu-lvliang-look'), '吕梁洪 is beyond 练气 — its tag waits');
   // chores pay 灵石, the night's work 修为 (the numbers are the economy's)
   const all = content.quests;
-  for (const q of all.filter((x) => x.id.startsWith('guan-'))) assert.ok(q.work === 'labor' ? q.grant.wealth > 0 : q.grant.units > 0, q.id);
+  for (const q of all.filter((x) => x.id.startsWith('guan-'))) assert.ok(q.work === 'labor' ? (q.grant.ls ?? q.grant.wealth) > 0 : q.grant.units > 0, q.id);
   // a chore is done in its own place, the 观's board there
   let c = must(quest, s, { action: 'take', id: 'guan-chaifang-wood' });
   c = fresh(must(move, c, { place: 'chaifang' }));

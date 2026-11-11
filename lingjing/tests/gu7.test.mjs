@@ -96,14 +96,14 @@ test('every board pays what the plan names: 修为 for cultivation, a pill or �
   for (const id of ['jiuge-sui', 'xie-wind']) assert.equal(t(id), undefined, `${id}: told (the 调息 cut)`);
   assert.equal(t('furnace-recipe').cut, '2026-10-19');
   assert.equal(CH.scenes['09-furnace'].exits[0].grant.item, 'qi-pill', '认方\'s 聚气丹 comes with the way on');
-  assert.equal(t('year-smell').grant.wealth, 3);
-  assert.equal(t('yishui-reed').grant.wealth, 2);
+  assert.equal(t('year-smell').grant.ls, 0.9); // 3 灵石 then: sizes since batch 2
+  assert.equal(t('yishui-reed').grant.ls, 0.6);
   assert.deepEqual(Object.values(t('jiuge-yubu').marks), ['yubu', 'yubu'], 'the mark `yubu` either way (no line reads it yet)');
   assert.equal(CH.scenes['09-snow'].exits[0].grant.item, 'huochai-jian');
   assert.equal(CH.scenes['09-xie'].exits[0].grant.item, 'shunfeng-liu');
   const lc = CH.scenes['09-lingcao'].exits[0].grant, sp = t('futian-spar').grant;
   assert.deepEqual([lc.progress, lc.wealth], [undefined, 20], '犰狳: the book\'s 「每人二十块灵石」 — no story 修为 (2026-10-16)');
-  assert.deepEqual([sp.table, sp.units, sp.wealth], ['task', 2.5, 10], '秦雁\'s bout, 格斗 since 2026-10-28: a board\'s 修为 (a size), its 灵石 at the task cap');
+  assert.deepEqual([sp.table, sp.units, sp.ls], ['task', 2.5, 3], '秦雁\'s bout, 格斗 since 2026-10-28: a board\'s 修为 (a size), its 灵石 at the task cap (a size since batch 2)');
   assert.equal(CH.scenes['09-futian'].exits[0].grant, undefined);
 });
 

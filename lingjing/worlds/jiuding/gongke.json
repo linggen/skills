@@ -1,7 +1,7 @@
 {
   "version": 1,
   "_about": "人间功课 as cultivation (Hanli, 2026-10-22: 「游戏里还要有和其他app如cfo, shifu, health等互动」 → 「可以」). Each app's quest file names a chore's `kind` — a plain word of its own, never a game word; this table, keyed by that kind, is what the chore means in the book: its in-world name (`name`, the 人间功课 board's label), the facts handed to 银月 when it is handed in (`about`: never shown, she words it), and what it adds on top of the chore's own pay (rules/chores.mjs choreGrant): `wealth` 灵石 and `progress` 修为 off the `chore_kind` table (balance.json pay), and an `item` (items.json — chore-only things, small effects declared there). A `week` row pays once a week when chores of the kind were handed in on `days` different days of it (the `chore_week` table) — 宗门月俸. `per_day` caps what the meanings add in one local day, all kinds together (`items`: how many things). The rules name no app and no chore id (rules/gongke.mjs); a chore with no kind, or a kind not here, pays as before and means nothing more. 开府's one-time milestones never take a meaning. Never needed for the main line; paid once per chore occurrence (the chore's own period).",
-  "per_day": { "wealth": 30, "units": 10, "items": 2 },
+  "per_day": { "ls": 9, "units": 10, "items": 2 },
   "_shares": "`shares_per_day`: how many of a day's daily chores (period `day`) pay their own share of the layer in 修为 (playpay.mjs chorePlay); the rest pay their 灵石, 体力 and meaning (rules/chores.mjs choreGrant). 2026-11-02 (Hanli 「任务设计可以, 按你说的做」): six dailies replaced one fixed workout; one share keeps a day's chore 修为 near where it was (one daily's 10%, plus the pick — now always a weekly or monthly, 20–30%, where the old pick was 10–30%). Waits on Hanli's word.",
   "shares_per_day": 1,
   "_doubled": "App-linked chores pay double (Hanli 2026-11-10: 「练体等…app联动的任务, 奖励都翻倍」): every kind above that comes from an app (body · rest · heal · ledger · sweep · ward · greet · song) pays twice its meaning — `units` and `wealth` — and `per_day` doubles with them (wealth 15 → 30, units 5 → 10; `items` is a count, not pay); the chore's own pay doubles in the master table (balance.json master.xiuwei.units.chore: a day 5 → 10, a week 10 → 20, a month 15 → 30; the `gongke_zero` table's 灵石 5 → 10), and the week's 月俸 (the `chore_week` table, 30 → 60 灵石; `chore_kind`'s 灵石 cap 10 → 20 so 算账's 16 lands). 传音 (`share`) is set at three small games on its own (`own`) and is not doubled again.",
@@ -10,48 +10,48 @@
     "body": {
       "name": { "zh": "练功", "en": "Practice" },
       "about": { "zh": "小满在山道上挑着担子练脚力，一趟一趟往上爬——功夫是腿上磨出来的。", "en": "Xiaoman climbs the mountain path under the yoke, trip after trip — the practice is worn into the legs." },
-      "wealth": 6, "units": 6, "item": "chenlian-fu"
+      "ls": 1.8, "units": 6, "item": "chenlian-fu"
     },
     "rest": {
       "name": { "zh": "养神", "en": "Rest" },
       "about": { "zh": "一夜好睡，神养足了，闭关时心定得快。", "en": "A good night's sleep; the spirit is full, and in seclusion the mind settles sooner." },
-      "wealth": 4, "units": 4, "item": "anshen-xiang"
+      "ls": 1.2, "units": 4, "item": "anshen-xiang"
     },
     "heal": {
       "name": { "zh": "调息", "en": "Tending" },
       "about": { "zh": "问过医、看过脉案，身上哪里不顺，心里有了数。", "en": "The healer's word read, the pulse notes looked over: what is off in the body is known now." },
-      "wealth": 6, "units": 3, "item": "anshen-xiang"
+      "ls": 1.8, "units": 3, "item": "anshen-xiang"
     },
     "ledger": {
       "name": { "zh": "算账", "en": "Accounts" },
       "about": { "zh": "小满娘的话：「遇事先算账。」账算清了，灵石才攒得住。", "en": "Xiaoman's mother's word: \"Before anything, do the accounts.\" Kept straight, the spirit stones stay." },
-      "wealth": 16, "units": 2,
+      "ls": 4.8, "units": 2,
       "week": { "days": 2, "name": { "zh": "宗门月俸", "en": "The sect's stipend" } }
     },
     "sweep": {
       "name": { "zh": "洒扫", "en": "Sweeping" },
       "about": { "zh": "洞府洒扫一遍，丹炉清了灰——下一炉成色高一等。", "en": "The abode swept, the furnace cleared of ash — the next pot comes out a grade better." },
-      "wealth": 8, "units": 2, "item": "jinglu-fu"
+      "ls": 2.4, "units": 2, "item": "jinglu-fu"
     },
     "ward": {
       "name": { "zh": "护山", "en": "Warding" },
       "about": { "zh": "护山大阵查过一遍、补了一角——藏珍有了着落，山门稳了。", "en": "The mountain's great ward walked and one corner mended — the treasures are kept, the gate holds." },
-      "wealth": 8, "units": 2, "item": "hushan-qi"
+      "ls": 2.4, "units": 2, "item": "hushan-qi"
     },
     "greet": {
       "name": { "zh": "问安", "en": "Greeting" },
       "about": { "zh": "早晚给银月问一声安。她哼一声「本王知道了」，尾巴尖却轻轻摇了一下。", "en": "A good morning, a good night to Yinyue. She sniffs, \"This queen knows\" — and the tip of her tail sways." },
-      "wealth": 4, "units": 2
+      "ls": 1.2, "units": 2
     },
     "song": {
       "name": { "zh": "琴心", "en": "Music" },
       "about": { "zh": "听了一曲、唱了一段，心里松快。", "en": "A song heard, a verse sung; the heart eases." },
-      "wealth": 4, "units": 2
+      "ls": 1.2, "units": 2
     },
     "share": {
       "name": { "zh": "传音", "en": "Sending word" },
       "about": { "zh": "把今日的签、近况传给山外的朋友。银月说：道不孤，必有邻。", "en": "Today's fortune and how things stand, sent to friends beyond the mountains. Yinyue says: the Way does not walk alone; it will have neighbours." },
-      "own": { "table": "life", "games": 3, "wealth": 15 }
+      "own": { "table": "life", "games": 3 }
     }
   }
 }

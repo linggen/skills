@@ -3,7 +3,7 @@
   "_about": "古七's boards (h11; the per-回 plan 2026-10-15, Wave 2 D): each the book's own action where its scene stands, every one skippable once stuck (the page's 算了，往下走), and each pays what the plan names — 修为 for cultivation (禹步, 定风), 灵石 / a thing for the rest (认方 a 聚气丹, 闻焦 and 芦苇 灵石). The two fights (灵草谷's 犰狳, 崖顶's 秦雁) are scene duels on their exits, paid there.",
   "_economy": "Pay declared here for the economy model (tools/balance.mjs reads tasks/*.json): the 修为 is +10 over 古七 from boards (jiuge-yubu 5, furnace-ding 5; 随叶 and 顺风溜's 5 each went with the 调息 cut 2026-10-20, told), +30 the 犰狳 (09-lingcao/fight, scene table) and +30 the 秦雁 bout (09-futian/spar, trial table, paid after the 七层 rise); 灵石 +2 (yishui-reed; year-smell's +3 went with its cut 2026-10-19), +20 (犰狳), +20 (秦雁); items: qi-pill (furnace-recipe), huochai-jian and shunfeng-liu (on the ways on). The three rises — 五层 (09-furnace/fire, and 09-year/futian as a catch-up), 六层 (09-yishui/night), 七层 (09-futian/spar, the 秦雁 bout's way on) — each wait on the 阶段任务: 圆满 of the layer held (caps.hui.h11.gates: [{layer 4, 09-furnace, [fire]}, {layer 4, 09-year, [futian]}, {layer 5, 09-yishui, [night]}, {layer 6, 09-futian, [spar]}]).",
   "tasks": [
-    {"id": "jiuge-yubu", "kind": "board", "game": "dash", "_was": "禹步 · 九格 (games/yubujiuge.js, home-made: 左脚 · 右脚绕 · the next square) until 2026-10-27, deleted; the classic Simon (照着走) plays the same lesson — 瞿老 walks the nine squares, you follow his feet. Id, pay and marks kept, so a save holding it done or offered goes on as it was.", "period": "once", "title": {"zh": "禹步 · 照着走", "en": "The Step of Yu · Follow his feet"}, "grant": {"table": "task", "units": 2.5, "wealth": 5}, "marks": {"quiet": "yubu", "loud": "yubu"}, "done_line": {"zh": "「猎户的脚。」", "en": "\"A hunter's feet.\""}, "_reward": "修为 5, and the mark `yubu` either way (he walked it). No line reads it yet (古九's 量河滩 board was planned, never built).", "_retired": "2026-11-05 (Hanli: 「这个小游戏删了吧, 太难了」): was 照着走 level 0 (games/simon.js, kept in the repo, dealt by no board); now 几何冲刺 (games.json's dash row for this task); 照着走's 5 灵石 a play (play_pay 记忆) rides in the grant, 几何冲刺 paying 调息's 0. Id, pay, marks and done line kept, so a save holding it — offered, kept (收着), done — takes it up as the run on its next Look.", "how": {"zh": "照着他的脚：点一下跳，空中碰到金环再点，矮顶底下别跳。碰上了，从头。", "en": "Follow his feet: tap to jump, tap again on a gold ring in the air, stay down under the low roofs. Touch one, start over."}},
+    {"id": "jiuge-yubu", "kind": "board", "game": "dash", "_was": "禹步 · 九格 (games/yubujiuge.js, home-made: 左脚 · 右脚绕 · the next square) until 2026-10-27, deleted; the classic Simon (照着走) plays the same lesson — 瞿老 walks the nine squares, you follow his feet. Id, pay and marks kept, so a save holding it done or offered goes on as it was.", "period": "once", "title": {"zh": "禹步 · 照着走", "en": "The Step of Yu · Follow his feet"}, "grant": {"table": "task", "units": 2.5, "ls": 1.5}, "marks": {"quiet": "yubu", "loud": "yubu"}, "done_line": {"zh": "「猎户的脚。」", "en": "\"A hunter's feet.\""}, "_reward": "修为 5, and the mark `yubu` either way (he walked it). No line reads it yet (古九's 量河滩 board was planned, never built).", "_retired": "2026-11-05 (Hanli: 「这个小游戏删了吧, 太难了」): was 照着走 level 0 (games/simon.js, kept in the repo, dealt by no board); now 几何冲刺 (games.json's dash row for this task); 照着走's 5 灵石 a play (play_pay 记忆) rides in the grant, 几何冲刺 paying 调息's 0. Id, pay, marks and done line kept, so a save holding it — offered, kept (收着), done — takes it up as the run on its next Look.", "how": {"zh": "照着他的脚：点一下跳，空中碰到金环再点，矮顶底下别跳。碰上了，从头。", "en": "Follow his feet: tap to jump, tap again on a gold ring in the air, stay down under the low roofs. Touch one, start over."}},
     {
       "_cut": "Off 09-furnace 2026-10-19 (the standing rule Hanli approved 10-19: a memory puzzle, button-only, fits no kit): the passage whole again (story_after merged), 定风 the scene's one board; its 聚气丹 is the way on's (09-furnace/fire grant). `cut` lets a save holding it offered let it go on load (state.mjs fitWorld); row and module stay in the 游戏厅.",
       "cut": "2026-10-19",
@@ -38,7 +38,7 @@
       "game": "huohousmell",
       "period": "once",
       "title": { "zh": "闻焦 · 半口气", "en": "The scorch · Half a breath" },
-      "grant": { "table": "task", "wealth": 3 },
+      "grant": { "table": "task", "ls": 0.9 },
       "marks": { "nose": "smell-nose", "late": "smell-late" },
       "done_line": { "zh": "「丹师，这个……是不是就是丹焦的味儿？」", "en": "\"Pill-master, this... is this the smell of a pill scorching?\"" },
       "_reward": "灵石 +3 — the 「丹房 · 看丹炉」 tablet's work (周衡: 看炉，记功)."
@@ -53,7 +53,7 @@
       "stars": 3,
       "period": "once",
       "title": { "zh": "芦苇里那一等", "en": "The wait in the reeds" },
-      "grant": { "table": "task", "wealth": 2 },
+      "grant": { "table": "task", "ls": 0.6 },
       "marks": { "still": "reed-still", "hasty": "reed-hasty" },
       "done_line": { "zh": "它叫了一声，翅膀张了一半，塌了下去。", "en": "It bellowed; the wings half opened and collapsed." },
       "_reward": "灵石 +2 — the book's split of the 四块 (「阿禾一块，孙二狗一块，他两块」); the hide and membrane are told (no item rows)."

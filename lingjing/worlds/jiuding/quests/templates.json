@@ -12,7 +12,7 @@
    "who": { "zh": "坊市的榜文", "en": "the notice at the market" },
    "say": { "zh": "{place}的{target}又出来伤人。降了它的，凭此榜领赏。", "en": "The {target} of {place} is hurting travellers again. Whoever subdues it is paid on this notice." },
    "work": "cultivation",
-   "grant": { "table": "quest", "units": 20, "wealth": 15 }
+   "grant": { "table": "quest", "units": 20, "ls": 4.5 }
   },
   {
    "id": "patrol",
@@ -23,7 +23,7 @@
    "who": { "zh": "坊市的榜文", "en": "the notice at the market" },
    "say": { "zh": "{target}多日没有消息。谁去看一眼，凭此榜领赏。", "en": "No word from {target} in days. Whoever goes to look is paid on this notice." },
    "work": "labor",
-   "grant": { "table": "labor", "wealth": 15 }
+   "grant": { "table": "labor", "ls": 4.5 }
   },
   {
    "id": "trial",
@@ -34,7 +34,7 @@
    "who": { "zh": "坊市的榜文", "en": "the notice at the market" },
    "say": { "zh": "{target}那边摆着一局，等人去解。解得开的，凭此榜领赏。", "en": "There is a game laid out at {target}, waiting for someone to solve it. Whoever does is paid on this notice." },
    "work": "labor",
-   "grant": { "table": "labor", "wealth": 20 }
+   "grant": { "table": "labor", "ls": 6 }
   }
  ]
 }

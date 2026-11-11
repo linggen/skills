@@ -20,6 +20,10 @@
 // · pool), the bot's slack. `economy`: 灵石 a minute of play (`income`), a 修为 pill's price in minutes of income for each night
 // of 闭关 it is worth, gear's per point by kind, the buy-back share, the 圆满 → 灵石 rate.
 
+import { hpMaxOf } from '../scripts/rules/cards.mjs';
+import { REALMS } from '../scripts/battle.js';
+import { incomeAt, rateOfLevel, realmOfLevel } from '../scripts/rules/playpay.mjs';
+
 const round10 = (x, r = 10) => Math.round(x / r) * r;
 
 /* The units a minute of the line's play mix is worth: a small game's (`board`) over the games' share of the 修为 per share of
@@ -49,8 +53,25 @@ export function curveOf(M, line, tiers) {
   return { layers, hours };
 }
 
-/* A pill's nights of 闭关 by 转 (一至九): the named 转, and straight between them. */
-export function pillNights(P) {
+
+const points = e => (e?.atk ?? 0) + (e?.def ?? 0) + Object.values(e?.ward ?? {}).reduce((a, b) => a + b, 0);
+const GEAR = new Set(['weapon', 'robe', 'pendant', 'shoes']);
+const r3 = x => Math.round(x * 1000) / 1000;
+
+/* The world the rules read, as much of it as the formulas need (playpay.mjs incomeAt · rateOfLevel read `balance`). */
+const worldOf = raw => ({ balance: { economy: { income: raw.master.economy.income }, play_pay: { xiuwei: { rate: raw.master.xiuwei.rate } } } });
+
+/* A level's 层 on the 古 ladder as derive knows it (`layers` written, `tiers` ladder.json's): its threshold, its realm's tier and
+   step (练气 counts from 零层). */
+function layerOf(raw, ladder, L) {
+  const tiers = ladder.tiers.filter(t => raw.master.lines.gu.tiers.includes(t.id)), r = realmOfLevel(L), t = tiers[r];
+  if (!t) return null;
+  const step = L - r * 9 - (t.zero ? 0 : 1);
+  return { tier: t.id, step, need: raw.layers[t.id]?.[step] ?? null };
+}
+
+/* A share table by 转 (一至九): the named 转, and straight between them (as pillNights was). */
+export function byZhuan(P) {
   const named = Object.entries(P).filter(([k]) => /^\d$/.test(k)).map(([k, v]) => [Number(k), v]).sort((a, b) => a[0] - b[0]);
   const out = [];
   for (let z = 1; z <= 9; z++) {
@@ -60,33 +81,103 @@ export function pillNights(P) {
   }
   return out;
 }
+/* A family's shares by 转: its own, or another's (`like`) × `step`. */
+const sharesOf = (F, f) => (f.share ? byZhuan(f.share) : sharesOf(F, F[f.like]).map(s => Math.round(s * f.step * 10000) / 10000));
 
-const points = e => (e?.atk ?? 0) + (e?.def ?? 0) + Object.values(e?.ward ?? {}).reduce((a, b) => a + b, 0);
-const GEAR = new Set(['weapon', 'robe', 'pendant', 'shoes']);
+/* Every family pill's numbers at its own level (batch 2, Hanli 2026-11-10): a 修为 family's share × need(level), as units at R
+   of that level (rules/core.mjs amountsOf: units × R(level)); a heal its share × his 气血 there (rules/cards.mjs hpMaxOf), a
+   mana pill its share × his 灵力 cap there (battle.js REALMS); an exception's 修为 beside it. Read by content.mjs withBalance. */
+export function pillsOf(raw, { ladder, items }) {
+  const P = raw.master.pills, F = P.families, W = worldOf(raw), out = {};
+  const staged = { ladder: { ...ladder, tiers: ladder.tiers.map(t => ({ ...t, thresholds: raw.layers[t.id] ?? [] })) } };
+  const xiuwei = (i, share) => { const at = layerOf(raw, ladder, i.level); return at?.need ? { table: P.table, units: r3((share * at.need) / rateOfLevel(W, i.level)), level: i.level, tier: i.tier } : null; };
+  for (const i of items.filter(x => x.kind === 'pill' && x.of && x.level > 0)) {
+    const f = F[i.of], z = (i.zhuan ?? 1) - 1, at = layerOf(raw, ladder, i.level);
+    if (!f) continue;
+    // 仙阶 (a 阶 off the ladder): no 转 — its own share (`xian`).
+    const share = f.pays === 'xiuwei' && !ladder.tiers.some(t => t.id === i.tier) && P.xian != null ? P.xian : sharesOf(F, f)[z];
+    const e = {};
+    if (f.pays === 'xiuwei') Object.assign(e, xiuwei(i, share));
+    if (f.pays === 'heal' && at) e.fight = { heal: Math.max(1, Math.round(share * hpMaxOf({ tier: at.tier, step: at.step }, staged))) };
+    if (f.pays === 'mana' && at) e.fight = { mana: Math.max(1, Math.round(share * (REALMS[at.tier] ?? REALMS.qi).mana)) };
+    const x = P.exceptions?.[i.id];
+    if (x?.xiuwei) Object.assign(e, xiuwei(i, x.xiuwei));
+    out[i.id] = e;
+  }
+  return { table: P.table, families: Object.keys(F), ...(P.xian != null ? { off_ladder: ['xian'] } : {}), effects: out };
+}
 
-/* Every shop price: a 修为 pill's by its nights of 闭关, gear's by its points, the buy-back of all; the rest as written. */
-export function pricesOf(raw, items, nights) {
-  const E = raw.master.economy, out = {};
+/* The kind a material is to the 饭桶 (fantong.json kinds: herb · beast · ore · paper), else junk; a 天材 that binds an element its own. */
+const materialOf = (i, fantong) => (i.effect?.core ? 'tiancai' : Object.entries(fantong?.kinds ?? {}).find(([k, v]) => !k.startsWith('_') && v?.items?.includes(i.id))?.[0] ?? 'junk');
+/* A thing's 品阶 to the 饭桶 (fantong.json tiers: 0 凡物 … 4). */
+const gradeOf = (i, fantong) => Number(Object.entries(fantong?.tiers ?? {}).find(([k, ids]) => /^\d$/.test(k) && ids.includes(i.id))?.[0] ?? 0);
+
+/* A 储物袋's slots by its 品 (items.json `pin`): base × step^(品−1). */
+export const pouchSlots = (P, i) => (P && i?.pin ? P.base * P.step ** (i.pin - 1) : null);
+
+/* A thing's price in minutes of income at its own level, by its class (master.economy.prices; null: a class with no price). */
+export function minutesOf(raw, i, { fantong, cards, effects, ladder }) {
+  const C = raw.master.economy.prices, X = raw.master.xiuwei, W = worldOf(raw), e = effects[i.id] ?? i.effect ?? {};
+  const bt = raw.master.breakthrough, items = Object.values(ladder?.breakthrough?.pill?.items ?? {}).flat();
+  const cost = id => (cards ?? []).find(c => c.id === id)?.cost ?? 0;
+  if (i.kind === 'pill') {
+    // A pill a breakthrough reaches for: its points on the throw (its own `bonus_of`, else by its 转).
+    if (items.includes(i.id)) return C.breakthrough * (bt.pill.bonus_of?.[i.id] ?? zhuanBonus(bt, i.zhuan) ?? bt.pill.bonus);
+    if (e.units && e.level) return C.pill_ratio * e.units / (X.board ?? 1); // its 修为 ÷ (R × board) a minute: R cancels at its level
+    if (e.fight?.heal) return C.heal * e.fight.heal;
+    if (e.fight?.mana) return C.mana * e.fight.mana;
+    return null;
+  }
+  if (GEAR.has(i.kind) && points(i.effect)) return points(i.effect) * C.gear[i.kind];
+  if (i.effect?.card) return (C.card?.[i.kind] ?? C.card?.treasure ?? 0) * (cost(i.effect.card) + 1);
+  if (i.kind === 'charm') return C.charm * Math.max(1, cost(i.id));
+  if (i.kind === 'scroll' && i.effect?.learn) return C.scroll * (i.effect.level ?? 1);
+  if (i.kind === 'pouch') return C.pouch * (pouchSlots(raw.master.economy.pouch, i) ?? 0);
+  if (i.kind === 'material') { const k = materialOf(i, fantong); return C.material[k] * (k === 'tiancai' ? 1 : C.grade[gradeOf(i, fantong)] ?? 1); }
+  return C[i.kind] ?? null;
+}
+/* A pill's points on the throw by its 转 (master.breakthrough.pill.zhuan): first + step a 转 + pin at each 品 + nine for a 九转. */
+export function zhuanBonus(bt, z) {
+  const Z = bt?.pill?.zhuan;
+  return Z && z ? Z.first + Z.step * (z - 1) + Z.pin * Math.floor((z - 1) / 3) + (z === 9 ? Z.nine : 0) : null;
+}
+
+/* Every shop price (batch 2): minutes of income by class × I(the item's level) — `buy` where a shop sells it (a row whose buy is
+   above 0: the table's shape is the declaration, its numbers are this), `sell` the buy-back share where it buys back at all. */
+export function pricesOf(raw, { items, fantong, cards, effects, ladder }) {
+  const E = raw.master.economy, W = worldOf(raw), out = {};
   for (const [id, p] of Object.entries(raw.prices ?? {})) {
     const i = items.find(x => x.id === id), q = { ...p };
-    const n = i?.kind === 'pill' && i.of && raw.master.pills_families?.includes(i.of) ? nights[(i.zhuan ?? 1) - 1] : null;
-    if (q.buy > 0 && n != null) q.buy = Math.round(n * E.pill_night_minutes * E.income);
-    else if (q.buy > 0 && GEAR.has(i?.kind) && E.gear_minutes?.[i.kind] && points(i.effect)) q.buy = Math.round(points(i.effect) * E.gear_minutes[i.kind] * E.income);
+    const m = i && q.buy > 0 ? minutesOf(raw, i, { fantong, cards, effects, ladder }) : null;
+    if (q.buy > 0 && m != null) q.buy = Math.max(1, Math.round(m * incomeAt(W, i.level)));
     // The buy-back: a share of the price — where the shop buys it back at all (`sell` 0 or none: it never does).
-    if (q.buy > 0 && q.sell > 0) q.sell = Math.max(1, Math.floor(q.buy * E.sell_back + 1e-6));
+    if (q.buy > 0 && q.sell > 0) q.sell = Math.max(1, Math.floor(q.buy * (E.sell_back_of?.[id] ?? E.sell_back) + 1e-6));
     out[id] = q;
   }
   return out;
 }
 
-/* 秘境探险's numbers (rules/mijing.mjs): the knobs as the rules read them, 灵石 turned from minutes of income to stones. */
-export function mijingOf(K, E) {
-  const ls = m => Math.max(1, Math.round(m * (E?.income ?? 3)));
+/* 秘境探险's numbers (rules/mijing.mjs): the knobs as the rules read them — its 灵石 in minutes of income, × I where he
+   stands when they land (rules/mijing.mjs). */
+export function mijingOf(K) {
   return {
     cap_day: K.key.cap_day, drops: { ...K.key.drops }, pay: { rate: K.pay.rate, short: K.pay.short }, keep_min: K.pay.keep_min,
     hurt: { ...K.hurt }, yield: K.yield, foe_step: K.foe_step, boss_more: K.boss_more, td_step: K.td_step,
-    wealth: { room: K.wealth.room.map(ls), chest: K.wealth.chest.map(ls), clear: ls(K.wealth.clear), step: K.wealth.step },
+    wealth: { room: [...K.wealth.room], chest: [...K.wealth.chest], clear: K.wealth.clear, step: K.wealth.step },
     chest_rolls: K.chest_rolls, offer: K.offer, clear: structuredClone(K.clear),
+  };
+}
+
+/* The breakthrough throw's numbers (master.breakthrough → balance.json `breakthrough`, folded onto ladder.json's at load):
+   `base` by realm and `pill.by_zhuan` by 转 from their formulas, the rest as the knobs say. `tiers`: the ladder's ids. */
+export function breakthroughOf(B, tiers) {
+  const at = id => tiers.indexOf(id), plateau = at(B.base.plateau);
+  const base = Object.fromEntries(tiers.slice(1).map(id => { const r = at(id); return [id, r === 1 ? B.base.first : B.base.start - B.base.step * (r - 2 - (plateau >= 0 && r >= plateau ? 1 : 0))]; }));
+  const { zhuan, ...pill } = B.pill;
+  return {
+    base, floor: B.floor, cap: B.cap, low: B.low,
+    pill: { ...structuredClone(pill), by_zhuan: Object.fromEntries(Array.from({ length: 9 }, (_, k) => [String(k + 1), zhuanBonus(B, k + 1)])) },
+    body: { ...B.body }, seclusion: { ...B.seclusion }, her: { ...B.her }, element: { ...B.element }, fail: { ...B.fail }, duan: { ...B.duan },
   };
 }
 
@@ -99,9 +190,11 @@ export function setPath(obj, path, value) {
 }
 export function getPath(obj, path) { return path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj); }
 
-/* The world's balance.json as the master table makes it. `ladder`: ladder.json's tiers (ids, 零层, how many steps); `items`:
-   items.json's (kind, 转, family, effect) — read, never written. */
-export function derive(raw0, { ladder, items }) {
+/* The world's balance.json as the master table makes it. `ladder`: ladder.json's tiers (ids, 零层, how many steps) and its
+   breakthrough's pills; `items`: items.json's (kind, level, 转, family, effect); `fantong`: its kinds and 品阶 (a material's
+   class); `cards`: cards.json's (a card's cost) — read, never written. `inputsOf(read)` reads them. */
+export const inputsOf = read => ({ ladder: read('ladder.json'), items: read('items.json').items, fantong: read('fantong.json'), cards: read('cards.json').cards });
+export function derive(raw0, { ladder, items, fantong = null, cards = null }) {
   const raw = structuredClone(raw0), M = raw.master, gu = M.lines.gu, pp = raw.play_pay;
   // Every realm counts nine 层 (Hanli 2026-11-02: 「9层用于计算, 小, 中, 大成用于显示」) — one level each since 2026-11-10 (L =
   // realm × 9 + 层): a realm shown in 段 is display only, each of its 层 its own threshold on the curve.
@@ -137,16 +230,27 @@ export function derive(raw0, { ladder, items }) {
   delete pp.authored;
   // 闭关 is units at R now: nothing scales by the layer any more.
   delete raw.layer_pay; delete raw._layer_pay;
-  const nights = pillNights(gu.pills);
-  // A 修为 pill is its 转's nights of 闭关 (× `play_pay.seclusion.night` units at R, content.mjs pillPay) — the cards'
-  // 「抵N日打坐」 true at every layer by construction. 仙阶 (`xian`, a 阶 off the ladder: no 转): its own, by `by_tier`.
-  raw.pills = { families: M.pills_families, table: 'pill', nights, ...(gu.pills.xian != null ? { by_tier: { xian: gu.pills.xian } } : {}), below: gu.pills.below };
+  // 丹药 by family at each pill's own level (batch 2, master.pills; content.mjs withBalance folds `effects` onto items.json).
+  raw.pills = pillsOf(raw, { ladder, items });
   // A size pays what it is: the tables it rides on cap nothing.
-  raw.pay.pill = { progress: 100000, wealth: 0 };
-  raw.pay.seclusion = { progress: 100000, wealth: 0 };
-  raw.convert = { ...raw.convert, rate: M.economy.convert };
-  raw.prices = pricesOf(raw, items, nights);
-  if (M.mijing) raw.mijing = mijingOf(M.mijing, M.economy);
+  raw.pay.pill = { progress: 100000, ls: 0 };
+  raw.pay.seclusion = { progress: 100000, ls: 0 };
+  // 灵石 (batch 2, master.economy): I(L), and every size in minutes of income — the pay tables', a board's rank, a kind's play,
+  // an errand's work, the 圆满 share, 开炉's worth by 品阶. Priced where they land (rules/playpay.mjs stonesAt).
+  const E = M.economy;
+  raw.economy = { income: { ...E.income }, ...(E.pouch ? { pouch: { ...E.pouch } } : {}) };
+  for (const [t, p] of Object.entries(raw.pay)) { const { wealth, ...rest } = p; raw.pay[t] = { ...rest, ls: E.tables[t] ?? 0 }; }
+  raw.boards = { ...E.boards };
+  pp.wealth = { ...E.play };
+  const { wealth: _w, ...errand } = pp.errand;
+  pp.errand = { ...errand, ls: E.errand };
+  const { rate: _r, ...convert } = raw.convert ?? {};
+  raw.convert = { ...convert, share: E.convert_share };
+  raw.kailu = { ...raw.kailu, tier: { ...E.kailu_tier }, ...(E.kailu_floor ? { grades: Object.fromEntries(Object.entries(raw.kailu.grades).map(([g, v]) => { const { floor, ...rest } = v; return [g, { ...rest, floor_ls: E.kailu_floor[g] ?? 0 }]; })) } : {}) };
+  raw.prices = pricesOf(raw, { items, fantong, cards, effects: raw.pills.effects, ladder });
+  if (M.mijing) raw.mijing = mijingOf(M.mijing);
+  // The breakthrough throw's numbers (master.breakthrough; ladder.json keeps its pills and elements).
+  if (M.breakthrough) raw.breakthrough = breakthroughOf(M.breakthrough, ladder.tiers.map(t => t.id));
   // 冷却事件 (rules/events.mjs): a completion pays `batch_plays` plays of its table, spread over its `batch` fights.
   for (const [id, E] of Object.entries(M.events ?? {}).filter(([k]) => !k.startsWith('_'))) {
     if (E.batch_plays != null && raw.events?.[id]?.batch) raw.events[id].fight_scale = Math.round((E.batch_plays / raw.events[id].batch) * 10000) / 10000;

@@ -62,7 +62,7 @@
       },
       "grant": {
         "table": "task",
-        "wealth": 3
+        "ls": 0.9
       },
       "marks": {
         "clean": "xiangke",

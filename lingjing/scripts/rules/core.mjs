@@ -24,7 +24,7 @@ import { capLook, pastCapSay, rebank, shareRoom, storyAllows, underCap } from '.
 import { entryGate, stageBrief, stageGate, stageSay } from './gates.mjs';
 import { fightStuck } from './skips.mjs';
 import { atScene, inMade, placeName, placeOf, placeOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
-import { convertRate, fightPlay, grantUnits, pillBelow, storyPlay, unitsPay } from './playpay.mjs';
+import { convertRate, fightPlay, grantUnits, rateOfLevel, stonesAt, storyPlay, unitsPay } from './playpay.mjs';
 import { closeStretch, endsStretch, floorOf, joinPaid, landedOnly, stretchShown, tallyTold } from './cultivation.mjs';
 
 /* ── Changing it ── */
@@ -70,15 +70,22 @@ function amountsOf(content, state, now, grant) {
   const story = grant.table === 'story' ? storyPlay(content, state) : null;
   // A fight's `units` are its 体力 (fightPlay reads them), never a size: on the haunt table only the fight pays.
   const units = fight == null && story == null && grant.table !== 'haunt' ? grantUnits(content, grant) : null;
-  // A pill (`pill`, its 阶 in `tier`): less past its own 阶 (playpay.mjs pillBelow).
-  const below = grant.table === 'pill' ? pillBelow(content, state, grant.tier) : 1;
-  const authored = fight ?? story ?? (units != null ? unitsPay(content, state, units) : Math.min(grant.progress ?? 0, table.progress)) * below;
+  // A thing's 修为 (`at_level`: a pill's, a 息珠's — its item's level, batch 2, Hanli 2026-11-10: 「算数值的时候, 按照这个级别算」):
+  // its units at R of ITS level, never where he stands and never the gap — a low pill stays what it is (`below` is gone).
+  const levelled = units != null && grant.at_level > 0;
+  const authored = fight ?? story ?? (levelled ? units * rateOfLevel(content, grant.at_level) : units != null ? unitsPay(content, state, units) : Math.min(grant.progress ?? 0, table.progress));
   // `share`: a replay's falling share (tasks.mjs duel, playpay.mjs fightReplay) — 修为 and 灵石 alike.
   const share = grant.share ?? 1;
   // 问签 (fortune.mjs qianPayOf): the day's 签 speed, and its 宜 kind's ×pay — 1 before the draw, never below.
   const want = Math.round(authored * speedOf(content, state) * share * qianPayOf(content, state, now, grant));
   const base = Math.max(0, want);
-  const wealth = Math.max(0, Math.round(Math.min(grant.wealth ?? 0, table.wealth) * share));
+  // 灵石 (batch 2): the book's is a size in minutes of income (`ls`, capped by its table's `ls`) × I where it is paid — the
+  // content's `level` if it says one, else where he stands (playpay.mjs stonesAt). A `wealth` number is one the rules built
+  // from those sizes already (a board's rank, a 功课's, a converted fight's) or a made scene's (Ling's), capped by the table there.
+  const cap = table.ls ?? Infinity;
+  const coin = grant.ls != null ? stonesAt(content, state, Math.min(grant.ls, cap), { level: grant.level ?? null })
+    : grant.wealth_told ? grant.wealth : Math.min(grant.wealth ?? 0, Number.isFinite(cap) ? stonesAt(content, state, cap) : Infinity);
+  const wealth = Math.max(0, Math.round(coin * share));
   // One realm multiplier (2026-11-10): R's own (`rate.realm`) — the ladder's per-realm `pay` is gone.
   return { base, progress: Math.round(base * layerPayOf(content, state, grant.table)), wealth };
 }
