@@ -17,6 +17,7 @@ import { strengthen } from './strengthen.mjs';
 import { allPlaces, sceneOf } from './world.mjs';
 import { sideLine } from './hui.mjs';
 import { entryGate, stageGate } from './gates.mjs';
+import { happeningTray } from './happenings.mjs';
 
 const MAX_PLAYS = 200;
 const floorAt = content => (content.balance?.play_pay?.replay ?? [1]).length - 1;
@@ -106,6 +107,18 @@ function boardHere(content, state, kept, now, tide) {
   return paying.sort((a, b) => (b.pays?.progress ?? 0) - (a.pays?.progress ?? 0))[0] ?? null;
 }
 
+/* A happening lit this 时辰 (rules/happenings.mjs) and not yet gone to, on his map: the one where he stands first (it opens its
+   game), else the first of the draw. `{ kind: 'happening', id, title: 「place · who」, place, here, task?, game_title? }`. */
+function happeningNext(content, state, kept, now) {
+  if (boardHere(content, state, kept, now, false)) return null; // a board standing here that still pays keeps its place (the old order)
+  const rows = happeningTray(content, state, now);
+  const e = rows.find(x => x.at === here(kept) && x.task) ?? rows.find(x => x.at !== here(kept)) ?? null;
+  if (!e) return null;
+  const at = allPlaces(content).find(p => p.id === e.at);
+  return { kind: 'happening', id: e.happening, title: e.title, place: at ? placeRef({ id: at.id, name: at.name }) : { id: e.at, name: e.title }, here: Boolean(e.task),
+    ...(e.task ? { task: e.task, game_title: e.game_title } : {}), ...(e.say ? { say: e.say } : {}) };
+}
+
 /* The ranking — Hanli's order, the first that has anything wins. Each returns a fact or null. */
 const NEXT = [
   // 1 · the story: set aside → 接着读; the way on open → walk it. (A passage owed the page tells by itself: the 主页
@@ -125,7 +138,11 @@ const NEXT = [
     const t = boardHere(c, s, k, now, false);
     return t && (t.pays?.progress ?? 0) >= short ? { kind: 'board', id: t.id, title: t.title, progress: t.pays.progress, enough: true } : null;
   },
-  // 3 · something to do here: an errand's count met here, the place's beast, a board that still pays well, an errand to take.
+  // 3 · the place's beast waiting here; then — no story step, no hand-in, no beast — a happening lit this 时辰 (观里的事,
+  //     Hanli 11-11: 「下一步」 names it, place · who · 去) ahead of an ordinary errand.
+  (c, s, k) => { const e = k.place?.encounter; return e?.game && !(e.won || e.withdrawn || e.tamed) ? { kind: 'fight', id: e.game.id, title: e.creature?.name ?? null } : null; },
+  (c, s, k, now) => happeningNext(c, s, k, now),
+  // …something to do here: an errand's count met here, a board that still pays well, an errand to take.
   (c, s, k) => {
     const q = (k.book ?? []).find(b => !b.ready && !b.chore && b.where?.id === here(k));
     if (!q) return null;
@@ -133,7 +150,6 @@ const NEXT = [
     const t = (questOf(c, q.id)?.need ?? []).map(n => n.task && (k.tasks ?? []).find(x => x.id === n.task && x.status === 'offered')).find(Boolean);
     return t ? { kind: 'board', id: t.id, title: t.title, for: q.title } : { kind: 'errand', id: q.id, title: q.title };
   },
-  (c, s, k) => { const e = k.place?.encounter; return e?.game && !(e.won || e.withdrawn || e.tamed) ? { kind: 'fight', id: e.game.id, title: e.creature?.name ?? null } : null; },
   // Standing in the gated scene (its ways held, at its own place): the gate's own errand to take before a practice board
   // (decided 2026-10-27 for Hanli: 接下 · 后山的野猪 at the 药园 first). Anywhere else a board that pays comes first, as at 外门.
   (c, s, k) => { const o = inHeldScene(c, s, k) && (k.offers ?? []).find(x => !x.locked); return o ? { kind: 'take', id: o.id, title: o.title } : null; },

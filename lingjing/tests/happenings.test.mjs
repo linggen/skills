@@ -47,6 +47,10 @@ test('the lint: every happening\'s place, person and games exist; its games are 
     assert.ok((h.say ?? []).length >= 2, `${where}: several reasons`);
     for (const l of h.say) assert.ok(l.zh && l.en && zhLen(l.zh) <= 30, `${where}: a reason in zh and en, ≤30: ${l.zh}`);
     for (const b of h.when ?? []) assert.ok(BRANCH.includes(b), `${where}: 时辰 ${b}`);
+    for (const d of h.deals ?? []) {
+      for (const b of d.when ?? []) assert.ok(BRANCH.includes(b), `${where}: deal ${d.task} 时辰 ${b}`);
+      for (const l of d.say ?? []) assert.ok(l.zh && l.en && zhLen(l.zh) <= 30, `${where}: deal ${d.task} reason in zh and en, ≤30: ${l.zh}`);
+    }
     for (const d of h.days ?? []) assert.ok(Number.isInteger(d) && d >= 1 && d <= 31, `${where}: day ${d}`);
     assert.ok((h.deals ?? []).length, `${where}: deals something`);
     for (const d of h.deals) {

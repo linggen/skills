@@ -62,7 +62,7 @@ export const WORDS = {
     agendaAll: '全部 ›', agendaAllTip: '事 · 全部 {n} 件', agendaMain: '主线', agendaGoal: '目标 · {step}', agendaGoalBare: '目标', agendaOther: '其他', agendaServes: '{step} ↑', agendaAim: '{what} · {name}',
     trayGo: '去{name} ›', trayOpen: '开局', trayKe: '{n} 刻', trayShi: '{n} 时辰',
     // 小游戏池 (rules/pool.mjs): the 时辰 in the head, when the next three come; all played; 体力 spent.
-    shichen: ['子时', '丑时', '寅时', '卯时', '辰时', '巳时', '午时', '未时', '申时', '酉时', '戌时', '亥时'], trayHour: '{hour}', trayHourChange: '{hour} · {n} 分换一批', trayHourTip: '{next}换一批', agendaPool: '小游戏 · 玩过一局才换下一局', agendaHappen: '这个时辰的事 · {n} 分换一批', varietyPaid: '变着花样 · 今天第{n}种', trayPoolMark: '玩过才换',
+    shichen: ['子时', '丑时', '寅时', '卯时', '辰时', '巳时', '午时', '未时', '申时', '酉时', '戌时', '亥时'], trayHour: '{hour}', trayHourChange: '{hour} · {n} 分换一批', trayHourTip: '{next}换一批', agendaPool: '小游戏 · 玩过一局才换下一局', agendaHappen: '这个时辰的事 · {n} 分换一批', varietyPaid: '变着花样 · 第{n}种 +{p} 修为', trayPoolMark: '玩过才换',
     trayAllPlayed: '这个时辰的都玩过了 · {next}再来', trayRest: '闭关中 · 约 {n} 分钟体力回满', trayRestOut: '体力耗尽 · 闭关约 {n} 分钟回满', trayRestUp: '闭关', trayRestFeed: '喂饭桶',
     secludeOpen: '闭关', secludeTitle: '闭关', secludeHint: '选一样专心修：一门法术、修为，或本命法宝。',
     secludeRule: '按真实时间，至多{cap}小时；不足{min}小时不长；体力一路回，约{rest}小时回满。',
@@ -129,7 +129,7 @@ export const WORDS = {
     trayLeft: { night: 'tide {n}', batch: 'this batch {n}/{of}', couplets: '{n} today', rounds: '{n} rounds today', errands: '{n} waiting', keys: 'keys ×{n}', ends: '{t} left', today: 'open today', tomorrow: 'up tomorrow' },
     agendaAll: 'All ›', agendaAllTip: 'Tasks · all {n}', agendaMain: 'Story', agendaGoal: 'Goal · {step}', agendaGoalBare: 'Goal', agendaOther: 'Other', agendaServes: '{step} ↑', agendaAim: '{what} · {name}',
     trayGo: 'Go to {name} ›', trayOpen: 'Play', trayKe: '{n} min', trayShi: '{n} h',
-    shichen: ['Rat hour', 'Ox hour', 'Tiger hour', 'Hare hour', 'Dragon hour', 'Snake hour', 'Horse hour', 'Goat hour', 'Monkey hour', 'Rooster hour', 'Dog hour', 'Boar hour'], trayHour: '{hour}', trayHourChange: '{hour} · new in {n} min', trayHourTip: 'New three at {next}', agendaPool: 'Small games · the next once this one is played', agendaHappen: 'This hour · new in {n} min', varietyPaid: 'Something different · kind {n} today', trayPoolMark: 'next once played',
+    shichen: ['Rat hour', 'Ox hour', 'Tiger hour', 'Hare hour', 'Dragon hour', 'Snake hour', 'Horse hour', 'Goat hour', 'Monkey hour', 'Rooster hour', 'Dog hour', 'Boar hour'], trayHour: '{hour}', trayHourChange: '{hour} · new in {n} min', trayHourTip: 'New three at {next}', agendaPool: 'Small games · the next once this one is played', agendaHappen: 'This hour · new in {n} min', varietyPaid: 'Variety · kind {n} +{p}', trayPoolMark: 'next once played',
     trayAllPlayed: "All of this hour's played · back at {next}", trayRest: 'In seclusion · stamina full in about {n} min', trayRestOut: 'Stamina spent · seclusion fills it in about {n} min', trayRestUp: 'Seclude', trayRestFeed: 'Feed the Rice Bucket',
     secludeOpen: 'Seclusion', secludeTitle: 'Seclusion', secludeHint: 'Pick one thing to work on: a spell, cultivation, or your treasure.',
     secludeRule: 'Real hours count, up to {cap}; under {min}, nothing grows. Stamina comes back all along, full in about {rest} h.',
@@ -1065,13 +1065,13 @@ function next(card, ctx) {
 /// Facts from Look, words from here; the bar moves from where it stood (`ctx.homeFrom`, the page's last) to now.
 export const HOME_WORDS = {
   zh: { stage: '阶段任务 · {step}', short: '还差 {n} 修为', chores: '功课 +{n}', plays: '约 {n} 局', playsMore: '再约 {n} 局', todo: '待办',
-    resume: '接着读', way: '去{name} ›', turnin: '交差 · {title}', errand: '去办 · {title}', fight: '斗 · {title}', board: '开局 · {title}',
+    resume: '接着读', way: '去{name} ›', turnin: '交差 · {title}', errand: '去办 · {title}', fight: '斗 · {title}', board: '开局 · {title}', happen: '{title} · 去',
     boardPays: '开局 · {title} · 修为 +{n}', take: '接下 · {title}', go: '去{name} ›', goWhat: '去{name} · {what}', wait: '{title} · {t}后', seclude: '闭关',
     ready: '可交 {n} · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · 修为 +{n}',
     tide: '兽潮 · 开局', yaoshou: '{title} · {place} · 还有 {n} 只', skipped: '收着的 {n} 局', waitAt: '{title} · {at} 再开', enough: '{what} · 够了',
     door: '{door} · {step}即开', doorOpen: '{door} · 门已开', doorAt: '还在门外 · 在{here}' },
   en: { stage: 'Stage quest · {step}', short: '{n} cultivation to go', chores: 'chores +{n}', plays: 'about {n} games', playsMore: 'then about {n} games', todo: 'Waiting',
-    resume: 'Read on', way: 'Go to {name} ›', turnin: 'Hand in · {title}', errand: 'Do it · {title}', fight: 'Fight · {title}', board: 'Play · {title}',
+    resume: 'Read on', way: 'Go to {name} ›', turnin: 'Hand in · {title}', errand: 'Do it · {title}', fight: 'Fight · {title}', board: 'Play · {title}', happen: '{title} · go',
     boardPays: 'Play · {title} · cultivation +{n}', take: 'Take · {title}', go: 'Go to {name} ›', goWhat: 'To {name} · {what}', wait: '{title} · in {t}', seclude: 'Seclusion',
     ready: '{n} to hand in · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · cultivation +{n}',
     tide: 'Beast tide · play', yaoshou: '{title} · {place} · {n} left', skipped: '{n} games kept', waitAt: '{title} · opens again at {at}', enough: '{what} · enough',
@@ -1103,6 +1103,10 @@ const HOME_ACTS = {
   errand: (n, h) => `<button class="act primary" data-book${bookAt(`errand:${n.id}`)}>${esc(say(h.errand, { title: n.title }))}</button>`,
   fight: (n, h) => `<button class="act primary" data-duel-start="${esc(n.id)}">${esc(say(h.fight, { title: n.title ?? '' }))}</button>`,
   board: (n, h) => { const t = n.progress ? say(h.boardPays, { title: n.title, n: n.progress }) : say(h.board, { title: n.title }); return `<button class="act primary" data-play="${esc(n.id)}">${esc(n.enough ? say(h.enough, { what: t }) : t)}</button>`; },
+  // 观里的事 lit this 时辰 (rules/home.mjs happeningNext): where he stands, its game opens; away, the way there (place · who · 去).
+  happening: (n, h) => (n.here && n.task
+    ? `<button class="act primary" data-play="${esc(n.task)}">${esc(say(h.board, { title: n.game_title ?? n.title }))}</button>`
+    : `<button class="act go primary" data-go="${esc(n.place.id)}">${esc(say(h.happen, { title: n.title }))}</button>`),
   take: (n, h) => `<button class="act primary do" data-do="take" data-id="${esc(n.id)}">${esc(say(h.take, { title: n.title }))}</button>`,
   go: (n, h) => `<button class="act go primary" data-go="${esc(n.place.id)}">${esc(n.titles?.length ? say(h.goWhat, { name: bareName(n.place.name), what: n.titles.join(' · ') }) : say(h.go, { name: n.place.name }))}</button>`,
   wait: (n, h, ctx) => `<div class="small dim homewait">${esc(say(h.wait, { title: n.title, t: homeWait(n.wait_min, ctx.words) }))}</div>`,

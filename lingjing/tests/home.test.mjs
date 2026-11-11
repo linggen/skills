@@ -9,6 +9,7 @@ import { newState } from '../scripts/state.mjs';
 import { playTo } from '../scripts/rules/progress.mjs';
 import { VERBS, look, move, quest, task } from '../scripts/rules.mjs';
 import { homeOf, playsFor } from '../scripts/rules/home.mjs';
+import { happeningTray } from '../scripts/rules/happenings.mjs';
 import { plateKey, poolToday } from '../scripts/rules/rotation.mjs';
 import { placeOf } from '../scripts/rules/world.mjs';
 import { chorePlay, playGrant } from '../scripts/rules/playpay.mjs';
@@ -151,13 +152,13 @@ test('nothing left here today: the board at its floor share, the errands done, �
 test('mid-cooldown with no work anywhere: the soonest wait, then 闭关', () => {
   let s = gate146();
   s = { ...s, plays: { day: '2026-10-27', ids: { pintu: 2 } }, shouchao: { ...(s.shouchao ?? {}), n: 1, at: NOW.toISOString() } };
-  const l = look(s, content, ctx());
+  const l = look(s, plain, ctx());
   const bare = { ...l, offers: [], book: [], work: null, stage_quest: { ...l.stage_quest, work: null }, waypoint: null, tasks: l.tasks.filter((t) => !t.practice) };
-  const h = homeOf(content, s, bare, NOW);
+  const h = homeOf(plain, s, bare, NOW);
   assert.equal(h.next.kind, 'wait');
   assert.equal(h.next.id, 'shouchao');
-  assert.deepEqual(homeOf(content, s, { ...bare, waits: [] }, NOW).next, { kind: 'seclude' });
-  assert.equal(homeOf(content, s, { ...bare, waits: [], locked: ['seclusion'] }, NOW).next, null, 'nothing at all: no button, the bar and the list stand');
+  assert.deepEqual(homeOf(plain, s, { ...bare, waits: [] }, NOW).next, { kind: 'seclude' });
+  assert.equal(homeOf(plain, s, { ...bare, waits: [], locked: ['seclusion'] }, NOW).next, null, 'nothing at all: no button, the bar and the list stand');
 });
 
 test('the order is the rules\': set aside → 接着读 before anything; a fight, 闭关 or a 今 scene stands no 主页', () => {
@@ -250,4 +251,30 @@ test('at a sealed instance\'s door, walked off to 渡口: the 主页 says where 
   assert.match(h, /还在门外 · 在渡口/);
   // The page's top line names where he stands, then the door (lingjing.js paint): never the scene's 「秘境石门前」 alone.
   assert.match(fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8'), /look\.door\.here \? door : `\$\{look\.place\?\.name \?\? ''\}　→ \$\{door\}`/);
+});
+
+test('观里的事: a lit happening is the 下一步 (place · who · 去) ahead of an ordinary errand — story step, hand-in and a beast waiting come first', () => {
+  const s = gate146('waimen');
+  let now = null;
+  for (let h = 6; h < 22 && !now; h += 1) { const t = new Date(2026, 9, 27, h, 5); if (happeningTray(content, s, t).some((e) => e.at !== 'waimen' || e.task)) now = t; }
+  assert.ok(now, 'a happening is lit in some 时辰 of the day');
+  const l = { ...look(s, content, { now, quests: [] }) };
+  const bare = { ...l, offers: [], book: [], work: null, stage_quest: null, waypoint: null, aside: null, fight: null, seclusion: null, place: { ...l.place, encounter: null }, tasks: (l.tasks ?? []).filter((t) => !t.practice) };
+  const errand = { id: 'e1', title: '修屋顶', ready: false, chore: false, where: { id: bare.place.id } };
+  const nextOf = (kept, c = content) => homeOf(c, s, kept, now).next;
+  const lit = nextOf(bare);
+  assert.equal(lit.kind, 'happening', JSON.stringify(lit));
+  assert.ok(lit.title.includes(' · ') && lit.place?.id && lit.id, 'place · who, and where to');
+  assert.equal(nextOf({ ...bare, book: [errand] }).kind, 'happening', 'ahead of an errand to do here');
+  assert.equal(nextOf({ ...bare, offers: [{ id: 'o1', title: '接活', locked: false }] }).kind, 'happening', 'ahead of an errand to take');
+  assert.equal(nextOf({ ...bare, book: [errand] }, plain).kind, 'errand', 'no happenings in the world: the errand, as before');
+  // …but the story, a hand-in and a beast waiting still come first (story > gate > kept fight > happening > errand).
+  const beast = { ...bare.place, encounter: { game: { id: 'yezhu' }, creature: { name: '野猪' } } };
+  assert.equal(nextOf({ ...bare, book: [errand], place: beast }).kind, 'fight');
+  assert.equal(nextOf({ ...bare, book: [errand], stage_quest: { met: true, step: '练气一层圆满' } }).kind, 'turnin');
+  assert.equal(nextOf({ ...bare, book: [{ ...errand, ready: true }] }).kind, 'turnin');
+  assert.equal(homeOf(content, { ...s, progress: NEED1 }, { ...bare, book: [errand], waypoint: { toward: { id: 'yaoyuan', name: '药园' } } }, now).next.kind, 'way', 'the story\'s way open');
+  assert.equal(nextOf({ ...bare, book: [errand], aside: { on: true, offers: [] } }).kind, 'resume');
+  // Both clients put the words on it: a button for where to go (or the game, where he stands).
+  assert.match(html({ ...bare, home: homeOf(content, s, bare, now) }), new RegExp(`data-(go|play)="[^"]+"[^>]*>[^<]*${lit.here ? lit.game_title : '去'}`));
 });

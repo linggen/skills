@@ -10,7 +10,7 @@ const body = (name) => page.slice(page.indexOf(`function ${name}(`), page.indexO
 
 test('a board won stands its 所得: the pay, the item, the line', () => {
   // The pay — and 变着花样's on it when that play reached the day's 3rd or 5th kind (rules/happenings.mjs) — and the line.
-  assert.match(body('payWin'), /const v = r\.ok \? r\.variety\?\.paid : null, paid = v \? \{ \.\.\.\(r\.paid \?\? \{\}\), progress: \(r\.paid\?\.progress \?\? 0\) \+ \(v\.progress \?\? 0\) \} : r\.paid;/);
+  assert.match(body('payWin'), /const v = varietyOwed\(r\), paid = v \? withVariety\(r\.paid, v\) : r\.paid;/);
   assert.match(body('payWin'), /const line = \[r\.line, [^\n]*\]\.filter\(Boolean\)\.join\('\\n'\) \|\| null;/);
   assert.match(body('payWin'), /if \(r\.ok && boardPaid\(\{ \.\.\.r, paid \}\)\) keep\(\{ spoils: \{[^}]*paid, spent: \[\], line \} \}\)/);
   assert.match(page, /const boardPaid = \(r\) => Boolean\(r\.paid\?\.progress \|\| r\.paid\?\.wealth/);

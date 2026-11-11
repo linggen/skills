@@ -242,7 +242,7 @@
           "en": "The straw dummies are up again at the back; Master Chu says: show it in your hands."
         }
       ],
-      "_deals": "结印课堂 (jiangtang-shifa: 讲堂试法's throws, with 结印's lesson as its other way — the camera's, or its no-camera demo). 论道 (lundao) is a word game hosted at 稷下 and needs no 卷一 place; 对对子 is 银月's own pool's (rules/aside.mjs HER_POOL, 褚先生 at this very hall). 师父传印 (chuanyin.json, rules/seals.mjs) joins as three more deals: the weekly lesson (`needs: seals.lesson`, dealt `first` while the week is out and a seal is due), the daily drill (`needs: seals.drill`, two learned seals), and the errand's own step board (`needs: seals.step`, never dealt by the draw — 九节菖蒲 asks for it).",
+      "_deals": "结印课堂 (jiangtang-shifa: 讲堂试法's throws, with 结印's lesson as its other way — the camera's, or its no-camera demo). 论道 (lundao) is a word game hosted at 稷下 and needs no 卷一 place; 对对子 is 银月's own pool's (rules/aside.mjs HER_POOL, 褚先生 at this very hall). 师父传印 (chuanyin.json, rules/seals.mjs) joins as three more deals: the weekly lesson (`needs: seals.lesson`, dealt `first` while the week is out and a seal is due — and, by its own `when` + `say`, in any waking 时辰, 卯–亥, so the one who plays only in the evening meets it too; the other deals stay the row's morning), the daily drill (`needs: seals.drill`, two learned seals), and the errand's own step board (`needs: seals.step`, never dealt by the draw — 九节菖蒲 asks for it).",
       "deals": [
         {
           "task": "jiangtang-shifa"
@@ -250,7 +250,13 @@
         {
           "task": "chuanyin-lesson",
           "needs": "seals.lesson",
-          "first": true
+          "first": true,
+          "when": ["mao", "chen", "si", "wu", "wei", "shen", "you", "xu", "hai"],
+          "say": [
+            { "zh": "天都黑了，褚先生还留着灯，说这周的印非教你不可。", "en": "Dark already, yet Master Chu keeps the lamp lit: this week's seal must be taught." },
+            { "zh": "讲堂人散尽，褚先生独坐案前，专等你来学印。", "en": "The hall has emptied; Master Chu sits alone at his desk, waiting just for you." },
+            { "zh": "褚先生把你留在堂上：课下了，印还得传。", "en": "Master Chu keeps you after hours: class is out, but the seal is still to be passed on." }
+          ]
         },
         {
           "task": "chuanyin-drill",

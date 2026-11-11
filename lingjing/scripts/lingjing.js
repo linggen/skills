@@ -2370,6 +2370,20 @@ async function taleWon(id) {
 }
 const taleAnswer = async (answer) => taleDone(await write('tale', { action: 'answer', answer }).catch(failed));
 
+/// 变着花样 on a result (rules/locks.mjs: the ONE field `result.variety = { kinds, at, paid }` on every play that can pay it —
+/// a board, 兽潮, 切磋, a duel at a haunt, the 妖兽 wave): its pay and its line, or null. Each settle point calls it once.
+const varietyOwed = (r) => {
+  const v = r?.ok ? r.variety?.paid : null;
+  return v ? { progress: v.progress ?? 0, line: fill(WORDS[lang()].varietyPaid, { n: r.variety.kinds, p: v.progress ?? 0 }) } : null;
+};
+const withVariety = (paid, v) => ({ ...(paid ?? {}), progress: (paid?.progress ?? 0) + v.progress });
+/// A play lost (`task lost`): the rules take it; a 变着花样 it paid stands as its 所得, as a win's would.
+async function writeLost(id) {
+  const r = await write('task', { action: 'lost', id }).catch(failed), v = varietyOwed(r);
+  if (v) keep({ spoils: { place: look?.place?.id ?? null, cards: [], items: [], paid: withVariety(null, v), spent: [], line: v.line } });
+  return r;
+}
+
 /// Practice `done`, from the page. An empty pool keeps the win: it is paid
 /// once 体力 is back (payKeptWins, on the next Look that has it).
 async function payWin(id) {
@@ -2379,8 +2393,8 @@ async function payWin(id) {
   // Every win shows what it paid (古五, 2026-10-15: a board won moved only the strip): 修为 · 灵石 and the
   // thing granted stand as 所得, with the task's own line.
   // 变着花样 (rules/happenings.mjs varietyAfter): the day's 3rd or 5th kind of game pays one small game more — in the same 所得.
-  const v = r.ok ? r.variety?.paid : null, paid = v ? { ...(r.paid ?? {}), progress: (r.paid?.progress ?? 0) + (v.progress ?? 0) } : r.paid;
-  const line = [r.line, r.variety?.paid ? fill(WORDS[lang()].varietyPaid, { n: r.variety.kinds }) : null].filter(Boolean).join('\n') || null;
+  const v = varietyOwed(r), paid = v ? withVariety(r.paid, v) : r.paid;
+  const line = [r.line, v?.line].filter(Boolean).join('\n') || null;
   if (r.ok && boardPaid({ ...r, paid })) keep({ spoils: { place: look?.place?.id ?? null, cards: [], items: boardItems(paid), paid, spent: [], line } });
   return r;
 }
@@ -4376,7 +4390,7 @@ function beatSettled(g, result) {
   // A bout played once (切磋, its deal's `once`): lost, it is over — the rules count it and its cooldown starts.
   if (!result?.won && !result?.left && g.data?.once && !g.sent) { g.sent = true; run(`lost:${g.taskId}`, () => onOnceLost(g)); return; }
   // Any other board lost was played: the rules take its 体力 (rules/tasks.mjs boardLost — a story board's is nothing), then the chip reads again.
-  if (!result?.won && !result?.left && !g.sent && !g.skipped) write('task', { action: 'lost', id: g.taskId }).then(() => refreshSoon()).catch(() => {});
+  if (!result?.won && !result?.left && !g.sent && !g.skipped) writeLost(g.taskId).then(() => refreshSoon()).catch(() => {});
   if (!result?.won && !g.sent && !g.skipped) fallBackFrom(g, result);
   if (!result?.won || g.sent || g.skipped) return;
   if (ownSkip(result)) return boardSkipped(g);
@@ -4393,12 +4407,12 @@ function beatSettled(g, result) {
 function boardLostNow(g) {
   if (!g || g.sent || g.skipped || g.left || isArcadeBoard(g.taskId)) return;
   tracker.boardLost(g.taskId);
-  write('task', { action: 'lost', id: g.taskId }).then(() => refreshSoon()).catch(() => {});
+  writeLost(g.taskId).then(() => refreshSoon()).catch(() => {});
 }
 const turnedLost = (was, now) => now?.outcome === 'lost' && was?.outcome !== 'lost';
 /* A bout lost that is played once (切磋): the rules take the loss, the board leaves the stage, the page reads again. */
 async function onOnceLost(g) {
-  const r = await write('task', { action: 'lost', id: g.taskId }).catch(failed);
+  const r = await writeLost(g.taskId);
   if (!r?.ok) keep({ doNote: refusal(r) });
   forgetShell(g.taskId);
   boards.delete(g.taskId);
@@ -4921,10 +4935,12 @@ async function settleBout(b, out = {}) {
   // What waits at the door (储物袋满了) is not 所得 in hand: the rules' line says so, the card asks.
   const got = r.outcome === 'won' ? (r.dropped ?? []).filter((d) => !d.offered) : [];
   if (r.pouch_full) keep({ doNote: r.pouch_full });
-  const paid = r.outcome === 'won' && (r.paid?.progress || r.paid?.wealth) ? r.paid : null;
+  const own = r.outcome === 'won' && (r.paid?.progress || r.paid?.wealth) ? r.paid : null;
+  // 变着花样 (a duel at a haunt is a kind): its pay joins the fight's own 所得, won or lost.
+  const vary = varietyOwed(r), paid = vary ? withVariety(own, vary) : own;
   // A 符 played is spent from the bag, won or lost: the card says so (page fact).
   const spent = r.spent ?? [];
-  if (got.length || paid || spent.length) keep({ spoils: { place: look?.place?.id ?? null, cards: got.filter((d) => d.card), items: got.filter((d) => !d.card), paid, spent, pending: true, book: bookDone() } });
+  if (got.length || paid || spent.length) keep({ spoils: { place: look?.place?.id ?? null, cards: got.filter((d) => d.card), items: got.filter((d) => !d.card), paid, spent, line: vary?.line ?? null, pending: true, book: bookDone() } });
   if (got.some((d) => !d.card)) gearOnSpoils();
   // The strip counts up once the room has closed and the eye is back on it.
   riseAfter = performance.now() + 600;

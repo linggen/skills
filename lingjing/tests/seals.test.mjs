@@ -8,7 +8,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { migrate, newState, threshold } from '../scripts/state.mjs';
 import { look, VERBS } from '../scripts/rules.mjs';
 import { drawAt, dealOf, happeningTray, metKinds } from '../scripts/rules/happenings.mjs';
-import { shichenOf } from '../scripts/rules/pool.mjs';
+import { BRANCH, shichenOf } from '../scripts/rules/pool.mjs';
 import { playGrant, storyPlay } from '../scripts/rules/playpay.mjs';
 import { bookView, cardView, daysSince, drillRows, heldOf, lessonRow, levelAt, planView, powerAt, seals } from '../scripts/rules/seals.mjs';
 import { begin, castsOf, confirm, figuresOf, left, next as nextStep, offerTap, switchTo, tick, trayOf, wanted } from '../scripts/games/jieyin/flow.js';
@@ -165,6 +165,23 @@ test('the happening deals them: the lesson first while it is due, the drill afte
   const unit = storyPlay(content, lesson.s);
   assert.ok(Math.abs(done.result.paid.progress - 3 * unit) <= 3, `three small games' worth: ${done.result.paid.progress} vs 3 × ${unit}`);
   assert.ok(done.state.happen.at['jiangtang-zaoke'], 'the happening is gone to');
+});
+
+test('the week\'s lesson is kept after hours: drawable in any waking 时辰 while it is due and dealt first; not due, 讲堂 stays morning-only', () => {
+  const lit = (st, now) => happeningTray(content, st, now).find((e) => e.happening === 'jiangtang-zaoke');
+  const evenings = [];
+  for (let d = 12; d < 26; d += 1) for (const h of [12, 15, 18, 20, 22]) evenings.push(DAY(d, h));
+  const due = at('jiangtang'), hit = evenings.map((now) => ({ now, e: lit(due, now) })).filter((x) => x.e);
+  assert.ok(hit.length, 'due: the lesson is lit in an afternoon or evening 时辰 within a fortnight');
+  for (const { now, e } of hit) {
+    assert.equal(e.task, 'chuanyin-lesson', 'after hours it deals the lesson, nothing else');
+    const row = content.happenings.happenings.find((h) => h.id === 'jiangtang-zaoke');
+    assert.ok(row.deals.find((x) => x.task === 'chuanyin-lesson').say.some((l) => l.zh === e.say || l.en === e.say), `its own reason after hours: ${e.say}`);
+    assert.ok(!row.when.includes(BRANCH[shichenOf(now).i]), 'outside the row\'s morning');
+  }
+  const learned = run(at(), { action: 'learn', id: 'bingzhui', how: 'hands' }).state;
+  for (let d = 13; d < 19; d += 1) for (const h of [12, 15, 18, 20, 22]) assert.equal(lit(learned, DAY(d, h)), undefined, `not due (day ${d} ${h}h): 讲堂 stays morning-only`);
+  assert.deepEqual(content.happenings.happenings.find((h) => h.id === 'jiangtang-zaoke').deals.find((x) => x.task === 'chuanyin-lesson').when, BRANCH.slice(3), 'the lesson\'s own `when` is every waking 时辰, 卯–亥');
 });
 
 test('mastery: thresholds in the data, a tapped cast half a camera one, and it never drops', () => {

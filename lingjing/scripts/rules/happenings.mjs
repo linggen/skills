@@ -97,9 +97,13 @@ const openByStory = (content, state, t) => !t?.after || (state.done_scenes ?? []
 /* Ever played (a `once` deal: 洛书, Hanli 10-19 「9宫格出现一次就可以了」): through a happening, in the pool, or counted. */
 const everPlayed = (state, id) => Boolean(state.happen?.games?.[id] || state.pool_played?.[id] || state.tasks?.[id]?.status === 'done' || state.stars?.[id] != null);
 
-/* The games a happening may deal now, for a device: each `{ task, kind, d }`. */
-export function dealable(content, state, h, host = hostOf(), met = metKinds(content, state), day = null, now = new Date()) {
+/* The 时辰 a deal may stand in: its own `when` (师父传印's week lesson, all day while it is due), else its row's. `i`: the
+   时辰's index (null: not asked). */
+const dealStands = (h, d, i) => i == null || !((d.when ?? h.when ?? []).length) || (d.when ?? h.when).includes(BRANCH[i]);
+/* The games a happening may deal now, for a device: each `{ task, kind, d }`. `i`: the 时辰 (BRANCH index) it is dealt in. */
+export function dealable(content, state, h, host = hostOf(), met = metKinds(content, state), day = null, now = new Date(), i = null) {
   return (h.deals ?? []).flatMap((d) => {
+    if (!dealStands(h, d, i)) return [];
     const t = taskOf(content, d.task);
     if (!t || !t.hosted || !repeatable(content, t) || !openByStory(content, state, t)) return [];
     if (!met.has(kindOf(t)) && !onPlate(content, state, h, t.id)) return [];
@@ -128,7 +132,7 @@ function kindAt(content, state, kind) {
 /* The game a happening deals, from the save alone: the least recently played kind first, never the game just played through
    a happening while it has another; a tie by the save, the day and the 时辰. Null: nothing it may deal here. */
 export function dealOf(content, state, h, sc, host = hostOf(), met) {
-  const can = dealable(content, state, h, host, met, sc.day, sc.start);
+  const can = dealable(content, state, h, host, met, sc.day, sc.start, sc.i);
   if (!can.length) return null;
   const pool = can.length > 1 ? can.filter(c => c.task !== state.happen?.last) : can;
   const key = c => coin(`${seedOf(state)}|${sc.day}|${sc.i}|${h.id}|${c.task}`);
@@ -145,7 +149,8 @@ function dayOfMonth(h, sc) {
 }
 /* Its 时辰, its days, its scene, its place open to him (on his map, not a hidden room, not past his strength). */
 function stands(content, state, h, sc, now) {
-  if ((h.when ?? []).length && !h.when.includes(BRANCH[sc.i])) return false;
+  // The row's 时辰, or a deal of its own whose `when` holds (the week's lesson outside the morning).
+  if ((h.when ?? []).length && !h.when.includes(BRANCH[sc.i]) && !(h.deals ?? []).some(d => (d.when ?? []).includes(BRANCH[sc.i]))) return false;
   if ((h.days ?? []).length && !h.days.includes(dayOfMonth(h, sc))) return false;
   if (h.after && !openByStory(content, state, { after: h.after })) return false;
   const p = placeOf(content, h.place);
@@ -157,7 +162,7 @@ const goneAt = (state, id) => (state.happen?.at?.[id] ? new Date(state.happen.at
    seeded keys (u^(1/w)), one a place, up to `draw`. Each `{ h, played }` (gone to inside this 时辰). */
 export function drawAt(content, state, sc, now = sc.start) {
   const n = cfgOf(content)?.draw ?? DRAW_DEFAULT, met = metKinds(content, state);
-  const scored = happeningsOf(content).filter(h => stands(content, state, h, sc, now) && dealable(content, state, h, 'mac', met, sc.day, now).length).map((h) => {
+  const scored = happeningsOf(content).filter(h => stands(content, state, h, sc, now) && dealable(content, state, h, 'mac', met, sc.day, now, sc.i).length).map((h) => {
     const at = goneAt(state, h.id), before = at && at < sc.start ? at : null;
     // Not gone to in a day ×2; one that comes only on its days (a market day) ×4 — it has the one day, the others every day.
     const w = (!before || sc.start - before > LATELY_MS ? 2 : 1) * ((h.days ?? []).length ? 4 : 1);
@@ -205,9 +210,11 @@ function whoName(content, state, id) {
   const p = (content.people?.people ?? []).find(x => x.id === id);
   return p ? String(pick(p.name, state.lang) ?? id) : null;
 }
-/* The reason told this 时辰: one of its lines, by the save, the day and the 时辰. */
-const sayOf = (state, h, sc) => {
-  const lines = h.say ?? [];
+/* The reason told this 时辰: one of its lines, by the save, the day and the 时辰 — the dealt game's own (`d.say`) when the row
+   stands only through that deal's `when` (the lesson kept after hours). */
+const sayOf = (state, h, sc, d = null) => {
+  const late = d?.d?.say?.length && (h.when ?? []).length && !h.when.includes(BRANCH[sc.i]);
+  const lines = late ? d.d.say : h.say ?? [];
   return lines.length ? pick(lines[Math.floor(coin(`${seedOf(state)}|${sc.day}|${sc.i}|say|${h.id}`) * lines.length)], state.lang) : null;
 };
 
@@ -222,7 +229,7 @@ export function happeningTray(content, state, now = new Date(), host = hostOf())
     if (!d) return [];
     const where = String(placeName(content, state, placeOf(content, h.place))?.name ?? h.place).split(' · ').pop(), who = whoName(content, state, h.who);
     const row = { id: `hap:${h.id}`, happening: h.id, at: h.place, label: String(pick(h.title, state.lang) ?? h.id), title: [where, who].filter(Boolean).join(' · '),
-      ...(who ? { who } : {}), say: sayOf(state, h, sc), places: [h.place], change_min: Math.max(1, Math.ceil((sc.end - now) / 60_000)) };
+      ...(who ? { who } : {}), say: sayOf(state, h, sc, d), places: [h.place], change_min: Math.max(1, Math.ceil((sc.end - now) / 60_000)) };
     if (state.place !== h.place) return [row];
     const t = taskOf(content, d.task);
     return [{ ...row, task: d.task, game: kindOf(t), game_title: String(pick(t.title, state.lang) ?? d.task), opens: 'play', arg: d.task, stage: `board:${d.task}` }];
