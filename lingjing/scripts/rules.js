@@ -38,6 +38,28 @@ export async function verb(name, args = {}) {
   }
 }
 
+/// A Look that ran and answered `{ok: false}` — no game came back. Thrown
+/// before the page takes it for the game.
+export class LookFailed extends Error {
+  constructor(out) {
+    super(out?.error || out?.refused || 'look failed');
+    this.name = 'LookFailed';
+  }
+}
+
+/// What the page says when a Look ran and failed, from the engine's JS
+/// runtime (`/api/runtime/js`): still being fetched, a fetch that failed, or
+/// neither — the game itself is not answering. A missing runtime starts a fetch.
+export function runtimeWord(status) {
+  if (status?.state === 'preparing' || status?.state === 'missing') return 'preparing';
+  if (status?.state === 'failed') return 'runtimeFailed';
+  return 'offline';
+}
+export async function runtimeState() {
+  const res = await fetch('/api/runtime/js', { method: 'POST' }).catch(() => null);
+  return res?.ok ? res.json().catch(() => null) : null;
+}
+
 /// A world's folder, relative to the page: art and content live there.
 /// `dir` is what Look's `world.dir` says — `worlds/<id>` for a shipped
 /// world, `data/worlds/<id>` for one the player made.

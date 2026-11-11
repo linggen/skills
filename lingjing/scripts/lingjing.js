@@ -9,7 +9,7 @@ import { createSession, listSkillSessions, pickResumable, fetchCloud, syncCloud,
 // And a namespace: a name the served /shared/api.js doesn't export yet
 // (`engineUiUrl`) must not fail the whole page.
 import * as sharedApi from '/shared/api.js';
-import { verb, content, SCRATCH, worldPath } from './rules.js';
+import { verb, content, SCRATCH, worldPath, LookFailed, runtimeState, runtimeWord } from './rules.js';
 import { charsOf, createTracker, trackSender } from './track.js';
 import { arcadeGameOf, arcadeRow, arcadeRowOf, arcadeTitle, isArcadeBoard, keptAdd, withArcade } from './arcade-board.js';
 /// A test save with no chat at all (`&chat=off`): the crawlers' opt-out (tools/playtest.mjs,
@@ -769,6 +769,8 @@ async function readOnce() {
     // What the device can do is known before the first Look is drawn: a board with an `alt` (古六's 讲堂 as 结印)
     // is dealt once, as this device plays it (caps.js).
     const [seen, , caps] = await Promise.all([verb('look', PREVIEW.day ? { day: PREVIEW.day } : {}), readCloud(), probeCaps(window)]);
+    // `{ok: false}` is no game (a Mac whose JS runtime is still on its way answers so): never taken for the Look.
+    if (seen?.ok === false) throw new LookFailed(seen);
     // The scene just left, kept for its header while its choice's passage is still told.
     if (look?.scene && seen?.scene?.id !== look.scene.id) leftLook(look);
     stageQuestDone(look, seen);
@@ -788,8 +790,9 @@ async function readOnce() {
     contentStale = false;
   } catch (e) {
     console.warn('[lingjing] look', e);
-    // Not reached yet (the data channel is still coming up): say so, and look again.
-    const word = e?.name === 'NotConnectedError' ? 'connecting' : 'offline';
+    // Not reached yet (the data channel is still coming up): say so, and look again. A Look that ran and
+    // failed: the engine says whether its JS runtime is still being fetched; the retry wakes the page once it lands.
+    const word = e?.name === 'NotConnectedError' ? 'connecting' : e?.name === 'LookFailed' ? runtimeWord(await runtimeState()) : 'offline';
     if (!authored) $('focus').innerHTML = `<div class="loading">${esc(WORDS.zh[word])} · ${esc(WORDS.en[word])}</div>`;
     lookAgainSoon();
     return;
