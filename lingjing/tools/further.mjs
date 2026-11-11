@@ -8,6 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { STATE_VERSION } from '../scripts/state.mjs';
 
 const SKILL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const KINDS = ['count', 'rank', 'number', 'time'];
@@ -128,9 +129,18 @@ export function resolved(skillDir = SKILL) {
   };
 }
 
+/** The newest save these rules play (state.mjs STATE_VERSION), read off the rule's own file by its `number` entry on
+ *  `version`: the phone's sync never pulls, pushes over or plays a save past it (lingjing_sync.dart). Null when the
+ *  rule does not decide by the version first. */
+export function newest(rule) {
+  const first = rule?.by?.[0];
+  return first && first.number === 'version' && !first.within ? { file: rule.file, number: 'version', max: STATE_VERSION } : null;
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const i = process.argv.indexOf('--out');
-  const json = JSON.stringify({ further: resolved() });
+  const further = resolved();
+  const json = JSON.stringify({ further, ...(newest(further) ? { newest: newest(further) } : {}) });
   if (i > 0) fs.writeFileSync(process.argv[i + 1], json);
   else console.log(json);
 }

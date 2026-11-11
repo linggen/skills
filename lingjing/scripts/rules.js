@@ -38,6 +38,19 @@ export async function verb(name, args = {}) {
   }
 }
 
+/// A Look that ran and answered `{ok: false}` — no game came back. Thrown
+/// before the page takes it for the game.
+export class LookFailed extends Error {
+  constructor(out) {
+    super(out?.error || out?.refused || 'look failed');
+    this.name = 'LookFailed';
+    this.refused = out?.refused ?? null;
+  }
+}
+
+/// A Look the rules refused because the save is from newer rules (rules/newer.mjs): the page's calm screen, not a retry word.
+export const newerSave = (e) => e?.name === 'LookFailed' && e.refused === 'newer-save';
+
 /// A world's folder, relative to the page: art and content live there.
 /// `dir` is what Look's `world.dir` says — `worlds/<id>` for a shipped
 /// world, `data/worlds/<id>` for one the player made.
