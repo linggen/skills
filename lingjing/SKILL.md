@@ -36,8 +36,11 @@ cloud:
   # phone↔cloud and phone↔Mac (skill-spec § Cloud `further`). `rise`: a move
   # up these is a milestone (the first one while the save is local-only is a
   # fact for 银月). JSON, so the phone's asset script reads it as is.
+  # The save's version decides first (2026-11-10): a build that has not carried the save forward (v17 beside v18's
+  # ladder) never wins over one that has — its 层 and 修为 are read on another ladder and cannot be compared.
   further:
     {"file": "data/state.json", "by": [
+      {"number": "version"},
       {"count": "done_scenes"},
       {"rank": "tier", "order": {"file": "worlds/jiuding/ladder.json", "list": "tiers", "key": "id"}, "rise": true},
       {"number": "step", "within": ["tier", "version"], "rise": true},

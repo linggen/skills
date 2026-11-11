@@ -146,8 +146,9 @@ test('cloud.further is declared in the shape the engine reads, its order resolvi
   assert.deepEqual(problems(rule), []);
   const r = resolved();
   assert.deepEqual(r.by.map((e) => Object.keys(e).find((k) => ['count', 'rank', 'number', 'time'].includes(k))),
-    ['count', 'rank', 'number', 'number', 'time', 'time']);
-  assert.equal(r.by[1].order[0], 'qi', 'the ladder, lowest realm first');
+    ['number', 'count', 'rank', 'number', 'number', 'time', 'time']);
+  assert.equal(r.by[0].number, 'version', 'the save\'s version decides first: an older build never wins over a carried save');
+  assert.equal(r.by[2].order[0], 'qi', 'the ladder, lowest realm first');
   assert.deepEqual(r.by.filter((e) => e.rise).map((e) => e.rank ?? e.number), ['tier', 'step']);
 });
 
