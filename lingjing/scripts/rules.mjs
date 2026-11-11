@@ -200,7 +200,7 @@ function trackPay(verb, args, result, before, after, content, now) {
   } catch { /* the log is never the game's problem */ }
 }
 
-const PAGE_ACTIONS = { task: ['skip', 'keep', 'kept-play', 'kept-drop'], tale: ['skip'], quest: ['menu', 'share'] };
+const PAGE_ACTIONS = { task: ['skip', 'keep', 'kept-play', 'kept-drop'], tale: ['skip'], quest: ['menu', 'share'], seals: ['learn', 'cast'] };
 export const pageOnly = (verb, args = {}) => Boolean(PAGE_ACTIONS[verb]?.includes(String(args.action ?? '')));
 function runLocked(verb, args, stateFile, reader) {
   const logFile = path.join(dataDir(), 'log.jsonl');
@@ -345,7 +345,8 @@ function runLocked(verb, args, stateFile, reader) {
     // The last player verb (state.mjs awayFit reads the gap from it).
     if (player) next.last_seen = now.toISOString();
     writeAtomic(stateFile, stateText(next));
-    if (!(standOnly && !out.state)) appendLog(logFile, { at: now.toISOString(), verb, args: logged(args, verb), before: unconfirmed(raw ?? state) });
+    // 师父传印's writes (rules/seals.mjs) are the page's bookkeeping, like `hergame` and `reading`: written, never logged — Undo takes back moves.
+    if (!(standOnly && !out.state) && verb !== 'seals') appendLog(logFile, { at: now.toISOString(), verb, args: logged(args, verb), before: unconfirmed(raw ?? state) });
     trackPay(verb, args, out.result, raw ?? state, next, content, now);
   }
   // …a read or a refusal is the player here too: stamped, never logged.

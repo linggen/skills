@@ -34,6 +34,7 @@ import { BRANCH, boardVaries, shichenOf } from './pool.mjs';
 import { allPlaces, hiddenRoom, placeName, placeOf, placeOpen, tooHard } from './world.mjs';
 import { hostOf, ownXiuwei } from './chores.mjs';
 import { lunarOf } from '../calendar.js';
+import { needsHold } from './seals.mjs';
 
 const cfgOf = content => content.happenings ?? null;
 export const happeningsOf = content => cfgOf(content)?.happenings ?? [];
@@ -97,7 +98,7 @@ const openByStory = (content, state, t) => !t?.after || (state.done_scenes ?? []
 const everPlayed = (state, id) => Boolean(state.happen?.games?.[id] || state.pool_played?.[id] || state.tasks?.[id]?.status === 'done' || state.stars?.[id] != null);
 
 /* The games a happening may deal now, for a device: each `{ task, kind, d }`. */
-export function dealable(content, state, h, host = hostOf(), met = metKinds(content, state), day = null) {
+export function dealable(content, state, h, host = hostOf(), met = metKinds(content, state), day = null, now = new Date()) {
   return (h.deals ?? []).flatMap((d) => {
     const t = taskOf(content, d.task);
     if (!t || !t.hosted || !repeatable(content, t) || !openByStory(content, state, t)) return [];
@@ -106,6 +107,8 @@ export function dealable(content, state, h, host = hostOf(), met = metKinds(cont
     // A stall's board (押宝) is once a day by its own rule: played today, it is not dealt again today.
     if (t.stall && day && state.tasks?.[t.id]?.status === 'done' && state.tasks[t.id].period === day) return [];
     if (host === 'phone' && d.phone === false) return [];
+    // `needs`: a state the deal waits on, named in the data and answered by rules/seals.mjs (师父传印: this week's lesson, a drill's two seals).
+    if (!needsHold(content, state, d.needs, now, d.task)) return [];
     return [{ task: t.id, kind: kindOf(t), d }];
   });
 }
@@ -125,11 +128,12 @@ function kindAt(content, state, kind) {
 /* The game a happening deals, from the save alone: the least recently played kind first, never the game just played through
    a happening while it has another; a tie by the save, the day and the 时辰. Null: nothing it may deal here. */
 export function dealOf(content, state, h, sc, host = hostOf(), met) {
-  const can = dealable(content, state, h, host, met, sc.day);
+  const can = dealable(content, state, h, host, met, sc.day, sc.start);
   if (!can.length) return null;
   const pool = can.length > 1 ? can.filter(c => c.task !== state.happen?.last) : can;
   const key = c => coin(`${seedOf(state)}|${sc.day}|${sc.i}|${h.id}|${c.task}`);
-  return [...pool].sort((a, b) => kindAt(content, state, a.kind) - kindAt(content, state, b.kind) || key(a) - key(b) || a.task.localeCompare(b.task))[0];
+  // `first`: a deal the data puts ahead (the week's lesson, when it is due) — it is dealt before the rotation of kinds.
+  return [...pool].sort((a, b) => Number(Boolean(b.d.first)) - Number(Boolean(a.d.first)) || kindAt(content, state, a.kind) - kindAt(content, state, b.kind) || key(a) - key(b) || a.task.localeCompare(b.task))[0];
 }
 
 /* ── When it may stand ── */
@@ -153,7 +157,7 @@ const goneAt = (state, id) => (state.happen?.at?.[id] ? new Date(state.happen.at
    seeded keys (u^(1/w)), one a place, up to `draw`. Each `{ h, played }` (gone to inside this 时辰). */
 export function drawAt(content, state, sc, now = sc.start) {
   const n = cfgOf(content)?.draw ?? DRAW_DEFAULT, met = metKinds(content, state);
-  const scored = happeningsOf(content).filter(h => stands(content, state, h, sc, now) && dealable(content, state, h, 'mac', met, sc.day).length).map((h) => {
+  const scored = happeningsOf(content).filter(h => stands(content, state, h, sc, now) && dealable(content, state, h, 'mac', met, sc.day, now).length).map((h) => {
     const at = goneAt(state, h.id), before = at && at < sc.start ? at : null;
     // Not gone to in a day ×2; one that comes only on its days (a market day) ×4 — it has the one day, the others every day.
     const w = (!before || sc.start - before > LATELY_MS ? 2 : 1) * ((h.days ?? []).length ? 4 : 1);

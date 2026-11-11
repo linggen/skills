@@ -39,6 +39,7 @@ export const meta = {
 const LEVELS = new URL('../../worlds/jiuding/levels/shouqiang.json', import.meta.url);
 const SEALS = new URL('./jieyin/helper.js', import.meta.url);
 import { leadWith } from './jieyin/lead.js';
+import { NONE as NO_MASTERY, closing, masteryFor } from './jieyin/mastery.js';
 const CREATURES = new URL('../../worlds/jiuding/creatures.json', import.meta.url); // each beast's element (五行相克)
 const FONT = new URL('./shouqiang/font/zcool-kuaile.woff2', import.meta.url);
 
@@ -75,19 +76,19 @@ export function callLine(c, root, moves, lang) {
 }
 
 /** 结印's button in the field, where it may be offered (games/jieyin/helper.js decides; none → null, nothing drawn). */
-export function offerJieyin(kit, box, { lang, game, shell, marks, feed = false, reading = () => false, load = () => import(SEALS.href) }) {
+export function offerJieyin(kit, box, { lang, game, shell, marks, feed = false, reading = () => false, load = () => import(SEALS.href), mastery = NO_MASTERY }) {
   const c = kit.jieyin, moves = (c?.moves ?? []).filter((m) => gateOpen(m, marks));
   if (!moves.length) return Promise.resolve(null);
   const say = (text) => (shell?.say ? shell.say(lang === 'en' ? 'Xiaoman' : '小满', text, 2200) : game.say('xiaoman', text));
   return load().then(({ offerSeals }) => offerSeals({
     host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis, moves: moves.map((m) => m.id), idle: c.idle, fastFps: c.armedFps,
-    state: () => game.jieyinState(), cast: (e) => game.jieyin(e.move), say,
+    state: () => game.jieyinState(), cast: (e) => { const ok = game.jieyin(e.move); if (ok) mastery.report(e.move); return ok; }, say,
     call: () => callLine(c, game.jieyinState().boss, moves, lang),
     first: moves.some((m) => m.id === 'feijian') ? c.first : null,
     paused: () => Boolean(reading() || shell?.paused?.() || game.paused()), // reading: the lead card is up (the dock opens by itself after it)
     aside: () => game.picking(),
     dock: c.dock, onProgress: (p) => game.jieyinProgress?.(p), // where the frame stands (data); the hand's progress: his hand glows (hud.js SealGlow)
-  })).catch((e) => { console.warn('[shouqiang] 结印', e); return null; });
+  })).then((h) => closing(h, mastery)).catch((e) => { console.warn('[shouqiang] 结印', e); return null; });
 }
 
 export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion = false, seed, lines, onEvent, shell } = {}) {
@@ -120,11 +121,12 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
     if (signal?.aborted) return leave();
     signal?.addEventListener('abort', leave, { once: true });
     const roots = fetch(CREATURES).then((r) => r.json()).then((j) => j.creatures ?? []).catch(() => []);
-    Promise.all([fetch(LEVELS).then((r) => r.json()), import('./shouqiang/shouqiang.min.mjs'), import('./shouqiang/core.js'), loadFont(doc), roots]).then(async ([table, { start }, { openingOf, withRoots }, , creatures]) => {
+    Promise.all([fetch(LEVELS).then((r) => r.json()), import('./shouqiang/shouqiang.min.mjs'), import('./shouqiang/core.js'), loadFont(doc), roots, masteryFor(data)]).then(async ([table, { start }, { openingOf, withRoots }, , creatures, sealed]) => {
       if (done) return;
       const kit = withRoots(table, creatures);
       let level = levelDealt(kit, data, search);
       if (dev && q.get('jy')) level = { ...level, jieyinWhen: q.get('jy') }; // the 游戏厅's dev: spells on every wave
+      if (Object.keys(sealed.bonus).length) level = { ...level, mastery: sealed.bonus }; // 师父传印: the 印谱's strength per move (core.js spellLands)
       // In the shell: the story lines read on its lead card, over the field standing still; the canvas keeps the big
       // banners and its 3-2-1 (with an opening pick, the pick comes straight after the card and they follow it).
       const said = shell?.lead ? (level.lead ?? []).filter((l) => !l.big).map((l) => l[lang] ?? l.zh).join('') : '';
@@ -145,7 +147,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         },
       });
       let reading = Boolean(said);
-      seals = level.jieyin === false ? null : offerJieyin(kit, box, { lang, game, shell, marks: data?.marks, feed: dev && q.get('feed') === '1', reading: () => reading }); // a level may take no spell (守白菜)
+      seals = level.jieyin === false ? null : offerJieyin(kit, box, { lang, game, shell, marks: data?.marks, feed: dev && q.get('feed') === '1', reading: () => reading, mastery: sealed }); // a level may take no spell (守白菜)
       // the lead card says 结印 is here where it is (jieyin/lead.js)
       if (said) leadWith(said, seals, level.jieyinWhen ?? kit.jieyin?.when, lang).then((told) => !done && shell.lead(told, { auto: 'read', lang })).then(() => { reading = false; game?.go(); });
       if (level.grid) {

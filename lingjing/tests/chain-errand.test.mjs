@@ -22,9 +22,9 @@ const at = (place, step, share, extra = {}) => {
 const offered = s => (look(s, content, ctx).offers ?? []).map(o => o.id);
 const chain = content.quests.filter(q => q.chain === 'jiujie');
 
-test('the chain as data: six steps, each after the one before, two a layer through 七 · 八 · 九层, each a size', () => {
-  assert.deepEqual(chain.map(q => q.id), ['guan-jiujie-1', 'guan-jiujie-2', 'guan-jiujie-3', 'guan-jiujie-4', 'guan-jiujie-5', 'guan-jiujie-6']);
-  assert.deepEqual(chain.map(q => q.opens.layer.step), [7, 7, 8, 8, 9, 9]);
+test('the chain as data: seven steps, each after the one before, two a layer through 七 · 八 · 九层 (and the master\'s seal before 看炉), each a size', () => {
+  assert.deepEqual(chain.map(q => q.id), ['guan-jiujie-1', 'guan-jiujie-2', 'guan-jiujie-3', 'guan-jiujie-4', 'guan-jiujie-4a', 'guan-jiujie-5', 'guan-jiujie-6']);
+  assert.deepEqual(chain.map(q => q.opens.layer.step), [7, 7, 8, 8, 8, 9, 9]);
   chain.slice(1).forEach((q, k) => { assert.equal(q.opens.after, chain[k].id); assert.equal(chain[k].then, q.id); });
   for (const q of chain) assert.ok(q.grant.units > 0 || q.work === 'labor', `${q.id}: a size, or a chore's work`);
   // 九层's two under 古八's 0.7 hold (ladder caps.hui.h09), so both open before 瞿老's door.

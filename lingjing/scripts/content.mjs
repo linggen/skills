@@ -188,6 +188,10 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     games: fs.existsSync(path.join(dir, 'games.json')) ? readJson(path.join(dir, 'games.json')) : null,
     // 观里的事 (rules/happenings.mjs, 2026-11-10): the happenings that deal the small games in the world.
     happenings: fs.existsSync(path.join(dir, 'happenings.json')) ? readJson(path.join(dir, 'happenings.json')) : null,
+    // 师父传印 (rules/seals.mjs, 2026-11-11): the master's weekly seal, the 印谱's book, mastery's knobs; and the 结印 kit's seal
+    // table (levels/jieyin.json), read for the gestures' figures only.
+    chuanyin: fs.existsSync(path.join(dir, 'chuanyin.json')) ? readJson(path.join(dir, 'chuanyin.json')) : null,
+    handkit: fs.existsSync(path.join(dir, 'levels', 'jieyin.json')) ? readJson(path.join(dir, 'levels', 'jieyin.json')) : null,
     // 秘境探险 (rules/mijing.mjs, 2026-10-28): the nine 重, their rooms, boons and 奇遇.
     mijing: fs.existsSync(path.join(dir, 'mijing.json')) ? readJson(path.join(dir, 'mijing.json')) : null,
     // 人间功课 as cultivation (rules/gongke.mjs): a chore's `kind` → its meaning in the book.

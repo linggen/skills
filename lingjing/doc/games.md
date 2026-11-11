@@ -1746,6 +1746,10 @@ tried again).
   colour in the hand hint (`held`). Game effects are the host's (守墙关).
 - **Tested:** the judge on synthetic hands (pose.js), not recorded ones; real-camera recognition is Hanli's to try.
 
+### 师父传印 — the master's seal a week, the 印谱, mastery (2026-11-11; Hanli 11-10: 「结印是亮点」 · 「可以，按这个做」)
+
+褚先生 (the 讲堂's, no new person) passes on ONE hand seal a week — seven real days after the last learned, and only a seal whose spell he has met (the kits' own `from` marks) — in three steps: 看 (his demonstration), 跟 (each gesture confirmed), 考 (the whole seal against the clock). Learned seals live in the save's `seals.book` (id, when, `hp` mastery in half-points); a save from before has none and reads the story's own 讲堂 lesson (`qiajue-*` marks) as 飞剑 · 火弹 learned at 生, undated. A daily drill (two or three learned seals chained) is another deal of 讲堂早课; the lesson stands `first` while due. Both are boards (`chuanyin-lesson` / `-drill`, tasks/happenings.json) paid in small games (`own`: 3 and 1, in place of the board's minutes). **No camera is a hard rule**: with none, a refusal, a failing model or the player's own switch off, 看 plays the same demonstration and 跟 · 考 · the chain are tapping the gesture figures in order against the clock — same pay, mastery at half a camera cast (`cast.hands` 2 · `cast.tap` 1); a camera failing mid-way switches to taps in place. Mastery 生 · 熟 (12 hp, +10%) · 精 (36 hp, +20%) — all in worlds/jiuding/chuanyin.json — lends a seal's spell its strength where 守炉 · 守墙关 · 守山门 resolve it (a factor 1 where none is given, so the proof bots and every old level resolve as before). The 印谱 is a pane of the 储物袋 (the phone's sheet), and a button on the lesson's card; the card drawn in code (words and the seal's figures only) can be shared, copied or saved, and sharing it is the day's 传音. Rules: rules/seals.mjs; games: games/jieyin/lesson.js · flow.js · mastery.js · seal-share.js; the page: seals-page.js.
+
 ### 结印 in 守墙关 — spells for the 大妖 (§ 手势斗法)
 
 Hanli 10-21, in order: 「放进去」 · 「最好不显示摄像头」 · 「别让用户太累」 · 「加一个手势的冷却, 让用户大部分时间在休息」 ·

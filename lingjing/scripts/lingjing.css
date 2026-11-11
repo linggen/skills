@@ -657,6 +657,20 @@ body.fighting .footrow { display: none; }
 .phead .pused.over { color: var(--seal); font-weight: 600; }
 .pouch .donote { margin-top: 10px; }
 .psec { margin-top: 14px; font-family: var(--ui); }
+/* 印谱 (seals-page.js): the seals the master has passed on — figures in ink, an outline where he has not. */
+.sseals { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 10px; }
+.sseal { padding: 10px 12px; border: 1px solid var(--line, #d8ceb8); border-radius: 12px; background: var(--surface); }
+.sseal.is-outline { border-style: dashed; opacity: .7; }
+.sseal .shead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.sseal .shead b { font-family: var(--serif); letter-spacing: .04em; }
+.sseal .sdim { color: var(--dim); font-size: 12px; }
+.sseal .sfigs { display: flex; align-items: center; gap: 6px; margin: 8px 0 4px; flex-wrap: wrap; }
+.sseal .sfigure { display: flex; flex-direction: column; align-items: center; gap: 1px; color: var(--ink, #2b2620); }
+.sseal.is-outline .sfigure { color: var(--dim); }
+.sseal .sfigure small { font-size: 11px; color: var(--dim); }
+.sseal .sarrow { font-style: normal; color: var(--dim); }
+.sseal .sdoes { margin: 2px 0; font-size: 13px; }
+.sseal .snext { margin: 0; }
 .psec h3 { font-family: var(--serif); font-size: 14px; letter-spacing: .15em; color: var(--dim); margin: 0 0 6px; font-weight: 600; }
 .pwornrow { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 6px; }
 .pwho + .pwho { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); }

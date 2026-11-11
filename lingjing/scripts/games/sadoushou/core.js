@@ -650,7 +650,9 @@ export function castJieyin(g, id, lane = null) {
   const hit = beastFor(g, LANE[lane] ?? colOf(g.aimX));
   if (!hit) return false;
   const boss = Boolean(hit.isBoss);
-  const raw = dpsOf(g) * m.secs * (boss ? c.bossMul ?? 1 : 1) + (m.flat ?? 0);
+  // 师父传印: the seal's mastery (`jieyin.mastery[move id]` = 1 + power, from the 印谱; none → 1) lends the spell its strength.
+  const K = c.mastery?.[m.id] > 0 ? c.mastery[m.id] : 1;
+  const raw = (dpsOf(g) * m.secs * (boss ? c.bossMul ?? 1 : 1) + (m.flat ?? 0)) * K;
   const dmg = boss ? Math.min(raw, hit.hpMax * (c.bossCap ?? 1)) : raw; // a big chunk of a 大妖, never the whole fight
   g.spellCool = c.cool;
   g.casts += 1;

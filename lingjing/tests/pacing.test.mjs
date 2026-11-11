@@ -100,10 +100,11 @@ test('the typical player waits at most MAX_WAIT days of only small games between
   for (const g of runs.typical.gates) {
     assert.ok((g.gap ?? g.days ?? 0) <= MAX_WAIT, `${g.scene} (${g.layer.step}层): ${(g.gap ?? g.days)?.toFixed(2)} days of play between beats — add a share gate earlier in the layer, or a chain step`);
   }
-  // The chain's steps are beats the walk takes, in order, two a layer through 七 · 八 · 九层.
+  // The chain's steps are beats the walk takes, in order, two a layer through 七 · 八 · 九层 — and, before 看炉, the master's
+  // seal (师父传印: guan-jiujie-4a, right after 秦雁's in 八层).
   const chain = runs.typical.beats.filter(b => b.kind === 'chain');
-  assert.deepEqual(chain.map(b => b.id), ['guan-jiujie-1', 'guan-jiujie-2', 'guan-jiujie-3', 'guan-jiujie-4', 'guan-jiujie-5', 'guan-jiujie-6']);
-  assert.deepEqual(chain.map(b => b.step), [7, 7, 8, 8, 9, 9]);
+  assert.deepEqual(chain.map(b => b.id), ['guan-jiujie-1', 'guan-jiujie-2', 'guan-jiujie-3', 'guan-jiujie-4', 'guan-jiujie-4a', 'guan-jiujie-5', 'guan-jiujie-6']);
+  assert.deepEqual(chain.map(b => b.step), [7, 7, 8, 8, 8, 9, 9]);
 });
 
 test('the share gates as data (2026-11-10, a proposal for Hanli): 一层 at 点卯 and the 执事房, 五层 at the 丹房 and 这一年, 六层 at 鯥 and 碾药 — each before its layer\'s 圆满, never at the door that 圆满 is held at', () => {

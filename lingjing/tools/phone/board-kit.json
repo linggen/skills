@@ -661,6 +661,7 @@
       "css": [
         "scripts/lingjing.css",
         "scripts/games/jieyin/jieyin.css",
+        "scripts/games/jieyin/lesson.css",
         "scripts/games/jieyin/helper.css"
       ],
       "files": [

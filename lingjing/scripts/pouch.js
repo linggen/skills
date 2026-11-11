@@ -9,13 +9,14 @@ import { esc } from './esc.js';
 import { closeX } from './card-close.js';
 import { deckHtml, gearFightHtml, herCardHtml, itemDoes, liftSaid, tamesLine } from './cards.js';
 import { PANGLU_WORDS, pangluHtml } from './panglu.js';
+import { sealsHtml } from './seals-page.js';
 
 export const POUCH_WORDS = {
   zh: {
     title: '储物袋', close: '合上', used: '{used}/{cap} 格', over: '超出 {n} 格：新得的东西要你定夺。',
     fullTitle: '储物袋满了', fullSwap: '丢一样换它', fullTake: '收下', fullLet: '不要了', fullPick: '点一样丢掉，换{name}', fullBack: '先不换',
     tabs: { all: '全部', pill: '丹药', arms: '法器', material: '材料', charm: '符', story: '剧情' },
-    deck: '牌组', deckNew: '新 {n}', empty: '储物袋是空的。', tabEmpty: '这里还没有东西。', pick: '点一样东西看看。',
+    deck: '牌组', seals: '印谱', deckNew: '新 {n}', empty: '储物袋是空的。', tabEmpty: '这里还没有东西。', pick: '点一样东西看看。',
     take: '服用', wear: '佩戴', study: '参悟', carry: '换上 · {n} 格', use: '使用', sell: '卖 {n}', toss: '丢',
     tossAsk: '丢掉{name} ×{n}？丢了就找不回了。', tossYes: '丢掉', tossNo: '留着',
     free: '剧情要用 · 不占格', fantong: '饭桶', ftPut: '放进饭桶',
@@ -25,7 +26,7 @@ export const POUCH_WORDS = {
     title: 'Storage Pouch', close: 'Close', used: '{used}/{cap} slots', over: '{n} over: new things wait on your choice.',
     fullTitle: 'The pouch is full', fullSwap: 'Drop one for it', fullTake: 'Take it', fullLet: 'Let it go', fullPick: 'Tap a thing to drop for {name}', fullBack: 'Not now',
     tabs: { all: 'All', pill: 'Pills', arms: 'Arms', material: 'Materials', charm: 'Talismans', story: 'Story' },
-    deck: 'Deck', deckNew: '{n} new', empty: 'The pouch is empty.', tabEmpty: 'Nothing here yet.', pick: 'Tap a thing to look at it.',
+    deck: 'Deck', seals: 'Seals', deckNew: '{n} new', empty: 'The pouch is empty.', tabEmpty: 'Nothing here yet.', pick: 'Tap a thing to look at it.',
     take: 'Take', wear: 'Wear', study: 'Study', carry: 'Carry it · {n} slots', use: 'Use', sell: 'Sell {n}', toss: 'Drop',
     tossAsk: 'Throw away {name} ×{n}? It is gone for good.', tossYes: 'Throw away', tossNo: 'Keep it',
     free: 'The story needs it · takes no slot', fantong: 'Rice Bucket', ftPut: 'Into the bucket',
@@ -198,7 +199,7 @@ function detailHtml(i, g, ctx, pw, ui) {
 }
 
 /// The panel. `ui` is the page's own view of it: `tab`, `sel` (the item
-/// tapped), `toss` (the item asking 丢?), `pane` ('deck' | 'panglu' | null), `ftOff(id)` (may it go into the docked
+/// tapped), `toss` (the item asking 丢?), `pane` ('deck' | 'seals' | 'panglu' | null), `ftOff(id)` (may it go into the docked
 /// 饭桶: null yes, else why), `ftRun` (the pot chews or reveals).
 /// Its head is one row of segments — 储物袋 (the grid, the 饭桶 docked in it) · 旁炉 · 牌组 — and one 合上 at
 /// the right; a segment is the way between them, so no pane carries a 「回储物袋」 of its own
@@ -209,7 +210,7 @@ export function pouchHtml(ctx, ui = {}) {
   if (!g) return `<div class="lu pouch"><header class="luhead"><b>${esc(pw.title)}</b>${close}</header><div class="loading">…</div></div>`;
   const p = g.pouch ?? { used: g.bag.length, cap: null };
   // 人间功课 is the 事 book's (cards.js choreRow; Hanli 11-02: 「人间功课也在物品UI里显示, 应该在任务里吧. 任务里已经有了」).
-  const pane = ui.pane === 'deck' && g.cards?.length ? 'deck' : ui.pane === 'panglu' && g.panglu ? 'panglu' : null;
+  const pane = ui.pane === 'deck' && g.cards?.length ? 'deck' : ui.pane === 'panglu' && g.panglu ? 'panglu' : ui.pane === 'seals' && g.seals ? 'seals' : null;
   // 储物袋满了 stands in the panel too, over every pane: the 饭桶's outputs land while he is in here.
   const note = (ctx.gearNote ? `<div class="donote">${esc(ctx.gearNote)}</div>` : '') + fullOfferHtml(ctx.look?.full_offer, ctx, { swap: ui.offerSwap, tab: ui.tab });
   const used = p.cap != null ? `<span class="pused${p.used > p.cap ? ' over' : p.used >= p.cap ? ' full' : ''}">${esc(say(pw.used, p))}</span>` : '';
@@ -218,11 +219,14 @@ export function pouchHtml(ctx, ui = {}) {
     // 旁炉 (panglu.js): at the 丹房's side furnace once it is his (rules/panglu.mjs) — Look's `panglu`, the last batch the page's.
     g.panglu ? seg('panglu', (PANGLU_WORDS[ctx.lang] ?? PANGLU_WORDS.zh).chip) : '',
     // 牌组 — the last tab (Hanli, 2026-10-27: 「牌组合进储物袋吧, 放到功课后面」), 新 n on cards not yet played.
+    // 印谱 (seals-page.js; rules/seals.mjs): the seals the master has passed on, once he has one.
+    g.seals ? seg('seals', pw.seals) : '',
     g.cards?.length ? seg('deck', pw.deck, ctx.look?.cards_new?.length ? ` <b class="pnew">${esc(say(pw.deckNew, { n: ctx.look.cards_new.length }))}</b>` : '') : ''].join('');
   const head = `<header class="luhead phead"><div class="psegs" role="tablist">${segs}</div>${close}</header>`;
   const shell = (body) => `<div class="lu pouch" role="dialog" aria-label="${esc(pw.title)}">${head}${note}${body}</div>`;
   if (pane === 'panglu') return shell(pangluHtml(ctx.look?.panglu ?? null, ctx.pangluLast ?? null, ctx.lang, ctx.artBase ?? ''));
   if (pane === 'deck') return shell(`<section class="psec">${deckHtml(g, ctx)}</section>`);
+  if (pane === 'seals') return shell(sealsHtml(ctx.sealBook ?? null));
   const over = p.cap != null && p.used > p.cap ? `<p class="small pover">${esc(say(pw.over, { n: p.used - p.cap }))}</p>` : '';
   // 丹毒 (rules/dandu.mjs): the turns owed and what they take off the 体力 pool, in the rules' words — a fact on the page.
   const dandu = ctx.look?.dandu ? `<p class="small pdandu">${esc(ctx.look.dandu.say)}</p>` : '';

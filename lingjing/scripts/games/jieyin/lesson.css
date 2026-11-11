@@ -1,0 +1,38 @@
+/* lesson.css — 师父传印 (games/jieyin/lesson.js): the lesson, the drill, the errand's step. Paper and ink, the 讲堂's own. */
+.jl { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 12px; background: #f1ece1; color: #2b2620; position: relative; }
+.jl-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.jl-name { font-size: 20px; letter-spacing: .06em; color: #a8352b; }
+.jl-phases { display: flex; gap: 6px; }
+.jl-phases i { font-style: normal; font-size: 13px; padding: 2px 10px; border-radius: 999px; border: 1px solid #c9bfa9; color: #6e6457; }
+.jl-phases i.is-on { background: #a8352b; border-color: #a8352b; color: #f1ece1; }
+.jl-line { margin: 0; min-height: 2.8em; font-size: 15px; line-height: 1.55; color: #2b2620; }
+.jl-stage { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px; border-radius: 10px; background: radial-gradient(ellipse at 50% 55%, #fffaf0, #efe4cf); border: 1px solid #d8ceb8; min-height: 200px; justify-content: center; text-align: center; }
+.jl-big svg { width: 150px; height: 150px; color: #2b2620; }
+.jl-bigname { font-size: 18px; }
+.jl-bighow { font-size: 13px; color: #6e6457; max-width: 24em; line-height: 1.5; }
+.jl-figs { display: flex; justify-content: center; gap: 10px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap; }
+.jl-figs li { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 8px; border-radius: 10px; border: 1px solid #d8ceb8; background: #f8f3e8; min-width: 64px; cursor: default; }
+.jl-figs li small { font-size: 12px; color: #6e6457; }
+.jl-figs li.is-done { opacity: .55; border-color: #5d7a4d; background: #eaf0e1; }
+.jl-figs li.is-next { border-color: #a8352b; box-shadow: 0 0 0 2px rgba(168, 53, 43, .25); animation: jl-pulse 1.4s ease-in-out infinite; }
+.jl-figs li.is-show { border-color: #8a6a3b; background: #fff6df; }
+[data-input="tap"][data-phase="follow"] .jl-figs li { cursor: pointer; }
+.jl-tray { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.jl-tray[hidden], .jl-clock[hidden], .jl-dock[hidden], .jl-tip[hidden], .jl-swap[hidden], .jl-card[hidden] { display: none; }
+.jl-t { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 10px; border-radius: 12px; border: 1.5px solid #8a7a66; background: #fffaf0; color: inherit; cursor: pointer; min-width: 72px; }
+.jl-t small { font-size: 12px; color: #6e6457; }
+.jl-t:active { transform: scale(.96); }
+.jl-clock { height: 6px; border-radius: 999px; background: #ddd2bd; overflow: hidden; }
+.jl-bar { display: block; height: 100%; width: 100%; background: #a8352b; transition: width .12s linear; }
+.jl-dock { display: flex; justify-content: center; }
+.jl-eye { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.jl-tip { margin: 0; font-size: 12px; color: #6e6457; text-align: center; }
+.jl-card { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.jl-none { padding: 24px 12px; text-align: center; color: #6e6457; }
+.is-shake { animation: jl-shake .35s; }
+@keyframes jl-pulse { 50% { box-shadow: 0 0 0 5px rgba(168, 53, 43, .12); } }
+@keyframes jl-shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+@media (prefers-reduced-motion: reduce) { .jl-figs li.is-next, .is-shake { animation: none; } .jl-bar { transition: none; } }
+.jl-slot { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; font-size: 18px; color: #6e6457; }
+.jl-stage.is-masked { min-height: 90px; }
+.jl-stage.is-masked .jl-bigname { font-size: 26px; color: #a8352b; }

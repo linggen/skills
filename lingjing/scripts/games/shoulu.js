@@ -38,6 +38,7 @@ import { jieyinCast, jieyinState } from './shoulu/core.js';
 const JIEYIN = new URL('../../worlds/jiuding/levels/jieyin.json', import.meta.url);
 const SEALS = new URL('./jieyin/helper.js', import.meta.url);
 import { leadWith } from './jieyin/lead.js';
+import { NONE as NO_MASTERY, closing, masteryFor } from './jieyin/mastery.js';
 import { forInput } from './kit/device.js';
 export const gateOpen = (row, marks) => !row.from || !Array.isArray(marks) || (row.from.marks ?? []).some((m) => marks.includes(m));
 /** The host's numbers for a level: hosts.shoulu with its pace's laid on. */
@@ -53,19 +54,20 @@ export function callFor(host, st, lang) {
 /** A host row's id in the 手势斗法 kit (jieyin.json `doufa`): its `jieyin`, else its own. */
 export const duelId = (row) => row.jieyin ?? row.id;
 /** Offer the dock for this mount: → Promise<handle | null> (null and nothing drawn without a camera — helper.js). */
-export function offerJieyin(host, box, { lang, now, marks, toast, paused, aside, level = null, feed = false, load = () => import(SEALS.href), env } = {}) {
+export function offerJieyin(host, box, { lang, now, marks, toast, paused, aside, level = null, feed = false, load = () => import(SEALS.href), env, mastery = () => NO_MASTERY } = {}) {
   const moves = (host?.moves ?? []).filter((m) => gateOpen(m, marks));
   if (!moves.length) return Promise.resolve(null);
-  const cfg = () => { const n = now(); return n.g ? jieyinCfg(host, n.level) : null; };
+  // 师父传印: the 印谱's strength for a move rides the host's numbers (core.js landJieyin reads `mastery`); none → exactly as before.
+  const cfg = () => { const n = now(); return n.g ? { ...jieyinCfg(host, n.level), mastery: mastery().bonus } : null; };
   return load().then(({ offerSeals }) => offerSeals({
     // the dock knows the 手势斗法 ids (a row's `jieyin`, else its own id) and casts back an event naming one
     host: box, lang, feed, env: env ?? box.ownerDocument.defaultView ?? globalThis, moves: moves.map(duelId), idle: host.idle,
     state: () => { const c = cfg(); return c ? jieyinState(now().g, c) : OFF; },
-    cast: (e) => { const c = cfg(), row = moves.find((m) => duelId(m) === (e?.move ?? e)); return c && row ? jieyinCast(now().g, row.id, c) : false; },
+    cast: (e) => { const c = cfg(), row = moves.find((m) => duelId(m) === (e?.move ?? e)); const ok = c && row ? jieyinCast(now().g, row.id, c) : false; if (ok) mastery().report(row.id); return ok; },
     fizzle: () => toast(lang === 'en' ? 'Pfft — it fizzled.' : '噗——走火了。'), say: toast,
     call: () => { const n = now(); return callFor(host, n.g ? jieyinState(n.g, cfg()) : null, lang); }, first: moves.some((m) => m.motion === 'jab' && !m.from) ? host.first : null,
     paused, aside, level, dock: host.dock, // where the frame stands (jieyin.json hosts.shoulu.dock)
-  })).catch((e) => { console.warn('[shoulu] 结印', e); return null; });
+  })).then((h) => closing(h, mastery())).catch((e) => { console.warn('[shoulu] 结印', e); return null; });
 }
 
 export const meta = {
@@ -238,8 +240,10 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
     if (!levels.length) { stage.textContent = lang === 'en' ? 'No levels.' : '没有关卡。'; return; }
     // 结印's dock (helper.js): offered once a mount, it follows whichever level is up; closed when the game goes.
     const q = new URLSearchParams(win?.location?.search ?? '');
-    const seals = fetch(JIEYIN).then((r) => r.json()).then((kit) => offerJieyin(kit.hosts?.shoulu, stage, {
-      lang, now: () => ({ g: g && !held ? g : null, level: levels[li] }), marks: data.marks, toast: (x) => toast(x),
+    let sealed = NO_MASTERY; // the 印谱's strength and its casts (jieyin/mastery.js; the host's seams in `data`), ready a moment after the mount
+    const known = masteryFor(data).then((m) => { sealed = m; });
+    const seals = known.then(() => fetch(JIEYIN)).then((r) => r.json()).then((kit) => offerJieyin(kit.hosts?.shoulu, stage, {
+      lang, now: () => ({ g: g && !held ? g : null, level: levels[li] }), marks: data.marks, toast: (x) => toast(x), mastery: () => sealed,
       paused: () => frozen() || !g || Boolean(g.over), aside: () => !menu.hidden || root.classList.contains('is-picking'),
       feed: q.get('dev') === '1' && q.get('feed') === '1', level: () => li,
     })).catch(() => null);

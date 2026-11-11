@@ -976,10 +976,12 @@ function landJieyin(g, { m, id, hit, t, cfg }) {
   for (const b of hit) {
     if (b.dead) continue;
     const mul = BEASTS[b.type].boss ? cfg.bossMul ?? 1 : b.elite ? cfg.eliteMul ?? 1 : 1;
-    if (m.root) b.stunT = Math.max(b.stunT, BEASTS[b.type].boss ? m.root * 0.4 : m.root);
-    if (m.slow) { b.slowT = Math.max(b.slowT, m.for ?? 2); b.slowF = Math.max(b.slowF, m.slow); }
-    if (m.push && !BEASTS[b.type].boss) { b.d = Math.max(0, b.d - m.push); place(g, b); }
-    const d = m.dmg ? hurt(g, b, m.dmg * mul * (b === t ? 1 : m.around ?? 1), 'jy') : 0;
+    // 师父传印: the seal's mastery (cfg.mastery[move id] = 1 + power, from the 印谱; none → 1) lends the spell its strength.
+    const K = cfg.mastery?.[m.id] > 0 ? cfg.mastery[m.id] : 1;
+    if (m.root) b.stunT = Math.max(b.stunT, (BEASTS[b.type].boss ? m.root * 0.4 : m.root) * K);
+    if (m.slow) { b.slowT = Math.max(b.slowT, (m.for ?? 2) * K); b.slowF = Math.max(b.slowF, m.slow); }
+    if (m.push && !BEASTS[b.type].boss) { b.d = Math.max(0, b.d - m.push * K); place(g, b); }
+    const d = m.dmg ? hurt(g, b, m.dmg * mul * K * (b === t ? 1 : m.around ?? 1), 'jy') : 0;
     if (d) addFx(g, { k: 'txt', x: b.x, y: b.y - BEASTS[b.type].r - 16, s: `-${Math.round(d)}`, col: '#c23b22', life: 1.5, max: 1.5, vy: -20, size: b === t ? 34 : 24, bold: true });
   }
   addFx(g, { k: 'txt', x: t.x, y: t.y - 30, s: m.name?.zh ?? id, col: '#b0412e', life: 0.9, max: 0.9, vy: -24, size: 15 });

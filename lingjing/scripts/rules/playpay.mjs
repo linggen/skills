@@ -135,9 +135,13 @@ export function playGrant(content, state, id, task, now, stars = null, { first =
   const share = replay[Math.min(playsToday(state, id, now), replay.length - 1)];
   const f = star * share;
   const units = boardCost(content, 'game', played);
-  const progress = Math.round(xiuweiOf(content, state, units, { level: task?.level ?? null, difficulty: task?.difficulty ?? 'normal', first, board: true }) * f);
+  // `own` on the task (师父传印's lesson and drill, chuanyin.json: the unit form of 传音's `own`): it pays so many small games'
+  // worth where he stands — each one story step's 体力 (play_pay.story.units) as small-game play, and play_pay.wealth.default minutes of
+  // 灵石 — in place of its own minutes; it still costs its 体力 (`stamina`).
+  const own = task?.own?.games > 0 ? task.own.games : 0, payUnits = own ? own * (pp.story?.units ?? units) : units;
+  const progress = Math.round(xiuweiOf(content, state, payUnits, { level: task?.level ?? null, difficulty: task?.difficulty ?? 'normal', first, board: true }) * f);
   // Its 灵石: its kind's minutes of income (play_pay.wealth, batch 2) × I at the board's level (its own, else where he stands).
-  const wealth = Math.round(stonesAt(content, state, pp.wealth?.[kind] ?? pp.wealth?.default ?? 0, { level: task?.level ?? null }) * f);
+  const wealth = Math.round(stonesAt(content, state, own ? own * (pp.wealth?.default ?? 0) : pp.wealth?.[kind] ?? pp.wealth?.default ?? 0, { level: task?.level ?? null }) * f);
   return progress || wealth ? { table: 'play', progress, wealth, kind, minutes, stamina: units } : null;
 }
 

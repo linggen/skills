@@ -34,6 +34,7 @@ const LEVELS = new URL('../../worlds/jiuding/levels/sadoushou.json', import.meta
 const FONT = new URL('./sadoushou/font/zcool-kuaile.woff2', import.meta.url);
 const SEALS = new URL('./jieyin/helper.js', import.meta.url);
 import { leadWith } from './jieyin/lead.js';
+import { NONE as NO_MASTERY, closing, masteryFor } from './jieyin/mastery.js';
 import { jieyinOf } from './sadoushou/core.js';
 
 /** A move's `from` gate: open from the start, or once the save holds any of its marks; no marks given (the 游戏厅) → open. */
@@ -43,7 +44,7 @@ export const gateOpen = (row, marks) => !row.from || !Array.isArray(marks) || (r
     and the game is exactly the game without it — Hanli 10-21: 「用户结印失败, 或者不愿意使用摄像头, 塔防游戏也能正常完成」).
     A cast strikes a beast (core.js beastFor): the 大妖 when out, else the nearest wave down the column the dock names
     (its lane: left · middle · right) or the squad's, else the nearest anywhere — never a card or a wall. */
-export function offerJieyin(level, box, { lang, game, shell, marks, feed = false, reading = () => false, load = () => import(SEALS.href) }) {
+export function offerJieyin(level, box, { lang, game, shell, marks, feed = false, reading = () => false, load = () => import(SEALS.href), mastery = NO_MASTERY }) {
   const c = level.jieyin, moves = (c?.moves ?? []).filter((m) => gateOpen(m, marks));
   if (!moves.length) return Promise.resolve(null);
   const t = (o) => o?.[lang] ?? o?.zh ?? '';
@@ -51,11 +52,11 @@ export function offerJieyin(level, box, { lang, game, shell, marks, feed = false
   return load().then(({ offerSeals }) => offerSeals({
     host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis, moves, idle: c.idle, fastFps: c.armedFps,
     // the dock casts back an event (its move, the hand's lane): the row ids here are the 手势斗法 ids
-    state: () => game.jieyinState(), cast: (e, lane) => game.jieyin(e?.move ?? e, e?.lane ?? lane?.lane ?? lane), fizzle: () => game.fizzle(), say,
+    state: () => game.jieyinState(), cast: (e, lane) => { const ok = game.jieyin(e?.move ?? e, e?.lane ?? lane?.lane ?? lane); if (ok) mastery.report(e?.move ?? e); return ok; }, fizzle: () => game.fizzle(), say,
     call: () => t(c.say), first: moves.some((m) => m.id === 'feijian' && !m.from) ? c.first : null,
     paused: () => Boolean(reading() || shell?.paused?.() || game.paused()), aside: () => game.picking(), // reading: the lead card is up
     dock: c.dock, onProgress: (p) => game.jieyinProgress?.(p), // where the frame stands (the kit's data); the hand's progress → 小满 glows
-  })).catch((e) => { console.warn('[sadoushou] 结印', e); return null; });
+  })).then((h) => closing(h, mastery)).catch((e) => { console.warn('[sadoushou] 结印', e); return null; });
 }
 
 /** The 游戏厅's ladder: the levels with no `story`, in the order they climb. */
@@ -109,10 +110,11 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
     const leave = () => { game?.destroy(); game = null; finish({ won: false, left: true }); };
     if (signal?.aborted) return leave();
     signal?.addEventListener('abort', leave, { once: true });
-    Promise.all([fetch(LEVELS).then((r) => r.json()), import('./sadoushou/sadoushou.min.mjs'), loadFont(doc)]).then(([kit, { start }]) => {
+    Promise.all([fetch(LEVELS).then((r) => r.json()), import('./sadoushou/sadoushou.min.mjs'), loadFont(doc), masteryFor(data)]).then(([kit, { start }, , sealed]) => {
       if (done) return;
       const asked = levelAsked(kit, data, search), dealt = levelDealt(kit, data, search);
       let level = { ...dealt, jieyin: jieyinOf(kit, dealt) }; // its moves from the kit's named set (story: simple; ladder: full)
+      if (level.jieyin && Object.keys(sealed.bonus).length) level = { ...level, jieyin: { ...level.jieyin, mastery: sealed.bonus } }; // 师父传印: the 印谱's strength per move (core.js castJieyin)
       if (dev && /(?:^|[?&])jy=(always|waves|boss)/.test(search)) level = { ...level, jieyin: level.jieyin && { ...level.jieyin, when: search.match(/jy=(\w+)/)[1] } }; // the 游戏厅's dev
       // In the shell: the story lines read on its lead card, over the road standing still; the canvas keeps the big line and its 3-2-1.
       const said = shell?.lead ? (level.lead ?? []).filter((l) => !l.big).map((l) => l[lang] ?? l.zh).join(lang === 'en' ? ' ' : '') : '';
@@ -128,7 +130,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         },
       });
       let reading = Boolean(said);
-      seals = offerJieyin(level, box, { lang, game, shell, marks: data?.marks, feed: dev && /(?:^|[?&])feed=1/.test(search), reading: () => reading });
+      seals = offerJieyin(level, box, { lang, game, shell, marks: data?.marks, feed: dev && /(?:^|[?&])feed=1/.test(search), reading: () => reading, mastery: sealed });
       // the lead card says 结印 is here where it is (jieyin/lead.js)
       if (said) leadWith(said, seals, level.jieyin?.when, lang).then((told) => !done && shell.lead(told, { auto: 'read', lang })).then(() => { reading = false; game?.go(); });
     }, () => {

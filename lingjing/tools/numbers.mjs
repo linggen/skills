@@ -386,6 +386,8 @@ function sources(ctx) {
     for (const [k, m] of Object.entries(content.gongke?.kinds ?? {})) if (m.units) put('gongke', `${k}:${l.key}`, `${k} · ${l.name}`, at, unitsPay(content, s, m.units), authored('gongke', m.units));
     // A chore's own pay (gongke.json `own`, 传音): in small games against its class (master.xiuwei.classes.share_games).
     for (const [k, m] of Object.entries(content.gongke?.kinds ?? {})) if (m.own) put('own', `${k}:${l.key}`, `${k} (own) · ${l.name}`, at, ownXiuwei(content, s, m.own), m.own.games ? authored('share_games', m.own.games) : authored('gongke', m.own.units));
+    // 师父传印's lesson, drill and errand step (tasks/happenings.json `own`, chuanyin.json): the board pays so many small games, against the same class.
+    for (const t of content.tasks.tasks) if (t.own?.games) put('own', `${t.id}:${l.key}`, `${t.id} (own) · ${l.name}`, at, ownXiuwei(content, s, t.own), authored('share_games', t.own.games));
     for (const t of ['chance', 'meet', 'tale', 'tale_end']) put(t, `${t}:${l.key}`, `${t} · ${l.name}`, at, unitsPay(content, s, sizedUnits(content, t)), { class: t, ...want(sizedUnits(content, t)) });
     for (const [d, w] of Object.entries(content.meets?.trial?.win ?? {})) put('trial', `trial-${d}:${l.key}`, `trial ${d} · ${l.name}`, at, unitsPay(content, s, w.units), authored('trial', w.units));
   }

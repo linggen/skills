@@ -416,12 +416,14 @@ function spellLands(g, s) {
   const c = spellKit(g), m = jieyinMove(g, s.move);
   const t = g.beasts.find((b) => b.id === s.home && b.hp > 0) ?? null;
   emit(g, { t: 'boom', kind: 'spell', move: m.id, shape: m.shape, wuxing: m.wuxing ?? null, x: s.x, y: s.y, r: m.radius ?? m.width ?? 40, fromX: s.fromX, fromY: s.fromY });
+  // 师父传印: the seal's mastery (the level's `mastery[move id]` = 1 + power, from the 印谱; none → 1) lends the spell its strength.
+  const K = g.level?.mastery?.[m.id] > 0 ? g.level.mastery[m.id] : 1;
   for (const [b, share] of (SHAPES[m.shape] ?? SHAPES.one)(g, s, m, t)) {
     const k = spellMul(g, m, b, c);
-    if (m.root) b.stunT = Math.max(b.stunT, m.root * k / (b.boss ? c.bossMul ?? 1 : 1));
-    if (m.slow) { b.slow = m.slow; b.slowT = Math.max(b.slowT, m.for ?? 2); }
-    if (m.push && !b.boss) { b.y = Math.max(reachY(g) + 10, b.y - m.push); b.atWall = false; b.stunT = Math.max(b.stunT, 0.6); }
-    if (m.dmg) hurt(g, b, m.dmg * share * k, 'spell', { big: b === t || k > 1 });
+    if (m.root) b.stunT = Math.max(b.stunT, m.root * k * K / (b.boss ? c.bossMul ?? 1 : 1));
+    if (m.slow) { b.slow = m.slow; b.slowT = Math.max(b.slowT, (m.for ?? 2) * K); }
+    if (m.push && !b.boss) { b.y = Math.max(reachY(g) + 10, b.y - m.push * K); b.atWall = false; b.stunT = Math.max(b.stunT, 0.6); }
+    if (m.dmg) hurt(g, b, m.dmg * share * k * K, 'spell', { big: b === t || k > 1 });
   }
 }
 

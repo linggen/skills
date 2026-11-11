@@ -91,6 +91,90 @@
     "zh": "山道上安静了，墙头一块砖没少。",
     "en": "The path is quiet; not a brick gone from the wall."
    }
+  },
+  {
+   "_why": "师父传印 (chuanyin.json; Hanli 2026-11-10: 「可以，按这个做」): the weekly lesson, dealt by 讲堂早课 only when the week is out and a seal whose spell he has met is not yet taught (`needs: seals.lesson`, the deal puts it `first`). Pays three small games' worth (`own.games`, the unit form of 传音's), instead of its own minutes. Camera or, with none, tapping the figures — the same pay; mastery at half.",
+   "id": "chuanyin-lesson",
+   "kind": "board",
+   "game": "jieyin",
+   "period": "day",
+   "hosted": true,
+   "varies": false,
+   "_varies": "A lesson or a drill of the master's, played again with the hands (happenings.json `again` names jieyin, rules/happenings.mjs repeatable).",
+   "deal": {
+    "lv": "lesson"
+   },
+   "own": {
+    "games": 3
+   },
+   "title": {
+    "zh": "师父传印",
+    "en": "The master passes on a seal"
+   },
+   "how": {
+    "zh": "褚先生每周传一个印：先看他结一遍，再跟着结，最后限时考。没有摄像头也行，点一点手势就是。过了，记进印谱。",
+    "en": "Master Chu passes on one seal a week: watch him make it, follow him, then the timed test. No camera needed — tap the gestures instead. Passed, it goes into the seal book."
+   },
+   "done_line": {
+    "zh": "褚先生点了点头，戒尺在桌上敲了一下：「记下了。」",
+    "en": "Master Chu nods and taps the ruler once on the desk: \"Noted.\""
+   }
+  },
+  {
+   "_why": "师父传印's daily drill: two or three learned seals chained (rules/seals.mjs drillRows), dealt only with two learned (`needs: seals.drill`). Pays one small game's worth (`own.games`).",
+   "id": "chuanyin-drill",
+   "kind": "board",
+   "game": "jieyin",
+   "period": "day",
+   "hosted": true,
+   "varies": false,
+   "_varies": "A lesson or a drill of the master's, played again with the hands (happenings.json `again` names jieyin, rules/happenings.mjs repeatable).",
+   "deal": {
+    "lv": "drill"
+   },
+   "own": {
+    "games": 1
+   },
+   "title": {
+    "zh": "讲堂 · 连着结",
+    "en": "The lecture hall · Seals in a chain"
+   },
+   "how": {
+    "zh": "褚先生点两三个学过的印，叫你连着结：摄像头前一个接一个，没有摄像头就按次序点手势。",
+    "en": "Master Chu names two or three seals you have learned and has you chain them: one after another at the camera, or, with none, tapped in order."
+   },
+   "done_line": {
+    "zh": "褚先生看了一遍，没说好，也没说不好，只把戒尺放下了。",
+    "en": "Master Chu watches the whole chain, says neither good nor bad, and only sets the ruler down."
+   }
+  },
+  {
+   "_why": "The chain errand 九节菖蒲's lesson step (quests/guan.json guan-jiujie-4a): the board an errand asks for at the 讲堂, never dealt by the draw (`needs: seals.step` is never true). The page asks the rules for its plan with intent 'step' (chuanyin.json `step.seals`: a seal he lacks is taught, else a drill).",
+   "id": "chuanyin-step",
+   "kind": "board",
+   "game": "jieyin",
+   "period": "day",
+   "hosted": true,
+   "varies": false,
+   "_varies": "A lesson or a drill of the master's, played again with the hands (happenings.json `again` names jieyin, rules/happenings.mjs repeatable).",
+   "deal": {
+    "lv": "step"
+   },
+   "own": {
+    "games": 1
+   },
+   "title": {
+    "zh": "师父传印 · 看炉前",
+    "en": "The master's seal · Before the furnace"
+   },
+   "how": {
+    "zh": "褚先生把看炉要用的印过一遍：没学的现教，学过的连着结。",
+    "en": "Master Chu goes over the seals the furnace watch will use: one you lack is taught, the ones you know are chained."
+   },
+   "done_line": {
+    "zh": "褚先生把戒尺往肩上一搭：「去吧，炉子不等人。」",
+    "en": "Master Chu rests the ruler on his shoulder: \"Go on; the furnace waits for no one.\""
+   }
   }
  ]
 }

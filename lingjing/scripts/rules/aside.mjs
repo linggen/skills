@@ -193,7 +193,7 @@ export const ASIDE_KINDS = PLAY_KINDS.filter(k => k.open);
 /* Verbs that never move the story: reads, the page's own marks, the save's keeping, the shelf, the
    pouch, an errand held — and these two. */
 export const ASIDE_ALWAYS = new Set(['look', 'show', 'progress', 'story', 'bag', 'gear', 'deck', 'atlas', 'saves', 'save', 'load', 'forget',
-  'lang', 'summarize', 'greet', 'remember', 'appear', 'unrolled', 'unfolded', 'unstick', 'reveal', 'quest', 'trade', 'haggle', 'refine', 'aside', 'resume']);
+  'lang', 'summarize', 'greet', 'remember', 'appear', 'unrolled', 'unfolded', 'unstick', 'reveal', 'quest', 'seals', 'trade', 'haggle', 'refine', 'aside', 'resume']);
 /* Verbs that move the story, or take him elsewhere: refused while the book is set aside (Move and Go
    too: no kind takes them since the 秘境 rerun was retired, 2026-10-28). */
 export const ASIDE_REFUSED = new Set(['move', 'go', 'resolve', 'judge', 'travel', 'fly', 'meet', 'ring', 'make', 'enter', 'leave', 'build',

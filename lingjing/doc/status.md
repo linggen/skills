@@ -100,6 +100,10 @@ Checked 11-10, already done before (were on old lists): the kept card's 丹囊/�
 **Batch 4 holds:** the 秘境 run's 修为; 筑基+ pacing with 卷二 and 卷二's band; the 今 line's own mix; 饭桶 `lingshi.per_layer` and the
 arcade's stage wallet; `power.things`; 格斗 fighters' levels on their boards (the creatures rows carry them).
 
+## 师父传印 (2026-11-11 — branch wt/chuanyin, phone wt/seals)
+
+The master's weekly seal, the 印谱, mastery (doc/games.md § 师父传印): rules/seals.mjs + worlds/jiuding/chuanyin.json; the lesson, the drill and the errand step as boards of 结印 (`chuanyin-*`); 九节菖蒲 gains 看炉前的印 (`guan-jiujie-4a`, 八层 70%, after 秦雁's; `opens.unless`); the validator's red 14 → 14, `numbers.mjs --apply` empty. **Held for Hanli:** 讲堂早课 stands only 卯 · 辰 · 巳 (a player who looks in only in the evening meets no lesson); mastery's 熟 · 精 thresholds and +10% · +20%; the five wuxing seals all open together at the 讲堂's marks. Not seen on a device or the live page (checked in a static harness with a headless browser and in unit tests).
+
 ## Open after 11-10
 
 - **Not seen on a device or a live page:** everything landed after the morning verify run (cultivation floor, full bar, holds, share gates, 画猜 hint, the three page fixes, the phone's 在 Mac 上玩). The morning run's playbot review opened 12 of 79 shots and must be redone before a release gate.

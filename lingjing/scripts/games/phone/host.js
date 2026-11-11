@@ -122,6 +122,17 @@ function dealOf(game, data, task) {
       return r?.ok ? { ok: true, word: r.word ?? null } : { ok: false, say: r?.say ?? null, done: r?.refused === 'cap' };
     };
   }
+  // 师父传印 (rules/seals.mjs; games/jieyin/mastery.js · lesson.js): the book read and the page's writes through the app's own rules;
+  // the lesson's card goes out through the app (its share sheet, then the day's 传音 by ShareReward), and its 「印谱」 opens the app's sheet.
+  d.sealBook = (args) => rules('seals', args);
+  d.sealed = (args) => rules('seals', args);
+  d.shareImage = (blob) => new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => { post({ t: 'sharePng', name: `lingjing-seal-${Date.now()}.png`, data: String(r.result) }); resolve(true); };
+    r.onerror = () => reject(r.error);
+    r.readAsDataURL(blob);
+  });
+  d.openBook = () => { post({ t: 'sealBook' }); return true; };
   if (task?.her && task.id) {
     d.wake = () => rules('hergame', { hold: 1, task: task.id });
     d.rest = () => rules('hergame', { hold: 0, task: task.id });

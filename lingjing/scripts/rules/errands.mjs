@@ -263,6 +263,8 @@ function offersOf(content, state, lang, now) {
   return [...(content.quests ?? []), ...(notice ? [notice] : []), ...wallPosts(content, state, now)]
     .filter(q => q.from?.place === state.place && !state.quests?.[q.id] && ofJuan(content, q, now) && !mootQuest(state, q)
       && (!q.opens?.after || afterMet(content, state, q.opens.after))
+      // `unless`: a step a save already past it (a later step of its chain taken or done) never sees — 九节菖蒲's seal before 看炉.
+      && (!q.opens?.unless || !state.quests?.[q.opens.unless])
       // Story time: after a scene (`done`), or only while it is still ahead (`before`) — 邺城 before and after the 漳水.
       && (!q.opens?.done || passed(content, state, q.opens.done))
       && (!q.opens?.before || !passed(content, state, q.opens.before))

@@ -24,6 +24,8 @@ export { demoHow } from './jieyin/auto.js';
 // (games/jieyin/auto.js — each seal's icon, name and 褚先生's line, then the 火蛋 at the dummy; a tap goes on, one line
 // says why) and THEN leaves the same way (`unable`, or the 'needs a camera' line where no board stands behind it).
 // Which seals: games/jieyin/sets.js — a phone (coarse pointer, small) only one-hand seals, a Mac both; `?dev=1&hands=1|2` picks.
+// 师父传印: a deal asking `lv: 'lesson' | 'drill' | 'step'` is mounted by jieyin/lesson.js (the master's weekly lesson, the daily
+// drill, the errand's step) — camera or taps, never a dead end.
 // Dev only: `?dev=1&feed=1` runs without a camera, hands fed from the console (`window.jieyinFeed(hands, picture?)`) — the
 // live check's way to play it through; never a player's.
 import { available, dropModel, loadModel, openEye } from './jieyin/eye.js';
@@ -34,6 +36,7 @@ import { iconSvg } from './jieyin/pose.js';
 import { facingLine, handHint } from './jieyin/hint.js';
 import { autoOf, autoSteps, pace, panelHtml, whyLine } from './jieyin/auto.js';
 import { inputKind } from './kit/device.js';
+import { LESSONS, mountLesson } from './jieyin/lesson.js';
 
 export const meta = {
   id: 'jieyin',
@@ -149,6 +152,8 @@ function burnt(box, from, reducedMotion) {
 }
 
 export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion = false, shell } = {}) {
+  // 师父传印 (games/jieyin/lesson.js): the master's weekly lesson, the daily drill, the errand's lesson step — the camera or taps.
+  if (LESSONS.includes(data?.lv)) return mountLesson(container, { lang, data, signal, shell, reducedMotion });
   const doc = container.ownerDocument, win = doc.defaultView ?? globalThis;
   lang = lang === 'en' ? 'en' : 'zh';
   const w = W[lang];

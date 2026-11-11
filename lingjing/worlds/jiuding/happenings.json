@@ -10,7 +10,8 @@
     "shoulu",
     "sadoushou",
     "zhazhai",
-    "yabao"
+    "yabao",
+    "jieyin"
   ],
   "_variety": "变着花样 (Hanli 2026-11-10's design): the day's distinct KINDS of game played to an end beside the story (a board played again, 兽潮 · 切磋 · 妖兽出没, a beast fought at a haunt or pool — counted or lost; a put-down is no play; the story's own boards keep the book's pace) — at the third, one small game's worth; at the fifth, another. `own` in the unit form of gongke.json's (`games`: so many small games at the layer he stands on, rules/chores.mjs ownXiuwei). No 灵石 here (the numbers' own pass).",
   "variety": {
@@ -241,10 +242,23 @@
           "en": "The straw dummies are up again at the back; Master Chu says: show it in your hands."
         }
       ],
-      "_deals": "结印课堂 (jiangtang-shifa: 讲堂试法's throws, with 结印's lesson as its other way — the camera's, or its no-camera demo). 论道 (lundao) is a word game hosted at 稷下 and needs no 卷一 place; 对对子 is 银月's own pool's (rules/aside.mjs HER_POOL, 褚先生 at this very hall). The fuller 师父传印 (seal book, mastery, weekly exam) is a later task: it joins this row as one more deal.",
+      "_deals": "结印课堂 (jiangtang-shifa: 讲堂试法's throws, with 结印's lesson as its other way — the camera's, or its no-camera demo). 论道 (lundao) is a word game hosted at 稷下 and needs no 卷一 place; 对对子 is 银月's own pool's (rules/aside.mjs HER_POOL, 褚先生 at this very hall). 师父传印 (chuanyin.json, rules/seals.mjs) joins as three more deals: the weekly lesson (`needs: seals.lesson`, dealt `first` while the week is out and a seal is due), the daily drill (`needs: seals.drill`, two learned seals), and the errand's own step board (`needs: seals.step`, never dealt by the draw — 九节菖蒲 asks for it).",
       "deals": [
         {
           "task": "jiangtang-shifa"
+        },
+        {
+          "task": "chuanyin-lesson",
+          "needs": "seals.lesson",
+          "first": true
+        },
+        {
+          "task": "chuanyin-drill",
+          "needs": "seals.drill"
+        },
+        {
+          "task": "chuanyin-step",
+          "needs": "seals.step"
         }
       ]
     },

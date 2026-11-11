@@ -249,6 +249,12 @@ function mountData(task) {
   deal.helper = () => (herNow() === 'awake' ? { id: 'yinyue', name: look?.companion?.name ?? words().yinyue } : { id: 'ling', name: 'Ling' });
   // What the save has learned, for a game whose moves are gated by it (守墙关's 结印: shouqiang.json `jieyin.moves` `from`).
   deal.marks ??= [...(look?.marks ?? [])];
+  // 师父传印 (rules/seals.mjs; games/jieyin/mastery.js · lesson.js): the 印谱 read (the plan the lesson teaches, the strength a
+  // seal lends a kit), the page's writes (a seal learned, casts that grow it), and the share picture sent out — the day's 传音.
+  deal.sealBook = (args) => verb('seals', args);
+  deal.sealed = (args) => write('seals', args);
+  deal.shared = () => sharedOut();
+  deal.openBook = () => openGear('seals'); // 「印谱」 from the lesson's card
   // A board that needs her (Look's `her`: the task or 传闻 game declares `needs: "her"`) wakes her out
   // of the 木牌 as its round begins, and puts her back as it ends (rules/hergame.mjs).
   if (task?.her && task.id) { deal.wake = () => herOut(task.id, true); deal.rest = () => herOut(task.id, false); }
@@ -391,7 +397,8 @@ const view = {
   pouchTab: 'all', //    the panel's tab (pouch.js TABS)
   pouchSel: null, //     the thing tapped, in the detail pane
   pouchToss: null, //    the thing asking 丢? on the pane, until answered
-  pouchPane: null, //    'deck' (牌组) or 'panglu' (旁炉) in the grid's place; the 饭桶 docks in the grid's own page
+  sealBook: null, //     the 印谱's rows (rules/seals.mjs `seals book`), read when its pane opens;
+  pouchPane: null, //    'deck' (牌组), 'seals' (印谱) or 'panglu' (旁炉) in the grid's place; the 饭桶 docks in the grid's own page
   offerSwap: null, //    储物袋满了: the offer whose 丢一样换它 grid is open (pouch.js fullOfferHtml)
   fantong: null, //      the rules' 饭桶 brief (rules/fantong.mjs), read when its board opens
   fantongOff: null, //   the rules' words when the 饭桶 is not his yet: the dock stands dimmed with them
@@ -3614,14 +3621,21 @@ const SALE_WORD = { zh: '灵石', en: 'spirit stones' };
 async function openGear(pane = null) {
   const pot = pane === 'fantong';
   if (pot) pane = null;
-  if (view.gearOpen) { show({ pouchPane: pane, pouchToss: null, ...(pot ? { ftFold: false } : {}) }); if (!pane) await loadFantong(); if (pot) potInView(); return; }
+  if (view.gearOpen) { show({ pouchPane: pane, pouchToss: null, ...(pot ? { ftFold: false } : {}) }); if (!pane) await loadFantong(); if (pane === 'seals') await loadSealBook(); if (pot) potInView(); return; }
   show({ gearOpen: true, luOpen: false, ...othersShut('gearOpen'), gear: null, pouchToss: null, pouchPane: pane, ...(pot ? { ftFold: false } : {}) });
   const r = await verb('gear').catch((e) => { console.warn('[lingjing] gear', e); return null; });
   if (view.gearOpen) show({ gear: r?.gear ?? null, gearNote: null });
   if (view.gearOpen && !view.pouchPane) await loadFantong();
+  if (view.gearOpen && pane === 'seals') await loadSealBook();
   if (pot) potInView();
 }
 const potInView = () => requestAnimationFrame(() => document.querySelector('#pouchbook [data-ft-dock]')?.scrollIntoView?.({ block: 'nearest', behavior: stillMotion() ? 'auto' : 'smooth' }));
+
+/* The 印谱 (seals-page.js): read from the rules when its pane opens — the page's own read, never on Look. */
+async function loadSealBook() {
+  const r = await verb('seals', { action: 'book' }).catch(() => null);
+  if (r?.ok) show({ sealBook: r });
+}
 
 /* After a write, the open panel reads the rules' gear again: openGear on an open panel only switches its pane, so
    a 换上 that landed left 24/24 and the pouch's tile up, and his second tap was refused 「囊中没有」 (Hanli 11-02). */
@@ -3669,7 +3683,7 @@ function drawPouch() {
   const fantongDock = docked ? kailuDockHtml(lang(), { brief: view.fantong, off: view.fantongOff, bag: view.gear?.bag ?? [], pot: view.ftPot, lingshi: view.ftLingshi,
     phase: view.ftPhase, fold: view.ftFold, outs: view.ftOuts, look, words: words(), artBase: artBase() }) : null;
   const ftOff = view.fantong && !view.pouchPane ? (id) => potOff(view.fantong, view.ftPot, id, lang(), view.ftPhase ?? 'fill') : null;
-  const html = pouchHtml({ ...ctx(), gear: view.gear, gearNote: view.gearNote, artBase: artBase(), catalog: cardCatalog(), fantongDock, pangluLast: view.pangluLast },
+  const html = pouchHtml({ ...ctx(), gear: view.gear, gearNote: view.gearNote, artBase: artBase(), catalog: cardCatalog(), fantongDock, pangluLast: view.pangluLast, sealBook: view.sealBook },
     { tab: view.pouchTab, sel: view.pouchSel, toss: view.pouchToss, pane: view.pouchPane, offerSwap: view.offerSwap, ftOff, ftRun: Boolean(view.fantong) && potRuns(view.ftPhase) });
   if (html !== drawnPouch) { el.innerHTML = html; drawnPouch = html; }
   if (docked && view.fantong) ftKailu.show(view.fantong, { lang: lang(), reducedMotion: stillMotion() });
@@ -4236,6 +4250,7 @@ const CLICKS = [
   ['[data-pouch-pane]', (el) => {
     show({ pouchPane: el.dataset.pouchPane || null, pouchToss: null, gearNote: null });
     if (!el.dataset.pouchPane) run('fantong:look', loadFantong);
+    if (el.dataset.pouchPane === 'seals') run('seals:book', loadSealBook);
   }],
   ['[data-panglu-fire]', (el) => { if (!el.matches(':disabled')) run(`panglu:fire:${el.dataset.pangluFire}`, () => firePanglu(el.dataset.pangluFire)); }],
   ['[data-pouch-item]', (el) => show({ pouchSel: el.dataset.pouchItem, pouchToss: null, pouchPane: null })],

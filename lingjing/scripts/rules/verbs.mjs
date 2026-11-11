@@ -40,6 +40,7 @@ import { fly, inkMapOf, jiudingBrief, unfolded, unrolled } from './inkmap.mjs';
 import { amend, art, atlas, build, enter, forget, leave, load, make, ring, save, saves, tame, travel, wake, worlds } from './worlds.mjs';
 import { yaoshou } from './yaoshou.mjs';
 import { panglu, pangluOpen } from './panglu.mjs';
+import { seals, sealsShown } from './seals.mjs';
 
 /* Every verb kept to the story gates (rules/locks.mjs): a shut system's verb is refused `not-yet`. */
 export const VERBS = gated({
@@ -67,6 +68,8 @@ export const VERBS = gated({
   go, saves, save, load, forget, divine, fate, ring, show, quest, meet, greet, deck, lundao, progress, seclude, bag, fantong, yaoshou,
   // 旁炉 · 炸炉 (rules/panglu.mjs): a herb into the 丹房's side furnace, the batch rolled by his count.
   panglu,
+  // 师父传印 (rules/seals.mjs): the 印谱's reads, a seal learned, the casts that grow its mastery — the page's writes.
+  seals,
   // 秘境探险 (rules/mijing.mjs): the page's own verb — in at the door, the map's rooms, out.
   mijing,
   // AI mini-games (rules/aigames.mjs): 砍价 (the shop panel's). 断案 cut 2026-10-27; the player-asks 二十问 2026-10-28.
@@ -84,7 +87,7 @@ export const VERBS = gated({
   gear: (s, c, x) => {
     const g = gearBrief(c, s, x?.now), open = fantongOpen(c, s), key = c.fantong?.needs?.item;
     // `panglu`: the 旁炉 tab, where he stands at the 丹房's side furnace once it is his (rules/panglu.mjs).
-    return { state: null, result: { ok: true, gear: { ...g, ...(open ? { fantong: true, bag: g.bag.filter(i => i.id !== key) } : {}), ...(pangluOpen(c, s) ? { panglu: true } : {}) } } };
+    return { state: null, result: { ok: true, gear: { ...g, ...(open ? { fantong: true, bag: g.bag.filter(i => i.id !== key) } : {}), ...(pangluOpen(c, s) ? { panglu: true } : {}), ...(sealsShown(c, s) ? { seals: true } : {}) } } };
   },
   appear, remember, unstick,
   // A 对话 board's word game told on his outright ask (rules/wordboard.mjs): Ling's Reveal, 银月's Whisper.

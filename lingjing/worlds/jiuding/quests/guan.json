@@ -449,6 +449,54 @@
         "ls": 1.5
       },
       "chain": "jiujie",
+      "then": "guan-jiujie-4a"
+    },
+    {
+      "_why": "师父传印 (Hanli 2026-11-10: 「结印是亮点」): the one step the chain gains, before 看炉 (guan-jiujie-5) — the board there, 守炉, offers hand seals, and the master teaches him the ones it can use first (chuanyin.json `step.seals`: 飞剑 · 火弹). The board it asks for is chuanyin-step (tasks/happenings.json, dealt at the 讲堂 by an errand only): a seal he has not learned is taught — the lesson counts as the week's, so the wait starts from it — else it is a drill of the seals he has. A small game paid as the chain's other labor steps; it sits between the 八层's 秦雁 and the 九层's 看炉, so no stretch of only small games grows (tests/pacing.test.mjs).",
+      "id": "guan-jiujie-4a",
+      "title": {
+        "zh": "九节菖蒲 · 看炉前的印",
+        "en": "Nine-node calamus · The seal before the furnace"
+      },
+      "thread": "person",
+      "from": {
+        "place": "jiangtang",
+        "who": {
+          "zh": "褚先生",
+          "en": "Master Chu"
+        }
+      },
+      "opens": {
+        "after": "guan-jiujie-4",
+        "unless": "guan-jiujie-5",
+        "layer": {
+          "tier": "qi",
+          "step": 8,
+          "share": 0.7
+        }
+      },
+      "say": {
+        "zh": "年七将尽，闵丹师那头开了春就要开正炉。小满从讲堂门口过，叫褚先生拿戒尺横在门框上拦住：「听说你要去看炉。头三夜鬿雀来，你拿什么挡？」他把戒尺在掌心敲了一下，「手上的印，没学的我现教，学过的给我连着结一遍。炉子不等人，我也不多说。」",
+        "en": "The seventh year is running out, and Pill-master Min means to light the main furnace come spring. Xiaoman passes the lecture hall door and Master Chu bars it with his ruler across the frame. \"I hear you're to watch the furnace. The first three nights the qique come: what will you stop them with?\" He raps the ruler once on his palm. \"The seals in your hands. One you lack, I teach now; the ones you have, you make for me in a chain. The furnace won't wait, and neither will I.\""
+      },
+      "done": {
+        "zh": "褚先生的戒尺在他手背上点了一下，又收回去：「印在手上，不在书上。去吧。」小满走出讲堂，指缝里还留着掐诀的热。",
+        "en": "Master Chu touches the ruler once to the back of his hand, then takes it away. \"A seal lives in the hand, not the book. Go.\" Xiaoman walks out of the hall, the heat of the pressed seals still between his fingers."
+      },
+      "need": [
+        {
+          "kind": "board",
+          "task": "chuanyin-step",
+          "n": 1,
+          "at": "jiangtang"
+        }
+      ],
+      "work": "labor",
+      "grant": {
+        "table": "labor",
+        "ls": 1.5
+      },
+      "chain": "jiujie",
       "then": "guan-jiujie-5"
     },
     {
@@ -466,7 +514,7 @@
         }
       },
       "opens": {
-        "after": "guan-jiujie-4",
+        "after": "guan-jiujie-4a",
         "layer": {
           "tier": "qi",
           "step": 9,
