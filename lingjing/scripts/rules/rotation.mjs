@@ -14,6 +14,7 @@
 // two days running. Nothing here names a place or a board: the data declares them.
 import { dayKey, seedOf } from '../state.mjs';
 import { allPlaces, hiddenRoom, placeOpen, tooHard } from './world.mjs';
+import { claimedAt, plateHappens } from './happenings.mjs';
 
 /* FNV-1a, then a final mix: a spread good enough that each id wins its share of days. */
 function mix(text) {
@@ -79,7 +80,8 @@ function dealOrder(content, state, key, now) {
 }
 /* The board dealt on the plate now: the saved one while he can still reach it, else the n-th of the order. */
 export function plateDealt(content, state, key, now) {
-  if (!key) return null;
+  // A plate a happening stands on deals no board of its own: its boards reach him through the happenings (rules/happenings.mjs).
+  if (!key || plateHappens(content, key)) return null;
   const order = dealOrder(content, state, key, now);
   if (!order.length) return null;
   const d = state.plate_deal?.[key];
@@ -107,7 +109,8 @@ export function playsDeal(content, state, verb, args, now) {
 export function standingToday(content, state, place, now = new Date()) {
   if (!place) return [];
   const d = place.has?.games_pool ? plateDealt(content, state, plateKey(place), now) : null;
-  return [...new Set([...(place.has?.games ?? []), ...(d?.at === place.id ? [d.game] : [])])];
+  // A fixed board a happening deals here stands only through it (rules/happenings.mjs claimedAt: 山门's 主力, 药园's 守炉).
+  return [...new Set([...(place.has?.games ?? []).filter(id => !claimedAt(content, place.id, id)), ...(d?.at === place.id ? [d.game] : [])])];
 }
 
 /* ── A wall's errands ── */

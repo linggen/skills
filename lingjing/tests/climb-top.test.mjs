@@ -11,7 +11,10 @@ import { plateKey } from '../scripts/rules/rotation.mjs';
 import { placeOf } from '../scripts/rules/world.mjs';
 
 process.env.LINGJING_STAMINA_LIMIT ??= '1';
-const content = loadContent();
+// The plate's own deal and the boards standing at the 观's places, as a world without 观里的事 has them: since 2026-11-10 a
+// plate a happening stands on deals through its happenings (rules/happenings.mjs, tests/happenings.test.mjs) — the
+// mechanism held here is the one every plate without happenings still runs.
+const content = { ...loadContent(), happenings: null };
 const day = (n, h = 10) => new Date(2026, 9, 27 + n, h);
 const T = { id: 'demo', game: 'demo-game', climb: ['r1', 'r2', 'r3'], climb_top: ['t1', 't2', 't3', 't4'] };
 

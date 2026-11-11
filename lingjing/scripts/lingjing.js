@@ -2370,7 +2370,10 @@ async function payWin(id) {
   keep({ doNote: r.ok ? null : refusal(r) });
   // Every win shows what it paid (古五, 2026-10-15: a board won moved only the strip): 修为 · 灵石 and the
   // thing granted stand as 所得, with the task's own line.
-  if (r.ok && boardPaid(r)) keep({ spoils: { place: look?.place?.id ?? null, cards: [], items: boardItems(r.paid), paid: r.paid, spent: [], line: r.line ?? null } });
+  // 变着花样 (rules/happenings.mjs varietyAfter): the day's 3rd or 5th kind of game pays one small game more — in the same 所得.
+  const v = r.ok ? r.variety?.paid : null, paid = v ? { ...(r.paid ?? {}), progress: (r.paid?.progress ?? 0) + (v.progress ?? 0) } : r.paid;
+  const line = [r.line, r.variety?.paid ? fill(WORDS[lang()].varietyPaid, { n: r.variety.kinds }) : null].filter(Boolean).join('\n') || null;
+  if (r.ok && boardPaid({ ...r, paid })) keep({ spoils: { place: look?.place?.id ?? null, cards: [], items: boardItems(paid), paid, spent: [], line } });
   return r;
 }
 

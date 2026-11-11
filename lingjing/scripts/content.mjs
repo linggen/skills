@@ -186,6 +186,8 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     lundao: fs.existsSync(path.join(dir, 'lundao.json')) ? readJson(path.join(dir, 'lundao.json')) : null,
     // The small games' registry (games.json, 2026-10-16): each standalone module and its levels.
     games: fs.existsSync(path.join(dir, 'games.json')) ? readJson(path.join(dir, 'games.json')) : null,
+    // 观里的事 (rules/happenings.mjs, 2026-11-10): the happenings that deal the small games in the world.
+    happenings: fs.existsSync(path.join(dir, 'happenings.json')) ? readJson(path.join(dir, 'happenings.json')) : null,
     // 秘境探险 (rules/mijing.mjs, 2026-10-28): the nine 重, their rooms, boons and 奇遇.
     mijing: fs.existsSync(path.join(dir, 'mijing.json')) ? readJson(path.join(dir, 'mijing.json')) : null,
     // 人间功课 as cultivation (rules/gongke.mjs): a chore's `kind` → its meaning in the book.
@@ -673,6 +675,7 @@ export function lint(content) {
   lintFate(content, bad);
   lintQian(content, bad);
   for (const task of content.tasks.tasks) lintTask(task, content, ids, bad);
+  lintHappenings(content, bad);
   for (const id of doubled(content.tasks.tasks.map(t => t.id))) bad(`task ${id}`, 'is defined twice (tasks/*.json ids are one namespace)');
   lintTaleShape(content, ids, bad);
   for (const chapter of Object.values(content.chapters)) lintChapter(chapter, content, ids, bad);
@@ -1424,6 +1427,37 @@ function lintRiddles(riddles, bad) {
 const markSet = (content, chapter, m) => [chapter, ...Object.values(content.chapters)].some(ch => Object.values(ch.scenes).some(sc => sc.exits.some(e => e.mark === m)))
   || content.tasks.tasks.some(t => Object.values(t.marks ?? {}).includes(m));
 const doubled = list => [...new Set(list.filter((x, i) => list.indexOf(x) !== i))];
+
+/* 观里的事 (happenings.json, rules/happenings.mjs): each row's place, who, words and deals real — a typo'd id would never
+   deal and never say so. Each deal a hosted board played again with sense (its content varies — a pool, a ladder,
+   `varies: true` — or a skill kit in `again`); 洛书-like `once` a flag; the forms' wave board a task. */
+function lintHappenings(content, bad) {
+  const h = content.happenings;
+  if (!h) return;
+  const places = new Set(Object.values(content.places ?? {}).flatMap(pr => (pr.places ?? []).map(p => p.id)));
+  const people = new Set((content.people?.people ?? []).map(p => p.id)), again = new Set(h.again ?? []);
+  const varies = t => ['pool', 'riddles', 'deck'].some(k => (Array.isArray(t.deal?.[k]) ? t.deal[k].length : t.deal?.[k])) || t.varies === true
+    || (t.varies !== false && ((t.climb?.length ?? 0) > 1 || (t.deal?.levels?.length ?? 0) > 1));
+  const seen = new Set();
+  for (const r of h.happenings ?? []) {
+    const where = `happening ${r.id}`;
+    if (seen.has(r.id)) bad(where, 'defined twice');
+    seen.add(r.id);
+    if (!places.has(r.place)) bad(where, `unknown place ${r.place}`);
+    if (!people.has(r.who)) bad(where, `who ${r.who} is not in people.json`);
+    if (!pair(r.title)) bad(where, 'a title in zh and en');
+    if (!(r.say ?? []).length || !r.say.every(pair)) bad(where, 'its reasons, each in zh and en');
+    if (!(r.deals ?? []).length) bad(where, 'deals nothing');
+    for (const d of r.deals ?? []) {
+      const t = content.tasks.tasks.find(x => x.id === d.task);
+      if (!t) { bad(where, `deals unknown task ${d.task}`); continue; }
+      if (!(t.hosted && t.kind === 'board' && t.game)) bad(where, `${d.task} is no hosted board`);
+      if (!(varies(t) || again.has(t.game))) bad(where, `${d.task} plays the same each time and is no skill kit in \`again\``);
+    }
+  }
+  const wave = h.forms?.yaoshou?.wave?.task;
+  if (wave && !content.tasks.tasks.some(t => t.id === wave)) bad('happenings forms.yaoshou', `unknown wave task ${wave}`);
+}
 
 function lintTask(task, content, ids, bad) {
   const where = `task ${task.id}`;

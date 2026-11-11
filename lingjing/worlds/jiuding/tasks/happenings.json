@@ -1,0 +1,96 @@
+{
+ "version": 1,
+ "_about": "观里的事 (rules/happenings.mjs, worlds/jiuding/happenings.json, Hanli 2026-11-10 「可以，按这个做」): the boards a happening deals that no place hosted before — hosted, practice, paid by their minutes as every board (rules/playpay.mjs; no grant of their own). Rows only.",
+ "tasks": [
+  {
+   "_why": "讲堂早课 (happenings.json jiangtang-zaoke): 古六's 讲堂试法 again at the 讲堂 — the same throws (砸寨 `jiangtang`), and where a camera is, the 结印 lesson as its other way, with its no-camera demo (qianye-qiajue's `alt`, Hanli 11-10: 「如果用户不开摄像头, 就改成自动演示给用户demo结印」). The fuller 师父传印 (seal book, mastery, weekly exam) is a later task. Practice: no marks.",
+   "id": "jiangtang-shifa",
+   "kind": "board",
+   "game": "zhazhai",
+   "period": "day",
+   "hosted": true,
+   "varies": false,
+   "_varies": "one level of a skill kit, played again with the hands (happenings.json `again`, rules/happenings.mjs repeatable): in the 观里的事 it is dealt again; won, the 小游戏池 would rest it.",
+   "deal": {
+    "lv": "jiangtang"
+   },
+   "alt": [
+    {
+     "needs": {
+      "camera": true
+     },
+     "_demo": "2026-11-10 (Hanli: 「结印课堂…是很重要的课堂. 如果用户不开摄像头, 就改成自动演示给用户demo结印」): dealt on every device, the phone too. No camera, or the camera refused or failing: the level plays the lesson by itself (levels/jieyin.json `auto`), then leaves `unable` and 讲堂试法 is dealt — he still plays the beat and is paid by it.",
+     "demo": true,
+     "game": "jieyin",
+     "deal": {
+      "lv": "jiangtang"
+     },
+     "title": {
+      "zh": "讲堂 · 一印一印",
+      "en": "The lecture hall · One seal at a time"
+     },
+     "how": {
+      "zh": "对着摄像头，照褚先生说的，一个印一个印地结，每个稳住一下才算；结错了，再来。五个都会了，四个连起来，午文收尾，火蛋打讲堂后头的草人。",
+      "en": "At the camera, make the seals one by one as Master Chu says, each held a moment; a wrong one, try again. All five learned, make four in a row ending on Wu, and the fire egg hits the straw dummy at the back of the hall."
+     }
+    }
+   ],
+   "stars": 3,
+   "title": {
+    "zh": "讲堂 · 试法",
+    "en": "The lecture hall · Trying the spells"
+   },
+   "how": {
+    "zh": "往后拉，松手，把法术扔向讲堂后头的草人。火弹落地就炸；冰锥飞行中点一下，一分为三；金刃点一下，直冲出去，木头一刀两断。扔一回，丹田便空一截——四回。",
+    "en": "Pull back and let go: throw the spells at the straw dummies at the back of the hall. The fireball bursts where it lands; tap the ice spike in flight and it splits in three; tap the gold blade and it shoots straight, cutting wood clean through. Each throw empties the dantian a notch: four throws."
+   },
+   "done_line": {
+    "zh": "草人倒了一排，褚先生的戒尺在桌上敲了一下。",
+    "en": "A row of straw dummies down; Master Chu taps his ruler once on the desk."
+   }
+  },
+  {
+   "_why": "巡山送信 (happenings.json shanmen-songxin): a letter up from the 山门 to the 执事堂 against a stick of incense — 几何冲刺 on 第三回's 三百级 (games.json dash `sanbai-dash`, its own row for this task).",
+   "id": "xunshan-songxin",
+   "kind": "board",
+   "game": "dash",
+   "period": "day",
+   "hosted": true,
+   "varies": false,
+   "_varies": "one level of a skill kit, played again with the hands (happenings.json `again`, rules/happenings.mjs repeatable): in the 观里的事 it is dealt again; won, the 小游戏池 would rest it.",
+   "stars": 3,
+   "title": {
+    "zh": "送信 · 一炷香",
+    "en": "The letter · One stick of incense"
+   },
+   "how": {
+    "zh": "一炷香里把信送上去：一级一级跳上去，按住连跳。碰上了，从头。",
+    "en": "Get the letter up within one stick of incense: jump the steps one by one, hold to keep jumping. Touch one, start over."
+   },
+   "done_line": {
+    "zh": "信送到了，香还剩一截。",
+    "en": "The letter is in; a stub of incense still burns."
+   }
+  },
+  {
+   "_why": "妖兽出没 as a wave (rules/forms.mjs, happenings.json `forms.yaoshou`): the batch's beast, when its kind is one 守墙关 knows, comes some batches as a night of its own kind at the wall — the 兽潮's tide maker with that kind alone. Not hosted: open only while the batch's fight is a wave where he stands; its win settles as the duel's (tasks.mjs yaoshouWaveDone). No art of its own: 守墙关's.",
+   "id": "yaoshou-wave",
+   "kind": "board",
+   "game": "shouqiang",
+   "period": "day",
+   "stars": 3,
+   "title": {
+    "zh": "妖兽出没 · 守墙",
+    "en": "Beasts abroad · Hold the wall"
+   },
+   "how": {
+    "zh": "它们成群下山了：点空位布防，守住墙头，一只也别放进来。",
+    "en": "They come down in a pack: tap an empty spot to set a guard and hold the wall; let none through."
+   },
+   "done_line": {
+    "zh": "山道上安静了，墙头一块砖没少。",
+    "en": "The path is quiet; not a brick gone from the wall."
+   }
+  }
+ ]
+}

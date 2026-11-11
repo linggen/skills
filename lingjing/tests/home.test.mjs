@@ -16,6 +16,7 @@ import { stageCards, stageSlots, withNext } from '../scripts/stage.mjs';
 import { WORDS, cardHtml } from '../scripts/cards.js';
 
 const content = loadContent();
+const plain = { ...content, happenings: null };
 const NOW = new Date('2026-10-27T07:00:00-03:00');
 const WORKOUT = { id: 'health-workout', app: 'health', kind: 'body', period: 'day', reward: 20, due: true, title: { zh: '炼体 · 运动二十分钟以上', en: 'Workout' } };
 const ctx = (quests = []) => ({ now: NOW, quests });
@@ -47,12 +48,13 @@ const html = (l) => cardHtml({ card: 'next' }, { look: l, words: WORDS.zh, lang:
 const mainOf = (l) => stageSlots(l, withNext(l, stageCards(l).filter((c) => !(c.card === 'board' && l.tasks?.find((t) => t.id === c.id)?.tide)))).main.map((c) => c.card);
 
 test('the gate short: the bar, what it still asks with today\'s 功课 counted, and the best board here first', () => {
-  const s = gate146(), l = look(s, content, ctx([WORKOUT]));
+  // The board standing at the 观 place by the plate's deal (a world without 观里的事: rules/happenings.mjs since 2026-11-10 deals the 观's through its happenings); the 主页's rule over it unchanged.
+  const s = gate146(), l = look(s, plain, ctx([WORKOUT]));
   const g = l.home.gate;
   // The day's 功课: its 体力-units × R (2026-11-02: a fixed number, ≈10 at 练气一层 — was 10% of the layer, 47).
-  const ch = chorePlay(content, s, 'day');
+  const ch = chorePlay(plain, s, 'day');
   assert.deepEqual([g.step, g.progress, g.of, g.short, g.chores], ['练气一层圆满', 146, NEED1, SHORT, ch]);
-  assert.equal(g.plays, playsFor(content, s, l, SHORT - ch, NOW), 'the boards for what the 功课 leaves');
+  assert.equal(g.plays, playsFor(plain, s, l, SHORT - ch, NOW), 'the boards for what the 功课 leaves');
   // More than a sitting's boards (the typical 30 minutes ≈ ten 3-minute boards): ≥ 30 while a board paid × 1.5, 18 since the
   // games carry the layer (× 5, 2026-11-10) — still sittings, not one.
   assert.ok(g.plays > 10, `${g.plays} boards for ${SHORT - ch} 修为: sittings of play now (Hanli's formula), not one`);
@@ -66,32 +68,34 @@ test('the gate short: the bar, what it still asks with today\'s 功课 counted, 
   assert.match(h, new RegExp(`练功 · 修为 \\+${ch}`));
   assert.doesNotMatch(h, /undefined|\{\w+\}/);
   // No 功课 today: the boards alone, the replay's falling share counted (17 at 古四, tests/play-pay).
-  const bare = look(s, content, ctx());
+  const bare = look(s, plain, ctx());
   assert.equal(bare.home.gate.chores, undefined);
-  assert.equal(bare.home.gate.plays, playsFor(content, s, bare, SHORT, NOW));
+  assert.equal(bare.home.gate.plays, playsFor(plain, s, bare, SHORT, NOW));
   assert.match(html(bare), new RegExp(`还差 ${SHORT} 修为 · 约 ${bare.home.gate.plays} 局`));
 });
 
 test('「约 N 局」 is the boards\' honest count: best first, each the replay share it pays that play, a day rolled when all are at the floor', () => {
-  const s = gate146(), l = look(s, content, ctx());
-  const need = SHORT, n = playsFor(content, s, l, need, NOW);
+  // The board standing at the 观 place by the plate's deal (a world without 观里的事: rules/happenings.mjs since 2026-11-10 deals the 观's through its happenings); the 主页's rule over it unchanged.
+  const s = gate146(), l = look(s, plain, ctx());
+  const need = SHORT, n = playsFor(plain, s, l, need, NOW);
   // One board less leaves it short: the count is the least that fills it.
   assert.ok(n > 1);
   // The best board here at its full share (each pays its own minutes since 2026-11-04).
-  const best = Math.max(...(l.tasks ?? []).filter((t) => t.practice).map((t) => playGrant(content, s, t.id, content.tasks.tasks.find((x) => x.id === t.id), NOW)?.progress ?? 0));
+  const best = Math.max(...(l.tasks ?? []).filter((t) => t.practice).map((t) => playGrant(plain, s, t.id, plain.tasks.tasks.find((x) => x.id === t.id), NOW)?.progress ?? 0));
   assert.ok(best > 0);
   assert.ok(n >= Math.ceil(need / best), 'never fewer than the best board at its full share could fill');
-  assert.equal(playsFor(content, s, l, 0, NOW), 0);
+  assert.equal(playsFor(plain, s, l, 0, NOW), 0);
 });
 
 test('standing in the gated scene: its ways held, the gate\'s own errand comes first — 接下 · 后山的野猪, then the 药园\'s board', () => {
+  // The board standing at the 观 place by the plate's deal (a world without 观里的事: rules/happenings.mjs since 2026-11-10 deals the 观's through its happenings); the 主页's rule over it unchanged.
   // Decided 2026-10-27 (for Hanli, away): in the gated scene the gate's own errand to take comes before a practice board;
   // taken, the best board here is next.
-  const s = gate146('yaoyuan'), l = look(s, content, ctx()), best = bestHere(s, l);
+  const s = gate146('yaoyuan'), l = look(s, plain, ctx()), best = bestHere(s, l);
   assert.deepEqual(l.home.next, { kind: 'take', id: 'guan-houshan-yezhu', title: '后山的野猪' });
   assert.ok(!l.home.next.place, 'never the held way on');
-  const took = quest(s, content, ctx(), { action: 'take', id: 'guan-houshan-yezhu' }).state;
-  const after = look(took, content, ctx());
+  const took = quest(s, plain, ctx(), { action: 'take', id: 'guan-houshan-yezhu' }).state;
+  const after = look(took, plain, ctx());
   assert.deepEqual([after.home.next.kind, after.home.next.id], ['board', best.id]);
 });
 
@@ -120,13 +124,14 @@ test('an errand ready here: 交差 first, the stage quest met too', () => {
 });
 
 test('nothing left here today: the board at its floor share, the errands done, 兽潮 shut — the next thing is elsewhere or to take; what waits says when', () => {
+  // The board standing at the 观 place by the plate's deal (a world without 观里的事: rules/happenings.mjs since 2026-11-10 deals the 观's through its happenings); the 主页's rule over it unchanged.
   let s = gate146();
   // Every board standing here today at its floor share (the day's set, rules/rotation.mjs).
-  const floor = Object.fromEntries(bestHere(s, look(s, content, ctx())).all.map((id) => [id, 2]));
-  for (const id of ['xu-waimen-roof', 'xu-yaoyuan-shouye']) s = quest(s, content, ctx(), { action: 'take', id }).state;
+  const floor = Object.fromEntries(bestHere(s, look(s, plain, ctx())).all.map((id) => [id, 2]));
+  for (const id of ['xu-waimen-roof', 'xu-yaoyuan-shouye']) s = quest(s, plain, ctx(), { action: 'take', id }).state;
   s = { ...s, plays: { day: '2026-10-27', ids: floor }, shouchao: { ...(s.shouchao ?? {}), n: 1, at: NOW.toISOString() },
     quests: Object.fromEntries(Object.entries(s.quests).map(([id, q]) => [id, { ...q, done_at: NOW.toISOString() }])) };
-  const l = look(s, content, ctx());
+  const l = look(s, plain, ctx());
   assert.notEqual(l.home.next.kind, 'board', JSON.stringify(l.home.next));
   assert.ok(['take', 'go', 'wait', 'seclude'].includes(l.home.next.kind), JSON.stringify(l.home.next));
   const wait = l.home.todo.find((r) => r.kind === 'wait' && r.id === 'shouchao');
@@ -135,11 +140,11 @@ test('nothing left here today: the board at its floor share, the errands done, �
   assert.ok(l.home.gate.plays > 0, 'the bar still counts its boards — tomorrow\'s fresh ones');
   // An errand held out here stands its own card on arrival (stage.mjs `offer`); taken, the 主页 is what the stage holds.
   let t = s;
-  for (const o of l.offers ?? []) t = quest(t, content, ctx(), { action: 'take', id: o.id }).state ?? t;
+  for (const o of l.offers ?? []) t = quest(t, plain, ctx(), { action: 'take', id: o.id }).state ?? t;
   t = { ...t, quests: Object.fromEntries(Object.entries(t.quests).map(([id, q]) => [id, { ...q, done_at: NOW.toISOString() }])) };
   // …and today's 签 drawn (问签, 2026-11-02: the 签筒 otherwise fills an empty stage, her asleep or not).
-  t = VERBS.divine(t, content, ctx(), {}).state ?? t;
-  const after = look(t, content, ctx());
+  t = VERBS.divine(t, plain, ctx(), {}).state ?? t;
+  const after = look(t, plain, ctx());
   assert.deepEqual(mainOf(after), ['next'], JSON.stringify(stageCards(after)));
 });
 
@@ -163,9 +168,10 @@ test('the order is the rules\': set aside → 接着读 before anything; a fight
 });
 
 test('an old loss not in the way is a line at most; the button is what advances the goal (Hanli 10-27: 「这里提示去买东西是什么意思?」)', () => {
+  // The board standing at the 观 place by the plate's deal (a world without 观里的事: rules/happenings.mjs since 2026-11-10 deals the 观's through its happenings); the 主页's rule over it unchanged.
   let s = gate146();
   s = { ...s, bag: { ...s.bag, 'old-bow': 1 }, wear: {}, hunt_losses: { houshan: 1 } };
-  const l = look(s, content, ctx());
+  const l = look(s, plain, ctx());
   assert.equal(l.home.next.kind, 'board', JSON.stringify(l.home.next));
   const line = l.home.todo.find((r) => r.kind === 'strengthen');
   assert.equal(line?.way.kind, 'wear');
@@ -186,20 +192,21 @@ test('a haunt lost to is never in the way: the fight is the button, the way to g
 });
 
 test('short by what one thing pays: that thing is the button, named as enough — a 功课 before a board, an old loss never', () => {
+  // The board standing at the 观 place by the plate's deal (a world without 观里的事: rules/happenings.mjs since 2026-11-10 deals the 观's through its happenings); the 主页's rule over it unchanged.
   const LEDGER = { id: 'cfo-import', app: 'cfo', kind: 'ledger', period: 'week', pool: true, due: true, title: { zh: '导入账单', en: 'Import' } };
   // A week's 功课 (its 体力-units × R, 2026-11-02): short by just that.
-  const wk = chorePlay(content, gate146(), 'week');
+  const wk = chorePlay(plain, gate146(), 'week');
   let s = { ...gate146(), progress: NEED1 - wk, hunt_losses: { houshan: 1 }, bag: { ...gate146().bag, 'old-bow': 1 }, wear: {} };
-  const l = look(s, content, ctx([LEDGER]));
+  const l = look(s, plain, ctx([LEDGER]));
   assert.equal(l.home.gate.short, wk);
   assert.deepEqual(l.home.next, { kind: 'gongke', id: 'cfo-import', title: '导入账单', means: '算账', progress: wk, enough: true });
   assert.match(html(l), new RegExp(`data-book[^>]*>算账 · 修为 \\+${wk} · 够了<`));
   // No 功课 that covers it: the best board here today, when it does (a board's +6 for 4 short).
-  const near = look({ ...s, progress: NEED1 - 4 }, content, ctx()), b = bestHere({ ...s, progress: NEED1 - 4 }, near);
+  const near = look({ ...s, progress: NEED1 - 4 }, plain, ctx()), b = bestHere({ ...s, progress: NEED1 - 4 }, near);
   assert.deepEqual([near.home.next.kind, near.home.next.id, near.home.next.enough], ['board', b.id, true]);
   assert.match(html(near), new RegExp(`data-play="${b.id}"[^>]*>开局 · ${b.name}[^<]*· 修为 \\+${Math.min(b.progress, near.home.gate.short)} · 够了<`)); // past the mark it is 灵石 (paysOf, 10-28): the button names what lands
   // Short by more than either: the plain ranking.
-  assert.equal(look({ ...s, progress: 146 }, content, ctx()).home.next.enough, undefined);
+  assert.equal(look({ ...s, progress: 146 }, plain, ctx()).home.next.enough, undefined);
 });
 
 test('the page: the 主页 replaces 下一步, the bar grows from where it stood, 兽潮 waits in the tray', async () => {

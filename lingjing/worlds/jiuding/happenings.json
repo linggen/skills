@@ -1,0 +1,378 @@
+{
+  "version": 1,
+  "_about": "观里的事 (rules/happenings.mjs; Hanli 2026-11-10: 「小游戏我们有很多种类. 让用户都能玩到」 · 「要放进剧情里, 现在的兽潮是个好例子, 每天野兽来袭等. 后山降妖也很好. 再想点其他点子, 加进去」 → 「可以，按这个做」): the small games reach him as things happening in the world. Each row: `place` (a place id), `who` (a people.json id — the one who asks), `title` (its name, ≤20), `say` (its reasons in the book's voice, one told a 时辰, each ≤30), `when` (the 时辰 it may stand in, rules/pool.mjs BRANCH), `days` (the days of the month it comes on — of the lunar month with `calendar: \"lunar\"`, the game's table, scripts/calendar.js; 逢五逢十), `after` (a scene behind him) and `deals` (task ids: hosted boards; `once`: dealt only until played once; `phone: false`: a game the phone's kit cannot host, tools/phone/board-kit.json). Each 时辰 lights `draw` of them, one a place. The pay is each game's own (rules/playpay.mjs): nothing here pays but `variety`. Rows only; the rules name no place, person or game (tests/happenings.test.mjs lints every row).",
+  "draw": 3,
+  "_again": "Skill kits a won board of may be dealt again (rules/happenings.mjs repeatable, beside pool.mjs boardVaries): a bout, a run, a wave or a furnace played again is played with the hands, not answered from memory — the 主力 practice Hanli asked for (11-10: 「也可以加一个地点刷其他主力游戏」), and 押宝's throw of the dice. A riddle, a fixed puzzle, a one-answer board is none of these and stays out.",
+  "again": [
+    "fighter",
+    "dash",
+    "shouqiang",
+    "shoulu",
+    "sadoushou",
+    "zhazhai",
+    "yabao"
+  ],
+  "_variety": "变着花样 (Hanli 2026-11-10's design): the day's distinct KINDS of game played to an end beside the story (a board played again, 兽潮 · 切磋 · 妖兽出没, a beast fought at a haunt or pool — counted or lost; a put-down is no play; the story's own boards keep the book's pace) — at the third, one small game's worth; at the fifth, another. `own` in the unit form of gongke.json's (`games`: so many small games at the layer he stands on, rules/chores.mjs ownXiuwei). No 灵石 here (the numbers' own pass).",
+  "variety": {
+    "at": [
+      3,
+      5
+    ],
+    "own": {
+      "table": "play",
+      "games": 1
+    }
+  },
+  "_forms": "The FORM a fight takes, rotated (rules/forms.mjs; Hanli 11-10: 妖兽出没 and 切磋 keep their clocks and pay, their FORM rotates by the creature's kind, least-recent first). `order`: the forms, the first the event's own; each other form names the creatures that may take it (`of`) and how it is played. 妖兽出没: the card duel, or a 守墙关 wave of the beast's own kind (the four kinds the wall's tide maker knows: 野猪 · 狰 · 犰狳 · 鬿雀). 切磋: 格斗 only this batch — a card duel with 秦雁 (creatures.json foe-shijie) needs a duel door for the bout on both clients, the second batch's.",
+  "forms": {
+    "yaoshou": {
+      "order": [
+        "duel",
+        "wave"
+      ],
+      "wave": {
+        "task": "yaoshou-wave",
+        "of": [
+          "yezhu",
+          "zheng",
+          "qiuyu",
+          "qique"
+        ]
+      }
+    },
+    "qiecuo": {
+      "order": [
+        "fighter"
+      ]
+    }
+  },
+  "happenings": [
+    {
+      "id": "danfang-lunzhi",
+      "_place": "丹房 is the 药园's (09-danfang and 09-dabi stand there, 闵丹师's furnace); no place of its own.",
+      "place": "yaoyuan",
+      "who": "min-danshi",
+      "title": {
+        "zh": "丹房轮值",
+        "en": "A turn at the furnace"
+      },
+      "when": [
+        "chen",
+        "si",
+        "wu",
+        "wei",
+        "shen"
+      ],
+      "say": [
+        {
+          "zh": "闵丹师守了三十年炉子，今天腰疼，叫你替一个时辰。",
+          "en": "Thirty years at the furnace, and today Min's back aches: take a turn for him."
+        },
+        {
+          "zh": "丹房缺个看火的，闵丹师在门口朝你招手。",
+          "en": "The furnace wants a watcher; Min beckons you from the door."
+        },
+        {
+          "zh": "一炉聚气丹等着配药，闵丹师说：手稳的来。",
+          "en": "A batch of qi pills waits for its herbs. Min says: steady hands only."
+        }
+      ],
+      "_deals": "守炉 is yaoyuan-kanlu (09-dabi's 丹房看炉, folded in: it stands at 药园 only through this and 药园巡夜 now, and an errand that asks for it still finds it); 配一炉丹 and 药材连连看 are one board, alchemy-daily (连连看 of the herbs).",
+      "deals": [
+        {
+          "task": "yaoyuan-kanlu"
+        },
+        {
+          "task": "alchemy-daily"
+        }
+      ]
+    },
+    {
+      "id": "yaoyuan-xunye",
+      "place": "yaoyuan",
+      "who": "ahe",
+      "title": {
+        "zh": "药园巡夜",
+        "en": "Night round at the herb garden"
+      },
+      "when": [
+        "xu",
+        "hai",
+        "zi",
+        "chou"
+      ],
+      "say": [
+        {
+          "zh": "天一黑，药园架子底下就窸窸窣窣，阿禾提着灯等你。",
+          "en": "After dark something rustles under the herb trellises; A He waits with a lamp."
+        },
+        {
+          "zh": "阿禾说夜里有东西啃灵草，一个人守不过来。",
+          "en": "A He says something gnaws the herbs at night; one pair of eyes is not enough."
+        },
+        {
+          "zh": "柴垛那边又闻见黄鼠狼的骚气，阿禾叫你一起去。",
+          "en": "The weasel smell is back by the woodpile; A He wants you along."
+        }
+      ],
+      "_deals": "捉虫 (yaoyuan-zhuochong), 赶黄鼠狼 (chaifang-huangshulang — the 柴房's weasels come over the wall by night) and the 药园's night watch at the furnace (yaoyuan-kanlu: 「药气飘上后山」 · 「天亮的时候」).",
+      "deals": [
+        {
+          "task": "yaoyuan-zhuochong"
+        },
+        {
+          "task": "chaifang-huangshulang"
+        },
+        {
+          "task": "yaoyuan-kanlu"
+        }
+      ]
+    },
+    {
+      "id": "cangjing-lishu",
+      "_who": "The 藏经阁 has no keeper of its own in 卷一; 孙二狗, an outer disciple set to the shelves, is the nearest who asks.",
+      "place": "cangjing",
+      "who": "sunergou",
+      "title": {
+        "zh": "藏经阁理书",
+        "en": "Shelving at the scripture hall"
+      },
+      "when": [
+        "chen",
+        "si",
+        "wu",
+        "wei",
+        "shen"
+      ],
+      "say": [
+        {
+          "zh": "孙二狗被罚来搬书架，一个人搬不动，喊你搭把手。",
+          "en": "Sun Ergou was set to move the shelves as a punishment; he cannot shift them alone."
+        },
+        {
+          "zh": "一卷残图受了潮，碎成好几块，孙二狗捧着不敢动。",
+          "en": "A damp old diagram has come apart in pieces; Sun Ergou holds it and dares not move."
+        },
+        {
+          "zh": "书架堵了过道，孙二狗挠头：得想法子腾条路。",
+          "en": "The shelves block the aisle. Sun Ergou scratches his head: we need a way through."
+        }
+      ],
+      "_deals": "拼图 (a torn diagram), 华容道 (shelves to move), 洛书 (a seal to mend) — 洛书 once ever (Hanli 10-19: 「9宫格出现一次就可以了」).",
+      "deals": [
+        {
+          "task": "pintu"
+        },
+        {
+          "task": "huarong"
+        },
+        {
+          "task": "luoshu",
+          "once": true
+        }
+      ]
+    },
+    {
+      "id": "shanmen-yanwu",
+      "_place": "At the 山门, where the 主力 boards stood since 11-10 (they stand there through this now); the 演武场 keeps the visiting pedlar's stall alone.",
+      "place": "shanmen",
+      "who": "neimen-shijie",
+      "title": {
+        "zh": "山门演武",
+        "en": "Drills at the gate"
+      },
+      "when": [
+        "shen",
+        "you",
+        "xu"
+      ],
+      "say": [
+        {
+          "zh": "秦雁从后山下来，在山门口拦住你：走几招？",
+          "en": "Qin Yan comes down from the back hill and stops you at the gate: a few moves?"
+        },
+        {
+          "zh": "天擦黑，秦雁在石阶上等人：今天练了没有？",
+          "en": "At dusk Qin Yan waits on the steps: have you trained today?"
+        },
+        {
+          "zh": "秦雁抱着剑看你：腿上的功夫，别荒了。",
+          "en": "Qin Yan looks you over, sword in her arms: don't let your legs go soft."
+        }
+      ],
+      "_deals": "格斗 (shanmen-qinyan), 轻身 (shanmen-qingshen), 守墙 (shanmen-shouqiang) — the three 山门 boards of 11-10, folded in. The card duel is a beast's (后山's pool, 妖兽出没) and no board deals one: not here this batch.",
+      "deals": [
+        {
+          "task": "shanmen-qinyan"
+        },
+        {
+          "task": "shanmen-qingshen"
+        },
+        {
+          "task": "shanmen-shouqiang"
+        }
+      ]
+    },
+    {
+      "id": "jiangtang-zaoke",
+      "_place": "讲经堂 is the 讲堂 (褚先生's hall).",
+      "place": "jiangtang",
+      "who": "chuxiansheng",
+      "title": {
+        "zh": "讲堂早课",
+        "en": "Morning lesson"
+      },
+      "when": [
+        "mao",
+        "chen",
+        "si"
+      ],
+      "say": [
+        {
+          "zh": "褚先生一早开讲，讲完要考，戒尺在桌上一敲。",
+          "en": "Master Chu lectures at first light, then tests; the ruler taps the desk."
+        },
+        {
+          "zh": "褚先生捋着山羊胡子：昨天讲的，今天试一试。",
+          "en": "Master Chu strokes his goat beard: what I taught yesterday, try today."
+        },
+        {
+          "zh": "讲堂后头又立起了草人，褚先生说：手上见真章。",
+          "en": "The straw dummies are up again at the back; Master Chu says: show it in your hands."
+        }
+      ],
+      "_deals": "结印课堂 (jiangtang-shifa: 讲堂试法's throws, with 结印's lesson as its other way — the camera's, or its no-camera demo). 论道 (lundao) is a word game hosted at 稷下 and needs no 卷一 place; 对对子 is 银月's own pool's (rules/aside.mjs HER_POOL, 褚先生 at this very hall). The fuller 师父传印 (seal book, mastery, weekly exam) is a later task: it joins this row as one more deal.",
+      "deals": [
+        {
+          "task": "jiangtang-shifa"
+        }
+      ]
+    },
+    {
+      "id": "fantang-qitan",
+      "_place": "棋摊 at the 饭堂 (伙房门口, where 马小宝 stands in 古七).",
+      "place": "fantang",
+      "who": "maxiaobao",
+      "title": {
+        "zh": "饭堂棋摊",
+        "en": "A board at the dining hall"
+      },
+      "when": [
+        "mao",
+        "chen",
+        "si",
+        "wu",
+        "wei",
+        "shen",
+        "you",
+        "xu"
+      ],
+      "say": [
+        {
+          "zh": "马小宝在伙房门口摆开一盘残局，挑着眉毛等人。",
+          "en": "Ma Xiaobao has set out an endgame by the kitchen door, eyebrows raised."
+        },
+        {
+          "zh": "饭堂桌上摊着一盘没下完的棋，马小宝说：你来？",
+          "en": "An unfinished game lies on a dining table. Ma Xiaobao: your move?"
+        },
+        {
+          "zh": "马小宝新得了一本棋谱，非要摆一局给你看。",
+          "en": "Ma Xiaobao has a new book of games and insists on showing you one."
+        }
+      ],
+      "deals": [
+        {
+          "task": "xiangqi"
+        },
+        {
+          "task": "wuziqi"
+        }
+      ]
+    },
+    {
+      "id": "shanmen-songxin",
+      "place": "shanmen",
+      "who": "qulao",
+      "title": {
+        "zh": "巡山送信",
+        "en": "An urgent letter"
+      },
+      "when": [
+        "chen",
+        "si",
+        "wu",
+        "wei"
+      ],
+      "say": [
+        {
+          "zh": "瞿老递来一封信：执事堂等着要，一炷香里送到。",
+          "en": "Old Qu hands you a letter: the stewards' hall wants it within a stick of incense."
+        },
+        {
+          "zh": "山下送来急信，瞿老腿脚不便，叫你跑一趟。",
+          "en": "An urgent letter from below; Old Qu's knees are bad, so you run it."
+        },
+        {
+          "zh": "瞿老把信塞给你：别走大路，一口气上去。",
+          "en": "Old Qu presses the letter on you: not the long way — straight up in one breath."
+        }
+      ],
+      "deals": [
+        {
+          "task": "xunshan-songxin"
+        }
+      ]
+    },
+    {
+      "id": "shanmen-ganji",
+      "_place": "The 坊市 is below the 观's map (外门弟子无令不得下山); on market day the stalls run up to the foot of the 山门's steps, and 周衡 keeps the gate's ledger.",
+      "place": "shanmen",
+      "who": "zhouheng",
+      "title": {
+        "zh": "山下赶集",
+        "en": "Market day below"
+      },
+      "_days": "逢五逢十 on the lunar month, as a market's days run (初五 · 初十 · 十五 · 二十 · 廿五 · 三十 — a short month has no 三十): the game's own lunar table (scripts/calendar.js lunarOf, the festivals' too).",
+      "calendar": "lunar",
+      "days": [
+        5,
+        10,
+        15,
+        20,
+        25,
+        30
+      ],
+      "when": [
+        "chen",
+        "si",
+        "wu",
+        "wei",
+        "shen"
+      ],
+      "say": [
+        {
+          "zh": "逢五逢十，山下赶集，货担子一直排到山门石阶底下。",
+          "en": "Market day: the pedlars' poles line up to the foot of the gate steps."
+        },
+        {
+          "zh": "周衡抱着账本守在山门：看可以，台阶不许下。",
+          "en": "Zhou Heng holds the gate with his ledger: look all you like, don't go down."
+        },
+        {
+          "zh": "今天赶集，钱掌柜的摊子摆到了山门外头。",
+          "en": "Market day, and Money Qian's stall is set up just outside the gate."
+        }
+      ],
+      "_deals": "押宝 (yabao, 钱掌柜's stall — once a day, its own pay) and 灯谜 (zhishi-shen, 周衡's riddles; it stays at the 执事堂 too). 画猜 and 成语接龙 need 银月 or the model to guess and answer, and 砍价 is a shop's button, not a board: not dealt.",
+      "deals": [
+        {
+          "task": "yabao"
+        },
+        {
+          "task": "zhishi-shen"
+        }
+      ]
+    }
+  ]
+}

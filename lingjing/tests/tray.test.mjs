@@ -29,7 +29,7 @@ const draw = (l, extra = {}) => trayHtml({ look: l, lang: 'zh', words: WORDS.zh,
 
 test('one registry: 先放一放 is a facet of it (its kinds unchanged); every tray kind declares itself there', () => {
   assert.deepEqual(ASIDE_KINDS.map((k) => k.kind), ['replay', 'gongke', 'fantong', 'pool', 'tide', 'seclusion', 'her']);
-  assert.deepEqual(PLAY_KINDS.filter((k) => k.tray && k.in !== 'shi').map((k) => k.kind), ['fantong', 'pool', 'yaoshou', 'tide', 'seclusion', 'her', 'board', 'mijing']);
+  assert.deepEqual(PLAY_KINDS.filter((k) => k.tray && k.in !== 'shi').map((k) => k.kind), ['fantong', 'pool', 'yaoshou', 'tide', 'seclusion', 'her', 'board', 'happening', 'mijing']);
   // What the 事 book lists stays there only (Hanli 11-02: 「在事里有的, 是否不用放下面显示?」): the tray holds games.
   assert.deepEqual(PLAY_KINDS.filter((k) => k.in === 'shi').map((k) => k.kind), ['errands', 'chance', 'visitor']);
   for (let h = 1; h < 24; h += 2) {

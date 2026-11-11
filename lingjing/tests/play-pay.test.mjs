@@ -13,6 +13,7 @@ import { gamesToday, plateDealt, plateKey } from '../scripts/rules/rotation.mjs'
 import { placeOf } from '../scripts/rules/world.mjs';
 
 const content = loadContent();
+const plain = { ...content, happenings: null };
 const NOW = new Date('2026-10-27T09:00:00-03:00');
 const ctx = { now: NOW };
 const PP = content.balance.play_pay, X = PP.xiuwei;
@@ -58,30 +59,31 @@ test('a board at 练气一层: its 体力 × R, by its kind; ★ and the replay 
 });
 
 test('古四 at 146/470: the place games at 沉鼎观 each pay their formula number — the layer is sittings of play, not one', () => {
-  let s = playTo(content, newState(content, 'zh', NOW), 'wm-chaifang', { now: NOW, policy: 'skip' }).state;
+  // The boards standing at the 观's places by the plate's deal (a world without 观里的事: since 2026-11-10 rules/happenings.mjs deals the 观's through its happenings); the formula over them unchanged.
+  let s = playTo(plain, newState(plain, 'zh', NOW), 'wm-chaifang', { now: NOW, policy: 'skip' }).state;
   s = { ...s, tier: 'qi', step: 1, progress: 146, stamina: 100 };
   let plays = 0;
   const seen = new Map();
   // The plate deals one practice board at a time (rules/rotation.mjs, 2026-11-04): each counted win deals the next, so
   // the 观's boards are played one after another — through the gated door every host plays by (VERBS).
-  const key = plateKey(placeOf(content, 'chaifang'));
+  const key = plateKey(placeOf(plain, 'chaifang'));
   for (let k = 0; k < 6; k += 1) {
-    const dealt = plateDealt(content, s, key, NOW);
-    const m = move(s, content, ctx, { place: dealt.at });
+    const dealt = plateDealt(plain, s, key, NOW);
+    const m = move(s, plain, ctx, { place: dealt.at });
     if (!m.result.ok) continue;
     s = m.state;
-    for (const id of [dealt.game].filter((x) => content.tasks.tasks.find((t) => t.id === x)?.kind === 'board')) {
-      const w = VERBS.win(s, content, ctx, { id, stars: 3 });
+    for (const id of [dealt.game].filter((x) => plain.tasks.tasks.find((t) => t.id === x)?.kind === 'board')) {
+      const w = VERBS.win(s, plain, ctx, { id, stars: 3 });
       if (!w.result.ok) continue;
-      const d = VERBS.task({ ...w.state, stamina: 100 }, content, ctx, { action: 'done', id });
+      const d = VERBS.task({ ...w.state, stamina: 100 }, plain, ctx, { action: 'done', id });
       if (!d.result.ok) continue;
       const got = d.state.progress - w.state.progress;
       const n = seen.get(id) ?? 0; seen.set(id, n + 1);
-      const cost = boardCost(content, 'game', content.games.games.find(g => g.task === id && !g.cut && !g.replaced));
+      const cost = boardCost(plain, 'game', plain.games.games.find(g => g.task === id && !g.cut && !g.replaced));
       const want = Math.round(R(1) * cost * X.board * PP.replay[Math.min(n, PP.replay.length - 1)]);
       if (!d.result.handed?.length) assert.ok(Math.abs(got - want) <= 1, `${id} (play ${n + 1}): +${got}, the formula ${want}`);
       // …and the verb took that board's own 体力 (task done on a hosted board, state.mjs boardCost).
-      if (content.tasks.tasks.find((t) => t.id === id)?.hosted) assert.equal(d.state.stamina, 100 - cost, `${id}: ${cost} 体力`);
+      if (plain.tasks.tasks.find((t) => t.id === id)?.hosted) assert.equal(d.state.stamina, 100 - cost, `${id}: ${cost} 体力`);
       s = d.state; plays += 1;
     }
   }
@@ -89,8 +91,8 @@ test('古四 at 146/470: the place games at 沉鼎观 each pay their formula num
   // The layer asks sittings now (Hanli's formula): what is left of 一层 is more than a sitting's 100 体力 of boards.
   assert.ok((470 - 146) / (R(1) * BOARD / BOARD) > 100, 'more than one sitting');
   // …and the next is dealt: standing where it is, it is open as practice, in the tray.
-  const next = plateDealt(content, s, key, NOW);
-  const l = look({ ...s, place: next.at }, content, ctx);
+  const next = plateDealt(plain, s, key, NOW);
+  const l = look({ ...s, place: next.at }, plain, ctx);
   assert.ok(l.tasks.some((t) => t.practice && t.id === next.game), 'the place games stay open as practice, in the tray — one dealt at a time');
 });
 

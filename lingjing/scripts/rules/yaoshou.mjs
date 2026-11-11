@@ -62,13 +62,15 @@ export function yaoshouBrief(content, state, now) {
 
 /* 手边的棋局's entry (rules/tray.mjs): the batch up — how many of how many, and its places (where he stands first); the fight
    is the pool's own, met standing there (`arg`: its game id) — or, between batches, the minutes left. */
-export function yaoshouTray(content, state, now, fightHere = null) {
+export function yaoshouTray(content, state, now, fightHere = null, waveHere = null) {
   const e = ev(content), b = yaoshouBatch(content, state, now), at = b ? placesOpen(content, state, now) : [];
   if (!b || !at.length) return [];
   const here = at.find(p => p.id === state.place);
   const row = { id: YAOSHOU, title: pick(e.title, state.lang) ?? YAOSHOU, places: [...(here ? [here] : []), ...at.filter(p => p !== here)].map(p => p.id) };
   if (!b.up) return [{ ...row, wait_min: b.wait_min, shut: pick(e.shut, state.lang) ?? null }];
   if (!b.left) return [];
+  // The fight as a wave (rules/forms.mjs, `waveHere`: its board's id): the board opens, as any board's.
+  if (here && waveHere) return [{ ...row, left: { unit: 'batch', n: b.left, of: b.of }, task: waveHere, opens: 'play', arg: waveHere, stage: `board:${waveHere}` }];
   return [{ ...row, left: { unit: 'batch', n: b.left, of: b.of }, ...(here && fightHere ? { opens: 'duel', arg: fightHere, stage: `duel:${fightHere}` } : {}) }];
 }
 

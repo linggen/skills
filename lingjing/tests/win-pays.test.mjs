@@ -9,7 +9,10 @@ const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url),
 const body = (name) => page.slice(page.indexOf(`function ${name}(`), page.indexOf('\n}\n', page.indexOf(`function ${name}(`)));
 
 test('a board won stands its 所得: the pay, the item, the line', () => {
-  assert.match(body('payWin'), /if \(r\.ok && boardPaid\(r\)\) keep\(\{ spoils: \{[^}]*paid: r\.paid[^}]*line: r\.line \?\? null \} \}\)/);
+  // The pay — and 变着花样's on it when that play reached the day's 3rd or 5th kind (rules/happenings.mjs) — and the line.
+  assert.match(body('payWin'), /const v = r\.ok \? r\.variety\?\.paid : null, paid = v \? \{ \.\.\.\(r\.paid \?\? \{\}\), progress: \(r\.paid\?\.progress \?\? 0\) \+ \(v\.progress \?\? 0\) \} : r\.paid;/);
+  assert.match(body('payWin'), /const line = \[r\.line, [^\n]*\]\.filter\(Boolean\)\.join\('\\n'\) \|\| null;/);
+  assert.match(body('payWin'), /if \(r\.ok && boardPaid\(\{ \.\.\.r, paid \}\)\) keep\(\{ spoils: \{[^}]*paid, spent: \[\], line \} \}\)/);
   assert.match(page, /const boardPaid = \(r\) => Boolean\(r\.paid\?\.progress \|\| r\.paid\?\.wealth/);
   const html = spoilsHtml({ cards: [], items: [{ name: '灵芝', n: 1 }], paid: { progress: 12, wealth: 3 }, spent: [], line: '洛书成了。' }, { words: WORDS.zh, catalog: {}, lang: 'zh' });
   assert.match(html, /修为 \+12 · 灵石 \+3/);

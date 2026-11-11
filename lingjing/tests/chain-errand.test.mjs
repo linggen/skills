@@ -60,17 +60,24 @@ test('handed in, a step pays its size and its work; the next is put in the book 
   assert.ok(t3.state.quests['guan-jiujie-4'] && !t3.state.quests['guan-jiujie-4'].done_at, 'step 4 in the book');
 });
 
-test('山门\'s 主力 practice stands only from 09-dabi on (a task\'s `after`), and stays after a win', () => {
-  const ids = s => look(s, content, ctx).tasks.filter(t => t.practice).map(t => t.id);
-  assert.deepEqual(ids(at('shanmen', 6, 0.5, { done_scenes: ['09-futian'] })).filter(id => id.startsWith('shanmen-')), []);
+test('山门\'s 主力 practice stands only from 09-dabi on (a task\'s `after`), and comes again after a win — through 山门演武 (观里的事, 2026-11-10)', () => {
+  // The three boards fold into the happening (rules/happenings.mjs): it lights at dusk some days and deals one of them at a time.
+  const dusk = d => [17, 19].map(h => new Date(2026, 10, d, h, 10));
+  const dealtAt = (s, now) => look(s, content, { now, quests: [] }).tasks.filter(t => t.practice && t.id.startsWith('shanmen-')).map(t => t.id);
+  const before = at('shanmen', 6, 0.5, { done_scenes: ['09-futian'] });
+  for (let d = 12; d < 19; d++) for (const now of dusk(d)) assert.deepEqual(dealtAt(before, now), [], 'before 09-dabi: none');
   const s = at('shanmen', 7, 0.3);
-  assert.deepEqual(ids(s).filter(id => id.startsWith('shanmen-')).sort(), ['shanmen-qingshen', 'shanmen-qinyan', 'shanmen-shouqiang']);
-  const w = VERBS.win(s, content, ctx, { id: 'shanmen-qinyan', stars: 3 });
-  const d = VERBS.task(w.state, content, ctx, { action: 'done', id: 'shanmen-qinyan' });
-  assert.equal(d.result.ok, true);
+  const first = Array.from({ length: 7 }, (_, k) => dusk(12 + k)).flat().find(now => dealtAt(s, now).length);
+  assert.ok(first, '演武 lights at dusk within a week');
+  const [id] = dealtAt(s, first), c = { now: first, quests: [] };
+  assert.ok(['shanmen-qingshen', 'shanmen-qinyan', 'shanmen-shouqiang'].includes(id));
+  const w = VERBS.win(s, content, c, { id, stars: 3 });
+  const d = VERBS.task(w.state, content, c, { action: 'done', id });
+  assert.equal(d.result.ok, true, JSON.stringify(d.result));
   assert.ok(d.state.progress > s.progress, 'it pays');
-  const tomorrow = new Date('2026-11-13T12:00:00');
-  assert.ok(look(d.state, content, { now: tomorrow, quests: [] }).tasks.some(t => t.id === 'shanmen-qinyan' && t.practice), 'there again the next day');
+  const later = Array.from({ length: 10 }, (_, k) => dusk(first.getDate() + 1 + k)).flat().find(now => dealtAt(d.state, now).length);
+  assert.ok(later, 'there again on a later day');
+  assert.notEqual(dealtAt(d.state, later)[0], id, 'another of the three first: the least recently played');
 });
 
 test('each 降 step and red tag names a place on 古八\'s map where its beast is fought for the errand itself (quest:<id>)', () => {

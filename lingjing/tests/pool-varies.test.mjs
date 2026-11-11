@@ -51,9 +51,13 @@ test('a fixed board once won is never drawn again; unwon, it is', () => {
 test('a board that varies, won, is still drawn', () => {
   const s = at('zhishi');
   const ids = ['wuziqi', 'xiangqi', 'huarong'];
-  // Dealt on the plate (rules/rotation.mjs, 2026-11-04: one practice board at a time): 象棋 at 执事堂.
+  // Dealt on the plate (rules/rotation.mjs, 2026-11-04: one practice board at a time): 象棋 at 执事堂 — on a plate no
+  // happening stands on (the 观's plate deals through 观里的事 since 2026-11-10, tested in happenings.test.mjs).
   const won = { ...s, pool_won: Object.fromEntries(ids.map(id => [id, START.toISOString()])), stars: Object.fromEntries(ids.map(id => [id, 3])), plate_deal: { guan: { n: 0, at: 'zhishi', game: 'xiangqi' } } };
-  assert.ok(ids.some(id => everIn(content, won, id)), 'a varying board stays in the pool once won');
+  assert.ok(ids.some(id => everIn({ ...content, happenings: null }, won, id)), 'a varying board stays in the pool once won');
+  // …and through a happening: 棋摊 deals 五子 won, again and again.
+  const qitan = content.happenings.happenings.find(h => h.id === 'fantang-qitan');
+  assert.ok(qitan.deals.some(d => d.task === 'wuziqi'), '五子 is 棋摊\'s');
 });
 
 test('the 灯谜 comes back once its deal carries a riddle pool (`deal.pool`)', () => {

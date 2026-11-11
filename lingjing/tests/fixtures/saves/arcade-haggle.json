@@ -1253,6 +1253,13 @@
   "hunted": {
    "mijing-xiongya": 1
   },
+  "variety": {
+   "day": "2026-10-01",
+   "kinds": [
+    "duel"
+   ],
+   "paid": []
+  },
   "cards_new": [
    "huiqi",
    "huoshe",

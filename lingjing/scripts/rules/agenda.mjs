@@ -91,8 +91,12 @@ export function agendaLook(content, state, view, trayRows = [], hour = view?.tra
   for (const t of boards) if (!storys(t)) add('other', 'task', t.id);
   // 小游戏池 (rules/pool.mjs): the draw together under one heading (`hour`; `all` once every one is played — Hanli 11-04
   // 「可以, 挪进清单」), then the rest of the tray. No minutes: a game waits till it is played (2026-11-04).
+  // 观里的事 (rules/happenings.mjs): the 时辰's happenings under their own heading, with the minutes till the next 时辰's.
+  const happen = tray.filter((e) => e.happening);
+  if (happen.length) add('other', 'happen', 'happen', { n: hour?.change_min ?? happen[0].change_min ?? null });
+  for (const e of happen) add('other', 'tray', e.id, { happening: true });
   if (hour?.drawn) add('other', 'hour', 'pool', hour.played >= hour.drawn ? { all: true } : {});
-  const pooled = tray.filter((e) => e.pool), rest = tray.filter((e) => !e.pool);
+  const pooled = tray.filter((e) => e.pool), rest = tray.filter((e) => !e.pool && !e.happening);
   for (const e of pooled) add('other', 'tray', e.id, { pool: true, ...(e.seg === 'cool' ? { cool: true } : {}) });
   for (const e of rest) add('other', 'tray', e.id, e.seg === 'cool' ? { cool: true } : {});
   if ((view.kept ?? []).length) add('other', 'kept', 'kept');

@@ -38,9 +38,9 @@ export const playedAt = (state, id) => (state.pool_played?.[id] ? new Date(state
    `pool_played` is the draw's rest, `pool_won` what he has won). Mutates `next`. */
 export function stampPlay(kinds, content, state, next, verb, args, now) {
   for (const k of kinds) {
-    const id = k.pool?.plays?.(verb, args, content, state);
+    const id = k.pool?.plays?.(verb, args, content, state, now);
     if (id) next.pool_played = { ...(next.pool_played ?? {}), [id]: now.toISOString() };
-    const won = k.pool?.won?.(verb, args, content, state);
+    const won = k.pool?.won?.(verb, args, content, state, now);
     if (won) {
       next.pool_won = { ...(next.pool_won ?? {}), [won]: now.toISOString() };
       // …and counted (`pool_wins`): a content pool deals its next by it (poolDeal). Counted on from an older save's

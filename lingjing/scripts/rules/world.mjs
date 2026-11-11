@@ -10,6 +10,7 @@ import { buyBack, visitorHere } from './visiting.mjs';
 import { huiNow, huiOrder, sceneHui } from './hui.mjs';
 import { waitsTheBook } from './codex.mjs';
 import { mijingDoors, mijingEncounter } from './mijing.mjs';
+import { yaoshouWave } from './forms.mjs';
 
 const STORY_WORDS = 300, STORY_CHARS = 600;
 
@@ -511,7 +512,13 @@ function eventBatch(content, state, place, now) {
   // Never 0 while up (the last fight completes it): a save mid-batch from a bigger `batch` has its one fight.
   return { batch: { event: ev, left: Math.max(1, row.batch - (eventRec(state, ev)?.taken ?? 0)), of: row.batch } };
 }
+/* The beast he meets where he stands — a pool's, a haunt's, the road's. 妖兽出没's fight when its form is a wave (rules/forms.mjs)
+   is no duel: the pool shows none, the tray opens the wave's board. */
 function encounterOf(content, state, now) {
+  const e = rawEncounter(content, state, now);
+  return e?.batch && e.pool && yaoshouWave(content, state, now, e) ? null : e;
+}
+function rawEncounter(content, state, now) {
   const place = placeOf(content, state.place);
   // Inside a 秘境探险 run the room's beast (rules/mijing.mjs), and nothing else of the place.
   const mj = mijingEncounter(content, state, now);
@@ -714,4 +721,4 @@ function fittingPlace(content, state, from) {
    opens when it ends. */
 const inCorridor = (content, state) => !inMade(state) && Boolean(state.scene) && carried(content, state);
 
-export { doorOf, eventPool, poolStands, standsAtScene, restAfter, fitLock, lockOf, roadsOf, meetBeast, poolTally, rememberAt, nightNow, poolUp, huntRules, poolResting, poolWait, guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };
+export { rawEncounter, doorOf, eventPool, poolStands, standsAtScene, restAfter, fitLock, lockOf, roadsOf, meetBeast, poolTally, rememberAt, nightNow, poolUp, huntRules, poolResting, poolWait, guardOf, fitSealed, hiddenRoom, sealedOf, plateBrief, fitLeave, grantPass, leaveFitted, leaveOf, passQuest, chapterOpen, passed, foeOf, hauntsOf, huntKey, poolBeast, poolOf, juanOpen, metNow, ofJuan, shutSay, allPlaces, atScene, beatOf, caughtBy, creatureOf, huntable, encounterOf, fittingPlace, inCorridor, inMade, mapOf, onMap, pathOf, placeBrief, placeName, placeOf, placeOpen, placeSaid, provinceOpen, sceneOf, settlePlace, STORY_CHARS, STORY_WORDS, tierIndex, tooHard, towardOf };

@@ -23,6 +23,8 @@ import { allPlaces, encounterOf, lockOf, placeOf, poolStands, poolWait, sceneOf 
 import { gamesToday, standingToday } from './rotation.mjs';
 import { errandWants, hostedHere } from './tasks.mjs';
 import { boardVaries, wonEver } from './pool.mjs';
+import { claimedAt, happeningTray, playsHappening } from './happenings.mjs';
+import { waveTask, yaoshouWave } from './forms.mjs';
 import { duiziBrief } from './duizi.mjs';
 import { visitorsTray } from './visiting.mjs';
 import { yaoshouBatch, yaoshouPlace, yaoshouTray } from './yaoshou.mjs';
@@ -73,7 +75,9 @@ function boardsAround(content, state, now) {
   const places = plate ? [here, ...allPlaces(content).filter(p => p.plate?.id === plate && p.id !== here.id)] : here ? [here] : [];
   const seen = new Set();
   // What stands there (the plate's one deal, rotation.mjs) and the day's pool an errand may still ask for — hostedHere says which.
-  return places.flatMap(p => [...new Set([...standingToday(content, state, p, now), ...gamesToday(content, p, now)])].filter(id => !seen.has(id) && hostedHere(content, { ...state, place: p.id }, id, now)).map((id) => {
+  // A board a happening deals there is the happening's row (rules/happenings.mjs), not a board row too — unless an errand asks for it.
+  const own = (p, id) => !claimedAt(content, p.id, id) || errandWants(content, { ...state, place: p.id }, id, p.id);
+  return places.flatMap(p => [...new Set([...standingToday(content, state, p, now), ...gamesToday(content, p, now)])].filter(id => !seen.has(id) && own(p, id) && hostedHere(content, { ...state, place: p.id }, id, now)).map((id) => {
     seen.add(id);
     const t = taskOf(content, id);
     return { id, task: id, game: t.game ?? null, title: String(pick(t.title, state.lang) ?? id), places: [p.id], opens: 'play', arg: id, stage: `board:${id}` };
@@ -111,7 +115,11 @@ export const PLAY_KINDS = [
       return w ? [{ ...w, places: [state.place] }] : [];
     } },
   { kind: 'yaoshou', // 妖兽出没 (rules/yaoshou.mjs): a batch at 后山 · 上山路 — the fight itself is the pool's (above)
-    tray: (content, state, view, now) => { const e = encounterOf(content, state, now); return yaoshouTray(content, state, now, e?.pool ? e.game.id : null); } },
+    // …its fight as a wave (rules/forms.mjs): the tray opens the wave's board in place of the duel.
+    tray: (content, state, view, now) => {
+      const wave = yaoshouWave(content, state, now) ? waveTask(content)?.id : null, e = wave ? null : encounterOf(content, state, now);
+      return yaoshouTray(content, state, now, e?.pool ? e.game.id : null, wave);
+    } },
   { kind: 'tide', // 兽潮, out of its cooldown (rules/shouchao.mjs)
     // …and 切磋's bout (rules/qiecuo.mjs), the same kind: a cooldown's board at hand
     open: (content, state, view, now) => tasksOf(view).filter(t => t.tide && (shouchaoHere(content, state, t.id, now) || qiecuoHere(content, state, t.id, now))).map(t => ({ id: t.id, title: t.title })),
@@ -160,13 +168,18 @@ export const PLAY_KINDS = [
     pool: {
       row: e => ({ cooldown_min: 360, when: BOARD_LEAN[e.game] ?? [], cost: 'game' }),
       // Played is won, lost, put down (✕) or kept (留) — a board's own 跳过 too (2026-11-04: the row waits till then).
-      plays: (verb, args, content) => ((verb === 'task' && ['done', 'lost', 'leave', 'skip', 'keep'].includes(args.action)) || (verb === 'win' && (args.grade === 'skipped' || args.skipped === true || args.skipped === 'true'))) && taskOf(content, String(args.id ?? ''))?.hosted ? String(args.id) : null,
+      // A board played as a happening's game is the happening's (rules/happenings.mjs stamps it): never the pool's too — a
+      // stamp here would hold a slot of the 时辰's draw for a board that is no member of it (drawAt's `gone`).
+      plays: (verb, args, content, state, now) => ((verb === 'task' && ['done', 'lost', 'leave', 'skip', 'keep'].includes(args.action)) || (verb === 'win' && (args.grade === 'skipped' || args.skipped === true || args.skipped === 'true'))) && taskOf(content, String(args.id ?? ''))?.hosted && !(state && playsHappening(content, state, verb, args, now)) ? String(args.id) : null,
       // Counted done is won (rules/pool.mjs `pool_won`).
       won: (verb, args, content) => (verb === 'task' && args.action === 'done' && taskOf(content, String(args.id ?? ''))?.hosted ? String(args.id) : null),
       // One fixed board, won once, is out of the pool for good (pool.mjs boardVaries, Hanli 11-02) — unless an errand
       // still asks for its win there.
       retired: (e, content, state) => !boardVaries(taskOf(content, e.id)) && wonEver(state, e.id) && !errandWants(content, state, e.id, e.places?.[0]),
     } },
+  { kind: 'happening', // 观里的事 (rules/happenings.mjs): the 时辰's happenings lit and not yet gone to — a place, who asks, why;
+    // the game it deals named only where he stands. Its own draw, beside the 小游戏池's (never a pool member).
+    tray: (content, state, view, now) => (view ? happeningTray(content, state, now) : []) },
   { kind: 'mijing', // 秘境探险 (rules/mijing.mjs): a 秘境令 in hand, away from the door — the door's run is its card there
     tray: (content, state, view) => (view?.mijing?.away ? [{ id: 'mijing', left: { unit: 'keys', n: view.mijing.keys }, places: [view.mijing.door.id], stage: 'mijing' }] : []) },
   { kind: 'chance', in: 'shi', // the day's 机缘 (road.mjs chanceBrief): where, the minutes left — met on arrival

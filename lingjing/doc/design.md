@@ -1601,6 +1601,17 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
   A deal with a content pool carries what the board deals the next by: `seed` (the save's) and `n`, his wins of it
   before this play (`pool_wins`, counted as `task done` counts it; an older save won by its ★ alone counts one) — so a
   replay never asks again what he has won (rules/pool.mjs poolDeal, Look's dealOf).
+- **观里的事** (Hanli 11-10: 「要放进剧情里, 现在的兽潮是个好例子…再想点其他点子, 加进去」 → 「可以，按这个做」; rules/happenings.mjs,
+  worlds/jiuding/happenings.json): the small games reach him as things happening in the world. A happening is a place, who
+  asks, a reason in the book's voice, when it may stand (`when` 时辰, `days` of the month, `after`) and the games it may deal.
+  Each 时辰 lights up to three (seeded: save + day + 时辰; one a place; the Mac and the phone alike); away, the row names place ·
+  who · why and 去; there, it deals ONE game — the kind played least recently first, never the one just played, only a
+  kind met in the story, only what the device hosts (`phone: false`), a one-answer board never (boardVaries, or a skill kit
+  in `again`); 洛书 `once`. They change with the 时辰 (「未时 · 47 分换一批」); the 小游戏池's one held game stands beside for
+  银月's games and 饭桶. A board a happening deals at its place stands only through it, and a plate a happening stands on
+  deals no plate board (errands still find theirs). Pay is the game's own; 变着花样 — the day's 3rd and 5th kind — pays one
+  small game each (`variety.own`). 妖兽出没 rotates its form by the beast's kind (`forms`: the card duel, a 守墙关 wave),
+  least recent first, its pay the duel's. tools/happenings-sim.mjs: 60 days at 练气八层.
 - **Yinyue on the stage:** one device, one Yinyue. The game stage is
   voice-only (`?pet=1&stage=1&body=0`, engine a250a04) — no 3D body in the
   game.

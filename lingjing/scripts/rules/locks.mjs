@@ -11,6 +11,8 @@ import { isOnce } from './chores.mjs';
 import { sealedVerb } from './sealed.mjs';
 import { asideVerb, PLAY_KINDS } from './aside.mjs';
 import { stampPlay } from './pool.mjs';
+import { playsHappening, stampHappening, varietyAfter } from './happenings.mjs';
+import { pay } from './core.mjs';
 import { advanceDeal, playsDeal } from './rotation.mjs';
 import { takenHeld, takenPlayed } from './skips.mjs';
 
@@ -63,16 +65,21 @@ function played(out, content, state, verb, args = {}, ctx = {}) {
   // Only a board put down (✕ · 留 · its own 跳过) writes when the verb wrote nothing: a resumed round (考考你's `open`
   // again) stays a read.
   const putDown = (verb === 'task' && ['leave', 'skip', 'keep'].includes(args.action)) || (verb === 'win' && (args.grade === 'skipped' || args.skipped === true || args.skipped === 'true'));
-  const stamps = putDown && PLAY_KINDS.some(k => k.pool?.plays?.(verb, args, content, state));
+  const stamps = putDown && (PLAY_KINDS.some(k => k.pool?.plays?.(verb, args, content, state, now)) || Boolean(playsHappening(content, state, verb, args, now)));
   // …and a kept board taken up (skips.mjs playKept `taken`), played so: over, never offered again — ✕ wrote nothing else.
   const taken = takenHeld(state, verb, args);
   let next = out.state && out.state !== state ? out.state : null;
   if (!next && (key || stamps || taken)) next = structuredClone(state);
   if (!next) return out;
   stampPlay(PLAY_KINDS, content, state, next, verb, args, now);
+  // 观里的事 (rules/happenings.mjs): a happening's game played — the happening gone to, the game and its kind stamped.
+  stampHappening(content, state, next, verb, args, now);
   if (key) advanceDeal(content, next, key, now);
   if (taken) takenPlayed(next, verb, args);
-  return next === out.state ? out : { ...out, state: next };
+  // 变着花样: a new kind of game played to an end today; the third and the fifth each pay one small game's worth.
+  const variety = varietyAfter(content, state, next, verb, args, out.result, { ...ctx, now }, pay);
+  const res = variety ? { ...out.result, variety } : out.result;
+  return next === out.state && !variety ? out : { ...out, state: next, result: res };
 }
 
 /* The fields of Look (and Progress) each shut system takes out. The book, the

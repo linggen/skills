@@ -15,6 +15,7 @@ import { gamesEver, plateKey } from '../scripts/rules/rotation.mjs';
 
 process.env.LINGJING_STAMINA_LIMIT ??= '1';
 const content = loadContent();
+const plain = { ...content, happenings: null };
 const TASK = content.tasks.tasks.find((t) => t.id === 'yaoyuan-zhuochong');
 const ROW = content.games.games.find((g) => g.task === 'yaoyuan-zhuochong');
 const RUNGS = TASK.climb.map((id) => ROW.levels.find((l) => l.id === id));
@@ -82,7 +83,8 @@ test('a deal names its rung (`lv`, rules/climb.mjs): the kit plays that one; a d
 });
 
 test('the 药园 pools it; standing there on a day it is up, Look deals the rung he is on, and a win deals the next', () => {
-  const p = placeOf(content, 'yaoyuan');
+  // The 药园's pool by the plate's deal (a world without 观里的事; since 2026-11-10 药园巡夜 deals 捉虫 there — tests/happenings.test.mjs).
+  const p = placeOf(plain, 'yaoyuan');
   assert.ok(gamesEver(p).includes('yaoyuan-zhuochong'));
   const SAVE = JSON.parse(fs.readFileSync(new URL('./fixtures/saves/waimen.json', import.meta.url), 'utf8'));
   let n = 0;
@@ -91,17 +93,17 @@ test('the 药园 pools it; standing there on a day it is up, Look deals the rung
   const dealt = { plate_deal: { [plateKey(p)]: { n: 0, at: 'yaoyuan', game: 'yaoyuan-zhuochong' } } };
   const here = (now, extra = {}) => ({ ...SAVE, place: 'yaoyuan', tier: 'qi', step: 1, progress: 100, stamina: 100, stamina_at: now.toISOString(), ...dealt, ...extra });
   let row = null;
-  for (; n < 6 && !row; n += 1) row = look(here(day(n)), content, { now: day(n), quests: [] }).tasks.find((t) => t.id === 'yaoyuan-zhuochong');
+  for (; n < 6 && !row; n += 1) row = look(here(day(n)), plain, { now: day(n), quests: [] }).tasks.find((t) => t.id === 'yaoyuan-zhuochong');
   assert.ok(row, 'up some day of the six');
   assert.equal(row.practice, true);
   assert.equal(row.deal.lv, 'yaoyuan-1');
   const now = day(n - 1), c = { now, quests: [] };
-  const won = win(here(now), content, c, { id: 'yaoyuan-zhuochong', stars: 3 });
+  const won = win(here(now), plain, c, { id: 'yaoyuan-zhuochong', stars: 3 });
   assert.equal(won.result.ok, true, JSON.stringify(won.result));
   assert.equal(won.state.climb?.rain, 1, 'the first rung behind him');
-  const done = task({ ...won.state, stamina: 100 }, content, c, { action: 'done', id: 'yaoyuan-zhuochong' });
+  const done = task({ ...won.state, stamina: 100 }, plain, c, { action: 'done', id: 'yaoyuan-zhuochong' });
   assert.equal(done.result.ok, true, JSON.stringify(done.result));
   assert.ok(done.state.progress > 100, 'a practice board pays its minutes');
-  const tomorrow = day(n + 1), next = look({ ...done.state, stamina: 100, stamina_at: tomorrow.toISOString() }, content, { now: tomorrow, quests: [] }).tasks.find((t) => t.id === 'yaoyuan-zhuochong');
+  const tomorrow = day(n + 1), next = look({ ...done.state, stamina: 100, stamina_at: tomorrow.toISOString() }, plain, { now: tomorrow, quests: [] }).tasks.find((t) => t.id === 'yaoyuan-zhuochong');
   assert.equal(next?.deal?.lv, 'yaoyuan-2', 'two days on, the next rung');
 });

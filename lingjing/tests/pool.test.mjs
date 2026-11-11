@@ -264,7 +264,11 @@ test('the row deals the 时辰\'s three one at a time: the first not played, the
   const poolOf = (st, now) => (lookAt(st, now).tray ?? []).filter(isMember).map(e => e.id);
   let s = at('waimen');
   const seen = [];
-  for (let n = 0; n < DRAW; n++) {
+  // Its members at the 观 since 观里的事 (2026-11-10): 银月's games and 饭桶 — the 观's boards are the happenings' now
+  // (rules/happenings.mjs), so a draw may hold fewer than DRAW; one at a time all the same.
+  const drawn = lookAt(s, AT(9, 10)).tray_hour.drawn;
+  assert.ok(drawn >= 2 && drawn <= DRAW, `a draw of ${drawn}`);
+  for (let n = 0; n < drawn; n++) {
     const shown = poolOf(s, AT(9, 10 + 10 * n));
     assert.equal(shown.length, 1, `one at a time (${n}): ${shown}`);
     assert.ok(!seen.includes(shown[0]), 'the next, never one played');
@@ -272,7 +276,7 @@ test('the row deals the 时辰\'s three one at a time: the first not played, the
     s = { ...s, pool_played: { ...(s.pool_played ?? {}), [shown[0]]: AT(9, 15 + 10 * n).toISOString() } };
   }
   assert.deepEqual(poolOf(s, AT(10, 50)), [], 'all three played: none');
-  assert.equal(lookAt(s, AT(10, 50)).tray_hour.played, DRAW);
+  assert.equal(lookAt(s, AT(10, 50)).tray_hour.played, drawn);
   // The world's events stand beside, as before.
   assert.ok((lookAt(s, AT(10, 50)).tray ?? []).some(e => e.id === 'shouchao'));
   // The first left unplayed: the 时辰 ends, the next 时辰's draw begins with its own first — nothing piles up.

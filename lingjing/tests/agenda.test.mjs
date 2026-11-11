@@ -36,7 +36,7 @@ const SOURCE = {
   task: (l, id) => (l.tasks ?? []).find((t) => t.id === id), tray: (l, id) => (l.tray ?? []).find((e) => e.id === id),
   kept: (l) => (l.kept ?? []).length, errand: (l, id) => (l.book ?? []).find((q) => q.id === id && !q.chore),
   chore: (l, id) => (l.book ?? []).find((q) => q.id === id && q.chore), chance: (l) => l.chance, kaifu: (l) => l.kaifu,
-  hour: (l) => l.tray_hour?.drawn, offer: (l, id) => (l.offers ?? []).find((o) => o.id === id), work: (l) => l.work, visitor: (l, id) => (l.visitors ?? []).find((v) => v.place?.id === id),
+  hour: (l) => l.tray_hour?.drawn, happen: (l) => (l.tray ?? []).some((e) => e.happening), offer: (l, id) => (l.offers ?? []).find((o) => o.id === id), work: (l) => l.work, visitor: (l, id) => (l.visitors ?? []).find((v) => v.place?.id === id),
 };
 
 test('one list in Look: every item once, in 主线 · 目标 · 其他 order, each pointing at the Look field that holds it', () => {

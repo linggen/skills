@@ -30,6 +30,9 @@ import { isTide, shouchaoDone, shouchaoFirst, shouchaoHere, shouchaoShut, tonigh
 import { isMijingFight, keyDrop, mijingBoardDone, mijingBoardHere, mijingDuel } from './mijing.mjs';
 import { isBout, qiecuoDone, qiecuoHere, qiecuoOver, qiecuoShut } from './qiecuo.mjs';
 import { yaoshouFought, yaoshouShare } from './yaoshou.mjs';
+import { claimedAt, happeningHosts } from './happenings.mjs';
+import { stampForm, waveHere, waveTask, yaoshouFormOf } from './forms.mjs';
+import { yaoshouBatch } from './yaoshou.mjs';
 
 /* Each line its own 修为 (rules/lines.mjs, Hanli 2026-10-27): a board pays the line it belongs to — a 今 board the 今, wherever
    it is replayed; on a 今 scene, the 今 — by the same minutes on that line's ladder, and never 灵石. Null: the 古's own. */
@@ -84,6 +87,8 @@ export function task(state, content, ctx, args) {
   // 收手: a board he opened by choice, put down (rules/skips.mjs leaveOf).
   // …切磋's bout put down is over (rules/qiecuo.mjs): skipped, its cooldown started.
   if (args.action === 'leave' && isBout(content, String(args.id ?? ''))) return qiecuoOver(state, content, ctx, String(args.id), 'skipped');
+  // …妖兽出没's wave lost or put down: the batch's fight is over, unpaid (a duel lost or run dry takes its slot alike).
+  if (['lost', 'leave', 'skip'].includes(args.action) && waveTask(content)?.id === String(args.id ?? '')) return yaoshouWaveOver(state, content, ctx, String(args.id), args.action);
   if (args.action === 'leave') return leaveBoard(state, content, ctx, String(args.id ?? ''));
   // A board lost (the page, as it ends unwon): it was played, so it costs its 体力 in full (boardLost) — 切磋's bout is
   // over too, unpaid, its cooldown started.
@@ -144,6 +149,10 @@ function hostsNow(content, state, id, now) {
   const place = placeOf(content, state.place);
   if (standingToday(content, state, place, now).includes(id)) return true;
   if (poolToday(place, now).includes(id) && errandAsking(content, state, id, state.place)) return true;
+  // A board a happening deals here (rules/happenings.mjs): the one it deals now, lit this 时辰 — or any of its deals an errand
+  // asks for here (九节菖蒲's 看炉 at the 药园: the board folded into the happening is still where the errand sends him).
+  if (claimedAt(content, state.place, id) && errandAsking(content, state, id, state.place)) return true;
+  if (happeningHosts(content, state, id, now)) return true;
   return (place?.has?.games_pool?.from ?? []).includes(id) && Boolean(errandAsking(content, state, id, state.place, true));
 }
 /* A stall's board (tasks/world.json `stall: true`, 钱掌柜's 押宝): played where a
@@ -183,6 +192,8 @@ function taskOpen(content, state, id, now) {
   if (isTide(content, id)) return shouchaoHere(content, state, id, now) || (shouchaoFirst(content, state, id) && reopened(content, state, id, now));
   // A 秘境探险 room's board: open while he stands in its room (rules/mijing.mjs).
   if (t.mijing) return mijingBoardHere(content, state, id);
+  // 妖兽出没's fight as a wave (rules/forms.mjs): open while the batch's beast here comes as one.
+  if (waveTask(content)?.id === id) return waveHere(content, state, id, now);
   // …and 切磋's bout by its own (rules/qiecuo.mjs).
   if (isBout(content, id)) return qiecuoHere(content, state, id, now);
   if (reopened(content, state, id, now) || hostedHere(content, state, id, now) || catchHere(content, state, id) || stallHere(content, state, id, now) || kaoHere(content, state, id, now) || shouchaoHere(content, state, id, now)) return true;
@@ -200,6 +211,8 @@ function taskDone(state, content, ctx, id) {
   if (kaoHere(content, state, id, ctx.now)) return kaoDone(state, content, ctx, id);
   // A 秘境探险 room's board (rules/mijing.mjs): the 气血 it cost, the room behind him; the run pays at its end.
   if (t.mijing) return mijingBoardHere(content, state, id) ? mijingBoardDone(state, content, ctx, id) : refuse('not-here', null);
+  // 妖兽出没's fight as a wave (rules/forms.mjs): settled as the duel's win would be.
+  if (waveTask(content)?.id === id) return waveHere(content, state, id, ctx.now) ? yaoshouWaveDone(state, content, ctx, id) : refuse('not-here', null);
   // 兽潮 (rules/shouchao.mjs): the night counted — its 灵气, the pay by stars, the next night.
   if (shouchaoHere(content, state, id, ctx.now)) return shouchaoDone(state, content, ctx, id);
   // 切磋 (rules/qiecuo.mjs): the bout won — its pay by stars and the day's share, the next bout, the cooldown.
@@ -542,7 +555,8 @@ export function duel(state, content, ctx, args) {
   // and rested begins again.
   // 妖兽出没 (rules/yaoshou.mjs): the batch's day share, read before this fight takes its slot (the last one completes it).
   const huntAt = hunt ? placeOf(content, game.hunt) : null, batchShare = hunt ? yaoshouShare(content, s, huntAt, ctx.now) : 1;
-  if (hunt) yaoshouFought(content, s, huntAt, ctx.now);
+  // …its form rotates (rules/forms.mjs): a batch's fight fought as the duel is stamped so, the next may come as a wave.
+  if (hunt && yaoshouBatch(content, s, ctx.now)?.up && yaoshouFought(content, s, huntAt, ctx.now)) stampForm(s, 'yaoshou', 'duel', ctx.now);
   const streakWas = hunt && (today.streak ?? 0) < restAfter(content, placeOf(content, game.hunt)) ? today.streak ?? 0 : 0;
   s.duels[key] = { day, outcome: played.outcome, ...(hunt ? { n: (today.n ?? 0) + 1, at: ctx.now.toISOString(), streak: streakWas + (played.outcome === 'won' ? 1 : 0), last: rememberAt(content, today, creature.id, poolOf(content, placeOf(content, game.hunt))) } : {}) };
   const firsts = creature.person ? {} : meetBeast(s, creature.id, played.outcome === 'won', ctx.now);
@@ -781,6 +795,57 @@ export function lundao(state, content, ctx, args) {
     paid = handed.find(h => h.paid)?.paid ?? null;
   } else if (l.misses >= cfg.misses) l.outcome = 'lost';
   return { state: s, result: { ok: true, good, ...(form ? { form } : {}), ...(!form && !judged ? { judged: false } : {}), lundao: lundaoBrief(content, s, ctx.now), ...(fresh ? { say: l.prompt } : {}), ...(l.model && !l.outcome ? { judge: judgeOf(l.model) } : {}), ...(l.outcome === 'won' ? { line: pick(taskOf(content, 'lundao').done_line, lang), ...(paid ? { paid } : {}), ...(handed.length ? { handed } : {}) } : {}) } };
+}
+
+/* ── 妖兽出没's fight as a wave (rules/forms.mjs) ── */
+/* Won: the duel's settle for a pool beast won, played as the wave — the batch's slot, the pool's record, the 图鉴, the errands
+   that count the beast, its drops and card, the 秘境令's chance and the haunt table's pay × the beast's day share × the
+   batch's share (tasks.mjs duel above, the same lines); 体力 is the wave's own minutes, as a board's. */
+function yaoshouWaveDone(state, content, ctx, id) {
+  const f = yaoshouFormOf(content, state, ctx.now);
+  if (f?.form !== 'wave') return refuse('not-here', null);
+  if (!state.wins?.[id]) return refuse('not-won', null);
+  const t = taskOf(content, id), s = clone(state), now = ctx.now, day = dayKey(now);
+  delete s.wins[id];
+  const empty = spendStamina(content, s, ctx, 'game', 1, boardCost(content, 'game', (content.games?.games ?? []).find(g => g.id === t.game && !g.cut && !g.replaced) ?? { id: t.game }));
+  if (empty) return empty;
+  const place = placeOf(content, s.place), cid = f.e.creature.id, creature = creatureOf(content, cid);
+  const batchShare = yaoshouShare(content, s, place, now);
+  yaoshouFought(content, s, place, now);
+  waveSettled(content, s, place, cid, 'won', now);
+  const firsts = meetBeast(s, cid, true, now);
+  const handed = advance(content, s, { kind: 'subdue', creature: cid }, ctx);
+  s.hunted = { ...s.hunted, [place.id]: (s.hunted?.[place.id] ?? 0) + 1 };
+  const ling = keyDrop(content, s, ctx, 'yaoshou');
+  const dropped = drop(content, s, creature, now, { loot: true });
+  const card = winCard(content, s, creature, now);
+  if (card) dropped.push(card);
+  const table = content.rewards.tables.haunt;
+  const paid = pay(content, s, ctx, { table: 'haunt', progress: table.progress, wealth: table.wealth, share: fightReplay(content, s, cid, now) * batchShare });
+  playCounted(s, hauntPlayId(cid), now);
+  s.tasks[id] = { status: 'done', period: day, done_at: now.toISOString() };
+  const full = fullLine(s, dropped);
+  return { state: s, result: { ok: true, done: id, form: 'wave', creature: cid, paid, haunt: cid, ...(dropped.length ? { dropped } : {}), ...(firsts.first_met ? { first_met: true } : {}), ...(firsts.first_win ? { first_win: true } : {}), ...(handed.length ? { handed } : {}), ...(full ? { pouch_full: full } : {}), ...(ling ? { key: ling } : {}), tally: poolTally(content, s, place, now), gives: null, line: pick(t.done_line, s.lang) } };
+}
+/* Lost or put down: the batch's fight is over, unpaid — the wave's minutes taken when lost, as a board's. */
+function yaoshouWaveOver(state, content, ctx, id, action) {
+  const f = yaoshouFormOf(content, state, ctx.now);
+  if (f?.form !== 'wave') return refuse('not-here', null);
+  const t = taskOf(content, id), s = clone(state), now = ctx.now, place = placeOf(content, s.place);
+  delete s.wins?.[id];
+  const before = s.stamina;
+  if (action === 'lost') spendStamina(content, s, ctx, 'lost', 1, boardCost(content, 'game', (content.games?.games ?? []).find(g => g.id === t.game && !g.cut && !g.replaced) ?? { id: t.game }));
+  yaoshouFought(content, s, place, now);
+  waveSettled(content, s, place, f.e.creature.id, action === 'lost' ? 'lost' : 'withdrew', now);
+  s.hunt_losses = { ...s.hunt_losses, [place.id]: (s.hunt_losses?.[place.id] ?? 0) + 1 };
+  return { state: s, result: { ok: true, ...(action === 'lost' ? { lost: id } : { left: id }), form: 'wave', creature: f.e.creature.id, stamina: Number.isFinite(before) && Number.isFinite(s.stamina) ? before - s.stamina : 0 } };
+}
+/* The pool's day record as a duel's settle writes it (the next beast, the streak), and the form stamped. Mutates `s`. */
+function waveSettled(content, s, place, cid, outcome, now) {
+  const key = huntKey(place.id), day = dayKey(now), today = s.duels?.[key]?.day === day ? s.duels[key] : null;
+  const streakWas = (today?.streak ?? 0) < restAfter(content, place) ? today?.streak ?? 0 : 0;
+  s.duels = { ...s.duels, [key]: { day, outcome, n: (today?.n ?? 0) + 1, at: now.toISOString(), streak: streakWas + (outcome === 'won' ? 1 : 0), last: rememberAt(content, today ?? {}, cid, poolOf(content, place)) } };
+  stampForm(s, 'yaoshou', 'wave', now);
 }
 
 export { catchHere, doneThisPeriod, errandAsking, gameLevel, hostedHere, stallHere, lundaoBrief, lundaoForm, lundaoName, questCheck, questDone, reopened };

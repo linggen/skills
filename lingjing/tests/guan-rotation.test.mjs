@@ -13,6 +13,8 @@ import { gamesToday, lapseWall, plateDealt, plateKey, poolToday, wallPosts, wall
 
 process.env.LINGJING_STAMINA_LIMIT ??= '1';
 const content = loadContent();
+// The plate's own deal, as a world without 观里的事 runs it (rules/rotation.mjs plateDealt; the 观's is its happenings' since 2026-11-10).
+const plain = { ...content, happenings: null };
 const SAVE = JSON.parse(fs.readFileSync(new URL('./fixtures/saves/waimen.json', import.meta.url), 'utf8'));
 const day = (n, h = 10) => new Date(2026, 9, 27 + n, h);
 const ctx = (now) => ({ now, quests: [] });
@@ -45,17 +47,19 @@ test('each 观 place has a pool of two or three of the kit\'s practice boards, a
 });
 
 test('the tray and Look show the plate\'s one deal (2026-11-04: 「只有之前的玩了才发新的」): practice where it stands, its tag alone', () => {
+  // On a plate no happening stands on (the 观's deals through 观里的事 since 2026-11-10 — and shows no plate board then).
+  assert.deepEqual(look(at('cangjing', day(0)), content, ctx(day(0))).boards ?? [], [], 'the 观 with its happenings: no plate board');
   for (const n of [0, 1]) {
-    const now = day(n), base = at('cangjing', now), d = plateDealt(content, base, plateKey(placeOf(content, 'cangjing')), now);
-    const l = look(base, content, ctx(now));
+    const now = day(n), base = at('cangjing', now), d = plateDealt(plain, base, plateKey(placeOf(plain, 'cangjing')), now);
+    const l = look(base, plain, ctx(now));
     assert.deepEqual(l.boards.map((b) => [b.id, b.games.map((g) => g.id)]), [[d.at, [d.game]]], 'one board on the whole plate');
     assert.ok(l.boards[0].games.every((g) => g.name && !g.name.includes(' · ')), JSON.stringify(l.boards));
     const practice = l.tasks.filter((t) => t.practice).map((t) => t.id);
     assert.deepEqual(practice, d.at === 'cangjing' ? [d.game] : [], 'practice here only when the deal is here');
     // Standing where it is dealt: it is his to play.
-    const there = look({ ...base, place: d.at }, content, ctx(now));
+    const there = look({ ...base, place: d.at }, plain, ctx(now));
     assert.ok(there.tasks.some((t) => t.id === d.game && t.practice), `${d.at}: ${d.game} stands`);
-    assert.deepEqual(d, plateDealt(content, base, plateKey(placeOf(content, 'cangjing')), day(0)), 'the same deal the next day, unplayed');
+    assert.deepEqual(d, plateDealt(plain, base, plateKey(placeOf(plain, 'cangjing')), day(0)), 'the same deal the next day, unplayed');
   }
 });
 
@@ -134,8 +138,8 @@ test('a tag lapses with its day: taken and undone, it is gone tomorrow, and the 
 
 test('the plate wears the deal under its seal (Look\'s `boards`)', async () => {
   const { boardsById, plateHtml } = await import('../scripts/plate.js');
-  const key = plateKey(placeOf(content, 'cangjing'));
-  const l = look(at('waimen', day(0), { plate_deal: { [key]: { n: 0, at: 'cangjing', game: 'pintu' } } }), content, ctx(day(0)));
+  const key = plateKey(placeOf(plain, 'cangjing'));
+  const l = look(at('waimen', day(0), { plate_deal: { [key]: { n: 0, at: 'cangjing', game: 'pintu' } } }), plain, ctx(day(0)));
   const plate = { spots: [{ id: 'cangjing', name: '藏经阁', at: [0.2, 0.3] }, { id: 'houshan', name: '后山', at: [0.5, 0.5] }] };
   const html = plateHtml(plate, { boards: boardsById(l) });
   const names = l.boards.find((b) => b.id === 'cangjing').games.map((g) => g.name).join(' · ');

@@ -61,5 +61,9 @@ export function trayLook(content, state, view, ctx, asideOffers = []) {
   const sorted = kept.map((r, i) => [r, i]).sort((a, b) => RANK[a[0].seg] - RANK[b[0].seg] || a[1] - b[1]).map(([r]) => r);
   // No 「N 分后换」 (2026-11-04): an unplayed game no longer changes with the 时辰 (pool.mjs drawPool), so no countdown is told.
   // `draw` · `game`: what the row holds, for the door to pin (rules.mjs, pool.mjs pinHold).
-  return { rows: sorted, hour: { i: shichen.i, drawn: drawn.length, played: drawn.filter(d => d.played).length, draw: draw.shichen.start.toISOString(), game: draw.shown } };
+  // 观里的事 (rules/happenings.mjs): how many happenings stand lit, and the minutes till the next 时辰 lights its own — the
+  // footer chip's 「未时 · 47 分换一批」 (a happening changes with the 时辰; the 小游戏池's one game waits till played).
+  const lit = sorted.filter(r => r.happening).length;
+  return { rows: sorted, hour: { i: shichen.i, drawn: drawn.length, played: drawn.filter(d => d.played).length, draw: draw.shichen.start.toISOString(), game: draw.shown,
+    ...(lit ? { happen: lit, change_min: Math.max(1, Math.ceil((shichen.end - now) / 60_000)) } : {}) } };
 }

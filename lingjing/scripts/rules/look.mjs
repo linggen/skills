@@ -8,6 +8,8 @@ import { playGrant, replayShare } from './playpay.mjs';
 import { CAST, gameOf } from '../content.mjs';
 import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
 import { poolDeal } from './pool.mjs';
+import { happeningHosted } from './happenings.mjs';
+import { waveHosted, waveRow, waveTask } from './forms.mjs';
 import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, phaseName, realmName, threshold, seedOf, cultivating, layerNo, layerName, stageOf } from '../state.mjs';
 import { duanCooling, duanOdds } from './breakthrough.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
@@ -494,6 +496,10 @@ function tasksBrief(content, state, ctx) {
   Object.assign(hosted, mijingHosted(content, state));
   // 切磋 (rules/qiecuo.mjs): the day's bout at 沉鼎观, out of its cooldown.
   Object.assign(hosted, qiecuoHosted(content, state, ctx.now));
+  // 观里的事 (rules/happenings.mjs): the game the happening lit where he stands deals now, as practice.
+  for (const [id, t] of Object.entries(happeningHosted(content, state, ctx.now))) if (!hosted[id]) hosted[id] = t;
+  // 妖兽出没's fight as a wave (rules/forms.mjs): its board, while the batch's beast here comes as one.
+  Object.assign(hosted, waveHosted(content, state, ctx.now));
   // A kept board taken up again where it was kept (rules/skips.mjs playKept `taken`): it stands there as practice until played.
   for (const [id, t] of Object.entries(state.tasks ?? {})) if (t?.taken && t.taken === state.place && t.status !== 'done' && !hosted[id]) hosted[id] = { status: 'offered', practice: true };
   const again = new Set([...(content.tasks?.tasks ?? []).map(t => t.id).filter(id => reopened(content, state, id, ctx.now)), ...Object.keys(hosted)]);
@@ -518,7 +524,7 @@ function tasksBrief(content, state, ctx) {
       const task = taskOf(content, id);
       // The deal: the task's own (and its game's levels) 兽潮's night (or 切磋's bout) and a 秘境探险 room's level laid over it — one deal.
       const own = dealOf(content, task, state, ctx.now);
-      const sc = task.shouchao ? shouchaoRow(content, state, ctx.now) : task.qiecuo ? qiecuoRow(content, state, ctx.now) : {}, mj = task.mijing ? mijingRow(content, state, id) : {};
+      const sc = task.shouchao ? shouchaoRow(content, state, ctx.now) : task.qiecuo ? qiecuoRow(content, state, ctx.now) : waveTask(content)?.id === id ? waveRow(content, state, ctx.now, lang) : {}, mj = task.mijing ? mijingRow(content, state, id) : {};
       const deal = own.deal || sc.deal || mj.deal ? { deal: { ...own.deal, ...sc.deal, ...mj.deal } } : {};
       return {
         id, title: boardTitle(content, state, id, task, again.has(id)), kind: task.kind, status: t.status,

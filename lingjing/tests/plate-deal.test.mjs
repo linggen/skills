@@ -15,7 +15,10 @@ const win = (s, c, ctx, a) => VERBS.win(s, c, ctx, a);
 import { plateDealt, plateKey, poolToday } from '../scripts/rules/rotation.mjs';
 import { allPlaces, placeOf } from '../scripts/rules/world.mjs';
 
-const content = loadContent();
+// The plate's own deal and the boards standing at the 观's places, as a world without 观里的事 has them: since 2026-11-10 a
+// plate a happening stands on deals through its happenings (rules/happenings.mjs, tests/happenings.test.mjs) — the
+// mechanism held here is the one every plate without happenings still runs.
+const content = { ...loadContent(), happenings: null };
 const NOW = new Date('2026-10-27T09:00:00-03:00');
 const at = (d) => ({ now: new Date(NOW.getTime() + d * 864e5) });
 const PLATE = plateKey(placeOf(content, 'cangjing'));
