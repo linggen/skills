@@ -151,6 +151,45 @@ test('cloud.further is declared in the shape the engine reads, its order resolvi
   assert.deepEqual(r.by.filter((e) => e.rise).map((e) => e.rank ?? e.number), ['tier', 'step']);
 });
 
+/* `cloud.ignore` (skill-spec § Cloud `ignore`): the keys of the save's state file the game stamps without play.
+   The engine leaves them out of "did the save move" and of "do the copies agree"; the phone ships the same list.
+   A key that is progress in here would hide a real move from both: lint it against the game's own writes. */
+const STAMPS = ['last_seen', 'updated', 'stamina', 'stamina_at', 'resting', 'away',
+  'shown', 'shown_at', 'weather_told', 'story_told', 'festival_told', 'recap', 'page_seen', 'asked_at', 'node',
+  'guided', 'told_scenes', 'tell_owed', 'pool_hold'];
+
+test('cloud.ignore lists the stamps and none of the progress', async () => {
+  const { readFurtherText, readIgnore, ignoreProblems, resolved } = await import('../tools/further.mjs');
+  const md = fs.readFileSync(SKILL_MD, 'utf8');
+  const ignore = JSON.parse(readIgnore(md));
+  assert.deepEqual(ignoreProblems(ignore, JSON.parse(readFurtherText(md))), []);
+  assert.deepEqual(ignore, STAMPS, 'the list the phone mirrors (linggen-mobile test/lingjing_sync_test.dart `stamps`)');
+  assert.deepEqual(resolved().ignore, ignore, 'the phone is shipped the same list');
+  // No key a move earns, nor one the rule reads before its last tie-break.
+  for (const progress of ['done_scenes', 'tier', 'step', 'progress', 'version', 'story_at', 'wealth', 'bag', 'cards', 'place']) {
+    assert.ok(!ignore.includes(progress), `${progress} is progress`);
+  }
+  // Every stamp is one the game's own code writes (a renamed key would silently stop being ignored).
+  const scripts = new URL('../scripts/', import.meta.url);
+  const code = fs.readdirSync(scripts, { recursive: true }).filter((f) => f.endsWith('.mjs')).map((f) => fs.readFileSync(new URL(f, scripts), 'utf8')).join('\n');
+  for (const k of ignore) assert.ok(new RegExp(`\\b${k}\\b`).test(code), `${k} is written by the rules`);
+});
+
+test('a broken ignore is caught', async () => {
+  const { ignoreProblems } = await import('../tools/further.mjs');
+  const rule = { file: 'a.json', by: [{ count: 'done' }, { time: 'story_at', within: ['tier'] }, { time: 'updated' }] };
+  assert.deepEqual(ignoreProblems(undefined, rule), []);
+  assert.deepEqual(ignoreProblems(['updated', 'last_seen'], rule), [], 'the last tie-break may be ignored');
+  assert.match(ignoreProblems(['x'], null)[0], /needs a cloud.further/);
+  assert.match(ignoreProblems([], rule)[0], /non-empty list/);
+  assert.match(ignoreProblems('updated', rule)[0], /non-empty list/);
+  assert.match(ignoreProblems(['done'], rule)[0], /read by cloud.further/);
+  assert.match(ignoreProblems(['story_at'], rule)[0], /read by cloud.further/);
+  assert.match(ignoreProblems(['tier'], rule)[0], /read by cloud.further/);
+  assert.match(ignoreProblems(['a.b'], rule)[0], /top-level key/);
+  assert.match(ignoreProblems(['a', 'a'], rule)[0], /twice/);
+});
+
 test('a broken further is caught', async () => {
   const { problems } = await import('../tools/further.mjs');
   assert.match(problems({ file: '../x', by: [] }).join(';'), /inside the skill.*non-empty/);

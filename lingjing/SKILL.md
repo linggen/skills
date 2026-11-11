@@ -45,6 +45,19 @@ cloud:
       {"time": "story_at"},
       {"time": "updated"}
     ]}
+  # Keys of data/state.json that the game or its page writes without a move (2026-11-10; found by diffing the save
+  # after read verbs at different times, tests/cloud-ignore.test.mjs). The clock and every player verb: `last_seen`,
+  # `updated`, and the 体力 refill `stamina`, `stamina_at`, `resting`, `away`. What the page or Ling's Look only shows
+  # or tells once: `shown`, `shown_at`, `weather_told`, `story_told`, `festival_told`, `recap`, `page_seen`,
+  # `asked_at`, `node`, `guided`, `told_scenes`, `tell_owed`, and the 小游戏池's hold `pool_hold`. A save that differs
+  # only in these has not moved: no push, no conflict copy, no "both moved". Never here: anything a move earns (the
+  # scenes, 修为, 层, wealth, bag, cards, `been`, the day's `chance` whose `taken` is earned…), nor `story_at`, which
+  # `further` reads, nor `companion`/`kaifu` (progress and stamp in one key). 体力 is earned only with `chores` or
+  # `last_seclusion` written beside it and spent only by a move that writes more, so leaving it out hides no move.
+  # `updated` is still read by `further` as its last tie-break; it is only left out of "did it move".
+  ignore: ["last_seen", "updated", "stamina", "stamina_at", "resting", "away",
+    "shown", "shown_at", "weather_told", "story_told", "festival_told", "recap", "page_seen", "asked_at", "node",
+    "guided", "told_scenes", "tell_owed", "pool_hold"]
 # The rules always know what the player must choose next, and the scene is
 # the question: every tool answer carries `ask`, and the engine asks it when
 # Ling ends a turn on words alone (2026-09-17 — Terra dropped it three times
