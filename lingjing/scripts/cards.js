@@ -1068,13 +1068,13 @@ export const HOME_WORDS = {
     resume: '接着读', way: '去{name} ›', turnin: '交差 · {title}', errand: '去办 · {title}', fight: '斗 · {title}', board: '开局 · {title}', happen: '{title} · 去',
     boardPays: '开局 · {title} · 修为 +{n}', take: '接下 · {title}', go: '去{name} ›', goWhat: '去{name} · {what}', wait: '{title} · {t}后', seclude: '闭关',
     ready: '可交 {n} · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · 修为 +{n}',
-    tide: '兽潮 · 开局', yaoshou: '{title} · {place} · 还有 {n} 只', skipped: '收着的 {n} 局', waitAt: '{title} · {at} 再开', enough: '{what} · 够了',
+    tide: '兽潮 · 开局', yaoshou: '{title} · {place} · 还有 {n} 只', skipped: '收着的 {n} 局', waitAt: '{title} · {at} 再开', enough: '{what} · 够到圆满',
     door: '{door} · {step}即开', doorOpen: '{door} · 门已开', doorAt: '还在门外 · 在{here}' },
   en: { stage: 'Stage quest · {step}', short: '{n} cultivation to go', chores: 'chores +{n}', plays: 'about {n} games', playsMore: 'then about {n} games', todo: 'Waiting',
     resume: 'Read on', way: 'Go to {name} ›', turnin: 'Hand in · {title}', errand: 'Do it · {title}', fight: 'Fight · {title}', board: 'Play · {title}', happen: '{title} · go',
     boardPays: 'Play · {title} · cultivation +{n}', take: 'Take · {title}', go: 'Go to {name} ›', goWhat: 'To {name} · {what}', wait: '{title} · in {t}', seclude: 'Seclusion',
     ready: '{n} to hand in · {title}', held: '{title} · {place}', heldBare: '{title}', gongke: '{name} · cultivation +{n}',
-    tide: 'Beast tide · play', yaoshou: '{title} · {place} · {n} left', skipped: '{n} games kept', waitAt: '{title} · opens again at {at}', enough: '{what} · enough',
+    tide: 'Beast tide · play', yaoshou: '{title} · {place} · {n} left', skipped: '{n} games kept', waitAt: '{title} · opens again at {at}', enough: '{what} · fills the bar',
     door: '{door} · opens at {step}', doorOpen: '{door} · open', doorAt: 'Not inside yet · at {here}' },
 };
 /* The clock time `min` minutes from now, 「15:40」. */
