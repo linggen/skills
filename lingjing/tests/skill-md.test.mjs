@@ -146,8 +146,8 @@ test('cloud.further is declared in the shape the engine reads, its order resolvi
   assert.deepEqual(problems(rule), []);
   const r = resolved();
   assert.deepEqual(r.by.map((e) => Object.keys(e).find((k) => ['count', 'rank', 'number', 'time'].includes(k))),
-    ['count', 'rank', 'number', 'number', 'time', 'time']);
-  assert.equal(r.by[1].order[0], 'qi', 'the ladder, lowest realm first');
+    ['number', 'count', 'rank', 'number', 'number', 'time', 'time']); // the version first (2026-11-11)
+  assert.equal(r.by[2].order[0], 'qi', 'the ladder, lowest realm first');
   assert.deepEqual(r.by.filter((e) => e.rise).map((e) => e.rank ?? e.number), ['tier', 'step']);
 });
 

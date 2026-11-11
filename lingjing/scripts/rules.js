@@ -44,8 +44,12 @@ export class LookFailed extends Error {
   constructor(out) {
     super(out?.error || out?.refused || 'look failed');
     this.name = 'LookFailed';
+    this.refused = out?.refused ?? null;
   }
 }
+
+/// A Look the rules refused because the save is from newer rules (rules/newer.mjs): the page's calm screen, not a retry word.
+export const newerSave = (e) => e?.name === 'LookFailed' && e.refused === 'newer-save';
 
 /// What the page says when a Look ran and failed, from the engine's JS
 /// runtime (`/api/runtime/js`): still being fetched, a fetch that failed, or
