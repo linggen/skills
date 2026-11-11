@@ -530,6 +530,9 @@ function pageTold(verb, reader, state, stateFile) {
    restored where it stood, or begun. The answer is the new world's Look,
    with `travelled` saying where from and whether the save is fresh. */
 function travelTo(id, current, { stateFile, logFile, now, verb }) {
+  // The other world's kept save from newer rules (rules/newer.mjs): never travelled into, and the game in play not parked.
+  const kept = savedFor(id) ? readSave(savedFile(id)) : null;
+  if (kept?.newer != null) return newerRefusal(kept.newer);
   const parkedBefore = parkedFiles([current.world, id]);
   keepSave('world', current.world, current, now.toISOString());
   const content = loadWorld(id);
