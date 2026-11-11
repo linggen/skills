@@ -31,6 +31,7 @@ import { guard, onLook, unconfirmed } from './rules/confirm.mjs';
 import { markSeen, notePage, READS_PAGE, unseen } from './rules/did.mjs';
 import { chooseLang, inPlay, langNow, stateText } from './rules/language.mjs';
 import { pageNames, pageThrows } from './rules/core.mjs';
+import { appendLog, trimLog } from './rules/log.mjs';
 import { clock, dataDir, freshState, withRun, shiftDays, shiftFile, homeDir, parseArgs, readQuests, SAVE_NAME, savedFile, savedFor, scratchName, skillDir, userTurn, userWords, withLock, writeAtomic } from './rules/files.mjs';
 import { look, stageAt } from './rules/look.mjs';
 import { pinHold } from './rules/pool.mjs';
@@ -203,6 +204,7 @@ const PAGE_ACTIONS = { task: ['skip', 'keep', 'kept-play', 'kept-drop'], tale: [
 export const pageOnly = (verb, args = {}) => Boolean(PAGE_ACTIONS[verb]?.includes(String(args.action ?? '')));
 function runLocked(verb, args, stateFile, reader) {
   const logFile = path.join(dataDir(), 'log.jsonl');
+  trimLog(logFile); // an oversized log cut to its newest lines (rules/log.mjs), here under the lock; never fails the call
   const now = clock();
   // The language is Linggen's (rules/language.mjs): the save's own `lang` is let go on read.
   const raw = fs.existsSync(stateFile) ? inPlay(migrate(JSON.parse(fs.readFileSync(stateFile, 'utf8')))) : null;
@@ -249,7 +251,7 @@ function runLocked(verb, args, stateFile, reader) {
   const owed = verb !== 'init' && saved === state && owesRecap(state, now, verb === 'look' ? session : null);
   if (verb === 'init' || !saved) writeAtomic(stateFile, stateText(state));
   if (verb === 'init') {
-    if (saved) fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args, before: unconfirmed(saved) }) + '\n');
+    if (saved) appendLog(logFile, { at: now.toISOString(), verb, args, before: unconfirmed(saved) });
     return { ...look(state, content, { now, quests: readQuests() }), restarted: !!saved };
   }
 
@@ -343,7 +345,7 @@ function runLocked(verb, args, stateFile, reader) {
     // The last player verb (state.mjs awayFit reads the gap from it).
     if (player) next.last_seen = now.toISOString();
     writeAtomic(stateFile, stateText(next));
-    if (!(standOnly && !out.state)) fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb, args: logged(args, verb), before: unconfirmed(raw ?? state) }) + '\n');
+    if (!(standOnly && !out.state)) appendLog(logFile, { at: now.toISOString(), verb, args: logged(args, verb), before: unconfirmed(raw ?? state) });
     trackPay(verb, args, out.result, raw ?? state, next, content, now);
   }
   // …a read or a refusal is the player here too: stamped, never logged.
@@ -531,7 +533,7 @@ function travelTo(id, current, { stateFile, logFile, now, verb }) {
   const state = withRun(unconfirmed(parked), 'travel') ?? freshState(content, langNow(), now, current, 'travel');
   state.updated = now.toISOString();
   writeAtomic(stateFile, stateText(state));
-  fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb: 'travel', args: { world: id, by: verb }, before: unconfirmed(current), parked: parkedBefore }) + '\n');
+  appendLog(logFile, { at: now.toISOString(), verb: 'travel', args: { world: id, by: verb }, before: unconfirmed(current), parked: parkedBefore });
   return { ...look(state, content, { now, quests: readQuests() }), travelled: { from: current.world, to: id, fresh: !parked } };
 }
 
@@ -545,7 +547,7 @@ function loadSave(found, current, { stateFile, logFile, now }) {
   if (found.kind === 'world') fs.rmSync(savedFile(found.id), { force: true });
   state.updated = now.toISOString();
   writeAtomic(stateFile, stateText(state));
-  fs.appendFileSync(logFile, JSON.stringify({ at: now.toISOString(), verb: 'load', args: { id: found.id }, before: unconfirmed(current), parked: parkedBefore }) + '\n');
+  appendLog(logFile, { at: now.toISOString(), verb: 'load', args: { id: found.id }, before: unconfirmed(current), parked: parkedBefore });
   const content = loadWorld(state.world);
   return { ...look(state, content, { now, quests: readQuests() }), loaded: { id: found.id, kind: found.kind, title: found.title, at: found.at } };
 }

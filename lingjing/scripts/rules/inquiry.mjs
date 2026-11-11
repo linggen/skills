@@ -8,7 +8,6 @@
 // 马腹 standing there and sent the player to "the beast panel". And after
 // `[scene] won`, with no log and no spoils in Look, she made up the last blow
 // and a 灵兽印记 to collect, and Showed cards the stage already held.
-import fs from 'node:fs';
 import path from 'node:path';
 import { battle } from '../battle.js';
 import { DEFAULT_WORLD, gameOf, knownWorld, loadWorld } from '../content.mjs';
@@ -16,6 +15,7 @@ import { pick } from '../state.mjs';
 import { THEN_RECAP } from './ask.mjs';
 import { cardCatalog } from './cards.mjs';
 import { dataDir } from './files.mjs';
+import { readLog } from './log.mjs';
 import { allPlaces, creatureOf } from './world.mjs';
 
 /* ── 问询: a subject named ── */
@@ -82,15 +82,16 @@ export const THEN_ABOUT_NONE = 'A 问询 about something this world\'s books do 
    fight is replayed here exactly as the rules decided it. The save after it
    is the next log line's `before`, or the save in play. */
 function settleOf(id) {
-  const file = path.join(dataDir(), 'log.jsonl');
-  if (!fs.existsSync(file)) return null;
-  const lines = fs.readFileSync(file, 'utf8').trim().split('\n').filter(Boolean);
+  // The log is trimmed to its newest lines (rules/log.mjs): a fight long gone is null here, and told bare by boutOf.
+  const lines = readLog(path.join(dataDir(), 'log.jsonl'));
   for (let i = lines.length - 1; i >= 0; i--) {
     if (!lines[i].includes('"verb":"duel"')) continue;
-    const e = JSON.parse(lines[i]);
-    if (e.args?.id !== id || !e.args.picks || !e.before?.fight?.setup) continue;
-    const after = lines[i + 1] ? JSON.parse(lines[i + 1]).before : null;
-    return { entry: e, after };
+    try {
+      const e = JSON.parse(lines[i]);
+      if (e.args?.id !== id || !e.args.picks || !e.before?.fight?.setup) continue;
+      const after = lines[i + 1] ? JSON.parse(lines[i + 1]).before : null;
+      return { entry: e, after };
+    } catch { /* a line that does not parse is no record */ }
   }
   return null;
 }

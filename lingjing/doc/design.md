@@ -1722,7 +1722,9 @@ Each 卷's 大场面 comes with its 卷 (§ 规矩).
 `done_scenes`, `place`, `quests`, `chores`, `tale`, `known`, `ledger`,
 `memories`, `companion`, `marks`, `story` (≤600 characters, Ling's
 `Summarize`; the rules never read it) … `log.jsonl` records every change
-`{at, verb, args, before}` — the audit and what `undo` restores. One writer
+`{at, verb, args, before}` — the audit and what `undo` restores; bounded
+(rules/log.mjs: trimmed to its newest ~4 MB / 400 lines once past 8 MB, a run of one
+fight's `mark` lines kept as its first and newest). One writer
 at a time (`state.json.lock`, then `busy`).
 
 ## A turn — what the context holds 【已建】
