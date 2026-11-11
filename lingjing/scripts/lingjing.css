@@ -1222,6 +1222,13 @@ a.readchip { text-decoration: none; display: inline-block; }
 body.fighting .atmos { display: none; }
 .atmos .frame i { position: absolute; display: none; }
 .atmos .pts { position: absolute; inset: 0; }
+/* The sun and the moon (sky-bodies.js): in the layer's own box at the top of the stage, behind the particles; a body's
+   box holds its glow (the disc is 36% of it), placed by its percents, moving a hair a minute. */
+.atmos .skybox { position: absolute; inset: 0; --sz: clamp(34px, 5.5vmin, 56px); }
+.atmos .skybody { position: absolute; display: block; width: calc(var(--sz) / .36); aspect-ratio: 1; transform: translate(-50%, -50%);
+  transition: left 1.2s linear, top 1.2s linear, opacity 1.2s ease; }
+.atmos .skybody svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.atmos .skybody[data-mode="glow"] { filter: blur(3px); }
 .atmos .pt { position: absolute; left: var(--x); top: -14px; display: block; will-change: transform; }
 
 /* The weather tints the sky before anything falls. */
@@ -1364,6 +1371,7 @@ body.fighting .atmos { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .atmos .pt, .atmos .frame i { animation: none !important; }
+  .atmos .skybody { transition: none; }
   .atmos .p-sparks, .atmos .p-rain, .atmos .p-gusts, .atmos .p-fireflies { display: none; }
   .atmos .p-snow .pt, .atmos .p-leaves .pt, .atmos .p-petals .pt { top: var(--y); margin-left: 0; }
   .atmos .p-glow .pt { bottom: auto; top: var(--y); opacity: .6; }

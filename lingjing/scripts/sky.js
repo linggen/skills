@@ -10,6 +10,8 @@ export const SKY_WORDS = {
   zh: {
     kinds: { clear: '晴', cloudy: '阴', fog: '雾', rain: '雨', snow: '雪', storm: '雷雨' },
     winds: { windy: '有风', gale: '大风' },
+    // The moon's phase (sky-bodies.js PHASES), the chip's title at night.
+    moon: { new: '新月', 'waxing-crescent': '蛾眉', 'first-quarter': '上弦', 'waxing-gibbous': '盈凸', full: '满月', 'waning-gibbous': '亏凸', 'last-quarter': '下弦', 'waning-crescent': '残月' },
     title: '天气',
     note: '填你所在的城市，灵境的天就跟着你那儿走；不填，便是蒙山的四季。',
     placeholder: '城市，如 哈尔滨',
@@ -20,6 +22,7 @@ export const SKY_WORDS = {
   en: {
     kinds: { clear: 'Clear', cloudy: 'Cloudy', fog: 'Fog', rain: 'Rain', snow: 'Snow', storm: 'Storm' },
     winds: { windy: 'windy', gale: 'gale' },
+    moon: { new: 'New', 'waxing-crescent': 'Waxing crescent', 'first-quarter': 'First quarter', 'waxing-gibbous': 'Waxing gibbous', full: 'Full', 'waning-gibbous': 'Waning gibbous', 'last-quarter': 'Last quarter', 'waning-crescent': 'Waning crescent' },
     title: 'Weather',
     note: 'Name your city and the sky here follows yours; leave it, and it is Mengshan\'s seasons.',
     placeholder: 'A city, e.g. Harbin',
@@ -42,7 +45,9 @@ export function wxChipHtml(weather, { lang = 'zh', open = false, sense = null, n
   const w = wordsOf(lang);
   const temp = Number.isFinite(weather.temp_c) ? ` ${weather.temp_c}°` : '';
   const blow = w.winds[wind?.level] ? `${lang === 'en' ? ', ' : '，'}${w.winds[wind.level]}` : '';
-  const label = `${weather.where} · ${w.kinds[weather.kind] ?? weather.kind}${blow}${temp}`;
+  // At night the moon's phase is on the title (hover, the screen reader): a clear night shows the moon, whose phase is its word.
+  const phase = weather.is_day === false && weather.moon ? ` · ${w.moon[weather.moon.name] ?? ''}` : '';
+  const label = `${weather.where} · ${w.kinds[weather.kind] ?? weather.kind}${blow}${temp}${phase}`;
   // On the footer, the sky's mark and the degrees (Hanli, 2026-10-15: the bar held too much — the
   // place is the header's); a story's sky has no degrees, so its word stands. The whole line is the title.
   const short = `${skyMark(weather)}${temp || ` ${w.kinds[weather.kind] ?? weather.kind}`}`;
@@ -51,7 +56,8 @@ export function wxChipHtml(weather, { lang = 'zh', open = false, sense = null, n
 
 /* The sky as one text mark (U+FE0E: drawn as text, never an emoji); a clear night is the moon. */
 const MARKS = { clear: '\u2600\uFE0E', cloudy: '\u2601\uFE0E', fog: '\u224B', rain: '\u2602\uFE0E', snow: '\u2744\uFE0E', storm: '\u26A1\uFE0E' };
-export const skyMark = (weather) => (weather.kind === 'clear' && weather.is_day === false ? '\u263E' : MARKS[weather.kind] ?? '\u2601\uFE0E');
+/* The moon's mark follows its phase: ☽ lit on the right while it waxes, ☾ lit on the left while it wanes. */
+export const skyMark = (weather) => (weather.kind === 'clear' && weather.is_day === false ? (weather.moon?.waxing ? '\u263D' : '\u263E') : MARKS[weather.kind] ?? '\u2601\uFE0E');
 
 /// The city as the page's language says it (live, 2026-10-15: 「跟着：Halifax」 on a Chinese page). The
 /// geocoder gives a name only in its own spelling, so the country — named by the browser in the page's

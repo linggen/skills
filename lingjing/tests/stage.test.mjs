@@ -248,7 +248,7 @@ test('the footer (Hanli, 2026-10-05): the weather chip names where he stands, æ
   assert.match(foot, /FOOTER\.filter\(has\)\.map\(\(part\) => FOOT_CHIPS\[part\]\(slots\)\)/, 'in stage.mjs FOOTER\'s order');
   assert.doesNotMatch(foot, /ledgerChipHtml/, 'the ledger is written no more: no chip');
   assert.match(foot, /wxChipHtml\(wxHere\(\)/);
-  assert.match(src, /const wxHere = \(\) => \(look\?\.weather \? \{ \.\.\.look\.weather, where: look\.place\?\.name \?\? look\.weather\.where \} : null\);/);
+  assert.match(src, /const wxHere = \(\) => \(look\?\.weather \? \{ \.\.\.look\.weather, where: look\.place\?\.name \?\? look\.weather\.where, is_day: dayOnStage\(\), moon: moonAt\(nowMs\(\)\) \} : null\);/); // + the stage's day and the moon, for the chip's mark and title (sky-bodies.js)
   assert.doesNotMatch(html, /<svg class="backdrop"|<circle/, 'no hill or moon drawn in code');
   assert.match(html, /<div class="backdrop" id="backdrop" aria-hidden="true"><\/div>/);
   // A picture only where the content declares one: the scene's own `backdrop`, a story sky's, the festival's, else the

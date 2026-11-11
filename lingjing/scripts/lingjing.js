@@ -74,6 +74,7 @@ import { atmosClasses, atmosOf, indoorOf, particlesHtml, stagePick, windVars } f
 import { placeArtOf } from './placeart.js';
 import { WINDS } from './rules/weather.mjs';
 import { parseDay } from './calendar.js';
+import { applySky, moonAt, skyOf } from './sky-bodies.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
 import { pieceStillAhead, advance, asidePlace, atLast, beatKey, choicesUp, readingAt as readingSetAside, current, DLG_WORDS, fitMode, huiAt, keepReading, leadsIn, loadReading, modeAt, sceneOfItem, logHtml, noted, ofPlay, playing, readingFor, sightNow, sightings, storyHolds, storyHtml, wholeBeats, withTold } from './dialogue.js';
 import { createLines, keepSpeed, paceOf, SPEEDS, speedNow, voiceOf } from './lines.js';
@@ -103,14 +104,17 @@ const $ = (id) => document.getElementById(id);
 /* A preview of the atmosphere, for testing only: `?day=2027-02-06` reads
    Look's `today` (and its season) for that date (a read — the save is never
    written for it), `?weather=snow|rain|fog|clear` draws that sky,
-   `?season=autumn` that season, `?wind=gale&winddir=270` that wind. */
+   `?season=autumn` that season, `?wind=gale&winddir=270` that wind, `?hour=23.5` that local hour (with `?day=` the
+   sun, the moon and its phase are those of the date and hour). */
 const PREVIEW = (() => {
   try {
     const q = new URLSearchParams(location.search);
     const wind = WINDS.find((w) => w.level === q.get('wind'));
+    const hour = Number(q.get('hour'));
     return { day: parseDay(q.get('day')) ? q.get('day') : null, weather: q.get('weather') || null, season: q.get('season') || null,
+      hour: q.get('hour') !== null && q.get('hour') !== '' && Number.isFinite(hour) && hour >= 0 && hour < 24 ? hour : null,
       wind: wind ? { level: wind.level, force: wind.force, dir: q.get('winddir') ? Number(q.get('winddir')) : undefined } : null };
-  } catch { return { day: null, weather: null, season: null, wind: null }; }
+  } catch { return { day: null, weather: null, season: null, hour: null, wind: null }; }
 })();
 
 // Tools that change the state: the scene re-reads Look once they have run.
@@ -1631,7 +1635,7 @@ function herTokenHtml() {
 /* The weather chip names where the hero stands (Hanli, 2026-10-05: 「蒙山·晴」
    at 沉鼎观): the place's own name — the sky may be his city's or 蒙山's
    seasons, which the chip's popover says. */
-const wxHere = () => (look?.weather ? { ...look.weather, where: look.place?.name ?? look.weather.where } : null);
+const wxHere = () => (look?.weather ? { ...look.weather, where: look.place?.name ?? look.weather.where, is_day: dayOnStage(), moon: moonAt(nowMs()) } : null);
 
 /* The backdrop (2026-10-14, the approved prototypes: 「底图 = 天气」): the whole stage, a
    painting of the sky over the scene — its own, else the real one (Look's `weather`: the
@@ -1675,8 +1679,15 @@ function paintBackdrop() {
   el.appendChild(bd);
   liveBackdrop(bd, src, authored?.backdrops, art); // 画活 (fx-alive.js): what the painting's row says moves, moves
 }
-/* Day or night by the clock here (the sense's own `is_day` wins where Look carries one). */
-const isDayNow = (d = new Date()) => d.getHours() >= 6 && d.getHours() < 18;
+/* The moment the page draws the sky for: now, or a preview's day and hour (PREVIEW). */
+function nowMs() {
+  if (!PREVIEW.day && PREVIEW.hour === null) return Date.now();
+  const n = new Date(), p = PREVIEW.day ? parseDay(PREVIEW.day) : { y: n.getFullYear(), m: n.getMonth() + 1, d: n.getDate() };
+  const h = PREVIEW.hour ?? n.getHours() + n.getMinutes() / 60;
+  return new Date(p.y, p.m - 1, p.d, Math.floor(h), Math.round((h % 1) * 60)).getTime();
+}
+/* Day or night by the clock here (the sense's own `is_day` wins where Look carries one): 6:00–18:00 — the game knows no sunrise. */
+const isDayNow = (d = new Date(nowMs())) => d.getHours() >= 6 && d.getHours() < 18;
 
 /* 节日 · 节气: today's festival as a chip — its task a word to Ling (she
    plays it out and pays it) until done — or the 节气's name, just said. */
@@ -1695,6 +1706,19 @@ function festChipHtml() {
    day's weather. The particles are laid again only when the layer changes, so
    a redraw never restarts them. */
 let atmosKey = null;
+/* The sun and the moon (sky-bodies.js) in the layer's own box: painted every time (the hour moves them, the weather and
+   the stage change what shows), but only rewritten when they differ; a minute's timer keeps the hour going. None on 今线,
+   in a sealed instance or a room; the 中秋 festival draws its own moon. */
+let skyHaze = false; //  the season's haze is in the layer (atmos.js): the sun is veiled
+function paintSky(jin = look?.scene?.line === 'jin', indoor = indoorOf(look?.scene, placeHere())) {
+  const box = $('atmosSky');
+  if (!box) return;
+  const none = jin || Boolean(look?.sealed) || indoor || !look;
+  const frame = look?.today?.festival?.dressing?.frame;
+  const kind = PREVIEW.weather ?? look?.weather?.kind ?? null;
+  applySky(box, skyOf({ ms: nowMs(), isDay: dayOnStage(), weather: kind, haze: skyHaze, none, noMoon: frame === 'moon' }));
+}
+setInterval(() => paintSky(), 60000);
 function paintAtmos() {
   // 今线 has no weather (Hanli, 2026-10-14: a pale modern stage) — and no festival dressing of the 古's.
   const jin = look?.scene?.line === 'jin';
@@ -1707,6 +1731,8 @@ function paintAtmos() {
   for (const c of [...v.classList]) if (c.startsWith('season-')) v.classList.remove(c);
   for (const c of [...v.classList]) if (c.startsWith('fest-') || c.startsWith('wx-')) v.classList.remove(c);
   v.classList.add(...atmosClasses(a));
+  skyHaze = a.particles.includes('haze');
+  paintSky(jin, indoor);
   // 今线 (an interlude, Look's scene `line: jin`): a pale modern stage — the scene's `scape` (track, court, stacks …) names which.
   for (const c of [...v.classList]) if (c === 'jin' || c.startsWith('jin-')) v.classList.remove(c);
   if (look?.scene?.line === 'jin') v.classList.add('jin', ...(look.scene.scape ? [`jin-${look.scene.scape}`] : []));
