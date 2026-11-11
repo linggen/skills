@@ -14,7 +14,7 @@ import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, 
 import { duanCooling, duanOdds } from './breakthrough.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_ROAD_RIDDLE, THEN_SECLUSION, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
-import { fightSetup, heldMark, pouchBrief, readOf } from './cards.mjs';
+import { fightSetup, heldMark, hpMaxOf, pouchBrief, readOf } from './cards.mjs';
 import { doorOffers } from './pouch.mjs';
 
 const hintsOf = (state, game, lang) => { const h = (game.hints ?? []).filter(x => heldMark(state, x.mark)).map(x => pick(x.say, lang)); return h.length ? { hints: h } : {}; };
@@ -714,7 +714,8 @@ export function look(state, content, ctx) {
     // `step`: the 层 as the book names it (state.mjs layerNo) — 练气一层 is 1 now that 练气 counts from 零层.
     // A realm shown in 段 (筑基 and above, Hanli approved 2026-11-02) adds `realm`, `duan` and `layer` (tierStages): the strip's
     // 「筑基 · 中成」 over three segments (stage.mjs duanOf); 练气 has none and reads as it did.
-    tier: { id: state.tier, step: layerNo(content, state.tier, state.step), name: realmName(content, state, lang), phase: phaseName(content, state.tier, state.step, lang), bar: cultivating(content, state), ...tierStages(content, state, lang, ctx.now) },
+    // `hp`: his 气血 at full here (cards.mjs hpMaxOf, P of his level — batch 3): the breakthrough seal reads its rise off it.
+    tier: { id: state.tier, step: layerNo(content, state.tier, state.step), name: realmName(content, state, lang), phase: phaseName(content, state.tier, state.step, lang), bar: cultivating(content, state), hp: hpMaxOf(state, content), ...tierStages(content, state, lang, ctx.now) },
     progress: state.progress, next: cultivating(content, state) ? threshold(content, state) : null, wealth: state.wealth,
     // Each other line's own 修为 (rules/lines.mjs, Hanli 2026-10-27): its hero, its realm and bar, as `tier` · `progress` ·
     // `next` are the 古's — the top bar on a 今 scene reads 「沈芒 新生一层 · 修为 x/y」 from it (stage.mjs barOf).

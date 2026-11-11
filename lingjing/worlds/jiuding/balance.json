@@ -86,6 +86,26 @@
       "pool": [0.25, 0.68],
       "slack": 0.08
     },
+    "fight": {
+      "_about": "斗法 on the level (batch 3, Hanli 2026-11-10: 「所有和数值相关的都应该有公式推到, 不能手动定」 · 卡牌的整数不改 「可以，按你的想法来」): `power` P(L) = first × growth^(L−1) × realm^realm, the same shape as R(L) and I(L) (rules/power.mjs); `first` 21 is 练气一层's 气血 as it was. His 气血 at full is P(his level) (rules/cards.mjs hpMaxOf). A fight is reckoned in his units (battle.js § unitOf): his 气血 the anchor — his realm's first level as it was (练气 21, 筑基 26, 结丹 32, 元婴 40: a realm's length class, its fights that much longer); a beast's its class share (creatures.json `hp`, a pool entry's, a story fight's foe's or a 秘境 room's over it; × the mode's 0.7) of his realm's row × P(its level) ÷ P(his); every card number as it is. So a hero and a beast of one level fight the fight of 练气一层 (of his realm), turn for turn and rounding for rounding, whatever the level; a beast a level apart is P's ratio stronger or weaker in 气血 and in every blow (st.scale) and every amount weighed against 气血 (a body's 血, +血, a heal, a glance, a lift's 抗); 境界压制 (a realm apart, battle.js SUPPRESS) multiplies on top. The page, Yinyue's facts and the rules' results show every fight number × P(his level) ÷ the anchor (battle.js shown). 零层 (before 入门) has no level and keeps its numbers; a fight kept from before batch 3 (its setup has no level) finishes on the old ones. `length`: fight_length (rules/cards.mjs lengthRule) — the cap on a beast's 气血 is what a player of level L deals a round (`dpt.first` card points at 练气一层, + `dpt.per_level` a level — the road's hands) over the realm's length class, × the realm's rounds (`minutes` by realm, `sec_per_round`); `heals`, `carry` as before (balance.json `_fight_length`). `gear`: a worn thing's points by its slot and 品.",
+      "_things": "`power.things`: where a worn thing's points (atk · def · ward, its 品 × the slot's class — master.gear) and a 回春丹's 气血 (master.pills, at the pill's level) count in a fight. 'own': at the thing's own level, × P(its level) ÷ P(his) — an arm of 练气一层 is a 练气一层 arm at 筑基; 'wearer': at his level, as before batch 3 (its level sets its price only). 'wearer' since 2026-11-10: every arm and heal pill 卷一 gives is 练气一层–七层, and 'own' takes the road's fights at 古六–第九回 out of their bands (cangying, dangkang, 冰夷双龙, the 冀 pools — doc/status.md § The numbers system, batch 3); 'own' wants 卷一 to sell or drop a 筑基 arm and pill first. Hanli's to choose.",
+      "power": {"first": 21, "growth": 1.05, "realm": 1.2, "things": "wearer"},
+      "gear": {
+        "_about": "A worn thing's fight points by its slot and 品 (items.json `pin`, batch 3: no hand 攻 · 防 · 抗 in the book): a weapon's 攻 (主灵根一击 + 攻 × cards.json gear.weapon_power), a robe's or shoes' 防 (护体 × armor_per_def), a pendant's 抗 on each root it names (`wards`, × ward_per_point) — points = 品 × the slot's own. Prices are points × economy.prices.gear × I(its level) (batch 2). In a fight the points count where power.things says.",
+        "weapon": {"atk": 1},
+        "robe": {"def": 1},
+        "shoes": {"def": 1},
+        "pendant": {"ward": 1}
+      },
+      "length": {
+        "sec_per_round": 18.6,
+        "minutes": [3, 3.5, 4, 4.5],
+        "cap": 5,
+        "dpt": {"first": 3.1, "per_level": 0.6},
+        "heals": 1,
+        "carry": 1
+      }
+    },
     "economy": {
       "_about": "灵石 on one curve (batch 2, Hanli 2026-11-10: 「所有和数值相关的都应该有公式推到, 不能手动定」 · 「丹药, 物品都给一个级别吧, 算数值的时候, 按照这个级别算」): `income` I(L) = first × growth^(L−1) × realm^realm — the 灵石 a minute of play is worth at level L (L = realm × 9 + 层, 零层 read at L1), the same shape as R(L) (rules/playpay.mjs incomeAt). Every 灵石 the book grants is a size in minutes of income (`ls` on a grant, a table's, a board's rank, a kind's play) × I where it is paid (its `level` if it says one, else where he stands; rules/playpay.mjs stonesAt); every shop price is minutes × I(the item's own level) by its class (`prices`, tools/master.mjs pricesOf). `first` 2.5: the sizes are today's 灵石 × 0.3 (a minute at the old 3⅓), and I₁ is set so the typical player's 卷一 earns what it did on main (2380 — tools/balance.mjs --wealth; his 灵石 is earned mostly at 练气五–九层, where I(L) stands at 3.0–3.7): 练气一层 pays 0.75 of what it did, 七层 1.0, 九层 1.1, 筑基一层 1.4. Until 2026-11-10 `income` was a flat 3.2 and every grant a hand number.",
       "income": {"first": 2.5, "growth": 1.05, "realm": 1.2},
@@ -705,12 +725,12 @@
   },
   "_lock_fight": "A story fight inside a key beat's lock (chapter.json `beats`, world.mjs lockOf) may be left once he is stuck (Hanli 2026-10-21: 「OK, a」): no shelf is reachable there, so a weak hand with an empty 丹囊 had no way past a 试. After `losses` fights of it lost or run dry, 「算了，往下走」 stands under its card (rules/skips.mjs fightStuck): the way on a win would take, paying nothing — no fight pay, no card, no drop, no exit grant — as a board left or a riddle passed. Since 2026-10-27 every story fight, inside a lock or not (Hanli: 「确保都能跳过去, 不会卡住游戏进程」), and a guard lost to as often lets him by (world.mjs guardOf); tests/no-win-walk.test.mjs walks 卷一 to its end with nothing won.",
   "lock_fight": {"losses": 3},
-  "_fight_length": "How long a card fight may run (Hanli 2026-11-07: 「斗法敌人100多血，攻击牌攻击一般都几点，一局要玩快10分钟。能控制在3分钟吗」 — then: about 3 minutes at today's 练气, longer with more cards and higher realms but within about 5, Hearthstone's match length; a boss within the same 5). A CEILING, not a target: a fight already shorter stays as it is. `minutes` by the ladder's tier index (练气, 筑基, 结丹, 元婴, then `cap`); `sec_per_round` turns rounds (his turn and the beast's) into minutes — measured on his recording, 当康 at 古七 (101 气血, two heals): about 5 minutes, which the rules play in about 16 rounds (≈150 logged moves, his \"157 plays\"), so ≈18.6 s a round. The door (rules/cards.mjs fightLength) caps a beast's 气血 at `dpt` × the realm's rounds, where `dpt` is what a player of that realm deals a round (`base` by tier index, + `step` a 层 — fitted on the road's hands, tools/fight-length.mjs; the party beside him adds next to none: 阿禾 heals, 孙二狗 guards), the 气血 it loses coming back on its blows (`carry`: its blows × (old 气血 ÷ new)^carry, so the fight is as hard, only shorter), and lets it heal `heals` times a fight, never more than one round's `dpt` (battle.js § heal). Not capped: a 试 (creatures.json `trial`: outlasted, its 气血 does not set its length) and a fight whose foe says `long: true` (a story fight the plot wants long — none today). tests/fight-length.test.mjs plays every fight of 卷一 and fails one too long for its realm.",
+  "_fight_length": "How long a card fight may run (Hanli 2026-11-07: 「斗法敌人100多血，攻击牌攻击一般都几点，一局要玩快10分钟。能控制在3分钟吗」 — then: about 3 minutes at today's 练气, longer with more cards and higher realms but within about 5, Hearthstone's match length; a boss within the same 5). A CEILING, not a target: a fight already shorter stays as it is. `minutes` by the ladder's tier index (练气, 筑基, 结丹, 元婴, then `cap`); `sec_per_round` turns rounds (his turn and the beast's) into minutes — measured on his recording, 当康 at 古七 (101 气血, two heals): about 5 minutes, which the rules play in about 16 rounds (≈150 logged moves, his \"157 plays\"), so ≈18.6 s a round. The door (rules/cards.mjs fightLength) caps a beast's 气血 at `dpt` × the realm's rounds, where `dpt` is what a player of that level deals a round (since batch 3, 2026-11-10, derived from master.fight.length: `dpt.first` card points at 练气一层 + `dpt.per_level` a level, over the realm's length class — 练气's old rows to the point, 筑基一层 6.54 for 6.5, 二 · 三层 7.0 · 7.46 for 6.8 · 7.1; until then `base` by tier index + `step` a 层, fitted on the road's hands, tools/fight-length.mjs; the party beside him adds next to none: 阿禾 heals, 孙二狗 guards), the 气血 it loses coming back on its blows (`carry`: its blows × (old 气血 ÷ new)^carry, so the fight is as hard, only shorter), and lets it heal `heals` times a fight, never more than one round's `dpt` (battle.js § heal). Not capped: a 试 (creatures.json `trial`: outlasted, its 气血 does not set its length) and a fight whose foe says `long: true` (a story fight the plot wants long — none today). tests/fight-length.test.mjs plays every fight of 卷一 and fails one too long for its realm.",
   "fight_length": {
     "sec_per_round": 18.6,
     "minutes": [3, 3.5, 4, 4.5],
     "cap": 5,
-    "dpt": {"base": [2.5, 6.5, 7.5, 8.5], "step": [0.6, 0.3, 0.3, 0.3]},
+    "dpt": {"first": 3.1, "per_level": 0.6},
     "heals": 1,
     "carry": 1
   },
@@ -752,5 +772,7 @@
     "element": {"match": 10, "feeds": 5},
     "fail": {"wound": 0.3, "progress": 0.3, "cooldown_hours": 6},
     "duan": {"base": 75, "cooldown_hours": 1}
-  }
+  },
+  "power": {"first": 21, "growth": 1.05, "realm": 1.2, "things": "wearer"},
+  "gear": {"weapon": {"atk": 1}, "robe": {"def": 1}, "shoes": {"def": 1}, "pendant": {"ward": 1}}
 }

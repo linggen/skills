@@ -11,7 +11,7 @@ import { endRun, keyDrop, mapOf, mapReaches, mijingBrief, mijingHold, nextRooms,
 import { winningPicks } from '../scripts/rules/progress.mjs';
 import { cardCatalog } from '../scripts/rules/cards.mjs';
 import { huiOrder, sceneHui } from '../scripts/rules/hui.mjs';
-import { begin } from '../scripts/battle.js';
+import { begin, shown } from '../scripts/battle.js';
 import { stageCards, CARD_KINDS } from '../scripts/stage.mjs';
 
 const content = loadContent();
@@ -209,7 +209,8 @@ test('a run: 气血 carried from fight to fight, a board\'s stars cost it, a 灵
     const door = call('duel', s, { id: 'mijing:boss' });
     assert.ok(door.result.ok);
     const st = begin(door.state.fight.setup, cardCatalog(content));
-    assert.equal(st.you.hp, run(door.state).hp, 'wounds: the fight opens at the run\'s 气血');
+    // In the fight's units (battle.js § unitOf: shown × P(his level) ÷ P₁) — as the room shows it, the run's to a point.
+    assert.ok(Math.abs(shown(st, st.you.hp) - run(door.state).hp) <= 1, `wounds: the fight opens at the run's 气血 (${shown(st, st.you.hp)} · ${run(door.state).hp})`);
     assert.equal(door.state.stamina, Math.max(0, s.stamina - staminaCost(content, 'duel')), 'a fight room costs a card fight\'s 体力 at its door (a run is play time, 2026-11-04)');
     const picks = winningPicks(door.state.fight.setup, cardCatalog(content), 60);
     assert.ok(picks, 'the 大妖 can be won');

@@ -10,6 +10,8 @@
   "gate": null,
   "_map": "The map this chapter opens (his, 2026-09-29: 地图分步打开): the prologue (古一 to 古四) is 石坳村 and 蒙山, and the road up to the temple. A corridor walks the player anyway; the map is what the page greys and Move refuses past (world.mjs mapOf).",
   "map": {
+    "_levels": "The levels this map's places stand in (batch 3, Hanli 2026-11-10: 卷一 is 练气一层 → 筑基三层, L1–12): each place's band (places/*.json `levels`) lies inside it, and every beast and thing on it too, or says why (content.mjs lintLevels). 零层 is outside the 81.",
+    "levels": [1, 12],
     "places": [
       "shiao",
       "mengshan",

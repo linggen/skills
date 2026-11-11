@@ -38,6 +38,42 @@ export const clash = (element, root) => (!element || !root ? 1 : BEATS[element] 
    number on the screen is the number that lands (his, 2026-09-22: 五行 is
    too much to reckon with four roots — 让页面算). `who` is the striker. */
 export const dealt = (st, who, n, element, target) => Math.max(1, Math.round(n * clash(element, target) * (st.scale?.[who] ?? 1)));
+/* Levels (batch 3, rules/power.mjs). A fight is reckoned in HIS units: his 气血 at full is P₁'s (练气一层's, 21), and every
+   number in the fight is a card number as at 练气一层 — so a fight of two sides at one level is the fight at 练气一层, turn for
+   turn and number for number, rounding and all. A beast of another level stands P(its level) ÷ P(his) to him (`f`, its
+   side's level factor): its 气血, every blow it deals (st.scale), and every amount it has that is weighed against 气血
+   (`scaled`: a body's 血 as it stands, a 增益's +血, a heal, a glance's `lands`, a lift's 抗). What the page shows is all of it
+   × P(his level) ÷ P₁ (`st.unit`, `shown`): the numbers grow with his level, the fight does not change. No level on the door
+   (零层, and a fight opened before levels were — its setup carries none): factor 1, unit 1, today's numbers. */
+export const unitOf = st => st?.unit ?? 1;
+/* A fight number as the page and the rules' results show it: × P(his level) ÷ P₁, a whole number (0 stays 0). */
+export const shown = (st, n) => (!n || typeof n !== 'number' || (unitOf(st) === 1 && Number.isInteger(n)) ? n : Math.max(1, Math.round(n * unitOf(st))));
+/* A side of view(st) as the rules' results hand it out (the phone and the page read them): its 气血, 护体, members and bodies × the
+   unit — the numbers the room showed. */
+export function shownSide(v, side) {
+  if (!side || unitOf(v) === 1) return side;
+  const S = n => shown(v, n);
+  return { ...side, hp: S(side.hp), hpMax: S(side.hpMax), armor: S(side.armor), powerHit: S(side.powerHit),
+    ...(side.allies ? { allies: side.allies.map(a => ({ ...a, hp: S(a.hp), hpMax: S(a.hpMax) })) } : {}),
+    ...(side.board ? { board: side.board.map(m => ({ ...m, atk: S(m.atk), hp: S(m.hp), hpMax: S(m.hpMax) })) } : {}) };
+}
+/* A log entry's numbers as the page shows them (the floats, 上一手): its 气血 amounts × the unit. */
+const SHOWN_LOG = ['amount', 'absorbed', 'heal', 'hp', 'armor', 'atk'];
+export const shownEntry = (t, unit = 1) => (unit === 1 || !t ? t : { ...t, ...Object.fromEntries([...SHOWN_LOG, ...(t.act === 'drought' ? ['n'] : [])].filter(k => typeof t[k] === 'number' && t[k] > 0).map(k => [k, Math.max(1, Math.round(t[k] * unit))])) });
+/* What a card does, as its face states it in this fight (the page's card text): every amount × the unit, a beast's ×
+   its own level factor too — so 「打 3 点」 reads what it is worth at his level. A blow's number on a card is the card's, not
+   what it lands on a root (the badges and 「→ 对它 n」 say that). */
+const SHOWN_KEYS = ['damage', 'sweep', 'heal', 'drought'];
+export function shownEffect(st, side, e) {
+  if (!e || (unitOf(st) === 1 && levelOf(side) === 1)) return e;
+  const n = v => shown(st, scaled(side, v));
+  const out = { ...e };
+  for (const k of SHOWN_KEYS) if (typeof out[k] === 'number') out[k] = n(out[k]);
+  for (const k of ['buff', 'rally']) if (out[k]) out[k] = { ...out[k], ...(out[k].atk ? { atk: n(out[k].atk) } : {}), ...(out[k].hp ? { hp: n(out[k].hp) } : {}) };
+  return out;
+}
+export const levelOf = side => side?.f ?? 1;
+export const scaled = (side, n) => (levelOf(side) === 1 || !n ? n : Math.max(1, Math.round(n * levelOf(side))));
 
 /* ── The realms ── */
 
@@ -222,13 +258,14 @@ const allyOf = (a, hp, seed, who) => {
 };
 function sideOf(who, cfg, catalog, mode, seed) {
   const realm = REALMS[cfg.tier] ?? REALMS.qi;
-  const hp = Math.max(1, Math.round((realm.hp + (cfg.step ?? 0) * 0.5) * (cfg.hpScale ?? 1)));
+  // `base`: 气血 at the side's level (begin, from `pow`); none, the old realm's row and half a point a step.
+  const hp = Math.max(1, Math.round((cfg.base ?? realm.hp + (cfg.step ?? 0) * 0.5) * (cfg.hpScale ?? 1)));
   // `wounds`: only a fight whose door was opened before 伤势 was cut
   // (2026-09-24) still carries them in its locked setup; the rules give none now.
   const now = Math.max(1, hp - Math.max(0, cfg.wounds ?? 0));
   const deck = shuffle(cfg.deck ?? [], `${seed}|${who}`);
   return {
-    who, tier: cfg.tier, root: cfg.root ?? null,
+    who, tier: cfg.tier, root: cfg.root ?? null, ...(cfg.f != null && cfg.f !== 1 ? { f: cfg.f } : {}), ...(cfg.level != null ? { level: cfg.level } : {}),
     hp: now, hpMax: hp, mana: 0, manaMax: (mode.startMana ?? 1) - 1, manaCap: realm.mana, powerHit: realm.power + (cfg.power ?? 0), boost: cfg.boost ?? null,
     armor: Math.max(0, cfg.armor ?? 0), ward: cfg.ward ?? null,
     deck, hand: [...(cfg.extra ?? [])], board: [], fatigue: 0, ...(cfg.fatigue === false ? { tireless: true } : {}), powerUsed: false, played: [],
@@ -265,25 +302,30 @@ export function begin(setup, catalog) {
   const seed = setup.seed ?? 'x';
   const unknown = missingCards(setup, catalog);
   if (unknown.length) throw new Error(`no card row for ${unknown.join(', ')}`);
-  const you = sideOf('you', setup.you, catalog, mode, seed);
+  // Levels (§ unitOf): his 气血 is P₁'s (`anchor`); a beast's its class share of 零层's 20 × P(its level) ÷ P(his) (`ff`), and so
+  // its blows. None given (零层, an old fight): today's numbers.
+  const levelled = setup.anchor && setup.you?.pow != null && setup.foe?.pow != null;
+  const fy = levelled ? 1 : null, ff = levelled ? setup.foe.pow / setup.you.pow : null;
+  const you = sideOf('you', { ...setup.you, ...(levelled ? { base: setup.anchor, f: 1 } : {}) }, catalog, mode, seed);
   // Every beast stands at the mode's share of its 气血; an elite is only its
   // harder deck (redesign-v2 § 四 — its full 气血 was cut with its own rules).
   // `foe.hp` (creatures.json `hp`) scales that share for one beast: the
   // story's fights are weighed one by one (tools/story-fights.mjs), and a
   // beast too frail to threaten anyone stands taller by data, never by name.
-  const foe = sideOf('foe', { ...setup.foe, hpScale: mode.foeHp * (setup.foe.hp ?? 1) }, catalog, mode, seed);
+  const foe = sideOf('foe', { ...setup.foe, hpScale: mode.foeHp * (setup.foe.hp ?? 1), ...(ff != null ? { base: (REALMS[setup.you.tier] ?? REALMS.qi).hp * ff, f: ff } : {}) }, catalog, mode, seed);
   // `uid`: each body that stands gets its own number, in the order it arrives —
   // two of the same card on one rank are two bodies, and the log and the
   // screen must tell them apart (Hanli, 2026-10-15: hitting the second 夫诸 lit
   // the first). Counted, never random, so a replay numbers them the same.
-  const st = { mode, catalog, seed, you, foe, turn: 0, whose: mode.youFirst ? 'you' : 'foe', outcome: 'open', log: [], uid: 0 };
+  const st = { mode, catalog, seed, you, foe, ...(levelled && setup.you.pow !== setup.anchor ? { unit: setup.you.pow / setup.anchor } : {}), turn: 0, whose: mode.youFirst ? 'you' : 'foe', outcome: 'open', log: [], uid: 0 };
   for (let i = 0; i < mode.hand; i += 1) drawFrom(st, you, null);
   for (const a of you.allies) drawFrom(st, you, a);
   for (let i = 0; i < mode.foeHand; i += 1) draw(st, foe);
   for (let i = 0; i < (mode.headStart ?? 0); i += 1) draw(st, you);
   const [mine, theirs] = mode.suppress ? suppression(setup.you.tier, setup.foe.tier) : [1, 1];
   // `foe.might`: a beast whose 气血 the door cut to keep the fight short hits that much harder (rules/cards.mjs fightLength).
-  st.scale = { you: mine, foe: theirs * (setup.foe.might ?? 1) };
+  // 境界压制 (a realm between them) stays on top of the levels' factor: the two multiply.
+  st.scale = { you: mine * (fy ?? 1), foe: theirs * (setup.foe.might ?? 1) * (ff ?? 1) };
   startTurn(st);
   return st;
 }
@@ -428,7 +470,7 @@ function draw(st, side, { effect = false } = {}) {
     }
     return;
   }
-  hurt(st, side, side.fatigue, { kind: 'fatigue' });
+  hurt(st, side, scaled(side, side.fatigue), { kind: 'fatigue' });
 }
 
 export function endTurn(st) {
@@ -481,7 +523,7 @@ export const wardOf = (side, element) => (element && side?.ward?.[element]) || 0
 export const shieldOf = (side, element) => (element && (side?.wards ?? []).find(w => w.element === element && w.left > 0 && w.half)) || null;
 export const landed = (st, who, n, element) => {
   const them = who === 'you' ? st.foe : st.you;
-  if (glances(them, element)) return Math.max(0, them.feint.lands ?? 1);
+  if (glances(them, element)) return Math.max(0, scaled(st[who], them.feint.lands ?? 1));
   const d = dealt(st, who, n, element, them.root);
   const h = shieldOf(them, element) ? Math.max(1, Math.floor(d / 2)) : d;
   return Math.max(1, h - wardOf(them, element));
@@ -510,7 +552,7 @@ function hurt(st, side, amount, why = {}) {
 
 /* A blow at a body, less the 抗 its lift gives for that element (her 佩, rules/companion.mjs herGear), at least 1. */
 export const minionLands = (side, minion, amount, element) => {
-  const ward = (element && side?.lifts?.[minion?.id]?.ward?.[element]) || 0;
+  const ward = scaled(side, (element && side?.lifts?.[minion?.id]?.ward?.[element]) || 0);
   return ward && amount > 0 ? Math.max(1, amount - ward) : amount;
 };
 function hurtMinion(st, side, minion, amount, why = {}) {
@@ -597,7 +639,7 @@ function resolve(st, side, effect, target, { arrival = false } = {}) {
   if (effect.heal != null && side.healsLeft !== 0) {
     // A side whose heals the door counted (a beast: balance.json fight_length) heals that often and
     // never past `healMax` (Hanli 2026-11-07: a fight within 3 minutes) — the card's other verbs still land.
-    const n = side.healMax != null ? Math.min(effect.heal, side.healMax) : effect.heal;
+    const n = side.healMax != null ? Math.min(scaled(side, effect.heal), side.healMax) : scaled(side, effect.heal);
     if (side.healsLeft != null) side.healsLeft -= 1;
     // The most wounded of the row (阿禾 heals whoever needs it); the lead on a tie.
     const a = woundedAlly(side);
@@ -628,15 +670,16 @@ function resolve(st, side, effect, target, { arrival = false } = {}) {
     const { id, n = 1 } = effect.summon;
     const c = st.catalog[id];
     for (let i = 0; i < n && c && side.board.length < st.mode.board; i += 1) {
-      const m = stand(st, side, { id, name: c.name, element: c.element, atk: c.atk, hp: c.hp, hpMax: c.hp, taunt: Boolean(c.keywords?.includes('taunt')), sick: true, struck: false });
+      const hp = scaled(side, c.hp);
+      const m = stand(st, side, { id, name: c.name, element: c.element, atk: c.atk, hp, hpMax: hp, taunt: Boolean(c.keywords?.includes('taunt')), sick: true, struck: false });
       st.log.push({ act: 'summoned', who: side.who, id, uid: m.uid });
     }
   }
   if (effect.rally) {
     for (const m of side.board) {
       m.atk += effect.rally.atk ?? 0;
-      m.hp += effect.rally.hp ?? 0;
-      m.hpMax += effect.rally.hp ?? 0;
+      m.hp += scaled(side, effect.rally.hp ?? 0);
+      m.hpMax += scaled(side, effect.rally.hp ?? 0);
     }
     if (side.board.length) st.log.push({ act: 'rally', who: side.who, ...effect.rally, on: side.board.length });
   }
@@ -644,8 +687,8 @@ function resolve(st, side, effect, target, { arrival = false } = {}) {
     const m = side.board[target?.index ?? 0];
     if (m) {
       m.atk += effect.buff.atk ?? 0;
-      m.hp += effect.buff.hp ?? 0;
-      m.hpMax += effect.buff.hp ?? 0;
+      m.hp += scaled(side, effect.buff.hp ?? 0);
+      m.hpMax += scaled(side, effect.buff.hp ?? 0);
       st.log.push({ act: 'buff', who: side.who, id: m.id, uid: m.uid, ...effect.buff });
     }
   }
@@ -822,7 +865,7 @@ export function act(st, action, who = 'you') {
     side.played.push(id);
     bindAt(st, them, c, action.target);
     if (c.kind === 'minion') {
-      const { atk, hp } = bodyOf(side, c), keys = keywordsOf(side, c);
+      const { atk, hp: raw } = bodyOf(side, c), hp = scaled(side, raw), keys = keywordsOf(side, c);
       const drought = effectOf(side, c)?.drought;
       const m = { id, name: c.name, element: c.element, atk, hp, hpMax: hp, taunt: keys.includes('taunt'), sick: true, struck: false, ...(drought ? { drought } : {}) };
       stand(st, side, m);
@@ -840,7 +883,7 @@ export function act(st, action, who = 'you') {
   if (action.target?.kind === 'minion') {
     const t = them.board[action.target.index];
     hurtMinion(st, them, t, dealt(st, side.who, m.atk, m.element, t.element), { from: 'attack', element: m.element ?? null });
-    if (t.atk > 0) hurtMinion(st, side, m, Math.max(1, Math.round(t.atk * clash(t.element, m.element))), { from: 'return', element: t.element ?? null });
+    if (t.atk > 0) hurtMinion(st, side, m, Math.max(1, Math.round(t.atk * clash(t.element, m.element) * levelOf(them))), { from: 'return', element: t.element ?? null });
   } else if (action.target?.kind === 'ally') {
     const a = them.allies[action.target.index];
     hurtAlly(st, them, a, dealt(st, side.who, m.atk, m.element, a.root), { from: 'attack', element: m.element ?? null });
@@ -1005,7 +1048,7 @@ function aimFor(st, side, c) {
   // else the hardest-hitting body it drives off; else the hero (a spell
   // never minds a 护主). A blow that only grazes a body is a blow wasted.
   const n = effectOf(side, c).damage;
-  if (them.hp <= n * 2) return undefined;
+  if (them.hp <= n * 2 * levelOf(side)) return undefined;
   const kills = them.board.map((m, index) => ({ m, index })).filter(({ m }) => dealt(st, side.who, n, c.element, m.element) >= m.hp)
     .sort((a, b) => (b.m.atk - a.m.atk) || (b.m.hp - a.m.hp));
   return kills.length ? { kind: 'minion', index: kills[0].index } : undefined;
@@ -1021,7 +1064,7 @@ function bestAttack(st, side, index) {
   const m = side.board[index];
   const them = other(st, side);
   const kills = them.board
-    .map((t, i) => ({ i, t, dealt: Math.round(m.atk * clash(m.element, t.element)), back: Math.round(t.atk * clash(t.element, m.element)) }))
+    .map((t, i) => ({ i, t, dealt: Math.round(m.atk * clash(m.element, t.element) * levelOf(side)), back: Math.round(t.atk * clash(t.element, m.element) * levelOf(them)) }))
     .filter(o => o.dealt >= o.t.hp)
     .sort((a, b) => (a.back - b.back) || (b.t.atk - a.t.atk));
   return kills.length && kills[0].back < m.hp ? { kind: 'minion', index: kills[0].i } : undefined;
@@ -1087,7 +1130,7 @@ export function battle(actions, setup, catalog) {
 export function view(st) {
   const side = s => ({
     hp: s.hp, hpMax: s.hpMax, mana: s.mana, manaMax: s.manaMax, manaCap: s.manaCap,
-    root: s.root, deck: s.deck.length, hand: s.hand.length, fatigue: s.fatigue,
+    root: s.root, deck: s.deck.length, hand: s.hand.length, fatigue: s.fatigue, ...(s.level != null ? { level: s.level } : {}), ...(s.f ? { f: s.f } : {}),
     powerUsed: s.powerUsed, powerHit: s.powerHit, boost: s.boost, armor: s.armor ?? 0, ward: s.ward ?? null,
     signature: s.signature, charge: s.charge?.phase ?? null, lifts: s.lifts, stars: s.stars ?? null, drain: s.drain ?? 0,
     ...(s.trial ? { trial: s.trial, ...(s.trial.survive ? { endured: s.endured ?? 0 } : {}) } : {}),
@@ -1101,7 +1144,7 @@ export function view(st) {
   // 望气术: the plan is shown only to a player who can read it (setup.you.insight).
   const sight = st.you.insight ?? 0;
   const intent = sight && st.foe.intent ? { sight, cards: [...st.foe.intent.cards], power: st.foe.intent.power, gathering: st.foe.intent.gathering } : null;
-  return { outcome: st.outcome, turn: st.turn, whose: st.whose, you: { ...side(st.you), hand: st.you.hand }, foe: { ...side(st.foe), ...(intent ? { intent } : {}) }, log: st.log, scale: st.scale };
+  return { outcome: st.outcome, turn: st.turn, whose: st.whose, you: { ...side(st.you), hand: st.you.hand }, foe: { ...side(st.foe), ...(intent ? { intent } : {}) }, log: st.log, scale: st.scale, ...(st.unit ? { unit: st.unit } : {}) };
 }
 
 /* Nothing left but to end the turn — no card affordable, no body that may

@@ -28,7 +28,9 @@
 //   h11b 练气六层 · + 震怒 (the 犰狳's) — 秦雁 on the 崖顶, alone.
 //   h09  练气七层 · + 入隙 (09-futian) — 古八's pools with 阿禾.
 //   h09b 练气八层 · the same hand — the 腊八 大比's final (09-laba/dabi; 09-dabi/dabi before the 2026-10-28 split), alone on the stage.
-//   h10  筑基一层 · the same hand at 筑基 — 冰夷双龙 alone, the 冀 pools with 阿禾.
+//   h10  筑基一层 · the same hand at 筑基 — 冰夷双龙 alone, the 冀 pools with 阿禾. step 0 (L10) since batch 3 (2026-11-10): the book
+//        has him 筑基 at 09-cliff with one 纹 (「几道纹？」「一道」) — 一层; h10's cap 筑基三层 is how far he may climb in it, not where
+//        he meets its fights (this stop stood at step 1, 二层, until then).
 //   h10b 筑基一层 · + 寒潭指 (双龙's) — 老井 on the 河滩 with 阿禾.
 // Gear worn as soon as it is had (a sensible player puts on what he is given).
 import fs from 'node:fs';
@@ -63,8 +65,8 @@ const STOPS = {
   h11b: { tier: 'qi', step: 6, cards: [...H11, 'zhennu'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' }, at: ['00-zhuji', '09-futian'] },
   h09: { tier: 'qi', step: 7, cards: [...H11, 'zhennu', 'ruxi'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' }, at: ['00-zhuji', '09-dabi'] },
   h09b: { tier: 'qi', step: 8, cards: [...H11, 'zhennu', 'ruxi'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' }, at: ['00-zhuji', '09-laba'] },
-  h10: { tier: 'foundation', step: 1, cards: [...H11, 'zhennu', 'ruxi'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' }, at: ['01-ji', '01-ye'] },
-  h10b: { tier: 'foundation', step: 1, cards: H10B, cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' }, at: ['01-ji', '01-laojing'] },
+  h10: { tier: 'foundation', step: 0, cards: [...H11, 'zhennu', 'ruxi'], cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' }, at: ['01-ji', '01-ye'] },
+  h10b: { tier: 'foundation', step: 0, cards: H10B, cast: ['zheng'], wear: { robe: 'grey-robe', weapon: 'huochai-jian' }, at: ['01-ji', '01-laojing'] },
 };
 
 export function stateAt(stop) {

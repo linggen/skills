@@ -8,7 +8,7 @@
   "key": "mijing-ling",
   "tiers": [
     {
-      "id": "xiongya",
+      "id": "xiongya", "levels": [2, 12],
       "n": 1,
       "name": {
         "zh": "一重 · 凶崖",
@@ -113,7 +113,7 @@
       "drops": "mijing-outer"
     },
     {
-      "id": "anhe",
+      "id": "anhe", "levels": [2, 12],
       "n": 2,
       "name": {
         "zh": "二重 · 暗河",
@@ -223,7 +223,7 @@
       "drops": "mijing-outer"
     },
     {
-      "id": "shishi",
+      "id": "shishi", "levels": [2, 12],
       "n": 3,
       "name": {
         "zh": "三重 · 石室",
@@ -305,7 +305,7 @@
       "drops": "mijing-outer"
     },
     {
-      "id": "lingcao",
+      "id": "lingcao", "levels": [4, 12],
       "n": 4,
       "name": {
         "zh": "四重 · 灵草谷",
@@ -399,7 +399,7 @@
       "drops": "mijing-outer"
     },
     {
-      "id": "jiuge",
+      "id": "jiuge", "levels": [4, 12],
       "n": 5,
       "name": {
         "zh": "五重 · 九格崖",
@@ -479,7 +479,7 @@
       "drops": "mijing-outer"
     },
     {
-      "id": "guya",
+      "id": "guya", "levels": [7, 12],
       "n": 6,
       "name": {
         "zh": "六重 · 孤崖",
@@ -559,7 +559,7 @@
       "drops": "mijing-outer"
     },
     {
-      "id": "zhangyuan",
+      "id": "zhangyuan", "levels": [10, 12],
       "n": 7,
       "name": {
         "zh": "七重 · 漳渊",

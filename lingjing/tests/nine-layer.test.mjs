@@ -75,7 +75,8 @@ test('the names: 「筑基 · 中成」 for each 层 of the 段, 圆满 on its l
 
 test('Look: tier.realm, tier.duan {id, name, at, marks} and tier.layer on 筑基 — as the strip\'s three-段 bar reads them; 练气 has none', () => {
   const l = lookOf(gujiu({ step: 1, progress: 100 }));
-  assert.deepEqual(l.tier, { id: 'foundation', step: 2, name: '筑基 · 小成', phase: '筑基 · 小成', bar: true, realm: '筑基', layer: '第二层',
+  // `hp`: his 气血 at full there (batch 3, cards.mjs hpMaxOf: P(筑基二层 = L11) = 21 × 1.05^10 × 1.2).
+  assert.deepEqual(l.tier, { id: 'foundation', step: 2, name: '筑基 · 小成', phase: '筑基 · 小成', bar: true, hp: 41, realm: '筑基', layer: '第二层',
     duan: { id: 'xiao', name: '小成', at: 2, marks: FD.thresholds.slice(0, 3) } });
   assert.deepEqual(duanOf(l.tier), { label: '筑基 · 小成', at: 2, layer: '第二层', full: '筑基 · 小成' });
   const en = lookOf(gujiu({ lang: 'en', step: 4, progress: 0 }));
@@ -87,7 +88,7 @@ test('Look: tier.realm, tier.duan {id, name, at, marks} and tier.layer on 筑基
   assert.equal(lookOf(open({ step: 8, progress: 10 })).tier.duan.trial, undefined, '九层 is the realm throw\'s');
   // 练气: as it was — no realm, no 段, no 层 of its own.
   const qi = lookOf({ ...gujiu(), tier: 'qi', step: 4, progress: 10 });
-  assert.deepEqual(Object.keys(qi.tier).sort(), ['bar', 'id', 'name', 'phase', 'step']);
+  assert.deepEqual(Object.keys(qi.tier).sort(), ['bar', 'hp', 'id', 'name', 'phase', 'step']);
   assert.equal(qi.tier.name, '练气四层');
   assert.equal(duanOf(qi.tier), null);
 });
@@ -143,7 +144,7 @@ test('the trial stands at 六层 too; 一层 → 二层 inside a 段 throws noth
   assert.deepEqual(content.ladder.caps.hui.h09.story, { tier: 'foundation', layer: 3 });
 });
 
-test('the curve: every 层 of a realm in 段 its own threshold and level (2026-11-10, 81 levels — 段 display only); 气血 by the realm as before', () => {
+test('the curve: every 层 of a realm in 段 its own threshold and level (2026-11-10, 81 levels — 段 display only); 气血 P(L) on the same levels', () => {
   // need(L) = R(L) × mix × 60 × T(L) (tools/master.mjs curveOf): each 层 more than the one below, the realm's first above the
   // last realm's 九层 (×1.2 on R). Until 2026-11-10 each 段 asked its old step's 修为 split over its 层, each 层 at the 段's level.
   const M = content.balance.master, steps = t => ({ id: t.id, zero: Boolean(t.zero), steps: t.steps.zh.length });
@@ -157,8 +158,10 @@ test('the curve: every 层 of a realm in 段 its own threshold and level (2026-1
   // 气血: half a point a step on three → a sixth a 层 on nine; 九层 is the old 大成's +1 … plus the 层 inside it.
   assert.deepEqual([0, 3, 6].map(k => hpStep(content, 'foundation', k)), [0, 1, 2], 'each 段\'s first 层 is its old step');
   assert.equal(hpStep(content, 'qi', 4), 4, '练气 as it was');
-  const hp = k => hpMaxOf({ tier: 'foundation', step: k }, content);
-  assert.deepEqual([hp(0), hp(3), hp(6)], [0, 1, 2].map(k => hpMaxOf({ tier: 'foundation', step: k })), '气血 at each 段\'s door as the old step\'s');
+  // 气血 (batch 3): P(L) on the same 81 levels — every 层 its own, 段 or not (until 2026-11-10 the 段's old step's, half a point a step).
+  const hp = k => hpMaxOf({ tier: 'foundation', step: k }, content), P = content.balance.power;
+  assert.deepEqual([0, 3, 6, 8].map(hp), [10, 13, 16, 18].map(L => Math.round(P.first * P.growth ** (L - 1) * P.realm)), '气血 P(L) at every 层');
+  for (let k = 1; k < 9; k++) assert.ok(hp(k) > hp(k - 1), `筑基 ${k + 1}层 more than ${k}层`);
 });
 
 test('old saves: v14\'s 小成 · 中成 · 大成 are those 段, the 修为 walked to the same point of the 段 — once', () => {

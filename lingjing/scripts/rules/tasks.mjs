@@ -3,7 +3,7 @@
 import { fightReplay, hauntPlayId, namedRow, playCounted, playGrant, playedRow, stonesAt } from './playpay.mjs';
 import { festivalDone } from './festival.mjs';
 import { climbWon } from './climb.mjs';
-import { battle } from '../battle.js';
+import { battle, shown, shownSide } from '../battle.js';
 import { gameOf } from '../content.mjs';
 import { addStamina, boardCost, dayKey, staminaCost, lockedOf, periodKey, pick, settleStamina, seedOf } from '../state.mjs';
 import { drop } from './arms.mjs';
@@ -609,7 +609,7 @@ export function duel(state, content, ctx, args) {
   const way = won || exit ? null : lossWay(content, s, ctx, game, setup, played);
   // A story fight (`retry`) not won is not over: the way on waits on its win, and it is fought again at once (look.mjs `again`).
   const again = game.retry && !won ? { again: true, story_open: true } : {};
-  return { state: s, result: { ok: true, ...again, ...(way ? way : {}), outcome: played.outcome, game: id, say, ...(spent.length ? { spent: spent.map(sid => ({ id: sid, name: pick(cardCatalog(content)[sid]?.name, s.lang) ?? sid })) } : {}), you: played.you, foe: played.foe, turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(firsts.first_met ? { first_met: true } : {}), ...(firsts.first_win ? { first_win: true } : {}), ...(hunt ? { tally: poolTally(content, s, placeOf(content, game.hunt), ctx.now) } : {}), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}), ...(ling ? { key: ling } : {}) } };
+  return { state: s, result: { ok: true, ...again, ...(way ? way : {}), outcome: played.outcome, game: id, say, ...(played.unit ? { unit: played.unit } : {}), ...(spent.length ? { spent: spent.map(sid => ({ id: sid, name: pick(cardCatalog(content)[sid]?.name, s.lang) ?? sid })) } : {}), you: shownSide(played, played.you), foe: shownSide(played, played.foe), turns: played.turn, ...(dropped.length ? { dropped } : {}), ...(firsts.first_met ? { first_met: true } : {}), ...(firsts.first_win ? { first_win: true } : {}), ...(hunt ? { tally: poolTally(content, s, placeOf(content, game.hunt), ctx.now) } : {}), ...(full ? { pouch_full: full } : {}), ...(handed.length ? { handed } : {}), ...(paid ? { paid, haunt: haunt.creature } : {}), ...(ling ? { key: ling } : {}) } };
 }
 
 /* A fight not won: `beat` — the beast's 护主 (bodies it stood up), its 气血 left, the turns he lasted —
@@ -617,7 +617,9 @@ export function duel(state, content, ctx, args) {
 function lossWay(content, s, ctx, game, setup, played) {
   const catalog = cardCatalog(content);
   const guards = played.log.filter(e => e.who === 'foe' && (e.act === 'summoned' || (e.act === 'played' && catalog[e.id]?.kind === 'minion'))).length;
-  const beat = { guards, foe_hp: played.foe.hp, foe_hp_max: played.foe.hpMax, you_hp_max: played.you.hpMax, turns: played.turn, deck: setup.you.deck.length };
+  // As the page shows them (battle.js § unitOf: × P(his level) ÷ P₁).
+  const S = n => shown(played, n);
+  const beat = { guards, foe_hp: S(played.foe.hp), foe_hp_max: S(played.foe.hpMax), you_hp_max: S(played.you.hpMax), turns: played.turn, deck: setup.you.deck.length };
   return { beat, way: strengthen(content, s, { now: ctx.now, beat, game }) };
 }
 

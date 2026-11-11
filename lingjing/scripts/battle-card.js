@@ -14,7 +14,7 @@ import { spoken } from './cards.js';
 import { esc } from './esc.js';
 import { freshHtml, partyHtml, sealHtml } from './battle-party.js';
 import { pillTrayHtml, pouchPickHtml } from './danang.js';
-import { POWER_COST, asleep, bodyOf, boostedOf, clash, costOf, dealt, effectOf, hashOf, keywordsOf, landed, pierces, shieldOf, sigEffect, starsOf } from './battle.js';
+import { POWER_COST, asleep, bodyOf, boostedOf, clash, costOf, dealt, effectOf, hashOf, keywordsOf, landed, pierces, scaled, shieldOf, shown, shownEffect, shownEntry, sigEffect, starsOf } from './battle.js';
 
 const GLYPH = { metal: '金', wood: '木', water: '水', fire: '火', earth: '土' };
 const EL_EN = { metal: 'metal', wood: 'wood', water: 'water', fire: 'fire', earth: 'earth' };
@@ -44,7 +44,7 @@ function dmgBadge(st, n, element, target, lang, hero = false) {
   const shield = hero && !glance && shieldOf(st.foe, element);
   const word = glance ? (lang === 'en' ? 'glances' : '擦过') : [clashWord(element, target, lang), shield ? wardWord(element, lang) : ''].filter(Boolean).join(' · ');
   const down = glance || shield || clash(element, target) < 1;
-  const hits = hero ? landed(st, 'you', n, element) : dealt(st, 'you', n, element, target);
+  const hits = shown(st, hero ? landed(st, 'you', n, element) : dealt(st, 'you', n, element, target));
   return `<span class="bdmg${down ? ' down' : word ? ' up' : ''}">−${hits}${word ? ` · ${word}` : ''}</span>`;
 }
 
@@ -413,7 +413,7 @@ function minionHtml(m, side, index, ctx, picked) {
       <span class="bglyph">${GLYPH[m.element] ?? ''}</span>
     </span>
     <span class="bname">${name(m, ctx.lang)}</span>
-    <span class="batk">${side === 'theirs' ? dealt(ctx.st, 'foe', m.atk, m.element, null) : m.atk}</span><span class="bhp">${m.hp}</span>
+    <span class="batk">${shown(ctx.st, side === 'theirs' ? dealt(ctx.st, 'foe', m.atk, m.element, null) : m.atk)}</span><span class="bhp">${shown(ctx.st, m.hp)}</span>
     ${marks.length ? `<small>${marks.map(esc).join(' · ')}</small>` : ''}${badge}
   </button>`;
 }
@@ -448,10 +448,11 @@ export function cardFaceHtml(id, ctx, foeState = null) {
   const c = ctx.catalog?.[id];
   if (!c) return '';
   if (!foeState) return leafHtml(c, ctx);
-  const hit = n => dealt(foeState, 'foe', n, c.element, null);
+  const hit = n => shown(foeState, dealt(foeState, 'foe', n, c.element, null));
   const effect = { ...c.effect };
   for (const key of ['damage', 'sweep', 'drought']) if (effect[key] != null) effect[key] = hit(effect[key]);
-  return leafHtml({ ...c, effect }, ctx, c.kind === 'minion' ? { atk: hit(c.atk) } : {});
+  if (effect.heal != null) effect.heal = shown(foeState, scaled(foeState.foe, effect.heal));
+  return leafHtml({ ...c, effect }, ctx, c.kind === 'minion' ? { atk: hit(c.atk), hp: shown(foeState, scaled(foeState.foe, c.hp)) } : {});
 }
 
 /* The fan: each card turned a little about the middle of the hand and dropped
@@ -485,9 +486,9 @@ function handHtml(st, ctx, picked) {
     // 闭关's ★: the cost it has now, and the stars by its name.
     // On the beast's turn every card waits alike: the seal and the turn say why once, not each card.
     const shownWhy = why && why !== 'not-your-turn' ? (w.why[why] ?? why) : null;
-    const text = `${esc(sayEffect({ ...c, effect: effectOf(st.you, c), keywords: keywordsOf(st.you, c) }, ctx))}${liftOf(st.you, c, ctx)}${onBeast(st, c, ctx)}${backlash(st, c, ctx)}`;
+    const text = `${esc(sayEffect({ ...c, effect: shownEffect(st, st.you, effectOf(st.you, c)), keywords: keywordsOf(st.you, c) }, ctx))}${liftOf(st.you, c, ctx)}${onBeast(st, c, ctx)}${backlash(st, c, ctx)}`;
     return `<button class="bcard el-${esc(c.element ?? 'none')}${herOf(id, ctx)}${held ? ' held' : ''}${why ? ' dim' : ''}${!why && !held ? ' can' : ''}" data-spot="hand" data-index="${index}" data-id="${esc(id)}" style="${fanOf(index, n)}"${why ? ` title="${esc(w.why[why] ?? why)}"` : ''}>
-      ${leafHtml(c, ctx, { cost: costOf(st.you, c), atk: b.atk, hp: b.hp, stars: starsOf(st.you, c), text, why: shownWhy })}${sealHtml(c, st, ctx)}${freshHtml(id, ctx)}
+      ${leafHtml(c, ctx, { cost: costOf(st.you, c), atk: shown(st, b.atk), hp: shown(st, b.hp), stars: starsOf(st.you, c), text, why: shownWhy })}${sealHtml(c, st, ctx)}${freshHtml(id, ctx)}
     </button>`;
   }).join('');
 }
@@ -545,7 +546,7 @@ function onBeast(st, c, ctx) {
   const shield = shieldOf(st.foe, c.element);
   const word = [clashWord(c.element, st.foe.root, ctx.lang), shield ? wardWord(c.element, ctx.lang) : ''].filter(Boolean).join(' · ');
   if (!word) return '';
-  const d = dealt(st, 'you', e.damage, c.element, st.foe.root), n = shield ? Math.max(1, Math.floor(d / 2)) : d;
+  const d = dealt(st, 'you', e.damage, c.element, st.foe.root), n = shown(st, shield ? Math.max(1, Math.floor(d / 2)) : d);
   return ` <b class="bon${shield || clash(c.element, st.foe.root) < 1 ? ' down' : ''}">${ctx.lang === 'en' ? `→ ${n} on ${pro(ctx).itObj} · ${word}` : `→ 对${pro(ctx).itObj} ${n} · ${word}`}</b>`;
 }
 
@@ -561,7 +562,7 @@ export function backlashOf(side, c) {
   return { over, n, deck };
 }
 function backlash(st, c, ctx) {
-  const { n, deck } = backlashOf(st.you, c);
+  const { n: raw, deck } = backlashOf(st.you, c), n = shown(st, raw);
   if (!n) return '';
   return ` <b class="bon down">${ctx.lang === 'en' ? `deck has ${deck} · backlash −${n} Life` : `牌库剩 ${deck} 张 · 反噬 −${n} 气血`}</b>`;
 }
@@ -571,7 +572,7 @@ function backlash(st, c, ctx) {
 function liftOf(side, c, ctx) {
   const b = side.boost;
   if (boostedOf(side, c) === c.effect) return '';
-  const n = b.n > 0 ? `+${b.n}` : `${b.n}`;
+  const m = Math.sign(b.n) * shown(ctx.st, Math.abs(b.n)), n = m > 0 ? `+${m}` : `${m}`;
   return ` <b class="blift${b.n < 0 ? ' down' : ''}">${ctx.lang === 'en' ? `cast ${n}` : `卦 ${n}`}</b>`;
 }
 
@@ -627,16 +628,16 @@ export function sayEffect(c, ctx) {
    the player answers a fact, not a guess — and Ling says nothing. */
 export function sigWords(st, ctx) {
   const e = sigEffect(st.foe), zh = ctx.lang !== 'en', root = st.foe.root;
-  const hit = (n, target) => dealt(st, 'foe', n, root, target);
+  const hit = (n, target) => shown(st, dealt(st, 'foe', n, root, target));
   const guard = st.you.board.find(m => m.taunt);
   const out = [];
   if (e.sweep != null) out.push(zh ? `你阵前每个 −${hit(e.sweep, null)}` : `each of your rank −${hit(e.sweep, null)}`);
   if (e.damage != null) {
     out.push(guard
       ? (zh ? `${name(guard, ctx.lang)} 替你挡 −${hit(e.damage, guard.element)}` : `${name(guard, ctx.lang)} takes it −${hit(e.damage, guard.element)}`)
-      : (zh ? `你 −${landed(st, 'foe', e.damage, root)}（护主可挡）` : `you −${landed(st, 'foe', e.damage, root)} (a Guard takes it)`));
+      : (zh ? `你 −${shown(st, landed(st, 'foe', e.damage, root))}（护主可挡）` : `you −${shown(st, landed(st, 'foe', e.damage, root))} (a Guard takes it)`));
   }
-  if (e.heal != null) out.push(zh ? `${pro(ctx).it}回 ${e.heal}` : `${pro(ctx).it} heals ${e.heal}`);
+  if (e.heal != null) out.push(zh ? `${pro(ctx).it}回 ${shown(st, scaled(st.foe, e.heal))}` : `${pro(ctx).it} heals ${shown(st, scaled(st.foe, e.heal))}`);
   if (e.summon) { const who = name(ctx.catalog?.[e.summon.id], ctx.lang); out.push(who ? (zh ? `召来 ${who} ×${e.summon.n ?? 1}` : `summons ${who} ×${e.summon.n ?? 1}`) : (zh ? `召来 ${e.summon.n ?? 1} 个` : `summons ${e.summon.n ?? 1}`)); }
   if (e.rally) out.push(zh ? `${pro(ctx).its}阵前全体 +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}` : `${pro(ctx).its} rank +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}`);
   if (e.ward?.element) out.push(zh ? `${pro(ctx).it}御${GLYPH[e.ward.element] ?? ''}：${GLYPH[e.ward.element] ?? ''}伤减半，到你下回合末` : `${pro(ctx).it} wards ${EL_EN[e.ward.element] ?? e.ward.element}: it lands half, to the end of your next turn`);
@@ -680,12 +681,13 @@ export function feintHtml(st, ctx) {
   if (st.outcome !== 'open' || !asleep(st.foe)) return '';
   const zh = ctx.lang !== 'en';
   const goes = [...(f.pierce ?? []).map(el => (zh ? GLYPH[el] : EN_EL[el])), ...(f.pierce_binds ? [zh ? '缚住了的那一回合' : 'a bound turn'] : [])].join(zh ? '、' : ', ');
-  const what = zh ? `装睡 —— 寻常一击只擦过 −${f.lands ?? 1}${goes ? `，${goes}能打进去` : ''}` : `Playing dead — a plain blow glances (−${f.lands ?? 1})${goes ? `; ${goes} goes in` : ''}`;
+  const lands = shown(st, f.lands ?? 1), per = shown(st, scaled(st.foe, f.per_glance ?? 0));
+  const what = zh ? `装睡 —— 寻常一击只擦过 −${lands}${goes ? `，${goes}能打进去` : ''}` : `Playing dead — a plain blow glances (−${lands})${goes ? `; ${goes} goes in` : ''}`;
   const sig = st.foe.signature ? name(st.foe.signature, ctx.lang) : '';
   const wake = f.left > 1
     ? (zh ? `再 ${f.left} 回合睁眼` : `wakes in ${f.left} turns`)
     : (zh ? '下回合睁眼' : 'wakes next turn');
-  const after = sig ? (zh ? `：${sig}，${sigWords(st, ctx)}${f.per_glance ? `（每擦过一下 +${f.per_glance}）` : ''}` : `: ${sig}, ${sigWords(st, ctx)}${f.per_glance ? ` (+${f.per_glance} per glance)` : ''}`) : '';
+  const after = sig ? (zh ? `：${sig}，${sigWords(st, ctx)}${f.per_glance ? `（每擦过一下 +${per}）` : ''}` : `: ${sig}, ${sigWords(st, ctx)}${f.per_glance ? ` (+${per} per glance)` : ''}`) : '';
   return `<div class="bcharge feint${foldOpen(ctx)}" id="bomen-feint">${foldHtml(name(f, ctx.lang), zh ? '装睡' : 'Playing dead', 'bomen-feint', ctx)}<b>${name(f, ctx.lang)}</b><span>${what}</span><small>${wake}${after}</small></div>`;
 }
 
@@ -707,13 +709,14 @@ export function intentBits(st, ctx) {
       return zh ? '助' : 'bolster';
     }
     const nm = name(c, ctx.lang);
-    if (c.kind === 'minion') return zh ? `召 ${nm} ${dealt(st, 'foe', c.atk, c.element, null)}/${c.hp}` : `${nm} ${dealt(st, 'foe', c.atk, c.element, null)}/${c.hp}`;
-    if (e.damage != null) return zh ? `${nm} 打 ${landed(st, 'foe', e.damage, c.element)}` : `${nm}: ${landed(st, 'foe', e.damage, c.element)}`;
-    if (e.sweep != null) return zh ? `${nm} 你阵前各 −${dealt(st, 'foe', e.sweep, c.element, null)}` : `${nm}: each of yours −${dealt(st, 'foe', e.sweep, c.element, null)}`;
-    if (e.heal != null) return zh ? `${nm} 回 ${e.heal}` : `${nm}: heals ${e.heal}`;
+    const S = n => shown(st, n), body = `${S(dealt(st, 'foe', c.atk, c.element, null))}/${S(scaled(st.foe, c.hp))}`;
+    if (c.kind === 'minion') return zh ? `召 ${nm} ${body}` : `${nm} ${body}`;
+    if (e.damage != null) return zh ? `${nm} 打 ${S(landed(st, 'foe', e.damage, c.element))}` : `${nm}: ${S(landed(st, 'foe', e.damage, c.element))}`;
+    if (e.sweep != null) return zh ? `${nm} 你阵前各 −${S(dealt(st, 'foe', e.sweep, c.element, null))}` : `${nm}: each of yours −${S(dealt(st, 'foe', e.sweep, c.element, null))}`;
+    if (e.heal != null) return zh ? `${nm} 回 ${S(scaled(st.foe, e.heal))}` : `${nm}: heals ${S(scaled(st.foe, e.heal))}`;
     return nm;
   }).filter(Boolean);
-  if (it.power) bits.push(exact ? (zh ? `主灵根一击 ${landed(st, 'foe', st.foe.powerHit, root)}` : `root strike ${landed(st, 'foe', st.foe.powerHit, root)}`) : (zh ? '一击' : 'strike'));
+  if (it.power) bits.push(exact ? (zh ? `主灵根一击 ${shown(st, landed(st, 'foe', st.foe.powerHit, root))}` : `root strike ${shown(st, landed(st, 'foe', st.foe.powerHit, root))}`) : (zh ? '一击' : 'strike'));
   return bits;
 }
 
@@ -733,8 +736,8 @@ export function intentHtml(st, ctx) {
    Only the last exchange is shown; the rest is behind 展开, as decided the
    same morning for the old bout card. */
 
-function sayTurn(t, ctx) {
-  const w = ctx.words, zh = ctx.lang !== 'en';
+function sayTurn(t0, ctx) {
+  const w = ctx.words, zh = ctx.lang !== 'en', t = shownEntry(t0, ctx.st?.unit ?? 1);
   const who = t.who === 'foe' ? (ctx.foeName ?? '') : (zh ? '你' : 'You');
   const card = id => name(ctx.catalog?.[id], ctx.lang) || id;
   switch (t.act) {
@@ -827,9 +830,9 @@ const fill = (tpl, v) => tpl.replace(/\{(\w+)\}/g, (_, k) => v[k] ?? '');
 function gearHtml(side, who, st, ctx) {
   const w = ctx.words;
   const hit = (st.log ?? []).some(t => t.act === 'hurt' && t.who === who && t.absorbed);
-  const armor = side.armor > 0 || hit ? `<span class="barmor${side.armor ? '' : ' gone'}">${esc(w.armor)} <b>${side.armor ?? 0}</b></span>` : '';
+  const armor = side.armor > 0 || hit ? `<span class="barmor${side.armor ? '' : ' gone'}">${esc(w.armor)} <b>${shown(st, side.armor ?? 0)}</b></span>` : '';
   const ward = Object.entries(side.ward ?? {}).filter(([, n]) => n > 0)
-    .map(([el, n]) => `<span class="bward">${esc(fill(w.ward, { el: ctx.lang === 'en' ? EN_EL[el] ?? el : GLYPH[el] ?? el, n }))}</span>`).join('');
+    .map(([el, n]) => `<span class="bward">${esc(fill(w.ward, { el: ctx.lang === 'en' ? EN_EL[el] ?? el : GLYPH[el] ?? el, n: shown(st, n) }))}</span>`).join('');
   return armor || ward ? `<div class="bgear">${armor}${ward}</div>` : '';
 }
 
@@ -922,7 +925,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
     <button class="bside foe${aim.hero ? ' aiming aimed' : ''}${windUp(st)}" data-spot="hero">
       <span class="bplate">${ctx.foeArt ? `<img class="bface" src="${esc(ctx.foeArt)}" alt="">` : `<b class="bface none">${esc([...(ctx.foeName ?? '')][0] ?? '')}</b>`}</span>
       <div class="bwho"><span class="bfoename"><span class="bfoetitle">${esc(ctx.foeName ?? '')}</span> <span class="belem el-${esc(st.foe.root ?? 'none')}">${GLYPH[st.foe.root] ?? ''}</span>${wardTags(st.foe, ctx)}${fierceTag(st, ctx)}</span>
-        ${pool(w.hp, st.foe.hp, st.foe.hpMax, 'hp', st.foe.trial?.yield)}
+        ${pool(w.hp, shown(st, st.foe.hp), shown(st, st.foe.hpMax), 'hp', st.foe.trial?.yield)}
         ${st.foe.trial?.survive ? `<small class="bstake bsurvive">${esc(ctx.lang === 'en' ? `Stood ${st.foe.endured ?? 0} of ${st.foe.trial.survive} turns` : `已站住 ${st.foe.endured ?? 0}/${st.foe.trial.survive} 回合`)}</small>` : ''}
         ${bubble('foe', ctx.says?.foe)}</div>
       <div class="bnums">
@@ -943,7 +946,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
 
     <div class="bside you">
       <div class="bwho" data-spot="self"><span class="byouname">${esc(ctx.youName ?? '')} <span class="belem el-${esc(st.you.root ?? 'none')}">${GLYPH[st.you.root] ?? ''}</span></span>
-        ${pool(w.hp, st.you.hp, st.you.hpMax, 'hp')}
+        ${pool(w.hp, shown(st, st.you.hp), shown(st, st.you.hpMax), 'hp')}
         ${bubble('her', ctx.says?.her, ctx.herName)}</div>
       <div class="bnums">
         ${gearHtml(st.you, 'you', st, ctx)}
@@ -955,7 +958,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
         ${pouchRowHtml(st, ctx, picked)}
         <button class="bact bpower el-${esc(st.you.root ?? 'none')}${powerWhy ? ' dim' : ''}${picked?.from === 'power' ? ' held' : ''}${!powerWhy && picked?.from !== 'power' ? ' can' : ''}" data-spot="power"${powerWhy ? ` title="${esc(w.why[powerWhy] ?? powerWhy)}"` : ''}>
           <span class="bsealface"><b>${esc(w.power)}</b><span class="belem">${GLYPH[st.you.root] ?? ''}</span></span>
-          <small>${powerWhy ? esc(w.why[powerWhy] ?? powerWhy) : `${st.you.powerHit} · ${POWER_COST}${ctx.lang === 'en' ? ' ' : ''}${esc(w.mana)}`}</small>
+          <small>${powerWhy ? esc(w.why[powerWhy] ?? powerWhy) : `${shown(st, st.you.powerHit)} · ${POWER_COST}${ctx.lang === 'en' ? ' ' : ''}${esc(w.mana)}`}</small>
         </button>
         ${endSealHtml(st, w, stuck, turn)}
       </div>

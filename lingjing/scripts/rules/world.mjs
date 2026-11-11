@@ -489,13 +489,17 @@ function foeOf(content, game) {
   const entry = creature && game.hunt ? poolEntry(content, game.hunt, game.creature) : null;
   const base0 = entry ? { ...creature, ...(entry.deck ? { deck: entry.deck } : {}), ...(entry.hp ? { hp: entry.hp } : {}), ...(entry.roaming ? { roaming: entry.roaming } : {}) } : creature;
   // Grown toward his band (match.mjs): its 气血 by the stand's scale.
-  const base = base0 && game.scale ? { ...base0, hp: Math.round((base0.hp ?? 1) * game.scale * 100) / 100 } : base0;
+  const base1 = base0 && game.scale ? { ...base0, hp: Math.round((base0.hp ?? 1) * game.scale * 100) / 100 } : base0;
+  // Its level (batch 3, rules/cards.mjs foeLevel): met again and again, his own held inside the band of where it is met — the
+  // pool's place, a 秘境 重 (`game.levels`, rules/mijing.mjs); a story fight stands at its exit's `level` (weighed, below).
+  const band = game.levels ?? (game.hunt ? placeOf(content, game.hunt)?.levels : null);
+  const base = base1 && band ? { ...base1, levels: band } : base1;
   return base && game.foe ? weighed(base, game.foe) : base;
 }
 /* A scene's fight weighed for where the story meets its beast (the exit game's `foe`: `hp`, `deck`,
    `trial`, `feint` over the creature's own — 2026-10-15, 古七: the 秘境's 犰狳 met again at 灵草谷 three layers
    on, 秦雁 on the 崖顶 where there is no 台边). The creature's row, and every other door to it, stand. */
-const weighed = (c, o) => ({ ...c, ...(o.hp ? { hp: o.hp } : {}), ...(o.deck ? { deck: o.deck } : {}), ...(o.trial ? { trial: { ...(c.trial ?? {}), ...o.trial } } : {}), ...(o.feint ? { feint: { ...(c.feint ?? {}), ...o.feint } } : {}),
+const weighed = (c, o) => ({ ...c, ...(o.level != null ? { level: o.level } : {}), ...(o.hp ? { hp: o.hp } : {}), ...(o.deck ? { deck: o.deck } : {}), ...(o.trial ? { trial: { ...(c.trial ?? {}), ...o.trial } } : {}), ...(o.feint ? { feint: { ...(c.feint ?? {}), ...o.feint } } : {}),
   // Who stands beside him here (party.json; `[]` alone), and what the scene puts in his hand (三试's 一滚 · 石子).
   ...(o.party ? { party: o.party } : {}), ...(o.extra ? { extra: o.extra } : {}),
   // `fatigue: false`: in this fight his deck run dry costs nothing (no 反噬) — a teaching fight's (00-fox, 2026-10-22).

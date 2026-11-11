@@ -24,7 +24,7 @@ import { fightOdds, oddsKey } from '../fightodds.js';
 import { wayLine } from '../wayline.js';
 import { wornOf } from './arms.mjs';
 import { GEAR_SLOTS, wornCount } from './wear.mjs';
-import { cardCatalog, fightSetup, ownedCards, rootsOf, usable } from './cards.mjs';
+import { cardCatalog, fightSetup, gearShown, ownedCards, rootsOf, usable } from './cards.mjs';
 import { clone } from './core.mjs';
 import { shelfOf } from './look.mjs';
 import { poolGame } from './match.mjs';
@@ -46,13 +46,14 @@ function wearable(content, state) {
     const best = Object.keys(state.bag ?? {}).map(id => content.items.items.find(i => i.id === id))
       .filter(i => i && i.kind === slot && (state.bag[i.id] ?? 0) > wornCount(state, i.id) && i.id !== on?.id && worth(i) > worth(on))
       .sort((a, b) => worth(b) - worth(a))[0];
-    if (best) out.push({ kind: 'wear', item: best.id, name: pick(best.name, state.lang), slot, cost: 0, where: 'here', does: gearDoes(best) });
+    if (best) out.push({ kind: 'wear', item: best.id, name: pick(best.name, state.lang), slot, cost: 0, where: 'here', does: gearShown(content, state, best) });
   }
   return out;
 }
 
 /* What worn gear lends: its 攻 · 防 · 抗 · the root it lends. */
-const gearDoes = item => Object.fromEntries(['atk', 'def', 'ward', 'root'].filter(k => item.effect?.[k] != null).map(k => [k, item.effect[k]]));
+// What it lends in a fight, as the fight shows it at his level (cards.mjs gearShown: 主灵根一击 +n · 护体 n · 抗 n — batch 3; until
+// 2026-11-10 the thing's own points, 「护体 1」 for a robe worth 4).
 /* What a card is: its cost, its body, its keywords, its effect (cards.json).
    A summon carries the name of what comes (`effect.summon.name`, wayline.js effectWords: 「召来 藤须」), from a copy — never the row. */
 const effectDoes = (e, catalog, lang) => {

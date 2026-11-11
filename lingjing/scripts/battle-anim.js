@@ -10,6 +10,7 @@
 // and for anyone who finds motion unpleasant.
 
 import { squash } from './fx.js';
+import { shownEntry } from './battle.js';
 
 /* Every wait here is a `sleep`, so a stretch being drawn can be hurried to its end (hurry): the next tap never waits
    for the last one's ink (Hanli 11-07: 「斗法一张牌出手后要等1秒，才能点第二张」). */
@@ -430,7 +431,8 @@ function exchanged(entries) {
 /* Replay one stretch of the log. `root` is the battle element as it stands
    NOW — the state has already moved; this only draws what got it there. */
 /* `ctx.onEntry(t)`: each entry as it is drawn (the fight's sound, games/kapai.js) — every one, drawn or skipped. */
-export async function playLog(root, entries, ctx = {}) {
+export async function playLog(root, entries0, ctx = {}) {
+  const entries = (entries0 ?? []).map(t => shownEntry(t, ctx.unit ?? 1));
   if (ctx.skip || !root) { for (const t of entries ?? []) ctx.onEntry?.(t); return; }
   raiseGhosts(root, ctx.ghosts);
   const held = holdPools(root, ctx.ghosts?.hp);

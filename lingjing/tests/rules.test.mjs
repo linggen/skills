@@ -1686,7 +1686,7 @@ test('chapter 1 (古十): waypoints, the market of Ye, the two failed plans, the
   // alone on the bank (第九回: he only dodges the dragons) — the scene says its 小队: none
   // …weighed with 火柴 worn (rules/gearhint.mjs: the door says so when he owns it and does not wear it)
   const { weighed_with: weighed, _weighed_with: _, ...plain } = trial.game;
-  assert.deepEqual(plain, { id: 'shuanglong-trial', kind: 'duel', creature: 'foe-shuanglong', retry: true, foe: { party: [] } });
+  assert.deepEqual(plain, { id: 'shuanglong-trial', kind: 'duel', creature: 'foe-shuanglong', retry: true, foe: { level: 10, party: [] } });
   assert.deepEqual(weighed, { wear: { weapon: 'huochai-jian' } });
   assert.equal(trial.duel.creature.root, 'water');
   refused(resolve, s, { exit: 'stand' }, 'game-not-won', octx());
@@ -1800,7 +1800,9 @@ test('chapter 1: the shaman sent first, then the dragons\' trial — fought out 
   // won on some day's hand: then 站着，不跪 walks on to the fallen tower (古九's 老胡), then the deep
   let won = null;
   // (the hand the road gives by 古九 — the walk here gains only the first cards; cards.md § 4)
-  for (let k = 0; k < 12 && won?.result.outcome !== 'won'; k += 1) won = fightOut({ ...s, seed: `trial-${k}`, cards: [...new Set([...(s.cards ?? []), ...ROAD_HAND])], ...SWORD(s) }, 'shuanglong-trial', { c: octx() });
+  // …at the level the book meets it at (batch 3: the trial stands at 筑基一层, its exit's `level`; this walk reaches 冀 at
+  // 练气 — under a realm the trial is 压制's, as a fight above his station is).
+  for (let k = 0; k < 12 && won?.result.outcome !== 'won'; k += 1) won = fightOut({ ...s, tier: 'foundation', step: 0, seed: `trial-${k}`, cards: [...new Set([...(s.cards ?? []), ...ROAD_HAND])], ...SWORD(s) }, 'shuanglong-trial', { c: octx() });
   assert.equal(won.result.outcome, 'won', JSON.stringify(won.result.log?.slice(-3)));
   const r = answer(resolve, won.state, { exit: 'stand' });
   assert.equal(r.state.scene, '01-tower'); assert.equal(r.result.paid.progress, 0); // no story 修为 (2026-10-16)

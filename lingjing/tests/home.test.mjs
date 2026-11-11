@@ -178,8 +178,9 @@ test('an old loss not in the way is a line at most; the button is what advances 
   assert.match(html(l), /data-home-way="todo"[^>]*>戴上 · /);
   assert.doesNotMatch(html(l), /data-home-way="next"/);
   // …and under it ONE fact line of what it does (Hanli 10-27: 「为什么要买东西? 能增强什么」), the same on Look for the phone.
-  assert.match(line.way.line, /^爷爷的弓 · 法器 · 主灵根一击 \+2，借木/);
-  assert.match(html(l), /<div class="homewhy"><span class="small dim">爷爷的弓 · 法器 · 主灵根一击 \+2，借木/);
+  assert.match(line.way.line, /^爷爷的弓 · 法器 · 主灵根一击 \+1，借木/);
+  // 主灵根一击 as the fight reckons it (batch 3, cards.mjs gearShown): 攻 2 × weapon_power ½ = +1 (the words said +2).
+  assert.match(html(l), /<div class="homewhy"><span class="small dim">爷爷的弓 · 法器 · 主灵根一击 \+1，借木/);
 });
 
 test('a haunt lost to is never in the way: the fight is the button, the way to grow stronger a 待办 line (Hanli 10-27: 「这个买东西的按钮是什么意思?」)', () => {

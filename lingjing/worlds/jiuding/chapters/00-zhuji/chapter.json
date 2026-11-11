@@ -15,6 +15,8 @@
   },
   "_map": "The same 观内 as 外门 (Hanli, 2026-10-15): the years are spent on the mountain; 内门 too goes below only on a 执事堂 令 — 周衡: 「份例不跟着涨。差的，自己挣——执事堂揭牌，下山打妖。」 (07-第七回). Ways past the map and the way home as world.mjs leaveOf / fitLeave.",
   "map": {
+    "_levels": "The levels this map's places stand in (batch 3, Hanli 2026-11-10: 卷一 is 练气一层 → 筑基三层, L1–12): each place's band (places/*.json `levels`) lies inside it, and every beast and thing on it too, or says why (content.mjs lintLevels). 零层 is outside the 81.",
+    "levels": [1, 12],
     "places": [
       "waimen",
       "fantang",

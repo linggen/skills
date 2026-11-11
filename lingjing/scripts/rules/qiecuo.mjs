@@ -17,7 +17,7 @@
 import { dayKey, lockedOf, pick, seedOf, staminaCost } from '../state.mjs';
 import { clone, pay, refuse, spendStamina } from './core.mjs';
 import { sideLine } from './hui.mjs';
-import { stonesAt, xiuweiOf } from './playpay.mjs';
+import { levelOf as levelOfRealm, stonesAt, xiuweiOf } from './playpay.mjs';
 import { hashOf } from './travel.mjs';
 import { keyDrop } from './mijing.mjs';
 import { eventDone, eventOf, eventShare, eventWait } from './events.mjs';
@@ -113,15 +113,12 @@ export function boutOf(content, state) {
   return { n, foe, style, line, climb: climbOf(content, state, c.climb) };
 }
 
-/* How far up his realm the bout stands, 0…1: the layers he has climbed past `climb.from` over `climb.span`. */
-function layerIndex(content, tier, step) {
-  let i = 0;
-  for (const t of content.ladder?.tiers ?? []) { if (t.id === tier) return i + (step ?? 0); i += (t.thresholds ?? []).length || 10; }
-  return i;
-}
+/* How far up his realm the bout stands, 0…1: the levels he has climbed past `climb.from` over `climb.span` (batch 3: on the 81
+   levels, playpay.mjs levelOf — L = realm × 9 + 层; until 2026-11-10 an index of the ladder's steps, the same numbers on 古). */
+const levelAt = (content, tier, step) => levelOfRealm(content, tier, step ?? 0)?.level ?? 0;
 export function climbOf(content, state, k) {
   if (!k) return 0;
-  const at = layerIndex(content, state.tier, state.step), from = layerIndex(content, k.from?.tier, k.from?.step);
+  const at = levelAt(content, state.tier, state.step), from = levelAt(content, k.from?.tier, k.from?.step);
   return Math.max(0, Math.min(1, (at - from) / Math.max(1, k.span ?? 10)));
 }
 

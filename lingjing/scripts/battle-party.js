@@ -4,6 +4,7 @@
 // its owner's seal (a member's card is played by that member) and 新 until it is first played.
 // Pure strings for the page (battle-card.js); the fight itself is battle.js.
 import { esc } from './esc.js';
+import { shown } from './battle.js';
 
 const first = s => [...String(s ?? '')][0] ?? '';
 const nameOf = (n, lang) => (typeof n === 'string' ? n : n?.[lang] ?? n?.zh ?? '');
@@ -24,7 +25,7 @@ export function partyHtml(st, ctx) {
     return `<div class="bally${a.gone ? ' gone' : ''}${a.taunt && !a.gone ? ' guard' : ''}" data-ally="${esc(a.id)}" data-spot="ally" data-index="${allies.indexOf(a)}" title="${esc(name)}">
       <span class="ballyface">${m.art ? `<img src="${esc(ctx.artBase ?? '')}${esc(m.art)}" alt="">` : `<b>${esc(first(name))}</b>`}</span>
       <span class="ballyname">${esc(name)}${a.taunt && !a.gone ? `<i class="ballyguard">${esc(w.guard)}</i>` : ''}${a.gone ? `<i class="ballygone">${esc(w.gone)}</i>` : ''}</span>
-      <span class="ballyhp" data-now="${a.hp}" data-max="${a.hpMax}"><i style="width:${pct}%"></i><b>${a.hp}<small>/${a.hpMax}</small></b></span>
+      <span class="ballyhp" data-now="${shown(st, a.hp)}" data-max="${shown(st, a.hpMax)}"><i style="width:${pct}%"></i><b>${shown(st, a.hp)}<small>/${shown(st, a.hpMax)}</small></b></span>
     </div>`;
   };
   return `<div class="bparty" aria-label="${esc(w.party)}">${allies.map(plate).join('')}</div>`;

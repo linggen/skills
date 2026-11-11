@@ -247,7 +247,7 @@ export function withBalance(content) {
   const fantong0 = content.fantong && c.fantong_min != null ? { ...content.fantong, limit: { ...content.fantong.limit, cooldown_min: c.fantong_min } } : content.fantong;
   // Shop prices (`prices`): every `buy` and `sell` lives here, folded onto its item; a pill's 修为 (`pills`) too.
   const fold = i => pillFolded(b, b.prices?.[i.id] ? { ...i, ...b.prices[i.id] } : i);
-  const items = content.items && (b.prices || b.pills) ? { ...content.items, items: content.items.items.map(fold) } : content.items;
+  const items = content.items && (b.prices || b.pills || b.gear) ? { ...content.items, items: content.items.items.map(fold) } : content.items;
   // …and its worth (`kailu`: what a thing is worth to the pot, what each grade gives back) with what it knows of each
   // thing — its kind, its `sell` (rules/fantong-roll.mjs withWorth).
   const fantong = withWorth(fantong0, b, items?.items);
@@ -273,7 +273,21 @@ export const pillEffect = (balance, item) => (item?.of != null ? balance?.pills?
 /* A 阶 outside the ladder that the pills know (balance.json pills `off_ladder`: 仙阶) — no 转, no 纹. */
 export const offLadderTier = (content, tier) => Boolean(tier && (content?.balance?.pills?.off_ladder ?? []).includes(tier)
   && !(content.ladder?.tiers ?? []).some(t => t.id === tier));
-const pillFolded = (b, i) => {
+/* A worn thing's fight points (batch 3, balance.json `gear` from master.fight.gear): its 品 × its slot's per-品 points, a
+   pendant's on each root it `wards` — laid on its effect at load (the book declares the class, never a 攻 · 防 · 抗). */
+export function gearFolded(b, i) {
+  const per = b?.gear?.[i?.kind];
+  // A 攻 · 防 · 抗 written by hand on a worn thing is the validator's (tools/numbers.mjs hardErrors): marked, kept as written.
+  if (per && ['atk', 'def', 'ward'].some(k => i.effect?.[k] != null)) return { ...i, _hand_fight: true };
+  if (!per || !(i.pin > 0)) return i;
+  const e = { ...(i.effect ?? {}) };
+  if (per.atk) e.atk = per.atk * i.pin;
+  if (per.def) e.def = per.def * i.pin;
+  if (per.ward && i.wards?.length) e.ward = Object.fromEntries(i.wards.map(el => [el, per.ward * i.pin]));
+  return { ...i, effect: e };
+}
+const pillFolded = (b, i0) => {
+  const i = gearFolded(b, i0);
   // A 储物袋's room by its 品 (items.json `pin`; balance.json economy.pouch: base × step^(品−1), batch 2).
   const P = b.economy?.pouch;
   if (i.kind === 'pouch' && i.pin && P) return { ...i, effect: { ...(i.effect ?? {}), pouch: P.base * P.step ** (i.pin - 1) } };
@@ -656,6 +670,86 @@ function lintDrawWords(content, ids, bad) {
   }
 }
 
+/* ── Levels (batch 3, Hanli 2026-11-10: 卷一's maps are L1–12; a place sits inside its map's band; the beasts and things on a
+   map fall inside it — out of band says why) ──
+   A map (a chapter's `map.levels`) with no band (卷二 onwards: Hanli has not chosen its start) is skipped and listed. Returns
+   { errors: [{where, say}], skipped: [chapter ids], checked: n }. A reason is `levels_why` on the thing out of band (a pool entry,
+   a creature, an item, a place). */
+const within = (inner, outer) => Array.isArray(inner) && Array.isArray(outer) && inner[0] >= outer[0] && inner[1] <= outer[1];
+const meets = (a, b) => Array.isArray(a) && Array.isArray(b) && a[0] <= b[1] && b[0] <= a[1];
+const band = b => Array.isArray(b) && b.length === 2 && Number.isInteger(b[0]) && Number.isInteger(b[1]) && b[0] >= 1 && b[0] <= b[1] && b[1] <= 81;
+const why = x => typeof x?.levels_why === 'string' && x.levels_why.trim().length > 10;
+export function levelLint(content) {
+  const errors = [], skipped = [], err = (where, say) => errors.push({ where, say });
+  const places = Object.values(content.places ?? {}).flatMap(f => (f.places ?? []).map(p => ({ ...p, _pools: f.pools ?? {} })));
+  const placeById = Object.fromEntries(places.map(p => [p.id, p]));
+  const creature = id => content.creatures.creatures.find(c => c.id === id);
+  const itemOf = id => content.items.items.find(i => i.id === id);
+  const mapsOf = {}; // place id → the bands of the banded maps it is on
+  let checked = 0;
+  for (const ch of Object.values(content.chapters ?? {})) {
+    const m = ch.map, b = m?.levels;
+    if (b == null) { skipped.push(ch.id); continue; }
+    if (!band(b)) { err(`chapter ${ch.id} map.levels`, `not a band of 1–81 (${JSON.stringify(b)})`); continue; }
+    for (const id of m.places ?? []) (mapsOf[id] ??= []).push([ch.id, b]);
+    // Its story fights stand at a level of the map (零层's at 0, outside the 81).
+    for (const sc of Object.values(ch.scenes ?? {})) for (const e of sc.exits ?? []) {
+      if (e.game?.kind !== 'duel') continue;
+      const L = e.game.foe?.level;
+      if (L == null) err(`scene ${sc.id}/${e.id}`, 'a story fight on a banded map stands at a declared level (`foe.level`; 0 at 零层)');
+      else if (L !== 0 && !(L >= b[0] && L <= b[1])) err(`scene ${sc.id}/${e.id}`, `level ${L} outside its map's band ${b.join('–')}`);
+      checked += 1;
+    }
+  }
+  // The level a 回 opens at: the cap of the 回 before it (ladder.json caps.hui, in book order) — where a pool entry's `from` lets a
+  // beast in at the earliest.
+  const caps = Object.entries(content.ladder?.caps?.hui ?? {}).filter(([k]) => /^h\d/.test(k));
+  const capLevel = c => { const t = content.ladder.tiers.find(x => x.id === c.tier); return t ? content.ladder.tiers.indexOf(t) * 9 + c.layer : 0; };
+  const huiFloor = h => { const i = caps.findIndex(([k]) => k === h); return i > 0 ? Math.max(1, capLevel(caps[i - 1][1])) : 1; };
+  const juan1 = Object.values(content.chapters ?? {}).find(ch => ch.map?.levels)?.map.levels;
+  // Every banded place: on a banded map, or inside one (沉鼎秘境's rooms, reached through 石门) — linted against 卷一's band.
+  for (const p of places.filter(x => x.levels != null)) if (!mapsOf[p.id] && juan1) mapsOf[p.id] = [['卷一', juan1]];
+  for (const [id, maps] of Object.entries(mapsOf)) {
+    const p = placeById[id];
+    if (!p) continue;
+    checked += 1;
+    if (!band(p.levels)) { err(`place ${id}`, `on a banded map (${maps.map(m => m[0]).join(', ')}) with no band of its own (\`levels\`)`); continue; }
+    for (const [cid, b] of maps) if (!within(p.levels, b) && !why(p)) err(`place ${id}`, `band ${p.levels.join('–')} outside map ${cid}'s ${b.join('–')}`);
+    const outer = maps[0][1];
+    // A beast listed here: made for the levels it meets him at (its `levels` meet the place's band), and inside the map's.
+    const listed = [...(p.has?.pool ? p._pools[p.has.pool]?.beasts ?? [] : []), ...(p.has?.creature ? [{ creature: p.has.creature }] : [])];
+    for (const e of listed) {
+      const c = creature(e.creature);
+      checked += 1;
+      if (!c) continue;
+      if (!band(c.levels)) { if (!why(e) && !why(c)) err(`place ${id} · ${e.creature}`, 'a beast on a banded map with no levels (creatures.json `levels`)'); continue; }
+      // Made for the lowest level it can be met at here: the place's floor, or its entry's 回 (`from`) if that opens later.
+      const floor = Math.max(p.levels[0], e.from ? huiFloor(e.from) : 1);
+      if (!(c.levels[0] <= floor && c.levels[1] >= p.levels[1]) && !why(e) && !why(c)) err(`place ${id} · ${e.creature}`, `made for ${c.levels.join('–')}, met here from ${floor} to ${p.levels[1]}`);
+      if (!within(c.levels, outer) && !why(e) && !why(c)) err(`place ${id} · ${e.creature}`, `made for ${c.levels.join('–')}, outside the map's ${outer.join('–')}`);
+    }
+    // A thing sold here: of a level the map holds, and not above the place's.
+    for (const g of p.has?.shop?.goods ?? []) {
+      const i = itemOf(g);
+      checked += 1;
+      if (i && !(i.level >= outer[0] && i.level <= Math.min(outer[1], p.levels[1])) && !why(i)) err(`place ${id} · shop ${g}`, `a level-${i.level} thing in a place of ${p.levels.join('–')} (map ${outer.join('–')})`);
+    }
+  }
+  // A 秘境 重 is a place: its band inside 卷一's maps (the run opens from 沉鼎秘境's door), its beasts made for it.
+  for (const t of content.mijing?.tiers ?? []) {
+    if (t.levels == null) { skipped.push(`mijing:${t.id}`); continue; }
+    checked += 1;
+    if (!band(t.levels) || (juan1 && !within(t.levels, juan1))) { err(`mijing ${t.id}`, `band ${JSON.stringify(t.levels)} not inside 卷一's ${juan1?.join('–')}`); continue; }
+    for (const e of [...(t.beasts ?? []), ...(t.xiong ?? []), ...(t.boss ? [t.boss] : [])]) {
+      const c = creature(e.creature);
+      checked += 1;
+      if (!c) continue;
+      if (!band(c.levels) || !within(t.levels, [c.levels[0], Math.max(c.levels[1], t.levels[1])]) || c.levels[1] < t.levels[1]) { if (!why(e) && !why(c)) err(`mijing ${t.id} · ${e.creature}`, `made for ${c.levels?.join('–') ?? 'no levels'}, met in the 重 from ${t.levels.join('–')}`); }
+    }
+  }
+  return { errors, skipped, checked };
+}
+
 export function lint(content) {
   const problems = [];
   const bad = (where, msg) => problems.push(`${where}: ${msg}`);
@@ -696,6 +790,7 @@ export function lint(content) {
   lintWalls(content, ids, bad);
   lintMeets(content, ids, bad);
   lintPlaces(content, ids, bad);
+  for (const e of levelLint(content).errors) bad(e.where, e.say);
   lintAtlas(content, bad);
   lintLore(content, bad);
   lintPeople(content, bad);

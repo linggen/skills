@@ -16,6 +16,8 @@ import { TIDES } from '../games/tide.js';
 import { kitOf, beastOpen } from './reveal.mjs';
 import { placeOf, rawEncounter } from './world.mjs';
 import { yaoshouPlace } from './yaoshou.mjs';
+import { levelOf } from './playpay.mjs';
+import { clampTo } from './power.mjs';
 
 const formsOf = (content, event) => content.happenings?.forms?.[event] ?? null;
 /* The forms a creature may be fought in at an event: the event's own first, then each that names it. */
@@ -37,6 +39,12 @@ export function stampForm(s, event, form, now) {
 }
 
 /* ── 妖兽出没 ── */
+/* The wave's difficulty at his level: (clamp(L, band) − its floor) ÷ the band's span, 0…1 (0 at 零层 or with no band). */
+export function waveTier(content, state) {
+  const b = placeOf(content, state.place)?.levels, L = levelOf(content, state.tier, state.step ?? 0)?.level ?? 0;
+  if (!Array.isArray(b) || !(L >= 1) || b[1] <= b[0]) return 0;
+  return Math.round(((clampTo(L, b) - b[0]) / (b[1] - b[0])) * 1000) / 1000;
+}
 export const waveTask = content => (content.tasks?.tasks ?? []).find(t => t.id === formsOf(content, 'yaoshou')?.wave?.task) ?? null;
 const MADE = new WeakMap();
 /* The wave of this one beast's kind: the tide maker's night, seeded by the save and the forms fought so far (null: the
@@ -44,9 +52,12 @@ const MADE = new WeakMap();
 export function waveMade(content, state, cid) {
   const t = waveTask(content), maker = t ? TIDES[t.game] : null, kit = maker ? kitOf(content, t.game) : null;
   if (!kit) return null;
-  const key = `${seedOf(state)}|${state.forms?.yaoshou?.n ?? 0}|${cid}`, memo = MADE.get(content) ?? new Map();
+  // Its difficulty class (the maker's `tier`, 0…1 — the 兽潮's is its climb by nights): where his level stands in the band of
+  // the place he meets it at (batch 3; until 2026-11-10 always 0) — at the band's floor the easiest, at its top the hardest.
+  const tier = waveTier(content, state);
+  const key = `${seedOf(state)}|${state.forms?.yaoshou?.n ?? 0}|${cid}|${tier}`, memo = MADE.get(content) ?? new Map();
   MADE.set(content, memo);
-  if (!memo.has(key)) memo.set(key, maker.night(kit, { seed: `${seedOf(state)}|yaoshou|${state.forms?.yaoshou?.n ?? 0}`, tier: 0, boss: false, open: k => k === cid && beastOpen(content, state, k) }) ?? null);
+  if (!memo.has(key)) memo.set(key, maker.night(kit, { seed: `${seedOf(state)}|yaoshou|${state.forms?.yaoshou?.n ?? 0}`, tier, boss: false, open: k => k === cid && beastOpen(content, state, k) }) ?? null);
   return memo.get(key);
 }
 /* The batch's fight where he stands, in its form: `{ form, e }` (e: the pool's encounter), or null (no batch up here). */

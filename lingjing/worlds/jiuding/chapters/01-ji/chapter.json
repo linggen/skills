@@ -9,6 +9,8 @@
   "gate": null,
   "_map": "卷一's whole map (Hanli, 2026-10-05: 游戏只到卷一，地图和故事只限卷一): after the Foundation he may walk all of 卷一 — 石坳村 and 蒙山, the area round 沉鼎观, 泗水 and 彭城 (古三's county town), and the road north from 泗水北岸 to 漳水南岸 into 冀 — 邺城, 河伯祠, 漳渊 and 太行山口. It holds while 01-ji runs and after it ends, while 卷二 waits (`coming`, world.mjs mapOf). `say` refuses a place of 徐 or 冀 the map leaves out; `beyond` refuses a province of a 卷 not open — greyed on the map, the line said on a tap (world.mjs shutSay, rules/inkmap.mjs).",
   "map": {
+    "_levels": "The levels this map's places stand in (batch 3, Hanli 2026-11-10: 卷一 is 练气一层 → 筑基三层, L1–12): each place's band (places/*.json `levels`) lies inside it, and every beast and thing on it too, or says why (content.mjs lintLevels). 零层 is outside the 81.",
+    "levels": [1, 12],
     "places": [
       "shiao",
       "mengshan",

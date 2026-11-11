@@ -81,7 +81,7 @@
     "kind": "duel",
     "creature": "foe-yinhu",
     "retry": true,
-    "foe": {
+    "foe": {"level": 0, 
      "trial": {
       "survive": 3,
       "goal": {

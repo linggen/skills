@@ -9,6 +9,8 @@ import { clone, refuse } from './core.mjs';
 import { gearBrief } from './errands.mjs';
 import { allPlaces, creatureOf, tierIndex } from './world.mjs';
 import { mainRoot } from './roots.mjs';
+import { levelOf } from './playpay.mjs';
+import { atLevel, clampTo, powerKnobs, powerOf } from './power.mjs';
 import { chapterLabel, huiLabel, huiNow, sceneHui } from './hui.mjs';
 
 /* ── 斗法 v3: the ten cards a player takes in ──
@@ -149,17 +151,38 @@ const RATES = content => content.cards?.gear ?? {};
 const weaponPower = (content, atk) => Math.round((atk ?? 0) * (RATES(content).weapon_power ?? 0));
 const treasurePower = (content, t) => weaponPower(content, t.base) + Math.floor((t.level - 1) / Math.max(1, RATES(content).treasure_levels ?? 99));
 function gearFight(content, state) {
-  // Every slot's number, whichever slot carries it (rules/wear.mjs armsOf): the 法衣's 防 and the shoes' add to 护体.
-  const arms = armsOf(GEAR_SLOTS.map(slot => wornOf(content, state, slot)));
-  const power = Math.max(arms.atk ? weaponPower(content, arms.atk) : 0, boundOf(content, state) ? treasurePower(content, state.treasure) : 0);
-  const armor = Math.round(arms.def * (RATES(content).armor_per_def ?? 0));
-  const ward = Object.fromEntries(Object.entries(arms.ward)
-    .map(([el, n]) => [el, Math.round(n * (RATES(content).ward_per_point ?? 0))]).filter(([, n]) => n > 0));
+  // Every slot's number, whichever slot carries it (rules/wear.mjs armsOf): the 法衣's 防 and the shoes' add to 护体. Batch 3:
+  // each worn thing's points count at its own level — × P(its level) ÷ P(his) (gearFactor), in his units (battle.js § unitOf):
+  // a thing of his level counts as it did at 练气一层, one below him less, one above more. 护体 and 抗 are 气血 at the door; the
+  // arm's strike joins 主灵根一击.
+  const worn = GEAR_SLOTS.map(slot => wornOf(content, state, slot)).filter(Boolean), arms = armsOf(worn);
+  const of = i => gearFactor(content, state, i);
+  const blade = worn.filter(i => (i.effect?.atk ?? 0) > 0 && i.effect.atk === arms.atk).sort((a, b) => of(b) - of(a))[0];
+  const armPower = blade ? weaponPower(content, arms.atk) * of(blade) : 0;
+  const power = Math.max(armPower, boundOf(content, state) ? treasurePower(content, state.treasure) : 0);
+  const armor = Math.round(worn.reduce((n, i) => n + (i.effect?.def ?? 0) * of(i), 0) * (RATES(content).armor_per_def ?? 0));
+  const wardOf = el => worn.reduce((n, i) => n + (i.effect?.ward?.[el] ?? 0) * of(i), 0);
+  const ward = Object.fromEntries(Object.keys(arms.ward)
+    .map(el => [el, Math.round(wardOf(el) * (RATES(content).ward_per_point ?? 0))]).filter(([, n]) => n > 0));
   // Every 符 in the bag that is a card (the drawn 符, and a story's one-time
   // 符 such as 踏马的符, 古五) goes in hand at the door, one of each.
   const catalog = cardCatalog(content);
   const charms = content.items.items.filter(i => i.effect?.charm && (state.bag?.[i.id] ?? 0) > 0 && catalog[i.id]?.charm).map(i => i.id);
   return { power, armor, ward: Object.keys(ward).length ? ward : null, charm: charms[0] ?? null, charms };
+}
+
+/* A worn thing's fight numbers as the fight shows them at his level (batch 3): 主灵根一击 +n (`atk`), 护体 n (`def`), 抗 n by root
+   (`ward`) — its points × the gear rates × gearFactor, × his unit (battle.js § unitOf); its lent root as it is. For the words that
+   state them (strengthen.mjs, wayline.js gearWords). */
+export function gearShown(content, state, item) {
+  const e = item?.effect ?? {}, f = gearFactor(content, state, item), u = unitAt(content, state), r = RATES(content);
+  const S = n => (n > 0 ? Math.max(1, Math.round(n * f * u)) : 0);
+  const out = {};
+  if (e.atk) out.atk = S(weaponPower(content, e.atk));
+  if (e.def) out.def = S(e.def * (r.armor_per_def ?? 0));
+  if (e.ward) out.ward = Object.fromEntries(Object.entries(e.ward).map(([el, n]) => [el, S(n * (r.ward_per_point ?? 0))]).filter(([, n]) => n > 0));
+  if (e.root) out.root = e.root;
+  return out;
 }
 
 /* His roots, and the ones his arms lend: a sword's `root` (佩之借木) and the
@@ -170,8 +193,56 @@ function rootsOf(content, state) {
   const lent = [wornOf(content, state, 'weapon')?.effect?.root, boundOf(content, state)?.element].filter(Boolean);
   return new Set([...(state.traits ?? []), ...lent]);
 }
-/* 气血 at full: the realm's, half a point a step — in 段 a third of that a 层 (state.mjs hpStep). */
-export const hpMaxOf = (state, content = null) => Math.round((CARD_REALMS[state.tier] ?? CARD_REALMS.qi).hp + (content ? hpStep(content, state.tier, state.step ?? 0) : state.step ?? 0) * 0.5);
+/* His level for a fight: L (playpay.mjs levelOf) where the 81 levels and the power knobs are, else null (零层, or a world
+   without them: the old numbers). */
+export const fightLevel = (content, state) => atLevel(content, content?.ladder ? levelOf(content, state.tier, state.step ?? 0)?.level : null);
+/* 气血 at full (batch 3, rules/power.mjs): P(his level) — one formula for the fight, the 秘境's run and a heal pill's share;
+   零层 (and a world without the knobs) the old reading: the realm's, half a point a step (in 段 a third of that a 层). */
+export function hpMaxOf(state, content = null) {
+  const L = content ? fightLevel(content, state) : null;
+  if (L != null) return Math.round(powerOf(powerKnobs(content), L));
+  return Math.round((CARD_REALMS[state.tier] ?? CARD_REALMS.qi).hp + (content ? hpStep(content, state.tier, state.step ?? 0) : state.step ?? 0) * 0.5);
+}
+/* The level a beast stands at in this fight: its own (`level`, a story fight's, fixed) else his, held inside its place's band
+   (`levels`, a repeatable's: a pool's place, a 秘境 重) — null where he has none (零层). */
+export const foeLevel = (content, state, creature) => {
+  const L = fightLevel(content, state);
+  if (L == null) return null;
+  return atLevel(content, creature?.level ?? clampTo(L, creature?.levels));
+};
+/* Each side's level on the door (battle.js begin): his and the beast's, their P, the anchor P₁ — and the beast's realm is the
+   realm of its level (境界压制 where they differ). Nothing where he stands at 零层. */
+function levelsAt(content, state, creature) {
+  const L = fightLevel(content, state), Lf = foeLevel(content, state, creature), x = powerKnobs(content);
+  if (L == null || Lf == null) return null;
+  const tier = content.ladder.tiers[Math.min(content.ladder.tiers.length - 1, Math.floor((Lf - 1) / 9))]?.id ?? state.tier;
+  return { anchor: anchorOf(content, state), you: { level: L, pow: powerOf(x, L) }, foe: { level: Lf, pow: powerOf(x, Lf), tier } };
+}
+/* His units (battle.js § unitOf): the fight is reckoned as today's fight of his realm — his 气血 P₁ × the realm's length class
+   (battle.js REALMS hp over 练气's: 1 · 1.3 · 1.6 · 2, how much longer a realm's fights run), a beast's its share of that
+   realm's row — and shown × P(his level) ÷ that anchor, so his 气血 on the page is P(his level). */
+/* A level as a {tier, step} on 古's ladder (L = realm × 9 + 层; 练气 counts from 零层). */
+export function levelState(content, L) {
+  const tiers = content.ladder.tiers, r = Math.min(tiers.length - 1, L > 0 ? Math.floor((L - 1) / 9) : 0), t = tiers[r];
+  return { tier: t.id, step: L - r * 9 - (t.zero ? 0 : 1) };
+}
+const realmRow = state => CARD_REALMS[state.tier] ?? CARD_REALMS[Object.keys(CARD_REALMS).at(-1)];
+export const lengthClass = state => realmRow(state).hp / CARD_REALMS.qi.hp;
+/* …his 气血 in his units: the realm's row at its first level as it was, a whole number (练气一层 21 = P₁ rounded, 筑基一层 26,
+   结丹 32, 元婴 40) — so his 气血 on the page, the anchor × P(L) ÷ the anchor, is P(L) to the point. */
+const firstHp = state => Math.round(realmRow(state).hp + (state.tier === 'qi' ? 0.5 : 0));
+export const anchorOf = (content, state) => Math.round((powerKnobs(content).first * firstHp(state)) / firstHp({ tier: 'qi' }));
+/* What one of his units shows as at this level (1 where he has no level). */
+export const unitAt = (content, state) => { const L = fightLevel(content, state); return L == null ? 1 : powerOf(powerKnobs(content), L) / anchorOf(content, state); };
+/* What a worn thing's numbers are worth at the door, in his units: × P(its own level) ÷ P(his) (batch 3) — an arm of a higher
+   level is a stronger arm; without levels (零层), as before. */
+/* `power.things`: 'own' — a worn thing and a pill count at their own level (one made for 练气一层 is a 练气一层 thing at
+   筑基); 'wearer' — at his (a thing never ages; its level sets its price only). The master's choice (master.fight). */
+export const ownLevel = content => powerKnobs(content)?.things === 'own';
+const gearFactor = (content, state, item) => {
+  const L = fightLevel(content, state), x = powerKnobs(content);
+  return L == null || !(item?.level >= 1) || !ownLevel(content) ? 1 : powerOf(x, item.level) / powerOf(x, L);
+};
 
 /* The fight open on the save, when it is THIS one (`game` its id) — a door
    left open on another creature holds nothing for this fight. */
@@ -209,9 +280,14 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   // 新: a card gained and not yet played (cards_new), marked in the hand until it is.
   const fresh = (state.cards_new ?? []).filter(id => deck.includes(id));
   // 丹囊: the pills he carries in (his last pick, as the bag still holds them).
-  const pouch = pouchFor(content, state);
+  const lv = levelsAt(content, state, creature);
+  // A 回春丹's 气血 is its own level's (batch 2, master.pills): into his units at the door (battle.js § unitOf).
+  const unit = unitAt(content, state), at = id => content.items.items.find(i => i.id === id)?.level ?? 1;
+  const into = p => (ownLevel(content) ? unit : unitAt(content, levelState(content, at(p.id))));
+  const pouch = pouchFor(content, state).map(p => (p.heal && into(p) !== 1 ? { ...p, heal: Math.max(1, Math.round(p.heal / into(p))) } : p));
   return {
     mode: 'pve',
+    ...(lv ? { anchor: lv.anchor } : {}),
     seed: deal ? `${duelSeed(state, creature, now)}|${deal}` : duelSeed(state, creature, now),
     you: {
       tier: state.tier, step: hpStep(content, state.tier, state.step ?? 0), root: main, deck, extra: [...(creature.extra ?? []), ...gear.charms],
@@ -231,9 +307,10 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
       ...(gear.armor ? { armor: gear.armor } : {}),
       ...(gear.ward ? { ward: gear.ward } : {}),
       // 问卦: the lower trigram's element, its 功法 lifted or lowered today.
+      ...(lv ? lv.you : {}),
     },
     // An elite is its harder deck and nothing else (redesign-v2 § 四).
-    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...fightLength(content, state, creature, beastToParty(content, creature, party, game)), ...(creature.signature ? { signature: creature.signature } : {}), ...(creature.feint ? { feint: creature.feint } : {}), ...(creature.trial ? { trial: creature.trial } : {}) },
+    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...fightLength(content, state, creature, beastToParty(content, creature, party, game), lv?.foe.level), ...(creature.signature ? { signature: creature.signature } : {}), ...(creature.feint ? { feint: creature.feint } : {}), ...(creature.trial ? { trial: creature.trial } : {}), ...(lv ? lv.foe : {}) },
   };
 }
 
@@ -277,14 +354,22 @@ export function lengthRule(content, state) {
   if (!r) return null;
   const minutes = Math.min(r.cap ?? Infinity, r.minutes?.[at] ?? r.cap ?? 5);
   const rounds = (minutes * 60) / r.sec_per_round;
-  const at1 = (list, fall = 0) => list?.[at] ?? list?.[list.length - 1] ?? fall;
-  const dpt = at1(r.dpt?.base) + at1(r.dpt?.step) * (state.step ?? 0);
+  // What a player of level L deals a round (batch 3), in his units (battle.js § unitOf — the fight is reckoned as at 练气一层;
+  // the page shows it × P(L) ÷ P₁): his hand's card points, `first` at 练气一层 and `per_level` more a level (the cards the road
+  // deals). 零层 the line read down to L0.
+  // In a realm of a longer fight (its length class, § anchorOf: 1 · 1.3 · 1.6 · 2) the cap is that much less a round — the
+  // rounds the realm's minutes give carry the rest (筑基一层: 8.5 ÷ 1.3 = 6.5, today's row).
+  const d = r.dpt ?? {}, L = levelOf(content, state.tier, state.step ?? 0)?.level ?? 0;
+  const dpt = ((d.first ?? 0) + (d.per_level ?? 0) * (L - 1)) / lengthClass(state);
   return { minutes, rounds, dpt, hp: Math.round(dpt * rounds), heals: r.heals ?? null, healMax: Math.max(1, Math.round(dpt)), carry: r.carry ?? 0 };
 }
-export function fightLength(content, state, creature, grown) {
+/* `Lf`: the beast's level at this door (its 气血's share is read at it); none, the old realm's row. */
+export function fightLength(content, state, creature, grown, Lf = null) {
   const rule = !creature.trial && !creature.long ? lengthRule(content, state) : null;
   if (!rule) return grown;
-  const share = (CARD_REALMS[state.tier] ?? CARD_REALMS.qi).hp * (MODES.pve.foeHp ?? 1);
+  // A beast's share of 气血 in his units: 零层's 20 × P(its level) ÷ P(his) (battle.js begin); no level, the old realm's row.
+  const L = fightLevel(content, state), x = powerKnobs(content);
+  const share = (CARD_REALMS[state.tier] ?? CARD_REALMS.qi).hp * (Lf != null && L != null ? powerOf(x, Lf) / powerOf(x, L) : 1) * (MODES.pve.foeHp ?? 1);
   const most = Math.floor((rule.hp / share) * 100) / 100;
   const was = grown.hp ?? 1, cut = was > most;
   // The weight a cut takes off its 气血 comes back on its blows (`carry`: 0 none, 1 all of it).
@@ -312,8 +397,10 @@ export function pouchFor(content, state, pick = state.pill_pick) {
 }
 /* What the door offers to carry: every pill in the bag with its number, and the pick as it stands. */
 export function pouchBrief(content, state) {
+  // A 回春丹's 气血 as the fight will show it at his level (batch 3: at its own level, or — power.things 'wearer' — at his).
+  const heal = i => (ownLevel(content) || !i.effect.fight.heal ? {} : { heal: Math.max(1, Math.round((i.effect.fight.heal / unitAt(content, levelState(content, i.level ?? 1))) * unitAt(content, state))) });
   const pills = content.items.items.filter(i => i.effect?.fight && (state.bag?.[i.id] ?? 0) > 0)
-    .map(i => ({ id: i.id, name: pick(i.name, state.lang), n: state.bag[i.id], ...i.effect.fight, ...(i.art ? { art: i.art } : {}) }));
+    .map(i => ({ id: i.id, name: pick(i.name, state.lang), n: state.bag[i.id], ...i.effect.fight, ...heal(i), ...(i.art ? { art: i.art } : {}) }));
   return pills.length ? { max: POUCH_MAX, pick: pouchFor(content, state).map(p => p.id), pills } : null;
 }
 

@@ -28,7 +28,7 @@ import { holdPlaceholder } from './invite.js';
 import { addressSay, codexHtml, codexOf } from './codex.js';
 import { newBoard, tapHeard } from './board.js';
 import { sounded } from './games/kit/heard.js';
-import { REALMS, begin, missingCards, replayInto, view as boutView } from './battle.js';
+import { REALMS, begin, missingCards, replayInto, shown as shownOf, view as boutView } from './battle.js';
 import { fightOdds, oddsKey } from './fightodds.js';
 import { withNext, FOOTER, barOf, duanOf, duanSegments, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, slotKey, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml } from './battle-card.js';
@@ -1022,7 +1022,7 @@ function riseStats() {
     // A tier in 段 rises by its 段 (「筑基 · 中成」): a 层 within it is the bar's, never a seal (duanOf). In 段 a 层 is a third
     // of a step's 气血 (state.mjs hpStep). (Until 11-02 this note sat mid-line and hid chapter, hui and 体力 from the strip.)
     rank: duanOf(bar.tier)?.label ?? bar.tier?.name, lang: lang(), step: duanOf(bar.tier) ? 1 + ((bar.tier.step ?? 1) - 1) / bar.tier.duan.marks.length : bar.tier?.step, chapter: look.chapter?.id, hui: look.chapter?.hui ?? look.chapter?.id, stamina: look.stamina?.now, resting: Boolean(look.stamina?.resting),
-    her: look.companion?.card ? { atk: look.companion.card.atk, hp: look.companion.card.hp } : null };
+    her: look.companion?.card ? { atk: look.companion.card.atk, hp: look.companion.card.hp } : null, hp: bar.tier?.hp ?? null };
   const before = shown;
   shown = now;
   // 大成就: a realm risen, a 回 begun — the stage marks it and 银月 speaks
@@ -1137,13 +1137,14 @@ async function gainBurst(g, fromStory = false) {
   setTimeout(() => el.remove(), 3400 + Math.max(0, riseAfter - performance.now()));
 }
 
-/* What a breakthrough grew in a fight, from the fight's own realm table
-   (battle.js REALMS: 气血 by realm + half a point a step, 灵力上限, 一击) —
+/* What a breakthrough grew in a fight: 气血 the rules' (Look tier.hp, P of his level — batch 3), 灵力上限 and 一击 the fight's
+   realm table (battle.js REALMS) —
    only what changed (his, 2026-09-24: 境界提升时, 属性增加吗? → show it on the seal). */
 function riseGains(before, now) {
   const stats = (t, step) => { const r = REALMS[t]; return r && { hp: Math.round(r.hp + ((step ?? 1) - 1) * 0.5), mana: r.mana, power: r.power }; };
   const a = stats(before.tier, before.step), b = stats(now.tier, now.step), w = words();
   if (!a || !b) return '';
+  if (before.hp != null && now.hp != null) { a.hp = before.hp; b.hp = now.hp; }
   return [
     b.hp !== a.hp ? fill(w.featHp, { a: a.hp, b: b.hp }) : '',
     b.mana !== a.mana ? fill(w.featMana, { a: a.mana, b: b.mana }) : '',
@@ -4678,7 +4679,8 @@ function herFightOver(b, r) {
   const c = b.brief?.creature ?? {}, v = boutView(b.st), zh = lang() !== 'en';
   const repeat = Boolean(r.tally) || String(b.id).startsWith('haunt:');
   const close = r.outcome === 'won' && v.you.hp < v.you.hpMax * CLOSE_AT;
-  const hp = zh ? `气血剩${v.you.hp}/${v.you.hpMax}` : `${v.you.hp}/${v.you.hpMax} Life left`;
+  const S = n => shownOf(v, n);
+  const hp = zh ? `气血剩${S(v.you.hp)}/${S(v.you.hpMax)}` : `${S(v.you.hp)}/${S(v.you.hpMax)} Life left`;
   // Lost without the thing it was weighed with (the door's gear_hint): that first, and her gear word counted as said for
   // this loss — the next Look at the door would say it again on top of her comfort.
   const gear = r.outcome !== 'won' && b.gearHint ? { ...b.gearHint, lost: (b.gearHint.lost ?? 0) + 1 } : null;
@@ -4686,7 +4688,7 @@ function herFightOver(b, r) {
   const what = gear ? `${gearWhat(gear, c.name ?? '', zh)}${zh ? `输给了${c.name ?? ''}，撑了${v.turn}回合。` : ` Lost to ${c.name ?? ''} after ${v.turn} turns.`}` : r.outcome === 'won'
     ? (zh ? `胜了${c.name ?? ''}，${v.turn}回合，${hp}${close ? '，险胜' : ''}${r.first_win ? '，头一回赢它' : ''}。` : `Beat ${c.name ?? ''} in ${v.turn} turns, ${hp}${close ? ', a close one' : ''}${r.first_win ? ', the first win over it' : ''}.`)
     // The step first: her facts are cut from the end under the cap (hersay.js momentFacts).
-    : wayFacts(r.way, zh) + (zh ? `输给了${c.name ?? ''}，撑了${v.turn}回合；它还剩气血${v.foe.hp}/${v.foe.hpMax}${r.beat?.guards ? `，叫出${r.beat.guards}个护主` : ''}。` : ` Lost to ${c.name ?? ''} after ${v.turn} turns; it had ${v.foe.hp}/${v.foe.hpMax} Life left${r.beat?.guards ? `, ${r.beat.guards} guards called` : ''}.`);
+    : wayFacts(r.way, zh) + (zh ? `输给了${c.name ?? ''}，撑了${v.turn}回合；它还剩气血${S(v.foe.hp)}/${S(v.foe.hpMax)}${r.beat?.guards ? `，叫出${r.beat.guards}个护主` : ''}。` : ` Lost to ${c.name ?? ''} after ${v.turn} turns; it had ${S(v.foe.hp)}/${S(v.foe.hpMax)} Life left${r.beat?.guards ? `, ${r.beat.guards} guards called` : ''}.`);
   const out = herSay.fight({ outcome: r.outcome, way: r.outcome === 'won' ? null : gear ? 'gear' : r.way?.[0]?.kind ?? null, story: Boolean(c.goal || c.person || c.elite || c.title), strong: strongFoe(b.brief), close, newBeast: Boolean(r.first_win), repeat, what, saidInFight: Boolean(b.say?.st.told.has(r.outcome)) });
   // A 稀有 arm out of the fight: a rare find (hersay.js rare).
   const rare = (r.dropped ?? []).find((d) => d.rarity === 'rare');

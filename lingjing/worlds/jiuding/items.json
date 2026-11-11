@@ -94,7 +94,7 @@
       ]
     },
     {
-      "id": "bamboo-sword",
+      "id": "bamboo-sword", "pin": 2,
       "kind": "weapon",
       "level": 1,
       "name": {
@@ -113,13 +113,10 @@
       "sold": [
         "徐"
       ],
-      "effect": {
-        "root": "wood",
-        "atk": 2
-      }
+      "effect": {"root": "wood"}
     },
     {
-      "id": "straw-cloak",
+      "id": "straw-cloak", "pin": 1,
       "kind": "robe",
       "level": 1,
       "name": {
@@ -134,12 +131,10 @@
       "sold": [
         "徐"
       ],
-      "effect": {
-        "def": 1
-      }
+      "effect": {}
     },
     {
-      "id": "grey-robe",
+      "id": "grey-robe", "pin": 1,
       "kind": "robe",
       "level": 1,
       "name": {
@@ -151,9 +146,7 @@
         "zh": "沉鼎观弟子的粗布袍，入门那天发的。",
         "en": "The coarse robe of a Sunken Cauldron Abbey disciple, given on the day of entry."
       },
-      "effect": {
-        "def": 1
-      }
+      "effect": {}
     },
     {
       "id": "ganliang",
@@ -234,7 +227,7 @@
       }
     },
     {
-      "id": "iron-sword",
+      "id": "iron-sword", "pin": 3,
       "kind": "weapon",
       "level": 7,
       "name": {
@@ -249,10 +242,7 @@
       "sold": [
         "冀"
       ],
-      "effect": {
-        "root": "metal",
-        "atk": 3
-      }
+      "effect": {"root": "metal"}
     },
     {
       "id": "foundation-pill",
@@ -990,7 +980,7 @@
       "sold": []
     },
     {
-      "id": "jade-ring",
+      "id": "jade-ring", "pin": 2, "wards": ["earth"],
       "kind": "pendant",
       "level": 1,
       "name": {
@@ -1005,11 +995,7 @@
       "sold": [
         "徐"
       ],
-      "effect": {
-        "ward": {
-          "earth": 2
-        }
-      }
+      "effect": {}
     },
     {
       "id": "juyou",
@@ -1174,7 +1160,7 @@
       "art_source": "The middle-grade pouch's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-09-25) until its own is painted."
     },
     {
-      "id": "chitong-hulu",
+      "id": "chitong-hulu", "pin": 3,
       "kind": "weapon",
       "level": 3,
       "name": {
@@ -1187,15 +1173,12 @@
         "en": "Red Pine Abbey's fire gourd; fire snakes pour from its mouth. The cork is the one your arrow shot off, picked up from the dry underground river and pushed back in. Empty now. It is Red Pine Abbey's: on the mountain, or anywhere their people are, it cannot be shown."
       },
       "sold": [],
-      "effect": {
-        "root": "fire",
-        "atk": 3
-      },
+      "effect": {"root": "fire"},
       "_about": "古五: 邹青松's gourd, seen in the fight (火蛇) — 摸到的兵器，须是打斗里亮过相的 (design.md § Items). Worn, it lends fire; the win that drops it deals 火鸦 (creatures.json foe-zou `card`), its fire snakes as a card. Never sold. In the book (古七, Hanli 2026-10-06) he tosses it into the 饭桶 with the shield shards to be rid of them, and out comes a plain sword, 火柴 (huochai-jian).",
       "art_source": "The fire essence's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
-      "id": "huochai-jian",
+      "id": "huochai-jian", "pin": 3,
       "kind": "weapon",
       "level": 4,
       "name": {
@@ -1212,16 +1195,12 @@
         "en": "The sword rises, the fire climbs; attack and guard in one."
       },
       "sold": [],
-      "effect": {
-        "root": "fire",
-        "atk": 3,
-        "strike": "huochai"
-      },
+      "effect": {"root": "fire", "strike": "huochai"},
       "_about": "古七 (Hanli 2026-10-06): the day after the 大比 he moves into the 内门西廊; sorting the bag, the 赤松观 gourd and shield shards are rubbish — he tosses them into the 饭桶 wanting nothing (要什么，不出什么) and it gives a plain sword, already under his bunk when 瞿老 gives him the 《河洛剑诀》. The label names it (火柴; 小字「剑起火升，攻守兼备」). It carries both its sources, and NOTHING is shown in 卷一 (Hanli 2026-10-06): a strike (划) looses fire, then fire snakes like the gourd's — revealed at its first real fight; held flat (横) the copper of the spine spreads into a red shield of light, like 邹青松's 赤铜盾 — a later second surprise. Both draw on the holder's own 灵力 and scale with his level (finger-thin snakes early; the shield stops equals, not someone three layers up). It cannot cut a 七层's 护体灵光 (屠七); in 古八 (古七 before the 2026-10-07 split) it kills the 合窳 only as a sword, through the throat as it cries. Fire-attribute (root fire; stats otherwise unchanged). Granted at 09-snow/feed. Never sold. In the game the gourd stays in the bag (a worn weapon is never taken).",
       "art_source": "The iron sword's picture until its own is painted."
     },
     {
-      "id": "shunfeng-liu",
+      "id": "shunfeng-liu", "pin": 1,
       "kind": "shoes",
       "level": 4,
       "name": {
@@ -1238,9 +1217,7 @@
         "en": "Wind at your back, a road at your feet."
       },
       "sold": [],
-      "effect": {
-        "def": 1
-      },
+      "effect": {},
       "_about": "古七 (Hanli 2026-10-09: 「小满自己做鞋子吗？……这之前都扔饭桶吧」; replaces the 2026-10-07 器房/老铁头 forging): the 鯥 of 沂水东岸 leaves its hide and gliding membrane; a winter stinking up the woodshed, then 年五开春 he feeds them to the 饭桶, which spits out the boots — name and one vague line on the sole (饭桶 item rule); the effect is found by trying: one step back with the wind, a ten-丈 glide downwind; against the wind only 「噗」. 银月, first words after a winter asleep: 「鱼皮鞋。还带响的。」 A 法器 for running, not fighting; three glides drain a 六层; the heel gills go 「噗」 so no sneaking. Used once more in 卷一: off the 黑松岭 cliff after the 合窳 throws him, downwind, three glides to the glowing grass. Game: worn in the 法衣 slot for a modest 防 +1 (the schema has no running effect); not granted by a scene yet, never sold.",
       "art_source": "Painted for Lingjing by Codex CLI's image tool (tools/paint-codex.py), 2026-10-07, from the description."
     },
@@ -1351,7 +1328,7 @@
       }
     },
     {
-      "id": "old-bow", "story": true,
+      "id": "old-bow", "pin": 2, "story": true,
       "kind": "weapon",
       "level": 1,
       "name": {
@@ -1363,13 +1340,10 @@
         "zh": "弓背裂过两回，拿牛筋缠着。爹摘下来放在你面前：「你拿着。」佩之借木。",
         "en": "Its back cracked twice and bound with ox sinew. Father took it off the wall and laid it before you: \"Take it.\" Worn, it lends 木."
       },
-      "effect": {
-        "root": "wood",
-        "atk": 2
-      }
+      "effect": {"root": "wood"}
     },
     {
-      "id": "duan-dao",
+      "id": "duan-dao", "pin": 1,
       "kind": "weapon",
       "level": 1,
       "name": {
@@ -1386,10 +1360,7 @@
         "en": "Three nicks in the edge."
       },
       "sold": [],
-      "effect": {
-        "root": "metal",
-        "atk": 1
-      },
+      "effect": {"root": "metal"},
       "_about": "古五: picked up, not given (the author, 2026-10-02: 「在秘境中捡一把武器吧」). The lowest blade there is: 器攻 1.",
       "art_source": "The iron sword's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
@@ -2030,7 +2001,7 @@
       "art_source": "The moon-bell picture until its own ink is painted; the small games show its comic icon (art/items-comic/yinyue-lingdang.webp)."
     },
     {
-      "id": "qiuyu-ci",
+      "id": "qiuyu-ci", "pin": 1,
       "kind": "weapon",
       "level": 3,
       "_level": "an arm the 秘境's beasts drop (古五)",
@@ -2045,15 +2016,12 @@
         "en": "The qiuyu's bird beak, ground to a point and wrapped in cloth for a grip. Worn, it lends 木."
       },
       "sold": [],
-      "effect": {
-        "root": "wood",
-        "atk": 1
-      },
+      "effect": {"root": "wood"},
       "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
       "art_source": "The iron sword's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
-      "id": "heyu-dao",
+      "id": "heyu-dao", "pin": 2,
       "kind": "weapon",
       "level": 3,
       "_level": "an arm the 秘境's beasts drop (古五)",
@@ -2068,15 +2036,12 @@
         "en": "One of the heyu's tusks, longer than a forearm, its edge sharp from birth. Worn, it lends 土."
       },
       "sold": [],
-      "effect": {
-        "root": "earth",
-        "atk": 2
-      },
+      "effect": {"root": "earth"},
       "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
       "art_source": "The iron sword's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
-      "id": "qingtong-jian",
+      "id": "qingtong-jian", "pin": 3,
       "kind": "weapon",
       "level": 1,
       "rarity": "rare",
@@ -2094,15 +2059,12 @@
         "en": "Bright under the rust."
       },
       "sold": [],
-      "effect": {
-        "root": "metal",
-        "atk": 3
-      },
+      "effect": {"root": "metal"},
       "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
       "art_source": "The iron sword's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
-      "id": "pi-kanjian",
+      "id": "pi-kanjian", "pin": 1,
       "kind": "robe",
       "level": 1,
       "rarity": "common",
@@ -2120,14 +2082,12 @@
         "en": "Someone else's first. Still supple."
       },
       "sold": [],
-      "effect": {
-        "def": 1
-      },
+      "effect": {},
       "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
       "art_source": "The grey robe's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
-      "id": "heyu-ao",
+      "id": "heyu-ao", "pin": 2,
       "kind": "robe",
       "level": 3,
       "_level": "an arm the 秘境's beasts drop (古五)",
@@ -2142,14 +2102,12 @@
         "en": "The heyu's yellow hide, cured and sewn into a short coat. A blade slides off it."
       },
       "sold": [],
-      "effect": {
-        "def": 2
-      },
+      "effect": {},
       "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
       "art_source": "The grey robe's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
-      "id": "shi-zhui",
+      "id": "shi-zhui", "pin": 1, "wards": ["earth"],
       "kind": "pendant",
       "level": 1,
       "rarity": "common",
@@ -2167,16 +2125,12 @@
         "en": "Picked out of the river."
       },
       "sold": [],
-      "effect": {
-        "ward": {
-          "earth": 1
-        }
-      },
+      "effect": {},
       "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
       "art_source": "The jade ring's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
-      "id": "shisui-zhui",
+      "id": "shisui-zhui", "pin": 2, "wards": ["earth"],
       "kind": "pendant",
       "level": 3,
       "_level": "an arm the 秘境's beasts drop (古五)",
@@ -2191,16 +2145,12 @@
         "en": "Stone marrow seeped from a crack of the Cliff of Danger and set into a bead, hung on a cord. Its earth is thick enough to turn an earth spell."
       },
       "sold": [],
-      "effect": {
-        "ward": {
-          "earth": 2
-        }
-      },
+      "effect": {},
       "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold. No wood ward among the drops: it turns the stair's 犰狳 (wood) into nothing (tools: a wood ward of 1 took its fight from ~50% to ~90%).",
       "art_source": "The jade ring's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
     {
-      "id": "anhe-yu",
+      "id": "anhe-yu", "pin": 2, "wards": ["earth", "water"],
       "kind": "pendant",
       "level": 1,
       "rarity": "rare",
@@ -2218,12 +2168,7 @@
         "en": "Warm to the touch."
       },
       "sold": [],
-      "effect": {
-        "ward": {
-          "earth": 2,
-          "water": 2
-        }
-      },
+      "effect": {},
       "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
       "art_source": "The jade ring's picture (Painted for Lingjing by the local picture model (FLUX.2 klein 4B)) until its own is painted."
     },
@@ -2931,7 +2876,7 @@
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
     {
-      "id": "lipi-kanjian",
+      "id": "lipi-kanjian", "pin": 1,
       "kind": "robe",
       "level": 1,
       "once": true,
@@ -2949,13 +2894,11 @@
         "en": "Wear it at night; make no sound."
       },
       "sold": [],
-      "effect": {
-        "def": 1
-      },
+      "effect": {},
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
     {
-      "id": "chaiya-zhui",
+      "id": "chaiya-zhui", "pin": 1, "wards": ["fire"],
       "kind": "pendant",
       "level": 1,
       "once": true,
@@ -2973,11 +2916,7 @@
         "en": "Hang it at the breast against fire."
       },
       "sold": [],
-      "effect": {
-        "ward": {
-          "fire": 1
-        }
-      },
+      "effect": {},
       "art_source": "Painted for Lingjing by Codex CLI's image tool (gpt-6.1-sol), 2026-10-16, in 水墨淡彩 with art/items/lingzhi.webp and art/items/jade-ring.webp as the style reference, redrawing the 2026-10-15 FLUX picture to the house style. No outside source."
     },
     {

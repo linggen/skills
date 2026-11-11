@@ -65,9 +65,40 @@ Checked 11-10, already done before (were on old lists): the kept card's 丹囊/�
 - Validator: no 灵石 number or price in the book (content.mjs authoredStones), every item levelled, claims read at the pill's
   level; a haggle opened at a stale list price is let go on load; red 15 → 14 (九转筑基丹 resolved).
 
-**Batch 3 still holds:** fights' difficulty, gear's combat stats, cards and foes against the new board rate; the 秘境 run's 修为;
-maps' and places' level bands (卷一 = 1–9); 筑基+ pacing with 卷二; the 今 line's own mix; 饭桶 `lingshi.per_layer` (Hanli's own
-「层数*10」) and the arcade's stage wallet still stone numbers.
+**Batch 3 (fights on the level, 2026-11-10 — branch wt/numbers-3):**
+- P(L) = 21 × 1.05^(L−1) × 1.2^realm (rules/power.mjs; master.fight.power). His 气血 at full is P(his level) (cards.mjs hpMaxOf —
+  the one formula: the fight, the 秘境 run, heal pills' shares, Look `tier.hp`, the breakthrough seal): 21 · 26 · 31 · 39 · 43 · 58 ·
+  108 at L1 · 5 · 9 · 10 · 12 · 18 · 27. 零层 has no level: its fights keep their numbers.
+- A fight is reckoned in his units (battle.js § unitOf): his 气血 his realm's anchor (练气 21, 筑基 26, 结丹 32, 元婴 40 — the old
+  rows, a realm's length class), a beast's its class share of that row × P(its level) ÷ P(his), every card number as written. Same
+  level: 练气一层's fight of his realm, turn for turn (tests/levels.test.mjs). The page, Yinyue's facts and the rules' results show
+  every number × P(L) ÷ anchor (`shown`, `shownEffect`, `shownEntry`, `shownSide`). An absolute engine (every blow × P ÷ P₁ at
+  `dealt`) was built first and measured: at 练气二–五层 a 1–3 point blow rounds to itself while 气血 grows 5–22%, and every fight
+  above L1 moved (yezhu@mengshan 65% → 30% at L4); the units engine has no such drift.
+- A beast's level: a story fight's exit `foe.level` (wm-wangzuo 2 · 09-lingcao 5 · 01-rise 10; 00-fox · 00-longzhi 0 = 零层); a
+  repeatable (pool, 妖兽出没, 秘境 room) at clamp(his level, its place's / 重's band). A beast a level apart: P's ratio on 气血 and
+  blows; 境界压制 multiplies on top (a realm apart; never in 卷一's same-level fights).
+- Bands: 卷一's four chapter maps `levels` [1, 12]; places (places/*.json `levels`): 观 · 山 · 村 [1, 12], 坊市 [4, 12], 石门 [2, 12],
+  沉鼎秘境 [2, 4], 泗水 · 彭城 · 冀 [10, 12]; 秘境 重 一–三 [2, 12], 四–五 [4, 12], 六 [7, 12], 七 [10, 12]; creatures `levels` from
+  the lowest level they can be met at to 12 (a pool entry's `from` 回 opens at the cap of the 回 before it: 豺 · 獙獙 · 当康 4, 猲狙 ·
+  鬿雀 6). 卷二 onwards and 重 八 · 九: no band (13 or 18 is Hanli's to choose). content.mjs levelLint (in lint and numbers.mjs
+  hardErrors): a place inside every banded map it is on (沉鼎秘境's rooms inside 卷一's); a beast listed at a place or a 重 made
+  from at or below the lowest level it is met there to the band's top; a thing sold there of a level the map holds and not above
+  the place's; a story fight on a banded map at a declared level — 0 errors. A duel with no place band (a quest's, an errand's, a
+  road meet's, a single haunt's) holds his level inside the beast's own `levels`.
+- h10 is met at 筑基一层 (step 0): 09-cliff's 「几道纹？」「一道」 is 一层; h10's cap 筑基三层 is how far he climbs in it.
+- fight_length on the level: dpt = (3.1 + 0.6 × (L−1)) ÷ the realm's length class (练气's rows exactly, 筑基一层 6.54 for 6.5,
+  二 · 三层 7.0 · 7.46 for 6.8 · 7.1).
+- Gear by class: `pin` (品; a pendant its `wards`), master.fight.gear makes 攻 · 防 · 抗 (same points, same prices). Things count at
+  the wearer's level (`power.things` 'wearer'); 'own' (at the thing's level) takes 冰夷双龙 to 22% and the 冀 pools, 当康, 苍鹰 down
+  (every 卷一 arm and heal pill is 练气一–七层) — Hanli's call, with a 筑基 arm and pill in 卷一 first.
+- Skill games: 妖兽出没's wave tier is his place in the band (was 0); 切磋's climb on the level (same numbers); 格斗, the TD kits and
+  兽潮's internals and their climb by nights as they were.
+- Bot rates in band (tests/fight-band · fight-band-pools · fight-length, 81/81); 练气四–七层 lose the old +½ 气血 a 层 (当康 53 → 44%,
+  猲狙 57 → 48%, 灵草谷犰狳 79 → 71%). Pace per 回 unchanged.
+
+**Batch 4 holds:** the 秘境 run's 修为; 筑基+ pacing with 卷二 and 卷二's band; the 今 line's own mix; 饭桶 `lingshi.per_layer` and the
+arcade's stage wallet; `power.things`; 格斗 fighters' levels on their boards (the creatures rows carry them).
 
 ## Open after 11-10
 

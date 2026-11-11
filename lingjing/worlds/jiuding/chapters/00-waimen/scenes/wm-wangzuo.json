@@ -115,7 +115,7 @@
     "kind": "duel",
     "creature": "gui",
     "retry": true,
-    "foe": {
+    "foe": {"level": 2, 
      "hp": 1.3,
      "deck": [
       "paoxiao",

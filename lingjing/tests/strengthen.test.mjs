@@ -116,7 +116,8 @@ const lostAtHoushan = (extra = {}) => gateSave({ wear: { weapon: 'old-bow', robe
 test('each step says what it is and does: a card its cost, body, keywords and effect; gear its slot and what it lends; a pill its effect', () => {
   const way = strengthen(content, gateSave(), { now: NOW });
   const bow = way.find(o => o.item === 'old-bow');
-  assert.deepEqual(bow.does, { atk: 2, root: 'wood' });
+  // What it lends as the fight reckons it (batch 3, cards.mjs gearShown): 攻 2 × weapon_power ½ → 主灵根一击 +1 (the words said +2).
+  assert.deepEqual(bow.does, { atk: 1, root: 'wood' });
   const caoren = strengthen(content, gateSave({ wear: { weapon: 'old-bow', robe: 'grey-robe' } }), { now: NOW }).find(o => o.card === 'caoren');
   assert.deepEqual(caoren.does, { card_kind: 'minion', cost: 2, atk: 1, hp: 3, keywords: ['taunt'], element: 'wood' });
   assert.equal(caoren.line.split(' · ')[0], '替身草人');

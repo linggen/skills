@@ -17,10 +17,10 @@
 // fought by the page's own 斗法 room through `duel` (tasks.mjs → mijingDuel: no 灵气, no haunt pay, no day's lock —
 // the 令 paid for the run); a board room's task is hosted while he stands in it (look.mjs tasksBrief → mijingHosted,
 // mijingRow; tasks.mjs win/done → mijingBoardHere, mijingBoardDone); a pick room is answered on the run's own card.
-import { boardCost, dayKey, hpStep, lockedOf, pick, seedOf } from '../state.mjs';
+import { boardCost, dayKey, lockedOf, pick, seedOf } from '../state.mjs';
 import { clone, pay, refuse, spendStamina } from './core.mjs';
-import { battle, POUCH_MAX, REALMS } from '../battle.js';
-import { cardCatalog, deckFor, fightPill, fightSetup, winCard } from './cards.mjs';
+import { battle, POUCH_MAX, shown, shownSide } from '../battle.js';
+import { cardCatalog, deckFor, fightPill, fightSetup, hpMaxOf, winCard } from './cards.mjs';
 import { hashOf } from './travel.mjs';
 import { stow, fullLine } from './pouch.mjs';
 import { creatureOf, foeOf, meetBeast, passed, placeName, placeOf } from './world.mjs';
@@ -207,7 +207,8 @@ export function keyDrop(content, s, ctx, source) {
 const boonsOf = (content, run) => (run?.boons ?? []).map(id => boonRow(content, id)).filter(Boolean);
 const sum = (list, f) => list.reduce((t, x) => t + (f(x) ?? 0), 0);
 /* The run's 气血 cap: the fight's own (battle.js sideOf, to the point), a share more by its boons (固本: `hpScale`). */
-const hpCap = (content, state, boons) => Math.max(1, Math.round(((REALMS[state.tier] ?? REALMS.qi).hp + hpStep(content, state.tier, state.step ?? 0) * 0.5) * (1 + sum(boons, b => b.hp_max))));
+// His 气血 at full (cards.mjs hpMaxOf: P of his level, batch 3) — the run's, as the page shows it.
+const hpCap = (content, state, boons) => Math.max(1, Math.round(hpMaxOf(state, content) * (1 + sum(boons, b => b.hp_max))));
 const hurtOf = (content, run, stars) => {
   const k = knobs(content), share = (k.hurt?.[String(stars)] ?? k.hurt?.['1'] ?? 0.2) * boonsOf(content, run).reduce((m, b) => m * (b.hurt ?? 1), 1);
   return Math.round(run.hp_max * share);
@@ -499,10 +500,12 @@ export function mijingHold(state, verb) {
 /* ── The fight rooms: the page's 斗法 room, the run's door ── */
 
 /* The game a fight room is fought as: the room's beast, weighed by the run (world.mjs foeOf reads `foe`). */
-function gameOf(run) {
+function gameOf(run, content) {
   const room = run?.room;
   if (!room?.foe) return null;
-  return { id: mijingFightId(room.id), kind: 'duel', creature: room.foe.creature, deal: `${run.seed}|${room.id}`, foe: { hp: room.foe.hp, ...(room.foe.deck ? { deck: room.foe.deck } : {}) }, mijing: true };
+  // A 重 is a place: its beasts meet him at his level held in its band (mijing.json `levels`, batch 3).
+  const band = tierRow(content, run.tier)?.levels ?? null;
+  return { id: mijingFightId(room.id), kind: 'duel', creature: room.foe.creature, deal: `${run.seed}|${room.id}`, foe: { hp: room.foe.hp, ...(room.foe.deck ? { deck: room.foe.deck } : {}) }, ...(band ? { levels: band } : {}), mijing: true };
 }
 /* The fight's setup: the door's own (cards.mjs fightSetup), his 气血 the run's (`wounds`, `hpScale` for 固本), the
    boons on what a fight reads, the 灵泉's ★ on its 功法. */
@@ -518,8 +521,9 @@ export function mijingSetup(content, state, game, now) {
   if (boons.some(b => f(b).insight)) you.insight = Math.max(you.insight ?? 0, ...boons.map(b => f(b).insight ?? 0));
   if (Object.keys(run.stars ?? {}).length) { you.stars = { ...(you.stars ?? {}) }; for (const [id, n] of Object.entries(run.stars)) you.stars[id] = (you.stars[id] ?? 0) + n; }
   if (scale !== 1) you.hpScale = scale;
-  // The fight's own cap (battle.js sideOf), less what the run has lost.
-  const wounds = hpCap(content, state, boons) - run.hp;
+  // The fight's own cap (battle.js sideOf), less the share the run has lost — by share, in the fight's units (battle.js § unitOf;
+  // a run kept from before batch 3 holds its 气血 on the old numbers: its share carries over).
+  const full = Math.max(1, Math.round((base.anchor ?? hpCap(content, state, [])) * scale)), wounds = full - Math.round((full * run.hp) / Math.max(1, run.hp_max));
   if (wounds > 0) you.wounds = wounds;
   return { ...base, you };
 }
@@ -529,7 +533,7 @@ export function mijingEncounter(content, state, now) {
   const run = runOf(state);
   if (!run) return undefined;
   if (run.room?.phase !== 'fight' || !(tableOf(content)?.doors ?? []).includes(state.place)) return null;
-  const game = gameOf(run), creature = creatureOf(content, game.creature);
+  const game = gameOf(run, content), creature = creatureOf(content, game.creature);
   if (!creature) return null;
   // Kept open (its door's own `resuming`: the run's fight is the save's): the card says 回到这一战 (look.mjs duelBrief `kept`),
   // and offers no 丹囊 pick — the door ignores `pills` when resuming.
@@ -548,7 +552,7 @@ export function mijingEncounter(content, state, now) {
    the door (the coordinator for Hanli, 2026-11-04: a run costs its rooms' minutes — the 令 stays its gate), no haunt pay,
    no day's lock: the run pays at its end. */
 export function mijingDuel(state, content, ctx, args) {
-  const id = String(args.id ?? ''), run = runOf(state), game = gameOf(run);
+  const id = String(args.id ?? ''), run = runOf(state), game = gameOf(run, content);
   if (!run || !game || game.id !== id || run.room.phase !== 'fight') return refuse('not-here', null);
   const creature = creatureOf(content, game.creature);
   if (!args.picks) {
@@ -577,8 +581,9 @@ export function mijingDuel(state, content, ctx, args) {
   const playedIds = new Set(played.log.filter(e => e.act === 'played' && e.who === 'you').map(e => e.id));
   if (s.cards_new) { const left = s.cards_new.filter(c => !playedIds.has(c)); if (left.length) s.cards_new = left; else delete s.cards_new; }
   const r = s.mijing.run, here = r.room, t = tierRow(content, r.tier);
-  r.hp = Math.max(0, Math.min(r.hp_max, played.you.hp));
-  const base = { ok: true, outcome: played.outcome, game: id, you: played.you, foe: played.foe, turns: played.turn, ...(firsts.first_met ? { first_met: true } : {}), ...(firsts.first_win ? { first_win: true } : {}) };
+  // Back from the fight's units onto the run's: as the room showed it (battle.js shown; 0 stays 0).
+  r.hp = played.you.hp <= 0 ? 0 : Math.max(1, Math.min(r.hp_max, shown(played, played.you.hp)));
+  const base = { ok: true, outcome: played.outcome, game: id, you: shownSide(played, played.you), foe: shownSide(played, played.foe), turns: played.turn, ...(firsts.first_met ? { first_met: true } : {}), ...(firsts.first_win ? { first_win: true } : {}) };
   if (played.outcome === 'lost' || r.hp <= 0) return endRun(s, content, ctx, 'dead', { ...base, room: here.id });
   roomCleared(content, r, here.kind);
   if (!won) { here.phase = 'done'; here.outcome = { withdrew: true }; return { state: s, result: { ...base, mijing: { room: here.id, hp: r.hp } } }; }

@@ -24,7 +24,7 @@
 //
 // Pure of the DOM: the page hands in `ask`, the clock and the timers.
 
-import { BEATS, TIERS, asleep, costOf, effectOf } from './battle.js';
+import { BEATS, TIERS, asleep, costOf, effectOf, shown, shownEffect } from './battle.js';
 import { intentBits, sayEffect, sigWords } from './battle-card.js';
 import { BROWSER_TIMERS, cleanLine, sayer, WAIT_MS } from './hersay.js';
 
@@ -92,8 +92,8 @@ const plain = (t) => String(t ?? '').replace(/&amp;/g, '&').replace(/&lt;/g, '<'
 const len = (t) => [...t].length;
 
 /* One body on a rank, as the card shows it. */
-function bodyWords(m, zh) {
-  return `${m.name ? nameOf(m, zh ? 'zh' : 'en') : m.id}${m.atk}/${m.hp}${m.taunt ? (zh ? '护主' : ' Guard') : ''}${m.chained ? (zh ? '被锁' : ' chained') : ''}`;
+function bodyWords(m, zh, v = null) {
+  return `${m.name ? nameOf(m, zh ? 'zh' : 'en') : m.id}${shown(v, m.atk)}/${shown(v, m.hp)}${m.taunt ? (zh ? '护主' : ' Guard') : ''}${m.chained ? (zh ? '被锁' : ' chained') : ''}`;
 }
 /* One card in hand: its name, what it costs now and what it does now. */
 function handWords(v, id, ctx, full) {
@@ -102,9 +102,9 @@ function handWords(v, id, ctx, full) {
   const nm = nameOf(c, ctx.lang), cost = costOf(v.you, c);
   if (!full) return zh ? `${nm}${cost}` : `${nm} ${cost}`;
   // A 灵兽's body (its 入阵 too, as the card prints it: 银月's heal); a 功法's effect as it stands now.
-  const said = (c.kind !== 'minion' || c.effect) ? plain(sayEffect({ ...c, effect: effectOf(v.you, c) }, ctx)).replace(/\s+/g, zh ? '' : ' ') : '';
+  const said = (c.kind !== 'minion' || c.effect) ? plain(sayEffect({ ...c, effect: shownEffect(v, v.you, effectOf(v.you, c)) }, ctx)).replace(/\s+/g, zh ? '' : ' ') : '';
   const does = c.kind === 'minion'
-    ? `${c.atk ?? 0}/${c.hp ?? 0}${said ? `${zh ? ',' : ', '}${said}` : c.keywords?.includes('taunt') ? (zh ? '护主' : ' Guard') : ''}`
+    ? `${shown(v, c.atk ?? 0)}/${shown(v, c.hp ?? 0)}${said ? `${zh ? ',' : ', '}${said}` : c.keywords?.includes('taunt') ? (zh ? '护主' : ' Guard') : ''}`
     : said;
   return zh ? `${nm}(${cost}灵力,${does})` : `${nm} (${cost}, ${does})`;
 }
@@ -163,8 +163,9 @@ export function fightFacts(v, ctx, kind = 'ask', extra = {}) {
     parts.push(zh ? `它在蓄杀招「${sigName}」，${phase === 'ready' ? '下回合放出' : '再下回合放出'}${what ? `：${what}` : ''}。` : `Charging ${sigName}, ${phase === 'ready' ? 'next turn' : 'in 2 turns'}${what ? `: ${what}` : ''}.`);
   }
   // Both sides' 气血 always go in, right after what is coming.
-  const hp = zh ? `你气血${v.you.hp}/${v.you.hpMax}，灵力${v.you.mana}/${v.you.manaMax}；它气血${v.foe.hp}/${v.foe.hpMax}。`
-    : `You ${v.you.hp}/${v.you.hpMax} Life, ${v.you.mana}/${v.you.manaMax} Force; it ${v.foe.hp}/${v.foe.hpMax}.`;
+  const S = n => shown(v, n);
+  const hp = zh ? `你气血${S(v.you.hp)}/${S(v.you.hpMax)}，灵力${v.you.mana}/${v.you.manaMax}；它气血${S(v.foe.hp)}/${S(v.foe.hpMax)}。`
+    : `You ${S(v.you.hp)}/${S(v.you.hpMax)} Life, ${v.you.mana}/${v.you.manaMax} Force; it ${S(v.foe.hp)}/${S(v.foe.hpMax)}.`;
   let plan = '';
   if (v.foe.intent && v.whose === 'you') {
     const bits = v.foe.intent.gathering ? [zh ? '蓄力，不出手' : 'gathers'] : intentBits(v, sc).map(plain);
@@ -173,12 +174,12 @@ export function fightFacts(v, ctx, kind = 'ask', extra = {}) {
   // Asked, what he holds comes before the beast's plan (the English cap is tight).
   if (kind !== 'ask') parts.push(plan);
   if (kind === 'ask') {
-    parts.push(v.foe.board.length ? (zh ? `它阵前：${v.foe.board.map((m) => bodyWords(m, zh)).join('、')}。` : `Its rank: ${v.foe.board.map((m) => bodyWords(m, zh)).join(', ')}.`) : (zh ? '它阵前空。' : 'Its rank: none.'));
+    parts.push(v.foe.board.length ? (zh ? `它阵前：${v.foe.board.map((m) => bodyWords(m, zh, v)).join('、')}。` : `Its rank: ${v.foe.board.map((m) => bodyWords(m, zh, v)).join(', ')}.`) : (zh ? '它阵前空。' : 'Its rank: none.'));
     const hand = (full) => v.you.hand.map((id) => handWords(v, id, ctx, full)).filter(Boolean);
     parts.push([zh ? `你手牌：${hand(true).join('、')}。` : `Your hand: ${hand(true).join('; ')}.`, zh ? `你手牌(灵力)：${hand(false).join('、')}。` : `Your hand (cost): ${hand(false).join(', ')}.`]);
-    if (v.you.board.length) parts.push(zh ? `你阵前：${v.you.board.map((m) => bodyWords(m, zh)).join('、')}。` : `Your rank: ${v.you.board.map((m) => bodyWords(m, zh)).join(', ')}.`);
+    if (v.you.board.length) parts.push(zh ? `你阵前：${v.you.board.map((m) => bodyWords(m, zh, v)).join('、')}。` : `Your rank: ${v.you.board.map((m) => bodyWords(m, zh, v)).join(', ')}.`);
     parts.push(plan);
-    parts.push(zh ? `主灵根一击${v.you.powerHit}点，2灵力${v.you.powerUsed ? '（本回合已用）' : ''}。` : `Root strike ${v.you.powerHit} for 2${v.you.powerUsed ? ' (used)' : ''}.`);
+    parts.push(zh ? `主灵根一击${S(v.you.powerHit)}点，2灵力${v.you.powerUsed ? '（本回合已用）' : ''}。` : `Root strike ${S(v.you.powerHit)} for 2${v.you.powerUsed ? ' (used)' : ''}.`);
   }
   parts.push(clashWords(v.you.root, v.foe.root, zh));
   parts.push(rankWords(ctx.tiers, zh));
@@ -212,9 +213,9 @@ export function cuesOf(before, after, log, fight = {}) {
 /* A big play: one move of the player's. `log` is that move's entries. */
 export function bigPlay(log, after, lang = 'zh') {
   const zh = lang !== 'en';
-  const hit = log.filter((t) => t.act === 'hurt' && t.who === 'foe' && t.kind !== 'fatigue').reduce((n, t) => n + (t.amount ?? 0), 0);
+  const hit = shown(after, log.filter((t) => t.act === 'hurt' && t.who === 'foe' && t.kind !== 'fatigue').reduce((n, t) => n + (t.amount ?? 0), 0));
   const driven = log.filter((t) => t.act === 'withdrew' && t.who === 'foe').length;
-  if (hit >= Math.ceil(after.foe.hpMax * BIG_SHARE)) return zh ? `一手打掉它${hit}点气血` : `${hit} off its Life in one move`;
+  if (hit >= Math.ceil(shown(after, after.foe.hpMax) * BIG_SHARE)) return zh ? `一手打掉它${hit}点气血` : `${hit} off its Life in one move`;
   if (driven >= BIG_DRIVEN) return zh ? `一手逼退它阵前${driven}个` : `${driven} of its rank driven off at once`;
   return null;
 }

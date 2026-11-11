@@ -2,6 +2,7 @@
 // carries in (up to three from the bag, his last pick lit); in the fight, the pills by the hand —
 // a tap takes one (a 回春丹 then asks whom: himself, or a member beside him). Pure strings.
 import { esc } from './esc.js';
+import { shown } from './battle.js';
 
 const W = {
   zh: { pouch: '丹囊', clear: '清空', none: '不带丹药', heal: '气血 +{n}', mana: '灵力 +{n}', used: '这回合已服过', whom: '给谁服？点自己或同伴' },
@@ -34,7 +35,7 @@ export function pillTrayHtml(st, ctx, picked) {
   const w = words(ctx.lang), used = st.you.pillUsed || st.whose !== 'you' || st.outcome !== 'open';
   const pills = pouch.map((p, index) => {
     const name = ctx.pillNames?.[p.id] ?? p.id, held = picked?.from === 'pill' && picked.index === index;
-    return `<button class="dn-pill${held ? ' held' : ''}${used ? ' dim' : ''}" data-spot="pill" data-index="${index}" title="${esc(used ? w.used : does(p, w))}">
+    return `<button class="dn-pill${held ? ' held' : ''}${used ? ' dim' : ''}" data-spot="pill" data-index="${index}" title="${esc(used ? w.used : does({ ...p, ...(p.heal ? { heal: shown(st, p.heal) } : {}) }, w))}">
       ${ctx.pillArt?.[p.id] ? `<img src="${esc(ctx.artBase ?? '')}${esc(ctx.pillArt[p.id])}" alt="">` : '<i aria-hidden="true">丹</i>'}<small>${esc(name)}</small></button>`;
   }).join('');
   return `<div class="dn-tray" aria-label="${esc(w.pouch)}"><span class="dn-seal">丹</span>${pills}${picked?.from === 'pill' ? `<small class="dn-whom">${esc(w.whom)}</small>` : ''}</div>`;

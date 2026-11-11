@@ -21,7 +21,7 @@
 import fs from 'node:fs';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { authoredStones, authoredXiuwei, loadContent, withBalance } from '../scripts/content.mjs';
+import { authoredStones, authoredXiuwei, levelLint, loadContent, withBalance } from '../scripts/content.mjs';
 import { paysOf } from '../scripts/rules/core.mjs';
 import { chorePlay, errandGrant, incomeAt, levelOf, playGrant, rateOfLevel, stoneLevel, secludeHour, sizedUnits, storyPlay, unitsPay, wallGrant, workGrant } from '../scripts/rules/playpay.mjs';
 import { effectGrant } from '../scripts/rules/errands.mjs';
@@ -451,17 +451,17 @@ function cards(ctx) {
 
 /* Every fight weighed by the careful bot (tools/story-fights.mjs) — only when asked: it is slow. */
 async function fights(ctx, deals) {
-  const sf = await import('./story-fights.mjs'), { begin } = await import('../scripts/battle.js');
+  const sf = await import('./story-fights.mjs'), { begin, shown } = await import('../scripts/battle.js');
   const catalog = Object.fromEntries(ctx.content.cards.cards.map(c => [c.id, c]));
   return sf.FIGHTS.map(f => {
     const r = sf.rateOf(f, deals, 0, 'lookahead'), st = sf.stateAt(f.at), setup = sf.setupOf(f);
     // The bands are the master table's (`difficulty`); a fight may name its own (story-fights FIGHTS `band`).
     const D = ctx.content.balance.master?.difficulty ?? TARGET.band;
     const band = f.band ?? (f.pool ? D.pool : D.story), hui = f.at.replace(/^(h\d+).*/, '$1');
-    // His side and the beast's as the door deals them: 气血, the deck, gear's 攻/甲.
-    const opened = begin({ ...setup, seed: 'numbers' }, catalog);
-    const you = { hp: opened.you?.hpMax ?? null, deck: (setup.you?.deck ?? []).length, armor: setup.you?.armor ?? 0 };
-    return { key: sf.keyOf(f), id: f.id, name: f.name, at: f.at, hui, slack: D.slack ?? LIMITS.fight_slack, layer: ctx.layer({ tier: st.tier, step: st.step })?.name ?? null, pool: f.pool ?? null, band, win: round(r.win, 2), lost: round(r.lost, 2), turns: round(r.turns, 1), you, foe: { hp: opened.foe?.hpMax ?? null, deck: (setup.foe?.deck ?? []).length }, deals };
+    // His side and the beast's as the door deals them: 气血, the deck, gear's 攻/甲 — as the page shows them (battle.js shown).
+    const opened = begin({ ...setup, seed: 'numbers' }, catalog), S = n => shown(opened, n);
+    const you = { hp: S(opened.you?.hpMax) ?? null, deck: (setup.you?.deck ?? []).length, armor: S(setup.you?.armor ?? 0), level: setup.you?.level ?? 0 };
+    return { key: sf.keyOf(f), id: f.id, name: f.name, at: f.at, hui, slack: D.slack ?? LIMITS.fight_slack, layer: ctx.layer({ tier: st.tier, step: st.step })?.name ?? null, pool: f.pool ?? null, band, win: round(r.win, 2), lost: round(r.lost, 2), turns: round(r.turns, 1), you, foe: { hp: S(opened.foe?.hpMax) ?? null, deck: (setup.foe?.deck ?? []).length, level: setup.foe?.level ?? 0 }, deals };
   });
 }
 
@@ -668,6 +668,17 @@ function walkNumbers(node, path, out) {
   if (node && typeof node === 'object') for (const [k, v] of Object.entries(node)) if (!k.startsWith('_')) walkNumbers(v, `${path}.${k}`, out);
 }
 
+/* Every declared class share of 气血 (`hp`): a creature's, a pool entry's, a story fight's foe, a 秘境 room's — [where, hp]. */
+const SHARE_MAX = 8;
+function fightShares(content) {
+  const out = [];
+  for (const c of content.creatures.creatures) if (c.hp != null) out.push([`creature ${c.id}`, c.hp]);
+  for (const f of Object.values(content.places ?? {})) for (const [pid, p] of Object.entries(f.pools ?? {})) if (!pid.startsWith('_')) for (const b of p.beasts ?? []) if (b.hp != null) out.push([`pool ${pid} · ${b.creature}`, b.hp]);
+  for (const ch of Object.values(content.chapters ?? {})) for (const sc of Object.values(ch.scenes ?? {})) for (const e of sc.exits ?? []) if (e.game?.foe?.hp != null) out.push([`scene ${sc.id}/${e.id}`, e.game.foe.hp]);
+  for (const t of content.mijing?.tiers ?? []) for (const b of [...(t.beasts ?? []), ...(t.xiong ?? []), ...(t.boss ? [t.boss] : [])]) if (b.hp != null) out.push([`mijing ${t.id} · ${b.creature}`, b.hp]);
+  return out;
+}
+const levelErrors = content => levelLint(content).errors;
 export function hardErrors(content) {
   const out = [], items = new Set(content.items.items.map(i => i.id)), b = content.balance ?? {};
   for (const k of ['layers', 'pay', 'prices', 'pills', 'play_pay', 'cooldowns', 'convert', 'boards', 'layer_pay', 'dandu', 'kailu', 'economy', 'mijing']) walkNumbers(b[k], `balance.${k}`, out);
@@ -678,6 +689,11 @@ export function hardErrors(content) {
   // No 灵石 number or price in the book either (batch 2): a size (`ls`) or the master's, save a master economy.told with its why.
   for (const e of authoredStones(content)) out.push(e);
   for (const [k, v] of Object.entries(b.master?.economy?.told ?? {})) if (!(typeof v?.why === 'string' && v.why.trim().length > 10)) out.push({ where: `balance.master.economy.told.${k}`, say: 'a told 灵石 number says why' });
+  // No fight number by hand (batch 3): a worn thing declares its 品 (`pin`) and the master makes its 攻 · 防 · 抗; a beast, a pool
+  // entry, a story fight's foe and a 秘境 room declare a class share of 气血 (`hp`, a multiple of the mode's), never a 气血.
+  for (const i of content.items.items) if (i._hand_fight) out.push({ where: `item ${i.id}`, say: 'a 攻 · 防 · 抗 by hand — declare its 品 (`pin`, `wards`); master.fight.gear makes the points' });
+  for (const [where, hp] of fightShares(content)) if (!(typeof hp === 'number' && hp > 0 && hp <= SHARE_MAX)) out.push({ where, say: `a 气血 of ${hp} — a class share (0–${SHARE_MAX} of the mode's), not a number of 气血` });
+  for (const e of levelErrors(content)) out.push(e);
   // Every thing has a level (1–81) — its numbers are its level's (Hanli 2026-11-10: 「丹药, 物品都给一个级别吧」).
   for (const i of content.items.items) if (!(Number.isInteger(i.level) && i.level >= 1 && i.level <= 81)) out.push({ where: `item ${i.id}`, say: `no level 1–81 (${i.level})` });
   // The master's told numbers (master.xiuwei.told): each with its why, each an exit that says `told: true`.

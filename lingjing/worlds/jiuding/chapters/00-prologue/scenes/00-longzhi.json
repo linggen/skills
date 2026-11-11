@@ -63,7 +63,7 @@
     "kind": "duel",
     "creature": "longzhi",
     "retry": true,
-    "foe": {
+    "foe": {"level": 0, 
      "trial": {
       "survive": 4,
       "goal": {

@@ -10,7 +10,7 @@
  "pools": {"mengshan": {"name": {"zh": "蒙山", "en": "Mount Meng"}, "beasts": [{"creature": "yezhu", "hp": 0.95, "weight": 3, "from": "h05"}, {"creature": "lang", "hp": 1.45, "weight": 2, "from": "h05"}, {"creature": "xiong", "hp": 1.4, "weight": 1, "from": "h05", "_hp": "1.25 until 2026-11-07: one heal a fight, at most a round's damage (balance.json fight_length), left it won 92% with two pills."}]}, "songlin": {"name": {"zh": "山门外的林子", "en": "The wood outside the gate"}, "stands": true, "_stands": "2026-11-04 (Hanli: 「攒修为可以让玩家去后山打怪吧?」 — 「你替我决定吧」, the call: 降妖 here stands whenever he is there): between 妖兽出没's batches the beast is up as at any haunt (its own rest: balance.json cooldowns pool_rest_min after pool_rest_after wins in a row; a loss draws the next at once), and while a scene stands here, never inside a key beat (world.mjs poolStands). A batch up is the event's, paid by its share; between batches a win pays as any haunt's.", "beasts": [{"creature": "longzhi", "weight": 2, "hp": 1.25, "deck": ["jinsuo", "jinsuo", "jinsuo", "jinsuo", "jiushou", "jiushou", "longzhi", "jinzhua", "jinzhua", "jinzhen", "qianyang", "qianyang"], "from": "h05"}, {"creature": "lang", "weight": 1, "hp": 1.45, "from": "h05"}, {"creature": "chihu", "weight": 1, "from": "h05", "when": "day"}, {"creature": "shanli", "weight": 1, "from": "h05", "when": "night"}]}, "yaoyuan-wai": {"name": {"zh": "药园外", "en": "Outside the herb garden"}, "stands": true, "_stands": "2026-11-04 (Hanli: 「攒修为可以让玩家去后山打怪吧?」 — 「你替我决定吧」, the call: 降妖 here stands whenever he is there): between 妖兽出没's batches the beast is up as at any haunt (its own rest: balance.json cooldowns pool_rest_min after pool_rest_after wins in a row; a loss draws the next at once), and while a scene stands here, never inside a key beat (world.mjs poolStands). A batch up is the event's, paid by its share; between batches a win pays as any haunt's.", "beasts": [{"creature": "zheng", "weight": 3, "hp": 1.45, "deck": ["huoya", "huoya", "tongling", "tongling", "huodan", "huodan", "yanxin", "yanxin", "huoya", "qiezhi", "zheng", "fenghuo"]}, {"creature": "yezhu", "weight": 1, "hp": 0.9}, {"creature": "chihu", "hp": 1.4, "weight": 1, "from": "h05"}, {"creature": "shanli", "hp": 0.9, "weight": 1, "from": "h05", "when": "night"}, {"creature": "mihou", "hp": 1.65, "weight": 1, "from": "h05", "after": "wm-diyilu", "when": "day"}, {"creature": "fushe", "hp": 0.9, "weight": 1, "from": "h05", "when": "day"}, {"creature": "congcong", "hp": 1.45, "weight": 1, "from": "h05", "after": "wm-diyilu"}, {"creature": "xiegou", "hp": 1.1, "weight": 1, "from": "h05", "when": "night"}, {"creature": "lang", "hp": 1.3, "weight": 1, "from": "h05", "deck": ["huilang", "huilang", "huilang", "jinzhua", "jinzhua", "jinzhua", "elang", "huilang", "jinzhen", "jinzhen", "suijin", "toulang"], "_deck": "One 恶狼 a 灰狼 at the 崖顶 (2026-11-04): with 狰's 入阵 draw live the band read 47.5% and the card's chip 易; now 38–41% and 相当 (tests/fight-band-pools · fightodds)."}, {"creature": "xiong", "hp": 1.4, "weight": 1, "from": "h05", "after": "wm-diyilu", "_hp": "1.25 until 2026-11-07: one heal a fight, at most a round's damage (balance.json fight_length), left it won 92% with two pills."}, {"creature": "lingling", "hp": 0.8, "weight": 1, "from": "h07"}, {"creature": "cangying", "hp": 2.05, "weight": 1, "from": "h08", "when": "day"}, {"creature": "yuanhu", "hp": 1.85, "weight": 1, "from": "h08"}, {"creature": "jingjing", "hp": 1.75, "weight": 1, "from": "h08"}, {"creature": "chai", "hp": 4.55, "weight": 1, "from": "h11", "roaming": {"extra": 4}, "_hp": "2026-11-07 (斗法 within 3 minutes, balance.json fight_length): its 气血 is cut at the door to the realm's rounds and the rest comes back on its blows (rules/cards.mjs fightLength) — this number is its weight, re-tuned so its band holds (tests/fight-band-pools)."}, {"creature": "bibi", "hp": 4.3, "weight": 1, "from": "h11", "roaming": {"hp": 0.1, "extra": 4}}, {"creature": "dangkang", "hp": 4.5, "weight": 1, "from": "h11", "roaming": {"hp": 0.55, "extra": 4}, "_hp": "2026-11-07 (斗法 within 3 minutes, balance.json fight_length): its 气血 is cut at the door to the realm's rounds and the rest comes back on its blows (rules/cards.mjs fightLength) — this number is its weight, re-tuned so its band holds (tests/fight-band-pools)."}, {"creature": "geju", "hp": 3.0, "weight": 1, "from": "h09", "when": "night", "roaming": {"hp": 0.05}}, {"creature": "qique", "hp": 4.0, "weight": 1, "from": "h09", "roaming": {"hp": 0.05, "extra": 4}, "_hp": "4.3 until 2026-11-07: about 3 minutes at the ceiling of 练气 (balance.json fight_length, tests/fight-length) — 4.0 keeps it inside, its band held."}]}, "sishui": {"name": {"zh": "泗水边", "en": "By the Si"}, "_beasts": "人鱼 · 合窳 by the Si too from 古五 (Hanli 2026-11-07: 「我玩斗法, 每次都是同样的妖, 应该打完换新的」 — 蛫 alone, every fight at 泗水北岸 was 蛫; the agent picked these two water beasts already pooled elsewhere, tuned at h10 as 蛫 is, tests/fight-band-pools).", "beasts": [{"creature": "gui", "weight": 1, "hp": 3.3, "roaming": {"hp": 0.45, "extra": 4}, "_hp": "3.3 since 2026-11-07's 御火 (its 杀招 halves his fire till the end of his next turn; at 3.7 it won 17.5% alone, bare) — now 45% alone, 65% with 阿禾. 2026-11-07 (斗法 within 3 minutes, balance.json fight_length): its 气血 is cut at the door to the realm's rounds and the rest comes back on its blows (rules/cards.mjs fightLength) — this number is its weight, re-tuned so its band holds (tests/fight-band-pools)."}, {"creature": "renyu", "weight": 1, "from": "h07", "hp": 2.75, "roaming": {"hp": 0.05, "extra": 4}}, {"creature": "heyu", "weight": 1, "from": "h07", "hp": 3.6, "roaming": {"hp": 0.45, "extra": 4}}]}, "mijing-ya": {"name": {"zh": "凶崖的石阶", "en": "The stair of the Cliff of Danger"}, "beasts": [{"creature": "qiuyu", "weight": 1, "hp": 1.1, "deck": ["tengmiao", "tengmiao", "mafu", "mafu", "mafu", "leipu", "leipu", "fengmao", "fengmao", "peiyuan", "leiming", "chunsheng"]}]}, "mijing-anhe": {"name": {"zh": "干了的暗河", "en": "The dry underground river"}, "beasts": [{"creature": "heyu", "hp": 2.2, "weight": 2}, {"creature": "qiuyu", "weight": 1, "hp": 1.2, "deck": ["tengmiao", "tengmiao", "mafu", "mafu", "mafu", "leipu", "leipu", "fengmao", "fengmao", "peiyuan", "leiming", "chunsheng"]}]}},
  "places": [
   {
-   "id": "sishui",
+   "id": "sishui", "levels": [10, 12],
    "name": {
     "zh": "泗水岸",
     "en": "The Si River bank"
@@ -41,7 +41,7 @@
    ]
   },
   {
-   "id": "sibei",
+   "id": "sibei", "levels": [10, 12],
    "name": {
     "zh": "泗水北岸",
     "en": "North bank of the Si"
@@ -68,7 +68,7 @@
    "water": true
   },
   {
-   "id": "pengcheng",
+   "id": "pengcheng", "levels": [10, 12],
    "name": {
     "zh": "彭城",
     "en": "Pengcheng"
@@ -439,7 +439,7 @@
    ]
   },
   {
-   "id": "dukou",
+   "id": "dukou", "levels": [1, 12],
    "name": {
     "zh": "渡口",
     "en": "The Si crossing"
@@ -467,7 +467,7 @@
    "water": true
   },
   {
-   "id": "shanlu",
+   "id": "shanlu", "levels": [1, 12],
    "name": {
     "zh": "上山路",
     "en": "The mountain path"
@@ -489,7 +489,7 @@
    }
   },
   {
-   "id": "shanmen",
+   "id": "shanmen", "levels": [1, 12],
    "plate": {
     "id": "guan",
     "at": [
@@ -519,7 +519,7 @@
    "has": {"games": ["shanmen-qinyan", "shanmen-qingshen", "shanmen-shouqiang"], "_games": "2026-11-10 (Hanli: 「小游戏目前靠后山刷斗法, 也可以加一个地点刷其他主力游戏」): the 主力 as practice at the 山门 — 秦雁's 格斗 (she comes up by these steps), 轻身's 几何冲刺, a 守墙关 night — each from 古八 on (its task's `after`, rules/tasks.mjs hostedOpen), beside the 后山's 斗法 and 兽潮. (演武场 holds the pedlar's visiting stall, which stands alone: content.mjs lintVisitor.)"}
   },
   {
-   "id": "zhengdian",
+   "id": "zhengdian", "levels": [1, 12],
    "plate": {
     "id": "guan",
     "at": [
@@ -549,7 +549,7 @@
    }
   },
   {
-   "id": "waimen",
+   "id": "waimen", "levels": [1, 12],
    "plate": {
     "id": "guan",
     "at": [
@@ -583,7 +583,7 @@
    }
   },
   {
-   "id": "shiao",
+   "id": "shiao", "levels": [1, 12],
    "name": {
     "zh": "石坳村",
     "en": "Shi'ao village"
@@ -604,7 +604,7 @@
    }
   },
   {
-   "id": "mengshan",
+   "id": "mengshan", "levels": [1, 12],
    "name": {
     "zh": "蒙山前山",
     "en": "The front slopes of Mount Meng"
@@ -625,7 +625,7 @@
    }
   },
   {
-   "id": "duanbei",
+   "id": "duanbei", "levels": [1, 12],
    "name": {
     "zh": "黑松岭 · 断碑",
     "en": "Black Pine Ridge · The broken stele"
@@ -646,7 +646,7 @@
    }
   },
   {
-   "id": "heisong",
+   "id": "heisong", "levels": [1, 12],
    "name": {
     "zh": "黑松岭",
     "en": "Black Pine Ridge"
@@ -671,7 +671,7 @@
    ]
   },
   {
-   "id": "yingu",
+   "id": "yingu", "levels": [1, 12],
    "name": {
     "zh": "银叶谷",
     "en": "The Silver-leaf Vale"
@@ -691,7 +691,7 @@
    "water": true
   },
   {
-   "id": "jiangtang",
+   "id": "jiangtang", "levels": [1, 12],
    "plate": {
     "id": "guan",
     "at": [
@@ -719,7 +719,7 @@
    }
   },
   {
-   "id": "cangjing",
+   "id": "cangjing", "levels": [1, 12],
    "plate": {
     "id": "guan",
     "at": [
@@ -747,7 +747,7 @@
    }
   },
   {
-   "id": "chaifang",
+   "id": "chaifang", "levels": [1, 12],
    "plate": {
     "id": "guan",
     "at": [
@@ -774,7 +774,7 @@
    }
   },
   {
-   "id": "yaoyuan",
+   "id": "yaoyuan", "levels": [1, 12],
    "plate": {
     "id": "guan",
     "at": [
@@ -807,7 +807,7 @@
    }
   },
   {
-   "id": "houshan",
+   "id": "houshan", "levels": [1, 12],
    "plate": {
     "id": "guan",
     "at": [
@@ -834,7 +834,7 @@
    }
   },
   {
-   "id": "fangshi",
+   "id": "fangshi", "levels": [4, 12],
    "name": {
     "zh": "沉鼎山下 · 坊市",
     "en": "Below Mount Chending · The market"
@@ -855,7 +855,7 @@
    }
   },
   {
-   "id": "shimen",
+   "id": "shimen", "levels": [2, 12],
    "name": {
     "zh": "沉鼎秘境 · 石门",
     "en": "The hidden realm · The stone door"
@@ -874,25 +874,25 @@
     "en": "Under the Si there is a stone door. Once every ten years the river draws back and shows it. the Sunken Cauldron Abbey takes its name from it."
    }
   },
-  {"id": "mijing-kou", "plate": {"id": "mijing", "at": [0.5, 0.12]}, "name": {"zh": "沉鼎秘境 · 岔口", "en": "The hidden realm · The forking hall"}, "tier": 0, "roads": ["shimen", "mijing-xiongya"], "map": [0.8102, 0.4414],
+  {"id": "mijing-kou", "levels": [2, 4], "plate": {"id": "mijing", "at": [0.5, 0.12]}, "name": {"zh": "沉鼎秘境 · 岔口", "en": "The hidden realm · The forking hall"}, "tier": 0, "roads": ["shimen", "mijing-xiongya"], "map": [0.8102, 0.4414],
    "has": {"games": ["mijing-huarong"]},
    "line": {"zh": "石门里头一间大石厅，七八个口子张着嘴。人都往人多的里头挤；最边上一道窄缝，石头上刻着一个「凶」字。", "en": "Inside the stone door, a great stone hall, seven or eight openings gaping. Everyone squeezes into the crowded ones; at the far edge a narrow fissure has 凶, \"danger\", cut above it."}},
-  {"id": "mijing-xiongya", "plate": {"id": "mijing", "at": [0.5, 0.34]}, "name": {"zh": "沉鼎秘境 · 凶崖", "en": "The hidden realm · The Cliff of Danger"}, "tier": 0, "roads": ["mijing-kou", "mijing-duanya"], "map": [0.8108, 0.4422],
+  {"id": "mijing-xiongya", "levels": [2, 4], "plate": {"id": "mijing", "at": [0.5, 0.34]}, "name": {"zh": "沉鼎秘境 · 凶崖", "en": "The hidden realm · The Cliff of Danger"}, "tier": 0, "roads": ["mijing-kou", "mijing-duanya"], "map": [0.8108, 0.4422],
    "has": {"pool": "mijing-ya", "guard": {"holds": ["mijing-duanya"], "won": {"n": 1, "say": {"zh": "石阶当中卧着一只犰狳，见了人便倒下装死，一动不动地堵着路。", "en": "A qiuyu lies across the stair; at the sight of you it drops and plays dead, blocking the way without a twitch."}}}},
    "line": {"zh": "「凶」字底下的石缝一路往下，越走越窄。脚底下的石阶湿滑，崖口黑得不见底。", "en": "Below the 凶 the fissure runs down, narrower at every step. The stone steps are slick underfoot, and the drop is black to the bottom."}},
-  {"id": "mijing-duanya", "plate": {"id": "mijing", "at": [0.46, 0.58]}, "name": {"zh": "沉鼎秘境 · 断崖下", "en": "The hidden realm · Below the drop"}, "tier": 0, "roads": ["mijing-xiongya", "mijing-yabi", "mijing-shishi"], "map": [0.8114, 0.443],
+  {"id": "mijing-duanya", "levels": [2, 4], "plate": {"id": "mijing", "at": [0.46, 0.58]}, "name": {"zh": "沉鼎秘境 · 断崖下", "en": "The hidden realm · Below the drop"}, "tier": 0, "roads": ["mijing-xiongya", "mijing-yabi", "mijing-shishi"], "map": [0.8114, 0.443],
    "line": {"zh": "他把袖子挽起来，顺着崖壁往下爬。他是猎户家的孩子，爬崖是本行，可这道崖从上到下一根草也不长，石头凉得透骨。他左边的肋骨，十月十二那夜断的，到这时候还没长牢，一使劲，便像有人往里头塞了一根针。\n\n崖下一道窄窄的石台，一面光秃秃的石墙——墙后头，有风。墙脚一汪半干的水潭。", "en": "He rolled up his sleeves and climbed down the cliff face. He was a hunter's child, and climbing cliffs was his trade, but this cliff grew not a blade of grass from top to bottom, and the rock was cold to the bone. His left ribs, broken that night of the twelfth of the tenth month, still hadn't knitted, and every time he strained, it felt as if someone were pushing a needle in.\n\nBelow the cliff, a narrow stone ledge and a bare stone wall — behind the wall, there is wind. At its foot, a half-dry pool."}, "_line": "The climb down is told here since 2026-10-19 (下崖 cut): the book's paragraph whole (05-第五回.md), then the room."},
-  {"id": "mijing-yabi", "plate": {"id": "mijing", "at": [0.17, 0.66]}, "name": {"zh": "沉鼎秘境 · 崖壁", "en": "The hidden realm · The cliff wall"}, "tier": 0, "roads": ["mijing-duanya"], "map": [0.8106, 0.4438],
+  {"id": "mijing-yabi", "levels": [2, 4], "plate": {"id": "mijing", "at": [0.17, 0.66]}, "name": {"zh": "沉鼎秘境 · 崖壁", "en": "The hidden realm · The cliff wall"}, "tier": 0, "roads": ["mijing-duanya"], "map": [0.8106, 0.4438],
    "line": {"zh": "石台外沿是崖壁，一根锈烂的铁橛子钉在崖沿上；再往外，就是不见底的崖口。", "en": "The ledge's outer edge is the cliff wall, a rusted iron stake driven into its lip; beyond it, the bottomless drop."}},
-  {"id": "mijing-shishi", "plate": {"id": "mijing", "at": [0.76, 0.56]}, "name": {"zh": "沉鼎秘境 · 石室", "en": "The hidden realm · The stone chamber"}, "tier": 0, "roads": ["mijing-duanya", "mijing-anhe"], "map": [0.8122, 0.4434],
+  {"id": "mijing-shishi", "levels": [2, 4], "plate": {"id": "mijing", "at": [0.76, 0.56]}, "name": {"zh": "沉鼎秘境 · 石室", "en": "The hidden realm · The stone chamber"}, "tier": 0, "roads": ["mijing-duanya", "mijing-anhe"], "map": [0.8122, 0.4434],
    "_has": "2026-10-31: the 石室's two 主力 levels hosted as practice — the 修为 for wm-kaikai's stage quest (四层圆满) is earned in the room, the world outside frozen.",
    "has": {"games": ["shishi-lingqi", "shishi-yinshen"]},
    "line": {"zh": "墙后一间石室，方方正正，四壁青石磨得照得出人影。地上四个方坑，正中一张石台。", "en": "Behind the wall, a square stone chamber, its blue-stone walls polished to a mirror. Four square pits in the floor; a stone altar in the middle."}},
-  {"id": "mijing-anhe", "plate": {"id": "mijing", "at": [0.8, 0.86]}, "name": {"zh": "沉鼎秘境 · 暗河", "en": "The hidden realm · The dry river"}, "tier": 0, "roads": ["mijing-shishi"], "map": [0.8128, 0.4446],
+  {"id": "mijing-anhe", "levels": [2, 4], "plate": {"id": "mijing", "at": [0.8, 0.86]}, "name": {"zh": "沉鼎秘境 · 暗河", "en": "The hidden realm · The dry river"}, "tier": 0, "roads": ["mijing-shishi"], "map": [0.8128, 0.4446],
    "has": {"pool": "mijing-anhe", "games": ["mijing-gather"]},
    "line": {"zh": "石室西北角那个半人高的黑洞，一路往下，通到一条干了的暗河。黑里，风是暖的。", "en": "The waist-high black hole in the chamber's northwest corner runs down and down to a dry underground river. In the dark, the wind is warm."}},
   {
-   "id": "fantang",
+   "id": "fantang", "levels": [1, 12],
    "plate": {
     "id": "guan",
     "at": [
@@ -919,7 +919,7 @@
    }
   },
   {
-   "id": "yanwu",
+   "id": "yanwu", "levels": [1, 12],
    "plate": {
     "id": "guan",
     "at": [
@@ -958,7 +958,7 @@
    }
   },
   {
-   "id": "zhishi",
+   "id": "zhishi", "levels": [1, 12],
    "plate": {
     "id": "guan",
     "at": [

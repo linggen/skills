@@ -55,6 +55,17 @@ export function curveOf(M, line, tiers) {
 
 
 const points = e => (e?.atk ?? 0) + (e?.def ?? 0) + Object.values(e?.ward ?? {}).reduce((a, b) => a + b, 0);
+/* A worn thing's fight points from its class (batch 3, master.fight.gear): its 品 × its slot's per-品 points — a pendant's 抗 on
+   each root it names (`wards`). The same reading as content.mjs gearFolded (laid on the item at load). */
+function gearPoints(G, i) {
+  const per = G?.[i?.kind];
+  if (!per || !(i.pin > 0)) return null;
+  const out = {};
+  if (per.atk) out.atk = per.atk * i.pin;
+  if (per.def) out.def = per.def * i.pin;
+  if (per.ward && i.wards?.length) out.ward = Object.fromEntries(i.wards.map(el => [el, per.ward * i.pin]));
+  return out;
+}
 const GEAR = new Set(['weapon', 'robe', 'pendant', 'shoes']);
 const r3 = x => Math.round(x * 1000) / 1000;
 
@@ -89,7 +100,7 @@ const sharesOf = (F, f) => (f.share ? byZhuan(f.share) : sharesOf(F, F[f.like]).
    mana pill its share × his 灵力 cap there (battle.js REALMS); an exception's 修为 beside it. Read by content.mjs withBalance. */
 export function pillsOf(raw, { ladder, items }) {
   const P = raw.master.pills, F = P.families, W = worldOf(raw), out = {};
-  const staged = { ladder: { ...ladder, tiers: ladder.tiers.map(t => ({ ...t, thresholds: raw.layers[t.id] ?? [] })) } };
+  const staged = { ladder: { ...ladder, tiers: ladder.tiers.map(t => ({ ...t, thresholds: raw.layers[t.id] ?? [] })) }, balance: { power: raw.master.fight?.power ?? null } };
   const xiuwei = (i, share) => { const at = layerOf(raw, ladder, i.level); return at?.need ? { table: P.table, units: r3((share * at.need) / rateOfLevel(W, i.level)), level: i.level, tier: i.tier } : null; };
   for (const i of items.filter(x => x.kind === 'pill' && x.of && x.level > 0)) {
     const f = F[i.of], z = (i.zhuan ?? 1) - 1, at = layerOf(raw, ladder, i.level);
@@ -128,7 +139,8 @@ export function minutesOf(raw, i, { fantong, cards, effects, ladder }) {
     if (e.fight?.mana) return C.mana * e.fight.mana;
     return null;
   }
-  if (GEAR.has(i.kind) && points(i.effect)) return points(i.effect) * C.gear[i.kind];
+  const g = GEAR.has(i.kind) ? gearPoints(raw.master.fight?.gear, i) ?? i.effect : null;
+  if (g && points(g)) return points(g) * C.gear[i.kind];
   if (i.effect?.card) return (C.card?.[i.kind] ?? C.card?.treasure ?? 0) * (cost(i.effect.card) + 1);
   if (i.kind === 'charm') return C.charm * Math.max(1, cost(i.id));
   if (i.kind === 'scroll' && i.effect?.learn) return C.scroll * (i.effect.level ?? 1);
@@ -249,6 +261,9 @@ export function derive(raw0, { ladder, items, fantong = null, cards = null }) {
   raw.kailu = { ...raw.kailu, tier: { ...E.kailu_tier }, ...(E.kailu_floor ? { grades: Object.fromEntries(Object.entries(raw.kailu.grades).map(([g, v]) => { const { floor, ...rest } = v; return [g, { ...rest, floor_ls: E.kailu_floor[g] ?? 0 }]; })) } : {}) };
   raw.prices = pricesOf(raw, { items, fantong, cards, effects: raw.pills.effects, ladder });
   if (M.mijing) raw.mijing = mijingOf(M.mijing);
+  // 斗法 on the level (batch 3, master.fight): P(L)'s knobs for the rules (rules/power.mjs) and fight_length's cap on P.
+  if (M.fight) { raw.power = { ...M.fight.power }; raw.fight_length = structuredClone(M.fight.length); }
+  if (M.fight?.gear) raw.gear = Object.fromEntries(Object.entries(M.fight.gear).filter(([k]) => !k.startsWith('_')));
   // The breakthrough throw's numbers (master.breakthrough; ladder.json keeps its pills and elements).
   if (M.breakthrough) raw.breakthrough = breakthroughOf(M.breakthrough, ladder.tiers.map(t => t.id));
   // 冷却事件 (rules/events.mjs): a completion pays `batch_plays` plays of its table, spread over its `batch` fights.

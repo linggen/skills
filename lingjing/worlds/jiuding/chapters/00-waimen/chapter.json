@@ -11,6 +11,8 @@
   "_id": "The book's 古四 to 古六 (story/jiuding-lu/04-第四回.md … 06-第六回.md since the 2026-10-02 rename; once 第一章 · 外门, then 第三回 until 2026-09-30), between the prologue and 冀: an id that sorts after 00-prologue and before 01-ji (chapters run in id order, core.mjs advanceChapter).",
   "_map": "观内 (Hanli, 2026-10-15: 「可以，按你的建议做」 — supersedes the 10-05 free-play area): while he is an 外门 disciple he roams INSIDE 沉鼎观 — 外门, 饭堂, 讲堂, 柴房, 演武场, 正殿, 执事堂, 藏经阁, 药园, 后山崖顶, 山门. Below the mountain (坊市, 渡口, 泗水, 彭城 …) is walled: refused with `say`, greyed on the map. Two things open a way past it, only the places on that way (world.mjs leaveOf): the story's scene standing off the map (石门 for the 秘境 — the road from the 观 to it, while that scene is ahead), and a 执事堂 令 (an errand declaring `pass`: the road to that one place, spent once the errand is done and he is back inside). A save standing off every way is put back at `home` with `back` (world.mjs fitLeave).",
   "map": {
+    "_levels": "The levels this map's places stand in (batch 3, Hanli 2026-11-10: 卷一 is 练气一层 → 筑基三层, L1–12): each place's band (places/*.json `levels`) lies inside it, and every beast and thing on it too, or says why (content.mjs lintLevels). 零层 is outside the 81.",
+    "levels": [1, 12],
     "places": [
       "waimen",
       "fantang",

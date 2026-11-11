@@ -359,6 +359,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 1,
@@ -386,7 +387,9 @@
        "mana": 3
       }
      ],
-     "armor": 4
+     "armor": 4,
+     "level": 1,
+     "pow": 21
     },
     "foe": {
      "tier": "qi",
@@ -417,7 +420,9 @@
       "effect": {
        "damage": 8
       }
-     }
+     },
+     "level": 1,
+     "pow": 21
     }
    }
   },
@@ -474,6 +479,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 1,
@@ -501,7 +507,9 @@
        "mana": 3
       }
      ],
-     "armor": 4
+     "armor": 4,
+     "level": 1,
+     "pow": 21
     },
     "foe": {
      "tier": "qi",
@@ -536,7 +544,9 @@
        },
        "damage": 3
       }
-     }
+     },
+     "level": 1,
+     "pow": 21
     }
    }
   },
@@ -593,6 +603,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 1,
@@ -620,7 +631,9 @@
        "mana": 3
       }
      ],
-     "armor": 4
+     "armor": 4,
+     "level": 1,
+     "pow": 21
     },
     "foe": {
      "tier": "qi",
@@ -651,7 +664,9 @@
       "effect": {
        "damage": 10
       }
-     }
+     },
+     "level": 1,
+     "pow": 21
     }
    }
   },
@@ -708,6 +723,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 1,
@@ -735,7 +751,9 @@
        "mana": 3
       }
      ],
-     "armor": 4
+     "armor": 4,
+     "level": 1,
+     "pow": 21
     },
     "foe": {
      "tier": "qi",
@@ -770,7 +788,9 @@
        },
        "damage": 6
       }
-     }
+     },
+     "level": 1,
+     "pow": 21
     }
    }
   },
@@ -827,6 +847,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 1,
@@ -854,7 +875,9 @@
        "mana": 3
       }
      ],
-     "armor": 4
+     "armor": 4,
+     "level": 1,
+     "pow": 21
     },
     "foe": {
      "tier": "qi",
@@ -886,7 +909,9 @@
        "draw": 1,
        "damage": 6
       }
-     }
+     },
+     "level": 1,
+     "pow": 21
     }
    }
   },
@@ -943,6 +968,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 1,
@@ -969,7 +995,9 @@
       }
      ],
      "power": 1,
-     "armor": 4
+     "armor": 4,
+     "level": 1,
+     "pow": 21
     },
     "foe": {
      "tier": "qi",
@@ -1000,7 +1028,9 @@
       "effect": {
        "damage": 8
       }
-     }
+     },
+     "level": 1,
+     "pow": 21
     }
    }
   },
@@ -1057,6 +1087,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 1,
@@ -1084,7 +1115,9 @@
        "mana": 3
       }
      ],
-     "armor": 4
+     "armor": 4,
+     "level": 1,
+     "pow": 21
     },
     "foe": {
      "tier": "qi",
@@ -1119,7 +1152,9 @@
        },
        "damage": 3
       }
-     }
+     },
+     "level": 1,
+     "pow": 21
     }
    }
   },
@@ -1176,6 +1211,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 1,
@@ -1202,7 +1238,9 @@
       }
      ],
      "power": 1,
-     "armor": 4
+     "armor": 4,
+     "level": 1,
+     "pow": 21
     },
     "foe": {
      "tier": "qi",
@@ -1234,7 +1272,9 @@
        "draw": 1,
        "damage": 7
       }
-     }
+     },
+     "level": 1,
+     "pow": 21
     }
    }
   },
@@ -1291,6 +1331,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 1,
@@ -1317,7 +1358,9 @@
       }
      ],
      "power": 1,
-     "armor": 4
+     "armor": 4,
+     "level": 1,
+     "pow": 21
     },
     "foe": {
      "tier": "qi",
@@ -1348,7 +1391,9 @@
       "effect": {
        "damage": 7
       }
-     }
+     },
+     "level": 1,
+     "pow": 21
     }
    }
   },
@@ -1405,6 +1450,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 1,
@@ -1432,7 +1478,9 @@
        "mana": 3
       }
      ],
-     "armor": 4
+     "armor": 4,
+     "level": 1,
+     "pow": 21
     },
     "foe": {
      "tier": "qi",
@@ -1467,7 +1515,9 @@
        },
        "damage": 3
       }
-     }
+     },
+     "level": 1,
+     "pow": 21
     }
    }
   },
@@ -1524,6 +1574,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 1,
@@ -1550,7 +1601,9 @@
       }
      ],
      "power": 1,
-     "armor": 4
+     "armor": 4,
+     "level": 1,
+     "pow": 21
     },
     "foe": {
      "tier": "qi",
@@ -1581,7 +1634,9 @@
       "effect": {
        "damage": 9
       }
-     }
+     },
+     "level": 1,
+     "pow": 21
     }
    }
   },
@@ -1638,6 +1693,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 1,
@@ -1665,7 +1721,9 @@
        "mana": 3
       }
      ],
-     "armor": 4
+     "armor": 4,
+     "level": 1,
+     "pow": 21
     },
     "foe": {
      "tier": "qi",
@@ -1700,7 +1758,9 @@
        },
        "damage": 4
       }
-     }
+     },
+     "level": 1,
+     "pow": 21
     }
    }
   },
@@ -1757,6 +1817,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 1,
@@ -1783,7 +1844,9 @@
       }
      ],
      "power": 1,
-     "armor": 4
+     "armor": 4,
+     "level": 1,
+     "pow": 21
     },
     "foe": {
      "tier": "qi",
@@ -1815,7 +1878,9 @@
        "sweep": 3,
        "damage": 3
       }
-     }
+     },
+     "level": 1,
+     "pow": 21
     }
    }
   },
@@ -1872,6 +1937,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 1,
@@ -1898,7 +1964,9 @@
       }
      ],
      "power": 1,
-     "armor": 4
+     "armor": 4,
+     "level": 1,
+     "pow": 21
     },
     "foe": {
      "tier": "qi",
@@ -1933,7 +2001,9 @@
        },
        "damage": 3
       }
-     }
+     },
+     "level": 1,
+     "pow": 21
     }
    }
   },
@@ -1990,6 +2060,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 1,
@@ -2017,7 +2088,9 @@
        "mana": 3
       }
      ],
-     "armor": 4
+     "armor": 4,
+     "level": 1,
+     "pow": 21
     },
     "foe": {
      "tier": "qi",
@@ -2048,7 +2121,9 @@
       "effect": {
        "damage": 10
       }
-     }
+     },
+     "level": 1,
+     "pow": 21
     }
    }
   },
@@ -2105,6 +2180,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 2,
@@ -2132,7 +2208,9 @@
        "mana": 3
       }
      ],
-     "armor": 4
+     "armor": 4,
+     "level": 2,
+     "pow": 22.05
     },
     "foe": {
      "tier": "qi",
@@ -2172,7 +2250,9 @@
         "turns": 1
        }
       }
-     }
+     },
+     "level": 2,
+     "pow": 22.05
     }
    }
   },
@@ -2229,6 +2309,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 2,
@@ -2256,7 +2337,9 @@
        "mana": 3
       }
      ],
-     "armor": 4
+     "armor": 4,
+     "level": 2,
+     "pow": 22.05
     },
     "foe": {
      "tier": "qi",
@@ -2302,7 +2385,9 @@
       "per_glance": 3,
       "pierce_binds": true,
       "_about": "装睡 (battle.js § asleep): its first two turns it lies still; a blow not of metal glances (lands 1) and is counted; 金克木 — metal goes in whole (小满 coats 火柴 in metal light), and so does every blow of a turn in which a bind was played at it (`pierce_binds`: 阿禾 binds it, 小满 strikes). It wakes with 鸱目一睁, 3 harder for every blow that glanced."
-     }
+     },
+     "level": 2,
+     "pow": 22.05
     }
    }
   },
@@ -2359,6 +2444,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 3,
@@ -2388,7 +2474,9 @@
        "mana": 3
       }
      ],
-     "armor": 4
+     "armor": 4,
+     "level": 3,
+     "pow": 23.1525
     },
     "foe": {
      "tier": "qi",
@@ -2420,7 +2508,9 @@
        "sweep": 2,
        "damage": 5
       }
-     }
+     },
+     "level": 3,
+     "pow": 23.1525
     }
    }
   },
@@ -2477,6 +2567,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 3,
@@ -2506,7 +2597,9 @@
        "mana": 3
       }
      ],
-     "armor": 4
+     "armor": 4,
+     "level": 3,
+     "pow": 23.1525
     },
     "foe": {
      "tier": "qi",
@@ -2552,7 +2645,9 @@
       "per_glance": 3,
       "pierce_binds": true,
       "_about": "装睡 (battle.js § asleep): its first two turns it lies still; a blow not of metal glances (lands 1) and is counted; 金克木 — metal goes in whole (小满 coats 火柴 in metal light), and so does every blow of a turn in which a bind was played at it (`pierce_binds`: 阿禾 binds it, 小满 strikes). It wakes with 鸱目一睁, 3 harder for every blow that glanced."
-     }
+     },
+     "level": 3,
+     "pow": 23.1525
     }
    }
   },
@@ -2609,6 +2704,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 2,
@@ -2636,7 +2732,9 @@
        "mana": 3
       }
      ],
-     "armor": 4
+     "armor": 4,
+     "level": 2,
+     "pow": 22.05
     },
     "foe": {
      "tier": "qi",
@@ -2668,7 +2766,9 @@
        "sweep": 4,
        "damage": 4
       }
-     }
+     },
+     "level": 2,
+     "pow": 22.05
     }
    }
   },
@@ -2725,6 +2825,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 4,
@@ -2753,7 +2854,9 @@
       }
      ],
      "power": 1,
-     "armor": 4
+     "armor": 4,
+     "level": 4,
+     "pow": 24.310125000000003
     },
     "foe": {
      "tier": "qi",
@@ -2784,7 +2887,9 @@
       "effect": {
        "damage": 8
       }
-     }
+     },
+     "level": 4,
+     "pow": 24.310125000000003
     }
    }
   },
@@ -2841,6 +2946,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 4,
@@ -2869,7 +2975,9 @@
       }
      ],
      "power": 1,
-     "armor": 4
+     "armor": 4,
+     "level": 4,
+     "pow": 24.310125000000003
     },
     "foe": {
      "tier": "qi",
@@ -2904,7 +3012,9 @@
         "hp": 1
        }
       }
-     }
+     },
+     "level": 4,
+     "pow": 24.310125000000003
     }
    }
   },
@@ -2961,6 +3071,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 4,
@@ -2989,7 +3100,9 @@
       }
      ],
      "power": 1,
-     "armor": 4
+     "armor": 4,
+     "level": 4,
+     "pow": 24.310125000000003
     },
     "foe": {
      "tier": "qi",
@@ -3020,7 +3133,9 @@
       "effect": {
        "damage": 9
       }
-     }
+     },
+     "level": 4,
+     "pow": 24.310125000000003
     }
    }
   },
@@ -3077,6 +3192,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 5,
@@ -3144,7 +3260,9 @@
       }
      ],
      "power": 2,
-     "armor": 4
+     "armor": 4,
+     "level": 5,
+     "pow": 25.525631250000004
     },
     "foe": {
      "tier": "qi",
@@ -3190,7 +3308,9 @@
       "per_glance": 3,
       "pierce_binds": true,
       "_about": "装睡 (battle.js § asleep): its first two turns it lies still; a blow not of metal glances (lands 1) and is counted; 金克木 — metal goes in whole (小满 coats 火柴 in metal light), and so does every blow of a turn in which a bind was played at it (`pierce_binds`: 阿禾 binds it, 小满 strikes). It wakes with 鸱目一睁, 3 harder for every blow that glanced."
-     }
+     },
+     "level": 5,
+     "pow": 25.525631250000004
     }
    }
   },
@@ -3247,6 +3367,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 5,
@@ -3314,7 +3435,9 @@
       }
      ],
      "power": 2,
-     "armor": 4
+     "armor": 4,
+     "level": 5,
+     "pow": 25.525631250000004
     },
     "foe": {
      "tier": "qi",
@@ -3365,7 +3488,9 @@
        },
        "damage": 3
       }
-     }
+     },
+     "level": 5,
+     "pow": 25.525631250000004
     }
    }
   },
@@ -3422,6 +3547,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 5,
@@ -3489,7 +3615,9 @@
       }
      ],
      "power": 2,
-     "armor": 4
+     "armor": 4,
+     "level": 5,
+     "pow": 25.525631250000004
     },
     "foe": {
      "tier": "qi",
@@ -3537,7 +3665,9 @@
        "sweep": 2,
        "damage": 5
       }
-     }
+     },
+     "level": 5,
+     "pow": 25.525631250000004
     }
    }
   },
@@ -3594,6 +3724,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 5,
@@ -3661,7 +3792,9 @@
       }
      ],
      "power": 2,
-     "armor": 4
+     "armor": 4,
+     "level": 5,
+     "pow": 25.525631250000004
     },
     "foe": {
      "tier": "qi",
@@ -3712,7 +3845,9 @@
         "hp": 1
        }
       }
-     }
+     },
+     "level": 5,
+     "pow": 25.525631250000004
     }
    }
   },
@@ -3769,6 +3904,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 7,
@@ -3819,7 +3955,9 @@
       }
      ],
      "power": 2,
-     "armor": 4
+     "armor": 4,
+     "level": 7,
+     "pow": 28.14200845312501
     },
     "foe": {
      "tier": "qi",
@@ -3856,7 +3994,9 @@
       "effect": {
        "damage": 10
       }
-     }
+     },
+     "level": 7,
+     "pow": 28.14200845312501
     }
    }
   },
@@ -3913,6 +4053,7 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 21,
     "you": {
      "tier": "qi",
      "step": 7,
@@ -3963,7 +4104,9 @@
       }
      ],
      "power": 2,
-     "armor": 4
+     "armor": 4,
+     "level": 7,
+     "pow": 28.14200845312501
     },
     "foe": {
      "tier": "qi",
@@ -4005,7 +4148,9 @@
        "damage": 7,
        "sweep": 1
       }
-     }
+     },
+     "level": 7,
+     "pow": 28.14200845312501
     }
    }
   },
@@ -4066,9 +4211,10 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 26,
     "you": {
      "tier": "foundation",
-     "step": 0.3333333333333333,
+     "step": 0,
      "root": "wood",
      "deck": [
       "mutang",
@@ -4094,7 +4240,9 @@
       }
      ],
      "power": 2,
-     "armor": 4
+     "armor": 4,
+     "level": 10,
+     "pow": 39.09347104265861
     },
     "foe": {
      "tier": "foundation",
@@ -4131,7 +4279,9 @@
        "zh": "这是试，不是斗：撑到双龙出完招，或把它们逼到三成气血，便算过了。",
        "en": "A trial, not a fight: stand until the dragons have spent every move, or drive them down to a third, and you have passed."
       }
-     }
+     },
+     "level": 10,
+     "pow": 39.09347104265861
     }
    }
   },
@@ -4188,9 +4338,10 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 26,
     "you": {
      "tier": "foundation",
-     "step": 0.3333333333333333,
+     "step": 0,
      "root": "wood",
      "deck": [
       "mutang",
@@ -4238,7 +4389,9 @@
       }
      ],
      "power": 2,
-     "armor": 4
+     "armor": 4,
+     "level": 10,
+     "pow": 39.09347104265861
     },
     "foe": {
      "tier": "foundation",
@@ -4266,9 +4419,9 @@
       "gui",
       "jixiao"
      ],
-     "hp": 4.23,
+     "hp": 4.06,
      "power": 1,
-     "might": 1.13,
+     "might": 1.18,
      "heals": 1,
      "healMax": 7,
      "signature": {
@@ -4289,7 +4442,9 @@
         "turns": 1
        }
       }
-     }
+     },
+     "level": 10,
+     "pow": 39.09347104265861
     }
    }
   },
@@ -4346,9 +4501,10 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 26,
     "you": {
      "tier": "foundation",
-     "step": 0.3333333333333333,
+     "step": 0,
      "root": "wood",
      "deck": [
       "mutang",
@@ -4396,7 +4552,9 @@
       }
      ],
      "power": 2,
-     "armor": 4
+     "armor": 4,
+     "level": 10,
+     "pow": 39.09347104265861
     },
     "foe": {
      "tier": "foundation",
@@ -4437,7 +4595,9 @@
       "effect": {
        "sweep": 2
       }
-     }
+     },
+     "level": 10,
+     "pow": 39.09347104265861
     }
    }
   },
@@ -4494,9 +4654,10 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 26,
     "you": {
      "tier": "foundation",
-     "step": 0.3333333333333333,
+     "step": 0,
      "root": "wood",
      "deck": [
       "mutang",
@@ -4544,7 +4705,9 @@
       }
      ],
      "power": 2,
-     "armor": 4
+     "armor": 4,
+     "level": 10,
+     "pow": 39.09347104265861
     },
     "foe": {
      "tier": "foundation",
@@ -4572,9 +4735,9 @@
       "luoshi",
       "kuiniu"
      ],
-     "hp": 4.23,
+     "hp": 4.06,
      "power": 1,
-     "might": 1.23,
+     "might": 1.29,
      "heals": 1,
      "healMax": 7,
      "signature": {
@@ -4587,7 +4750,9 @@
        "sweep": 2,
        "damage": 5
       }
-     }
+     },
+     "level": 10,
+     "pow": 39.09347104265861
     }
    }
   },
@@ -4644,9 +4809,10 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 26,
     "you": {
      "tier": "foundation",
-     "step": 0.3333333333333333,
+     "step": 0,
      "root": "wood",
      "deck": [
       "mutang",
@@ -4694,7 +4860,9 @@
       }
      ],
      "power": 2,
-     "armor": 4
+     "armor": 4,
+     "level": 10,
+     "pow": 39.09347104265861
     },
     "foe": {
      "tier": "foundation",
@@ -4736,7 +4904,9 @@
        "heal": 3,
        "draw": 1
       }
-     }
+     },
+     "level": 10,
+     "pow": 39.09347104265861
     }
    }
   },
@@ -4793,9 +4963,10 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 26,
     "you": {
      "tier": "foundation",
-     "step": 0.3333333333333333,
+     "step": 0,
      "root": "wood",
      "deck": [
       "mutang",
@@ -4843,7 +5014,9 @@
       }
      ],
      "power": 2,
-     "armor": 4
+     "armor": 4,
+     "level": 10,
+     "pow": 39.09347104265861
     },
     "foe": {
      "tier": "foundation",
@@ -4871,8 +5044,9 @@
       "yanxin",
       "yanxin"
      ],
-     "hp": 4.14,
+     "hp": 4.06,
      "power": 1,
+     "might": 1.02,
      "heals": 1,
      "healMax": 7,
      "signature": {
@@ -4885,7 +5059,9 @@
        "sweep": 2,
        "damage": 3
       }
-     }
+     },
+     "level": 10,
+     "pow": 39.09347104265861
     }
    }
   },
@@ -4942,9 +5118,10 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 26,
     "you": {
      "tier": "foundation",
-     "step": 0.3333333333333333,
+     "step": 0,
      "root": "wood",
      "deck": [
       "mutang",
@@ -4992,7 +5169,9 @@
       }
      ],
      "power": 2,
-     "armor": 4
+     "armor": 4,
+     "level": 10,
+     "pow": 39.09347104265861
     },
     "foe": {
      "tier": "foundation",
@@ -5033,7 +5212,9 @@
       "effect": {
        "sweep": 2
       }
-     }
+     },
+     "level": 10,
+     "pow": 39.09347104265861
     }
    }
   },
@@ -5090,9 +5271,10 @@
    },
    "setup": {
     "mode": "pve",
+    "anchor": 26,
     "you": {
      "tier": "foundation",
-     "step": 0.3333333333333333,
+     "step": 0,
      "root": "wood",
      "deck": [
       "mutang",
@@ -5140,7 +5322,9 @@
       }
      ],
      "power": 2,
-     "armor": 4
+     "armor": 4,
+     "level": 10,
+     "pow": 39.09347104265861
     },
     "foe": {
      "tier": "foundation",
@@ -5168,9 +5352,9 @@
       "luoshi",
       "kuiniu"
      ],
-     "hp": 4.23,
+     "hp": 4.06,
      "power": 1,
-     "might": 1.23,
+     "might": 1.29,
      "heals": 1,
      "healMax": 7,
      "signature": {
@@ -5183,7 +5367,9 @@
        "sweep": 2,
        "damage": 5
       }
-     }
+     },
+     "level": 10,
+     "pow": 39.09347104265861
     }
    }
   }
