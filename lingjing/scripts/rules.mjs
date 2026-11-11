@@ -26,6 +26,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { allWorlds, DEFAULT_WORLD, knownWorld, loadWorld } from './content.mjs';
 import { awayFit, migrate } from './state.mjs';
+import { newerHeld, newerRefusal } from './rules/newer.mjs';
 import { askOf, tapThen, THEN_RECAP, THEN_STAGED, withAsk } from './rules/ask.mjs';
 import { guard, onLook, unconfirmed } from './rules/confirm.mjs';
 import { markSeen, notePage, READS_PAGE, unseen } from './rules/did.mjs';
@@ -121,11 +122,17 @@ function run(verb, args, reader = null) {
   if (verb === 'changes') return changes(args);
   // 数据埋点 (rules/analytics.mjs): the page's play log and its report — never under the save's lock, never in its
   // log or `page_did`, never Ling's or 银月's to call.
-  if (verb === 'track' || verb === 'stats') return reader ? { ok: false, refused: 'page-only', say: null } : verb === 'track' ? track(args) : stats(args);
   const stateFile = path.join(dataDir(), 'state.json');
-  if (verb === 'seed') return withLock(stateFile, () => seed(args, stateFile), () => ({ ok: false, refused: 'busy', say: null }));
-  if (verb === 'shift') return withLock(stateFile, () => shift(args), () => ({ ok: false, refused: 'busy', say: null }));
-  return withLock(stateFile, () => guided(verb, args, reader, stateFile, runLocked(verb, args, stateFile, reader)), () => ({ ok: false, refused: 'busy', say: null }));
+  // A save from newer rules (rules/newer.mjs) is never written, never migrated: every verb is refused — before the lock
+  // and again under it (a sync may put one in place between the two), so nothing below ever reads it. A seed from the
+  // player's own save reads that one too.
+  const newer = () => newerHeld(stateFile, verb === 'seed' && String(args.from ?? '') === 'real' ? path.join(homeDir(), 'state.json') : null);
+  const early = newer();
+  if (early) return early;
+  if (verb === 'track' || verb === 'stats') return reader ? { ok: false, refused: 'page-only', say: null } : verb === 'track' ? track(args) : stats(args);
+  if (verb === 'seed') return withLock(stateFile, () => newer() ?? seed(args, stateFile), () => ({ ok: false, refused: 'busy', say: null }));
+  if (verb === 'shift') return withLock(stateFile, () => newer() ?? shift(args), () => ({ ok: false, refused: 'busy', say: null }));
+  return withLock(stateFile, () => newer() ?? guided(verb, args, reader, stateFile, runLocked(verb, args, stateFile, reader)), () => ({ ok: false, refused: 'busy', say: null }));
 }
 
 /* Ling's answer carries the rules of what just became live (rules/guide.mjs):
@@ -655,6 +662,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     // A seed that could not reach its target fails loudly (rules/progress.mjs): the scene and why are in the answer.
     if (verb === 'seed' && result?.refused === 'cannot-advance') process.exitCode = 1;
   } catch (err) {
+    if (err?.name === 'NewerSave') {
+      console.log(JSON.stringify(newerRefusal(err.version)));
+      process.exit(0);
+    }
     console.log(JSON.stringify({ ok: false, refused: 'error', error: String(err?.message ?? err) }));
     process.exit(1);
   }

@@ -681,9 +681,20 @@ function readWhole(state, sc) {
   return !first || (state.tasks?.[first]?.status === 'done' && !owed.includes(`after/${sc.id}`));
 }
 
+/* A save from newer rules (its version above STATE_VERSION) is never carried back, never fitted: thrown, so nothing
+   writes it with these rules' numbers (rules/newer.mjs — the door refuses it before this is reached). */
+export class NewerSave extends Error {
+  constructor(version) {
+    super(`newer-save: version ${version} is newer than these rules (${STATE_VERSION})`);
+    this.name = 'NewerSave';
+    this.version = version;
+  }
+}
+
 export function migrate(state, content = null) {
   if (!state) return state;
   const from = state.version ?? 1;
+  if (Number(from) > STATE_VERSION) throw new NewerSave(Number(from));
   if (from >= STATE_VERSION) return content ? fitWorld(state, content) : state;
   const m = structuredClone(state);
   for (const [to, step] of MIGRATIONS) if (from < to) step(m);

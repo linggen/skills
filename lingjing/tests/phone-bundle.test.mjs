@@ -125,6 +125,34 @@ test('the phone bundle plays 第一回 exactly as rules.mjs does, in a bare JS c
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 
+test('the phone bundle refuses a save from newer rules as rules.mjs does, keeps it byte for byte, and says its own version', async (t) => {
+  const build = await builder();
+  if (!build) return t.skip('esbuild is not installed (npm ci in lingjing/tools/phone)');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'phone-bundle-newer-'));
+  const out = await build({ out: path.join(tmp, 'bundle') });
+  const ctx = vm.createContext({});
+  vm.runInContext(fs.readFileSync(out.rules, 'utf8'), ctx);
+  const phone = ctx.Lingjing;
+  phone.load(fs.readFileSync(out.world, 'utf8'));
+  phone.env('LINGJING_NOW', NOW);
+  const { STATE_VERSION } = await import('../scripts/state.mjs');
+  assert.equal(phone.version, STATE_VERSION, 'the host reads the newest version these rules play');
+  const fixture = JSON.parse(fs.readFileSync(path.join(SKILL, 'tests/fixtures/saves/waimen.json'), 'utf8'));
+  const newer = JSON.stringify({ ...(fixture.state ?? fixture), version: STATE_VERSION + 1 });
+  phone.restore(JSON.stringify({ '/data/state.json': newer }));
+  fs.mkdirSync(path.join(tmp, 'data'), { recursive: true });
+  fs.writeFileSync(path.join(tmp, 'data/state.json'), newer);
+  const cli = oracle(tmp);
+  for (const [verb, args] of [['look', {}], ['resolve', { exit: 'x' }], ['win', { id: 'rain-basins' }], ['init', {}], ['undo', {}], ['tell', {}]]) {
+    const a = phone.call(verb, args), b = cli(verb, args);
+    assert.equal(a, b, `${verb}`);
+    assert.equal(JSON.parse(a).refused, 'newer-save', verb);
+  }
+  assert.equal(JSON.parse(phone.dump())['/data/state.json'], newer, 'the phone\'s save is untouched');
+  assert.equal(fs.readFileSync(path.join(tmp, 'data/state.json'), 'utf8'), newer, 'the Mac\'s is untouched');
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
+
 test('the world file carries the world as JSON text, no art', () => {
   const files = worldFiles();
   const names = Object.keys(files);

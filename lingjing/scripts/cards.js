@@ -53,6 +53,8 @@ export const WORDS = {
     loading: '正在展开……', offline: '灵境还没醒来。', connecting: '正在连通灵境……',
     // A Mac with no JS runtime yet (a DMG install): the engine is fetching it (rules.js runtimeWord).
     preparing: '正在准备运行环境……', runtimeFailed: '运行环境没装上，请检查网络。',
+    // A save from newer rules (rules/newer.mjs): one calm screen until Linggen is updated — the rules' own words.
+    newerSave: '存档来自新版 Linggen，更新后继续。',
     elite: '精英',
     // 闭关 (rules/seclusion.mjs) — the chooser, the running card, 出关.
     tamesFor: '收服{names}所需',
@@ -124,6 +126,7 @@ export const WORDS = {
     gateTitle: 'The next cauldron', opens: 'Opens', tribTitle: 'The heavenly tribulation', omen: "Today's omen", yinyue: 'Yinyue',
     loading: 'Unfolding…', offline: 'Lingjing has not woken yet.', connecting: 'Reaching Lingjing…',
     preparing: 'Preparing the runtime…', runtimeFailed: 'The runtime did not install. Check the network.',
+    newerSave: 'This save is from a newer Linggen. Update to continue.',
     elite: 'Elite',
     tamesFor: 'Wins over {names}',
     boardLeave: 'Put down', boardLeft: 'Left unfinished — on you go.', unkept: 'This one cannot be kept; it is put away.', keptGroup: 'Kept for later · {n}', boardKeep: 'Keep for later', boardClose: 'Put it away', keptChip: 'Kept {n}', keptPlay: 'Play', keptDrop: 'Drop', keptAt: '{where} · {when}', toldSaid: { couplet: 'The original: {a}', riddle: 'The answer: {a}', chain: 'One that follows: {a}' }, toldBy: ' — {src}', toldOn: 'Go on',

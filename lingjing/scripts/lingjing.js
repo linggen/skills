@@ -9,7 +9,7 @@ import { createSession, listSkillSessions, pickResumable, fetchCloud, syncCloud,
 // And a namespace: a name the served /shared/api.js doesn't export yet
 // (`engineUiUrl`) must not fail the whole page.
 import * as sharedApi from '/shared/api.js';
-import { verb, content, SCRATCH, worldPath, LookFailed, runtimeState, runtimeWord } from './rules.js';
+import { verb, content, SCRATCH, worldPath, LookFailed, newerSave, runtimeState, runtimeWord } from './rules.js';
 import { charsOf, createTracker, trackSender } from './track.js';
 import { arcadeGameOf, arcadeRow, arcadeRowOf, arcadeTitle, isArcadeBoard, keptAdd, withArcade } from './arcade-board.js';
 import { describeDeal } from './games/drawguess-words.js';
@@ -603,6 +603,13 @@ let refreshTimer = null;
    waited out the data channel. 2, 4, 8, then every 15 s — and at once when
    the channel opens or the page comes back into view. */
 let lookMisses = 0;
+/* The save is from a newer Linggen (rules/newer.mjs): nothing of the game is drawn or offered, the one line said in both
+   languages, as the loading line is. */
+function showNewerSave() {
+  document.body.setAttribute('data-newer', '1');
+  $('focus').innerHTML = `<div class="loading newer" data-newer-save>${esc(WORDS.zh.newerSave)}<br>${esc(WORDS.en.newerSave)}</div>`;
+}
+
 function lookAgainSoon() {
   lookMisses += 1;
   refreshSoon(Math.min(2000 * 2 ** (lookMisses - 1), 15000));
@@ -814,14 +821,20 @@ async function readOnce() {
     contentStale = false;
   } catch (e) {
     console.warn('[lingjing] look', e);
+    // A save from a newer Linggen: one calm screen over the whole page, whatever was drawn before; looked at again now
+    // and then, for an update that lands under the open page.
+    const newer = newerSave(e);
+    if (newer) showNewerSave();
+    else document.body.removeAttribute('data-newer');
     // Not reached yet (the data channel is still coming up): say so, and look again. A Look that ran and
     // failed: the engine says whether its JS runtime is still being fetched; the retry wakes the page once it lands.
     const word = e?.name === 'NotConnectedError' ? 'connecting' : e?.name === 'LookFailed' ? runtimeWord(await runtimeState()) : 'offline';
-    if (!authored) $('focus').innerHTML = `<div class="loading">${esc(WORDS.zh[word])} · ${esc(WORDS.en[word])}</div>`;
+    if (!authored && !newer) $('focus').innerHTML = `<div class="loading">${esc(WORDS.zh[word])} · ${esc(WORDS.en[word])}</div>`;
     lookAgainSoon();
     return;
   }
   lookMisses = 0;
+  document.body.removeAttribute('data-newer');
   // The stage came back with Look — what Ling showed, what the scene was
   // authored with, what the place holds. The optimistic copy has served its
   // purpose; a board he opened himself stays until he walks on.

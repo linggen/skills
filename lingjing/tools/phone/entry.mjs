@@ -23,6 +23,8 @@
 import { chooseBoard } from '../../scripts/board-choice.js';
 import { parseArgs } from '../../scripts/rules/files.mjs';
 import { forLing, run } from '../../scripts/rules.mjs';
+import { newerRefusal } from '../../scripts/rules/newer.mjs';
+import { STATE_VERSION } from '../../scripts/state.mjs';
 import { drainSink } from '../../scripts/rules/analytics.mjs';
 import { MOMENTS, REGISTER, REGISTER_ASLEEP, gearFacts, herMode, mijingWhat, momentFacts, poolOf, shortFacts } from '../../scripts/hersay.js';
 import { friendFacts, qianFacts } from '../../scripts/qian-facts.js';
@@ -68,6 +70,8 @@ function call(verb = 'look', args = {}, { reader = null, save = null, now = null
     const result = run(verb, rest, reading);
     return JSON.stringify(reading === 'ling' ? forLing(result) : result);
   } catch (err) {
+    // A newer save reached by some other way (a parked one: state.mjs migrate throws) answers the door's refusal.
+    if (err?.name === 'NewerSave') return JSON.stringify(newerRefusal(err.version));
     return JSON.stringify({ ok: false, refused: 'error', error: String(err?.message ?? err) });
   }
 }
@@ -110,6 +114,8 @@ function her(kind, look = {}, { lang = 'zh', weight = 'full', what = null, resul
 
 let ENV_NOW = false;
 const api = {
+  // The newest save version these rules play (state.mjs STATE_VERSION): the host's sync never hands them a newer one.
+  version: STATE_VERSION,
   chooseBoard: (task, caps) => JSON.stringify(chooseBoard(task, caps)),
   load: (json) => { seed(typeof json === 'string' ? JSON.parse(json) : json); return stats(); },
   call,

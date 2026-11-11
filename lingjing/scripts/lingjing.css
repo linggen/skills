@@ -209,6 +209,10 @@ body.fighting .placecap { display: none; }
 .focus > :first-child { margin-top: auto; }
 .focus > :last-child { margin-bottom: auto; }
 .focus .loading { margin: auto; color: var(--faint); font-family: var(--serif); }
+/* A save from a newer Linggen (lingjing.js showNewerSave): the one line alone — no bar, stage, tray or footer to tap. */
+body[data-newer] .topbar, body[data-newer] .stage, body[data-newer] .sight, body[data-newer] .dlgwrap,
+body[data-newer] .slotfoot, body[data-newer] .tray, body[data-newer] .lubook { visibility: hidden; }
+.focus .loading.newer { color: var(--dim); line-height: 1.8; text-align: center; }
 
 /* ── today's practice ── */
 .tray { flex: none; border-top: 1px solid var(--line); padding: 10px 18px 12px; max-height: 172px; overflow-y: auto; background: var(--surface); }
