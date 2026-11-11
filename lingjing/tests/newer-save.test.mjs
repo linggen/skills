@@ -92,14 +92,27 @@ test('a scratch save that is newer is refused like the main one; a main save tha
   assert.equal(verb(dir, ['look', '--said=x']).ok, true);
 });
 
-test('a parked save from newer rules is never loaded: the backstop answers the same refusal', () => {
+test('a parked save from newer rules never stops the game in play, is never listed, never loaded, never touched', () => {
   const dir = scratch(save(STATE_VERSION));
   fs.mkdirSync(path.join(dir, 'saves'), { recursive: true });
   const parked = { kind: 'slot', id: 'p1', title: 'p', at: '2026-11-11T00:00:00.000Z', state: save(STATE_VERSION + 1) };
   fs.writeFileSync(path.join(dir, 'saves', 'p1.json'), JSON.stringify(parked));
+  const shelf = fs.readFileSync(path.join(dir, 'saves', 'p1.json'), 'utf8');
+  // Across a day change too (a new day's first move keeps yesterday's save and prunes the shelf).
+  for (const now of ['2026-11-11T10:00:00Z', '2026-11-13T10:00:00Z']) {
+    assert.equal(verb(dir, ['look', '--said=x'], { LINGJING_NOW: now }).ok, true, `look ${now}`);
+    const listed = verb(dir, ['saves'], { LINGJING_NOW: now });
+    assert.equal(listed.ok, true);
+    assert.ok(!listed.saves.some((x) => x.id === 'p1'), 'not listed');
+  }
   const before = fs.readFileSync(path.join(dir, 'state.json'), 'utf8');
   assert.equal(verb(dir, ['load', '--id=p1']).refused, 'newer-save');
-  assert.equal(fs.readFileSync(path.join(dir, 'state.json'), 'utf8'), before, 'the save in play stays as it was');
+  assert.equal(fs.readFileSync(path.join(dir, 'saves', 'p1.json'), 'utf8'), shelf, 'the parked save byte for byte');
+  // The game in play is the player's own, current save: a refused load leaves it where it stood (the clock's own
+  // `last_seen` stamp aside, which any verb of his writes).
+  const { last_seen: _a, ...was } = JSON.parse(before);
+  const { last_seen: _b, ...now } = JSON.parse(fs.readFileSync(path.join(dir, 'state.json'), 'utf8'));
+  assert.deepEqual(now, was, 'the save in play stays as it was');
   assert.ok(fs.existsSync(path.join(dir, 'saves', 'p1.json')), 'the parked save stays');
 });
 

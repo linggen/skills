@@ -10,6 +10,7 @@ import { advanceChapter, clone, judgeAnswer, pay, refuse, RIDDLE_TRIES, spendSta
 import { advance, itemOf } from './errands.mjs';
 import { herKey, herSlot } from './wear.mjs';
 import { savedFile, savedFor, savesDir, skillDir, writeAtomic, writeMadeWorld } from './files.mjs';
+import { newerRefusal, newerVersion } from './newer.mjs';
 import { inPlay } from './language.mjs';
 import { nameOf, sceneBrief, spoken } from './look.mjs';
 import { arriveOnRoad, chanceLive, dealChance, meetHere } from './road.mjs';
@@ -161,13 +162,18 @@ const DAY_SAVES_KEPT = 14;
 
 function readSave(file) {
   const doc = JSON.parse(fs.readFileSync(file, 'utf8'));
+  // A kept save from newer rules (rules/newer.mjs) is never carried: it stays on the shelf untouched, `newer` saying
+  // so — never listed, never pruned, never loaded or travelled into (the door refuses those), never a reason to stop
+  // the game in play.
+  const newer = newerVersion(doc.state ?? doc);
+  if (newer != null) return { id: doc.id ?? doc.world, kind: doc.state ? doc.kind : 'world', title: doc.title ?? null, at: doc.at ?? doc.updated, state: null, newer };
   // The language is Linggen's (rules/language.mjs): a kept save's own is let go.
   if (doc.state) return { ...doc, state: inPlay(migrate(doc.state)) };
   const state = inPlay(migrate(doc));
   return { id: state.world, kind: 'world', title: null, at: state.updated, state };
 }
 const saveFiles = () => (fs.existsSync(savesDir()) ? fs.readdirSync(savesDir()).filter(f => f.endsWith('.json')).map(f => path.join(savesDir(), f)) : []);
-const allSaves = () => saveFiles().map(readSave).sort((a, b) => String(b.at).localeCompare(String(a.at)));
+const allSaves = () => saveFiles().map(readSave).filter(x => x.newer == null).sort((a, b) => String(b.at).localeCompare(String(a.at)));
 const saveOf = id => (savedFor(id) ? readSave(savedFile(id)) : null);
 function keepSave(kind, id, state, at, title = null) {
   const { lang, lang_set, ...kept } = state;
@@ -223,6 +229,7 @@ export function forget(state, content, ctx, args) {
 export function load(state, content, ctx, args) {
   const found = saveOf(String(args.id ?? ''));
   if (!found) return refuse('unknown-save', null, { saves: allSaves().map(x => x.id) });
+  if (found.newer != null) return { state: null, result: newerRefusal(found.newer, state.lang) };
   return { state: null, result: { ok: true, load: found } };
 }
 
