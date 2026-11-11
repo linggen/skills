@@ -72,6 +72,9 @@ test('installs the committed tree, never uncommitted edits', () => {
   const marker = JSON.parse(t.read('.installed'));
   assert.equal(marker.ref, 'HEAD');
   assert.equal(marker.commit, t.git('rev-parse', 'HEAD').trim());
+  // The Mac app orders bundles against this time (linggen-app skill_sync.rs).
+  assert.equal(marker.committed, Number(t.git('show', '-s', '--format=%ct', 'HEAD').trim()));
+  assert.equal(marker.by, 'install-skill');
 });
 
 test('a broken import in the ref aborts with nothing installed', () => {

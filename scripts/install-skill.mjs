@@ -385,7 +385,7 @@ async function main() {
 
     if (o.check) {
       console.log(`check ${head}`);
-      try { const m = JSON.parse(fs.readFileSync(path.join(installDir, '.installed'), 'utf8')); console.log(`installed: ${m.ref} ${String(m.commit).slice(0, 9)} at ${m.at}`); }
+      try { const m = JSON.parse(fs.readFileSync(path.join(installDir, '.installed'), 'utf8')); console.log(`installed: ${m.ref} ${String(m.commit).slice(0, 9)} at ${m.at}${m.by ? ` by ${m.by}` : ''}`); }
       catch { console.log('installed: no .installed marker (never installed by this script)'); }
       const allLinks = linkCheck(treeView([installDir]), files.filter(r => installed.has(r)));
       const links = allLinks.filter(p => !isDevOnly(p));
@@ -438,8 +438,15 @@ async function main() {
       for (const p of after) console.error(`  ${p}`);
       return 1;
     }
-    fs.writeFileSync(path.join(installDir, '.installed'),
-      JSON.stringify({ ref: o.ref, commit, at: new Date().toISOString() }, null, 2) + '\n');
+    // `committed` (the commit's own time, unix seconds) is what the Mac app
+    // orders by: a bundle older than this install never replaces it, a newer
+    // one does (linggen-app shell/src/skill_sync.rs). Tmp + rename: the app
+    // reads this file at every start.
+    const committed = Number(git(repo, ['show', '-s', '--format=%ct', commit]).stdout.trim());
+    const marker = path.join(installDir, '.installed');
+    fs.writeFileSync(`${marker}.tmp.${process.pid}`,
+      JSON.stringify({ ref: o.ref, commit, committed, at: new Date().toISOString(), by: 'install-skill' }, null, 2) + '\n');
+    fs.renameSync(`${marker}.tmp.${process.pid}`, marker);
     console.log(`installed ${todo.length} file(s), pruned ${pruning.length}; ${files.length} in sync`);
     if (skillMdChanged) await reload(port);
     return 0;
