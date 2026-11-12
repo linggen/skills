@@ -596,7 +596,9 @@ function placeBrief(content, state, now = new Date()) {
   // The shop by its own name and keeper (按店进货, look.mjs shopOf): the shelf card's title.
   const shop = shopOf(place) ?? visitor;
   const show = [
-    ...(has.creature && metNow(content, has.creature, now) ? [{ card: 'creature', id: has.creature }] : []),
+    // The place's own beast is pictured by itself only until it is his (Hanli 2026-11-12, at the 药园 with the 狰 long
+    // tamed: 「这张狰的卡也和秘境卡一样, 无故出现」): once in his 小队 (`cast`) its card is the 图鉴's, opened by him.
+    ...(has.creature && metNow(content, has.creature, now) && !state.cast?.includes(has.creature) ? [{ card: 'creature', id: has.creature }] : []),
     ...(shelf.length ? [{ card: 'item', ids: shelf.map(i => i.id) }] : []),
   ];
   return {
