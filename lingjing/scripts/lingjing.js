@@ -2161,7 +2161,9 @@ function noteInView() {
 
 /* The pills' names and paintings for the fight's 丹囊 tray. */
 function pillWords() {
-  const items = (authored?.codexFiles?.items?.items ?? []).filter((i) => i.effect?.fight);
+  // Every pill, by its kind: a family pill's fight effect is the balance book's (content.mjs pillEffect), not the item
+  // file's — filtering on `effect.fight` here left 回春丹 nameless in the tray (the raw id, no painting; 2.1 gate, 11-11).
+  const items = (authored?.codexFiles?.items?.items ?? []).filter((i) => i.kind === 'pill');
   return { pillNames: Object.fromEntries(items.map((i) => [i.id, i.name?.[lang()] ?? i.name?.zh ?? i.id])), pillArt: Object.fromEntries(items.filter((i) => i.art).map((i) => [i.id, i.art])) };
 }
 

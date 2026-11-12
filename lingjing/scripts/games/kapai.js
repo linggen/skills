@@ -34,7 +34,7 @@ import { WORDS, duelTitle } from '../cards.js';
 
 export const meta = {
   name: { zh: '斗法', en: 'Card duel' },
-  how: { zh: '出牌、催随从、主灵根一击；打退对手，或撑过它的十二张。', en: 'Play cards, send your rank, strike with your root; drive it off, or outlast its twelve.' },
+  how: { zh: '出牌、催随从、主灵根一击；打光对手的气血就赢。', en: 'Play cards, send your rank, strike with your root; take all its Life to win.' },
   // Turn-based, but the shell may pause it: the hand is put away and the beast's turn waits (shell.css).
   pause: true,
   // The 游戏厅 opens a foe picker before it (arcade.js): one fight a foe.
