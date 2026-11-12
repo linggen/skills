@@ -49,6 +49,7 @@
    "zixu-zhi": 1,
    "zou-purse": 1,
    "xizhu": 1,
+   "foundation-pill-9": 1,
    "zipai-jing": 1,
    "penti-fu": 1,
    "yangyang-zhen": 3,
@@ -1068,6 +1069,7 @@
    "zixu-zhi": 1,
    "zou-purse": 1,
    "xizhu": 1,
+   "foundation-pill-9": 1,
    "zipai-jing": 1,
    "penti-fu": 1,
    "yangyang-zhen": 3,
@@ -1077,7 +1079,7 @@
    "huochai-jian": 1
   },
   "gained": {
-   "n": 24,
+   "n": 25,
    "scene": "09-furnace",
    "items": [
     {
