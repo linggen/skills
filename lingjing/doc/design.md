@@ -1053,10 +1053,14 @@ several times its face. His calls, 2026-11-12: *斗法这里为了平衡, 都是
   bare, about 65% with two pills, never a wall, sometimes really lost (tests/fight-band*.test.mjs). It is what makes
   a pill worth buying. **That thought pays:** three lines play every fight (tools/duel-lines.mjs) — `plain` plays the
   first card he sees, `careful` a sensible card each turn, `lookahead` thinks a turn ahead — and each stands clearly
-  above the one before, none always winning. Which line carries the band is chosen from the three-line table, not
-  before: `lookahead` under fair rules plays far better than the line the band was set with (in the first even run
-  it stood 57% where `careful` stood 10%), and a band pinned to it would be a harder game than he approved. The
-  weakest line with two pills gets its own never-a-wall floor.
+  above the one before, none always winning. **`lookahead` carries the band, as it does today** (measured
+  2026-11-12, 36 fights × 40 seeds). On today's rules the band's line wins about 50%, `careful` 22%, `plain` 10%; on
+  the even rules before any fitting the three stand 87 · 61 · 25, the same order and a like spread. So fitting
+  `lookahead` to 45% leaves `careful` near where it stands today, not below it. `careful` with two pills is the
+  never-a-wall line for a player who does not plan; its floor is set when the fitted table is in.
+  The fitting goes one knob class at a time, each step measured: his deck to ten (done), the cards weighed without
+  gear, gear worth about a level, then a beast's level and deck budget by its class — master knobs, never a number
+  on one fight.
 - **PvP** is two sheets at one level with no gear and no pills. Nothing else differs.
 - **Collecting: one of each, its rarity on its frame** (his, later that day: *斗法卡牌不会重复吧, 只能拿一张. 根据稀有度画边框* —
   as a 精英 or a 稀有精英 wears its dragon in 魔兽, and a legendary its frame in 炉石). A card is held once; there are no
