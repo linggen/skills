@@ -32,3 +32,10 @@ test('plain passage and speech keys stay unchanged', () => {
   assert.equal(paraKey('[犰狳]{注=qiuyu}，见人则眠。'), paraKey('犰狳，见人则眠。'));
   assert.ok(!beat.text.includes('<ruby'));
 });
+
+test('only a creature out of a classic is read: no person, no plain animal', () => {
+  const plain = annotate('马小宝和秦雁在看野猪、狼和熊。');
+  assert.ok(!plain.includes('<ruby'), plain);
+  assert.ok(annotate('无支祁').includes('<rt>'));
+  assert.ok(annotate('夫诸').includes('<rt>'));
+});

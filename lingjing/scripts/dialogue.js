@@ -17,7 +17,10 @@
 import { esc } from './esc.js';
 import { pinyinAnnotator } from './read-md.js';
 
-export const storyPinyin = (creatures = []) => pinyinAnnotator(Object.fromEntries(creatures.filter((c) => c.name?.zh && typeof c.pinyin === 'string' && c.pinyin.trim()).map((c) => [c.name.zh, c.pinyin])));
+/* Only a creature out of a classic gets its reading (Hanli 2026-11-12: 「拼音怎么加到马小宝头上了, 这么简单的字. 我们只加山海经里的妖吧」):
+   its `source` names a book (《山海经 · …》, 《古岳渎经》 …) — never a person, never a hunter's plain animal. */
+export const fromClassic = (c) => typeof c?.source?.zh === 'string' && c.source.zh.trim().startsWith('《');
+export const storyPinyin = (creatures = []) => pinyinAnnotator(Object.fromEntries(creatures.filter((c) => fromClassic(c) && c.name?.zh && typeof c.pinyin === 'string' && c.pinyin.trim()).map((c) => [c.name.zh, c.pinyin])));
 const identity = (html) => html;
 import { closeX } from './card-close.js';
 import { headOf } from './book-words.mjs';
