@@ -1508,12 +1508,19 @@ typical player took in 58 灵石 a day and spent 7; `economy.earn` 0.5 made it 3
   replay share: a player who buys nothing finishes the layer in more days, never not at all.
 - **秘境令 is bought.** The free drops shrink to an occasional one (兽潮's night); the shelf sells it, each one dearer
   than the last that day. A run pays more of the layer than it does now.
-- **闭关 draws on 灵石, and he chooses how much** (his, the same day: *闭关时, 让用户选灵石消耗数量, 对应不同的修为增长速度* ·
-  *但要有个上限, 比如一块灵石5一小时修为之类的. 不带灵石一小时2修为*). Going in he picks a pace: 吐纳 (no 灵石, a trickle —
-  his example 2 修为 an hour at 练气九层) or one of a few paces that burn 灵石 an hour for more 修为, up to a top pace
-  that nothing exceeds. Sizes follow the level like every price (his example: a 灵石 about 5 修为); nothing burns once
-  the bar is full, and a 灵石 never buys more 修为 than the full bar pays back in 灵石 (0.25 a 修为), so the two never
-  make a loop.
+- **闭关 draws on 灵石: 聚灵, then 吐纳** (his, the same day: *闭关时, 让用户选灵石消耗数量, 对应不同的修为增长速度* · *但要有个上限* ·
+  *闭关上限10%只是个例子, 可以闭关时间不变, 比如6h, 前面2h烧完灵石涨8%, 后面每小时不烧灵石, 缓慢涨之类的. 你帮我设计一下*).
+  A 闭关 is as long as he likes, as now (≤ 12 h). Going in he lays down 灵石, none to a full 阵; they are drawn first,
+  at one steady pace, and when they are spent he breathes on (吐纳) at a trickle until he comes out.
+  - **A 灵石 is worth the same 修为 at every layer** (`per_stone` 3 — under the 4 a full bar pays back per 灵石, so the two
+    never make a loop): he can do the sum in his head, and a higher layer simply takes more of them.
+  - **The full 阵 is a share of the layer** (`array` 8%), drawn in `hours` 2: 练气九层 (910) 24 灵石 → 72 修为; 练气一层
+    (550) 15 → 45. Fewer 灵石 burn for less time at the same pace.
+  - **The cap is the day's, not the 闭关's** (`per_day`: one full 阵): two short 闭关 share it; a third lays down none.
+  - **吐纳** is `trickle` 0.25% of the layer an hour, a whole number, at least 1 (练气九层 2): a night of it is 2–3%.
+  - Coming out early hands back what was not yet drawn; nothing is drawn once the bar is full. 体力, 补转, 安神香 and
+    a pill taken going in stay as they are; the old free 「a night = 10% of the layer」 is gone.
+  - The card going in says it as he would: 「布 24 块：两个时辰吸尽，修为 +72；之后吐纳，每时辰 +2」 and 「今日还可布 N 块」.
 - **The 饭桶 eats 炉炭, not 灵石.** Bought at the shelf, graded; more lifts the pot along today's falling curve.
 - **The 旁炉 is put away** (his, the same day: *旁炉好像用处不大, 先去掉?*): its tab and its rule are switched off by data;
   a save keeps what it fired.
