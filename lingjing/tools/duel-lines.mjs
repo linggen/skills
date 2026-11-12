@@ -3,7 +3,8 @@
 // companions), played by both lines over fixed seeds, with the even rules ON (balance.json `duel_hp.foe.deck`, set here in
 // memory — the file is not touched) and OFF (the rules as they stand).
 //
-//   node tools/duel-lines.mjs [--seeds N] [--only key,id] [--rules on|off|both] [--json]
+//   node tools/duel-lines.mjs [--seeds N] [--only key,id] [--rules on|off|both] [--bare-gear] [--json]
+//   --bare-gear: nothing worn, no 符, no pill on his side (default off: the output is as it was).
 //
 // Three lines: `thinking` is `lookahead` (scripts/fightline.js), `careless` is `careful` (tools/trial-sim.mjs fightOnce, one-ply
 // greedy) and `plain` is the first card he sees (fightline.js `plain`: the first card that can be played, the first body to
@@ -41,11 +42,11 @@ function plainRate(setup, seeds, from) {
 }
 
 /// One fight under one rule set: the three lines' win and the turns, alone; null when the even rules do not apply.
-export function duel(fight, { on, seeds = 40, from = 0 }) {
+export function duel(fight, { on, seeds = 40, from = 0, bare = false }) {
   return withRules(on, () => {
-    const setup = setupOf(fight, { party: [] });
+    const setup = setupOf(fight, { party: [], bare });
     if (on && !setup.even) return null;
-    const think = rateOf(fight, seeds, from, 'lookahead', { party: [] }), care = rateOf(fight, seeds, from, 'careful', { party: [] }), first = plainRate(setup, seeds, from);
+    const think = rateOf(fight, seeds, from, 'lookahead', { party: [], bare }), care = rateOf(fight, seeds, from, 'careful', { party: [], bare }), first = plainRate(setup, seeds, from);
     return { thinking: think.win, careless: care.win, plain: first.win, gap: think.win - care.win, gapPlain: care.win - first.win, turns: (think.turns + care.turns + first.turns) / 3 };
   });
 }
@@ -66,10 +67,10 @@ export function summary(rows) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2), arg = (k, d) => (args.includes(k) ? args[args.indexOf(k) + 1] : d);
-  const seeds = Number(arg('--seeds', 40)), only = arg('--only', null)?.split(','), rules = arg('--rules', 'both');
+  const seeds = Number(arg('--seeds', 40)), only = arg('--only', null)?.split(','), rules = arg('--rules', 'both'), bare = args.includes('--bare-gear');
   const rows = FIGHTS.filter(f => !only || only.includes(keyOf(f)) || only.includes(f.id)).map(f => ({
     key: keyOf(f), name: f.name, at: f.at,
-    ...(rules !== 'off' ? { even: duel(f, { on: true, seeds }) } : {}), ...(rules !== 'on' ? { main: duel(f, { on: false, seeds }) } : {}),
+    ...(rules !== 'off' ? { even: duel(f, { on: true, seeds, bare }) } : {}), ...(rules !== 'on' ? { main: duel(f, { on: false, seeds, bare }) } : {}),
   }));
   if (args.includes('--json')) console.log(JSON.stringify({ seeds, rows, summary: summary(rows) }, null, 1));
   else {
