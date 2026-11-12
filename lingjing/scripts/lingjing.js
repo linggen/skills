@@ -1153,9 +1153,17 @@ function playTravel(stops) {
    saw one (2026-09-23: 还是没看到动画). */
 /* A story step's 修为 just landed (gainedThings): the next burst of 修为 is the story's. */
 let storyGainDue = null;
+/* The board last won (its title, when): the burst that follows says where its numbers came from (Hanli 2026-11-12, of a
+   +18 · +6 that floated over the next game's card 47 s after 对对子 paid it: 「是上一轮的奖励卡了吗?」). */
+let lastPay = null;
+const BURST_LATE_MS = 4000, PAY_NAMED_MS = 180_000;
+const gameStands = () => Boolean(document.querySelector('#focus [data-board-close]'));
 async function gainBurst(g, fromStory = false) {
+  const asked = Date.now();
   // After the book and the moments: a gain never floats over her memory or a seal.
   for (let k = 0; k < 720 && (boxAhead() || momentUp() || momentPending.size); k += 1) await pause(250);
+  // Held back and now another game stands: the strip's numbers already rose — never a late burst over that game's card.
+  if (Date.now() - asked > BURST_LATE_MS && gameStands()) return;
   // 所得 already says these numbers (a won fight, a board's pay): no burst over its text (live 11-05).
   if (view.spoils?.paid || spoilsUp()) return;
   // Taken from the step just read (gainedThings), not a stale one: 「剧情所得」 heads the burst.
@@ -1164,6 +1172,8 @@ async function gainBurst(g, fromStory = false) {
   const story = fromStory || Boolean(due), xw = Math.max(due?.total ?? 0, g.progress ?? 0);
   const w = words(), bits = [];
   if (story) bits.push(`<span class="from">${esc(w.storyGain)}</span>`);
+  else if (lastPay && Date.now() - lastPay.at < PAY_NAMED_MS && lastPay.title) bits.push(`<span class="from">${esc(lastPay.title)}</span>`);
+  if (!story) lastPay = null;
   if (g.progress) bits.push(`<span>${esc(w.xw)} <b>+${xw}</b></span>`);
   if (g.wealth) bits.push(`<span>${esc(w.ls)} <b>+${g.wealth}</b></span>`);
   // Past the cap the rest came as 灵石 (rules/cap.mjs): the rules' own line under the numbers.
@@ -2328,6 +2338,7 @@ async function settleWin(taskId, won, grade) {
   const stars = won?.state?.stars; // a small game's stars (喂饼's corners), kept on the save
   // The game it was played as (caps.js chooseBoard: an `alt` on a device with a camera), so it pays by that row (rules/playpay.mjs playedRow).
   const row = look?.tasks?.find((t) => t.id === taskId)?.game ?? null;
+  lastPay = { title: (look?.tasks ?? []).find((t) => t.id === taskId)?.title ?? null, at: Date.now() };
   const r = await write('win', { id: taskId, ...(grade ? { grade } : {}), ...(Number.isFinite(stars) ? { stars } : {}), ...(row ? { row } : {}) }).catch(failed);
   // Refused (not here, not open), the win is kept on the board and sent again
   // when it can count — never told to Ling as a win he cannot pay (2026-09-23:
