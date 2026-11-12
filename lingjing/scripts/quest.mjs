@@ -41,8 +41,10 @@ export function later(a, b) {
 }
 
 /* The file's next body: the menu, each `done_at` the later of what the file held and `stamps` (id → time); `due` always. */
-export function merged(doc, stamps = {}, menu = MENU) {
-  const held = Array.isArray(doc?.quests) ? doc.quests.filter((q) => q && typeof q === 'object') : [];
+export function merged(doc, stamps = {}, menu = MENU, now = new Date()) {
+  // A held `done_at` past now was never a share (a wrong clock, a test's stamp): dropped, so a real one can replace it.
+  const sane = (q) => (typeof q.done_at === 'string' && Date.parse(q.done_at) > now.getTime() ? { ...q, done_at: null } : q);
+  const held = Array.isArray(doc?.quests) ? doc.quests.filter((q) => q && typeof q === 'object').map(sane) : [];
   const was = new Map(held.map((q) => [q.id, q]));
   const mine = new Set(menu.map((m) => m.id));
   return {
@@ -59,6 +61,7 @@ const readJson = (file) => {
 };
 
 function write(stamps, dir) {
+  // The wall clock, not the stamp's own time: a phone's fact may be older than a time already held, and still not move it.
   const file = path.join(dir, `${APP}.json`), held = readJson(file), body = merged(held, stamps);
   if (JSON.stringify(held) === JSON.stringify(body)) return body; // nothing moved: nothing written
   fs.mkdirSync(dir, { recursive: true });

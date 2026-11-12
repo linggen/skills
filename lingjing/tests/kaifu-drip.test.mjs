@@ -153,3 +153,12 @@ test('the 事 book: 「开府 n/N」 on its own line, each row its 怎么做, wh
   assert.match(html, /dj-play.*data-do="turn" data-id="dj-play"/s);
   assert.doesNotMatch(html, /data-do="skip"|undefined|\{\w+\}/);
 });
+
+test('two files, one row: a done_at ahead of now never outranks a real one', () => {
+  const now = new Date('2026-11-12T00:53:33Z');
+  const mac = { id: 'lingjing-share', period: 'day', done_at: '2026-11-12T13:10:00.000Z' };
+  const phone = { id: 'lingjing-share', period: 'day', done_at: '2026-11-12T00:53:33.000Z' };
+  assert.equal(oneRowEach([mac, phone], now)[0].done_at, phone.done_at);
+  assert.equal(oneRowEach([mac], now)[0].done_at, null);
+  assert.equal(oneRowEach([mac, phone])[0].done_at, mac.done_at, 'no clock given: as before');
+});

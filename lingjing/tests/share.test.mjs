@@ -271,3 +271,12 @@ test('the page: the 传音 row shows 去分享 (opening the 签 card) only while
   const plain = page([{ ...row(null), go: undefined }], 'zh', withQian);
   assert.doesNotMatch(plain, /data-divine/);
 });
+
+test('a stamp from the future is no share: dropped from the file, and a real one replaces it', () => {
+  const now = new Date('2026-11-12T00:53:33Z');
+  const ahead = { quests: [{ id: SHARE, done_at: '2026-11-12T13:10:00.000Z' }] };
+  assert.equal(merged(ahead, {}, MENU, now).quests.find(q => q.id === SHARE).done_at, null);
+  assert.equal(merged(ahead, { [SHARE]: now.toISOString() }, MENU, now).quests.find(q => q.id === SHARE).done_at, now.toISOString());
+  const past = { quests: [{ id: SHARE, done_at: '2026-11-11T01:36:07.000Z' }] };
+  assert.equal(merged(past, {}, MENU, now).quests.find(q => q.id === SHARE).done_at, '2026-11-11T01:36:07.000Z');
+});

@@ -174,15 +174,20 @@ function readQuests() {
       for (const q of doc.quests ?? []) quests.push({ ...q, app: doc.app });
     } catch { /* an app's half-written file is skipped, never fatal */ }
   }
-  return oneRowEach(quests);
+  return oneRowEach(quests, clock());
 }
+
+/* A `done_at` past `now` is no time a thing was done (a clock set wrong, a test's stamp that reached the real file —
+   Hanli's 传音, 2026-11-11: a stamp a day ahead outranked every real share and the row never came ready): read as not
+   done, so a real time from another file wins. */
+const notYet = (q, now) => (now && q.done_at && new Date(q.done_at) > now ? { ...q, done_at: null } : q);
 
 /* One row per id: the same step seen on two devices (the Mac's linggen.json
    and the phone's own file) counts once — the first file's words, the latest
    `done_at` of any. */
-export function oneRowEach(quests) {
+export function oneRowEach(quests, now = null) {
   const by = new Map();
-  for (const q of quests) {
+  for (const q of quests.map(q => notYet(q, now))) {
     const had = by.get(q.id);
     if (!had) { by.set(q.id, q); continue; }
     if (q.done_at && (!had.done_at || new Date(q.done_at) > new Date(had.done_at))) by.set(q.id, { ...had, done_at: q.done_at });
