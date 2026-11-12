@@ -615,6 +615,16 @@
         "pills": 1.1
       }
     },
+    "_econ": "2026-11-12 (design.md § 耗材): the economy's players — each a player above with what it does with the new sinks laid on (tools/balance.mjs --econ; `on` true: every report, the bands and --solve play them, and `--old` the players without). `mijing` runs a day (a share: every other day at 0.5; each a 重 walked through, its minutes and its 体力 — the door's fee, else its rooms'), `lay` the share of his purse he lays in the 聚灵阵 each night (to what it holds and the day allows; 0 none), `arrays` whether he buys its levels (when the purse holds the price and a full 阵 beside it), `chores_long` the week's and the month's 人间功课 on their days. `frugal` (`like` typical): the player who buys NOTHING — no 灵石 laid, no 阵 levels, no pills; he still runs the 秘境 (体力 is free) and sits 闭关 (吐纳).",
+    "econ": {
+      "on": false,
+      "players": {
+        "light": {"mijing": 0.5, "lay": 1, "arrays": true, "chores_long": true},
+        "typical": {"mijing": 1, "lay": 1, "arrays": true, "chores_long": true},
+        "heavy": {"mijing": 2, "lay": 1, "arrays": true, "chores_long": true},
+        "frugal": {"like": "typical", "mijing": 1, "lay": 0, "arrays": false, "pills": 0, "chores_long": true}
+      }
+    },
     "_session": "2026-10-27 (Hanli at 古五's 渡口, 129/498: 「渡口前应该让玩家接近2层圆满」): the playtest player — the book straight through in long sittings, no nights between, no 功课, no 闭关, no wall tags but while a gate holds him (balance.mjs playWalls). The gate rule (master hours.fit `arrive`) holds the 修为 a one-layer gate asks to be about earned by the time he reaches it; never in the bands.",
     "session": {
       "minutes": 600,

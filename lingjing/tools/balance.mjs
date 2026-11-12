@@ -8,6 +8,12 @@
 //   --json    the rows as JSON;
 //   --wealth  the 灵石 flow per player.
 //   --events  妖兽出没's day per player: its 修为 as a share of the layer, of the day, its 灵石.
+//   --econ    the economy's report (design.md § 耗材, 2026-11-12): four players (light · typical · heavy, and `frugal`, who buys
+//             nothing), each with balance.json `model.econ.players` laid on — the 秘境 runs a day (where the grind is, before
+//             the free practice boards), 灵石 laid in the 聚灵阵 each night, its levels bought, the week's and month's 功课 —
+//             and per 回 the days, the layers climbed, the free share (story · games · errands · chores) and 修为 by source;
+//             in all, 灵石 in / out a day, at the end, and the share spent. `model.econ.on`: every report plays them.
+//   --old     the players without the economy's fields (the report as it stood before 耗材).
 // tests/balance.test.mjs holds the bands (`model.bands`).
 //
 // A day, as the model plays it (every number from balance.json `model` or the world's data):
@@ -146,6 +152,24 @@ export function bookWalk(content, model = content.balance.model) {
   return out;
 }
 
+/* ── 秘境探险 as the model plays it (rules/mijing.mjs; design.md § 耗材) ── */
+/* One run of a 重 walked through to its 大妖, as the means of mijing.json say it: its minutes (the first row all play, the
+   rows after it play or a pick by their weights, the 大妖), its 体力 when the rooms pay their own (a fight room a card
+   fight's, a board room its minutes, a pick none), and its 灵石 in minutes of income (rooms won, chests, the clear) before
+   the run's scale. Read from the data; the tests' own walk (tests/mijing.test.mjs roomMinutes) is the same. */
+export function runMeans(content, n = 1) {
+  const M = content.mijing, K = M.kinds, k = content.balance.mijing, pool = M.deals.pool.filter(d => (d.weight ?? 1) > 0);
+  const t = M.tiers.find(x => x.n === n) ?? M.tiers[0], all = pool.reduce((a, d) => a + (d.weight ?? 1), 0);
+  const per = (f, first = false) => pool.reduce((a, d) => a + (d.weight ?? 1) * (d.room === 'yao' && !first ? (1 - M.deals.elite) * f('yao') + M.deals.elite * f('xiong') : f(d.room)), 0) / all;
+  const picks = Object.entries(K).filter(([, r]) => r.play === 'pick' && r.weight > 0), wP = M.deals.weight, wAll = wP + picks.reduce((a, [, r]) => a + r.weight, 0);
+  const row = f => (wP * per(f) + picks.reduce((a, [id, r]) => a + r.weight * f(id), 0)) / wAll;
+  const duel = staminaCost(content, 'duel'), mean = x => (Array.isArray(x) ? (x[0] + x[1]) / 2 : x ?? 0);
+  const minutes = id => K[id]?.minutes ?? 0, stamina = id => (K[id]?.play === 'fight' ? duel : K[id]?.play === 'board' ? K[id].minutes : 0);
+  const wealth = id => (K[id]?.play === 'fight' || K[id]?.play === 'board' ? mean(k.wealth.room) * (id === 'xiong' ? 2 : 1) : id === 'bao' ? mean(k.wealth.chest) : 0);
+  const path = f => per(f, true) + (t.layers - 1) * row(f) + f('boss');
+  return { tier: t.n, minutes: path(minutes), stamina: path(stamina), wealth: path(wealth) - wealth('boss') + (k.wealth.clear ?? 0), step: 1 + (k.wealth.step ?? 0) * (t.n - 1) };
+}
+
 /* ── one player through 卷一 ── */
 /* The sealed beat that holds scene `id` (world.mjs sealedOf: past its entry), or null. */
 export function sealedBeat(content, id) {
@@ -238,7 +262,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
   const earn = (n, src = 'story') => { if (n > 0) { W.now += n; W.earned += n; book(D.ls, src, n); } };
   const takePills = fights => {
     const want = (player.pills ?? 0) * fights, can = pillPrice ? Math.min(want, W.now / pillPrice) : 0;
-    W.now -= can * pillPrice; W.spent += can * pillPrice; W.pills += can; W.low = Math.min(W.low, W.now);
+    W.now -= can * pillPrice; W.spent += can * pillPrice; W.pills += can; W.low = Math.min(W.low, W.now); if (D) book(D.out, 'pills', can * pillPrice);
   };
   // A fight's 修为 past the cap is 灵石 at the convert rate, as every source's (gain, above).
   // `mult`: the 冷却事件's day share on top (妖兽出没's third batch of a day half, rules/events.mjs eventShare).
@@ -282,6 +306,55 @@ export function play(content, player, { model = content.balance.model, ladder = 
     return ids.filter(id => places.get(id)?.has?.pool).length > 0 ? 1 : 0;
   };
   const holdsFantong = () => !inside() && walk.slice(0, i).some(w => w.id === model.fantong_from);
+  /* ── The economy (design.md § 耗材; a player's own fields, none of which the old players declare — the old report is
+     theirs): `mijing` runs a day (a share: 0.5 every other day), `lay` the share of his purse he lays in the 阵 each night
+     (0: none), `arrays` whether he buys the 阵's levels, `chores_long` the week's and the month's 人间功课 beside the day's. ── */
+  const MJ = content.mijing ? content.balance.mijing : null, JL = content.balance.julin?.on ? content.balance.julin : null;
+  /* The 重 open to him (their `after` scenes behind him; each one before cleared, as a run a day clears it). */
+  const tierNow = () => (content.mijing?.tiers ?? []).filter(t => done.has(t.after)).reduce((n, t) => Math.max(n, t.n), 0);
+  /* The day's 秘境 allowance: `player.mijing` runs a day (a share carries: 0.5 is every other day), at most `cap_day` a day. */
+  let runCarry = 0, runsDone = 0, runsDay = -1, runsToday = 0;
+  const runsAllowed = () => { if (runsDay !== day) { runsDay = day; runsToday = 0; runCarry = Math.min(MJ?.cap_day ?? 0, runCarry + (player.mijing ?? 0)); } return Math.min((MJ?.cap_day ?? 0) - runsToday, Math.floor(runCarry + 1e-9)); };
+  /* One 秘境 run, where the grind is (a stage quest holds him: the minutes he would give to practice boards — the 秘境 is what
+     体力 buys, design.md § 耗材), outside a sealed instance, past 零层, a 重 open to him: while the sitting has its minutes and
+     the pool its 体力 — the door's fee when it has one, else its rooms'. With the key on the model takes the keys as held
+     (his save, 2026-11-12: eleven unused). Pays the run's 修为 (its minutes at the games' rate × pay.rate, cleared) and its
+     灵石 (rooms, chests, the clear × the run's scale × I × earn). Returns its minutes, or 0. */
+  const playRun = left => {
+    if (!MJ || !player.mijing || inside() || zero() || runsAllowed() < 1) return 0;
+    const n = tierNow();
+    if (!n) return 0;
+    const R = runMeans(content, n), cost = MJ.door > 0 ? MJ.door : Math.round(R.stamina);
+    if (left < R.minutes || qi < cost) return 0;
+    qi -= cost; runCarry -= 1; runsToday += 1; runsDone += 1;
+    gain(Math.round((boardPlay(content, { ...s, need: need() }, R.minutes) ?? 0) * (MJ.pay?.rate ?? 1)), false, 'play', 'mijing');
+    earn(Math.round(R.wealth * R.step * LS(1)), 'mijing');
+    return R.minutes;
+  };
+  /* What the bar still takes where he stands (a step he may take: as much as he likes), for 聚灵's stones (never past it). */
+  const roomNow = () => { if (zero()) return 0; const top = s.step >= tierAt(s.tier).thresholds.length - 1, cap = capAt(); if (!top && (!cap || rank(s.tier, s.step + 1) <= cap.grind)) return Infinity; const m = markAt(); return Math.max(0, Math.min(need(), m ?? Infinity) - s.progress); };
+  const J = { level: 1, bought: 0, laid: 0 };
+  const holdsNow = () => (JL ? Math.floor((JL.array[J.level - 1] * need()) / JL.per_stone) : 0);
+  /* A night's 闭关 on 修为: with the 阵 on, the stones he lays (`lay` of the purse, to what it holds and the day allows),
+     drawn first at its pace, each per_stone, never past the bar; then 吐纳 the rest of the hours. Off, the old night. */
+  const secludeNight = hours => {
+    if (!JL) { gain(Math.floor(hours * (secludeHour(content, { ...s, need: need() }) ?? 0)), false, 'seclusion', 'seclusion'); return; }
+    const holds = holdsNow(), pace = holds / JL.hours;
+    const want = Math.min(holds, Math.floor(holds * JL.per_day), Math.floor(W.now * (player.lay ?? 0)), pace > 0 ? Math.floor(hours * pace + 1e-9) : 0);
+    const n = Math.max(0, Math.min(want, Math.floor(roomNow() / JL.per_stone)));
+    if (n > 0) { W.now -= n; W.spent += n; J.laid += n; book(D.out, 'julin', n); gain(n * JL.per_stone, false, 'seclusion', 'julin'); }
+    const breathe = Math.max(0, hours - (pace > 0 ? n / pace : 0)), t = need() > 0 ? Math.max(1, Math.floor(JL.trickle * need())) : 0;
+    gain(Math.floor(breathe * t + 1e-9), false, 'seclusion', 'trickle');
+  };
+  /* The 阵's next level, bought at the day's end when the purse holds its price and a full 阵 beside it (`arrays`). */
+  const buyArrays = () => {
+    if (!JL || !player.arrays || zero()) return;
+    while (J.level < JL.array.length) {
+      const price = JL.costs[J.level];
+      if (W.now < price + holdsNow()) break;
+      W.now -= price; W.spent += price; J.bought += price; J.level += 1; book(D.out, 'arrays', price);
+    }
+  };
   /* A day's plays of each board inside (the replay's falling share, play_pay.replay; rules/playpay.mjs playsToday). */
   let roomPlays = { day: -1, ids: {} };
   const rows = new Map(), row = id => { if (!rows.has(id)) rows.set(id, { hui: id, start: null, end: null }); return rows.get(id); };
@@ -292,7 +365,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
   const spend = c => (qi >= c ? ((qi -= c), true) : false);
   /* The day's ledger: 修为 (`xw`) and 灵石 (`ls`) by where they came from. One row a day, in `ledger`. */
   const ledger = [], book = (m, k, n) => { if (n) m[k] = (m[k] ?? 0) + n; };
-  let D = { xw: {}, ls: {} };
+  let D = { xw: {}, ls: {}, out: {} };
   let day = 0;
   /* The day's routine split over its sittings (`k` of `n`): 功课 at the first,
      the fights and feeds spread; the rest of the sitting is the story's. */
@@ -362,7 +435,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
     const total = day === 0 ? player.first_minutes : player.minutes, n = player.sittings, sit = total / n;
     const poolCap = pools() * (1 + Math.floor(sit / content.balance.cooldowns.pool_rest_min));
     wins = 0;
-    D = { xw: {}, ls: {}, need: need(), batched: batched() };
+    D = { xw: {}, ls: {}, out: {}, need: need(), batched: batched() };
     ledger.push(D);
     for (let k = 0; k < n && i < walk.length; k++) {
       let left = sit, fought = 0;
@@ -404,7 +477,9 @@ export function play(content, player, { model = content.balance.model, ladder = 
         if (k === 0 && !sealedNow && player.meanings) { const m = meaningDay(player.meanings); gain(U(m.units) * player.gongke, false, 'chore_kind', 'gongke'); earn(LS(m.ls) * player.gongke, 'gongke'); }
         // 闭关 overnight (rules/seclusion.mjs, focus 修为): `seclude` hours a night, the rules' rate and cap.
         // 闭关 overnight (rules/seclusion.mjs, focus 修为): `seclude` hours a night at an hour's share of the layer (play_pay.seclusion).
-        if (k === 0 && day > 0 && player.seclude && !sealedNow) gain(Math.floor(Math.min(player.seclude, content.rewards.seclusion.cap_hours) * (secludeHour(content, { ...s, need: need() }) ?? 0)), false, 'seclusion', 'seclusion');
+        if (k === 0 && day > 0 && player.seclude && !sealedNow) secludeNight(Math.min(player.seclude, content.rewards.seclusion.cap_hours));
+        // The week's and the month's 人间功课 (`chores_long`, a player of the economy's report): its units on its day.
+        if (k === 0 && !sealedNow && player.chores_long && day > 0) for (const [period, every] of [['week', 7], ['month', 30]]) if (day % every === 0) gain((chorePlay(content, { ...s, need: need() }, period) ?? 0) * player.gongke, false, 'gongke', 'gongke');
         for (let f = 0; f < Math.min(share(player.fights, k, n), poolCap) && evLeft(hour()) > 0 && left >= T.fight && spend(C.duel); f++) { left -= T.fight; fought += 1; poolFight(); const g = [...gates.values()].find(x => x.wait == null); if (g) g.did.fights += 1; }
         if (holdsFantong()) for (let f = 0; f < share(player.fantong, k, n) && left >= T.fantong; f++) { left -= T.fantong; gain(U(model.fantong_units), false, 'pill', 'fantong'); }
         if (k === 0 && !sealedNow && !walled() && player.tale && left >= T.tale) { left -= T.tale; gain(U(content.rewards.tale.cap.units) * player.tale, false, null, 'tale'); }
@@ -501,6 +576,8 @@ export function play(content, player, { model = content.balance.model, ladder = 
         if (extra < player.gate_fights && fought + extra < poolCap && evLeft(hour()) > 0 && left >= T.fight && spend(C.duel)) { left -= T.fight; extra += 1; poolFight(); if (waiting) waiting.did.fights += 1; continue; }
         // …then the day's wall tags he has not taken yet.
         if (wallsLeft() > 0.01 && wallsOpen().length) { const share = wallsLeft(); wallsOn = day; wallsTaken = 1; const used = playWalls(left, share); if (used) { left -= used; if (waiting) waiting.did.walls += share; continue; } }
+        // …then a 秘境 run (the economy's players, `mijing`): what 体力 buys, before the free practice boards.
+        { const m = playRun(left); if (m) { left -= m; if (waiting) waiting.did.runs = (waiting.did.runs ?? 0) + 1; continue; } }
         // …then the practice boards (play_pay, 2026-10-27): a board's minutes at the layer's share, `model.practice.factor`
         // for its ★ and the replay's falling share across a sitting.
         const P = model.practice;
@@ -536,8 +613,9 @@ export function play(content, player, { model = content.balance.model, ladder = 
       const n = price > 0 ? Math.floor((W.now * player.qi_buy) / price) : 0;
       if (n > 0) { W.now -= n * price; W.spent += n * price; gain(n * xw, false, 'pill', 'bought'); settle(); }
     }
+    buyArrays();
     // Where the day ends (tools/numbers.mjs reads it): the layer, the 回, the wallet and all 灵石 earned so far.
-    Object.assign(D, { at: { tier: s.tier, step: s.step }, hui, wallet: W.now, earned: W.earned });
+    Object.assign(D, { at: { tier: s.tier, step: s.step }, hui, wallet: W.now, earned: W.earned, spent: W.spent });
     before += total;
   }
   // A 今 interlude is the 古 回's before it (as its cap is, rules/cap.mjs): its time goes there.
@@ -554,13 +632,24 @@ export function play(content, player, { model = content.balance.model, ladder = 
     const ts = [g.day, ...beats.filter(b => b.kind === 'chain' && b.day > g.day && b.day < g.day + g.days).map(b => b.day), g.day + g.days];
     g.gap = Math.max(...ts.slice(1).map((t, k) => t - ts[k]));
   }
-  return { rows: out, gates: gateList, beats, byLayer, trace, end: { tier: s.tier, step: s.step, progress: Math.round(s.progress) }, days: day, wealth: { ...W, perDay: day ? W.earned / day : 0, spentPerDay: day ? W.spent / day : 0 }, ledger };
+  return { rows: out, gates: gateList, beats, byLayer, trace, end: { tier: s.tier, step: s.step, progress: Math.round(s.progress) }, days: day, wealth: { ...W, perDay: day ? W.earned / day : 0, spentPerDay: day ? W.spent / day : 0 }, ledger, julin: { ...J }, runs: runsDone };
 }
 
-/* The three players' days per 回. */
+/* The players a report plays: `model.players`, and — the economy's on (`model.econ.on`, or `econ` asked; never with `old`)
+   — each with its `model.econ.players` fields laid on, and the ones only the economy has (`frugal`, `like` another). */
+export function playersOf(content, { econ = null, old = false } = {}) {
+  const m = content.balance.model, E = m.econ, on = !old && (econ ?? Boolean(E?.on));
+  if (!on || !E?.players) return m.players;
+  const out = {};
+  for (const [who, p] of Object.entries(m.players)) out[who] = { ...p, ...(E.players[who] ?? {}) };
+  for (const [who, p] of Object.entries(E.players).filter(([w]) => !m.players[w])) { const { like, ...rest } = p; out[who] = { ...(m.players[like] ?? {}), ...rest }; }
+  return out;
+}
+
+/* The players' days per 回 (playersOf: the economy's when it is on). */
 export function table(content, opts = {}) {
-  const players = content.balance.model.players;
-  const runs = Object.fromEntries(Object.entries(players).map(([k, p]) => [k, play(content, p, opts)]));
+  const players = playersOf(content, opts);
+  const runs = Object.fromEntries(Object.entries(players).map(([k, p]) => [k, play(content, p, { model: opts.model, ladder: opts.ladder })]));
   const huis = runs.typical.rows.map(r => r.hui);
   return huis.map(h => ({ hui: h, ...Object.fromEntries(Object.entries(runs).map(([k, r]) => [k, round(r.rows.find(x => x.hui === h)?.days)])) }));
 }
@@ -594,11 +683,55 @@ export function balanceText(raw) {
 }
 
 /* 灵石 by player: in and out per day over 卷一, the pills bought, the lowest he stood at. */
-export function wealthTable(content) {
-  return Object.entries(content.balance.model.players).map(([who, p]) => {
+export function wealthTable(content, opts = {}) {
+  return Object.entries(playersOf(content, opts)).map(([who, p]) => {
     const r = play(content, p).wealth;
     return { who, days: play(content, p).days, in: Math.round(r.perDay), out: Math.round(r.spentPerDay), pills: Math.round(r.pills), end: Math.round(r.now), low: Math.round(r.low) };
   });
+}
+
+/* 修为 by where it came from (the day's ledger keys, play's `src`), in the economy's columns. */
+export const SOURCES = {
+  story: ['story'], games: ['boards', 'grind', 'pool', 'yaoshou'], errands: ['errand', 'wall'], chores: ['gongke'],
+  mijing: ['mijing'], bought: ['julin'], trickle: ['trickle', 'seclusion'],
+};
+const sourceOf = src => Object.keys(SOURCES).find(k => SOURCES[k].includes(src)) ?? 'other';
+const bySource = days => {
+  const out = Object.fromEntries([...Object.keys(SOURCES), 'other'].map(k => [k, 0]));
+  for (const d of days) for (const [src, n] of Object.entries(d.xw)) out[sourceOf(src)] += n;
+  return out;
+};
+/* The economy's report (`--econ`, design.md § 耗材): per player and per 回 the days and the 修为 by source (story · games ·
+   errands · chores · 秘境 · 闭关 bought · 闭关 trickle · other), its share of the layers he climbed there; in all, the 灵石 in
+   and out a day, what is left at the end, the share of what came in he spent, the 阵's level and what it took. */
+export function econTable(content, opts = {}) {
+  return Object.entries(playersOf(content, { econ: true, ...opts })).map(([who, p]) => {
+    const r = play(content, p), rows = r.rows.map(row => {
+      const days = r.ledger.filter(d => d.hui === row.hui);
+      // 修为 by source as a share of the layers it was earned against (a day's `need`, the layer he stood on that morning).
+      const src = bySource(days), layers = days.reduce((t, d) => t + (d.need ? Object.values(d.xw).reduce((a, x) => a + x, 0) / d.need : 0), 0);
+      const free = days.reduce((t, d) => t + (d.need ? ['story', 'games', 'errands', 'chores'].reduce((a, k) => a + Object.entries(d.xw).filter(([s]) => sourceOf(s) === k).reduce((b, [, x]) => b + x, 0), 0) / d.need : 0), 0);
+      return { hui: row.hui, days: round(row.days), src, layers: Math.round(layers * 100) / 100, free: Math.round(free * 100) / 100 };
+    });
+    const W = r.wealth, out = { pills: 0, julin: 0, arrays: 0 };
+    for (const d of r.ledger) for (const [k, n] of Object.entries(d.out ?? {})) out[k] = (out[k] ?? 0) + n;
+    return { who, days: r.days, rows, src: bySource(r.ledger), in: W.perDay, outDay: W.spentPerDay, end: W.now, earned: W.earned, spent: W.spent, share: W.earned ? W.spent / W.earned : 0, out, level: r.julin.level, runs: r.runs };
+  });
+}
+/* …printed. */
+export function econText(rows) {
+  const L = [], k = Object.keys(SOURCES).concat('other'), head = ['story', 'games', 'errand', 'chores', '秘境', '闭关买', '吐纳', 'other'];
+  const huis = rows[0].rows.map(r => r.hui);
+  L.push(`回     ${rows.map(r => r.who.padStart(8)).join('')}   (days)`);
+  for (const h of huis) L.push(`${h.padEnd(5)} ${rows.map(r => String(r.rows.find(x => x.hui === h)?.days ?? '—').padStart(8)).join('')}`);
+  for (const r of rows) {
+    L.push(`\n${r.who} — ${r.days} days, ${r.runs} 秘境 runs, 阵 level ${r.level}`);
+    L.push(`  回     days  layers  free  free%  | ${head.map(x => x.padStart(7)).join('')}   (修为)`);
+    for (const x of r.rows) L.push(`  ${x.hui.padEnd(5)} ${String(x.days ?? '—').padStart(5)} ${x.layers.toFixed(2).padStart(7)} ${x.free.toFixed(2).padStart(5)} ${(x.layers ? `${Math.round((x.free / x.layers) * 100)}%` : '—').padStart(6)} | ${k.map(c => String(Math.round(x.src[c])).padStart(7)).join('')}`);
+    L.push(`  all                              | ${k.map(c => String(Math.round(r.src[c])).padStart(7)).join('')}`);
+    L.push(`  灵石 in ${Math.round(r.in)}/day · out ${Math.round(r.outDay)}/day (pills ${Math.round(r.out.pills)} · 阵 laid ${Math.round(r.out.julin)} · 阵 levels ${Math.round(r.out.arrays)}) · end ${Math.round(r.end)} · spent ${(r.share * 100).toFixed(0)}% of ${Math.round(r.earned)}`);
+  }
+  return L.join('\n');
 }
 
 /* 妖兽出没's day (rules/yaoshou.mjs), per player, over the days its pools are the map's (卷一): the 修为 its batches pay as a
@@ -680,12 +813,19 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.error('--fit is retired: the master table derives the 层 and fits the hours (node tools/numbers.mjs --apply).');
     process.exit(1);
   }
-  const rows = table(content);
+  // `--old`: the players without the economy's fields (the report as it was before design.md § 耗材); `--econ`: its report.
+  const old = process.argv.includes('--old');
+  if (process.argv.includes('--econ')) {
+    const e = econTable(content, { old: false });
+    console.log(process.argv.includes('--json') ? JSON.stringify(e, null, 1) : econText(e));
+    process.exit(0);
+  }
+  const rows = table(content, { old });
   if (process.argv.includes('--json')) console.log(JSON.stringify(rows, null, 1));
   else {
     console.log(`练气 ${JSON.stringify(content.ladder.tiers[0].thresholds)}`);
-    console.log('回     轻   中   重   (days)');
-    for (const r of rows) console.log(`${r.hui.padEnd(5)} ${[r.light, r.typical, r.heavy].map(x => String(x ?? '—').padStart(4)).join(' ')}`);
+    console.log(`回     轻   中   重${'frugal' in rows[0] ? '   省' : ''}   (days)`);
+    for (const r of rows) console.log(`${r.hui.padEnd(5)} ${[r.light, r.typical, r.heavy, ...('frugal' in r ? [r.frugal] : [])].map(x => String(x ?? '—').padStart(4)).join(' ')}`);
     const pct = x => `${(x * 100).toFixed(1)}%`;
     if (process.argv.includes('--events')) for (const e of eventTable(content)) console.log(`妖兽出没 ${e.who.padEnd(8)} ${e.days} days: 修为 ${Math.round(e.xw)}/day = ${pct(e.layer)} of the layer · ${pct(e.of_day)} of the day's 修为 · 灵石 ${Math.round(e.ls)}/day`);
     // --qi-buy: the typical player spending all his 灵石 on 聚气丹 each night, against him spending none (batch 2's balance check).
@@ -693,6 +833,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       const p = content.balance.model.players.typical, base = play(content, p).rows, buy = play(content, { ...p, qi_buy: 1 }).rows;
       console.log(`聚气丹 (${content.items.items.find(i => i.id === 'qi-pill')?.buy} 灵石) bought with every 灵石, typical: ` + base.map(r => `${r.hui} ${round(r.days)}→${round(buy.find(x => x.hui === r.hui)?.days)}`).join(' · '));
     }
-    if (process.argv.includes('--wealth')) for (const w of wealthTable(content)) console.log(`灵石 ${w.who.padEnd(8)} ${w.days} days: in ${w.in}/day · pills out ${w.out}/day (${w.pills} pills) · end ${w.end} · lowest ${w.low}`);
+    if (process.argv.includes('--wealth')) for (const w of wealthTable(content, { old })) console.log(`灵石 ${w.who.padEnd(8)} ${w.days} days: in ${w.in}/day · pills out ${w.out}/day (${w.pills} pills) · end ${w.end} · lowest ${w.low}`);
   }
 }
