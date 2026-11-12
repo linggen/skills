@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, move, playTo } from '../scripts/rules.mjs';
-import { agendaReady, stageLeads, TRAY_MAX } from '../scripts/rules/agenda.mjs';
+import { agendaLook, agendaReady, stageLeads, TRAY_MAX } from '../scripts/rules/agenda.mjs';
 import { FOOTER } from '../scripts/stage.mjs';
 import { WORDS, allChipHtml, bookPopHtml, trayHtml } from '../scripts/cards.js';
 
@@ -83,7 +83,10 @@ test('目标: what the stage quest\'s work points at is tagged with its layer �
   for (const i of goal) assert.equal(i.serves, '练气一层', 'the layer, without 圆满');
   assert.ok(l.agenda.filter((i) => i.group !== 'goal').every((i) => !i.serves), 'only 目标 serves');
   assert.match(bookPopHtml(page(l)), new RegExp(`data-agenda="${goal[0].key}"[\\s\\S]*?class="serves">练气一层 ↑<`));
-  assert.match(trayHtml(page(l)), /class="serves">练气一层 ↑</);
+  assert.ok(!goal[0].tray, 'the stage quest occupies the one goal slot');
+  const focused = { ...l, agenda: l.agenda.filter((i) => i.group !== 'goal' || i.serves) };
+  focused.agenda = agendaLook(content, SAVES[1], { ...focused, stage_quest: { ...sq, scene: SAVES[1].scene }, waypoint: null }, focused.tray);
+  assert.match(trayHtml(page(focused)), /class="serves">练气一层 ↑</);
   // Held off, at 后山: the work points at a beast there — a fight in the tray if one stands, else the pointer itself.
   const off = look(heldOff(40), content, ctx);
   assert.ok(off.agenda.some((i) => i.group === 'goal' && i.serves), JSON.stringify(off.agenda));
@@ -104,6 +107,25 @@ test('the tray is the head of the list: its cards are 事\'s rows, in the same o
     const main = l.agenda.find((i) => i.group === 'main' && i.tray);
     if (main && t.includes(main.key)) assert.equal(t[0], main.key, s.scene);
   }
+});
+
+const eightRows = () => Array.from({ length: 8 }, (_, n) => ({ kind: 'pool', id: `game-${n}`, title: `Game ${n}`, seg: 'open', act: 'open', opens: 'divine' }));
+const eightLook = (rows) => { const l = { tasks: [], book: [], tray: rows }; return { ...l, agenda: agendaLook(content, {}, l, rows) }; };
+
+test('eight playable others: three on the tray, all eight in 全部', () => {
+  const l = eightLook(eightRows()), others = l.agenda.filter((i) => i.group === 'other');
+  assert.equal(others.length, 8);
+  assert.deepEqual(others.filter((i) => i.tray).map((i) => i.id), ['game-0', 'game-1', 'game-2']);
+  assert.deepEqual(keysIn(bookPopHtml(page(l))), others.map((i) => i.key));
+  assert.deepEqual(keysIn(trayHtml(page(l))), others.slice(0, 3).map((i) => i.key));
+});
+
+test('a finished playable row gives its tray place to the next', () => {
+  const before = eightLook(eightRows()), after = eightLook(eightRows().filter((e) => e.id !== 'game-0'));
+  const shown = (l) => l.agenda.filter((i) => i.group === 'other' && i.tray).map((i) => i.id);
+  assert.deepEqual(shown(before), ['game-0', 'game-1', 'game-2']);
+  assert.deepEqual(shown(after), ['game-1', 'game-2', 'game-3']);
+  assert.equal(after.agenda.length, 7);
 });
 
 test('交N sits on 「全部 ›」: the count of what can be handed in, and nowhere else in the tray', () => {

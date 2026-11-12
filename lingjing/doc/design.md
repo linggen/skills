@@ -1678,6 +1678,8 @@ His ruling (2026-09-29): 「不用小人书的方式了，图片作为图鉴，�
   with 先放一放 (rules/aside.mjs `PLAY_KINDS` `tray`: what is left, where, its opener, the stage card it would repeat);
   Look carries `tray`; the page draws whatever comes. Empty, 「手边无局，随处走走。」. Agent's picks (Hanli delegated
   11-02) in status.md.
+  2026-11-12：「还是全部里都显示所有, 底栏精简? 这样简单些?」全部保留所有事项。
+  底栏保留主线、至多一个目标和三个其他事项；有空位时才显示冷却，做完后下一件补上。
   **小游戏池** (Hanli's design, 11-02: 「可以, 按照你设计的做吧」; rules/pool.mjs): the repeatable small games (对对子, 银月出题,
   饭桶, 闭关, the practice boards on his map) are a pool, each declaring its cooldown, its 时辰's lean (a weight),
   its 体力 cost and the verb that plays it. Each 时辰 draws three (seed: save + day + 时辰); played, a game leaves the row

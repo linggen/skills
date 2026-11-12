@@ -68,10 +68,10 @@ test('each entry: what it is, what is left, where, and its button — 开局 her
   assert.equal(there.stage, `duel:${there.arg}`, 'the 降妖 card it would repeat on the stage');
   const out = s;
   // The page: 开局 opens the board by its own opener, 去X › walks.
-  const html = draw({ tasks: [], tray: trayOf(out) });
+  const html = draw({ tasks: [], tray: trayOf(out).filter((e) => e.id === away.id) });
   assert.match(html, new RegExp(`data-go="${away.go.id}"[^>]*>去${away.go.name}`));
-  assert.match(draw({ tasks: [], tray: rows }), new RegExp(`data-play="${T.id}"`));
-  assert.match(draw({ tasks: [], tray: rows }), /data-divine/);
+  assert.match(draw({ tasks: [], tray: rows.filter((e) => e.id === T.id) }), new RegExp(`data-play="${T.id}"`));
+  assert.match(draw({ tasks: [], tray: rows.filter((e) => e.id === 'divine') }), /data-divine/);
 });
 
 test('对对子 once its scene is behind him: today\'s couplets at the 讲堂, walked to from elsewhere', () => {
@@ -95,8 +95,9 @@ test('exclusions: a card on the stage, a game done for today, a road Move refuse
   // On the stage: the entry naming that card is not drawn again; its task never doubles as a story board.
   const tide = rows.find((e) => e.id === T.id);
   const story = { id: T.id, kind: 'board', title: '兽潮 · 第1潮', status: 'offered', tide: true };
-  assert.doesNotMatch(draw({ tasks: [story], tray: rows }, { stageKeys: [tide.stage] }), new RegExp(`data-play="${T.id}"`));
-  assert.equal(draw({ tasks: [story], tray: rows }).split(`data-play="${T.id}"`).length, 2, 'drawn once, as the tray entry');
+  const focused = [tide];
+  assert.doesNotMatch(draw({ tasks: [story], tray: focused }, { stageKeys: [tide.stage] }), new RegExp(`data-play="${T.id}"`));
+  assert.equal(draw({ tasks: [story], tray: focused }).split(`data-play="${T.id}"`).length, 2, 'drawn once, as the tray entry');
   // Done for today: the day's cast leaves 问卦 out (no cooldown row either).
   const cast = divine(s, content, ctx(), {});
   assert.equal(cast.result.ok, true, JSON.stringify(cast.result).slice(0, 200));
@@ -118,7 +119,9 @@ test('cooling: only a wait back within hours, muted at the row\'s end; a longer 
   // A wait past the cap (a clock set ahead): out.
   const far = { ...just, events: { ...just.events, shouchao: { ...just.events.shouchao, at: new Date(NOW.getTime() + COOL_MAX_MIN * 60_000).toISOString() } } };
   assert.equal(trayOf(far).find((e) => e.id === T.id), undefined);
-  const html = draw({ tasks: [], tray: trayOf(just) });
+  const crowded = draw({ tasks: [], tray: trayOf(just) });
+  assert.doesNotMatch(crowded, new RegExp(`data-wait="${T.id}"`), 'three playable rows fill the normal-day tray first');
+  const html = draw({ tasks: [], tray: [cool] });
   assert.match(html, new RegExp(`class="card task waiting cool" data-wait="${T.id}"`));
   assert.match(html, /兽潮 · 第1潮/);
 });
