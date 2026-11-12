@@ -569,7 +569,7 @@ function tasksBrief(content, state, ctx) {
   // Before a story gate: no chores, no 开府, and a board pays no 修为 (state.mjs lockedOf).
   const shut = lockedOf(content, state);
   const menu = ctx.quests ?? [];
-  const chores = shut.includes('chores') ? [] : todayChores(state, menu, ctx.now), ready = shut.includes('kaifu') ? [] : kaifuReady(state, menu, ctx.now, content);
+  const chores = shut.includes('chores') ? [] : todayChores(state, menu, ctx.now, content), ready = shut.includes('kaifu') ? [] : kaifuReady(state, menu, ctx.now, content);
   const quests = [...chores, ...ready].map(q => ({
     id: q.id, app: q.app, title: pick(q.title, lang), how: choreHow(q, lang), device: q.device ?? null,
     done: questDone(q, ctx.now), paid: state.chores[q.id]?.period === periodKey(q.period, ctx.now),

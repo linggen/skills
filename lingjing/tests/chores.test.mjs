@@ -8,10 +8,11 @@ import { loadContent } from '../scripts/content.mjs';
 import { monthKey, newState, periodKey, periodStart } from '../scripts/state.mjs';
 import { chorePlay, tableStones } from '../scripts/rules/playpay.mjs';
 import { look, quest, task, progress } from '../scripts/rules.mjs';
-import { dailyPick, fitsDevices, phoneReady, playerDevices } from '../scripts/rules/chores.mjs';
+import { dailyPick as pickChore, fitsDevices, phoneReady, playerDevices } from '../scripts/rules/chores.mjs';
 import { readQuests } from '../scripts/rules/files.mjs';
 
 const content = loadContent();
+const dailyPick = (state, quests, now) => pickChore(state, quests, now, content);
 const NOW = new Date('2026-09-24T10:00:00'); // a Thursday
 const day = (n, h = 10) => new Date(2026, 8, 24 + n, h);
 // Joined (the outer court): before the prologue's story gate there are no 功课 and no 开府 (chapter.json `locks`).
@@ -19,7 +20,7 @@ const start = () => ({ ...newState(content, 'zh', NOW), scene: '00-waimen', plac
 const T = id => ({ zh: `做${id}`, en: `Do ${id}` });
 
 const entry = (id, extra = {}) => ({ id, app: id.split('-')[0], period: 'week', due: true, reward: 20, stamina: 10, device: 'mac', pool: true, done_at: null, title: T(id), ...extra });
-const workout = (extra = {}) => entry('health-workout', { period: 'day', device: 'phone', pool: undefined, ...extra });
+const workout = (extra = {}) => entry('health-workout', { period: 'day', device: 'phone', pool: undefined, kind: 'share', ...extra });
 const milestone = (n, extra = {}) => entry(`linggen-m${n}`, { app: 'linggen', period: 'once', pool: undefined, reward: 50, stamina: 20, device: n % 2 ? 'phone' : 'mac', open: '/settings?tab=models', ...extra });
 const paired = { ...milestone(0), id: 'linggen-pair', device: 'phone', done_at: '2026-09-01T00:00:00Z' };
 const MENU = [
@@ -68,7 +69,7 @@ test('the pick skips what is done this period, what no file offers, and a phone 
   const did = MENU.map(q => (q.id === today.id ? { ...q, done_at: new Date(NOW - 3600e3).toISOString() } : q));
   assert.equal(dailyPick(s, did, NOW).pick.id, today.id);
   // nothing to pick at all
-  assert.equal(dailyPick(s, [workout()], NOW).pick, null);
+  assert.equal(dailyPick(s, [milestone(1)], NOW).pick, null);
 });
 
 test('a flood of menu entries: the book holds the workout and the one pick — two lines', () => {
@@ -214,31 +215,33 @@ const NEW_SET = [
 const ids = rows => rows.map(q => q.id);
 
 test('a Mac-only player: the Mac and both dailies, never a phone one, and the pick is one he can do on the Mac', async () => {
-  const { todayChores } = await import('../scripts/rules/chores.mjs');
+  const { todayChores: select } = await import('../scripts/rules/chores.mjs');
+  const todayChores = (state, quests, now) => select(state, quests, now, content);
   const s = start();
   for (let n = 0; n < 10; n += 1) {
     const today = todayChores(s, NEW_SET, day(n));
-    assert.deepEqual(ids(today).slice(0, 4), ['linggen-greet', 'cfo-review', 'dj-listen', 'shifu-glance'], `day ${n}`);
+    assert.equal(today.length, 1);
     for (const q of today) assert.notEqual(q.device, 'phone', `day ${n}: ${q.id}`);
   }
 });
 
 test('a two-device player gets the phone dailies too; a due:false row is hidden as a daily and never the pick', async () => {
-  const { todayChores } = await import('../scripts/rules/chores.mjs');
+  const { todayChores: select } = await import('../scripts/rules/chores.mjs');
+  const todayChores = (state, quests, now) => select(state, quests, now, content);
   const s = start(), quests = [...NEW_SET, paired];
   const today = todayChores(s, quests, day(0));
-  assert.ok(ids(today).includes('health-steps'));
+  assert.equal(today.length, 1);
   assert.ok(!ids(today).includes('health-sleep'), 'the app says sleep cannot be done: hidden');
   for (let n = 0; n < 30; n += 1) assert.notEqual(dailyPick(s, quests, day(n)).pick?.id, 'shifu-clear');
   // done anyway in its period: shown as done
   const slept = quests.map(q => (q.id === 'health-sleep' ? { ...q, done_at: day(0, 7).toISOString() } : q));
-  assert.ok(ids(todayChores(s, slept, day(0))).includes('health-sleep'));
+  assert.notEqual(dailyPick(s, slept, day(0)).pick?.id, 'health-sleep', 'done but not selected stays hidden');
 });
 
 test('the book row carries the app\'s how; only shares_per_day dailies pay their share of the layer', async () => {
   const { choreGrant } = await import('../scripts/rules/chores.mjs');
   const s = start(), q = NEW_SET[0];
-  const book = look(s, content, ctx(NEW_SET, day(0))).book ?? [];
+  const book = look(s, content, ctx([NEW_SET[0]], day(0))).book ?? [];
   const row = book.find(b => b.id === 'linggen-greet');
   assert.equal(row?.chore?.how, '跟银月说句话');
   const n = content.gongke.shares_per_day;
@@ -259,7 +262,7 @@ test('the book row carries the app\'s how; only shares_per_day dailies pay their
 test('问安 opens the chat addressed to her: the book row carries `to` and `ask`, its button the box to 银月', async () => {
   const { WORDS, bookPopHtml } = await import('../scripts/cards.js');
   const greet = { ...NEW_SET[0], open: '/', ask: { zh: '', en: '' }, to: 'yinyue' };
-  const quests = [greet, ...NEW_SET.slice(1)];
+  const quests = [greet];
   const l = look(start(), content, ctx(quests, day(0)));
   const row = (l.book ?? []).find(b => b.id === 'linggen-greet');
   assert.equal(row?.chore?.to, 'yinyue');
@@ -270,6 +273,33 @@ test('问安 opens the chat addressed to her: the book row carries `to` and `ask
   assert.match(its, /data-ask-her/, its);
   assert.doesNotMatch(its, /href="\/"/, 'no link out to the home page');
   // a `to` that is no agent's id is dropped
-  const odd = look(start(), content, ctx([{ ...greet, to: 'x y' }, ...NEW_SET.slice(1)], day(0)));
+  const odd = look(start(), content, ctx([{ ...greet, to: 'x y' }], day(0)));
   assert.equal((odd.book ?? []).find(b => b.id === 'linggen-greet')?.chore?.to, undefined);
+});
+
+ test('60-day rotation covers a realistic two-device menu and respects weekly completion', () => {
+  const quests = [...NEW_SET.map(q => ({ ...q, due: true })),
+    entry('shifu-backup', { period: 'month', device: 'mac' }), entry('cfo-import', { period: 'month', device: 'both' }),
+    entry('dj-sync', { device: 'phone' }), entry('health-check', { device: 'phone' }), entry('linggen-clean', { device: 'both' }), paired];
+  const s = start(), counts = {};
+  for (let n = 0; n < 60; n += 1) {
+    const now = day(n), q = dailyPick(s, quests, now).pick;
+    assert.ok(q); counts[q.id] = (counts[q.id] ?? 0) + 1;
+    if (q.period === 'week') assert.notEqual(s.chores[q.id]?.period, periodKey('week', now));
+    s.chores[q.id] = { period: periodKey(q.period, now), paid_at: now.toISOString() };
+  }
+  for (const q of quests.filter(q => q.period !== 'once')) assert.ok(counts[q.id], `${q.id} never picked`);
+  assert.ok(Math.max(...Object.values(counts)) <= 12, JSON.stringify(counts));
+});
+
+test('former daily not picked is hidden and refused; fixed status comes from the world kind', () => {
+  const fixed = daily('custom-own', { kind: 'custom' });
+  const world = { ...content, gongke: { ...content.gongke, kinds: { ...content.gongke.kinds, custom: { own: { table: 'life', games: 3 } } } } };
+  const all = [...NEW_SET.map(q => ({ ...q, due: true, done_at: day(0, 9).toISOString() })), { ...fixed, done_at: day(0, 9).toISOString() }, paired];
+  const s = start(), selected = pickChore(s, all, NOW, world).pick;
+  const other = all.find(q => q.period === 'day' && q.kind !== 'custom' && q.id !== selected.id);
+  const rows = chores(look(s, world, ctx(all)).book);
+  assert.deepEqual(rows.map(q => q.id), [selected.id, fixed.id]);
+  assert.equal(quest(s, world, ctx(all), { action: 'turn', id: other.id }).result.refused, 'not-today');
+  assert.equal(quest(s, world, ctx(all), { action: 'turn', id: fixed.id }).result.ok, true);
 });

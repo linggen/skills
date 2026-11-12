@@ -92,16 +92,16 @@ function errandFor(content, state, creature) {
    day's one pick; 开府 has its own section). They take no slot — nobody took
    them, life gave them — and one paid for its period leaves, like any errand
    handed in. */
-function choresOf(state, ctx, lang) {
+function choresOf(content, state, ctx, lang) {
   const now = ctx?.now ?? new Date(), quests = ctx?.quests ?? [];
-  return todayChores(state, quests, now)
+  return todayChores(state, quests, now, content)
     .filter(q => state.chores?.[q.id]?.period !== periodKey(q.period, now))
     .map(q => {
       const done = questDone(q, now);
       return { id: q.id, title: pick(q.title, lang), need: [{ kind: 'chore', have: done ? 1 : 0, n: 1 }], ready: done, where: null,
         // Where to do it: the app's own page, as the app declares it (`open`),
         // else its door. Only a path on this host — never a link out.
-        chore: { app: q.app, period: q.period, done_at: done ? q.done_at : null, open: choreOpen(q), how: choreHow(q, lang), device: q.device ?? null, kind: isPool(q) ? 'pick' : 'fixed', ...choreTalk(q, lang), ...choreGo(q) } };
+        chore: { app: q.app, period: q.period, done_at: done ? q.done_at : null, open: choreOpen(q), how: choreHow(q, lang), device: q.device ?? null, kind: isPool(q, content) ? 'pick' : 'fixed', ...choreTalk(q, lang), ...choreGo(q) } };
     });
 }
 
@@ -110,7 +110,7 @@ function bookOf(content, state, lang, ctx) {
   // Before a story gate the book holds nothing it keeps shut (state.mjs lockedOf).
   const shut = lockedOf(content, state), errands = !shut.includes('errands');
   const tale = errands ? taleRow(content, state, { now: ctx?.now ?? new Date() }) : null;
-  return [...(errands ? errandsOf(content, state, lang, ctx?.now ?? new Date()) : []), ...(tale ? [tale] : []), ...(shut.includes('chores') ? [] : choresOf(state, ctx, lang))];
+  return [...(errands ? errandsOf(content, state, lang, ctx?.now ?? new Date()) : []), ...(tale ? [tale] : []), ...(shut.includes('chores') ? [] : choresOf(content, state, ctx, lang))];
 }
 
 /* 主线 · 人物线 · 杂务 (design.md § 剧情 × 开放世界): the errand's declared thread, else 杂务. */

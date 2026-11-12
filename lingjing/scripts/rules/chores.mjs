@@ -1,19 +1,7 @@
-// rules/chores.mjs — 人间功课 and 开府: the apps' menus, read into one line a day.
-// Part of the rules engine; rules.mjs is its one door.
-//
-// Each app writes its whole MENU to ~/.linggen/quests/<app>.json (design.md §
-// The menu). Listing every entry flooded the book, so the rules read it thus
-// (design.md § A day, 今日传闻, real-life chores — one a day):
-//
-// - **Fixed** — no `pool`, not `once` (the workout): a line every day.
-// - **Pool** — `pool: true`: ONE is picked a day, the same on every device
-//   and every reload. Only the pick (and the fixed) show and pay; a pool chore
-//   done that is not today's pick is shown nowhere and pays nothing.
-// - **开府** — `period: "once"`: the one-time first steps. Their own section,
-//   never a book line; each pays once ever (`state.chores[id].period ===
-//   'once'`, in the synced save). Only the rows the player's devices can do
-//   are listed; every done one is handed in at once, and only the hint of an
-//   undone one drips, one more a day (Hanli, 2026-11-02; § 开府 below).
+// rules/chores.mjs — 人间功课 and 开府.
+// 2026-11-12, Hanli: 「每日任务太多也不太好, 可以每天换一个」.
+// One doable non-once chore rotates daily; kinds with world-declared own pay stay fixed (传音).
+// Only the pick and fixed rows show and pay. 开府 remains separate and pays once ever.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -21,8 +9,8 @@ import { chorePlay, stonesAt, tableStones, xiuweiOf } from './playpay.mjs';
 import { dayKey, lockedOf, periodKey, periodStart, pick, questStamina, seedOf, zeroAt } from '../state.mjs';
 
 const isOnce = q => q.period === 'once';
-const isPool = q => q.pool === true && !isOnce(q);
-const isFixed = q => !q.pool && !isOnce(q);
+const isFixed = (q, content) => !isOnce(q) && Boolean(content?.gongke?.kinds?.[q.kind]?.own);
+const isPool = (q, content) => !isOnce(q) && !isFixed(q, content);
 /* `device`: where a row is done — `mac`, `phone`, `both` (either one) or `pair`
    (needs both: listed only to a player who has a Mac and a phone). Unknown reads `both`. */
 const deviceOf = q => (['mac', 'phone', 'both', 'pair'].includes(q.device) ? q.device : 'both');
@@ -84,9 +72,9 @@ const offered = (q, has, now) => (q.due !== false || questDone(q, now)) && fitsD
    either; when the day's device has none, the other's may serve.
    Highest-hash-wins, so an entry appearing mid-day moves the pick only if it
    outranks it. */
-export function dailyPick(state, quests, now) {
+export function dailyPick(state, quests, now, content) {
   const has = playerDevices(quests), phone = has.phone;
-  const pool = quests.filter(q => isPool(q) && offered(q, has, now) && doable(state, q, now));
+  const pool = quests.filter(q => isPool(q, content) && offered(q, has, now) && doable(state, q, now));
   const device = has.mac && has.phone ? ((dayNumber(now) + mix(seedOf(state))) % 2 ? 'phone' : 'mac') : has.phone ? 'phone' : 'mac';
   const fits = pool.filter(q => [device, 'both'].includes(deviceOf(q)));
   const from = fits.length ? fits : pool;
@@ -95,10 +83,10 @@ export function dailyPick(state, quests, now) {
   return { pick: best, device, phone };
 }
 
-/* Today's 人间功课: the fixed ones (the dailies) the player can do, then the pick. */
-export function todayChores(state, quests, now) {
-  const has = playerDevices(quests), { pick: one } = dailyPick(state, quests, now);
-  return [...quests.filter(q => isFixed(q) && offered(q, has, now)), ...(one ? [one] : [])];
+/* Today's 人间功课: the pick, then the fixed own-pay rows the player can do. */
+export function todayChores(state, quests, now, content) {
+  const has = playerDevices(quests), { pick: one } = dailyPick(state, quests, now, content);
+  return [...(one ? [one] : []), ...quests.filter(q => isFixed(q, content) && offered(q, has, now))];
 }
 
 /* How it is done, the app's own words (`how`, ≤20 words), or null. */
@@ -120,7 +108,7 @@ export const choreHow = (q, lang) => (q?.how && typeof q.how === 'object' ? pick
    open or was skipped (the drip, below). */
 export function choreCounts(state, quests, q, now, content) {
   if (isOnce(q)) return kaifuMay(state, content, quests, q, now);
-  return isFixed(q) || dailyPick(state, quests, now).pick?.id === q.id;
+  return isFixed(q, content) || dailyPick(state, quests, now, content).pick?.id === q.id;
 }
 
 /* What it pays (Hanli, 2026-10-15: 修为 comes from cultivation, chores pay
@@ -132,7 +120,7 @@ export function choreCounts(state, quests, q, now, content) {
    At 练气零层, which takes no 修为, the 功课 pays the `gongke_zero` table's
    灵石 instead (Hanli, 2026-10-15: every hand-in visibly raises one or the
    other) — `state` is the save it is paid to. */
-const choreTable = (content, q, state) => (isOnce(q) ? 'once' : !isFixed(q) ? 'life'
+const choreTable = (content, q, state) => (isOnce(q) ? 'once' : q.pool === true ? 'life'
   : state && content.rewards.tables.gongke_zero && zeroAt(content, state.tier, state.step) ? 'gongke_zero' : 'gongke');
 const FLAT = new Set(['once', 'gongke_zero']); // the table's own 灵石, not the chore's `reward`
 /* A day holds `shares_per_day` (gongke.json) dailies that pay their share of the layer; the rest pay their

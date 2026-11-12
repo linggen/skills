@@ -1374,6 +1374,9 @@ and pay (capped).** Token cost counts in the daily routine: a few rounds a day, 
   - **Retired** (the engine drops them from `linggen.json`): linggen-model, -account (sign-in comes
     before the game), -memory, -remote, -mission, -browser, -chatgpt, -phone-chat (→ linggen-chat);
     CFO's cfo-first-stock (→ cfo-open). A save keeps what it was paid for them.
+2026-11-12，Hanli：「每日任务太多也不太好, 可以每天换一个」。
+人间功课每天从可做的非开府功课中轮换一项，再固定显示自有报酬的传音；只有这两项可交差。开府不变，报酬不变。
+
 - **人间功课 as cultivation 【已建】** (Hanli, 2026-10-22: 「游戏里还要有和其他app如cfo,
   shifu, health等互动」 → 「可以」): each menu entry names its `kind`, a plain
   word of the app's (body · heal · rest · ledger · sweep · ward · song · greet); the
