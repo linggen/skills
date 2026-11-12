@@ -1,6 +1,5 @@
 // rules/chores.mjs — 人间功课 and 开府.
-// 2026-11-12, Hanli: 「每日任务太多也不太好, 可以每天换一个」.
-// One doable non-once chore rotates daily; kinds with world-declared own pay stay fixed (传音).
+// One doable pool chore rotates daily; 传音 (own pay) and 炼体 (daily) stay fixed.
 // Only the pick and fixed rows show and pay. 开府 remains separate and pays once ever.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -9,7 +8,7 @@ import { chorePlay, stonesAt, tableStones, xiuweiOf } from './playpay.mjs';
 import { dayKey, lockedOf, periodKey, periodStart, pick, questStamina, seedOf, zeroAt } from '../state.mjs';
 
 const isOnce = q => q.period === 'once';
-const isFixed = (q, content) => !isOnce(q) && Boolean(content?.gongke?.kinds?.[q.kind]?.own);
+const isFixed = (q, content) => !isOnce(q) && Boolean(content?.gongke?.kinds?.[q.kind]?.own || content?.gongke?.kinds?.[q.kind]?.daily === true);
 const isPool = (q, content) => !isOnce(q) && !isFixed(q, content);
 /* `device`: where a row is done — `mac`, `phone`, `both` (either one) or `pair`
    (needs both: listed only to a player who has a Mac and a phone). Unknown reads `both`. */
@@ -83,7 +82,7 @@ export function dailyPick(state, quests, now, content) {
   return { pick: best, device, phone };
 }
 
-/* Today's 人间功课: the pick, then the fixed own-pay rows the player can do. */
+/* Today's 人间功课: the pick, then the fixed rows the player can do. */
 export function todayChores(state, quests, now, content) {
   const has = playerDevices(quests), { pick: one } = dailyPick(state, quests, now, content);
   return [...(one ? [one] : []), ...quests.filter(q => isFixed(q, content) && offered(q, has, now))];

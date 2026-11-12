@@ -8,7 +8,7 @@ import { loadContent } from '../scripts/content.mjs';
 import { monthKey, newState, periodKey, periodStart } from '../scripts/state.mjs';
 import { chorePlay, tableStones } from '../scripts/rules/playpay.mjs';
 import { look, quest, task, progress } from '../scripts/rules.mjs';
-import { dailyPick as pickChore, fitsDevices, phoneReady, playerDevices } from '../scripts/rules/chores.mjs';
+import { choreCounts, choreGrant, dailyPick as pickChore, fitsDevices, isFixed, phoneReady, playerDevices } from '../scripts/rules/chores.mjs';
 import { readQuests } from '../scripts/rules/files.mjs';
 
 const content = loadContent();
@@ -38,6 +38,26 @@ test('the pick is the same all day, on any device, whatever order the menus are 
   assert.equal(dailyPick(JSON.parse(JSON.stringify(s)), quests, day(0, 12)).pick.id, a, 'the synced save picks alike');
   // over a fortnight the pick moves — not one chore forever
   assert.ok(new Set([...Array(14).keys()].map(n => dailyPick(s, quests, day(n)).pick.id)).size >= 3);
+});
+
+test('body is fixed and pays each day while the remaining pool rotates', () => {
+  let s = start();
+  for (let n = 0; n < 14; n += 1) {
+    const now = day(n), body = daily('health-steps', { device: 'phone', kind: 'body', done_at: day(n, 9).toISOString() });
+    const pool = [daily('other-a', { kind: 'rest' }), daily('other-b', { kind: 'rest' })];
+    const quests = [body, ...pool], selected = dailyPick(s, quests, now).pick;
+    assert.ok(pool.includes(selected), `day ${n}: one other pool row is picked`);
+    assert.equal(isFixed(pool[0], content), false, 'a kind without daily or own stays in the pool');
+    assert.equal(choreCounts(s, quests, body, now, content), true);
+    assert.equal(choreCounts(s, quests, pool.find(q => q !== selected), now, content), false);
+    const grant = choreGrant(content, body, s, now);
+    assert.equal(grant.table, 'gongke');
+    assert.equal(grant.progress, chorePlay(content, s, 'day'));
+    const out = quest(s, content, ctx(quests, now), { action: 'turn', id: body.id });
+    assert.equal(out.result.ok, true);
+    assert.equal(out.result.paid.progress, grant.progress);
+    s = out.state;
+  }
 });
 
 test('days alternate mac and phone once a phone is paired; with none, only the Mac', () => {
@@ -230,7 +250,8 @@ test('a two-device player gets the phone dailies too; a due:false row is hidden 
   const todayChores = (state, quests, now) => select(state, quests, now, content);
   const s = start(), quests = [...NEW_SET, paired];
   const today = todayChores(s, quests, day(0));
-  assert.equal(today.length, 1);
+  assert.equal(today.length, 2);
+  assert.ok(ids(today).includes('health-steps'));
   assert.ok(!ids(today).includes('health-sleep'), 'the app says sleep cannot be done: hidden');
   for (let n = 0; n < 30; n += 1) assert.notEqual(dailyPick(s, quests, day(n)).pick?.id, 'shifu-clear');
   // done anyway in its period: shown as done
@@ -288,7 +309,7 @@ test('问安 opens the chat addressed to her: the book row carries `to` and `ask
     if (q.period === 'week') assert.notEqual(s.chores[q.id]?.period, periodKey('week', now));
     s.chores[q.id] = { period: periodKey(q.period, now), paid_at: now.toISOString() };
   }
-  for (const q of quests.filter(q => q.period !== 'once')) assert.ok(counts[q.id], `${q.id} never picked`);
+  for (const q of quests.filter(q => q.period !== 'once' && q.kind !== 'body')) assert.ok(counts[q.id], `${q.id} never picked`);
   assert.ok(Math.max(...Object.values(counts)) <= 12, JSON.stringify(counts));
 });
 
@@ -297,9 +318,9 @@ test('former daily not picked is hidden and refused; fixed status comes from the
   const world = { ...content, gongke: { ...content.gongke, kinds: { ...content.gongke.kinds, custom: { own: { table: 'life', games: 3 } } } } };
   const all = [...NEW_SET.map(q => ({ ...q, due: true, done_at: day(0, 9).toISOString() })), { ...fixed, done_at: day(0, 9).toISOString() }, paired];
   const s = start(), selected = pickChore(s, all, NOW, world).pick;
-  const other = all.find(q => q.period === 'day' && q.kind !== 'custom' && q.id !== selected.id);
+  const other = all.find(q => q.period === 'day' && q.kind !== 'custom' && q.kind !== 'body' && q.id !== selected.id);
   const rows = chores(look(s, world, ctx(all)).book);
-  assert.deepEqual(rows.map(q => q.id), [selected.id, fixed.id]);
+  assert.deepEqual(rows.map(q => q.id), [selected.id, 'health-steps', fixed.id]);
   assert.equal(quest(s, world, ctx(all), { action: 'turn', id: other.id }).result.refused, 'not-today');
   assert.equal(quest(s, world, ctx(all), { action: 'turn', id: fixed.id }).result.ok, true);
 });

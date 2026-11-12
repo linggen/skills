@@ -8,6 +8,7 @@
   "_own": "`own` on a kind (Hanli, 2026-11-10: 「分享动作就给奖励」, in 灵境: 「给修为和灵石奖励, 加进每日任务」): the chore's own pay, outside everything above — not the meaning (no `progress`/`wealth` on the kind, so `per_day` never touches it), not a `shares_per_day` slot (it neither takes one nor counts toward the day's; the paid record carries `apart`), not the chore's own `reward`. It pays `games` small games' 修为 at the layer he stands on — each one story step's 3 体力 as small-game play (rules/chores.mjs ownXiuwei: × R × play_pay.xiuwei.board), so it follows the knobs: 90 at 练气一层 today (Hanli 2026-11-10: 「分享任务给3倍奖励」, then 「传音改成真正的3倍」; it was 9 units without the small game's factor, 18) — its own class in the master (master.xiuwei.classes.share_games), weighed there by tools/numbers.mjs) and `wealth` 灵石, capped by `table`. The one declaration of the share's pay. Paid once a day, as any daily (the chore's period).",
   "kinds": {
     "body": {
+      "daily": true,
       "name": { "zh": "练功", "en": "Practice" },
       "about": { "zh": "小满在山道上挑着担子练脚力，一趟一趟往上爬——功夫是腿上磨出来的。", "en": "Xiaoman climbs the mountain path under the yoke, trip after trip — the practice is worn into the legs." },
       "ls": 1.8, "units": 6, "item": "chenlian-fu"
