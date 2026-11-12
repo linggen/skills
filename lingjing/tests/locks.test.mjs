@@ -152,8 +152,8 @@ test('before the gate nothing pays 修为 or 灵石: the trial board pays none; 
 });
 
 test('after the gate every system is there: realm, 灵石, chores, 开府, the 事 chip, the coins', () => {
-  const s = waimen();
-  const l = look(s, content, ctx());
+  const s = waimen(), at = ctx(MENU.filter(q => q.id !== 'shifu-scan'));
+  const l = look(s, content, at);
   assert.equal(l.locked, undefined);
   assert.equal(l.tier.name, '练气零层', 'admitted at 零层 (story DESIGN: 主角零层入门)');
   assert.equal(l.tier.bar, false, 'no 修为 bar until the 小周天');
@@ -162,10 +162,10 @@ test('after the gate every system is there: realm, 灵石, chores, 开府, the �
   assert.ok(l.book.some(b => b.chore), 'chores ride the book');
   assert.equal(l.kaifu.of, 2);
   assert.notEqual(allChipHtml({ look: l, lang: 'zh', words: WORDS.zh }), '');
-  assert.equal(VERBS.divine(s, content, ctx(), {}).result.ok, true);
-  assert.equal(VERBS.task(s, content, ctx(), { action: 'check', id: 'health-workout' }).result.ok, true);
-  assert.equal(VERBS.quest(s, content, ctx(), { action: 'kaifu' }).result.ok, true);
-  assert.ok(progress(s, content, ctx()).result.tier);
+  assert.equal(VERBS.divine(s, content, at, {}).result.ok, true);
+  assert.equal(VERBS.task(s, content, at, { action: 'check', id: 'health-workout' }).result.ok, true);
+  assert.equal(VERBS.quest(s, content, at, { action: 'kaifu' }).result.ok, true);
+  assert.ok(progress(s, content, at).result.tier);
 });
 
 test('Yinyue\'s greeting before the gate says nothing of a realm', () => {

@@ -91,7 +91,7 @@ test('the situations cover the stage\'s own cards', () => {
 });
 
 test('「全部 ›」: what can be handed in rides on it — and 事 holds the goal and the rows', () => {
-  const at = ctx({ quests: chores });
+  const at = ctx({ quests: [chores[0]] });
   const took = quest({ ...open, place: 'zhishi' }, content, at, { action: 'take', id: 'xu-lvliang-look' });
   const l = look(took.state, content, at), page = pageCtx(l);
   assert.match(allChipHtml(page), /class="bookchip allchip ready"[^>]*title="事 · 全部 \d+ 件 · 可交 1">全部 ›<b class="due">交1<\/b><\/button>/, 'a line ready to hand in is never behind a click — a count on 全部, the line its title');
@@ -102,7 +102,9 @@ test('「全部 ›」: what can be handed in rides on it — and 事 holds the 
   assert.match(html, /class="tstep">到吕梁洪</, 'the step by name and place (rules/errand-line.mjs), never 「到 0/1」');
   assert.match(html, /class="bookrow trow ready".*扫描.*交 差/s, 'the scan its app saw done is handed in from the row');
   assert.match(html, /data-agenda-group="other"[\s\S]*class="bookrow trow ready"[\s\S]*吕梁洪的水声/, '其他: what can be handed in first, then what is in hand');
-  assert.match(html, /t-day">每日<\/span>.*炼体.*今日.*去 Health 做/s, 'a chore wears its tag, its period and its app\'s page');
+  const workoutAt = ctx({ quests: [chores[1]] });
+  const workoutPage = pageCtx(look(took.state, content, workoutAt));
+  assert.match(bookPopHtml(workoutPage), /t-day">每日<\/span>.*炼体.*今日.*去 Health 做/s, 'a chore wears its tag, its period and its app\'s page');
   assert.doesNotMatch(html, /undefined|\{\w+\}/);
   assert.doesNotMatch(html, /说说|bookdetail/, 'closed rows: nothing opened, and no row asks the model for what the page knows');
   // a row opened: the page reads the line from the rules and shows it — no model turn
@@ -114,9 +116,9 @@ test('「全部 ›」: what can be handed in rides on it — and 事 holds the 
   const chained = quest({ ...open, place: 'pengcheng' }, content, at, { action: 'info', id: 'xu-elder-herb' }).result;
   assert.deepEqual([chained.next, chained.then, chained.taken, chained.gives], ['林子里的蠪侄', undefined, false, '竹剑']);
   assert.match(opened, /data-go="lvliang">去吕梁洪</, 'where the count is met is one tap from the opened row — the page walks it');
-  const chore = quest(took.state, content, at, { action: 'info', id: 'health-workout' }).result;
+  const chore = quest(took.state, content, workoutAt, { action: 'info', id: 'health-workout' }).result;
   assert.deepEqual([chore.kind, chore.app, chore.grant.progress], ['chore', 'health', chorePlay(content, took.state, 'day')], 'its day\'s minutes of board play (2026-10-27)');
-  assert.doesNotMatch(bookPopHtml({ ...page, bookRow: 'health-workout', bookInfo: chore }), /data-drop/, 'life\'s own cannot be put down');
+  assert.doesNotMatch(bookPopHtml({ ...workoutPage, bookRow: 'health-workout', bookInfo: chore }), /data-drop/, 'life\'s own cannot be put down');
   assert.equal(quest(took.state, content, at, { action: 'info', id: 'nope' }).result.refused, 'no-such-quest');
   // an empty list: no 全部
   assert.equal(allChipHtml(pageCtx({ ...l, agenda: [] })), '');

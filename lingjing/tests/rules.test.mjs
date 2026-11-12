@@ -1057,12 +1057,12 @@ test('a task pays once; one never offered cannot be claimed', () => {
 
 test('a quest pays when its app says it was done this period, once', () => {
   const chore = { id: 'shifu-scan', app: 'apple-shifu', period: 'week', due: true, reward: 30, title: { zh: '扫描', en: 'Scan' } };
-  const done = ctx({ quests: [{ ...chore, done_at: '2026-09-10T09:00:00' }] });
+  const done = ctx({ quests: [{ ...chore, done_at: '2026-09-11T09:00:00' }] });
   const s = joined();
   const seen = look(s, content, done).quests[0];
   assert.deepEqual([seen.done, seen.paid], [true, false], 'Look shows the app\'s record before anyone asks');
   const paid = must(task, s, { action: 'check', id: 'shifu-scan' }, done);
-  assert.equal(paid.result.paid.progress, chorePlay(content, s, 'week'), 'a fixed one is the day\'s 功课: 修为, a week\'s 20% of the layer (2026-10-27)');
+  assert.equal(paid.result.paid.progress, chorePlay(content, s, 'week'), 'the day’s pick pays its weekly share');
   assert.equal(paid.state.chores['shifu-scan'].period, weekKey(NOW), 'the apps\' 功课 are the chores book; `quests` is 差事 now');
   assert.equal(look(paid.state, content, done).quests[0].paid, true);
   refused(task, paid.state, { action: 'check', id: 'shifu-scan' }, 'already-paid', done);

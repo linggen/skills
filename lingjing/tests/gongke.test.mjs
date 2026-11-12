@@ -29,7 +29,7 @@ const content = loadContent();
 const ROOT = path.resolve(import.meta.dirname, '..');
 const NOW = new Date('2026-10-22T12:00:00');
 const T = id => ({ zh: `做${id}`, en: `Do ${id}` });
-// Fixed chores (no pool): each shows and pays every day, so the tests need no pick.
+// A single non-own chore in a menu is the day’s pick.
 const chore = (id, kind, extra = {}) => ({ id, app: 'some-app', period: 'day', due: true, reward: 20, stamina: 10, device: 'mac', done_at: '2026-10-22T09:00:00', title: T(id), ...(kind ? { kind } : {}), ...extra });
 const ctxOf = (quests, now = NOW) => ({ now, quests });
 const waimen = () => walk(newState(content, 'zh', NOW), TO_WAIMEN, content, NOW);
@@ -59,10 +59,10 @@ test('mapping: a kind the table knows means something; none, an unknown one, or 
 
 test('a chore of a known kind pays its meaning on top: 灵石, its thing in the pouch, the facts for her', () => {
   const s = waimen(), quests = [chore('x-workout', 'body'), chore('x-plain', null)];
-  const plain = turn(s, quests, 'x-plain');
+  const plain = turn(s, [quests[1]], 'x-plain');
   assert.equal(plain.result.ok, true);
   assert.equal(plain.result.meaning, undefined, 'no kind: paid as before, nothing more');
-  const out = turn(s, quests, 'x-workout');
+  const out = turn(s, [quests[0]], 'x-workout');
   assert.equal(out.result.ok, true);
   const m = out.result.meaning;
   // 练功's 灵石: its size doubled since 2026-11-10 (app-linked chores pay double, Hanli 「…app联动的任务, 奖励都翻倍」): 1.8 minutes
@@ -90,21 +90,42 @@ test('paid once per occurrence: the same chore again today is refused; tomorrow 
 
 test('capped per day, all kinds together: 灵石 to per_day, things to per_day — and the day after starts fresh', () => {
   const cap = content.gongke.per_day;
-  const quests = ['a', 'b', 'c'].map(x => chore(`l-${x}`, 'ledger'));
-  let s = waimen(), got = 0;
-  const caps = [];
-  for (const q of quests) { const out = turn(s, quests, q.id); s = out.state; got += out.result.meaning.paid.wealth; caps.push(Boolean(out.result.meaning.capped)); }
-  // The day's cap in minutes of income (`per_day.ls`, batch 2): what lands sums to it, each part rounded where it lands.
+  // A legacy save can already have meaning paid today; the one current pick must respect it.
+  const ledger = chore('l-a', 'ledger');
+  const before = waimen();
+  const prior = content.gongke.kinds.ledger.ls;
+  let s = { ...before, gongke: { day: { key: '2026-10-22', ls: prior, units: 0, wealth: Math.round(stonesAt(content, before, prior)), progress: 0, items: 0 } } };
+  const out = turn(s, [ledger], ledger.id);
+  assert.equal(out.result.ok, true);
+  assert.equal(out.result.meaning.capped, true);
+  assert.equal(s.gongke.day.ls + meaningGrant(content, s, ledger, NOW).ls, cap.ls);
   const capStones = stonesAt(content, s, cap.ls);
-  assert.ok(Math.abs(got - capStones) <= 1.5, `${got} of the day's ${capStones}`);
-  assert.equal(s.gongke.day.ls, cap.ls, 'the day\'s minutes are its cap exactly');
-  assert.deepEqual(caps, [false, true, true]);
-  const things = ['p', 'q', 'r'].map(x => chore(`s-${x}`, 'sweep'));
-  let t = waimen();
-  for (const q of things) t = turn(t, things, q.id).state;
-  assert.equal(t.bag['jinglu-fu'], cap.items, 'no more things than the day allows');
+  assert.ok(Math.abs(s.gongke.day.wealth + out.result.meaning.paid.wealth - capStones) <= 1.5);
+  assert.equal(out.state.gongke.day.ls, cap.ls);
+  // Own-pay and 开府 stack with the pick, without consuming its meaning cap.
+  const share = chore('own-share', 'share');
+  const once = chore('open-step', null, { period: 'once' });
+  const stack = [ledger, share, once];
+  const shared = turn(out.state, stack, share.id);
+  assert.equal(shared.result.ok, true);
+  assert.ok(shared.result.paid.wealth > 0);
+  assert.deepEqual(shared.state.gongke.day, out.state.gongke.day);
+  const opened = turn(shared.state, stack, once.id);
+  assert.equal(opened.result.ok, true);
+  assert.ok(opened.result.paid.wealth > 0);
+  assert.deepEqual(opened.state.gongke.day, out.state.gongke.day);
+  // The same rule holds for item room, including a full cap on an older save.
+  const sweep = chore('s-a', 'sweep');
+  const almost = { ...before, gongke: { day: { key: '2026-10-22', ls: 0, units: 0, wealth: 0, progress: 0, items: cap.items - 1 } } };
+  const last = turn(almost, [sweep], sweep.id);
+  assert.equal(last.result.meaning.paid.item, 'jinglu-fu');
+  assert.equal(last.state.gongke.day.items, cap.items);
+  const full = meaningGrant(content, last.state, chore('s-b', 'sweep'), NOW);
+  assert.equal(full.item, null);
+  assert.equal(full.capped, true);
   const later = new Date('2026-10-23T12:00:00');
-  assert.equal(meaningGrant(content, s, chore('l-a', 'ledger'), later).ls, content.gongke.kinds.ledger.ls);
+  assert.equal(meaningGrant(content, out.state, ledger, later).ls, content.gongke.kinds.ledger.ls);
+  assert.equal(meaningGrant(content, last.state, sweep, later).item, 'jinglu-fu');
 });
 
 test('宗门月俸: the ledger kept on enough days of a week pays once, that week', () => {
@@ -201,9 +222,10 @@ test('a 开府 step handed in between the gates owes its 灵石; they land on th
 });
 
 test('the board shows facts only: the meaning, the app\'s title, a stamp with the app\'s time, 已领, one tap each', () => {
-  const quests = [chore('x-workout', 'body'), chore('x-sweep', 'sweep', { done_at: null }), chore('x-paid', 'ward')];
-  let s = waimen();
-  s = turn(s, quests, 'x-paid').state;
+  const quests = [chore('x-workout', 'body'), chore('x-sweep', 'sweep', { done_at: null }), chore('x-paid', 'share')];
+  // An earlier hand-in on a pre-rotation save left one item in today's tally.
+  let s = { ...waimen(), gongke: { day: { key: '2026-10-22', ls: 0, units: 0, wealth: 0, progress: 0, items: 1 } } };
+  s = turn(s, [quests[2]], 'x-paid').state;
   const board = gongkeBoard(content, s, quests, NOW, 'zh', questDone);
   const by = Object.fromEntries(board.rows.map(r => [r.id, r]));
   assert.deepEqual([by['x-workout'].done, by['x-workout'].paid, by['x-workout'].adds.item], [true, false, '晨练符']);
@@ -215,7 +237,7 @@ test('the board shows facts only: the meaning, the app\'s title, a stamp with th
   assert.deepEqual(board.weeks.map(w => w.name), ['宗门月俸']);
   // On the 事 book (Hanli 11-02: 「人间功课也在物品UI里显示, 应该在任务里吧. 任务里已经有了」): each chore's row
   // carries its meaning, the seal with the app's time, what it pays; 交差 when done; a paid one in 已交 with 已领.
-  const l = look(s, content, ctxOf(quests));
+  const l = look(s, content, ctxOf([quests[0], quests[2]]));
   const html = bookPopHtml({ lang: 'zh', look: l, words: WORDS.zh });
   const row = (id) => html.match(new RegExp(`<div class="bookrow trow[^"]*"[^>]*data-bookrow="${id}"[\\s\\S]*?<div class="tact">[\\s\\S]*?</div></div>`))?.[0] ?? '';
   assert.match(row('x-workout'), /练功/);

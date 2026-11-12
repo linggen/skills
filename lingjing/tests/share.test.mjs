@@ -87,9 +87,10 @@ test('a share pays three small games\' 修为 where he stands (90 at 练气一�
 test('it lands whole when the day\'s meaning cap is already spent', () => {
   let s = { ...joined(), step: 1, progress: 0 };
   const cap = content.gongke.per_day;
-  const quests = [chore('a-body', 'body'), chore('a-rest', 'rest'), chore('a-ledger', 'ledger'), chore('a-sweep', 'sweep'), row()];
-  for (const id of ['a-body', 'a-rest', 'a-ledger', 'a-sweep']) s = turn(s, quests, id).state;
-  assert.ok(s.gongke.day.progress >= cap.progress || (s.gongke.day.ls ?? 0) >= cap.ls, 'the cap is met');
+  // A pre-rotation save may have already filled today's meaning cap.
+  s = { ...s, gongke: { day: { key: '2026-11-10', ls: cap.ls, units: cap.units, items: cap.items, wealth: 0, progress: 0 } } };
+  const quests = [row()];
+  assert.ok(s.gongke.day.units >= cap.units && s.gongke.day.ls >= cap.ls, 'the cap is met');
   const seen = { ...s.gongke.day };
   const out = turn(s, quests, SHARE);
   assert.deepEqual([out.result.paid.progress, out.result.paid.wealth], [XW, WS]);
