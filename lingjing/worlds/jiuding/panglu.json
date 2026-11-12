@@ -1,5 +1,7 @@
 {
   "version": 1,
+  "on": false,
+  "_on": "2026-11-12: 旁炉好像用处不大, 先去掉?",
   "_about": "旁炉 · 炸炉 (rules/panglu.mjs; design.md § 丹药; story DESIGN § 六·五 「凡人丹炉十炉炸七」): the 丹房's side furnace 闵丹师 gives him in 09-laba (「料你自己碾，火你自己看。炼糊了，碾了做药引。」). A mortal furnace he tends himself — never the 饭桶's lottery (the 饭桶 is 老君's and never 炸s). It stands where a place `has.furnace` (the 丹房's scenes stand at the 药园, places/xu.json `yaoyuan`), open once `after` is done. One herb of `herbs` a batch (the 丹房's 下脚料 and the plain herbs of the hills — no shelf sells them); the rules roll the batch from `bands` (炸 · 糊 · 一转 · 二转), the band picked by how many batches this save has fired (`state.panglu.n`), seeded by the day, the save and that count, so firing again never re-rolls. `lesson`: the batch count at which 闵丹师 says 「首尾武，中间文」 — the step that lifts 二转 (no band before it has any). What each comes to is `outs` (糊 → 药引, a material); a 炸 gives nothing and costs the herb and a little 体力 (rewards.json stamina.cost `panglu`), nothing more. `per_day`: batches a local day (the book: 一个月不过三四炉). The agent's picks (Hanli delegated, 2026-10-31): the odds, `lesson` 8, `per_day` 2, one pill a batch.",
   "after": "09-laba",
   "herbs": ["huangjing-gen", "huangqi-canzhu", "huangjing", "fuling", "cangzhu", "chaihu", "yuanzhi", "banxia", "songmo"],

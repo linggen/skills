@@ -23,7 +23,7 @@ const fill = (text, vars) => String(text ?? '').replace(/\{(\w+)\}/g, (_, k) => 
 /* Given him: the scene that hands him the stool is done. */
 export const pangluGiven = (content, state) => {
   const t = tableOf(content);
-  return Boolean(t && (!t.after || (state.done_scenes ?? []).includes(t.after)));
+  return Boolean(t && t.on !== false && (!t.after || (state.done_scenes ?? []).includes(t.after)));
 };
 /* Here: he stands where a furnace is. */
 export const atFurnace = (content, state) => Boolean(placeOf(content, state.place)?.has?.furnace);
@@ -65,6 +65,7 @@ const ACTIONS = { look, fire };
 export function panglu(state, content, ctx, args = {}) {
   const t = tableOf(content);
   if (!t) return refuse('no-panglu', null);
+  if (t.on === false) return refuse('off', null);
   const action = String(args.action ?? 'look');
   if (!ACTIONS[action]) return refuse('unknown-action', null, { actions: Object.keys(ACTIONS) });
   const w = wordsOf(t, state.lang);

@@ -4,13 +4,18 @@
 // after 闵丹师's 「首尾武，中间文」 (`lesson`); a 炸 costs the herb and a little 体力, nothing more; never the 饭桶.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { readSave } from '../scripts/rules/worlds.mjs';
 import { loadContent, lint } from '../scripts/content.mjs';
 import { newState, staminaCost } from '../scripts/state.mjs';
 import { look, VERBS } from '../scripts/rules.mjs';
 import { bandOf, OUTCOMES, pangluOpen, rollBatch } from '../scripts/rules/panglu.mjs';
 import { notePage } from '../scripts/rules/did.mjs';
 
-const content = loadContent();
+const offContent = loadContent();
+const content = { ...offContent, panglu: { ...offContent.panglu, on: true } };
 const T = content.panglu;
 const T0 = new Date('2026-10-31T10:00:00');
 const day = n => new Date(T0.getTime() + n * 86_400_000);
@@ -21,6 +26,34 @@ const save = (extra = {}) => ({
   bag: { danlu: 1, huangjing: 20, fuling: 3 }, stamina: 100, stamina_at: T0.toISOString(), ...extra,
 });
 const fire = (s, id = 'huangjing', now = T0) => VERBS.panglu(s, content, ctx(now), { action: 'fire', id });
+
+test('off: no Look or gear offer, no pane, no action or cost; old save survives loading', async () => {
+  assert.equal(offContent.panglu.on, false);
+  const old = { n: 12, day: '2026-10-31', today: 1, made: { hu: 4, yi: 8 } };
+  const s = save({ panglu: old }), before = structuredClone(s);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'panglu-save-'));
+  try {
+    const file = path.join(dir, 'old.json');
+    fs.writeFileSync(file, JSON.stringify({ id: 'old', kind: 'named', state: s }));
+    const loaded = readSave(file).state;
+    assert.deepEqual(loaded.panglu, old);
+    const l = look(loaded, offContent, ctx());
+    assert.equal(l.panglu, undefined);
+    const gear = VERBS.gear(loaded, offContent, ctx()).result.gear;
+    assert.equal(gear.panglu, undefined);
+    const { pouchHtml } = await import('../scripts/pouch.js');
+    const { WORDS } = await import('../scripts/cards.js');
+    assert.doesNotMatch(pouchHtml({ lang: 'zh', words: WORDS.zh, look: l, gear }, { pane: 'panglu' }), /data-pouch-pane="panglu"/);
+    for (const action of ['look', 'fire', 'invalid']) {
+      const r = VERBS.panglu(loaded, offContent, ctx(), { action, id: 'huangjing' });
+      assert.equal(r.result.refused, 'off');
+      assert.equal(r.state, null);
+      assert.equal(notePage('panglu', { action }, r.result, loaded, offContent, T0), null);
+    }
+    assert.deepEqual(loaded.panglu, old);
+    assert.deepEqual(s, before);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
 
 test('the table: herbs the world has, no shelf sells; bands climb, 二转 only from the lesson; outs are items; the lint holds', () => {
   assert.ok(T, 'worlds/jiuding/panglu.json loads');

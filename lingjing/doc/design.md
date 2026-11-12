@@ -903,7 +903,9 @@ The furnace's pills are their own items (`mend-pill-9` 第一炉, `qi-pill-9` fr
   he is 练气 — none once he has laid the foundation; 结丹's come with 卷二's rows.
 - **方子 that give more than one** (fantong.json recipes `n`): 古八's 九节聚气 — the 十年黄精 fed alone gives three
   三转聚气丹, the book's pot (§ Per-回 › 古八).
-- **炸炉 · the 旁炉** 【已建】 (2026-10-31; rules/panglu.mjs, worlds/jiuding/panglu.json; tests/panglu.test.mjs): the
+- **炸炉 · the 旁炉** 【已建】 (2026-10-31; rules/panglu.mjs, worlds/jiuding/panglu.json; tests/panglu.test.mjs):
+  Switched off 2026-11-12 by `panglu.json` `on: false`; the rule and data remain.
+  The
   book's 凡人丹炉十炉炸七 belongs to a furnace he tends himself — the 丹房's 旁炉, his from 09-laba (「料你自己碾，火你自己看。
   炼糊了，碾了做药引。」). It stands where a place `has.furnace` (the 药园: the 丹房's scenes stand there), opens once
   `after` (09-laba) is done, and shows as the 储物袋's 旁炉 tab (Mac panglu.js; phone lingjing_today.dart). One herb a
