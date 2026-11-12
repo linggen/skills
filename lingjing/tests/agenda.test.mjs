@@ -124,7 +124,7 @@ test('the footer has no 「事」 chip: 去往 · 木牌 · 天气 · 时辰 · 
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   const chips = src.slice(src.indexOf('const FOOT_CHIPS = {'), src.indexOf('const IN_A_FIGHT'));
   assert.doesNotMatch(chips, /bookChipHtml|allChipHtml|data-book/, 'no chip of 事 in the footer');
-  assert.match(chips, /more: \(slots\) => `<span class="errands">\$\{view\.bookOpen \? bookPopHtml\(ctx\(\)\) : ''\}\$\{moreHtml\(slots\)\}/, 'the list stands from there, and 还有 N 件 keeps its place');
+  assert.match(chips, /more: \(slots\) => `<span class="errands">\$\{view\.bookOpen \? bookPopHtml\(\{ \.\.\.ctx\(\), doNote: view\.doNote \}\) : ''\}\$\{moreHtml\(slots\)\}/, 'the list stands from there, and 还有 N 件 keeps its place');
   // The cap's 「走剧情破境 ›」 opens it at 主线; a tray card at its own item; 收着 n at the kept boards.
   assert.match(src, /class="capgo" data-book data-book-at="group:main"/);
   assert.match(src, /\['\[data-agenda-at\]', \(el\) => openBook\(el\.dataset\.agendaAt\)\]/);

@@ -227,7 +227,7 @@ test('开局 from the tray is never dropped: in the box\'s choices the box goes 
   assert.match(tray('liandan'), /读完这段就开/);
   assert.ok(!/data-play="liandan"/.test(tray('liandan')), 'no second tap to drop');
   const src = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  const body = src.slice(src.indexOf('function openFromTray('), src.indexOf('\n}\n', src.indexOf('function openFromTray(')));
+  const body = src.slice(src.indexOf('function openTrayBoard('), src.indexOf('\n}\n', src.indexOf('function openTrayBoard(')));
   assert.match(body, /const inBox = choicesInBox\(\);[\s\S]*if \(inBox\) nextBeat\(\);/);
   assert.match(src, /\['\[data-play\]', \(el\) => !el\.matches\(':disabled'\) && openFromTray\(el\.dataset\.play\)\]/);
   assert.match(src, /view\.opened\.scene \?\? null\) !== \(look\.scene\?\.id \?\? null\)/);

@@ -220,7 +220,7 @@ test('one board alive: opening a second board leaves one instance; the first is 
   assert.match(one, /for \(const id of beats\.live\(\)\)/);
   assert.match(one, /if \(keepable\) keepGame\(id\);/);
   assert.match(one, /beats\.leave\(id\);\s+forgetShell\(id\);/);
-  assert.match(page, /function openFromTray\(id\) \{\n  if \(view\.opened\?\.id === id\) return; \/\/ a second tap on 开局: the one already up\n  oneBoard\(id\);/);
+  assert.match(page, /function openTrayBoard\(id\) \{\n  oneBoard\(id\);/);
   assert.match(page, /oneBoard\(null\); \/\/ a fight takes the stage: no board plays on under it/);
   assert.match(page, /if \(beats\.live\(\)\.includes\(view\.opened\.id\)\) oneBoard\(null\);/, 'the scene moving on puts the opened board away');
   // the fighter hears the abort: its listeners off, its frame loop stopped

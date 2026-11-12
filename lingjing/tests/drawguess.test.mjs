@@ -321,6 +321,6 @@ test('a new board or round skips Ling\'s question still open in its chat — her
   const ling = fs.readFileSync(new URL('../scripts/games/drawguess-ling.js', import.meta.url), 'utf8');
   assert.match(ling.slice(ling.indexOf('export async function askInChat')), /^[^]*?await skipLingAsk\(sid\)[^]*?await post\('\/api\/chat'/);
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
-  assert.match(page, /function openFromTray\(id\) \{\n[^\n]*\n  oneBoard\(id\);\n  skipStaleAsk\(\);/);
+  assert.match(page, /function openTrayBoard\(id\) \{\n  oneBoard\(id\);\n  skipStaleAsk\(\);/);
   assert.match(page, /deal\.begin = async \([^)]*\) => \{\n\s*skipStaleAsk\(\);/);
 });

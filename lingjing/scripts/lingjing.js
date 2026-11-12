@@ -36,6 +36,7 @@ import { since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
 import { emergeFacts as seclusionFacts, focusName } from './seclude-facts.js';
+import { openStage } from './open-stage.js';
 import { gameOpen, popX, WORDS, say as fill, waitingLine, valueChoice, appearHtml, askBarHtml, bookPopHtml, gearChipHtml, readChipHtml, cardHtml, emergedHtml, handinHtml, panelActsHtml, trayHtml, trialToldHtml, clockOf, isShut, duelTitle, threadsAt, asideOpens, doorLine, trayHourChipHtml } from './cards.js';
 import { ownSkip } from './stuck.js';
 import { fullOfferHtml, pouchHtml, spoilGearHtml } from './pouch.js';
@@ -1627,7 +1628,7 @@ const FOOT_CHIPS = {
   books: () => shelfChipHtml(),
   // No 「事 N」 chip (Hanli 2026-11-04): 事 opens from the tray's 「全部 ›」 and every way that named it; the list itself stands
   // over the stage from here, and the queue's 「还有 N 件 ›」 keeps its place.
-  more: (slots) => `<span class="errands">${view.bookOpen ? bookPopHtml(ctx()) : ''}${moreHtml(slots)}</span>`,
+  more: (slots) => `<span class="errands">${view.bookOpen ? bookPopHtml({ ...ctx(), doNote: view.doNote }) : ''}${moreHtml(slots)}</span>`,
   bag: () => gearChipHtml(ctx(), view.gearOpen),
 };
 const IN_A_FIGHT = new Set(['more', 'bag']);
@@ -2127,7 +2128,7 @@ function draw() {
   // What already stands on the stage is not listed again in the tray (Hanli, 2026-10-05: the 九宫格 twice).
   // A scene's own game is not at hand before its passage reaches it (his, 2026-10-14: 接雨 in the tray at load).
   const gamesAhead = storyAhead() ? (look.scene?.show ?? []).filter((c) => c.card === 'board').map((c) => c.id) : [];
-  $('tray').innerHTML = !solo && stands(headLook(), 'tray') ? awayChipsHtml(view.awayNow, { look, name: awayName }) + trayHtml({ ...ctx(), bookOpen: view.bookOpen, bookFresh: view.bookFresh, onStage: [...(slots?.main ?? []).map((c) => c.id).filter(Boolean), ...gamesAhead], stageKeys: (slots?.main ?? []).flatMap((c) => [c.card, `${c.card}:${c.id ?? ''}`]), trayQueued: view.opened && trayAhead() ? view.opened.id : null }) : '';
+  $('tray').innerHTML = !solo && stands(headLook(), 'tray') ? awayChipsHtml(view.awayNow, { look, name: awayName }) + (view.doNote && !view.bookOpen ? `<div class="donote">${esc(view.doNote)}</div>` : '') + trayHtml({ ...ctx(), bookOpen: view.bookOpen, bookFresh: view.bookFresh, onStage: [...(slots?.main ?? []).map((c) => c.id).filter(Boolean), ...gamesAhead], stageKeys: (slots?.main ?? []).flatMap((c) => [c.card, `${c.card}:${c.id ?? ''}`]), trayQueued: view.opened && trayAhead() ? view.opened.id : null }) : '';
   $('tray').parentElement.hidden = !$('tray').innerHTML;
   // Redrawn while Ling takes up a tap, the button stays pressed — never
   // offered to be tapped again.
@@ -3008,8 +3009,20 @@ function oneBoard(next = null) {
 /// A new board or round begun: Ling's question still open in this chat is skipped, as its 跳过 does (Hanli 2026-11-04:
 /// play never waits on the chat; replaces 09-17's queue-behind for this case). Never a test save's chatless page.
 const skipStaleAsk = () => { if (!CHATLESS) skipLingAsk(chat?.getSessionId?.() ?? null).catch(() => 0); };
-function openFromTray(id) {
-  if (view.opened?.id === id) return; // a second tap on 开局: the one already up
+async function openFromTray(id) {
+  if (view.opened?.id === id && !bout) return; // a second tap on the board already up
+  const b = bout, room = boutRoom(b), live = beats.live().find((key) => key !== id);
+  const game = live && boardFor(live);
+  return openStage({
+    fight: b ? (room?.room().ended ? 'finished' : 'unfinished') : null,
+    board: game ? (game.state?.won || game.sent || game.skipped ? 'finished' : 'unfinished') : null,
+    closeFight: async () => { room.tap({ kind: 'close', index: -1 }); await b.done; },
+    closeBoard: () => { beats.leave(live); forgetShell(live); boards.delete(live); },
+    note: (code) => show({ doNote: words().refused[code] }),
+    open: () => openTrayBoard(id),
+  });
+}
+function openTrayBoard(id) {
   oneBoard(id);
   skipStaleAsk();
   spoilsAway();
@@ -4845,7 +4858,7 @@ function mountBout(b) {
   forgetShell(fightShell(b));
   const reducedMotion = Boolean(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
   b.stop = new AbortController();
-  Promise.resolve(kapai.mount(node, { data: { setup: b.setup, brief: b.brief, st: b.st, catalog: cardCatalog(), resumed: b.resumed }, lang: lang(), reducedMotion, signal: b.stop.signal, shell: shellFor(fightShell(b), 'kapai'), story: boutHooks(b) }))
+  b.done = Promise.resolve(kapai.mount(node, { data: { setup: b.setup, brief: b.brief, st: b.st, catalog: cardCatalog(), resumed: b.resumed }, lang: lang(), reducedMotion, signal: b.stop.signal, shell: shellFor(fightShell(b), 'kapai'), story: boutHooks(b) }))
     .then((out) => (b.kept ? keptBout(b) : settleBout(b, out)))
     .catch((e) => { console.warn('[lingjing] the fight room', e); return settleBout(b, { r: failed(e) }); });
 }

@@ -160,5 +160,5 @@ test('the ways back that take knowing where to look are few and named', () => {
   const gaps = Object.entries(STAGE).filter(([, r]) => r.close !== 'none' && r.visible !== true).map(([k]) => k);
   assert.deepEqual(gaps.sort(), ['closed', 'seclude'], `known gaps changed: ${gaps.join(', ')} — name each in the report`);
   // a told card's one-tap way back is the ↩ chip: it must be drawn even when 体力 is spent (outside trayHtml's early return)
-  assert.match(read('lingjing.js'), /awayChipsHtml\(view\.awayNow[^)]*\) \+ trayHtml\(/);
+  assert.match(read('lingjing.js'), /awayChipsHtml\(view\.awayNow[^)]*\)[^\n]* \+ trayHtml\(/);
 });
