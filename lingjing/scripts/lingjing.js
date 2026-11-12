@@ -3426,16 +3426,32 @@ async function endAppear(id) {
    she never decides it (Hanli, 2026-09-28). */
 let thrown = null; // a landed throw, for the rise seal's mark
 async function throwTap(exitId) {
+  const was = barOf(look);
   const r = await write('resolve', { exit: exitId }).catch(failed);
   const b = r.ok ? r.breakthrough : null;
   thrown = b?.success ? b : null;
+  // The throw landed: the save says so at once, the header does not until the passage that tells it is over. (The next scene
+  // may be on another line — 筑基 → 今 — where riseStats sees no rise at all, so the hold is taken here, before the Look.)
+  if (b?.success && !was.line) holdBar({ tier: was.tier, progress: was.progress, next: was.next });
   const fell = b && !b.success ? fill(words().bt.failed, { st: b.lost.stamina, xw: b.lost.progress, at: clock(b.again_at) }) : null;
   keep({ throwNote: r.ok ? fell : refusal(r) });
   await refresh();
   if (!b) return;
+  if (b.success) releaseWhenTold();
   if (!b.success) herSay.say('bt_failed', lang() === 'en' ? `A ${b.chance}% chance; stamina −${b.lost.stamina}, cultivation −${b.lost.progress}; again after ${clock(b.again_at)}.` : `把握${b.chance}%；体力−${b.lost.stamina}，修为−${b.lost.progress}；${clock(b.again_at)}之后可以再试。`);
   // Ling hears it once the passage that tells it is over (tellAfter) — not the throw's own moment.
   tellAfter(`[scene] breakthrough ${b.success ? 'won' : 'failed'} ${b.chance}%`);
+}
+
+/* The throw's own passage still to be told: owed or being drawn, or the box still on what leads into this scene from the one
+   thrown in (dialogue.js leadsIn: the header holds the old scene until the exit passage ends). The next scene's own passages
+   are not it. */
+const exitTold = () => Boolean(look?.tell_owed || drawingTold || leadsIn(readingHere(), look?.scene?.id, lastLook()?.scene?.id));
+const toldOver = () => tellMay({ ahead: exitTold(), seal: riseWaits, piece: Boolean(pieceOn) });
+/* …and the bar changes when it is (a passage that never ends lets go after the same ten minutes). */
+async function releaseWhenTold() {
+  for (let k = 0; k < 2400 && !toldOver(); k += 1) await pause(250);
+  releaseBar();
 }
 
 /* A result told after it is shown (queue.js tellMay): the report waits for the book, the realm's seal and the set piece,
@@ -3444,7 +3460,7 @@ async function throwTap(exitId) {
    never twice. A passage that never ends sends it after ten minutes — never lost. */
 const OWED_KEY = `lingjing.owed.${SCRATCH || 'main'}`;
 const owedTells = [];
-let tellsRun = null;
+let tellsRun = false;
 const mirrorOwed = () => { try { owedTells.length ? localStorage.setItem(OWED_KEY, JSON.stringify(owedTells)) : localStorage.removeItem(OWED_KEY); } catch { /* no storage: this load only */ } };
 function adoptOwed() {
   try { for (const t of JSON.parse(localStorage.getItem(OWED_KEY) ?? '[]')) if (typeof t === 'string' && !owedTells.includes(t)) owedTells.push(t); } catch { /* none */ }
@@ -3455,19 +3471,20 @@ function tellAfter(text) {
   return flushTells();
 }
 function flushTells() {
-  if (tellsRun) return tellsRun;
+  // One run at a time, flagged BEFORE it starts: a run with nothing owed ends inside this call.
+  if (tellsRun) return;
+  tellsRun = true;
   adoptOwed();
-  tellsRun = (async () => {
+  (async () => {
     try {
       while (owedTells.length) {
-        for (let k = 0; k < 2400 && !tellMay({ ahead: boxAhead(), seal: riseWaits, piece: Boolean(pieceOn) }); k += 1) await pause(250);
+        for (let k = 0; k < 2400 && !toldOver(); k += 1) await pause(250);
         const due = owedTells.splice(0);
         mirrorOwed();
         for (const t of due) await report(t);
       }
-    } finally { tellsRun = null; }
+    } finally { tellsRun = false; }
   })();
-  return tellsRun;
 }
 
 /* 组牌 — a tap puts a card in the ten or takes it out; the popover redraws

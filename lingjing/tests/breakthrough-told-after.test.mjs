@@ -54,14 +54,24 @@ test('the page holds the bar from the rise and lets it go with the seal', () => 
   assert.match(page, /featNow\(\.\.\.latest\); releaseBar\(\); return;/, 'the seal goes up and the bar changes with it');
 });
 
+test('the throw holds the bar before the Look, since the next scene may be on another line (筑基 → 今), where no rise is seen', () => {
+  const throwTap = fn('async function throwTap');
+  assert.match(throwTap, /const was = barOf\(look\);\s*const r = await write\('resolve'/, 'the bar as it stood, taken before the throw');
+  assert.match(throwTap, /if \(b\?\.success && !was\.line\) holdBar\(\{ tier: was\.tier, progress: was\.progress, next: was\.next \}\);\s*const fell/, 'held before refresh() draws the new Look');
+  assert.match(throwTap, /if \(b\.success\) releaseWhenTold\(\);/);
+  const told = page.slice(page.indexOf('const exitTold'), page.indexOf('const exitTold') + 900);
+  assert.match(told, /leadsIn\(readingHere\(\), look\?\.scene\?\.id, lastLook\(\)\?\.scene\?\.id\)/, 'the exit passage is told while the box leads into this scene from the last (the header\'s own rule)');
+  assert.match(told, /tellMay\(\{ ahead: exitTold\(\), seal: riseWaits, piece: Boolean\(pieceOn\) \}\)/);
+});
+
 test('the throw tells Ling through the owed list, not at once; skip, leave and reload all send it once', () => {
   const throwTap = fn('async function throwTap');
-  assert.doesNotMatch(throwTap.slice(0, throwTap.indexOf('/* A result told after')), /await report\(`\[scene\] breakthrough/, 'no report at the throw');
+  assert.doesNotMatch(throwTap.slice(0, throwTap.indexOf('/* The throw\'s own passage')), /await report\(`\[scene\] breakthrough/, 'no report at the throw');
   assert.match(throwTap, /tellAfter\(`\[scene\] breakthrough \$\{b\.success \? 'won' : 'failed'\} \$\{b\.chance\}%`\);/);
   const flush = fn('function flushTells');
-  assert.match(flush, /tellMay\(\{ ahead: boxAhead\(\), seal: riseWaits, piece: Boolean\(pieceOn\) \}\)/, 'the same book, seal and piece the moments wait for');
+  assert.match(flush, /if \(tellsRun\) return;\s*tellsRun = true;/, 'flagged before it starts: a run with nothing owed ends inside the call (a promise kept in the flag stayed set for ever — seen live)');
+  assert.match(flush, /k < 2400 && !toldOver\(\)/, 'the same wait as the bar, and the same ten minutes the moments wait');
   assert.match(flush, /owedTells\.splice\(0\);\s*mirrorOwed\(\);\s*for \(const t of due\) await report\(t\);/, 'taken off the list (and the storage) before it is sent: never twice');
-  assert.match(flush, /k < 2400/, 'a passage that never ends sends it after the same ten minutes the moments wait');
   assert.match(page, /recapWhenSettled\(greeted\);\s*\/\/ A result told after[^\n]*\n\s*flushTells\(\);/, 'a reloaded page sends what the closed one still owed');
   assert.match(page, /const OWED_KEY = `lingjing\.owed\.\$\{SCRATCH \|\| 'main'\}`;/, 'kept per save, a scratch save never reaches the main one');
 });
