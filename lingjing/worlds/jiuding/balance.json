@@ -108,6 +108,8 @@
     },
     "economy": {
       "_about": "灵石 on one curve (batch 2, Hanli 2026-11-10: 「所有和数值相关的都应该有公式推到, 不能手动定」 · 「丹药, 物品都给一个级别吧, 算数值的时候, 按照这个级别算」): `income` I(L) = first × growth^(L−1) × realm^realm — the 灵石 a minute of play is worth at level L (L = realm × 9 + 层, 零层 read at L1), the same shape as R(L) (rules/playpay.mjs incomeAt). Every 灵石 the book grants is a size in minutes of income (`ls` on a grant, a table's, a board's rank, a kind's play) × I where it is paid (its `level` if it says one, else where he stands; rules/playpay.mjs stonesAt); every shop price is minutes × I(the item's own level) by its class (`prices`, tools/master.mjs pricesOf). `first` 2.5: the sizes are today's 灵石 × 0.3 (a minute at the old 3⅓), and I₁ is set so the typical player's 卷一 earns what it did on main (2380 — tools/balance.mjs --wealth; his 灵石 is earned mostly at 练气五–九层, where I(L) stands at 3.0–3.7): 练气一层 pays 0.75 of what it did, 七层 1.0, 九层 1.1, 筑基一层 1.4. Until 2026-11-10 `income` was a flat 3.2 and every grant a hand number.",
+      "_earn": "2026-11-12: 「目前灵石3.6K了, 没有消耗的地方, 奖励调低点」；1 为原收入。",
+      "earn": 0.5,
       "income": {"first": 2.5, "growth": 1.05, "realm": 1.2},
       "_tables": "What a pay table pays by itself, or the most a grant on it may declare (`pay.<table>.ls`, minutes of income): `labor` an errand of 杂役, `once` 开府, `stage` a 阶段任务 handed in, `chore_week` the 宗门月俸, `life` the day's pick, `gongke_zero` a 功课 at 零层, `haunt` a pool's fight won; the rest cap the book's grants (a scene's way on, a task's, a meet's…). Today's caps × 0.3.",
       "tables": {
@@ -755,7 +757,7 @@
       ]
     }
   },
-  "economy": {"income": {"first": 2.5, "growth": 1.05, "realm": 1.2}, "pouch": {"base": 6, "step": 2}},
+  "economy": {"earn": 0.5, "income": {"first": 2.5, "growth": 1.05, "realm": 1.2}, "pouch": {"base": 6, "step": 2}},
   "breakthrough": {
     "base": {"foundation": 10, "core": 55, "nascent": 50, "deity": 45, "void": 40, "body": 40, "maha": 35, "tribulation": 30},
     "floor": 5,

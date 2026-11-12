@@ -288,7 +288,7 @@ function rollLoot(content, run, tier, key, { elite = false, times = 1 } = {}) {
   for (const g of got) run.loot.items[g.id] = (run.loot.items[g.id] ?? 0) + g.n;
   return got;
 }
-const addWealth = (run, n) => { run.loot.wealth += Math.max(0, Math.round(n)); return n; };
+const addWealth = (run, n) => { run.loot.wealth += n > 0 ? Math.max(1, Math.round(n)) : 0; return n; };
 
 /* ── In ── */
 
@@ -344,7 +344,7 @@ function goRoom(state, content, ctx, args) {
 }
 // 灵石 in minutes of income (balance.json mijing.wealth, batch 2): × the run's I (`inc`: where he stood when he went in,
 // rules/playpay.mjs incomeAt) — a run started before 2026-11-10 carries none and reads 练气一层's.
-const wealthScale = (content, t, run) => (1 + (knobs(content).wealth?.step ?? 0) * (t.n - 1)) * (run?.inc ?? incomeAt(content, 1));
+const wealthScale = (content, t, run) => (1 + (knobs(content).wealth?.step ?? 0) * (t.n - 1)) * (run?.inc ?? incomeAt(content, 1)) * (content.balance?.economy?.earn ?? 1);
 /* A room behind him: counted (its minutes toward the run's 修为, the depth he reached). */
 function roomCleared(content, run, kind) {
   if (run.done.includes(run.at)) return;
@@ -441,7 +441,8 @@ export function endRun(s, content, ctx, how, extra = {}) {
   const items = Object.entries(r.loot.items).map(([id, n]) => ({ id, n: how === 'clear' ? n : Math.floor(n * keep) })).filter(i => i.n > 0);
   let wealth = Math.round(r.loot.wealth * keep);
   if (how === 'clear') {
-    wealth += Math.round((k.wealth?.clear ?? 0) * wealthScale(content, t, r));
+    const clearWealth = (k.wealth?.clear ?? 0) * wealthScale(content, t, r);
+    wealth += clearWealth > 0 ? Math.max(1, Math.round(clearWealth)) : 0;
     for (const p of k.clear?.items ?? []) if ((p.from ?? 1) <= t.n && (p.to ?? 99) >= t.n) items.push({ id: p.item, n: between(p.n, u(`${r.seed}|clear|${p.item}`)) });
     const arm = rollLoot(content, r, t, 'clear', { elite: true, times: 1 }).find(g => content.items.items.find(i => i.id === g.id)?.rarity);
     if (arm && !items.some(i => i.id === arm.id)) items.push(arm);

@@ -84,7 +84,7 @@ function amountsOf(content, state, now, grant) {
   // from those sizes already (a board's rank, a 功课's, a converted fight's) or a made scene's (Ling's), capped by the table there.
   const cap = table.ls ?? Infinity;
   const coin = grant.ls != null ? stonesAt(content, state, Math.min(grant.ls, cap), { level: grant.level ?? null })
-    : grant.wealth_told ? grant.wealth : Math.min(grant.wealth ?? 0, Number.isFinite(cap) ? stonesAt(content, state, cap) : Infinity);
+    : grant.wealth_told ? Math.max(1, Math.round(grant.wealth * (content.balance?.economy?.earn ?? 1))) : Math.min(grant.wealth ?? 0, Number.isFinite(cap) ? stonesAt(content, state, cap) : Infinity);
   const wealth = Math.max(0, Math.round(coin * share));
   // One realm multiplier (2026-11-10): R's own (`rate.realm`) — the ladder's per-realm `pay` is gone.
   return { base, progress: Math.round(base * layerPayOf(content, state, grant.table)), wealth };

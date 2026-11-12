@@ -126,7 +126,7 @@ test('修屋顶 is handed in for 灵石 and, since 2026-10-27, its minutes\' 修
   const e = content.balance.play_pay.errand;
   // A fixed number (2026-11-02): its minutes as 体力-units × R at 练气一层 (play_pay.xiuwei.rate.base, 2).
   assert.equal(turned.result.paid.progress, Math.round(content.balance.play_pay.xiuwei.rate.base * e.minutes), 'an errand\'s minutes at 练气一层');
-  assert.equal(turned.result.paid.wealth, 5 + Math.round(stonesAt(content, s, e.ls)), '周衡: 「记你五块灵石」 (a master told, batch 2), and the errand\'s own (minutes of income × I where he stands)');
+  assert.equal(turned.result.paid.wealth, Math.max(1, Math.round(5 * content.balance.economy.earn)) + Math.round(stonesAt(content, s, e.ls)), '周衡: 「记你五块灵石」 (a master told, batch 2), and the errand\'s own (minutes of income × I where he stands)');
   const f = structuredClone(s);
   // A fight won: its 体力 × R at 练气一层 (2026-11-02) × a card fight's factor (play_pay.xiuwei.fight, 2026-11-10: 「打一场才几点」).
   assert.equal(pay(content, f, ctx, { table: 'haunt', progress: T.haunt.progress, ls: T.haunt.ls }).progress, fightPlay(content, f));

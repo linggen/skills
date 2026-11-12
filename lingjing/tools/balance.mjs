@@ -131,7 +131,7 @@ export function bookWalk(content, model = content.balance.model) {
         // 灵石 in minutes of income (batch 2), priced where it lands (rules/playpay.mjs stonesAt).
         ls: wealthCap(content, e?.grant) + (side ? 0 : boards.reduce((n, t) => n + wealthCap(content, t.grant), 0) + boardFirst(content, ch, sc, boards)),
         // …and a 灵石 number the book tells (master.economy.told: 09-lingcao's 二十), as written.
-        stones: e?.grant?.wealth_told ? e.grant.wealth : 0,
+        stones: e?.grant?.wealth_told ? Math.max(1, Math.round(e.grant.wealth * (content.balance?.economy?.earn ?? 1))) : 0,
         // A story step (`story`, Hanli 2026-11-09) pays one small game's 修为 where he stands — priced when it lands.
         // A stretch of cultivation (`cultivation`, Hanli 2026-11-10, rules/cultivation.mjs) whose way on pays no 修为 of its own:
         // one story step on leaving, when its boards paid none (`floor`; priced after the rise, in play below).
@@ -348,7 +348,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
   const payErrand = q => {
     errandsPaid.add(q.id); errandsDue.delete(q.id);
     gain(U(unitsOf(q.grant)), false, null, 'errand'); gain(pillXw(content, q.grant?.item) ?? U(pillOf(content, q.grant?.item)), false, 'pill', 'errand');
-    gain(workGrant(content, { ...s, need: need() }, q)?.progress ?? 0, false, 'play', 'errand'); earn(LS(wealthCap(content, q.grant)) + (q.grant?.wealth_told ? q.grant.wealth : 0), 'errand');
+    gain(workGrant(content, { ...s, need: need() }, q)?.progress ?? 0, false, 'play', 'errand'); earn(LS(wealthCap(content, q.grant)) + (q.grant?.wealth_told ? Math.max(1, Math.round(q.grant.wealth * (content.balance?.economy?.earn ?? 1))) : 0), 'errand');
   };
   /* A day's meanings of `n` app chores: the kinds' mean units and 灵石 (a kind with its own pay, 传音, is not one), capped per day. */
   const meaningDay = n => {

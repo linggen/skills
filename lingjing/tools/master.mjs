@@ -250,7 +250,7 @@ export function derive(raw0, { ladder, items, fantong = null, cards = null }) {
   // 灵石 (batch 2, master.economy): I(L), and every size in minutes of income — the pay tables', a board's rank, a kind's play,
   // an errand's work, the 圆满 share, 开炉's worth by 品阶. Priced where they land (rules/playpay.mjs stonesAt).
   const E = M.economy;
-  raw.economy = { income: { ...E.income }, ...(E.pouch ? { pouch: { ...E.pouch } } : {}) };
+  raw.economy = { earn: E.earn ?? 1, income: { ...E.income }, ...(E.pouch ? { pouch: { ...E.pouch } } : {}) };
   for (const [t, p] of Object.entries(raw.pay)) { const { wealth, ...rest } = p; raw.pay[t] = { ...rest, ls: E.tables[t] ?? 0 }; }
   raw.boards = { ...E.boards };
   pp.wealth = { ...E.play };

@@ -170,9 +170,9 @@ export function roll(t0, { seed, ids, lingshi = 0, realm = 0, press = false, lif
     // A 方子 may give more than one (`n`: 古八's 九节聚气, 「滚出三颗丹来」).
     if (recipe && grade !== 'junk') return { out: grade === 'useful' ? recipe.out : recipe.best, grade, recipe: recipe.id, ...(recipe.n > 1 ? { n: recipe.n } : {}) };
     const target = targetOf(t, grade, worth), got = rowsFor(t, family, target, open, info);
-    if (!got) return stones ? { out: LINGSHI, wealth: worthInStones(t, target, worth, grade), grade, family } : { out: LINGSHI, wealth: 1, grade, family };
+    if (!got) return stones ? { out: LINGSHI, wealth: Math.max(1, Math.round(worthInStones(t, target, worth, grade) * (t.worth?.earn ?? 1))), grade, family } : { out: LINGSHI, wealth: 1, grade, family };
     const row = weighted(pickU, got.rows);
-    const ls = stonesOfRow(row, t.worth?.income ?? 1);
+    const ls = stonesOfRow(row, (t.worth?.income ?? 1) * (t.worth?.earn ?? 1));
     const n = ls ? ls[0] + Math.floor(nU * (ls[1] - ls[0] + 1)) : row.n ?? 1;
     return { out: row.item ?? LINGSHI, ...(ls ? { wealth: n } : n > 1 ? { n } : {}), grade, family: got.family,
       ...(row.with && withU * 100 < (row.with_chance ?? 100) ? { with: row.with } : {}) };
@@ -221,7 +221,7 @@ export function withWorth(t, balance, items = null) {
   // level); a row's own worth (`worth_ls`, a rare thing the shops never price) its minutes × I(its thing's level).
   const x = balance?.economy?.income ?? null, tierM = balance?.kailu?.tier ?? {}, lv = new Map((items ?? []).map(i => [i.id, i.level ?? 1]));
   const of = (id, m) => (x ? Math.round(m * incomeOf(x, lv.get(id) ?? 1)) : m);
-  const tbl = { ...t, ...(balance?.kailu ? { worth: { ...balance.kailu, ...(x ? { income: incomeOf(x, 1), income_of: x } : {}) } } : {}) };
+  const tbl = { ...t, ...(balance?.kailu ? { worth: { ...balance.kailu, earn: balance?.economy?.earn ?? 1, ...(x ? { income: incomeOf(x, 1), income_of: x } : {}) } } : {}) };
   const info = items ? Object.fromEntries(items.map(i => {
     const sell = balance?.prices?.[i.id]?.sell ?? i.sell ?? 0;
     return [i.id, { kind: i.kind, sell, level: i.level ?? 1, ...(x && !(sell > 0) ? { worth: of(i.id, tierM[tierOfItem(tbl, i.id)] ?? 0) } : {}) }];

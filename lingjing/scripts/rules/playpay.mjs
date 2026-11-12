@@ -221,7 +221,9 @@ export function stoneLevel(content, state) {
 }
 /* `minutes` of income in 灵石 where it is paid: at the content's `level` if given, else where he stands. Unrounded. */
 export function stonesAt(content, state, minutes, { level = null } = {}) {
-  return minutes > 0 ? minutes * incomeAt(content, level ?? stoneLevel(content, state)) : 0;
+  const base = minutes > 0 ? minutes * incomeAt(content, level ?? stoneLevel(content, state)) : 0;
+  const scaled = base * (content.balance?.economy?.earn ?? 1);
+  return base >= 0.5 && scaled > 0 ? Math.max(0.5, scaled) : scaled;
 }
 /* A pay table's own 灵石 (balance.json `pay.<table>.ls`, minutes) where he stands — what a table pays by itself (labor,
    once, stage, chore_week, life, gongke_zero, haunt), and what it caps a grant at. Rounded. */

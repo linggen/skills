@@ -31,7 +31,7 @@ import { itemOf, offersOf } from './errands.mjs';
 import { hashOf } from './travel.mjs';
 import { bagFull, hasFound, roomFor } from './pouch.mjs';
 import { mainRoot } from './roots.mjs';
-import { sizedUnits, stonesAt } from './playpay.mjs';
+import { incomeAt, sizedUnits, stoneLevel, stonesAt } from './playpay.mjs';
 import { visitorHere } from './visiting.mjs';
 import { allPlaces, atScene, creatureOf, huntable, inMade, sealedOf, ofJuan, placeOf, placeOpen, poolBeast, tooHard } from './world.mjs';
 
@@ -233,7 +233,7 @@ function meetBrief(content, state, now) {
 const STAKES = {
   // A stake of 灵石: minutes of income (meets.json trial.lose.coin, batch 2) × I where he stands.
   coin: (content, s, ctx, n) => {
-    const lost = Math.min(s.wealth, Math.round(stonesAt(content, s, n)));
+    const lost = Math.min(s.wealth, Math.round(n * incomeAt(content, stoneLevel(content, s))));
     s.wealth -= lost;
     return { lost: { wealth: lost } };
   },

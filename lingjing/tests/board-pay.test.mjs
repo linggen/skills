@@ -3,6 +3,8 @@
 // stands (batch 2, 2026-11-10; 5 · 10 · 15 灵石 before) — on top of
 // the task's own grant; a replay pays nothing; before 入门 nothing at all.
 import test from 'node:test';
+import fs from 'node:fs';
+import { derive, inputsOf } from '../tools/master.mjs';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { task, win } from '../scripts/rules.mjs';
@@ -57,6 +59,24 @@ for (const [grade, rank] of [['loose', 'plain'], ['tight', 'best']]) {
     assert.ok(done.state.boards_paid.includes(ID));
   });
 }
+
+test('earn halves a board grant without changing a shop price', () => {
+  const { s, now } = at('00-waimen/wm-qianye');
+  const original = content.balance.economy.earn;
+  const read = f => JSON.parse(fs.readFileSync(new URL(`../worlds/jiuding/${f}`, import.meta.url), 'utf8'));
+  const raw = read('balance.json'), inputs = inputsOf(read);
+  raw.master.economy.earn = 1;
+  const prices = derive(raw, inputs).prices;
+  raw.master.economy.earn = 0.5;
+  assert.deepEqual(derive(raw, inputs).prices, prices);
+  try {
+    content.balance.economy.earn = 1;
+    const full = clear(s, now, ID, 'loose').result.paid.board.wealth;
+    content.balance.economy.earn = 0.5;
+    const half = clear(s, now, ID, 'loose').result.paid.board.wealth;
+    assert.equal(half, Math.max(1, Math.round(full * 0.5)));
+  } finally { content.balance.economy.earn = original; }
+});
 
 test('a replay pays nothing: the board is paid once', () => {
   const { s, now } = at('00-waimen/wm-qianye');
