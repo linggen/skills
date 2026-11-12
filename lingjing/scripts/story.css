@@ -506,3 +506,6 @@ body.storylock :is(#footRow, #footChips, #headCards, .tray) :is(button, a, [role
 .story .wayacts .gatecard .acts { justify-content: center; }
 .story .wayacts .gatecard .act { color: #fff; background: var(--ling); border-color: var(--ling); }
 .story .wayacts .paneltap:disabled, .story.done .wayacts .paneltaps > .paneltap:disabled { animation: none; opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Match the book reader; its 1.95 line height leaves room for pinyin. */
+.story ruby.py rt, .dlglog ruby.py rt { font-size: 0.5em; letter-spacing: 0; color: var(--dim); font-family: system-ui, sans-serif; font-weight: 400; }

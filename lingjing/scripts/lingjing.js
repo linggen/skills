@@ -76,7 +76,7 @@ import { WINDS } from './rules/weather.mjs';
 import { parseDay } from './calendar.js';
 import { applySky, moonAt, skyOf } from './sky-bodies.js';
 import { cityNote, draft as skyDraft, wxChipHtml } from './sky.js';
-import { pieceStillAhead, advance, asidePlace, atLast, beatKey, choicesUp, readingAt as readingSetAside, current, DLG_WORDS, fitMode, huiAt, keepReading, leadsIn, loadReading, modeAt, sceneOfItem, logHtml, noted, ofPlay, playing, readingFor, sightNow, sightings, storyHolds, storyHtml, wholeBeats, withTold } from './dialogue.js';
+import { pieceStillAhead, advance, asidePlace, atLast, beatKey, choicesUp, readingAt as readingSetAside, current, DLG_WORDS, fitMode, huiAt, keepReading, leadsIn, loadReading, modeAt, sceneOfItem, logHtml, noted, ofPlay, playing, readingFor, sightNow, sightings, storyHolds, storyHtml, storyPinyin, wholeBeats, withTold } from './dialogue.js';
 import { createLines, keepSpeed, paceOf, SPEEDS, speedNow, voiceOf } from './lines.js';
 import { isSight, artRoom, chatHeard, fitBox, mountChatToggle, paintSight, setAutoFold } from './sight.js';
 import { createPager } from './pager.js';
@@ -545,7 +545,7 @@ async function loadContent(world, force = false) {
   // The stage's backdrops, by the weather and the hour (atmos.js backdropOf); a world without them keeps the paper.
   const backdrops = await content(baseDir, 'backdrops.json').catch(() => null);
   const sameWorld = authored?.world === world.id;
-  authored = { world: world.id, dir: baseDir, creatures: all, herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, traits: roots, dictionary, cards, codexFiles: { codex, people, creatures, items, arts }, backdrops, loadedAt: Date.now() };
+  authored = { world: world.id, dir: baseDir, creatures: all, storyPinyin: storyPinyin(all), herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, traits: roots, dictionary, cards, codexFiles: { codex, people, creatures, items, arts }, backdrops, loadedAt: Date.now() };
   if (!sameWorld) boards.clear();
 }
 
@@ -2964,7 +2964,7 @@ const replayUp = (l) => (l?.tasks ?? []).some((t) => t.replay && t.status !== 'd
 function dialogBoxHtml(slots) {
   const r = readingHere();
   if (!r) return '';
-  const log = view.logOpen ? logHtml(r, { lang: lang() }) : '';
+  const log = view.logOpen ? logHtml(r, { lang: lang(), pinyin: authored?.storyPinyin }) : '';
   // A board on the stage puts the box away — not its 回看 (2026-10-15, his: the button above
   // 黑地十一步 did nothing): the log still opens over the board, and the board's clock waits.
   if (boxYields(slots)) return log;
@@ -2972,7 +2972,7 @@ function dialogBoxHtml(slots) {
   // The beast beside the scene sits under the box at its last beat, with or without the scene's choices there (live at
   // 430, bf7a5fe2: the box held no choices and the chip fell to the footer strip, clipped).
   const acts = (choicesInBox() ? panelActsHtml(ctx(), { inBox: true }) : '') + (atLast(r, lang()) ? besideHtml(slots) : '');
-  const story = playing(r) ? storyHtml(r, { lang: lang(), voice, acts, herId: look.companion?.id ?? null, speed: modeAt(r, speedNow(), lang()), faces: r.all?.whole ? firstFaces() : [], aside: asideMay(r) }) : '';
+  const story = playing(r) ? storyHtml(r, { lang: lang(), pinyin: authored?.storyPinyin, voice, acts, herId: look.companion?.id ?? null, speed: modeAt(r, speedNow(), lang()), faces: r.all?.whole ? firstFaces() : [], aside: asideMay(r) }) : '';
   return story + log;
 }
 

@@ -210,17 +210,24 @@ export function createLines({ onDone = () => {}, onScreen = () => {}, timer = gl
      before each sentence comes up (its text) and before the beat ends (null); true holds it, looked at again soon. */
   const gated = (text) => Boolean(opts.gate?.(text));
   const waitGate = () => armAt(step, GATE_POLL_MS, f());
+  // Ruby annotations are visual only, not part of the spoken sentence or cue.
+  const plainSentence = (el) => {
+    if (!el.querySelector?.('rt, rp')) return el.textContent;
+    const copy = el.cloneNode(true);
+    copy.querySelectorAll('rt, rp').forEach((node) => node.remove());
+    return copy.textContent;
+  };
   function step() {
     clear();
     if (!host || done) return;
     const ss = sents();
     if (ki < ss.length) {
-      if (gated(ss[ki].textContent)) { waitGate(); return GATED; }
+      if (gated(plainSentence(ss[ki]))) { waitGate(); return GATED; }
       ki += 1;
       paint();
       if (paused) return;
       const last = ki === ss.length;
-      arm(step, paceOf(ss[ki - 1].textContent, { last, lang: opts.lang }));
+      arm(step, paceOf(plainSentence(ss[ki - 1]), { last, lang: opts.lang }));
       return;
     }
     if (si + 1 < screens().length) {

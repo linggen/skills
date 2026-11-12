@@ -15,6 +15,10 @@
 // Pure: the reading is a plain object, kept per save in localStorage so a
 // reload finds its place (lingjing.js holds it; tests read these directly).
 import { esc } from './esc.js';
+import { pinyinAnnotator } from './read-md.js';
+
+export const storyPinyin = (creatures = []) => pinyinAnnotator(Object.fromEntries(creatures.filter((c) => c.name?.zh && typeof c.pinyin === 'string' && c.pinyin.trim()).map((c) => [c.name.zh, c.pinyin])));
+const identity = (html) => html;
 import { closeX } from './card-close.js';
 import { headOf } from './book-words.mjs';
 import { joinSentences, linesHtml, paraHtml, screensOf } from './lines.js';
@@ -356,13 +360,14 @@ export const beatKey = (r, lang = 'zh') => (playing(r) ? `${r.run ?? ''}|${r.sce
    (lines.js speedNow); at 快 the rest of the passage stands as one column (wholeOf,
    `wholeHtml`). Nothing here reaches Ling. */
 /* `aside`: 先放一放 stands on the box (Look's `aside` has something to play meanwhile; rules/aside.mjs). */
-export function storyHtml(r, { lang = 'zh', voice = null, acts = '', herId = null, speed = 'mid', faces = [], aside = false } = {}) {
+export function storyHtml(r, { lang = 'zh', voice = null, acts = '', herId = null, speed = 'mid', faces = [], aside = false, pinyin = identity } = {}) {
   if (!playing(r)) return '';
   const w = DLG_WORDS[lang] ?? DLG_WORDS.zh, { beat: b } = current(r, lang);
   const last = atLast(r, lang), key = beatKey(r, lang), whole = Boolean(r.all?.whole);
   const choices = last && acts ? acts : '';
-  const body = whole ? wholeHtml(r, { lang, herId, w, choices, faces })
-    : `<div class="lines" aria-live="polite">${linesHtml(b, { lang, herId, words: w })}</div>${waysHtml(b, choices, lang)}`;
+  const annotate = lang === 'zh' ? pinyin : identity;
+  const body = whole ? wholeHtml(r, { lang, herId, w, choices, faces, annotate })
+    : `<div class="lines" aria-live="polite">${annotate(linesHtml(b, { lang, herId, words: w }))}</div>${waysHtml(b, choices, lang, annotate)}`;
   const cls = `story${choices ? ' choosing' : ''}${whole ? ' whole' : r.all && last ? ' shown' : ''}`;
   return `<div class="${cls}" data-dlg-on data-dlg-next data-story="${esc(key)}" role="button" tabindex="0" aria-label="${esc(w.on)}">
     ${body}
@@ -381,30 +386,31 @@ function countHtml(r, lang, w) {
 /* 快's pages (pager.js fills the count and hides what is not on the page): beside this 回's count. */
 const pagerHtml = (w) => `<span class="pager" hidden><button class="q" data-pg="-1"><span aria-hidden="true">‹</span> <span class="pgw">${esc(w.pages[0])}</span></button><span class="pgn"></span><button class="q" data-pg="1"><span class="pgw">${esc(w.pages[1])}</span> <span aria-hidden="true">›</span></button></span>`;
 /* Its last line, faint above the way on (b-choices): the beat's final screen. */
-function waysHtml(b, choices, lang) {
+function waysHtml(b, choices, lang, annotate) {
   if (!choices) return '';
   const last = screensOf(b.text, lang).at(-1), tail = last ? joinSentences(last, b.text) : '';
-  return `<div class="ways"><div class="last">${esc(tail)}</div><div class="wayacts">${choices}</div></div>`;
+  return `<div class="ways"><div class="last">${annotate(esc(tail))}</div><div class="wayacts">${choices}</div></div>`;
 }
 /* 快's column: every beat left of the passage, a paragraph each, in the band on the stage's lower
    half, page by page (pager.js); a face's 亮相 (sightings — the beat the book marks his entrance)
    named on its paragraph (`data-faces`), so the page that holds it brings him on large in the
    upper half; at the end the choices, or 「接着往下」 when the reading goes on past this column. */
-function wholeHtml(r, { lang, herId, w, choices, faces }) {
+function wholeHtml(r, { lang, herId, w, choices, faces, annotate }) {
   const seen = sightings(r, faces, lang), beats = wholeBeats(r, lang);
-  const paras = beats.map((b) => paraHtml(b, { herId, words: w, place: `${b.i}.${b.j}`, faces: (faces ?? []).filter((e) => seen.get(e.id) === b.at).map((e) => e.id) })).join('');
+  const paras = beats.map((b) => annotate(paraHtml(b, { herId, words: w, place: `${b.i}.${b.j}`, faces: (faces ?? []).filter((e) => seen.get(e.id) === b.at).map((e) => e.id) }))).join('');
   const end = choices ? `<div class="wayacts">${choices}</div>` : `<div class="onward"><button class="q" data-dlg-onward>${esc(w.onward)} <span aria-hidden="true">›</span></button></div>`;
   return `<div class="wholecol" aria-label="${esc(w.whole)}"><div class="wholetext">${paras}</div>${end}</div>`;
 }
 
 /* 回看: what was told so far — the scenes before (`past`), then this one up
    to the beat on show — a panel of its own with a plain close. */
-export function logHtml(r, { lang = 'zh' } = {}) {
+export function logHtml(r, { lang = 'zh', pinyin = identity } = {}) {
+  const annotate = lang === 'zh' ? pinyin : identity;
   const w = DLG_WORDS[lang] ?? DLG_WORDS.zh;
   const other = lang === 'en' ? 'zh' : 'en';
   const past = (r?.past ?? []).map((g) => (g[lang]?.length ? g[lang] : g[other] ?? [])).filter((g) => g.length)
-    .map((g) => `<div class="dlglogscene">${g.map((b) => rowHtml(b, w)).join('')}</div>`).join('');
-  const now = toldSoFar(r, lang).map((b) => rowHtml(b, w)).join('');
+    .map((g) => `<div class="dlglogscene">${g.map((b) => annotate(rowHtml(b, w))).join('')}</div>`).join('');
+  const now = toldSoFar(r, lang).map((b) => annotate(rowHtml(b, w))).join('');
   return `<div class="dlglog" role="dialog" aria-label="${esc(w.logTitle)}"><div class="dlgloghead"><span>${esc(w.logTitle)}</span>${closeX(lang, 'data-dlg-logclose', w.close)}</div><div class="dlglogbody">${past}${now ? `<div class="dlglogscene now"><div class="dlglogmark">${esc(w.logNow)}</div>${now}</div>` : ''}</div></div>`;
 }
 

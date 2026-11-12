@@ -118,12 +118,13 @@ const escRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /// over every occurrence in the page's text, longest word first — inside a
 /// gloss, a 回目, a 典 link or a table cell too, never in a tag or a ruby
 /// already set (his, 2026-10-07: 只要出现就加拼音).
-export function pinyinAll(html, list) {
+export function pinyinAnnotator(list) {
   const words = Object.keys(list ?? {}).filter((w) => w && rubyWord(w, list[w]) !== w).sort((a, b) => [...b].length - [...a].length);
-  if (!words.length) return html;
+  if (!words.length) return (html) => html;
   const re = new RegExp(words.map(escRe).join('|'), 'g');
-  return html.split(TAG_OR_RUBY).map((s, i) => (i % 2 ? s : s.replace(re, (w) => rubyWord(w, list[w])))).join('');
+  return (html) => html.split(TAG_OR_RUBY).map((s, i) => (i % 2 ? s : s.replace(re, (w) => rubyWord(w, list[w])))).join('');
 }
+export const pinyinAll = (html, list) => pinyinAnnotator(list)(html);
 
 // `《书名》{典=id}` — a classic named in the text (classics.json).
 const CLASSIC = /《([^》\n]+)》\{典=([\w-]+)\}/g;
