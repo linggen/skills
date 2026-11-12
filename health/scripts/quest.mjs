@@ -5,10 +5,9 @@
 // data, no letter this week, no new doctor's note) publishes `due: false`, and
 // a game hides it.
 //
-//   health-steps   5,000 steps today: the phone says so (fact `health-steps`,
-//                  HealthKit's own de-duplicated day total — the mirror holds
-//                  Watch and iPhone samples that overlap, so it never sums
-//                  them). Due while the mirror holds steps from the last 2 days
+//   health-steps   5,000 steps, a workout or 20 exercise minutes today: the
+//                  phone decides and sends only that it happened (fact
+//                  `health-steps`), never a count. Due while the mirror holds steps from the last 2 days
 //                  and a phone has said it once — a phone that cannot send the
 //                  fact never gets a chore it cannot finish.
 //   health-sleep   last night ≥ 7 h asleep: the phone says so (fact
@@ -47,8 +46,8 @@ export const RETIRED = ['health-workout'];
 export const MENU = [
   {
     id: 'health-steps', kind: 'body', period: 'day', reward: 20, device: 'phone', open: OPEN,
-    title: { zh: '炼体 · 走满 5000 步', en: 'Temper the body · walk 5,000 steps' },
-    how: { zh: '带着手机或手表走路，今天满 5000 步即成', en: 'Walk with your phone or Watch; 5,000 steps today' },
+    title: { zh: '炼体 · 今日动一动', en: 'Temper the body · move today' },
+    how: { zh: '走满 5000 步，或记一次锻炼，或活动满 20 分钟——哪样都算', en: '5,000 steps, any workout, or 20 exercise minutes — any one counts' },
   },
   {
     id: 'health-sleep', kind: 'rest', period: 'day', reward: 20, device: 'phone', open: OPEN,
