@@ -25,8 +25,10 @@ export const SHARE = 'lingjing-share';
 export const MENU = [
   {
     id: SHARE, kind: 'share', period: 'day', reward: 0, device: 'both', open: false, go: 'qian',
-    title: { zh: '传音 · 分享今日的签或近况', en: 'Send word · share today\'s fortune or health' },
-    how: { zh: '分享今日的签，或健康里的卡片', en: 'Share your fortune, or a health card' },
+    turns: [
+      { title: { zh: '传音 · 分享今日的签', en: "Send word · share today's fortune" }, how: { zh: '分享今日的签；健康里的卡片也算', en: 'Share your fortune; a health card counts too' } },
+      { title: { zh: '传音 · 分享一张健康卡片', en: 'Send word · share a health card' }, how: { zh: '在手机的健康里分享一张卡片；今日的签也算', en: 'Share a card from Health on your phone; your fortune counts too' } },
+    ],
   },
 ];
 
@@ -40,6 +42,8 @@ export function later(a, b) {
   return t(b) > t(a) ? b : a;
 }
 
+export const turnOf = (now) => ((Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000) % 2) + 2) % 2;
+
 /* The file's next body: the menu, each `done_at` the later of what the file held and `stamps` (id → time); `due` always. */
 export function merged(doc, stamps = {}, menu = MENU, now = new Date()) {
   // A held `done_at` past now was never a share (a wrong clock, a test's stamp): dropped, so a real one can replace it.
@@ -50,7 +54,7 @@ export function merged(doc, stamps = {}, menu = MENU, now = new Date()) {
   return {
     app: APP,
     quests: [
-      ...menu.map((m) => ({ ...m, due: true, done_at: m.id in stamps ? later(was.get(m.id)?.done_at ?? null, stamps[m.id]) : was.get(m.id)?.done_at ?? null })),
+      ...menu.map(({ turns, ...m }) => ({ ...m, ...(turns ? turns[turnOf(now) % turns.length] : {}), due: true, done_at: m.id in stamps ? later(was.get(m.id)?.done_at ?? null, stamps[m.id]) : was.get(m.id)?.done_at ?? null })),
       ...held.filter((q) => !mine.has(q.id)),
     ],
   };

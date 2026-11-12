@@ -13,7 +13,7 @@ import { VERBS, look } from '../scripts/rules.mjs';
 import { WORDS, agendaRowHtml } from '../scripts/cards.js';
 import { choreGo, choreGrant, ownOf, ownXiuwei } from '../scripts/rules/chores.mjs';
 import { storyPlay } from '../scripts/rules/playpay.mjs';
-import { MENU, SHARE, merged, publish, stamp, stampCli } from '../scripts/quest.mjs';
+import { MENU, SHARE, merged, publish, stamp, stampCli, turnOf } from '../scripts/quest.mjs';
 import { TO_WAIMEN, walk } from './prologue.mjs';
 
 const content = loadContent();
@@ -28,7 +28,7 @@ const ROOT = path.resolve(import.meta.dirname, '..');
 const NOW = new Date('2026-11-10T12:00:00');
 const T = id => ({ zh: `做${id}`, en: `Do ${id}` });
 const chore = (id, kind, extra = {}) => ({ id, app: 'some-app', period: 'day', due: true, reward: 20, stamina: 10, device: 'mac', done_at: '2026-11-10T09:00:00', title: T(id), ...(kind ? { kind } : {}), ...extra });
-const row = (done = '2026-11-10T09:30:00') => ({ ...MENU[0], app: 'lingjing', due: true, done_at: done });
+const row = (done = '2026-11-10T09:30:00') => ({ ...merged(null, {}, MENU, NOW).quests[0], app: 'lingjing', done_at: done });
 const ctxOf = (quests, now = NOW) => ({ now, quests });
 const joined = () => walk(newState(content, 'zh', NOW), TO_WAIMEN, content, NOW);
 const turn = (s, quests, id, now = NOW) => VERBS.quest(s, content, ctxOf(quests, now), { action: 'turn', id });
@@ -153,6 +153,37 @@ test('quest share is shut before 入门, and Ling and 银月 can never report on
   fs.rmSync(dir, { recursive: true, force: true });
   const run = spawnSync(process.execPath, ['-e', "import('./scripts/rules.mjs').then(m => console.log(m.pageOnly('quest', { action: 'share' }), m.pageOnly('quest', { action: 'menu' }), m.pageOnly('quest', { action: 'turn' })))"], { cwd: ROOT, encoding: 'utf8' });
   assert.equal(run.stdout.trim(), 'true true false');
+});
+
+test('share words alternate by local day and a menu refresh preserves the stamp', () => {
+  const first = new Date(2026, 10, 10, 9), next = new Date(2026, 10, 11, 9);
+  const body = merged(null, { [SHARE]: first.toISOString() }, MENU, first);
+  const refreshed = merged(body, {}, MENU, next);
+  const a = body.quests[0], b = refreshed.quests[0];
+  assert.notEqual(turnOf(first), turnOf(next));
+  assert.equal(turnOf(first), turnOf(new Date(2026, 10, 10, 23)));
+  assert.deepEqual(a.title, MENU[0].turns[turnOf(first)].title);
+  assert.deepEqual(b.title, MENU[0].turns[turnOf(next)].title);
+  assert.notDeepEqual(a.title, b.title);
+  assert.equal(b.done_at, first.toISOString());
+  assert.equal(b.go, 'qian');
+  assert.equal('turns' in b, false);
+  assert.deepEqual(b.how, MENU[0].turns[turnOf(next)].how);
+});
+
+test('reading chores refreshes yesterday’s menu on disk without a new stamp', async () => {
+  const { readQuests } = await import('../scripts/rules/files.mjs');
+  const dir = tmp(), today = new Date(), yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1, 12);
+  const file = path.join(dir, 'lingjing.json');
+  fs.writeFileSync(file, JSON.stringify(merged(null, { [SHARE]: yesterday.toISOString() }, MENU, yesterday)));
+  withQuests(dir, () => {
+    const seen = readQuests().find(q => q.id === SHARE);
+    const stored = JSON.parse(fs.readFileSync(file, 'utf8')).quests[0];
+    assert.deepEqual(seen.title, MENU[0].turns[turnOf(today)].title);
+    assert.deepEqual(stored.title, seen.title);
+    assert.equal(stored.done_at, yesterday.toISOString());
+  });
+  fs.rmSync(dir, { recursive: true, force: true });
 });
 
 test('the menu: written once, a stamp never moves a time back, a bad stamp is refused, an unknown entry stays', () => {

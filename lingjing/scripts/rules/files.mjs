@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { cardOf, madeWorldDir, overlayOf } from '../content.mjs';
 import { newState } from '../state.mjs';
+import { publish } from '../quest.mjs';
 
 /* ── Files and the command line ── */
 
@@ -165,6 +166,8 @@ function withLock(file, fn, busy) {
 }
 
 function readQuests() {
+  const writable = questsWriteDir();
+  if (writable) { try { publish({ dir: writable }); } catch { /* a menu that cannot be written never stops a read */ } }
   const dir = questsDir();
   if (!fs.existsSync(dir)) return [];
   const quests = [];

@@ -5,7 +5,7 @@
 // finished 分享, 拷贝图片 or 保存图片 of its pictures (the 签; qian-share.js); the rules stamp the menu's row and hand it in
 // at once, as any 人间功课 is (tasks.mjs questCheck): once a day, its pay the kind's own (chores.mjs ownOf). The page's
 // alone: a report Ling could make would be a self-reported share.
-import { APP, MENU, SHARE, publish, stamp } from '../quest.mjs';
+import { APP, SHARE, merged, publish, stamp } from '../quest.mjs';
 import { questsWriteDir } from './files.mjs';
 
 /* The menu put in the quests folder, when the game may write one there (a scratch save without its own folder may not). */
@@ -20,5 +20,5 @@ export function publishMenu() {
 export function shareRow(now) {
   const dir = questsWriteDir();
   if (dir) { try { return { ...stamp(SHARE, { dir, now }), app: APP }; } catch { /* the row below */ } }
-  return { ...MENU.find((m) => m.id === SHARE), app: APP, due: true, done_at: now.toISOString() };
+  return { ...merged(null, { [SHARE]: now.toISOString() }, undefined, now).quests.find((m) => m.id === SHARE), app: APP };
 }
