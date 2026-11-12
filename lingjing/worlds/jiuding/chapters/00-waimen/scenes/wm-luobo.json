@@ -72,6 +72,11 @@
    },
    "beat": [],
    "next": "wm-yaban",
+   "grant": {
+    "table": "scene",
+    "item": "foundation-pill-9"
+   },
+   "_grant": "The bag gets the 九转 here, where the 饭桶 makes it (the builder, 2026-11-12: the game gives a thing where the story does) — not on 09-qulao, where nobody hands it over. It sits in the bag five years; no scene's text mentions it again until the eve of 筑基 (2026-10-06, unchanged). Kept safe meanwhile: items.json `story: true` (never sold, tossed or swapped), never fed to the 饭桶 (fantong.json never.items), refused as food below 筑基 (rules/travel.mjs trade use).",
    "needs": {
     "task": "luobo-rope"
    },

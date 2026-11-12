@@ -298,6 +298,11 @@ export function trade(state, content, ctx, args) {
       return { state: s, result: { ok: true, used: item.id, item: itemBrief(content, s, item), ...(worn.swapped ? { swapped: worn.swapped } : {}), pouch: pouchBrief(content, s) } };
     }
     if (e.units || e.progress) {
+      // A pill of a realm above his own is for that realm's throw (the breakthrough reaches for it, ladder.json breakthrough.pill) — a 筑基丹 sits in the bag
+      // from 古五 to 古八 and is never eaten as food at 练气 (the builder 2026-11-12); once he has crossed, one left over is still eaten as before.
+      if (item.kind === 'pill' && item.zhuan && item.tier && tierRank(content, item.tier) > tierIndex(content, s)) {
+        return refuse('for-the-throw', pick({ zh: '这是冲关时服的丹，留着，到那一刻再用。', en: 'This pill is for the breakthrough itself — keep it for that moment.' }, lang));
+      }
       // 圆满 (Hanli 11-03: 「修为圆满, 聚气丹无法起作用」): a pill would pay nothing and still owe 丹毒 — kept in the bag,
       // the reason said. A 九转 that clears 丹毒 owed still goes down.
       const clears = (item.zhuan ?? 0) >= 9 && (s.dandu ?? 0) > 0;

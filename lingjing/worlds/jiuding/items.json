@@ -308,7 +308,7 @@
       "zhuan": 9,
       "of": "foundation",
       "art": "art/items/foundation-pill.webp",
-      "_furnace": "Made in 银月's furnace: one pill, from a 萝卜 at the end of 古五 (Hanli 2026-10-06: 「改成一颗」), never shown again until the eve of his 筑基 (Hanli 2026-10-06: 「等筑基的时候再拿出来」 — the bag gets it on 09-qulao `listen`) and eaten there (古八; 古七 before the 2026-10-07 split). The breakthrough reaches for it before the 一转 (ladder.json breakthrough.pill); not sold.",
+      "_furnace": "Made in 银月's furnace: one pill, from a 萝卜 at the end of 古五 (Hanli 2026-10-06: 「改成一颗」), never shown again until the eve of his 筑基 (Hanli 2026-10-06: 「等筑基的时候再拿出来」 — that sentence was about the TEXT not mentioning the pill in between) and eaten at the 筑基 throw (古八; 古七 before the 2026-10-07 split). The bag gets it at `wm-luobo`'s way on, where the 饭桶 makes it (the builder, 2026-11-12: the game gives a thing where the story does; it was on 09-qulao `listen` from 2026-10-06 to 11-12, where nobody hands it over), and no scene's text mentions it again until the eve of 筑基. `story: true` (2026-11-12): in the bag five years, it takes no slot and is never sold, tossed or swapped (rules/pouch.mjs storyKeep); `trade use` refuses it below 筑基 (rules/travel.mjs: a pill of a realm above his own is for that realm's throw); the 饭桶 never takes it (fantong.json never.items). The breakthrough reaches for it before the 一转 (ladder.json breakthrough.pill); not sold.",
       "_fill": "Was `fill: \"full\"` (Hanli 2026-10-14: 筑基小成圆满 in one night) until 2026-10-16 — Hanli: 「要让玩家去刷经验/修为等. 不要直接跳层」: no story-given thing fills a step any more (the lint refuses `fill`); the 九转 lands 筑基小成 and he sits it full. Before: how far a breakthrough this pill carries fills the step it lands on — \"full\" lands it 圆满 (ladder.json `full`). The 九转 takes 小满 to 筑基小成圆满 in one night; the rest of its power sinks into the lake bed (古八, Hanli 2026-10-14: 「因为9转筑基丹, 小成得以圆满」). A pill without it lands at the step's start, 修为 0. Read by rules/core.mjs landFill; an exit may declare the same for a world with no breakthrough pills.",
       "about": {
         "zh": "饭桶一炉出的筑基丹，透亮得像一滴凝住的露水，九道金纹，一丝黑斑也没有，一个字也没有。沉鼎观三百年最好的一炉是三转。",
@@ -319,6 +319,7 @@
         "en": "(Not one word on it.)"
       },
       "sold": [],
+      "story": true,
       "effect": {
         "table": "pill"
       }

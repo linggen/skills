@@ -11,7 +11,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { newState, threshold, staminaCost } from '../scripts/state.mjs';
-import { look, oddsOf, resolve, rollOf } from '../scripts/rules.mjs';
+import { look, oddsOf, resolve, rollOf, VERBS } from '../scripts/rules.mjs';
+import { trade } from '../scripts/rules/travel.mjs';
 import { pay } from '../scripts/rules/core.mjs';
 import { bookNo } from './book-num.mjs';
 import { earnedFor } from './earn.mjs';
@@ -28,7 +29,7 @@ const CH = content.chapters['00-zhuji'];
 const atSnow = (extra = {}) => ({
   ...newState(content, 'zh', NOW), chapter: '00-zhuji', scene: '09-snow', place: 'chaifang',
   ended: ['00-prologue', '00-waimen'], tier: 'qi', step: 5, progress: 0, traits: ['wood', 'water', 'fire', 'earth', 'metal'],
-  stamina: content.rewards.stamina.max, stamina_at: NOW.toISOString(), bag: { danlu: 1 }, tasks: { 'snow-fantong': { status: 'done' } }, ...extra, // 喂饭桶 played (tests/gu7.test.mjs)
+  stamina: content.rewards.stamina.max, stamina_at: NOW.toISOString(), bag: { danlu: 1, 'foundation-pill-9': 1 }, tasks: { 'snow-fantong': { status: 'done' } }, ...extra, // 喂饭桶 played (tests/gu7.test.mjs); the 九转 already in the bag since wm-luobo (2026-11-12)
 });
 const go = (s, exit, extra = {}) => {
   const r = resolve(earnedFor(content, s, exit), content, ctx, { exit, ...extra });
@@ -76,13 +77,13 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
   s = go(s, 'feed').state;
   assert.equal(s.scene, '09-jiuge');
   assert.equal(s.bag['huochai-jian'], 1, 'a plain sword, 火柴, at the move into the 内门 the day after the 大比 (renamed from 劈柴, Hanli 2026-10-06)');
-  assert.equal(s.bag['foundation-pill-9'], undefined, 'the 九转 is not shown before the eve of 筑基 (Hanli 2026-10-06)');
+  assert.equal(s.bag['foundation-pill-9'], 1, 'the one 九转 stays in the bag since wm-luobo; nothing here shows or gives another (2026-10-06 unchanged: no scene mentions it)');
   assert.equal(s.bag['foundation-pill'], undefined, 'no 官丹 yet: 祁长松 has the sect\'s one');
   s = go(placed(s), 'down').state;
   assert.equal(s.scene, '09-furnace');
   assert.equal(s.step, 4, '腊月: still 四层');
   s = go(placed(s), 'fire').state;
-  assert.equal(s.bag['foundation-pill-9'], undefined, 'the furnace gives qi pills, not a 九转');
+  assert.equal(s.bag['foundation-pill-9'], 1, 'the furnace gives qi pills, not a second 九转');
   assert.equal(s.scene, '09-danfang', '闵丹师\'s pill (第二批 2026-10-26), then the year');
   s = go(placed(s), 'smell').state;
   assert.equal(s.scene, '09-year');
@@ -150,12 +151,13 @@ test('the winter and the years: 火柴 at the move, the furnace\'s culls, the se
 });
 
 test('the cliff: 瞿老\'s last disciple, then the throw — the 九转 reached for before the 一转, and 古十 opens at once', () => {
-  let s = { ...atSnow(), scene: '09-qulao', place: 'houshan', step: 9, progress: PEAK, bag: { 'foundation-pill': 1 }, tasks: { 'qulao-dan': { status: 'done' }, 'shijie-tiandan': { status: 'done' } } };
+  let s = { ...atSnow(), scene: '09-qulao', place: 'houshan', step: 9, progress: PEAK, bag: { 'foundation-pill': 1, 'foundation-pill-9': 1 }, tasks: { 'qulao-dan': { status: 'done' }, 'shijie-tiandan': { status: 'done' } } };
   s = go(s, 'listen').state;
+  assert.equal(s.bag['foundation-pill-9'], 1, '09-qulao listen gives none: nobody hands him a pill there, the bag still holds the one from wm-luobo');
   assert.equal(s.scene, '09-shijie', 'the 160th step (2026-10-26), then the cliff');
   s = go({ ...s, place: CH.scenes['09-shijie'].at }, 'dawn').state;
   assert.equal(s.scene, '09-cliff');
-  assert.equal(s.bag['foundation-pill-9'], 1, 'the 九转 comes out on the eve of 筑基');
+  assert.equal(s.bag['foundation-pill-9'], 1, 'the 九转 comes out on the eve of 筑基 — the one from wm-luobo, none added since');
   const odds = oddsOf(content, s, NOW, 'foundation');
   const pill = odds.parts.find(p => p.id === 'pill');
   assert.equal(pill.item.id, 'foundation-pill-9');
@@ -294,3 +296,29 @@ test('09-snow 「扔进饭桶」 eats the 赤铜葫芦 if he still holds it, and
   assert.equal('chitong-hulu' in pawned.bag, false, 'a pawned gourd is not made a count');
   assert.ok(Object.values(pawned.bag).every(n => Number.isFinite(n) && n > 0), JSON.stringify(pawned.bag));
 });
+
+test('the 九转 comes into the bag at wm-luobo\'s way on, where the 饭桶 makes it — and is kept safe for the five years (the builder, 2026-11-12)', () => {
+  const luobo = content.chapters['00-waimen'].scenes['wm-luobo'];
+  const at = { ...newState(content, 'zh', NOW), chapter: '00-waimen', scene: 'wm-luobo', place: luobo.at, ended: ['00-prologue'], tier: 'qi', step: 5, progress: 0,
+    stamina: content.rewards.stamina.max, stamina_at: NOW.toISOString(), bag: {}, tasks: { 'luobo-rope': { status: 'done' } } };
+  assert.equal(at.bag['foundation-pill-9'], undefined);
+  const r = go(at, 'on');
+  assert.equal(r.state.bag['foundation-pill-9'], 1, 'the pill is granted at the way on after the board luobo-rope');
+  assert.equal(r.state.scene, 'wm-yaban');
+  // 09-qulao gives none any more
+  const listen = content.chapters['00-zhuji'].scenes['09-qulao'].exits.find(e => e.id === 'listen');
+  assert.equal(listen.grant, undefined, '09-qulao listen has no grant');
+  // …and in the bag it cannot be lost or wasted: not eaten below 筑基, not sold, not tossed, not fed to the 饭桶
+  const held = { ...r.state, place: 'zhishi', chapter: '00-zhuji', ended: ['00-prologue', '00-waimen'], bag: { 'foundation-pill-9': 1 } };
+  for (const step of [5, 9]) {
+    const use = trade({ ...held, step }, content, ctx, { action: 'use', id: 'foundation-pill-9' });
+    assert.equal(use.result.refused, 'for-the-throw', `eaten at 练气 ${step}层: refused`);
+  }
+  const sell = trade(held, content, ctx, { action: 'sell', id: 'foundation-pill-9' });
+  assert.equal(sell.result.refused, 'story-keep', 'not sold at a counter that buys');
+  assert.equal(VERBS.bag({ ...held, place: 'chaifang' }, content, ctx, { action: 'toss', id: 'foundation-pill-9' }).result.refused, 'story-keep', 'not tossed');
+  const feed = VERBS.fantong({ ...held, place: 'chaifang' }, content, ctx, { action: 'feed', ids: 'foundation-pill-9' });
+  assert.equal(feed.result.ok, false, 'not fed to the 饭桶');
+  // after the crossing a leftover one is still eaten as before (tests/pills.test.mjs)
+});
+
