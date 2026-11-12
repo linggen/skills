@@ -95,18 +95,20 @@ test('under an hour nothing grows but 体力: it comes back all through the sitt
   assert.equal(seclude(old, at(0.1 * H), { action: 'leave' }).state.stamina, Math.floor(0.1 * H * perHour));
 });
 
-test('修为: per hour counted, through the tables like any grant; at the realm\'s peak it counts on past the mark', () => {
+test('修为: per hour counted, through the tables like any grant; at the realm\'s peak the bar stops full and the rest is 灵石 (2026-11-12)', () => {
   const r = inAndOut(player(), 10, { focus: 'progress' });
   const p0 = player(), hour = secludeHour(content, p0);
   assert.equal(r.result.emerged.progress.paid, Math.floor(10 * hour), 'ten hours at an hour\'s share of the layer');
   assert.equal(r.state.progress, p0.progress + Math.floor(10 * hour));
-  // At the peak of 结丹 the rest waits for the breakthrough.
+  // At the peak of 结丹 the bar fills to its need; the rest is 灵石, and 出关's card says it (`converted`).
   const top = content.ladder.tiers.find(t => t.id === 'core').thresholds;
-  const peak = inAndOut(player({ step: top.length - 1, progress: top.at(-1) - 10 }), 12, { focus: 'progress' });
+  const start = player({ step: top.length - 1, progress: top.at(-1) - 10 });
+  const peak = inAndOut(start, 12, { focus: 'progress' });
   const got = Math.floor(12 * secludeHour(content, player({ step: top.length - 1 })));
-  assert.equal(peak.result.emerged.progress.paid, got);
-  assert.ok(peak.result.emerged.progress.hold, 'the realm\'s top: the rest waits for the breakthrough');
-  assert.equal(peak.state.progress, top.at(-1) - 10 + got);
+  assert.equal(peak.result.emerged.progress.paid, 10, 'what fit');
+  assert.deepEqual([peak.result.emerged.progress.converted.progress, peak.result.emerged.progress.converted.wealth > 0], [got - 10, true], 'the rest as 灵石');
+  assert.equal(peak.state.progress, top.at(-1), 'full, never past');
+  assert.equal(peak.state.wealth - start.wealth, peak.result.emerged.progress.converted.wealth);
   assert.equal(peak.state.step, top.length - 1);
 });
 
@@ -221,7 +223,7 @@ test('the page: the chooser, the running card with 出关, and 出关\'s count-u
     const html = emergedHtml(out, { lang, words: w });
     assert.match(html, /data-countup="7"/);
     // Brief: ≤20 words a line (a zh line, ≤36 characters).
-    for (const text of [w.secludeHint, w.secludeRule, w.emergeBtn, w.secludeTooShort, w.secludeHeld].map(t => say(t, { cap: 12, min: 1, rest: 8 }))) {
+    for (const text of [w.secludeHint, w.secludeRule, w.emergeBtn, w.secludeTooShort].map(t => say(t, { cap: 12, min: 1, rest: 8 }))) {
       assert.ok(lang === 'zh' ? [...text].length <= 36 : text.split(/\s+/).length <= 20, text);
     }
   }

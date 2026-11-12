@@ -11,6 +11,7 @@ import { look } from '../scripts/rules.mjs';
 import { pay } from '../scripts/rules/core.mjs';
 import { capLook, settleHeld, shareMark, underCap } from '../scripts/rules/cap.mjs';
 import { gatesOf } from '../scripts/rules/gates.mjs';
+import { convertRate } from '../scripts/rules/playpay.mjs';
 import { play } from '../tools/balance.mjs';
 
 process.env.LINGJING_STAMINA_LIMIT = '0';
@@ -96,9 +97,13 @@ test('gates climb (the lint): no gate asks the layer the highest gate before it 
 // a gate's wait is split only where such a step lands inside it (tools/balance.mjs play: `gap`). 七层's exception is gone:
 // 九节菖蒲's two steps a layer break 七 · 八 · 九层's waits.
 const MAX_WAIT = 2;
+// 2026-11-12 (修为不要超过上限, 超过后换算为灵石奖励 — Hanli): past the cap the rest is 灵石, never banked to come back at the
+// 石室's door, so 古五's 石室 gate (wm-kaikai, 三层圆满 inside the sealed 秘境) waits 3.0 typical days of its rooms' boards: allowed
+// to 3, NOT retuned — Hanli's call (a share gate earlier in 三层, or a smaller hold before the 石室).
+const WAIT_EXCEPT = { 'wm-kaikai': 3 };
 test('the typical player waits at most MAX_WAIT days of only small games between two beats of story (a scene, or a 连环差事\'s step)', () => {
   for (const g of runs.typical.gates) {
-    assert.ok((g.gap ?? g.days ?? 0) <= MAX_WAIT, `${g.scene} (${g.layer.step}层): ${(g.gap ?? g.days)?.toFixed(2)} days of play between beats — add a share gate earlier in the layer, or a chain step`);
+    assert.ok((g.gap ?? g.days ?? 0) <= (WAIT_EXCEPT[g.scene] ?? MAX_WAIT), `${g.scene} (${g.layer.step}层): ${(g.gap ?? g.days)?.toFixed(2)} days of play between beats — add a share gate earlier in the layer, or a chain step`);
   }
   // The chain's steps are beats the walk takes, in order, two a layer through 七 · 八 · 九层 — and, before 看炉, the master's
   // seal (师父传印: guan-jiujie-4a, right after 秦雁's in 八层).
@@ -130,41 +135,42 @@ const atDabi = (progress, extra = {}) => ({ ...newState(content, 'zh', NOW), cha
   done_scenes: ['wm-mijing', 'wm-kaikai', 'wm-xiqi', 'wm-chu', 'wm-hetan', 'wm-luobo', 'wm-yaban', 'wm-qianye', 'wm-koujue', 'wm-zhaojing', 'wm-laba', 'wm-dabi', 'wm-lun1', 'wm-fushi', 'wm-shuigang'],
   tier: 'qi', step: 4, progress, traits: ['wood', 'water', 'fire', 'earth', 'metal'], stamina: 100, stamina_at: NOW.toISOString(), lang: 'zh', ...extra });
 
-test('a share hold stops the bar at its share: past it the 修为 waits in the 丹田 (banked, 一分不丢) and the cap\'s words say why; the layer steps no further', () => {
+test('a share hold stops the bar at its share: past it the 修为 is 灵石 (Hanli 2026-11-12: 「超过后换算为灵石奖励」) and the cap\'s words say why; the layer steps no further', () => {
   const mark = Math.floor(0.6 * th[4]);
   assert.equal(shareMark(content, atDabi(0)), mark);
-  const s = atDabi(mark - 10);
-  // A story lump (the `gate` table, a scene's own 修为 — no table that turns 修为 to 灵石) banks past the mark.
+  const s = atDabi(mark - 10), w0 = s.wealth;
+  // A story lump (the `gate` table, a scene's own 修为) past the mark: what fits lands, the rest is 灵石 — nothing banked.
   const paid = pay(content, s, ctx, { table: 'gate', progress: 400 });
   assert.equal(s.progress, mark, 'the bar at the mark');
-  assert.ok(s.banked > 0, 'the rest banked');
-  assert.ok(paid.hold?.cap, 'the pay says it was held');
+  assert.equal(s.banked, undefined, 'nothing waits in the 丹田');
+  assert.deepEqual([paid.progress, paid.converted.progress], [10, 390], 'the pay says what landed and what did not fit');
+  assert.equal(s.wealth - w0, paid.wealth, 'the rest paid as 灵石');
   assert.deepEqual(capLook(content, s, 'zh'), { say: content.ladder.caps.say.zh, share: true }, 'the cap\'s own line');
   assert.equal(look(s, content, ctx).capped?.say, content.ladder.caps.say.zh, 'Look hands the page the 「走剧情破境 ›」 chip');
   assert.equal(underCap(content, s, 'qi', 5), false, 'no step past 四层');
-  // A fight or a board past the mark is 灵石, as at 圆满 (rewards.json xiuwei_to_lingshi: 刷怪, 刷副本).
-  const f = atDabi(mark), w0 = f.wealth;
+  // A fight or a board past the mark is 灵石 the same way.
+  const f = atDabi(mark), w1 = f.wealth;
   const fought = pay(content, f, ctx, { table: 'play', progress: 40, wealth: 0 });
   assert.equal(f.progress, mark);
-  assert.ok(fought.converted && f.wealth > w0, 'converted to 灵石');
+  assert.ok(fought.converted && f.wealth > w1, 'converted to 灵石');
 });
 
-test('the story reaches the hold\'s scene: the bank comes back on load, up to the next mark; a save already past a share is never pulled down', () => {
+test('a save that holds a bank (`banked`, before 2026-11-12) is settled once on load: onto the bar up to its cap, the rest 灵石; a save already past a share is never pulled down', () => {
   const mark6 = Math.floor(0.6 * th[4]), mark8 = Math.floor(0.8 * th[4]);
   const held = { ...atDabi(mark6), banked: 300 };
-  assert.equal(settleHeld(content, held), held, 'still before wm-jiejing: nothing moves');
+  const once = settleHeld(content, held);
+  assert.deepEqual([once.progress, once.banked, once.wealth > held.wealth], [mark6, undefined, true], 'still before wm-jiejing: the bank is 灵石');
+  assert.equal(settleHeld(content, once), once, 'idempotent: settled once, then nothing moves');
   const on = settleHeld(content, { ...held, scene: 'wm-jiejing' });
-  assert.deepEqual([on.progress, on.banked], [mark8, mark6 + 300 - mark8], 'up to 0.8, the rest still banked');
-  // 古七 holds 0.8 on to 09-jiuge, the scene before 定风 (2026-11-10, Hanli: 「满了后的下一场剧情是突破」; was let go at 09-snow).
-  const snow = settleHeld(content, { ...held, scene: '09-snow', chapter: '00-zhuji', done_scenes: [...held.done_scenes, 'wm-jiejing', 'wm-heluo'] });
-  assert.deepEqual([snow.step, snow.progress, snow.banked], [4, mark8, mark6 + 300 - mark8], 'at 09-snow: still 0.8, the rest banked');
-  const free = settleHeld(content, { ...snow, scene: '09-jiuge', done_scenes: [...snow.done_scenes, '09-snow'] });
-  assert.deepEqual([free.step, free.progress, free.banked], [4, mark6 + 300, undefined], 'past every hold: all of it back, 四层 still (定风 ahead)');
-  // An old save past the share keeps its bar; what comes now is banked.
-  const old = atDabi(th[4] - 5);
+  assert.deepEqual([on.progress, on.banked], [mark8, undefined], 'at wm-jiejing: up to 0.8, the rest 灵石');
+  // 古七 holds 0.8 on to 09-jiuge, the scene before 定风; past every hold the bank lands whole (under 四层\'s need).
+  const free = settleHeld(content, { ...held, scene: '09-jiuge', chapter: '00-zhuji', done_scenes: [...held.done_scenes, 'wm-jiejing', 'wm-heluo', '09-snow'] });
+  // 396 + 300 is past 四层's need (660): full at its need, the 36 past it 灵石 (9 at 0.25 a 修为).
+  assert.deepEqual([free.step, free.progress, free.banked, free.wealth - held.wealth], [4, Math.min(mark6 + 300, th[4]), undefined, Math.max(1, Math.round((mark6 + 300 - th[4]) * convertRate(content, free)))], 'past every hold: on the bar up to 四层\'s need, 四层 still (定风 ahead)');
+  // An old save past the share keeps its bar; what comes now is 灵石.
+  const old = atDabi(th[4] - 5), w0 = old.wealth;
   assert.equal(settleHeld(content, old), old, 'never pulled down');
   pay(content, old, ctx, { table: 'gate', progress: 400 });
   assert.equal(old.progress, th[4] - 5);
-  assert.ok(old.banked > 0);
-  assert.ok(threshold(content, old) > old.progress);
+  assert.ok(old.wealth > w0 && old.banked === undefined);
 });

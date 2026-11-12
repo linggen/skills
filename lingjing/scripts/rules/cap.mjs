@@ -12,15 +12,16 @@
 // as before; a world without `caps` has none.
 //
 // What it does: grinding fills the layer at the cap and steps no further — the
-// 修为 counts on past its mark (Hanli, 2026-10-15; state.mjs addProgress) and
-// the story's rise carries it; a story's rise or breakthrough past `story` is
-// refused in the world's words.
+// bar stops at its mark and what does not fit is paid as 灵石 (Hanli, 2026-11-12:
+// 「修为不要超过上限, 超过后换算为灵石奖励」; state.mjs addProgress, `landProgress`
+// here); a story's rise or breakthrough past `story` is refused in the world's words.
 // A save already past the cap (one played before 2026-10-05) is never pulled
 // down: it keeps its layer and fills it, and goes no higher until the story
 // catches up.
 import { addProgress, pick, stageDoor, stepOfLayer, threshold, tierOf, zeroAt } from '../state.mjs';
 import { huiNow, huiOrder } from './hui.mjs';
 import { atScene, inMade, placeName, placeOf, sceneOf } from './world.mjs';
+import { convertRate } from './playpay.mjs';
 
 /* A realm and layer as one number, low to high: tier index, then layer. */
 export const rankOf = (content, tier, step) => content.ladder.tiers.findIndex(t => t.id === tier) * 100 + step;
@@ -106,18 +107,56 @@ export function shareMark(content, state) {
   return shares.length ? Math.floor(Math.min(...shares) * threshold(content, state)) : null;
 }
 
-/* The room under the share mark: what of `amount` the bar may take now (all of it where no mark binds). */
-export const shareRoom = (content, state) => { const m = shareMark(content, state); return m == null ? Infinity : Math.max(0, m - (state.progress ?? 0)); };
 
-/* 修为 past a share mark waits in the 丹田 (`banked` — the cap's own 「一分不丢」) and comes back as the mark lifts or he
-   steps on. Never pulls a save down: only a carry just made (`carried`, a step this pay made) is banked past the mark.
-   Mutates `s`. */
-export function rebank(content, s, carried = false) {
-  const m = shareMark(content, s);
-  if (carried && m != null && (s.progress ?? 0) > m) { s.banked = (s.banked ?? 0) + s.progress - m; s.progress = m; }
-  const back = Math.min(s.banked ?? 0, m == null ? Infinity : Math.max(0, m - (s.progress ?? 0)));
-  if (back > 0) { s.progress += back; s.banked -= back; }
-  if (s.banked != null && s.banked <= 0) delete s.banked;
+/* The most the bar may hold where he stands (Hanli 2026-11-12: 「修为不要超过上限」): the layer's need — the bar's right-hand
+   number — and under a share mark (shareMark) the mark, or what the bar held before the gain where that is higher (`had`: a
+   mark never pulls a save down — one that walked into a 回 past its mark keeps it, and gains nothing more there).
+   Infinity off the ladder and at 零层 (it takes nothing). */
+export function barCap(content, state, had = 0) {
+  if (!tierOf(content, state.tier) || zeroAt(content, state.tier, state.step)) return Infinity;
+  const m = shareMark(content, state);
+  return Math.min(threshold(content, state), m == null ? Infinity : Math.max(m, had));
+}
+
+/* 修为 that did not fit, as 灵石 (balance.json `convert`, rules/playpay.mjs convertRate — share × I(L) ÷ (R(L) × board) at his
+   level): rounded, and never 0 for a gain that did not fit (at least 1). */
+export const overStones = (content, state, over) => (over > 0 ? Math.max(1, Math.round(over * convertRate(content, state))) : 0);
+
+/* `amount` of 修为 onto the bar, the one way every source lands it: the steps it may take (`mayStep`), then the bar cut to
+   its cap (barCap) — read where the move lands (`at`: a way on pays as he walks through it, so a gate it passes is open;
+   rules/core.mjs pay). `over`: what of `amount` did not fit, taken off; `pre`: what the bar already held past its need (a
+   save not settled yet, settleCap) — the caller pays both as 灵石 (overStones). `carry`: what is past the need walks through
+   a door opened since (settleCap, on load), not cut first. Mutates `s`. */
+export function landProgress(content, s, amount, mayStep = null, at = x => x, carry = false) {
+  const pre = !carry && Number.isFinite(barCap(content, s)) ? Math.max(0, (s.progress ?? 0) - threshold(content, s)) : 0;
+  if (pre > 0) s.progress -= pre;
+  const had = s.progress ?? 0;
+  const { levels, hold } = addProgress(content, s, amount, mayStep);
+  const cap = barCap(content, at(s), levels.length ? 0 : had), cut = Math.max(0, (s.progress ?? 0) - cap);
+  if (cut > 0) s.progress -= cut;
+  return { levels, hold, over: cut + (hold?.over ?? 0), pre };
+}
+
+/* Two pays' `converted` as one (a step's own and its floor's, a board's play and its task's): summed, the line kept. */
+export function joinConverted(a, b) {
+  if (!a || !b) return a ?? b ?? null;
+  return { progress: (a.progress ?? 0) + (b.progress ?? 0), wealth: (a.wealth ?? 0) + (b.wealth ?? 0), say: a.say ?? b.say ?? null };
+}
+
+/* What a save carries past its cap — the 丹田's bank (`banked`, the share holds' until 2026-11-12) or a bar past its need (a
+   save from before the rule, or written by older rules) — settled as it loads: the bank onto the bar, any door opened since
+   stepped through, the bar cut to its cap and the rest paid as 灵石 at a pay's rate. Idempotent: a save within its cap comes
+   back as it was (the same object). Never through a 段 door (that step is the trial's, thrown by the next pay —
+   rules/breakthrough.mjs). */
+export function settleCap(content, state) {
+  if (!state || !tierOf(content, state.tier) || zeroAt(content, state.tier, state.step)) return state;
+  if (state.banked === undefined && (state.progress ?? 0) < threshold(content, state)) return state;
+  const s = structuredClone(state), bank = Math.max(0, s.banked ?? 0);
+  delete s.banked;
+  const mayStep = content.ladder?.caps ? (tier, step) => underCap(content, s, tier, step) && !stageDoor(content, tier, step) : null;
+  const { levels, over } = landProgress(content, s, bank, mayStep, x => x, true);
+  if (!levels.length && !over && state.banked === undefined) return state;
+  s.wealth = (s.wealth ?? 0) + overStones(content, s, over);
   return s;
 }
 
@@ -177,19 +216,7 @@ export const capPillSay = (content, lang) => pick(content.ladder.caps?.pill ?? c
 /* A breakthrough past the cap, refused in the world's words. */
 export const pastCapSay = (content, lang) => pick(content.ladder.caps?.refuse, lang);
 
-/* A full layer whose door has opened since (a gate passed, the next 回's cap) steps now: the 修为
-   already past its mark carries him up as the next grant would (Hanli 10-27: the bar stood at
-   「一层圆满 · 候」 while the book had him at 二层). Run on every load (rules.mjs), as settleStages;
-   a save with nothing to step comes back as it was (the same object). */
-export function settleHeld(content, state) {
-  if (!state || !content.ladder?.caps || !tierOf(content, state.tier) || zeroAt(content, state.tier, state.step)) return state;
-  // 修为 banked past a share mark comes back as the mark lifts (rebank).
-  const back = state.banked > 0 && shareRoom(content, state) > 0;
-  if (!back && (state.progress ?? 0) < threshold(content, state)) return state;
-  const s = structuredClone(state);
-  if (back) rebank(content, s);
-  // Never through a 段 door (四层, 七层 of a realm in 段): that step is the trial's, thrown by the next pay (rules/breakthrough.mjs).
-  const { levels } = addProgress(content, s, 0, (tier, step) => underCap(content, s, tier, step) && !stageDoor(content, tier, step));
-  if (levels.length) rebank(content, s, true);
-  return levels.length || back ? s : state;
-}
+/* A full layer whose door has opened since (a gate passed, the next 回's cap) steps now (Hanli 10-27: the bar stood at
+   「一层圆满 · 候」 while the book had him at 二层) — and anything past the cap is settled (settleCap). Run on every load
+   (rules.mjs), as settleStages; a save with nothing to settle comes back as it was (the same object). */
+export const settleHeld = (content, state) => settleCap(content, state);

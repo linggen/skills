@@ -12,6 +12,7 @@
 
 import { spoken } from './cards.js';
 import { esc } from './esc.js';
+import { convertedSay } from './turned.js';
 import { freshHtml, partyHtml, sealHtml } from './battle-party.js';
 import { pillTrayHtml, pouchPickHtml } from './danang.js';
 import { POWER_COST, asleep, bodyOf, boostedOf, clash, costOf, dealt, effectOf, hashOf, keywordsOf, landed, pierces, scaled, shieldOf, shown, shownEffect, shownEntry, sigEffect, starsOf } from './battle.js';
@@ -518,6 +519,7 @@ export function spoilsHtml(spoils, ctx) {
   // 「所得收起的卡, 在点之前已经收到奖励了吧, 点了收起好像没变化」).
   return `<div class="card spoils" data-spoils-close title="${esc(w.spoilsClose)}"><div class="cardtitle">${esc(gained ? w.spoils : w.spentTitle)}</div>
     ${pays ? `<div class="spoilpays">${esc(pays)} <span class="small dim spoilin">· ${esc(w.spoilsIn)}</span></div>` : ''}
+    ${convertedSay(p) ? `<div class="small dim">${esc(convertedSay(p))}</div>` : ''}
     ${spoils.line ? `<div class="small">${esc(spoils.line)}</div>` : ''}
     ${gear ? `<div class="spoilgears">${gear}</div>` : ''}
     ${faces ? `<div class="small dim">${esc(w.spoilsCard)}</div><div class="spoilfaces">${faces}</div>` : ''}

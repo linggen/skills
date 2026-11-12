@@ -16,8 +16,8 @@
 //     `cooldowns.pool_rest_min` of a sitting); the 饭桶 (once he holds it: `fantong_units` a
 //     feed, one an hour); 今日传闻 where the map is not walled (a heavy player's: the `tale` cap);
 //     闭关 overnight (`seclude` hours, focus 修为, the rules' rate and its table's cap);
-//   - every fight win pays the haunt table's 修为 — at the full mark of a layer he may not grind
-//     past (the 回's cap, a stage quest ahead), 灵石 instead (at `convert.rate`); the day's limit is 体力 alone;
+//   - every pay lands 修为 up to the cap — the full mark of a layer he may not grind past (the 回's cap, a stage
+//     quest ahead) or a share mark — and the rest as 灵石 (at `convert`, Hanli 2026-11-12); the day's limit is 体力 alone;
 //   - then the story, minute by minute: a scene's passages at `chars_per_min`, its boards, its
 //     fight; its boards' and its way on's grants, its pills, its rises (no story floor), a stretch of
 //     cultivation's one story step where its boards paid none (rules/cultivation.mjs), the sealed rooms' play, the 回's errands (`errands_at`); a way on behind a stage quest
@@ -31,7 +31,7 @@
 //     (`waking_h` spread over the sittings), a fight, a story step and a board its rewards.json
 //     price — out of it, the sitting stops. (While we test the switch is off: rules.mjs.)
 // Days per 回: from the day its first scene is reached to the day its last is done (fractional,
-// by the minutes used). 修为 is the clock; 灵石 runs beside it (a fight's 修为 past the mark at the convert
+// by the minutes used). 修为 is the clock; 灵石 runs beside it (any 修为 past the cap at the convert
 // rate). The 杂役 errands' and 开府's 灵石 are not played; 执事堂's east-wall tags are (`walls`, 2026-10-27, playWalls).
 // Grinding stops where the 回's cap says — and, while a stage quest is ahead, at its layer.
 import fs from 'node:fs';
@@ -161,7 +161,7 @@ export function play(content, player, { model = content.balance.model, ladder = 
   const walk = bookWalk(content, model), rooms = roomsPay(content);
   const quests = new Map(content.quests.map(q => [q.id, q]));
   const places = placeById(content);
-  const s = { tier: tiers[0].id, step: 0, progress: 0, stretch: 0, pill9: false, bank: 0 };
+  const s = { tier: tiers[0].id, step: 0, progress: 0, stretch: 0, pill9: false };
   const need = () => tierAt(s.tier).thresholds[s.step] + s.stretch;
   const zero = () => tierAt(s.tier).zero && s.step === 0;
   /* A size's 修为 where he stands (rules/playpay.mjs unitsPay): units × R. */
@@ -175,7 +175,9 @@ export function play(content, player, { model = content.balance.model, ladder = 
   // A gate on a way the walk does not take (腊八, a stay before 入秋 in the same scene) is passed with the one it does.
   const walked = new Set(walk.filter(w => w.gate).map(w => `${w.gate.scene}/${w.gate.exits[0]}`));
   // A hold of the 回 (`holds`, rules/cap.mjs): no further than its layer until the story reaches its scene.
-  const reached = id => done.has(id) || walk[Math.min(i, walk.length - 1)].id === id;
+  // `landing`: the scene a way on walks into, while its grants are paid (rules/core.mjs pay reads the cap where the move lands).
+  let landing = null;
+  const reached = id => done.has(id) || walk[Math.min(i, walk.length - 1)].id === id || id === landing;
   const heldBy = c => Math.min(Infinity, ...(c.gates ?? []).filter(g => !done.has(g.scene) && walked.has(`${g.scene}/${g.exits[0]}`)).map(g => rank(g.tier ?? tiers[0].id, stepOf(g.tier ?? tiers[0].id, g.layer))),
     ...(c.holds ?? []).filter(h => !reached(h.until)).map(h => rank(h.tier ?? tiers[0].id, stepOf(h.tier ?? tiers[0].id, h.layer))));
   const capAt = () => { const c = caps[capHui]; if (!c) return null; const st = c.story ?? c; return { grind: Math.max(Math.min(rank(c.tier, stepOf(c.tier, c.layer)), heldBy(c)), rank(s.tier, s.step)), story: rank(st.tier, stepOf(st.tier, st.layer)) }; };
@@ -193,25 +195,23 @@ export function play(content, player, { model = content.balance.model, ladder = 
     // Every pay comes in already sized as the rules pay it (core.mjs amountsOf): a size priced where it lands (`U`), a routine
     // by its formula, a told number as written. Until 2026-11-10 the model read every authored number as a share of 练气一层
     // (× need ÷ 470): 09-shenshi's 660 landed as 1166 where the rules paid 660.
-    let add = n * layerPay(table);
-    // Under a share mark (rules/cap.mjs shareMark): a fight's past it is 灵石, the rest waits in the 丹田 (`bank`).
-    const m = markAt();
-    if (m != null && add > Math.max(0, m - s.progress)) {
-      const past = add - Math.max(0, m - s.progress);
-      add -= past;
-      if (fight) { s.progress += add; bookXw(k0, src, add); return past; }
-      s.bank += past;
-    }
+    const add = n * layerPay(table);
+    // As the rules land it (rules/cap.mjs landProgress, Hanli 2026-11-12): steps it may take, then the bar cut to its cap —
+    // the layer's need, or a share mark (never below what the bar held) — and what did not fit is 灵石 (overStones), any source.
+    const had = s.progress, at = k0;
     s.progress += add;
     for (;;) {
       if (s.progress < need()) break;
       const top = s.step >= tierAt(s.tier).thresholds.length - 1, cap = capAt();
-      if (!top && (!cap || rank(s.tier, s.step + 1) <= cap.grind)) { up(s.tier, s.step + 1, s.progress - need()); rebank(true); continue; }
-      if (fight) { const over = Math.min(add, s.progress - need()); s.progress = need(); bookXw(k0, src, add - over); return over; }
+      if (!top && (!cap || rank(s.tier, s.step + 1) <= cap.grind)) { up(s.tier, s.step + 1, s.progress - need()); continue; }
       break;
     }
-    bookXw(k0, src, add);
-    return 0;
+    const m = markAt(), keep = Math.min(need(), m == null ? Infinity : Math.max(m, `${s.tier}:${s.step}` === at ? had : 0));
+    const past = Math.max(0, s.progress - keep);
+    s.progress -= past;
+    bookXw(k0, src, add - past);
+    if (past > 0) earn(Math.max(1, Math.round(past * convertRate(content, { ...s, need: need() }))), 'convert');
+    return past;
   };
   /* The share mark on the layer he stands on (rules/cap.mjs shareMark), or null. */
   const markAt = () => {
@@ -220,22 +220,8 @@ export function play(content, player, { model = content.balance.model, ladder = 
     const shares = (c.holds ?? []).filter(h => h.share != null && !reached(h.until) && rank(h.tier ?? tiers[0].id, stepOf(h.tier ?? tiers[0].id, h.layer)) === rank(s.tier, s.step)).map(h => h.share);
     return shares.length ? Math.floor(Math.min(...shares) * need()) : null;
   };
-  /* The bank back as the mark lifts; a carry past a new mark banked (rules/cap.mjs rebank). Then any step it opens. */
-  const rebank = (carried = false) => {
-    const m = markAt();
-    if (carried && m != null && s.progress > m) { s.bank += s.progress - m; s.progress = m; }
-    const back = Math.min(s.bank, m == null ? Infinity : Math.max(0, m - s.progress));
-    if (back > 0) { s.bank -= back; s.progress += back; }
-  };
-  const settle = () => {
-    rebank();
-    for (;;) {
-      if (zero() || s.progress < need()) break;
-      const top = s.step >= tierAt(s.tier).thresholds.length - 1, cap = capAt();
-      if (top || (cap && rank(s.tier, s.step + 1) > cap.grind)) break;
-      up(s.tier, s.step + 1, s.progress - need()); rebank(true);
-    }
-  };
+  /* Standing where a hold lets go or a door opens: a full bar steps through (rules.mjs settleHeld, on every load). */
+  const settle = () => { for (;;) { if (zero() || s.progress < need()) break; const top = s.step >= tierAt(s.tier).thresholds.length - 1, cap = capAt(); if (top || (cap && rank(s.tier, s.step + 1) > cap.grind)) break; up(s.tier, s.step + 1, s.progress - need()); } };
   /* Full where he may not step on: the 回's cap or a stage quest ahead (a fight's 修为 there is 灵石). */
   const held = () => { if (s.progress < need()) return false; const top = s.step >= tierAt(s.tier).thresholds.length - 1, cap = capAt(); return top || (cap && rank(s.tier, s.step + 1) > cap.grind); };
   // A gate asks its layer full, or a share of it (`share`, rules/gates.mjs gateMark).
@@ -254,11 +240,9 @@ export function play(content, player, { model = content.balance.model, ladder = 
     const want = (player.pills ?? 0) * fights, can = pillPrice ? Math.min(want, W.now / pillPrice) : 0;
     W.now -= can * pillPrice; W.spent += can * pillPrice; W.pills += can; W.low = Math.min(W.low, W.now);
   };
-  // A fight's 修为 past the mark he may not leave is 灵石 at the convert rate (rules/core.mjs pay).
-  // Read at the layer he stands on (playpay.mjs convertRate: 灵石 per 修为 at 练气一层, the same 灵石 at every layer).
-  const converts = (content.rewards.xiuwei_to_lingshi?.tables ?? []).includes('haunt');
+  // A fight's 修为 past the cap is 灵石 at the convert rate, as every source's (gain, above).
   // `mult`: the 冷却事件's day share on top (妖兽出没's third batch of a day half, rules/events.mjs eventShare).
-  const win = (n, src = 'pool', mult = 1) => { for (let k = 0; k < n; k++) { const whole = Math.min(1, n - k); const rate = converts ? convertRate(content, { ...s, need: need() }) : 0; earn(rate * gain((fightPlay(content, { ...s, need: need() }) ?? pay.haunt.progress) * whole * mult, true, 'haunt', src), src); wins += whole; } earn(LS(pay.haunt.ls ?? 0) * n * mult, src); takePills(n / model.fight_win_rate); };
+  const win = (n, src = 'pool', mult = 1) => { for (let k = 0; k < n; k++) { const whole = Math.min(1, n - k); gain((fightPlay(content, { ...s, need: need() }) ?? pay.haunt.progress) * whole * mult, true, 'haunt', src); wins += whole; } earn(LS(pay.haunt.ls ?? 0) * n * mult, src); takePills(n / model.fight_win_rate); };
   /* 妖兽出没 (rules/yaoshou.mjs, balance.json `events.yaoshou`): on a chapter map whose pools are all the event's (卷一's
      外门 and 沉鼎观), the pool's fights come in batches of `batch`, the next `every_h` hours after the last is fought out;
      the sittings spread over the waking day (`waking_h`), each at its own hour. Elsewhere the old rest (`pool_rest_min`). */
@@ -489,10 +473,14 @@ export function play(content, player, { model = content.balance.model, ladder = 
               if (w.rise.full) s.progress = Math.max(s.progress, need());
             }
           }
+          // The way on's grants are paid where it lands (rules/core.mjs pay `landing`): this scene behind him, the next one reached.
+          const wasDone = done.has(w.id);
+          done.add(w.id); landing = walk[i + 1]?.id ?? null;
           gain(U(w.grant)); gain(w.told); gain(w.pill_xw ?? U(w.pill), false, 'pill');
           if (w.story) gain(storyPlay(content, { ...s, need: need() }), false, 'play');
           // The floor of a stretch of cultivation its boards left unpaid (zero at 零层; after the rise: 小周天's night at 一层).
           if (w.floor && !(w.boards_xw > 0)) gain(storyPlay(content, { ...s, need: need() }), false, 'play');
+          landing = null; if (!wasDone) done.delete(w.id);
           earn(LS(w.ls) + (w.stones ?? 0));
           // A story fight on the way takes its pills too.
           if (w.fight) takePills(1 / model.fight_win_rate);

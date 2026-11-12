@@ -1,7 +1,7 @@
 // rules/core.mjs — Changing it: refusals, pay, riddles, stamina, resolve and judge.
 // Part of the rules engine; rules.mjs is its one door.
 import { gameOf, MADE_GRANT } from '../content.mjs';
-import { addProgress, layerPayOf, dayKey, fill, fitValue, fullName, lockedOf, normalizeAnswer, personOf, pick, rollDay, settleStamina, speedOf, staminaCost, staminaLimited, staminaRest, staminaReturnsAt, stepName, peakName, phaseName, threshold, tierOf, seedOf, stepOfLayer, stepUp, zeroAt } from '../state.mjs';
+import { layerPayOf, dayKey, fill, fitValue, fullName, lockedOf, normalizeAnswer, personOf, pick, rollDay, settleStamina, speedOf, staminaCost, staminaLimited, staminaRest, staminaReturnsAt, stepName, peakName, phaseName, threshold, tierOf, seedOf, stepOfLayer, stepUp, zeroAt } from '../state.mjs';
 import { growTreasure, learn } from './arms.mjs';
 import { askOf } from './ask.mjs';
 import { gainCard, grantFrom } from './cards.mjs';
@@ -20,11 +20,11 @@ import { companionOf } from './companion.mjs';
 import { grantMemory } from './memories.mjs';
 import { writeLedger } from './ledger.mjs';
 import { comingOf, sideLine } from './hui.mjs';
-import { capLook, pastCapSay, rebank, shareRoom, storyAllows, underCap } from './cap.mjs';
+import { landProgress, overStones, pastCapSay, storyAllows, underCap } from './cap.mjs';
 import { entryGate, stageBrief, stageGate, stageSay } from './gates.mjs';
 import { fightStuck } from './skips.mjs';
 import { atScene, inMade, placeName, placeOf, placeOpen, sceneOf, settlePlace, tooHard } from './world.mjs';
-import { convertRate, fightPlay, grantUnits, rateOfLevel, stonesAt, storyPlay, unitsPay } from './playpay.mjs';
+import { fightPlay, grantUnits, rateOfLevel, stonesAt, storyPlay, unitsPay } from './playpay.mjs';
 import { closeStretch, endsStretch, floorOf, joinPaid, landedOnly, stretchShown, tallyTold } from './cultivation.mjs';
 
 /* ── Changing it ── */
@@ -92,37 +92,31 @@ function amountsOf(content, state, now, grant) {
 
 /* What a grant would pay him now — the table's cap, his roots, the day's
    cast and his tier all counted — so a card shows the number that lands,
-   not the authored one (review, 2026-09-24). A realm at its peak may hold
-   some of it back; that is told when it is paid. */
-const paysOf = (content, state, now, grant) => {
+   not the authored one (review, 2026-09-24). Past the cap the row says what
+   lands (Hanli 2026-11-12: 「修为不要超过上限, 超过后换算为灵石奖励」): the 修为
+   that fits, the rest in its 灵石 — and `full`, so the row can say why. */
+const duePays = (content, state, now, grant) => {
   if (!grant || !content.rewards.tables[grant.table]) return null;
   const { progress: due, wealth: coin } = amountsOf(content, state, now, grant), shut = lockedOf(content, state);
-  const progress = shut.includes('cultivation') ? 0 : due, wealth = shut.includes('wealth') ? 0 : coin;
-  // At 圆满 the row says what lands (Hanli 10-28: 「修为圆满了, 已接任务里应该不奖励修为了吧? 应该走剧情进阶后才能获得修为」):
-  // the 修为 past the held mark as 灵石 where its table converts, else none — and `full`, so the row can say why.
-  const conv = converting(content, grant), past = pastMark(content, state, progress, now);
+  return { progress: shut.includes('cultivation') ? 0 : due, wealth: shut.includes('wealth') ? 0 : coin };
+};
+const cappedPays = (content, state, now, { progress, wealth }) => {
+  const past = pastMark(content, state, progress, now);
   if (!past) return { progress, wealth };
-  const lingshi = conv && !shut.includes('wealth') ? Math.round(past * convertRate(content, state, conv)) : 0;
-  return { progress: progress - past, wealth: wealth + lingshi, full: true };
+  return { progress: progress - past, wealth: wealth + (lockedOf(content, state).includes('wealth') ? 0 : overStones(content, state, past)), full: true };
+};
+const paysOf = (content, state, now, grant) => { const d = duePays(content, state, now, grant); return d && cappedPays(content, state, now, d); };
+/* Several grants paid in one move (an errand's grant and its work, errands.mjs questPays): summed, the cap tried once. */
+const paysOfAll = (content, state, now, grants) => {
+  const due = grants.map(g => duePays(content, state, now, g)).filter(Boolean);
+  return due.length ? cappedPays(content, state, now, due.reduce((t, d) => ({ progress: t.progress + d.progress, wealth: t.wealth + d.wealth }), { progress: 0, wealth: 0 })) : null;
 };
 
-/* 圆满之后走剧情到下一个阶段; 刷副本或者打怪奖励的修为改为灵石 (Hanli, 2026-10-15): a grant on
-   a table rewards.json `xiuwei_to_lingshi` lists (the fights' — never a scene, a board or the
-   功课) pays 修为 only up to the full mark of the layer he may not step past (the 回's cap, a
-   realm's peak); the rest is 灵石 at its `rate`, and never carries into the next layer. */
-const converting = (content, grant) => {
-  const c = content.rewards.xiuwei_to_lingshi;
-  return c && (c.tables ?? []).includes(grant?.table) ? c : null;
-};
-/* How much of `progress` would land past a mark he may not leave — tried on a copy. */
+/* How much of `progress` would not fit under the cap (rules/cap.mjs landProgress) — tried on a copy. */
 function pastMark(content, state, progress, now) {
   if (progress <= 0 || zeroAt(content, state.tier, state.step)) return 0;
-  // Under a share mark (rules/cap.mjs shareMark): what lands past it.
-  const room = shareRoom(content, state);
-  if (room < progress) return progress - room;
-  const trial = { tier: state.tier, step: state.step, progress: state.progress, ...(state.stretch ? { stretch: { ...state.stretch } } : {}) };
-  const { hold } = addProgress(content, trial, progress, (tier, step) => underCap(content, state, tier, step) && duanPass(content, state, now, tier, step));
-  return hold ? Math.min(progress, Math.max(0, hold.over ?? 0)) : 0;
+  const trial = { ...state, ...(state.stretch ? { stretch: { ...state.stretch } } : {}) };
+  return landProgress(content, trial, progress, (tier, step) => underCap(content, state, tier, step) && duanPass(content, state, now, tier, step)).over;
 }
 
 /* Held at a 段 door: the try just thrown, else the hour still running (and the chance the next pay will throw at). */
@@ -138,33 +132,32 @@ function pay(content, state, ctx, grant, landing = state) {
   // where the move lands — the hall's three stones land in the outer court.
   const shut = lockedOf(content, landing);
   const due = amountsOf(content, state, ctx.now, grant);
-  const base = shut.includes('cultivation') ? 0 : due.base, progress = shut.includes('cultivation') ? 0 : due.progress;
-  // A fight's 修为 past the held mark is paid as 灵石 (converting, above).
-  const conv = converting(content, grant), over = conv ? pastMark(content, state, progress, ctx.now) : 0;
-  const lingshi = over && !shut.includes('wealth') ? Math.round(over * convertRate(content, state, conv)) : 0;
-  const wealth = (shut.includes('wealth') ? 0 : due.wealth) + lingshi;
-  state.day.progress += base; state.day.wealth += wealth; state.wealth += wealth;
+  const progress = shut.includes('cultivation') ? 0 : due.progress;
   // The door of each step: the 回's cap, then — into 四层 and 七层 of a realm in 段 — the 段 trial's die (rules/breakthrough.mjs).
+  // The cap is read where the move lands (`landing`: a way on that walks through a stage quest's gate — 09-shenshi's 冬天, 「他过了
+  // 八层」 — pays with that gate open), his bar as it stands now.
+  const at = landing === state ? (x => x) : (x => ({ ...landing, tier: x.tier, step: x.step, progress: x.progress, stretch: x.stretch }));
   let door = null;
   const mayStep = (tier, step) => {
-    if (!underCap(content, state, tier, step)) return false;
+    if (!underCap(content, at(state), tier, step)) return false;
     const odds = duanOdds(content, state, ctx.now, tier, step);
     if (duanPass(content, state, ctx.now, tier, step)) { if (odds) door = { to: { tier, step }, odds }; return true; }
     door = { held: { tier, step }, odds };
     return false;
   };
-  // Past a share mark (rules/cap.mjs shareMark) the rest waits in the 丹田 (`banked`), never on the bar.
-  const room = shareRoom(content, state), banked = Math.max(0, progress - over - room);
-  if (banked) state.banked = (state.banked ?? 0) + banked;
-  const { levels, hold: kept0 } = addProgress(content, state, progress - over - banked, mayStep);
-  if (levels.length) rebank(content, state, true);
-  const kept = banked && !kept0 ? { cap: true, held: 0, over: banked, share: true } : kept0;
+  // One way onto the bar for every source (rules/cap.mjs landProgress): what does not fit under the cap is 灵石 (overStones) —
+  // owed while a gate keeps 灵石 shut (landOwed), never lost.
+  const { levels, hold: kept, over, pre } = landProgress(content, state, progress, mayStep, at);
+  const lingshi = overStones(content, state, over + pre);
+  if (lingshi && shut.includes('wealth')) state.owed = { ...state.owed, wealth: (state.owed?.wealth ?? 0) + lingshi };
+  const wealth = (shut.includes('wealth') ? 0 : due.wealth + lingshi);
+  const landed = progress - over - (kept?.zero ? kept.held : 0);
+  state.day.progress += Math.max(0, landed); state.day.wealth += wealth; state.wealth += wealth;
   // The 段 trial thrown on this pay, written down: through, or held at the door with the hour started.
   const trial = door ? duanTried(content, state, ctx.now, door) : null;
-  // At the 回's cap the held part is told in the world's words (rules/cap.mjs) — not when the rest went to 灵石. At a 段 door
-  // the trial holds it (`duan`), not the cap.
-  const atDoor = Boolean(kept?.cap && door?.held);
-  const hold = atDoor ? { duan: duanHeld(content, state, ctx.now, trial), held: 0, over: kept.over ?? 0 } : over ? null : kept?.cap ? { ...kept, say: capLook(content, state, state.lang)?.say ?? null } : kept;
+  // What is still held is told: 零层's (it takes none) and a 段 door's (the trial holds it, `duan`). The cap's own is 灵石 now.
+  const hold = kept?.zero ? kept : kept?.cap && door?.held ? { duan: duanHeld(content, state, ctx.now, trial), held: 0, over: kept.over ?? 0 } : null;
+  const converted = over + pre ? { progress: over + pre, wealth: lingshi, say: pick(content.ladder.caps?.convert, state.lang) ?? null } : null;
   if (grant.cast && !state.cast.includes(grant.cast)) state.cast.push(grant.cast);
   // A beast that joins brings its card; a grant may name one outright.
   const day = dayKey(ctx.now);
@@ -180,16 +173,17 @@ function pay(content, state, ctx, grant, landing = state) {
   const learned = grant.art ? learn(content, state, grant.art) : null;
   // A 层 inside a 段 is the bar's, never a rise told (筑基 · 小成 → 筑基 · 小成): only a step whose name moves.
   const named = levels.map(l => ({ from: stepName(content, l.from.tier, l.from.step, state.lang), to: stepName(content, l.to.tier, l.to.step, state.lang) })).filter(l => l.from !== l.to);
-  // `progress` is what the realm really took; at the peak the rest is held.
-  return { progress: progress - over - (hold?.held ?? 0), wealth, ...(trial ? { duan: trial } : {}), ...(over ? { converted: { progress: over, wealth: lingshi } } : {}), cast: grant.cast ?? null, item: grant.item ?? null, ...(extra.length ? { more: extra } : {}), ...(full ? { offered: true, pouch_full: full } : {}), levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
+  // `progress` is what the bar really took; `converted` what did not fit, paid as 灵石 (in `wealth`).
+  return { progress: landed, wealth, ...(trial ? { duan: trial } : {}), ...(converted ? { converted } : {}), cast: grant.cast ?? null, item: grant.item ?? null, ...(extra.length ? { more: extra } : {}), ...(full ? { offered: true, pouch_full: full } : {}), levels: named, hold, ...(cards.length ? { cards } : {}), ...(learned ? { learned } : {}) };
 }
 
 /* What a story grant put in his hands: its thing (`n` of it), the rest (`more`), the 灵石 it paid, and the 修为 that landed
    (Hanli 2026-11-09: 「…然后有动画显示剧情奖励」 — the page shows 「剧情所得 · 修为 +n」). Null: nothing. */
 function gainsOf(grant, paid) {
   const items = [grant.item ? { id: grant.item, n: grant.n ?? 1 } : null, ...Object.entries(grant.more ?? {}).map(([id, n]) => ({ id, n }))].filter(Boolean);
-  const wealth = paid.wealth ?? 0, progress = paid.progress ?? 0;
-  return items.length || wealth > 0 || progress > 0 ? { items, ...(wealth > 0 ? { wealth } : {}), ...(progress > 0 ? { progress } : {}) } : null;
+  // `converted` without its words: the save is the same in either language (look.mjs gainedBrief says it in his).
+  const wealth = paid.wealth ?? 0, progress = paid.progress ?? 0, converted = paid.converted?.wealth > 0 ? { progress: paid.converted.progress, wealth: paid.converted.wealth } : null;
+  return items.length || wealth > 0 || progress > 0 ? { items, ...(wealth > 0 ? { wealth } : {}), ...(progress > 0 ? { progress } : {}), ...(converted ? { converted } : {}) } : null;
 }
 
 /* What was owed while a gate kept it shut (tasks.mjs owe: 开府 handed in before the 灵石 were his)
@@ -766,7 +760,7 @@ export function judge(state, content, ctx, args) {
   return { state: null, result: { ok: true, right: judgeAnswer(content, args.key, args.answer) } };
 }
 
-export { advanceChapter, clone, gainsOf, paysOf, replaying, hourOf, judgeAnswer, offerTasks, pay, refuse, RIDDLE_TRIES, riddleOpen, setRiddleAside, spendStamina, triedToday };
+export { advanceChapter, clone, gainsOf, paysOf, paysOfAll, replaying, hourOf, judgeAnswer, offerTasks, pay, refuse, RIDDLE_TRIES, riddleOpen, setRiddleAside, spendStamina, triedToday };
 
 
 /* One of an item out of the bag (an exit's `take`). Never below nothing: an

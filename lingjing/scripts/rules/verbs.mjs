@@ -41,6 +41,7 @@ import { amend, art, atlas, build, enter, forget, leave, load, make, ring, save,
 import { yaoshou } from './yaoshou.mjs';
 import { panglu, pangluOpen } from './panglu.mjs';
 import { seals, sealsShown } from './seals.mjs';
+import { joinConverted } from './cap.mjs';
 
 /* Every verb kept to the story gates (rules/locks.mjs): a shut system's verb is refused `not-yet`. */
 export const VERBS = gated({
@@ -227,6 +228,7 @@ function kaifuTurnAll(state, content, ctx) {
     turned.push({ id: q.id, title: pick(q.title, state.lang) });
     paid.progress += one.result.paid?.progress ?? 0;
     paid.wealth += (one.result.paid?.wealth ?? 0) + (one.result.owed?.wealth ?? 0);
+    if (one.result.paid?.converted) paid.converted = joinConverted(paid.converted, one.result.paid.converted);
     stamina += Number(one.result.stamina?.added ?? one.result.stamina) || 0;
   }
   if (!turned.length) return refuse('not-done', null);

@@ -47,12 +47,16 @@ export function closeStretch(s, scene) {
 /* A floor's pay that landed nothing and holds nothing (a gate still shut) is no pay: no 「修为 +0」 on the page. */
 export const landedOnly = paid => (paid && ((paid.progress ?? 0) > 0 || paid.hold || paid.levels?.length) ? paid : null);
 
+/* Two `converted` as one (rules/cap.mjs joinConverted's shape — kept here, a leaf). */
+const sumConverted = (a, b) => (!a || !b ? a ?? b : { progress: (a.progress ?? 0) + (b.progress ?? 0), wealth: (a.wealth ?? 0) + (b.wealth ?? 0), say: a.say ?? b.say ?? null });
+
 /* Two pays of one step as one: the exit's own and the floor's. */
 export function joinPaid(paid, more) {
   if (!more || !paid) return paid ?? more ?? null;
   return {
-    ...paid, progress: (paid.progress ?? 0) + (more.progress ?? 0), levels: [...(paid.levels ?? []), ...(more.levels ?? [])],
+    ...paid, progress: (paid.progress ?? 0) + (more.progress ?? 0), wealth: (paid.wealth ?? 0) + (more.wealth ?? 0), levels: [...(paid.levels ?? []), ...(more.levels ?? [])],
     ...(more.hold ? { hold: more.hold } : {}), ...(more.duan ? { duan: more.duan } : {}),
+    ...(paid.converted || more.converted ? { converted: sumConverted(paid.converted, more.converted) } : {}),
   };
 }
 

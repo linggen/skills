@@ -168,21 +168,22 @@ test('no daily thinning (Hanli, 2026-10-16): every pool win pays its share of th
   const last = pay(content, full, ctx, { table: 'haunt', progress: T.haunt.progress, ls: T.haunt.ls });
   assert.equal(last.progress, room);
   // 灵石 per 修为 the same at every level (playpay.mjs convertRate, batch 2: share × I(L) ÷ (R(L) × board) — R and I share their shape).
-  assert.deepEqual(last.converted, { progress: each - room, wealth: Math.round((each - room) * convertRate(content, full)) });
+  assert.deepEqual(last.converted, { progress: each - room, wealth: Math.max(1, Math.round((each - room) * convertRate(content, full))), say: content.ladder.caps.convert.zh });
   assert.ok(Math.abs(convertRate(content, full) - convertRate(content, { ...full, step: 1 })) < 1e-9, 'the same rate at 一层 and 四层');
 });
 
-test('no story jump (2026-10-16): past the mark the 功课 counts on and a fight pays 灵石; 第一路 moves no layer — 二层 is ground', () => {
+test('no story jump (2026-10-16): past the mark the 功课 and a fight alike pay 灵石 (2026-11-12); 第一路 moves no layer — 二层 is ground', () => {
   const th = content.ladder.tiers[0].thresholds;
   const s = { ...newState(content, 'zh', NOW), chapter: '00-waimen', scene: null, place: 'waimen', ended: ['00-prologue'], done_scenes: ['wm-ahe', 'wm-jiangtang', 'wm-zhoutian'],
     tier: 'qi', step: 1, progress: th[1], traits: ROOTS, stamina: 100, stamina_at: NOW.toISOString() };
   const g = chorePlay(content, s, 'day'); // the day's 功课, its minutes of board play (2026-10-27)
-  assert.equal(pay(content, s, ctx, { table: 'gongke', progress: g }).progress, g, 'the whole 功课 counted');
-  assert.deepEqual([s.step, s.progress], [1, th[1] + g]);
+  const done = pay(content, s, ctx, { table: 'gongke', progress: g });
+  assert.deepEqual([done.progress, done.converted?.progress], [0, g], 'the whole 功课 past the full bar: 灵石 (Hanli 2026-11-12)');
+  assert.deepEqual([s.step, s.progress], [1, th[1]]);
   const f = structuredClone(s);
   const won = pay(content, f, ctx, { table: 'haunt', progress: T.haunt.progress, ls: T.haunt.ls });
   assert.equal(won.progress, 0, 'no 修为 past the mark from a fight');
-  assert.equal(won.wealth, tableStones(content, f, 'haunt') + Math.round(fightPlay(content, f) * convertRate(content, f)));
+  assert.equal(won.wealth, tableStones(content, f, 'haunt') + Math.max(1, Math.round(fightPlay(content, f) * convertRate(content, f))));
   // 第一路 (wm-diyilu): once a rise to 二层; now the story moves nothing — 古五's grinding steps him. (Its way on waits on
   // 喂饭桶 · 一根牛骨头 since 2026-10-21: played.)
   const at = { ...s, scene: 'wm-diyilu', place: 'chaifang', tasks: { ...s.tasks, 'diyilu-niugu': { status: 'done' }, 'diyilu-tama': { status: 'done' } } };
@@ -243,5 +244,7 @@ test('buying 修为 is no farm: every 灵石 on 聚气丹 saves the typical play
   const p = M.players.typical, days = rows => rows.reduce((n, r) => n + (r.days ?? 0), 0);
   const base = days(play(content, p).rows), buyer = days(play(content, { ...p, qi_buy: 1 }).rows);
   assert.ok(buyer < base, `the pills do something: ${base} → ${buyer}`);
-  assert.ok(buyer >= base * 0.95, `${base} → ${buyer} days`);
+  // 2026-11-12 (修为 past the cap is 灵石, Hanli): a longer 卷一 (45 → 50 typical days) gives the pills more to save — 5.8%;
+  // allowed to 6%, NOT retuned (pill_ratio is Hanli's call).
+  assert.ok(buyer >= base * 0.94, `${base} → ${buyer} days`);
 });

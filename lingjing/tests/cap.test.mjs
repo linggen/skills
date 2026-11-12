@@ -44,7 +44,7 @@ test('every 古 回 declares its cap, as the book\'s realm line stands', () => {
   assert.deepEqual(lint(content).filter(p => /cap/.test(p)), []);
 });
 
-test('古四: 零层 grinds nothing; past the 小周天 grinding fills 一层 and stays on it — the 修为 counting on past the mark (2026-10-15), the world\'s line by the bar', () => {
+test('古四: 零层 grinds nothing; past the 小周天 grinding fills 一层 and stays on it — the bar stops at its need and the rest is 灵石 (2026-11-12), the world\'s line by the bar', () => {
   const zero = gusi();
   assert.equal(grind(zero).got, 0, '零层 takes no 修为');
   assert.equal(named(zero), '练气零层');
@@ -52,14 +52,14 @@ test('古四: 零层 grinds nothing; past the 小周天 grinding fills 一层 an
   const s = gusi({ step: 1 });
   const { got, last } = grind(s);
   assert.equal(named(s), '练气一层', '九月\'s roll call: 小满 一层');
-  assert.ok(s.progress > threshold(content, s), 'the layer is full, and the 修为 goes on past its mark');
-  assert.equal(got, s.progress, 'every grant counted — nothing held back');
-  assert.equal(last.hold.cap, true);
-  assert.deepEqual([last.hold.held, last.progress], [0, 90], 'at the cap a grant still lands whole');
-  assert.equal(last.hold.say, content.ladder.caps.say.zh);
+  assert.equal(s.progress, threshold(content, s), 'the layer is full, and the bar stops at its need (Hanli 2026-11-12)');
+  assert.equal(got, s.progress, 'what landed is what the bar holds — nothing past it');
+  assert.equal(last.hold, null, 'nothing held: the rest is 灵石');
+  assert.deepEqual([last.progress, last.converted.progress, last.converted.wealth > 0], [0, 90, true], 'at the cap a grant lands as 灵石');
+  assert.equal(last.converted.say, content.ladder.caps.convert.zh);
   const l = look(s, content, ctx);
   assert.equal(l.capped.say, content.ladder.caps.say.zh, 'Look carries the line by the full bar');
-  assert.ok(l.progress > l.next, 'the bar shows it: 9000/200');
+  assert.equal(l.progress, l.next, 'the bar shows it full, never past: 200/200');
   assert.equal(look({ ...s, progress: 10 }, content, ctx).capped, undefined, 'below the top, no line');
   assert.equal(look(at('00-waimen', 'wm-ahe', 'waimen', ['00-prologue'], { lang: 'en', step: 1, progress: content.ladder.tiers[0].thresholds[1] }), content, ctx).capped.say, content.ladder.caps.say.en);
 });
@@ -99,8 +99,8 @@ test('古四\'s close lifts no layer (2026-10-16); 古五 grinds to 二层 throu
   s = { ...s, scene: 'wm-qianye', place: 'waimen', done_scenes: [...s.done_scenes, 'wm-xiqi', 'wm-chu'] };
   grind(s);
   assert.equal(named(s), '练气四层', '古六: 四层 to the eve (the gate asks 三层圆满 since 2026-11-03); 五层 is 古七\'s');
-  // …and the bar stops at the share hold's mark (0.45 until the 大比, 2026-11-03): the rest waits in the 丹田.
-  assert.deepEqual([s.progress, s.banked > 0], [Math.floor(0.45 * threshold(content, s)), true], 'a share of 四层, the rest banked');
+  // …and the bar stops at the share hold's mark (0.45 until the 大比, 2026-11-03): the rest is 灵石 (2026-11-12), nothing banked.
+  assert.deepEqual([s.progress, s.banked], [Math.floor(0.45 * threshold(content, s)), undefined], 'a share of 四层, the rest 灵石');
 });
 
 test('古七: 四层 until 定风 is walked — each layer ground behind its gate; 古八 grinds 七层 for 年六, 八层 for 年七\'s 腊月, then 九层 for 入秋', () => {
@@ -160,7 +160,7 @@ test('卷一\'s end: 古八 over, 卷二 waiting — 筑基小成 filled, and no
   const { got } = grind(s, 300);
   assert.equal(named(s), '筑基 · 小成');
   assert.equal(s.step, 2, '筑基三层: the whole of 小成 ground, no further');
-  assert.ok(s.progress > threshold(content, s) && got > s.progress, 'every grant counted: 一层 and 二层 passed, 三层 past its mark');
+  assert.ok(s.progress === threshold(content, s) && got > s.progress, 'every grant counted: 一层 and 二层 passed, 三层 full at its mark');
   assert.equal(look(s, content, ctx).capped.say, content.ladder.caps.say.zh);
   assert.equal(look(s, content, ctx).tier.name, '筑基 · 小成圆满', 'the 段 filled reads 圆满');
   // In 古八 itself, the same.

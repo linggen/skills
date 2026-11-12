@@ -256,8 +256,10 @@ export function derive(raw0, { ladder, items, fantong = null, cards = null }) {
   pp.wealth = { ...E.play };
   const { wealth: _w, ...errand } = pp.errand;
   pp.errand = { ...errand, ls: E.errand };
-  const { rate: _r, ...convert } = raw.convert ?? {};
-  raw.convert = { ...convert, share: E.convert_share };
+  // 修为 past the cap → 灵石 (Hanli 2026-11-12: every source, so no `tables` list): 灵石 a 修为 = share × I(L) ÷ (R(L) × board),
+  // read by the rules at his level (playpay.mjs convertRate) — a minute of small-game play past the cap pays `share` of a
+  // minute's income. R and I share growth and realm, so it is one number at every level: share × income.first ÷ (rate.base × board).
+  raw.convert = { share: E.convert_share };
   raw.kailu = { ...raw.kailu, tier: { ...E.kailu_tier }, ...(E.kailu_floor ? { grades: Object.fromEntries(Object.entries(raw.kailu.grades).map(([g, v]) => { const { floor, ...rest } = v; return [g, { ...rest, floor_ls: E.kailu_floor[g] ?? 0 }]; })) } : {}) };
   raw.prices = pricesOf(raw, { items, fantong, cards, effects: raw.pills.effects, ladder });
   if (M.mijing) raw.mijing = mijingOf(M.mijing);

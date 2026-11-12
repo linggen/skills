@@ -45,7 +45,7 @@ import { esc } from './esc.js';
 import { forInput } from './games/kit/device.js';
 import { revealCards, whenceLine } from './card-reveal.js';
 import { pickAfter, pickNow } from './danang.js';
-import { HANDED_STAY_MS, TURNED_MS, handedStale } from './turned.js';
+import { HANDED_STAY_MS, TURNED_MS, convertedSay, handedStale } from './turned.js';
 import { thinker, stillAsked } from './think.js';
 import { DUIZI_WORDS, duiziChecksHtml, duiziFormOf, duiziTableOf } from './aigames-cards.js';
 import { createVoice, nodeMoment } from './voice.js';
@@ -1152,6 +1152,8 @@ async function gainBurst(g, fromStory = false) {
   if (story) bits.push(`<span class="from">${esc(w.storyGain)}</span>`);
   if (g.progress) bits.push(`<span>${esc(w.xw)} <b>+${xw}</b></span>`);
   if (g.wealth) bits.push(`<span>${esc(w.ls)} <b>+${g.wealth}</b></span>`);
+  // Past the cap the rest came as 灵石 (rules/cap.mjs): the rules' own line under the numbers.
+  if (convertedSay(g)) bits.push(`<span class="from">${esc(convertedSay(g))}</span>`);
   const el = document.createElement('div');
   el.className = 'gainburst';
   el.innerHTML = bits.join('');

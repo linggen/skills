@@ -213,9 +213,9 @@ test('no pill fills a step (2026-10-16): the 九转 and the sect\'s 一转 both 
   for (const [s, step, name] of [[filled, 0, '筑基 · 小成'], [{ ...filled, chapter: '01-ji', scene: null, place: 'zhangyuan', ended: [...filled.ended, '01-ji'], done_scenes: [...ji, '01-end'] }, 2, '筑基 · 小成圆满']]) {
     let got = 0, last = null;
     for (let i = 0; i < 50; i += 1) { last = pay(content, s, ctx, { table: 'seclusion', progress: 90 }); got += last.progress; }
-    assert.ok(got > 0 && s.step === step && s.tier === 'foundation', 'it counts on past the mark (2026-10-15), and still no 中成');
-    assert.equal(last.hold?.cap, true, 'the cap keeps 中成 shut');
-    assert.ok(s.progress > threshold(content, s), 'the bar shows it past the mark');
+    assert.ok(got > 0 && s.step === step && s.tier === 'foundation', 'it fills the bar (the rest 灵石, 2026-11-12), and still no 中成');
+    assert.ok(last.converted?.progress > 0 && !last.levels.length, 'the cap keeps 中成 shut: the pay past it is 灵石');
+    assert.equal(s.progress, threshold(content, s), 'the bar full at its need, never past');
     assert.equal(look(s, content, ctx).tier.name, name);
   }
 });

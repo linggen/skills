@@ -301,7 +301,9 @@ export function trade(state, content, ctx, args) {
       // 圆满 (Hanli 11-03: 「修为圆满, 聚气丹无法起作用」): a pill would pay nothing and still owe 丹毒 — kept in the bag,
       // the reason said. A 九转 that clears 丹毒 owed still goes down.
       const clears = (item.zhuan ?? 0) >= 9 && (s.dandu ?? 0) > 0;
-      if (!clears && paysOf(content, clone(s), ctx.now ?? new Date(), effectGrant(e))?.full) {
+      // A pill that lands part of its 修为 goes down: the rest is 灵石, as the card says (Hanli 2026-11-12) — kept only when none lands.
+      const would = paysOf(content, clone(s), ctx.now ?? new Date(), effectGrant(e));
+      if (!clears && would?.full && !would.progress) {
         // At the 回's cap the way on is the story (Hanli 11-03); elsewhere (a 段 door, a realm's peak) the generic line.
         return refuse('xw-full', capLook(content, s, lang) ? capPillSay(content, lang) : pick({ zh: '你现在修为圆满，服下也不长修为；破境之后再服。', en: 'Your cultivation is full; it would do nothing now. Take it after you break through.' }, lang));
       }

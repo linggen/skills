@@ -6,14 +6,13 @@ import { dayKey, fill, itemName, lockedOf, periodKey, pick, peakName, stepName, 
 import { canPick, cardCatalog, fightDeck, gearFight, ownedCards, pickedCards, rootsOf, usable } from './cards.mjs';
 import { companionOf, hasCompanion, herCard, nearestPlace } from './companion.mjs';
 import { readingOf } from './scrolls.mjs';
-import { meets, pay, paysOf } from './core.mjs';
+import { meets, pay, paysOf, paysOfAll } from './core.mjs';
 import { workGrant } from './playpay.mjs';
 
 /* What an errand pays, as it will land: its grant, and an 外门 errand's minutes (rules/playpay.mjs, 2026-10-27). */
 export function questPays(content, state, now, q) {
-  const a = paysOf(content, state, now, q.grant), more = workGrant(content, state, q);
-  const b = more ? paysOf(content, state, now, more) : null;
-  return a && b ? { ...a, progress: (a.progress ?? 0) + (b.progress ?? 0), wealth: (a.wealth ?? 0) + (b.wealth ?? 0) } : a ?? b;
+  // Both as one: the cap tried on the whole (core.mjs paysOfAll, Hanli 2026-11-12 — what does not fit shows as 灵石).
+  return paysOfAll(content, state, now, [q.grant, workGrant(content, state, q)]);
 }
 import { nameOf, shopOf } from './look.mjs';
 import { buyBack, visitorHere } from './visiting.mjs';
@@ -26,7 +25,7 @@ import { coolingUntil, oddsOf } from './breakthrough.mjs';
 import { freeSlot, pouchBrief, roomWith } from './pouch.mjs';
 import { GEAR_SLOTS, armSlot, herKey, herSlot, wornCount } from './wear.mjs';
 import { chapterLabel, comingOf } from './hui.mjs';
-import { capLook, storyAllows } from './cap.mjs';
+import { capLook, joinConverted, storyAllows } from './cap.mjs';
 import { gatesOf, stageBrief, stageGate } from './gates.mjs';
 import { errandLine } from './errand-line.mjs';
 import { mijingHold } from './mijing.mjs';
@@ -393,6 +392,7 @@ function complete(content, s, ctx, id, q) {
     paid.wealth = (paid.wealth ?? 0) + (got.wealth ?? 0);
     if (got.levels?.length) paid.levels = [...(paid.levels ?? []), ...got.levels];
     if (got.hold) paid.hold = got.hold;
+    if (got.converted) paid.converted = joinConverted(paid.converted, got.converted);
   }
   const next = q.then ? questOf(content, q.then) : null;
   const open = Object.keys(s.quests).filter(x => !questDoneBefore(s, x)).length;
@@ -661,8 +661,9 @@ const EFFECT_BRIEF = {
   progress: (e, content, lang, state) => {
     const p = state ? paysOf(content, state, new Date(), effectGrant(e)) : null;
     // …and at the 回's cap, `capped`: the card points to the story (Hanli 11-03), not to a breakthrough of his own.
+    // Past the cap (Hanli 2026-11-12) the rest is 灵石: the card says both, as the pay lands (`wealth`).
     const full = p?.full && !p.progress;
-    return { progress: p?.progress ?? Math.round(e.progress ?? 0), ...(full ? { full: true } : {}), ...(full && capLook(content, state, lang) ? { capped: true } : {}) };
+    return { progress: p?.progress ?? Math.round(e.progress ?? 0), ...(p?.full && p.progress && p.wealth ? { wealth: p.wealth } : {}), ...(full ? { full: true } : {}), ...(full && capLook(content, state, lang) ? { capped: true } : {}) };
   },
   learn: e => ({ learn: e.learn, level: e.level, tier: e.tier }),
   wear: e => ({ wear: e.wear, ...(e.lift ? { lift: e.lift } : {}) }),

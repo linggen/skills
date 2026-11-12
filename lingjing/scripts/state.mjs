@@ -557,10 +557,11 @@ export function layerPayOf(content, state, table) {
 /* Add progress; rise through the tier's steps, the 修为 over each mark carried
    in (stepUp). Where the next step is shut — the 回's cap (`mayStep`,
    rules/cap.mjs) or the realm's top, which only the next tier's chapter opens —
-   the step is full and the 修为 keeps coming past its mark (Hanli, 2026-10-15:
-   「230/200」, every hand-in visibly adds; nothing is held back any more). The
-   story's rise or the throw carries it on. `hold` says which door is shut and
-   how far past the mark he stands (`over`); `held` is 0 — kept for callers. */
+   the bar stops at its mark: 修为 never stands past the layer's need (Hanli,
+   2026-11-12: 「修为不要超过上限, 超过后换算为灵石奖励」 — until then it counted on,
+   「230/200」). `hold` says which door is shut and what did not fit (`over`, taken
+   off the bar: the caller pays it as 灵石, rules/cap.mjs overStones); `held` is
+   0 — kept for callers. A full bar still walks the loop: a door opened since steps. */
 export function addProgress(content, state, amount, mayStep = null) {
   const levels = [];
   let hold = null;
@@ -577,8 +578,9 @@ export function addProgress(content, state, amount, mayStep = null) {
       stepUp(content, state, state.tier, state.step + 1, state.progress - need);
       continue;
     }
-    const tiers = content.ladder.tiers, next = tiers[tiers.indexOf(tier) + 1];
-    hold = top ? { gate: next?.gate ?? null, held: 0, over: state.progress - need } : { cap: true, held: 0, over: state.progress - need };
+    const tiers = content.ladder.tiers, next = tiers[tiers.indexOf(tier) + 1], over = state.progress - need;
+    state.progress = need;
+    hold = top ? { gate: next?.gate ?? null, held: 0, over } : { cap: true, held: 0, over };
     break;
   }
   return { levels, hold };

@@ -93,7 +93,8 @@ const GROW = {
     const want = Math.floor(hours * (secludeHour(content, s) ?? 0));
     if (!want) return { progress: { paid: 0 } };
     const p = pay(content, s, ctx, { table: 'seclusion', progress: want });
-    return { progress: { paid: p.progress, levels: p.levels, ...(p.hold ? { hold: p.hold } : {}) } };
+    // Past the cap the rest is 灵石 (rules/cap.mjs landProgress): 出关's card says both.
+    return { progress: { paid: p.progress, levels: p.levels, ...(p.hold ? { hold: p.hold } : {}), ...(p.converted ? { converted: p.converted } : {}) } };
   },
   treasure: (content, s, sec, hours) => {
     const r = RULE(content), from = s.treasure?.level ?? 0;

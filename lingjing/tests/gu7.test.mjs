@@ -121,9 +121,11 @@ test('walking 古七 by its boards and fights: 修为 rises at each cultivation 
   s = play(play(s, 'furnace-deng'), 'furnace-ding'); // 守墙关 · 药园巡夜 · 开春 since the 调息 cut (2026-10-20): no grade
   s = go(s, 'fire');
   assert.ok(s.bag['qi-pill'] > 0, 'the way on: a 聚气丹 (认方 cut 2026-10-19)');
-  assert.deepEqual([s.scene, s.step], ['09-danfang', 4], '定风 lifts nothing: 五层 is ground');
+  // 定风 lifts nothing by itself; the way on's own 修为 is paid where it lands (core.mjs pay `landing`, 2026-11-12), 定风's gate
+  // behind him, so the 四层 he ground full steps — his own work, the book's 「那天早上……他过了五层」.
+  assert.deepEqual([s.scene, s.step], ['09-danfang', 5], '定风 behind him: his full 四层 steps on the way on\'s own 修为');
   s = play(s, 'danfang-min');
-  assert.equal(s.step, 5, '闵丹师\'s board: the 修为 banked past 四层 steps him, 定风 behind him — his own, the book\'s 「他过了五层」');
+  assert.equal(s.step, 5, '闵丹师\'s board: 五层 ground on');
   s = go(s, 'smell');
   assert.equal(s.scene, '09-year');
   s = go(play(s, 'year-kanlu'), 'qingming'); // 闻焦 cut 2026-10-19: told; 看炉 (2026-10-26) the nights

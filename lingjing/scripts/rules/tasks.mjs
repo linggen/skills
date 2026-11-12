@@ -33,6 +33,7 @@ import { yaoshouFought, yaoshouShare } from './yaoshou.mjs';
 import { claimedAt, happeningHosts } from './happenings.mjs';
 import { stampForm, waveHere, waveTask, yaoshouFormOf } from './forms.mjs';
 import { yaoshouBatch } from './yaoshou.mjs';
+import { joinConverted } from './cap.mjs';
 
 /* Each line its own 修为 (rules/lines.mjs, Hanli 2026-10-27): a board pays the line it belongs to — a 今 board the 今, wherever
    it is replayed; on a 今 scene, the 今 — by the same minutes on that line's ladder, and never 灵石. Null: the 古's own. */
@@ -287,7 +288,7 @@ function taskDone(state, content, ctx, id) {
     paid.wealth = (paid.wealth ?? 0) + (more.wealth ?? 0);
     if (more.levels?.length) paid.levels = [...(paid.levels ?? []), ...more.levels];
     if (more.hold) paid.hold = more.hold;
-    if (more.converted) paid.converted = more.converted;
+    if (more.converted) paid.converted = joinConverted(paid.converted, more.converted);
     playCounted(s, id, ctx.now);
   }
   // A board of the scene he stands in, its 修为 tallied to the scene's stretch (rules/cultivation.mjs): a marked scene's exit

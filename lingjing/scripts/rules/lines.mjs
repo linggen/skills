@@ -8,6 +8,7 @@
 // (修行 begins at 入门 on the 古; 沈芒's line is real life and counts from its first board). Part of the rules engine.
 import { addProgress, cultivating, layerNo, lineStart, lineTiers, phaseName, pick, realmName, stepName, threshold } from '../state.mjs';
 import { playGrant } from './playpay.mjs';
+import { overStones } from './cap.mjs';
 import { sideLine } from './hui.mjs';
 
 /* The lines a world declares beside the book's own (ladder.json `lines`), by id. */
@@ -68,7 +69,9 @@ export function lineGrant(content, state, line, id, task, now, stars = null, opt
 }
 
 /* Paid onto its line: the 修为 climbs that line's ladder (state.mjs addProgress — 层 by 层, the stretch as 古's; at a realm's
-   top the bar fills on and waits, with no throw yet). Mutates `state`. Its levels are named on that line (新生一层 → 新生二层). */
+   top the bar stops full and waits, with no throw yet). What does not fit is 灵石, as on 古's bar (Hanli 2026-11-12: 「修为不要
+   超过上限, 超过后换算为灵石奖励」; rules/cap.mjs overStones) — the save's one purse. Mutates `state`. Its levels are named on
+   that line (新生一层 → 新生二层). */
 export function linePay(content, state, line, grant) {
   const W = lineWorld(content, line), amount = Math.max(0, Math.round(grant?.progress ?? 0));
   if (!W || !amount) return null;
@@ -76,7 +79,10 @@ export function linePay(content, state, line, grant) {
   const { levels, hold } = addProgress(W, v, amount);
   lineKeep(state, line, v);
   const named = levels.map(l => ({ from: stepName(W, l.from.tier, l.from.step, state.lang), to: stepName(W, l.to.tier, l.to.step, state.lang) }));
-  return { progress: amount, wealth: 0, line, levels: named, hold: hold ? { ...hold, line } : null };
+  const over = hold?.zero ? 0 : hold?.over ?? 0, wealth = overStones(content, state, over);
+  if (wealth) { state.wealth = (state.wealth ?? 0) + wealth; if (state.day) state.day.wealth = (state.day.wealth ?? 0) + wealth; }
+  const converted = over ? { progress: over, wealth, say: pick(content.ladder.caps?.convert, state.lang) ?? null } : null;
+  return { progress: amount - over, wealth, line, levels: named, hold: hold?.zero ? { ...hold, line } : null, ...(converted ? { converted } : {}) };
 }
 
 /* Each line's place as Look shows it — the same shape as Look's own (古's) `tier` · `progress` · `next`, with the line's

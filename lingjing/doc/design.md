@@ -390,7 +390,7 @@ prints.** (rules/playpay.mjs; balance.json `master.xiuwei` → `play_pay.xiuwei`
   (doubled 2026-11-10 with the app-linked meanings); a day's east-wall tags 5 together; a night's 闭关 10 (20 at 练气一层);
   an errand's work its 5 minutes. A pill is its 转's nights of 闭关 (× the night's units), so 「抵N日打坐」 holds at every
   layer; what the book authors is a size in `units` (the master's one `told` aside). 切磋 a bout's 体力 × R × ★ × `board`;
-  圆满 → 灵石 flat (`convert.rate`).
+  修为 past the cap → 灵石 for every source (Hanli 2026-11-12: share × I ÷ (R × board), 0.25 a 修为; rules/cap.mjs landProgress).
 - **The story's 圆满 gates** (agent's pick, Hanli approved 2026-11-02 「可以, 按你说的做」): fixed pay made each gate days of
   grinding (第五回 ~40 typical days). A `gate` lump (`grant: {table: 'gate', progress}`, balance.json `pay.gate`) on the way
   into each gate scene — the only 修为 the story grants (content.mjs lintEarned) — and no replay falloff inside a sealed
@@ -539,7 +539,7 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
   (ladder.json `breakthrough.duan`: base 75 + the realm throw's 体力 · 闭关 · 银月 · 五行 rows,
   floor/cap shared), thrown by the pay that carries him over the 段's last 层 (core.mjs pay's door,
   rules/breakthrough.mjs `duanPass`/`duanTried`, seeded as the realm throw); a failure costs only
-  the hour (`cooldown_hours` 1): the 层 stays full, the 修为 counts on past its mark, and the next pay
+  the hour (`cooldown_hours` 1): the 层 stays full (the rest of that pay 灵石, 2026-11-12), and the next pay
   after the hour throws a new die. Look's `tier.duan.trial` gives the chance on the 段's last 层
   (`again_at` while it cools); a pay's result carries `duan`. A load never steps through a 段 door
   (cap.mjs settleHeld). 九层圆满 into the next realm is the realm throw, unchanged; 练气 has no 段

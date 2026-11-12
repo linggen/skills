@@ -16,7 +16,7 @@
   "tier": "qi",
   "step": 5,
   "progress": 284,
-  "wealth": 541,
+  "wealth": 544,
   "lines": {
    "jin": {
     "tier": "xinsheng",
@@ -688,8 +688,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 2659,
-   "wealth": 544
+   "progress": 2364,
+   "wealth": 547
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -1246,10 +1246,6 @@
    "09-furnace/fire"
   ],
   "furnace_name": "饭桶",
-  "stretch": {
-   "qi:2": 15,
-   "qi:3": 338
-  },
   "hunted": {
    "mijing-xiongya": 1
   },
@@ -1270,6 +1266,9 @@
    "mutang",
    "yangzhen"
   ],
+  "stretch": {
+   "qi:3": 337
+  },
   "told_scenes": [
    "00-baicai",
    "00-masan",

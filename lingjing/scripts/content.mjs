@@ -1312,6 +1312,7 @@ function lintCaps(content, bad) {
   const caps = content.ladder.caps, where = 'ladder caps';
   if (!caps) return;
   if (!caps.say?.zh || !caps.say?.en || !caps.refuse?.zh || !caps.refuse?.en) bad(where, 'say and refuse in zh and en');
+  if (!caps.convert?.zh || !caps.convert?.en) bad(where, 'convert in zh and en (rules/cap.mjs: the line a pay past the cap says)');
   const layerOk = at => { const t = content.ladder.tiers.find(x => x.id === at?.tier); return t && Number.isInteger(at.layer) && stepOfLayer(content, t.id, at.layer) >= 0 && stepOfLayer(content, t.id, at.layer) < t.thresholds.length; };
   const first0 = content.ladder.tiers[0].id;
   for (const [id, e] of Object.entries(caps.hui ?? {})) {

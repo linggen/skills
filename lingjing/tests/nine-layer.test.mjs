@@ -106,10 +106,10 @@ test('the 段 trial: into 四层 a light throw on the pay that carries him over 
   assert.deepEqual([r.duan.success, r.duan.to.name], [true, '中成']);
   assert.deepEqual(r.levels, [{ from: '筑基 · 小成', to: '筑基 · 中成' }]);
   assert.equal(win.duan.tries['foundation:3'], 1);
-  // Failed: held at 三层圆满, the 修为 counting on past the mark; the hour starts; nothing else lost.
+  // Failed: held at 三层圆满, the bar full at its need and the rest 灵石 (2026-11-12); the hour starts; nothing else lost.
   const lose = atDoor(2, false), had = lose.stamina;
   const f = pay(content, lose, ctx, { table: 'seclusion', progress: 50 });
-  assert.deepEqual([lose.step, lose.progress], [2, FD.thresholds[2] + 49]);
+  assert.deepEqual([lose.step, lose.progress, f.converted.progress], [2, FD.thresholds[2], 49]);
   assert.equal(f.duan.success, false);
   assert.equal(f.hold.duan.success, false);
   assert.equal(lose.stamina, had, 'no wound');

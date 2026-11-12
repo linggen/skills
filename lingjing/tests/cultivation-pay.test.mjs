@@ -138,7 +138,8 @@ test('(6b) a story step on the exit counts as paid: 09-dabi', () => {
 test('(6c) a gain told for the scene it leads into pays that stretch: wm-mingpai\'s 760 into wm-kaikai\'s 埋土 night', () => {
   // Its 阶段任务 asks 三层圆满 first (gates.mjs): the bar full there.
   const qi = content.ladder.tiers.find(t => t.id === 'qi');
-  const { s, now } = at('00-waimen/wm-kaikai', { exit: 'sit', boards: 'skip', step: 3, progress: qi.thresholds[3] });
+  // (The 760 now steps him into 三层 as he walks in — its carry stretches 三层's need, state.mjs stepUp: the fixture stands at the plain mark.)
+  const { s, now } = at('00-waimen/wm-kaikai', { exit: 'sit', boards: 'skip', step: 3, progress: qi.thresholds[3], stretch: undefined });
   assert.equal(s.scene_xiuwei?.scene, 'wm-kaikai', 'the told gain marked the stretch paid as he walked in');
   const marked = must(resolve, s, now, { exit: 'sit' });
   const control = must(resolve, s, now, { exit: 'sit' }, unmarked('wm-kaikai'));

@@ -175,10 +175,11 @@ test('古七\'s cap follows its stage quests (2026-10-16): grinding stops at the
   // steps the moment the next 修为 comes, or on load (rules/cap.mjs settleHeld); 09-year's 伏天 holds nothing (2026-11-03).
   const fire = resolve({ ...snow, scene: '09-furnace', place: content.chapters['00-zhuji'].scenes['09-furnace'].at, tasks: { 'furnace-ding': { status: 'done' } }, stamina: 100, stamina_at: NOW.toISOString() }, content, ctx, { exit: 'fire' });
   assert.equal(fire.result.ok, true, JSON.stringify(fire.result).slice(0, 200));
-  assert.equal(fire.state.step, 4, 'the story moved no layer');
-  assert.equal(grind({ ...fire.state, scene: null, place: 'houshan' }).step, 5, 'ground to 五层 right past 定风, the year not walked yet');
+  // The way on's own 修为 lands where it walks to (core.mjs pay `landing`, 2026-11-12): 定风's gate behind him, the full 四层 steps.
+  assert.equal(fire.state.step, 5, 'his full 四层 steps on the way on\'s own 修为 — no rise of the story\'s');
+  assert.equal(grind({ ...fire.state, scene: null, place: 'houshan' }).step, 5, 'ground on 五层 right past 定风, the year not walked yet');
   // A 四层 already full when 定风 is walked steps on load — never a free rise: one short of 圆满 stays 四层.
-  const past = { ...fire.state, scene: '09-danfang', place: content.chapters['00-zhuji'].scenes['09-danfang'].at, progress: th[4] + 80 };
+  const past = { ...fire.state, scene: '09-danfang', place: content.chapters['00-zhuji'].scenes['09-danfang'].at, step: 4, stretch: undefined, progress: th[4] + 80 };
   const settled = settleHeld(content, past);
   assert.deepEqual([settled.step, settled.progress > 0], [5, true], '定风 behind him and 四层 full: 五层 on load');
   assert.equal(settleHeld(content, { ...past, progress: th[4] - 1 }).step, 4, 'short of 圆满: no step');

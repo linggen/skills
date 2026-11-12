@@ -15,11 +15,15 @@ const WORDS = {
   en: { zero: 'Stage zero · cultivation not taken' },
 };
 
-/// The pay of one hand-in, as a line: what came in, and the 修为 零层 does not take.
+/// The pay of one hand-in, as a line: what came in, the 修为 零层 does not take, and — past the cap — the rules' line that
+/// the rest came as 灵石 (`converted.say`, rules/cap.mjs; Hanli 2026-11-12: 「修为不要超过上限, 超过后换算为灵石奖励」).
 export function turnedPays(paid, w, lang) {
   const t = WORDS[lang] ?? WORDS.zh, p = paid ?? {};
-  return [p.progress ? `${w.xw} +${p.progress}` : '', p.wealth ? `${w.ls} +${p.wealth}` : '', p.stamina ? `${w.qi} +${p.stamina}` : '', p.hold?.zero && p.hold.held ? t.zero : ''].filter(Boolean);
+  return [p.progress ? `${w.xw} +${p.progress}` : '', p.wealth ? `${w.ls} +${p.wealth}` : '', p.stamina ? `${w.qi} +${p.stamina}` : '', p.hold?.zero && p.hold.held ? t.zero : '', convertedSay(p)].filter(Boolean);
 }
+
+/// The rules' own line for a pay whose 修为 did not all fit (`converted.say`), or ''.
+export const convertedSay = (paid) => (paid?.converted?.wealth > 0 && paid.converted.say ? paid.converted.say : '');
 
 /// The 所得 card has stood long enough: every row on it older than HANDED_STAY_MS.
 export const handedStale = (handed, ageOf) => (handed ?? []).length > 0 && handed.every((h) => ageOf(h.id) > HANDED_STAY_MS);
