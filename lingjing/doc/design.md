@@ -1177,8 +1177,52 @@ beast's own line in the classic as its cards are today. A first sketch, costs an
 With the three bought 符 that is fifteen, and five 术. 五行 gain a lean by it: 火 bursts, 木 heals and calls, 土
 guards, 金 sharpens, 水 holds.
 
-**Batch two, not designed:** 亡语 (leaves something as it falls) · 破法 (《炉石》's 沉默: strips what a body carries)
-· 突袭 (strikes a body the turn it comes) · 悟道 as 发现 (one of three).
+**Batch two — four mechanics** (his, the same day: *第二批也设计一下吧*). Built only after batch one is fitted.
+
+1. **殒: what a body leaves as it falls** (《炉石》's 亡语). When its 血 reaches 0 on the table its 殒 happens, for its
+   own side: the falls of the side whose turn it is first, then the other's, each in the order they stood. It reuses
+   the verbs there are (call, heal, draw, blow, 毒); nothing new is resolved, only *when*. A body swallowed or sent
+   back has not fallen. It makes a body worth more than its numbers, and makes 「kill it now or leave it」 a question.
+2. **突袭: it strikes the turn it comes** (《炉石》's 突袭, not 冲锋). A body that comes in waits a turn today
+   (battle.js `sick`). One with 突袭 may strike a foe **body** at once — never the lead, and a 护主 still stands in
+   its way. 冲锋 (the lead too) is left out on purpose: 《炉石》 retired it because a blow from the hand at the lead
+   cannot be answered.
+3. **破法: strip what is laid on** (《炉石》's 沉默, and its answer to 奥秘 in one word). Aimed at one body of either
+   side, or at one 符 lying on the foe's side. A body loses all it carries — 护主, 灵光, 毒, 殒, 突袭, a hold, every
+   gain — and stands at its card's own 攻 and 血 (its wounds stay). A 符 is turned up and gone, unspent. It is the
+   answer batch one needs: without it a 灵光 behind a 护主 and a laid 符 have none. On his own body it lifts a 毒 or
+   a hold, at the price of what else the body carried.
+4. **悟: one of three** (《炉石》's 发现). Three cards are shown, he keeps one in hand for this fight; it costs as
+   written and never enters the 卡册. Where the three come from is the card's own word: **`own`** — cards he holds
+   and did not bring (so a wide 卡册 is worth something in a fight without one number growing: the link collecting
+   lacked); **`foe`** — the cards of the one across. Three different, drawn by the fight's seed (a replay shows the
+   same three). Fewer than three: what there is; none: he draws one instead. The choice holds the stage as any card
+   kind does (`holds`). 悟道 · 参悟 stay plain draws.
+
+**Batch two's cards** — the roaming beasts' own, so a beast met in the wild has a reason to be fought again (§ 品:
+`foe` cards come by chance, 金). Named from the classic's line, or from 爹's word where the beast is the hunters':
+
+| Beast | Card | What it is |
+|---|---|---|
+| 苍鹰 「它两个都看见了」 | 俯冲 | 灵兽 with 突袭 |
+| 狰 「五尾一角，其音如击石」 | 一角 | 灵兽 with 突袭 |
+| 天马 「见人则飞」 | 见人则飞 | 灵兽 with 突袭, light |
+| 豺 「一只在前头逗你，几只绕到后头掏你」 | 群豺 | 灵兽, 殒: two 豺 come in |
+| 赤狐 「看见一行，别当是一只」 | 一行脚印 | 灵兽, 殒: another comes in |
+| 当康 「见则天下大穰」 | 大穰 | 灵兽, 殒: his lead heals |
+| 絜钩 「见则其国多疫」 | 多疫 | 灵兽, 殒: every foe body takes 毒 1 |
+| 人鱼 「食之无痴疾」 | 无痴 | 功法: 破法 |
+| 领胡 「食之已狂」 | 已狂 | 功法: 破法, and he draws one |
+| 猕猴 「猴子学人。你蹲下，它也蹲下」 | 学人 | 功法: 悟 from the foe's cards |
+
+One more is his own and certain (凡): a 悟 from his own 卡册, given where the story has him read widely — the scene
+is chosen when the cards are written. Eleven, with batch one's fifteen: twenty-six new cards, 132 in all, and the
+cards that come by chance in 卷一 go from nine to about thirty.
+
+**What the two batches change together.** A turn today asks 「which blow, at what」. After them it also asks: strike or
+use the 术; lay a 符 now or hold the 灵力; break a 灵光 or go past it; heal or let the 毒 run; kill a body with a
+殒 or leave it; spend the 破法 on the 护主 or keep it for the 符. PvP reads the same (one sheet); what 悟 `own`
+reads there — the whole 卡册 or a named side-board — is settled with PvP.
 
 **Order:** after the fair base is fitted (§ 斗法 v4's measure) — a mechanic added while the band is being fitted moves
 the band under the fit. Then: the engine's three mechanics with the lines taught to play them; the five 术; the
