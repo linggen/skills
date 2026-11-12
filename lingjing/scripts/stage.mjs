@@ -83,6 +83,14 @@ export function barOf(look) {
   return own ? { line, name: own.hero, tier: own.tier, progress: own.progress, next: own.next }
     : { line: null, name: look?.name, tier: look?.tier, progress: look?.progress, next: look?.next };
 }
+/* A realm risen is told after its passage (Hanli, 2026-11-12: the top bar read 「筑基 · 小成」 and its 修为 while the
+   passage of the breakthrough was on page 2 of 22). While the seal is owed the header reads the 古's bar as it stood
+   before the rise (`hold`: its tier, progress and next, kept at the rise); a line beside the book has its own bar and
+   no seal, so nothing is held there. Without a hold the very look comes back. */
+export function barHeld(look, hold) {
+  if (!hold || !look || sideLineOf(look)) return look;
+  return { ...look, tier: hold.tier, progress: hold.progress, next: hold.next };
+}
 /* The 修为 bar in three 段 (Hanli 2026-11-02: 「9层用于计算, 小, 中, 大成用于显示」 · 「筑基以后再分3段UI吧」). The
    switch is the Look's, per tier: a tier whose `duan` the rules give reads 「筑基 · 中成」 over three segments, one per 层
    of the 段 (`at` 1–3 the one he is in); the 层 only in the tooltip (`layer`, 「第四层」). A tier without it (练气) keeps

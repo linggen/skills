@@ -31,7 +31,7 @@ import { newBoard, tapHeard } from './board.js';
 import { sounded } from './games/kit/heard.js';
 import { REALMS, begin, missingCards, replayInto, shown as shownOf, view as boutView } from './battle.js';
 import { fightOdds, oddsKey } from './fightodds.js';
-import { withNext, FOOTER, barOf, duanOf, duanSegments, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, slotKey, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
+import { withNext, FOOTER, barHeld, barOf, duanOf, duanSegments, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, slotKey, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml } from './battle-card.js';
 import { since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
@@ -94,7 +94,7 @@ import { fenceBoards } from './board-fence.js';
 import { awayChipsHtml, awayKey, closeOf, closeX, STAGE as CLOSE_STAGE, stageMinusAway, withCloseX } from './card-close.js';
 import { devArcade } from './dev-arcade.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
-import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, gameAlone, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
+import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, gameAlone, huiLineOf, momentMay, momentsHold, tellMay, trayWaits } from './queue.js';
 // 喂饭桶 · 开炉 (fantong-kailu.js): the game is made once here, so every draw may lay it into its host.
 const ftKailu = fantongKailu({ feed: (ids, fuel, press) => feedFantong(ids, fuel, press), onFed: (r) => fedFantong(r),
   // The pot's beat: while it chews and reveals, the bag folds away (fantong-kailu.js `busy`); a fresh pot empties the places.
@@ -1052,6 +1052,26 @@ function watchDrain() {
     setTimeout(() => { drawnStrip = null; render(); }, Math.max(0, draining.start - t) + 1500);
   }
 }
+/* A realm risen is told after its passage (Hanli, 2026-11-12, at 筑基: the top bar read the new realm and its 修为 while the
+   passage was on page 2 of 22). The rules and the save are not delayed; only the header's bar is: from the rise until its seal
+   goes up (feat — after the box and the set piece) the header reads the bar as it stood (stage.mjs barHeld). A reload
+   forgets it: the page loads after the passage and shows the new realm at once. */
+let shownBar = null; // {tier, progress, next} of the Look last drawn
+let barHold = null; //  the same, kept from before a rise until its seal
+function holdBar(before) {
+  if (barHold || !before) return;
+  barHold = before;
+  // The strip was drawn a moment ago, before this Look's rise was seen: draw it again as it stood.
+  const strip = statusHtml();
+  $('status').innerHTML = strip;
+  drawnStrip = strip;
+}
+function releaseBar() {
+  if (!barHold) return;
+  barHold = null;
+  drawnStrip = null;
+  render();
+}
 function riseStats() {
   // The strip's bar (stage.mjs barOf): the 古's, or on a 今 scene the 今's — its own tier ids, so a walk across lines is never a gain.
   const bar = barOf(look);
@@ -1062,6 +1082,9 @@ function riseStats() {
     her: look.companion?.card ? { atk: look.companion.card.atk, hp: look.companion.card.hp } : null, hp: bar.tier?.hp ?? null };
   const before = shown;
   shown = now;
+  // The bar as it stood a Look ago: a realm risen shows it until its seal (barHold).
+  const prevBar = shownBar;
+  shownBar = bar.line ? null : { tier: bar.tier, progress: bar.progress, next: bar.next };
   // 大成就: a realm risen, a 回 begun — the stage marks it and 银月 speaks
   // at once (his, 2026-09-23: 境界突破等大成就达成时, 显示一个动画, 并让银月说点什么).
   // The same world in the same language: a realm's name read again in the other language is no rise (11-02: tapping En
@@ -1078,7 +1101,10 @@ function riseStats() {
     // one plain fact on the page (新生一层 → 新生二层).
     if (now.rank && before.rank && now.rank !== before.rank && now.line !== before.line) { /* another line's bar, not a rise */ }
     else if (now.rank && before.rank && now.rank !== before.rank && now.line) keep({ doNote: `${before.rank} → ${now.rank}` });
-    else if (now.rank && before.rank && now.rank !== before.rank) feat('rise', now.rank, before.rank, false, riseGains(before, now), herGrew(before, now) ? { from: before.her, to: now.her } : null);
+    else if (now.rank && before.rank && now.rank !== before.rank) {
+      holdBar(prevBar);
+      feat('rise', now.rank, before.rank, false, riseGains(before, now), herGrew(before, now) ? { from: before.her, to: now.her } : null);
+    }
     // A cauldron found tells her on its own (the story node, with its facts); the seal still shows.
     // A 回 begun — where the scenes' 回 turns, inside a chapter or across one (rules/hui.mjs).
     else if (now.hui && before.hui && now.hui !== before.hui) feat('chapter', look.chapter.title, '', nodeFresh(['cauldron', 'chapter']));
@@ -1240,7 +1266,7 @@ function feat(...args) {
     // Up now: the seal itself holds the box (momentUp) until it goes — and the turn with it
     // (sealOwed stays until the seal is put away, featNow's `gone`): live at 今 · 三 → 古七
     // (2026-10-15) the scene's 「扔进饭桶 ›」 stood under 「新的一回」 before 09-snow's passage.
-    if (kind === 'rise') { riseWaits = false; const latest = risePending ?? args; risePending = null; featNow(...latest); return; }
+    if (kind === 'rise') { riseWaits = false; const latest = risePending ?? args; risePending = null; featNow(...latest); releaseBar(); return; }
     featNow(...args);
     render();
   }, 0);
@@ -2892,7 +2918,8 @@ async function resumeTap() {
 /* The look whose header stands now: the last scene's, while the box tells what leads into this one
    — the choice that left it, and a 前情 or that scene's unplayed beats before it (dialogue.js leadsIn;
    live 2026-10-14: a 前情 first in the reading put 00-waimen's people over 00-hall/born); else this one. */
-function headLook() {
+const headLook = () => barHeld(headLookOf(), barHold);
+function headLookOf() {
   const prev = lastLook();
   // …and at a 回's turn, while the old 回's 「完」 stands (proto f, 2026-10-14): its last scene's header and picture
   // hold under the card; they turn with 合上, before the new 回's first words.
@@ -3407,7 +3434,40 @@ async function throwTap(exitId) {
   await refresh();
   if (!b) return;
   if (!b.success) herSay.say('bt_failed', lang() === 'en' ? `A ${b.chance}% chance; stamina −${b.lost.stamina}, cultivation −${b.lost.progress}; again after ${clock(b.again_at)}.` : `把握${b.chance}%；体力−${b.lost.stamina}，修为−${b.lost.progress}；${clock(b.again_at)}之后可以再试。`);
-  await report(`[scene] breakthrough ${b.success ? 'won' : 'failed'} ${b.chance}%`);
+  // Ling hears it once the passage that tells it is over (tellAfter) — not the throw's own moment.
+  tellAfter(`[scene] breakthrough ${b.success ? 'won' : 'failed'} ${b.chance}%`);
+}
+
+/* A result told after it is shown (queue.js tellMay): the report waits for the book, the realm's seal and the set piece,
+   the way the seal does (momentTurn's poll). It is owed in the page and mirrored to this browser's storage, so a reload
+   mid-passage still sends it, once, when the reloaded page is settled (openSitting). Taken off the list before it is sent:
+   never twice. A passage that never ends sends it after ten minutes — never lost. */
+const OWED_KEY = `lingjing.owed.${SCRATCH || 'main'}`;
+const owedTells = [];
+let tellsRun = null;
+const mirrorOwed = () => { try { owedTells.length ? localStorage.setItem(OWED_KEY, JSON.stringify(owedTells)) : localStorage.removeItem(OWED_KEY); } catch { /* no storage: this load only */ } };
+function adoptOwed() {
+  try { for (const t of JSON.parse(localStorage.getItem(OWED_KEY) ?? '[]')) if (typeof t === 'string' && !owedTells.includes(t)) owedTells.push(t); } catch { /* none */ }
+}
+function tellAfter(text) {
+  owedTells.push(text);
+  mirrorOwed();
+  return flushTells();
+}
+function flushTells() {
+  if (tellsRun) return tellsRun;
+  adoptOwed();
+  tellsRun = (async () => {
+    try {
+      while (owedTells.length) {
+        for (let k = 0; k < 2400 && !tellMay({ ahead: boxAhead(), seal: riseWaits, piece: Boolean(pieceOn) }); k += 1) await pause(250);
+        const due = owedTells.splice(0);
+        mirrorOwed();
+        for (const t of due) await report(t);
+      }
+    } finally { tellsRun = null; }
+  })();
+  return tellsRun;
 }
 
 /* 组牌 — a tap puts a card in the ten or takes it out; the popover redraws
@@ -5825,6 +5885,8 @@ async function openSitting(fresh, grew) {
   if (fresh) openWith(chat?.getSessionId(), greeted);
   // Ling opening a fresh chat herself tells the 前情提要 in her opening.
   if (!fresh || greeted) recapWhenSettled(greeted);
+  // A result told after its passage and owed when the page last closed (tellAfter).
+  flushTells();
 }
 
 /// 问候 — the day's first opening is hers (rules § 问候): the rules say

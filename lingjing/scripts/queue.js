@@ -94,6 +94,12 @@ export function momentMay(kind, { ahead = false, up = false, pending = [] }) {
   return !ahead && !up && !before.some((m) => pending.includes(m));
 }
 
+/* A result the page tells Ling after it is shown (Hanli, 2026-11-12: 「小满筑基成了。」 in the chat while the breakthrough's
+   passage was on page 2 of 22): it waits for the book told (`ahead`), the realm's seal (`seal`, riseWaits — it comes after
+   the passage's set piece) and a set piece in play (`piece`). A result with no passage behind it (a failed throw) is due
+   at once. */
+export const tellMay = ({ ahead = false, seal = false, piece = false }) => !ahead && !seal && !piece;
+
 /* A board he opened from the tray's 开局 is his own pick, not the scene's way
    on: it waits for the whole passage — the box put away, not only its last
    beat — and for a 回's turn (its 「完」, the new title). Live 2026-10-01: 开局
