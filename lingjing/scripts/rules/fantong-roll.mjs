@@ -120,19 +120,40 @@ export function rowWeight(t, row, target, info = null) {
 }
 /* The rows a family draws from: its `pools`, open for this save; when none is within reach, its `then`. Returns the
    [row, weight] list of the first family in that chain that has one, or null. */
-export function rowsFor(t, family, target, open = null, info = null) {
+export function rowsFor(t, family, target, open = null, info = null, keep = null) {
   const tried = new Set();
   for (let f = family; f && !tried.has(f); f = t.families?.[f]?.then) {
     tried.add(f);
     // A pot reaches no thing above the realm after its own (`worth.reach_level`, withPotIncome: a pot of 练气 things draws to
     // 筑基's top, never a 卷八 琅玕 at its 卷's worth — batch 2).
     const top = t.worth?.reach_level ?? Infinity;
-    const rows = (t.families?.[f]?.pools ?? [f]).flatMap(p => t.pools?.[p] ?? []).filter(r => (!open || open(r)) && (!r.item || (info?.(r.item)?.level ?? 1) <= top));
+    const rows = (t.families?.[f]?.pools ?? [f]).flatMap(p => t.pools?.[p] ?? []).filter(r => (!open || open(r)) && (!r.item || (info?.(r.item)?.level ?? 1) <= top) && (!keep || keep(r)));
     const ws = rows.map(r => [r, rowWeight(t, r, target, info)]).filter(([, w]) => w > 0);
     if (ws.length) return { family: f, rows: ws };
   }
   return null;
 }
+/* A TOP ROLL GIVES A THING (Hanli 2026-11-12: 90 灵石 and three pieces of gear rolled 逆天, and 124 灵石 came back).
+   A roll of 珍品 or 逆天 that finds no row of its own grade within reach does not fall to 灵石 while any THING is within
+   reach at a lower grade: it takes the rows within reach of the next grade down (珍品, then 有用, then 凡) — things only,
+   none worth more than twice the pot (`FALLBACK_X`: no farm) — and gives a whole number of them that brings the worth near
+   the rolled grade's `floor`, never past that twice. Only a pot with no thing in reach at any grade pays 灵石 (`back`).
+   Same stream, same draws: the pick and the count use the dice the plain row would have. The thing is shown at ITS grade. */
+export const FALLBACK_X = 2;
+const fallbackRows = (t, family, grade, worth, open, info) => {
+  if (GRADES.indexOf(grade) < 2) return null;
+  const keep = r => r.item && rowWorth(t, r, info) <= worth * FALLBACK_X;
+  for (let k = GRADES.indexOf(grade) - 1; k >= 0; k--) {
+    const got = rowsFor(t, family, targetOf(t, GRADES[k], worth), open, info, keep);
+    if (got) return { ...got, shown: GRADES[k], rolled: grade };
+  }
+  return null;
+};
+/* How many of a fallback row: its worth near the rolled grade's floor, at least one, and (with its count) within twice the pot. */
+const fallbackCount = (t, row, grade, worth, info) => {
+  const w = rowWorth(t, row, info);
+  return w > 0 ? Math.max(1, Math.min(Math.floor(worth * FALLBACK_X / w), Math.round(floorOf(t, grade) / w))) : 1;
+};
 /* Nothing within reach anywhere: its worth in 灵石 (a thing as sold where it lay — creatures.json `_loot`'s way), but
    never more than went in (or the grade's `floor`): a pot that outruns every pool — a pile of 灵石 — gives its stones
    back, never the grade's multiple of them (no 灵石 farm). */
@@ -175,13 +196,14 @@ export function roll(t0, { seed, ids, lingshi = 0, realm = 0, press = false, lif
     if (lift) grade = GRADES[Math.min(GRADES.length - 1, GRADES.indexOf(grade) + 1)];
     // A 方子 may give more than one (`n`: 古八's 九节聚气, 「滚出三颗丹来」).
     if (recipe && grade !== 'junk') return { out: grade === 'useful' ? recipe.out : recipe.best, grade, recipe: recipe.id, ...(recipe.n > 1 ? { n: recipe.n } : {}) };
-    const target = targetOf(t, grade, worth), got = rowsFor(t, family, target, open, info);
+    const target = targetOf(t, grade, worth), plain = rowsFor(t, family, target, open, info), fb = plain ? null : fallbackRows(t, family, grade, worth, open, info);
+    const got = plain ?? fb;
     // Nothing within reach: its 灵石 handed back — a refund, so never scaled by `earn` (only what play earns is).
     if (!got) return { out: LINGSHI, wealth: stones ? worthInStones(t, target, worth, grade) : 1, grade, shown: ordinaryOf(grade), back: true, family };
     const row = weighted(pickU, got.rows);
     const ls = stonesOfRow(row, (t.worth?.income ?? 1) * (t.worth?.earn ?? 1));
-    const n = ls ? ls[0] + Math.floor(nU * (ls[1] - ls[0] + 1)) : row.n ?? 1;
-    return { out: row.item ?? LINGSHI, ...(ls ? { wealth: n } : n > 1 ? { n } : {}), grade, shown: ls ? ordinaryOf(grade) : grade, family: got.family,
+    const n = ls ? ls[0] + Math.floor(nU * (ls[1] - ls[0] + 1)) : (row.n ?? 1) * (fb ? fallbackCount(t, row, grade, worth, info) : 1);
+    return { out: row.item ?? LINGSHI, ...(ls ? { wealth: n } : n > 1 ? { n } : {}), grade, shown: ls ? ordinaryOf(grade) : fb ? fb.shown : grade, family: got.family,
       ...(row.with && withU * 100 < (row.with_chance ?? 100) ? { with: row.with } : {}) };
   };
   const first = one(pity >= (t.pity?.after ?? Infinity));
@@ -211,10 +233,11 @@ export function odds(t0, { ids, lingshi = 0, realm = 0, press = false, pity = 0,
   for (const [g, p] of Object.entries(rolled)) {
     if (!p) continue;
     grades[g] += p;
-    const target = targetOf(t, g, worth), got = rowsFor(t, family, target, open, info);
+    const target = targetOf(t, g, worth), plain = rowsFor(t, family, target, open, info), fb = plain ? null : fallbackRows(t, family, g, worth, open, info);
+    const got = plain ?? fb;
     if (!got) { items[LINGSHI] = (items[LINGSHI] ?? 0) + p; value += p * (stones ? worthInStones(t, target, worth, g) : 1) * lsWorth(t); continue; }
     const sum = got.rows.reduce((a, [, w]) => a + w, 0);
-    for (const [r, w] of got.rows) { const id = r.item ?? LINGSHI; items[id] = (items[id] ?? 0) + p * w / sum; value += p * (w / sum) * rowWorth(t, r, info); }
+    for (const [r, w] of got.rows) { const id = r.item ?? LINGSHI; items[id] = (items[id] ?? 0) + p * w / sum; value += p * (w / sum) * rowWorth(t, r, info) * (fb ? fallbackCount(t, r, g, worth, info) : 1); }
   }
   return { items, grades, power, family, worth, value };
 }

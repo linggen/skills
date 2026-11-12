@@ -1535,7 +1535,11 @@ out it spins: 凡 grey ~70 · 有用 blue ~25 · 珍品 purple ~4 · 逆天 gold
 什么都出的」): the odds of high things rise smoothly with the pot's 品阶 (its best input) and his realm, 灵石 add to it.
 Pity: five 凡 in a row, the next is 有用 or better. Quirks: 3% it spits the pot back, 4% two things. The first of each
 thing lands in the 饭桶图鉴 (录). 古七's 方子, three 方子残页 → 回气丹; the book's 火柴 / 顺风溜 are guards, never drops;
-饱嗝令 waives the next hosted game's 灵气. All data: fantong.json (rows, tiers, odds); rules/fantong.mjs (on a save) and
+饱嗝令 waives the next hosted game's 灵气.
+**2026-11-12 (Hanli's 逆天 that was 灵石 ×124):** a 珍品 or 逆天 roll with no row of its grade in reach gives a THING — the best of the next grade down
+that has one (珍品, 有用, 凡), a whole number of them near the rolled grade's floor and never worth over twice the pot (no farm; `roll` keeps `grade` as
+rolled, `shown` is the thing's own); only a pot with nothing in reach at any grade pays 灵石 back, shown 凡/有用, with `words.stones_back`, no 「新!」 and no 图鉴 entry.
+All data: fantong.json (rows, tiers, odds); rules/fantong.mjs (on a save) and
 rules/fantong-roll.mjs (pure); the Phaser play tools/kailu/ → games/kailu/; the pane fantong-kailu.js.
 
 炼丹 (pair herbs) · 押宝 (four doors, three bets) · 华容道 (秘境) · 拼图 (七巧 until 10-27) · 五子 ·

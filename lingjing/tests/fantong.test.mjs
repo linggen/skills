@@ -13,7 +13,7 @@ import { newState, staminaCost } from '../scripts/state.mjs';
 import { VERBS } from '../scripts/rules.mjs';
 import { spendStamina } from '../scripts/rules/core.mjs';
 import { GRADES, chances, familyOf, fantongAll, gradeWeights, kindOf, layerIndex, lingshiCap, realmOf, rollFeed, tierOfItem, waitWords, worthOf } from '../scripts/rules/fantong.mjs';
-import { leadOf } from '../scripts/rules/fantong-roll.mjs';
+import { leadOf, potWorth } from '../scripts/rules/fantong-roll.mjs';
 import { readFileSync } from 'node:fs';
 import { pouchHtml } from '../scripts/pouch.js';
 import { luHtml } from '../scripts/lu.js';
@@ -588,45 +588,93 @@ test('the docked 饭桶\'s 灵石: −/＋ a stone, and quick picks that scale w
 // Hanli's pot of 11-12: two 合窳刀, one 旧皮坎肩, 90 灵石, by a 练气九层. The grade rolled was 逆天; what came out was 124 灵石.
 const HANLI = { ids: ['heyu-dao', 'heyu-dao', 'pi-kanjian'], lingshi: 90 };
 const hanliSave = (n = 0, extra = {}) => saveWith({ tier: 'qi', step: 9, wealth: 3607, bag: { danlu: 1, 'heyu-dao': 2, 'pi-kanjian': 1 }, fantong: { n }, ...extra });
-/* Feed Hanli's pot on a save whose count `n` is stepped until `ok(result)` — the seed holds the count, so each n is a fresh, repeatable roll. */
-function hanliUntil(ok, lang = 'zh') {
+/* The seed holds the save's feed count `n`, so each n is a fresh, repeatable roll: step it until `ok(result)` (how a test forces a grade). */
+function until(save, args, ok, lang = 'zh') {
   for (let n = 0; n < 600; n++) {
-    const r = feed({ ...hanliSave(n), lang }, { ids: HANLI.ids, lingshi: HANLI.lingshi });
+    const r = feed({ ...save(n), lang }, args);
     if (r.result.ok && !r.result.spat_back && !r.result.her && ok(r.result)) return r;
   }
   return null;
 }
+const hanliUntil = (ok, lang) => until(hanliSave, { ids: HANLI.ids, lingshi: HANLI.lingshi }, ok, lang);
+// A pot with no THING within reach at any grade: one stick and a 筑基圆满's whole 灵石 cap.
+const NOTHING = { ids: ['chaihuo'], lingshi: 190 };
+const nothingSave = (n = 0) => saveWith({ tier: 'foundation', step: 9, wealth: 3607, bag: { danlu: 1, chaihuo: 1 }, fantong: { n } });
+const nothingUntil = (ok, lang) => until(nothingSave, NOTHING, ok, lang);
+const inWorth = (ids, lingshi) => potWorth(T, ids, lingshi, id => T.item_info[id]);
+const outWorth = o => (o.out === 'lingshi' ? o.wealth : worthOf(T, o.out, id => T.item_info[id]) * (o.n ?? 1));
 
-test('stones-only: a top roll that can only pay 灵石 is shown as an ordinary grade, with one plain line, and no 「新」', () => {
-  const r = hanliUntil(x => x.rolled === 'best' && x.out.wealth);
-  assert.ok(r, 'a 逆天 roll that paid stones (Hanli 11-12) exists in the first 600 counts');
+test('a top roll gives a thing: Hanli\'s exact pot, 逆天 rolled, is a thing in the bag — not 124 灵石 — shown as the grade of that thing, and 「新」', () => {
+  const r = hanliUntil(x => x.rolled === 'best');
+  assert.ok(r, 'a 逆天 roll of that pot within 600 counts');
   const x = r.result;
-  assert.ok(['junk', 'useful'].includes(x.grade), `shown ${x.grade}, rolled ${x.rolled}`);
-  assert.equal(x.out.grade, x.grade, 'the out carries the told grade, so the play draws the same one');
-  assert.notEqual(x.grade_name, '逆天');
-  assert.equal(x.first, undefined, 'stones are no 「新」');
-  assert.equal(x.note, T.words.zh.stones_back);
-  assert.ok(x.say.includes(T.words.zh.stones_back));
-  assert.ok(!r.state.fantong.seen.some(s => s.id === 'lingshi'), 'the 图鉴 never takes 灵石');
-  assert.equal(r.state.fantong.last.shown, x.grade);
-  assert.equal(r.state.fantong.last.grade, 'best', 'the roll\'s own grade stays what was rolled');
-  const en = hanliUntil(y => y.rolled === 'best' && y.out.wealth, 'en');
+  assert.notEqual(x.out.id, 'lingshi', 'the 11-12 bug: a 逆天 that was only stones');
+  assert.ok(!x.out.wealth && x.note === undefined, 'a thing, and no stones-back line');
+  assert.ok(['useful', 'junk', 'rare'].includes(x.grade) && x.grade === x.out.grade, `the thing's own grade: ${x.grade}`);
+  assert.notEqual(x.grade_name, '逆天', 'what is given is not a 逆天 thing, and is not called one');
+  assert.equal(r.state.wealth, 3607 - 90, 'the 90 went in and nothing came back as stones');
+  assert.ok((r.state.bag[x.out.id] ?? 0) >= x.out.n || x.out.n === undefined, 'in the 储物袋');
+  assert.ok(x.first?.includes(x.out.id) || r.state.fantong.seen.some(s => s.id === x.out.id));
+  assert.ok(outWorth({ out: x.out.id, n: x.out.n }) <= 2 * inWorth(HANLI.ids, HANLI.lingshi), 'never more than twice what went in');
+  assert.equal(r.state.fantong.last.grade, 'best', 'the dice stay as rolled (pity and the odds read them)');
+});
+
+test('a top roll gives a thing: the pure roll, the same seed — 珍品 and 逆天 fall to the next grade down that has a thing in reach, shown at its grade', () => {
+  const seen = new Set();
+  for (let i = 0; i < 800; i++) {
+    const o = { seed: `h|${i}`, ids: HANLI.ids, lingshi: HANLI.lingshi, realm: 2.7 };
+    const r = rollFeed(T, o);
+    assert.deepEqual(rollFeed(T, o), r, 'seeded: the same pot, day and count give the same result');
+    if (r.refused || r.event || !['rare', 'best'].includes(r.grade)) continue;
+    assert.notEqual(r.out, 'lingshi', `${r.grade} seed ${i}`);
+    assert.ok(GRADES.indexOf(r.shown) < GRADES.indexOf(r.grade), 'the thing is of a lower grade, and is told as that');
+    assert.equal(Number.isInteger(r.n ?? 1) && (r.n ?? 1) >= 1, true);
+    seen.add(`${r.grade}->${r.shown}:${r.out}`);
+  }
+  assert.ok(seen.size >= 2, [...seen].join());
+});
+
+test('stones-only: a pot with no thing in reach at any grade pays 灵石, shown as an ordinary grade, with one plain line, and no 「新」', () => {
+  for (const rolled of ['best', 'rare']) {
+    const r = nothingUntil(x => x.rolled === rolled);
+    assert.ok(r, `a ${rolled} roll of the empty-handed pot within 600 counts`);
+    const x = r.result;
+    assert.equal(x.out.id, 'lingshi');
+    assert.ok(['junk', 'useful'].includes(x.grade), `shown ${x.grade}, rolled ${x.rolled}`);
+    assert.equal(x.out.grade, x.grade, 'the out carries the told grade, so the play draws the same one');
+    assert.notEqual(x.grade_name, '逆天');
+    assert.equal(x.first, undefined, 'stones are no 「新」');
+    assert.equal(x.note, T.words.zh.stones_back);
+    assert.ok(x.say.includes(T.words.zh.stones_back));
+    assert.ok(x.out.n <= inWorth(NOTHING.ids, NOTHING.lingshi), 'stones back, never more than went in');
+    assert.ok(!r.state.fantong.seen.some(s => s.id === 'lingshi'), 'the 图鉴 never takes 灵石');
+    assert.equal(r.state.fantong.last.shown, x.grade);
+    assert.equal(r.state.fantong.last.grade, rolled, 'the roll\'s own grade stays what was rolled');
+  }
+  const en = nothingUntil(y => y.rolled === 'best', 'en');
   assert.equal(en.result.note, T.words.en.stones_back);
   assert.ok(T.words.zh.stones_back && T.words.en.stones_back);
 });
 
-test('the pure roll keeps `grade` as rolled and adds `shown`: 灵石 are never shown above 有用, a thing keeps its grade', () => {
-  let stones = 0, things = 0;
-  for (let i = 0; i < 1500; i++) {
-    const r = rollFeed(T, { seed: `s|${i}`, ids: HANLI.ids, lingshi: HANLI.lingshi, realm: 2.7 });
+test('no farm: over 500 seeded pots of mixed inputs, what a top roll falls back to is worth at most twice what went in (and so are the stones paid when nothing is in reach)', () => {
+  const all = Object.keys(T.item_info), info = id => T.item_info[id];
+  let a = 7;
+  const rnd = () => { a = (Math.imul(a, 1103515245) + 12345) & 0x7fffffff; return a / 0x7fffffff; };
+  let things = 0, stones = 0;
+  for (let i = 0; i < 500; i++) {
+    const ids = Array.from({ length: 1 + Math.floor(rnd() * 3) }, () => all[Math.floor(rnd() * all.length)]);
+    const lingshi = Math.floor(rnd() * 190), r = rollFeed(T, { seed: `mix|${i}`, ids, lingshi, realm: rnd() * 6 });
     if (r.refused || r.event) continue;
+    const put = potWorth(T, ids, lingshi, info);
     for (const o of r.outs) {
-      assert.ok(GRADES.includes(o.grade) && GRADES.includes(o.shown));
-      if (o.out === 'lingshi') { stones++; assert.ok(GRADES.indexOf(o.shown) <= 1, `${o.grade} stones shown ${o.shown}`); assert.ok(GRADES.indexOf(o.shown) <= GRADES.indexOf(o.grade)); }
-      else { things++; assert.equal(o.shown, o.grade); }
+      if (o.back) { stones++; assert.ok(o.wealth <= 2 * put + 1e-9, `${ids} + ${lingshi}: ${o.wealth} stones back of ${put}`); assert.ok(GRADES.indexOf(o.shown) <= 1); }
+      else if (o.shown !== o.grade && o.out !== 'lingshi') { things++; assert.ok(outWorth(o) <= 2 * put + 1e-9, `${ids} + ${lingshi}: ${o.out} ×${o.n ?? 1} = ${outWorth(o)} of ${put}`); }
     }
   }
-  assert.ok(stones > 100 && things > 100, `${stones} / ${things}`);
+  assert.ok(things >= 20 && stones >= 20, `the property is not vacuous: ${things} things, ${stones} stones`);
+  // The exact odds are told the same way: the average out-worth of a fallback-heavy pot stays under twice.
+  const c = chances(T, { ids: HANLI.ids, lingshi: HANLI.lingshi, realm: 2.7 });
+  assert.ok(c.value <= 2 * c.worth, `${c.value} of ${c.worth}`);
 });
 
 test('an old save (no `shown` on fantong.last, a 灵石 entry in the 图鉴) still reads: look, the book, and a fresh feed', () => {
