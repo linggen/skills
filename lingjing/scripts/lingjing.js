@@ -1,3 +1,4 @@
+import { paintBeta } from './beta.js';
 // lingjing.js — the Mac scene beside the chat. It shows the game; it never
 // decides it. Numbers come from the rules' Look, cards from Ling's Show, and
 // the only things the page itself reports are a board or a bout the player
@@ -187,8 +188,19 @@ function postMoment(fact, flags, { mood = null } = {}) {
    engine is asked, else the browser. */
 const tagLang = (tag) => (/^zh/i.test(String(tag ?? '')) ? 'zh' : 'en');
 let pageLang = tagLang(navigator.language);
-fetch('/api/user/language').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d?.language) pageLang = tagLang(d.language); }).catch(() => {});
+fetch('/api/user/language').then((r) => (r.ok ? r.json() : null)).then((d) => { if (d?.language) { pageLang = tagLang(d.language); paintBeta(document, lang()); } }).catch(() => {});
 const lang = () => ((look?.lang ?? pageLang) === 'en' ? 'en' : 'zh');
+paintBeta(document, lang());
+$('betaTag').addEventListener('click', () => {
+  const note = $('betaNote');
+  note.hidden = !note.hidden;
+  $('betaTag').setAttribute('aria-expanded', String(!note.hidden));
+});
+document.addEventListener('click', (e) => {
+  if (e.target.closest('#betaTag, #betaNote')) return;
+  $('betaNote').hidden = true;
+  $('betaTag').setAttribute('aria-expanded', 'false');
+});
 /// The game's language as the engine's tag, for the chat and for 银月's moments (an engine that knows `lang`).
 const chatLanguage = () => (lang() === 'en' ? 'en' : 'zh-Hans');
 /// The page's own labels, with the stat names from the world's dictionary
@@ -607,6 +619,7 @@ let lookMisses = 0;
 /* The save is from a newer Linggen (rules/newer.mjs): nothing of the game is drawn or offered, the one line said in both
    languages, as the loading line is. */
 function showNewerSave() {
+  paintBeta(document, lang());
   document.body.setAttribute('data-newer', '1');
   $('focus').innerHTML = `<div class="loading newer" data-newer-save>${esc(WORDS.zh.newerSave)}<br>${esc(WORDS.en.newerSave)}</div>`;
 }
@@ -2002,6 +2015,7 @@ function restoreFocus(key) {
 }
 
 function draw() {
+  paintBeta(document, lang());
   if (!look || !authored) return;
   trackReading();
   const had = focusKey(document.activeElement);

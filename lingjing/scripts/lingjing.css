@@ -69,6 +69,9 @@ button:disabled { cursor: default; }
 .topbar .status { display: contents; }
 .topbar .titlerow { order: 1; flex: 1 1 16em; }
 .topbar .langsw { order: 2; }
+.beta-tag { flex: none; font: inherit; font-size: 11px; line-height: 1.4; padding: 1px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--dim); white-space: nowrap; cursor: pointer; }
+.beta-note { flex: none; padding: 6px 18px; background: var(--surface); border-bottom: 1px solid var(--line); color: var(--dim); font-size: 12px; }
+.beta-note[hidden] { display: none; }
 .topbar .place { font-size: 15px; flex: 0 0 auto; max-width: 62%; }
 .topbar .xw { max-width: 200px; min-width: 100px; }
 .status .daohao { font-family: var(--serif); font-weight: 600; font-size: 15px; }
@@ -212,6 +215,7 @@ body.fighting .placecap { display: none; }
 /* A save from a newer Linggen (lingjing.js showNewerSave): the one line alone — no bar, stage, tray or footer to tap. */
 body[data-newer] .topbar, body[data-newer] .stage, body[data-newer] .sight, body[data-newer] .dlgwrap,
 body[data-newer] .slotfoot, body[data-newer] .tray, body[data-newer] .lubook { visibility: hidden; }
+body[data-newer] .beta-tag { visibility: visible; }
 .focus .loading.newer { color: var(--dim); line-height: 1.8; text-align: center; }
 
 /* ── today's practice ── */
