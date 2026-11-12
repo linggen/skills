@@ -57,7 +57,7 @@ const mostLaid = (content, state, now) => Math.max(0, Math.min(arrayHolds(conten
 const roomFor = (content, state, now, want) => (want > 0 ? paysOf(content, state, now, { table: 'seclusion', progress: want, exact: true })?.progress ?? 0 : 0);
 /* Look's facts for the choice (the page writes the words): the 阵's level and size, today's remaining, the purse, the next
    level's price, the pace, each stone's worth, 吐纳's an hour, and the three presets (none · half · full of what he may lay). */
-export function julinBrief(content, state, now) {
+function factsOf(content, state, now) {
   const j = J(content);
   if (!j) return null;
   const level = arrayLevel(content, state), holds = arrayHolds(content, state), most = mostLaid(content, state, now);
@@ -67,12 +67,20 @@ export function julinBrief(content, state, now) {
     per_stone: j.per_stone, hours: j.hours, pace: holds ? holds / j.hours : 0, trickle: trickleHour(content, state), next,
     room: roomFor(content, state, now, holds * j.per_stone), presets: { none: 0, half: Math.floor(most / 2), full: most } };
 }
-/* What laying `n` would do, as the card says it (the rules' own reckoning — the card shows this, never its own sums). */
-export function julinPreview(content, state, now, n) {
-  const j = J(content), b = julinBrief(content, state, now);
+/* What laying `n` would do on the facts `b`, as the card says it (the rules' own reckoning — the card shows this, never its own sums). */
+function previewOn(j, b, n) {
   if (!b || !(n > 0) || !b.pace) return { stones: 0, hours: 0, progress: 0, trickle: b?.trickle ?? 0 };
   const drawn = Math.min(n, Math.floor(b.room / j.per_stone));
   return { stones: n, hours: Math.round((drawn / b.pace) * 100) / 100, progress: drawn * j.per_stone, ...(drawn < n ? { back: n - drawn } : {}), trickle: b.trickle };
+}
+export const julinPreview = (content, state, now, n) => previewOn(J(content), factsOf(content, state, now), n);
+/* The facts, and with them `previews`: what each preset would do (the same reckoning as julinPreview), so a card that only
+   gets Look's facts — the phone's — shows the rules' sums rather than its own. */
+export function julinBrief(content, state, now) {
+  const b = factsOf(content, state, now);
+  if (!b) return null;
+  const j = J(content);
+  return { ...b, previews: Object.fromEntries(Object.entries(b.presets).map(([k, n]) => [k, previewOn(j, b, n)])) };
 }
 
 /* 出关 on a sitting with the 阵 laid (`sec.julin`, stamped going in): the stones its real hours drew — never past the bar —

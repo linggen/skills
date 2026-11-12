@@ -189,6 +189,28 @@ test('聚灵 never past the bar: stones it cannot take are not drawn and come ba
   assert.ok(per * convertRate(JULIN, s) < 1, `${per} 修为 a stone × ${convertRate(JULIN, s)} 灵石 a 修为 past the bar`);
 });
 
+test('聚灵 previews: one per preset, the rules\' own julinPreview; none is 吐纳 alone; a full 阵 past the bar carries back', () => {
+  const s = sitter(), b = julinBrief(JULIN, s, NOW);
+  assert.deepEqual(Object.keys(b.previews), Object.keys(b.presets));
+  for (const [k, n] of Object.entries(b.presets)) assert.deepEqual(b.previews[k], julinPreview(JULIN, s, NOW, n), `${k} is julinPreview of ${n}`);
+  assert.deepEqual(b.previews.none, { stones: 0, hours: 0, progress: 0, trickle: b.trickle }, 'none: no stones, the 吐纳 rate');
+  assert.equal(b.previews.full.back, undefined, 'room enough: nothing handed back');
+  const tight = sitter({ progress: threshold(JULIN, s) - 7 }), t = julinBrief(JULIN, tight, NOW), per = JULIN.balance.julin.per_stone;
+  assert.equal(t.previews.full.back, t.presets.full - Math.floor(7 / per), 'a full 阵 past the bar: the rest comes back');
+  assert.deepEqual(t.previews.full, julinPreview(JULIN, tight, NOW, t.presets.full));
+});
+
+test('聚灵 chooser: the page\'s preview line is the rules\' `previews`, whichever preset is picked', () => {
+  const tight = sitter({ progress: threshold(JULIN, sitter()) - 7 });
+  const j = julinBrief(JULIN, tight, NOW), w = WORDS.zh;
+  for (const [k, pv] of Object.entries(j.previews)) {
+    const html = cardHtml({ card: 'seclude' }, { seclude: { julin: j, rule: {}, pills: [] }, secludeFocus: { focus: 'progress' }, secludeStones: j.presets[k], lang: 'zh', words: w });
+    const want = pv.stones > 0 ? w.secludePreview.replace('{n}', pv.stones).replace('{h}', String(Math.round(pv.hours * 10) / 10)).replace('{p}', pv.progress).replace('{t}', pv.trickle) : w.secludePreviewNone.replace('{t}', pv.trickle);
+    assert.ok(html.includes(want), `${k}: ${want}`);
+    assert.equal(html.includes(w.secludePreviewBack.replace('{back}', pv.back)), Boolean(pv.back), `${k}: the 退回 note only with back`);
+  }
+});
+
 test('the day\'s cap is shared by several 闭关; laying more than the 阵, the day or the purse allows is refused', () => {
   const s = sitter(), holds = arrayHolds(JULIN, s);
   assert.equal(call(JULIN, 'seclude', s, { action: 'enter', focus: 'progress', stones: holds + 1 }).result.refused, 'too-many-stones');

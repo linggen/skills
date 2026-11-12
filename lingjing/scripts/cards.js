@@ -848,9 +848,9 @@ function julinChoice(j, ctx) {
   const presets = [['none', w.secludeStonesNone], ['half', w.secludeStonesHalf], ['full', w.secludeStonesFull]]
     .filter(([k], i, all) => k === 'none' || (j.presets[k] > 0 && !(k === 'half' && j.presets.half === j.presets.full)))
     .map(([k, t]) => `<button class="act quiet${n === j.presets[k] ? ' on' : ''}" data-seclude-stones="${j.presets[k]}">${esc(say(t, { n: j.presets[k] }))}</button>`).join('');
-  // What laying n does, from Look's facts: the stones the bar takes (`room`), at the 阵's pace, each its 修为.
-  const drawn = Math.min(n, Math.floor(j.room / j.per_stone)), back = n - drawn;
-  const line = n > 0 && j.pace > 0 ? say(w.secludePreview, { n, h: round1(drawn / j.pace), p: drawn * j.per_stone, t: j.trickle }) : say(w.secludePreviewNone, { t: j.trickle });
+  // What laying n does: the rules' own reckoning (julinBrief `previews`), n being always one of the three presets.
+  const pv = j.previews[['none', 'half', 'full'].find(k => j.presets[k] === n)] ?? j.previews.full, back = pv.back ?? 0;
+  const line = pv.stones > 0 ? say(w.secludePreview, { n: pv.stones, h: round1(pv.hours), p: pv.progress, t: pv.trickle }) : say(w.secludePreviewNone, { t: pv.trickle });
   const up = j.next ? `<button class="act quiet" data-seclude-array${j.wallet < j.next.price ? ' disabled' : ''}>${esc(say(w.secludeArrayUp, { price: j.next.price }))}</button>` : '';
   return `<div class="small">${esc(say(w.secludeArray, { level: j.level, top: j.top, holds: j.holds, left: j.left_today, wallet: j.wallet }))}</div>
     <div class="acts">${presets}${up}</div><div class="small dim secludenext">${esc(line)}${back > 0 ? ` · ${esc(say(w.secludePreviewBack, { back }))}` : ''}</div>`;
