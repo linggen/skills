@@ -1048,7 +1048,7 @@ several times its face. His calls, 2026-11-12: *斗法这里为了平衡, 都是
   beast's side (v3: a lone beast is a party of one).
 - **What he brings in PvE.** Gear stays whole numbers (攻 · 防 · 抗) and is weighed again so a worn set is worth about a
   level (today 攻 2 防 4 decides the late fights). Pills as now. Companions on both sides.
-- **The measure** (proposed, his yes needed; it replaces the first-meeting band): at equal level a player who thinks a
+- **The measure** (mine to set since 2026-11-12, 「其他数字你帮我定」; it replaces the first-meeting band): at equal level a player who thinks a
   turn ahead wins clearly more than one who plays the first card he sees, and neither always wins. Both lines exist
   (tools/story-fights.mjs `lookahead` · `careful`); at 练气四层, where the sides are close, they stood 53–88% and 8–40%.
 - **PvP** is two sheets at one level with no gear and no pills. Nothing else differs.
@@ -1058,14 +1058,52 @@ several times its face. His calls, 2026-11-12: *斗法这里为了平衡, 都是
   where it is found, never its strength for its cost. A beast has a grade of the same names and drops cards of that
   grade; each 重 of the 秘境 ends in a graded 大妖, and a rarer grade stands there now and then. A drop is never a card
   he already holds.
-- **Drops.** A clear always gives a card. The chances are knobs in balance.json's master, set only after a simulator
-  shows the typical and the unlucky number of days to the first card of each grade, from the runs a day (the 令's income
-  and `cap_day`) and how often a run is cleared under fair fights (气血 carries from room to room). A count he can see
-  (机缘) ends a dry spell. This amends 得牌's *nothing at random* (2026-09-22): a card's first copy still comes from
-  its `from`.
+- **Drops.** A clear gives a chance at a card, not a card (§ 品 below: the pool is too small for one a clear). The
+  chances are knobs in balance.json's master, set only after a simulator shows the typical and the unlucky number of
+  days to the first card of each grade, from the runs a day (the door's 25 体力 and `cap_day` 2, § 耗材) and how often
+  a run is cleared under fair fights (气血 carries from room to room). A count he can see (机缘) ends a dry spell. This
+  amends 得牌's *nothing at random* (2026-09-22): what the book hands him, what he buys and what a beast leaves the
+  first time stay certain; only a beast's own cards come by chance.
 - **Later:** cards meet the other games, 塔防 first (a collected card usable there). Not designed.
 - **Order:** the fair base (branch `feat/duel-fixed-numbers`), then 品 · 框 · the 卡册, then graded beasts and drops, then
   PvP. The save changes; the game says it is a beta (2026-11-12), and Mac and phone ship together.
+
+### 品 · 框 · the 卡册 【设计 2026-11-12; no chances yet】
+
+**品 is read off where a card is found; it is never typed on the card.** So it survives the cost audit, and
+cards.json gains no field: rules/cards.mjs derives it from `from` and from where the card's beast stands (mijing.json).
+
+| 品 (框) | Found | | Cards today |
+|---|---|---|---|
+| 凡 (plain) | the book hands it, a board wins it, 钱掌柜 sells it (`story` · `beat` · `tale` · `shop`) | certain | 21 |
+| 银 | what a beast leaves the first time it is beaten (`beast`) | certain | 26 |
+| 金 | a beast's own card (`foe`, a beast's, not a person's): from that beast beaten again, wherever it stands | chance | 9, 卷一 6: 小妖 · 金针雨 · 灰狼 · 饿狼 · 水雾 · 童灵 |
+| 宝石 | the same, where its beast is the 大妖 that ends a 重: only from a clear | chance | 4, 卷一 3: 蠪侄 · 九首 · 火鸦 |
+| 钻石 | a legend's card, the ones with an 入阵 (`tame` · `summon`) | certain when it is tamed in its 卷; before that, a small chance where that legend ends a 重 | 18, 卷一 2: 狰 · 蛫 |
+
+78 to collect. Not collected: the companions' 12 (theirs; the 卡册 shows them on each companion's leaf), six arts that
+stay their owners' (山精 · 土偶 · 五雷法 · 燎原 · 金梭 · 剑影), ten tokens and blows. 106 in all. The split is a result,
+not a target; it stands as a pyramid without being forced into one. 灰狼 · 饿狼 「never a gift」 (2026-10-27) ends here.
+
+- **A beast's grade is its standing.** Roaming 银, a 重's 凶兽 金, its 大妖 宝石. Now and then a 重 ends in the rarer
+  one (钻石): the same creature some levels up, nothing else changed (v4: harder only by level and deck), and its room's
+  door says so before he steps in — 《魔兽》's rare elite. Rolled from the run's seed; the chance and the levels are knobs.
+- **The supply, counted before any chance.** 卷一 holds nine cards that come by chance. The door (25 体力, two runs a
+  day) over the typical 52 days of 卷一 is about a hundred runs. One card a clear would empty the pool in a week; nine
+  cards over a hundred runs is one in eleven, which reads as nothing dropping. So the pool must grow before the
+  chances are set: each 重 wants cards only it gives (its 凶兽's and its 大妖's own), or there is no reason to go back
+  to it. How many is the simulator's answer together with the chances — one question, not two.
+- **What the chances are tuned to** (the shape; the numbers after the simulator): the typical player holds 卷一's last
+  chance card near 卷一's end, the unlucky one is bounded by 机缘, and nobody is done in the first week.
+- **机缘** (《炉石》's pity): a count on each 重 he can see. A clear that drops nothing adds one; at full the next clear
+  drops; a drop empties it. The chance is never shown, the count always.
+- **A 重 with nothing left** wears 收齐. Its clears pay loot and 灵石 as ever; no roll, no count.
+- **The 卡册:** every card that can be collected. Held, in its frame; not held, a dim back in its frame with one line
+  of where it is found. Counts by 品 and by 重. Mac and phone together.
+- **v3's 「under ten held, two of a card」 stands**: the early deck may play a held card twice; the 卡册 holds it once.
+- **Waits on:** the fair base landing (it edits the same rules), then 品 derived + 框 + the 卡册 (no chance involved,
+  can ship alone), then the simulator (runs a day from § 耗材, the clear rate from fair fights), then new cards and
+  chances.
 
 ## 差事 — the task system, 《魔兽世界》's loop 【已建】
 
