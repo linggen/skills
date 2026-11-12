@@ -1,7 +1,7 @@
 {
  "_about": "游戏厅 stage save for duizi (tools/arcade-saves.mjs, from its games.json row)",
  "state": {
-  "version": 18,
+  "version": 19,
   "world": "jiuding",
   "lang": "zh",
   "name": "沈小满",
@@ -15,8 +15,8 @@
   ],
   "tier": "qi",
   "step": 5,
-  "progress": 284,
-  "wealth": 312,
+  "progress": 300,
+  "wealth": 298,
   "lines": {
    "jin": {
     "tier": "xinsheng",
@@ -689,8 +689,8 @@
   },
   "day": {
    "key": "2026-10-01",
-   "progress": 2364,
-   "wealth": 315
+   "progress": 2418,
+   "wealth": 301
   },
   "stamina": 100,
   "stamina_at": "2026-10-01T01:00:00.000Z",
@@ -1269,7 +1269,7 @@
    "yangzhen"
   ],
   "stretch": {
-   "qi:3": 337
+   "qi:3": 334
   },
   "told_scenes": [
    "00-baicai",

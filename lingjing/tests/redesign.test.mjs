@@ -45,7 +45,7 @@ test('a save from before the cut migrates: what is held stays, what only the cut
   const old = oldSave();
   const m = migrate(old, content);
   assert.equal(m.version, STATE_VERSION);
-  assert.equal(STATE_VERSION, 18); // v18 (2026-11-10): the curve, the bar read by its percent (v17, 11-04: read_whole)
+  assert.equal(STATE_VERSION, 19); // v19 (2026-11-12): 耗材 — no 秘境令, the 阵 at level 1, a one-of-a-kind thing held once (v18, 11-10: the curve)
   // Kept: the bag (an old 回春丹 and 妖丹 are goods now), the cards, the cast,
   // the treasure and its 重, her joining, the realm.
   assert.deepEqual(m.bag, old.bag);
