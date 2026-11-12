@@ -44,7 +44,7 @@ export const STAGE = {
   tribulation: { close: 'away', scope: 'told', chip: true, reopen: ['data-card-back'], visible: true, what: '天劫 card' },
   treasure: { close: 'away', scope: 'told', chip: true, reopen: ['data-card-back', 'data-gear'], visible: true, what: '本命法宝', also: '物品' },
   hexagram: { close: 'away', scope: 'told', chip: true, reopen: ['data-card-back', 'data-shelf'], visible: true, what: 'the day\'s coins (old 问卦)', also: '书 › 今日签' },
-  // 秘境令 away from the door: the tray's own 秘境 row stands again once the card is down (rules/aside.mjs `stage: 'mijing'`),
+  // 2026-11-12: away from the door the tray's 秘境令 row is home; if the card is opened, putting it down returns it there,
   // with the same 去石门 ›; at the door and after a run, the 收起 chip. Inside a run it is the run.
   mijing: { close: 'away', scope: 'place', chip: (look) => !look?.mijing?.away, reopen: ['data-card-back', 'data-go', 'data-gear'], visible: true,
     none: (look) => Boolean(look?.mijing?.inside), own: (look) => Boolean(look?.mijing?.last), ownAttr: 'data-mijing="close"', what: '秘境探险: 秘境令 · 石门 (away), the door\'s 重, a run\'s pay', also: 'away: the tray\'s 秘境令 row; 物品 holds the 令' },

@@ -13,6 +13,7 @@ import { cardCatalog } from '../scripts/rules/cards.mjs';
 import { huiOrder, sceneHui } from '../scripts/rules/hui.mjs';
 import { begin, shown } from '../scripts/battle.js';
 import { stageCards, CARD_KINDS } from '../scripts/stage.mjs';
+import { WORDS, trayHtml, bookPopHtml } from '../scripts/cards.js';
 
 const content = loadContent();
 const M = content.mijing;
@@ -163,6 +164,30 @@ test('秘境令: one spent at the door; none, the door stays shut; the run holds
   const l = look(out.state, content, ctx());
   assert.ok(l.mijing?.inside && l.mijing.map.layers[0].every(r => r.state === 'next'));
   assert.ok(stageCards(l).some(c => c.card === 'mijing'));
+});
+
+test('秘境令 away lives in the tray and 全部, not on the stage', () => {
+  const l = look({ ...atDoor(11), place: 'waimen' }, content, ctx());
+  assert.ok(l.mijing.away);
+  assert.equal(stageCards(l).some(c => c.card === 'mijing'), false);
+  const row = l.tray.find(e => e.id === 'mijing');
+  assert.equal(row.left.n, 11);
+  const page = { look: l, lang: 'zh', words: WORDS.zh };
+  const tray = trayHtml(page);
+  assert.match(tray, /秘境令 ×11/);
+  assert.match(tray, /data-go="shimen"[^>]*>去[^<]*石门 ›/);
+  assert.ok(l.agenda.some(i => i.id === 'mijing' && i.group === 'other'));
+  assert.match(bookPopHtml(page), /秘境令 ×11/);
+  for (const show of [[{ card: 'road', kind: 'riddle' }], [{ card: 'board', id: 'test' }]]) {
+    assert.equal(stageCards({ ...l, scene: { ...l.scene, show } }).some(c => c.card === 'mijing'), false);
+  }
+});
+
+test('秘境 card still stands at the door and after a run', () => {
+  assert.ok(stageCards(look(atDoor(), content, ctx())).some(c => c.card === 'mijing'));
+  const entered = call('mijing', atDoor(), { action: 'enter', tier: 1 }).state;
+  const left = call('mijing', entered, { action: 'leave' }).state;
+  assert.ok(stageCards(look(left, content, ctx())).some(c => c.card === 'mijing'));
 });
 
 test('秘境令 drops: a 兽潮 night always, a pool\'s beast now and then — never past the day\'s cap, never before the 秘境', () => {

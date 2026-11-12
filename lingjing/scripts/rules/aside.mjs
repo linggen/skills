@@ -180,7 +180,7 @@ export const PLAY_KINDS = [
   { kind: 'happening', // 观里的事 (rules/happenings.mjs): the 时辰's happenings lit and not yet gone to — a place, who asks, why;
     // the game it deals named only where he stands. Its own draw, beside the 小游戏池's (never a pool member).
     tray: (content, state, view, now) => (view ? happeningTray(content, state, now) : []) },
-  { kind: 'mijing', // 秘境探险 (rules/mijing.mjs): a 秘境令 in hand, away from the door — the door's run is its card there
+  { kind: 'mijing', // 2026-11-12: 秘境令 away from the door lives in this tray row and 全部; the door and run keep their cards.
     tray: (content, state, view) => (view?.mijing?.away ? [{ id: 'mijing', left: { unit: 'keys', n: view.mijing.keys }, places: [view.mijing.door.id], stage: 'mijing' }] : []) },
   { kind: 'chance', in: 'shi', // the day's 机缘 (road.mjs chanceBrief): where, the minutes left — met on arrival
     tray: (content, state, view) => { const c = view?.chance; return c?.minutes_left > 0 && !c.here ? [{ id: 'chance', left: { unit: 'ends', n: c.minutes_left }, places: [c.place.id] }] : []; } },

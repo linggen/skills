@@ -2276,7 +2276,9 @@ export function trayHtml(ctx) {
     return body ? `<div class="card task agenda g-${esc(i.group)}${i.ready ? ' ready' : ''}">${body}</div>` : '';
   };
   // Each card wears its item's key: a tap off its buttons opens 事 at that row (lingjing.js `data-agenda-at`).
-  const row = agendaOf(look).filter((i) => i.tray).map((i) => keyed(card(i), i.key, i.kind !== 'kept')).filter(Boolean);
+  const items = agendaOf(look);
+  // 2026-11-12: held 秘境令 have a home in the tray even when its ordinary slots are full.
+  const row = items.filter((i) => i.tray || (i.kind === 'tray' && i.id === 'mijing')).map((i) => keyed(card(i), i.key, i.kind !== 'kept')).filter(Boolean);
   // This 时辰's three all played (rules/pool.mjs): one line after what is at hand.
   const h = look.tray_hour, done = h?.drawn && h.played >= h.drawn
     ? `<div class="card task timed notice allplayed"><div class="small dim">${esc(say(ctx.words.trayAllPlayed, { next: ctx.words.shichen[(h.i + 1) % 12] }))}</div></div>` : '';

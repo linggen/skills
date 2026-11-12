@@ -1912,6 +1912,8 @@ itself untouched). `worlds/jiuding/mijing.json` (the nine 重, rooms, beasts, bo
 card `scripts/mijing.js` · numbers `balance.json master.mijing`.
 - **The key:** one 秘境令 a run. It drops from wins in the cooldown events (兽潮 a night, a pool's beast now and then,
   比武切磋 once built: `keyDrop(content, s, ctx, 'qiecuo')`), under the day's cap. The 秘境 has no cooldown of its own.
+  **2026-11-12:** away from the stone door, held keys live in the bottom tray's 秘境 row (count and 去石门), also in
+  全部 › 其他; they do not put a card on the stage. At the door, inside a run and after a run the card stands as before.
 - **The map:** 3–4 rows of 6–8 rooms with branches, a 大妖 at the head; every room on a way to it (since 2026-11-10 every
   重 has four: 一重 · 二重 went 3 → 4 rows, 8 rooms, so a run of the shorter new games stays 15–25 minutes — 17.3 each). A room has something
   to play (`deals.weight` 80) or is a pick — 奇遇 (data decides, 银月 says it), 灵泉 (rest or temper a 功法), 宝箱 — by

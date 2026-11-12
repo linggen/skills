@@ -311,8 +311,8 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
     if ((word || (look.lundao && look.lundao.outcome === 'open')) && !has('lundao')) cards.push({ card: 'lundao' });
     // AI mini-games: 对对子 where the teacher is, one 联 a sitting (duiziUp). (砍价 is the shelf's own button, 2026-10-28.)
     if (duiziUp(look) && !has('duizi')) cards.push({ card: 'duizi' });
-    // 秘境探险: the run's map inside, the door's 重 at the door, what a run paid after it (rules/mijing.mjs).
-    if (look.mijing && (look.mijing.inside || look.mijing.door || look.mijing.last || (look.mijing.away && !look.scene?.panel)) && !has('mijing')) cards.push({ card: 'mijing' });
+    // 秘境探险: inside, at the door, or the run's pay; away, the tray owns the key (2026-11-12).
+    if (look.mijing && (look.mijing.inside || (look.mijing.door && !look.mijing.away) || look.mijing.last) && !has('mijing')) cards.push({ card: 'mijing' });
     // Every board open here: the story's, an errand's, and the games this place hosts.
     // A place's game open only as practice (Look's `practice`) waits in the tray for his 开局 — never dealt by itself;
     // so does 兽潮's night when its time comes (Look's `tide`; Hanli 10-27: 「兽潮时间到了不要自动开始, 让玩家点击开始」).
