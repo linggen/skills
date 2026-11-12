@@ -13,10 +13,12 @@
 // `tray: true` marks the head the tray shows: the 主线 card (and the story's boards), up to two of 目标, then what can be
 // played or handed in, as many as TRAY_MAX holds. `ready`: it can be handed in now (the 「交N」 on 「全部 ›」).
 
-/* How many items the tray shows before 「全部 ›」 (agent's pick: one row of cards on a Mac's width). */
-export const TRAY_MAX = 6;
-/* 目标 in the tray: at most two (Hanli 11-04's shape: 「[主线] [目标] [日常…] [全部 ›]」). */
-const GOAL_MAX = 2;
+/* How many items the tray shows before 「全部 ›」: a few at hand, the rest in 全部 (Hanli 2026-11-12, of a tray and a list
+   that offered some fifteen things at once: 「现在同时能做的任务太多, 可以手头任务精简一下吗」 · 「还是全部里都显示所有, 底栏精简?
+   这样简单些?」). It was 6 (one row of cards on a Mac's width). The next comes into the tray as one is done; 全部 holds all. */
+export const TRAY_MAX = 3;
+/* 目标 in the tray: one (it was two; Hanli 11-04's shape: 「[主线] [目标] [日常…] [全部 ›]」). */
+const GOAL_MAX = 1;
 
 /* Does the stage quest hold the story now? The goal line is the stage quest's (waypointOf `gate.kind: 'stage'`), or he
    stands in the very scene that waits on it. Else its gate is further on and the story is free. */
