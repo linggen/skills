@@ -583,3 +583,62 @@ test('the docked 饭桶\'s 灵石: −/＋ a stone, and quick picks that scale w
   // Nothing tells him 灵石 top out at three.
   assert.doesNotMatch(JSON.stringify(T.words) + html, /灵石最多三|最多三(块|颗)|三块灵石|(three|3) (spirit )?stones/i);
 });
+
+/* ── 2026-11-12: a result that is only 灵石 is never CALLED 珍品 or 逆天, and never 「新」 ── */
+// Hanli's pot of 11-12: two 合窳刀, one 旧皮坎肩, 90 灵石, by a 练气九层. The grade rolled was 逆天; what came out was 124 灵石.
+const HANLI = { ids: ['heyu-dao', 'heyu-dao', 'pi-kanjian'], lingshi: 90 };
+const hanliSave = (n = 0, extra = {}) => saveWith({ tier: 'qi', step: 9, wealth: 3607, bag: { danlu: 1, 'heyu-dao': 2, 'pi-kanjian': 1 }, fantong: { n }, ...extra });
+/* Feed Hanli's pot on a save whose count `n` is stepped until `ok(result)` — the seed holds the count, so each n is a fresh, repeatable roll. */
+function hanliUntil(ok, lang = 'zh') {
+  for (let n = 0; n < 600; n++) {
+    const r = feed({ ...hanliSave(n), lang }, { ids: HANLI.ids, lingshi: HANLI.lingshi });
+    if (r.result.ok && !r.result.spat_back && !r.result.her && ok(r.result)) return r;
+  }
+  return null;
+}
+
+test('stones-only: a top roll that can only pay 灵石 is shown as an ordinary grade, with one plain line, and no 「新」', () => {
+  const r = hanliUntil(x => x.rolled === 'best' && x.out.wealth);
+  assert.ok(r, 'a 逆天 roll that paid stones (Hanli 11-12) exists in the first 600 counts');
+  const x = r.result;
+  assert.ok(['junk', 'useful'].includes(x.grade), `shown ${x.grade}, rolled ${x.rolled}`);
+  assert.equal(x.out.grade, x.grade, 'the out carries the told grade, so the play draws the same one');
+  assert.notEqual(x.grade_name, '逆天');
+  assert.equal(x.first, undefined, 'stones are no 「新」');
+  assert.equal(x.note, T.words.zh.stones_back);
+  assert.ok(x.say.includes(T.words.zh.stones_back));
+  assert.ok(!r.state.fantong.seen.some(s => s.id === 'lingshi'), 'the 图鉴 never takes 灵石');
+  assert.equal(r.state.fantong.last.shown, x.grade);
+  assert.equal(r.state.fantong.last.grade, 'best', 'the roll\'s own grade stays what was rolled');
+  const en = hanliUntil(y => y.rolled === 'best' && y.out.wealth, 'en');
+  assert.equal(en.result.note, T.words.en.stones_back);
+  assert.ok(T.words.zh.stones_back && T.words.en.stones_back);
+});
+
+test('the pure roll keeps `grade` as rolled and adds `shown`: 灵石 are never shown above 有用, a thing keeps its grade', () => {
+  let stones = 0, things = 0;
+  for (let i = 0; i < 1500; i++) {
+    const r = rollFeed(T, { seed: `s|${i}`, ids: HANLI.ids, lingshi: HANLI.lingshi, realm: 2.7 });
+    if (r.refused || r.event) continue;
+    for (const o of r.outs) {
+      assert.ok(GRADES.includes(o.grade) && GRADES.includes(o.shown));
+      if (o.out === 'lingshi') { stones++; assert.ok(GRADES.indexOf(o.shown) <= 1, `${o.grade} stones shown ${o.shown}`); assert.ok(GRADES.indexOf(o.shown) <= GRADES.indexOf(o.grade)); }
+      else { things++; assert.equal(o.shown, o.grade); }
+    }
+  }
+  assert.ok(stones > 100 && things > 100, `${stones} / ${things}`);
+});
+
+test('an old save (no `shown` on fantong.last, a 灵石 entry in the 图鉴) still reads: look, the book, and a fresh feed', () => {
+  const old = hanliSave(3, { fantong: { n: 3, at: null, day: '2026-11-11', today: 1, recipes: [], dry: 0,
+    seen: [{ id: 'lingshi', grade: 'best', at: '2026-11-11' }, { id: 'baina-dai', grade: 'junk', at: '2026-11-11' }],
+    last: { in: ['heyu-dao'], out: { id: 'lingshi' }, lingshi: 90, grade: 'best', press: false } } });
+  const look = VERBS.fantong(old, content, ctx(), { action: 'look' }).result;
+  assert.equal(look.ok, true);
+  assert.equal(look.fantong.seen, 1, 'the old 灵石 entry is no thing');
+  const book = VERBS.story(old, content, ctx(), {}).result.fantong_book;
+  assert.deepEqual(book.seen.map(s => s.id), ['baina-dai']);
+  assert.ok(!fantongAll(T, content, old).includes('lingshi'));
+  const r = feed(old, { ids: HANLI.ids, lingshi: HANLI.lingshi });
+  assert.equal(r.result.ok, true);
+});

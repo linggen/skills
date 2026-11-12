@@ -546,6 +546,8 @@ export class KailuScene extends Phaser.Scene {
     else outs.forEach((o, k) => one(o, W / 2 + (k ? 170 : -170), false));
     // Under the cards, never under the shell's bubble at the top: her gag's whole line, a 方子 worked out.
     if (r.her) this.ui.add(this.text(W / 2, 920, r.say ?? '', 20, { color: '#f6e6c4', wrap: W - 80 }));
+    // A pot with nothing better within reach gave 灵石 back: one plain line from the table's words (rules `note`), never a 逆天.
+    if (r.note) this.ui.add(this.text(W / 2, 900, r.note, 24, { color: '#e9d8b4', wrap: W - 100 }));
     if (r.discovered) this.ui.add(this.text(W / 2, 930, `${r.discovered.in}${r.discovered.lingshi ? ` + ${r.discovered.lingshi} ${this.w.stones}` : ''} → ${r.discovered.out}`, 26, { color: '#9fe39a' }));
     const btn = this.button(W / 2, BTN_Y, 300, 84, this.w.take, () => this.done(), { color: 0x3f9b4a, size: 44 });
     btn.setAlpha(0);

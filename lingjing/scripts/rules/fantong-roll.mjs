@@ -6,6 +6,12 @@ import { incomeOf, realmOfLevel } from './income.mjs';
 
 export const GRADES = ['junk', 'useful', 'rare', 'best'];
 export const LINGSHI = 'lingshi'; // what a `wealth` row's output is called on the board and in the 图鉴
+/* THE GRADE ROLLED vs THE GRADE SHOWN (Hanli 2026-11-12: a 逆天 that was only 124 灵石, 「新!」 on it, and a 储物袋 with no 逆天
+   thing in it). `grade` is what the dice said — pity, 压盖, the odds and the tests all read that. `shown` (on every out)
+   is what the player is TOLD: the grade of what actually came out. A result that is only 灵石 is never called 珍品 or
+   逆天 (ordinaryOf); the fallback of a pot with nothing within reach also carries `back: true`, so the page can say so. */
+export const shownOf = o => o.shown ?? o.grade; // an out's told grade (recipes, the story's pot and her gag carry no `shown`: theirs is the grade)
+export const ordinaryOf = grade => GRADES[Math.min(Math.max(0, GRADES.indexOf(grade)), 1)]; // 凡 or 有用, never above
 
 /* ── The roll's dice: a small stable hash and a seeded stream — no Math.random. ── */
 export function hash(text) {
@@ -170,11 +176,12 @@ export function roll(t0, { seed, ids, lingshi = 0, realm = 0, press = false, lif
     // A 方子 may give more than one (`n`: 古八's 九节聚气, 「滚出三颗丹来」).
     if (recipe && grade !== 'junk') return { out: grade === 'useful' ? recipe.out : recipe.best, grade, recipe: recipe.id, ...(recipe.n > 1 ? { n: recipe.n } : {}) };
     const target = targetOf(t, grade, worth), got = rowsFor(t, family, target, open, info);
-    if (!got) return stones ? { out: LINGSHI, wealth: Math.max(1, Math.round(worthInStones(t, target, worth, grade) * (t.worth?.earn ?? 1))), grade, family } : { out: LINGSHI, wealth: 1, grade, family };
+    // Nothing within reach: its 灵石 handed back — a refund, so never scaled by `earn` (only what play earns is).
+    if (!got) return { out: LINGSHI, wealth: stones ? worthInStones(t, target, worth, grade) : 1, grade, shown: ordinaryOf(grade), back: true, family };
     const row = weighted(pickU, got.rows);
     const ls = stonesOfRow(row, (t.worth?.income ?? 1) * (t.worth?.earn ?? 1));
     const n = ls ? ls[0] + Math.floor(nU * (ls[1] - ls[0] + 1)) : row.n ?? 1;
-    return { out: row.item ?? LINGSHI, ...(ls ? { wealth: n } : n > 1 ? { n } : {}), grade, family: got.family,
+    return { out: row.item ?? LINGSHI, ...(ls ? { wealth: n } : n > 1 ? { n } : {}), grade, shown: ls ? ordinaryOf(grade) : grade, family: got.family,
       ...(row.with && withU * 100 < (row.with_chance ?? 100) ? { with: row.with } : {}) };
   };
   const first = one(pity >= (t.pity?.after ?? Infinity));

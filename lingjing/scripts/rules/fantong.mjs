@@ -18,7 +18,7 @@ import { itemOf } from './errands.mjs';
 import { huiNow, huiOrder } from './hui.mjs';
 import { isLocked } from './locks.mjs';
 import { freeSlot, hasFound, pouchBrief, stow, fullLine } from './pouch.mjs';
-import { LINGSHI, familyOfKind, kindOf, odds, roll, tierOfItem } from './fantong-roll.mjs';
+import { LINGSHI, familyOfKind, kindOf, odds, roll, shownOf, tierOfItem } from './fantong-roll.mjs';
 
 export { GRADES, familyOf, gradeWeights, kindOf, powerOf, tierOfItem, worthOf } from './fantong-roll.mjs';
 
@@ -179,22 +179,24 @@ export function fantongAll(t, content = null, state = null) {
   const ids = new Set(), save = Boolean(content && state);
   for (const [k, rows] of Object.entries(t.pools ?? {})) for (const r of k === '_about' ? [] : rows) {
     if (save && !rowOpen(content, state, t, r) && !hasFound(state, r.item)) continue;
-    ids.add(r.item ?? LINGSHI); if (r.with) ids.add(r.with);
+    if (r.item) ids.add(r.item); // a 灵石 row is no entry in the book: the 图鉴 holds things
+    if (r.with) ids.add(r.with);
   }
   for (const r of t.recipes?.list ?? []) if (!save || rowOpen(content, state, t, { hui: r.hui })) { ids.add(r.out); ids.add(r.best); }
   for (const e of t.events ?? []) ids.add(e.out);
   if (!save) for (const r of t.recipes?.story?.list ?? []) ids.add(r.out);
   return [...ids];
 }
+/* The 图鉴's record: things only. (Saves from before 2026-11-12 may hold a 灵石 entry — it is no thing, and is left out.) */
+const seenOf = state => (state.fantong?.seen ?? []).filter(s => s.id !== LINGSHI);
 /* 饭桶图鉴: what has come out, in the order it first did, with its grade; and how many the table holds. */
 export function fantongBook(content, state) {
   const t = tableOf(content), lang = state.lang;
   if (!t) return null;
-  const seen = state.fantong?.seen ?? [];
+  const seen = seenOf(state);
   if (!seen.length && !state.fantong?.n) return null;
   return {
-    seen: seen.map(s => (s.id === LINGSHI ? { id: LINGSHI, name: wordsOf(t, lang).lingshi, grade: s.grade }
-      : { id: s.id, name: itemName(itemOf(content, s.id), state, lang) ?? s.id, hint: pick(itemOf(content, s.id)?.hint, lang), grade: s.grade })),
+    seen: seen.map(s => ({ id: s.id, name: itemName(itemOf(content, s.id), state, lang) ?? s.id, hint: pick(itemOf(content, s.id)?.hint, lang), grade: s.grade })),
     of: new Set([...fantongAll(t, content, state), ...seen.map(s => s.id)]).size, grades: wordsOf(t, lang).grades ?? {},
   };
 }
@@ -218,7 +220,7 @@ export function fantongBrief(content, state, now) {
     limit: { ...(t.limit?.cooldown_min ? { cooldown_min: t.limit.cooldown_min } : {}), ...(t.limit?.per_day ? { per_day: t.limit.per_day, today: state.fantong?.day === dayKey(now) ? state.fantong.today ?? 0 : 0 } : {}) },
     inputs, held_back: heldBack(content, state, t), leans, max_in: t.max_in ?? 3, tints, grades: wordsOf(t, lang).grades ?? {}, quips: wordsOf(t, lang).quips ?? {},
     lingshi: locked ? null : { max: lingshiCap(content, state, t), have: state.wealth ?? 0 },
-    recipes: fantongRecipes(content, state), fed: state.fantong?.n ?? 0, seen: (state.fantong?.seen ?? []).length, of: new Set([...fantongAll(t, content, state), ...(state.fantong?.seen ?? []).map(s => s.id)]).size,
+    recipes: fantongRecipes(content, state), fed: state.fantong?.n ?? 0, seen: seenOf(state).length, of: new Set([...fantongAll(t, content, state), ...seenOf(state).map(s => s.id)]).size,
   };
 }
 
@@ -288,11 +290,12 @@ function feed(state, content, ctx, args, t) {
   if (lifted) { s.bag[lifted] -= 1; if (s.bag[lifted] <= 0) delete s.bag[lifted]; }
   // Into the pouch: every output (the twin too), and a thing's companion (含笑半步颠 · 止笑丸).
   const landed = [];
-  const land = (id, grade, k = 1, wealth = 0) => {
-    if (wealth) { s.wealth = (s.wealth ?? 0) + wealth; landed.push({ got: { id: LINGSHI, n: wealth }, grade }); return; }
+  const land = (id, grade, k = 1, wealth = 0, back = false) => {
+    if (wealth) { s.wealth = (s.wealth ?? 0) + wealth; landed.push({ got: { id: LINGSHI, n: wealth }, grade, ...(back ? { back } : {}) }); return; }
     landed.push({ got: stow(content, s, id, k, 'fantong'), grade });
   };
-  for (const o of roll.outs) { land(o.out, o.grade, o.n ?? 1, o.wealth ?? 0); if (o.with) land(o.with, o.grade); }
+  // The grade he is TOLD is the grade of what came out (`shown`); the one rolled stays the roll's (pity, 压盖, the odds).
+  for (const o of roll.outs) { land(o.out, shownOf(o), o.n ?? 1, o.wealth ?? 0, o.back); if (o.with) land(o.with, shownOf(o)); }
   const found = new Set(f.recipes ?? []);
   const discovered = roll.recipe && !found.has(roll.recipe) ? roll.recipe : null;
   if (discovered) found.add(discovered);
@@ -300,14 +303,14 @@ function feed(state, content, ctx, args, t) {
   const P = t.pages, pages = (f.pages ?? 0) + (P ? landed.filter(l => l.got.id === P.item).length : 0);
   const paged = P && pages >= P.need && !found.has(P.recipe) ? P.recipe : null;
   if (paged) found.add(paged);
-  // 图鉴: the first time each thing comes out.
+  // 图鉴: the first time each THING comes out — 灵石 are no entry and never 「新」 (a stones-only result is not a find).
   const seen = [...(f.seen ?? [])];
   const fresh = [];
-  for (const l of landed) if (!seen.some(x => x.id === l.got.id)) { seen.push({ id: l.got.id, grade: l.grade, at: today }); fresh.push(l.got.id); }
+  for (const l of landed) if (l.got.id !== LINGSHI && !seen.some(x => x.id === l.got.id)) { seen.push({ id: l.got.id, grade: l.grade, at: today }); fresh.push(l.got.id); }
   const dry = roll.outs.every(o => o.grade === 'junk') && !roll.event ? (f.dry ?? 0) + 1 : 0;
   s.fantong = { ...f, n: n + 1, at: now.toISOString(), day: today, today: (f.day === today ? f.today ?? 0 : 0) + 1, recipes: [...found],
     seen, dry, spat: 0, ...(P ? { pages } : {}),
-    last: { in: ids, out: roll.out, lingshi, grade: roll.grade, press } };
+    last: { in: ids, out: roll.out, lingshi, grade: roll.grade, shown: shownOf(roll), press } };
   delete s.fantong.stars;
 
   const briefs = landed.map(l => outBrief(content, s, t, l.got, l.grade));
@@ -316,14 +319,17 @@ function feed(state, content, ctx, args, t) {
   const named = o => (o.wealth || o.n > 1 ? `${o.name} ×${o.n}` : o.name);
   const line = ev ? pick(ev.say, lang) : fill(w.spit, { name: named(out) });
   const pageLine = P && pages > (f.pages ?? 0) && !paged ? fill(w.page, { n: Math.min(pages, P.need), need: P.need }) : null;
-  const say = [line, extra ? fill(w.with, { name: named(extra) }) : null, twin ? fill(w.twin, { name: named(twin) }) : null, pageLine,
+  // The fallback — nothing better within reach of the pot — says so, once, in the table's words (words.stones_back).
+  const note = landed.some(l => l.back) ? w.stones_back ?? null : null;
+  const say = [line, note, extra ? fill(w.with, { name: named(extra) }) : null, twin ? fill(w.twin, { name: named(twin) }) : null, pageLine,
     fullLine(s, landed.map(l => l.got))].filter(Boolean).join(' ');
-  const nextNow = nextAt(t, s, now);
+  const shown = shownOf(roll), nextNow = nextAt(t, s, now);
   const newRecipe = discovered ?? paged;
   return { state: s, result: {
     ok: true, fed: { ids, id: ids[0], names: ids.map(id => itemName(itemOf(content, id), s, lang) ?? id), name: ids.map(id => itemName(itemOf(content, id), s, lang) ?? id).join(lang === 'en' ? ', ' : '、'), lingshi, press },
     out, ...(extra ? { with: extra } : {}), ...(twin ? { twin } : {}), outs: briefs,
-    grade: roll.grade, grade_name: wordsOf(t, lang).grades?.[roll.grade] ?? roll.grade,
+    // `grade` here is what the page and the play show: the grade of what came out. The grade rolled is `rolled`.
+    grade: shown, grade_name: wordsOf(t, lang).grades?.[shown] ?? shown, rolled: roll.grade, ...(note ? { note } : {}),
     ...(lifted ? { lifted: { id: lifted, name: itemName(itemOf(content, lifted), s, lang) } } : {}),
     ...(ev ? { her: true } : {}), ...(roll.story ? { story: roll.story } : {}), ...(fresh.length ? { first: fresh } : {}), say,
     ...(newRecipe ? { discovered: fantongRecipes(content, s).find(r => r.id === newRecipe) } : {}),

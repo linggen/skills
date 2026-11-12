@@ -85,22 +85,24 @@ export async function storyPot(lang, story) {
 }
 
 async function sample(lang, seed, force) {
-  const { t, byId, pick, words, input, brief: briefOf, out: brief1, roll, kindOf, familyOfKind, tierOfItem, GRADES } = await tableOf(lang);
+  const { t, byId, pick, words, input, brief: briefOf, out: brief1, roll, shownOf, kindOf, familyOfKind, tierOfItem, GRADES } = await tableOf(lang);
   const brief = briefOf(SAMPLE.filter((id) => byId.has(id)).map((id) => input(id, 9)), { max: t.lingshi?.max ?? t.lingshi?.min ?? 10, have: 9 });
   let n = 0, dry = 0;
   const seen = new Set();
   const rollOne = async (ids, lingshi, press) => {
     let r = null;
-    for (let k = 0; k < 4000; k++) { // `force`: the 游戏厅's look at one grade's reveal, rolled for honestly until it comes
+    for (let k = 0; k < 4000; k++) { // `force`: the 游戏厅's look at one grade's reveal, rolled for honestly until it comes (the grade SHOWN)
       r = roll(t, { seed: `${seed}|${n}|${ids.join('+')}|${lingshi}|${k}`, ids, lingshi, press, pity: dry });
-      if (!force || r.grade === force) break;
+      if (!force || shownOf(r) === force) break;
     }
     n += 1;
     if (r.refused) return { ok: true, spat_back: true, say: words.spat_back, outs: [] };
     dry = r.outs.every((o) => o.grade === 'junk') ? dry + 1 : 0;
-    const outs = r.outs.flatMap((o) => [{ ...brief1(o.out, o.grade), ...(o.wealth ? { n: o.wealth } : {}) }, ...(o.with ? [brief1(o.with, o.grade)] : [])]);
-    const first = outs.map((o) => o.id).filter((id) => !seen.has(id) && seen.add(id));
-    return { ok: true, outs, out: outs[0], grade: r.grade, grade_name: words.grades?.[r.grade] ?? r.grade, ...(r.twin ? { twin: true } : {}), first, power: r.power, GRADES };
+    // The grade told is the grade of what came out (rules/fantong-roll.mjs `shown`); a stones-only result is no 「新」.
+    const outs = r.outs.flatMap((o) => [{ ...brief1(o.out, shownOf(o)), ...(o.wealth ? { n: o.wealth } : {}) }, ...(o.with ? [brief1(o.with, shownOf(o))] : [])]);
+    const first = outs.filter((o) => !o.wealth).map((o) => o.id).filter((id) => !seen.has(id) && seen.add(id));
+    const note = r.outs.some((o) => o.back) ? words.stones_back : null, shown = shownOf(r);
+    return { ok: true, outs, out: outs[0], grade: shown, grade_name: words.grades?.[shown] ?? shown, ...(note ? { note } : {}), ...(r.twin ? { twin: true } : {}), first, power: r.power, GRADES };
   };
   return { brief, roll: rollOne };
 }
