@@ -1115,6 +1115,75 @@ not a target; it stands as a pyramid without being forced into one. 灰狼 · �
   can ship alone), then the simulator (runs a day from § 耗材, the clear rate from fair fights), then new cards and
   chances.
 
+### 牌的种类 — more than blows; the first batch 【设计 2026-11-12】
+
+His, 2026-11-12: *斗法卡牌设计可否多样性一些, 目前所有牌都是攻击. 炉石的卡牌都有什么种类, 是否有技能, 加buffer, 治疗等?* ·
+*好, 卡牌按你说的做.* Counted that day: of 106 cards about 39 are bodies (16 of them 护主), 35 deal damage (26 single,
+9 sweeps), 8 draw, 7 buff, 6 heal, 3 summon — and nearly all of 小满's own in 卷一 are damage; the healing, the buffs
+and the summons are 阿禾's. 《炉石》's variety comes from a hero power that differs by class and from keywords
+(亡语 · 圣盾 · 突袭 · 吸血 · 剧毒 · 冻结 · 沉默 · 奥秘 · 发现); v3 built 护主 and 入阵 and named 亡语 · 冲锋 for later.
+Mechanics come two or three at a time, each batch after the one before is fitted. Every number stays a small whole
+one, a card reads the same in either hand (v4), and the three lines (tools/duel-lines.mjs) must play a new mechanic
+before its cards are fitted — a mechanic the lines cannot play cannot be measured.
+
+**Batch one — three mechanics:**
+
+1. **灵根术: the skill differs by root** (《炉石》's hero power). Once a turn, for the same 2 灵力, he strikes
+   (主灵根一击, as now: the worn 法器 rides it) **or** casts his main root's 术 (no 法器 in it):
+
+   | 灵根 | 术 | |
+   |---|---|---|
+   | 火 | 燎 | every foe body takes 1 |
+   | 木 | 回春 | his lead or one of his bodies heals 2 |
+   | 土 | 厚土 | his lead gains 2 护体 |
+   | 金 | 淬锋 | one of his bodies gains +1 攻, kept |
+   | 水 | 冰封 | one foe body does not strike on its next turn |
+
+   No new card; every fight plays differently by who he is. A beast's lead has its root's 术 too (one sheet). Why
+   「or」 and not 「instead」: a 法器's 器攻 rides the strike, and a skill that replaced it would leave four roots'
+   weapons with nothing to add to. The numbers grow by realm as the strike's do (v3: 1 · 2 · 2 · 3), weighed in the audit.
+2. **伏符: a 符 laid face down** (《炉石》's 奥秘). Played for its cost, it lies on his side unseen — the foe sees
+   that one lies there, not which — and goes off once, on the foe's own act. At most two lie at a time, never two of
+   one kind. A 符 is bought and spent when it goes off: the 耗材 the fights lacked (§ 耗材; his: 「打怪也用不到丹药, 符箓」).
+   The first three, one for each thing a foe does:
+   - **护身符** — the next blow at his lead lands on the 符 instead.
+   - **定身符** — the next body the foe sends in does not strike on its first turn.
+   - **惊雷符** — the next 功法 the foe casts costs its lead 2.
+   The 符 thrown from the hand today (符 · 五雷符 · 踏马符) stay as they are.
+3. **Two things a body may carry.** **灵光** (《炉石》's 圣盾): the first blow that reaches it is stopped, and the
+   灵光 with it. **毒 n**: at the start of each of its own turns it takes n, until it is healed — so a heal now also
+   cleanses, and 「break the 灵光 or go past it」 · 「heal now or let the 毒 run」 are choices a turn did not hold before.
+   毒 here is a wound over time, not 《炉石》's kill at a touch: small numbers, and it reads in the hand.
+
+**The new cards are the 秘境's drops** (§ 品: 卷一 holds only nine cards that come by chance, and each 重 wants cards
+only it gives). About twelve, each its beast's own (`foe`, so 金 or 宝石 by where the beast stands), named from the
+beast's own line in the classic as its cards are today. A first sketch, costs and numbers the audit's:
+
+| Beast | Card | What it is |
+|---|---|---|
+| 犰狳 「见人则眠 … 见则螽蝗为败」 | 蜷眠 | 功法: one of his bodies gains 灵光 |
+| | 螽蝗 | 功法: two 1/1 蝗 come in, each carrying 毒 1 on what it bites |
+| 合窳 「食人，亦食虫蛇，见则天下大水」 | 大水 | 功法: no foe body strikes on its next turn |
+| | 食蛇 | 功法: heal 3 and cleanse |
+| 蠪侄 「九尾、九首、虎爪 … 其音如婴儿」 | 九尾 | 灵兽 with 灵光 |
+| | 婴声 | 伏: the next foe body that strikes is held a turn |
+| 鬿雀 「白首，鼠足而虎爪」 | 白首 | 灵兽, high 攻 and 1 血, with 灵光 |
+| | 鼠足 | 灵兽, 入阵: 毒 1 on a foe body |
+| 蛫 「白身赤首 … 可以御火」 | 龟甲 | 功法: his lead gains 3 护体 |
+| | 御火 | 伏: the next 火 功法 the foe casts is spent for nothing |
+| 蝮蛇 「它等你一脚踩上去」 | 蛇毒 | 功法: 毒 2 on one |
+| | 伏草 | 伏: the next foe body that strikes takes 毒 1 first |
+
+With the three bought 符 that is fifteen, and five 术. 五行 gain a lean by it: 火 bursts, 木 heals and calls, 土
+guards, 金 sharpens, 水 holds.
+
+**Batch two, not designed:** 亡语 (leaves something as it falls) · 破法 (《炉石》's 沉默: strips what a body carries)
+· 突袭 (strikes a body the turn it comes) · 悟道 as 发现 (one of three).
+
+**Order:** after the fair base is fitted (§ 斗法 v4's measure) — a mechanic added while the band is being fitted moves
+the band under the fit. Then: the engine's three mechanics with the lines taught to play them; the five 术; the
+cards with their pictures; the audit and the band again; Mac and phone together.
+
 ## 差事 — the task system, 《魔兽世界》's loop 【已建】
 
 **接 · 记 · 追 · 交** — accept, log, track, turn in (his ask, 2026-09-18).
