@@ -1052,10 +1052,12 @@ several times its face. His calls, 2026-11-12: *斗法这里为了平衡, 都是
   turn ahead wins clearly more than one who plays the first card he sees, and neither always wins. Both lines exist
   (tools/story-fights.mjs `lookahead` · `careful`); at 练气四层, where the sides are close, they stood 53–88% and 8–40%.
 - **PvP** is two sheets at one level with no gear and no pills. Nothing else differs.
-- **Collecting, two lines.** 品 is how special a card is: it sets where the card is found and how many the ten may hold,
-  never its strength for its cost. 框 (银 · 金 · 宝石 · 钻石) is the same card in a finer printing; it changes nothing in
-  a fight. A beast has a grade of the same four names and drops its own cards in its 框. Each 重 of the 秘境 ends in a
-  graded 大妖; a rarer grade stands there now and then.
+- **Collecting: one of each, its rarity on its frame** (his, later that day: *斗法卡牌不会重复吧, 只能拿一张. 根据稀有度画边框* —
+  as a 精英 or a 稀有精英 wears its dragon in 魔兽, and a legendary its frame in 炉石). A card is held once; there are no
+  copies to break up or build from. Its rarity (银 · 金 · 宝石 · 钻石 above the plain ones) is drawn as its frame and sets
+  where it is found, never its strength for its cost. A beast has a grade of the same names and drops cards of that
+  grade; each 重 of the 秘境 ends in a graded 大妖, and a rarer grade stands there now and then. A drop is never a card
+  he already holds.
 - **Drops.** A clear always gives a card. The chances are knobs in balance.json's master, set only after a simulator
   shows the typical and the unlucky number of days to the first card of each grade, from the runs a day (the 令's income
   and `cap_day`) and how often a run is cleared under fair fights (气血 carries from room to room). A count he can see
@@ -1493,43 +1495,46 @@ Over v1 (below). rules/fortune.mjs · qian.json · qian-reading.js · qian-facts
   without 忌 · the 宜 kind's tie-break by the last line · 12 kept friends · the friend's 称呼 kept out of the log even when
   kept · her line kept per browser, not in the save · a 签 drawn before v2 shipped may read another 宜 kind now (its tag).
 
-## 耗材 — what 灵石 is for 【设计 2026-11-12】
+## 耗材 — what 灵石 and 体力 are for 【设计 2026-11-12】
 
-His calls, 2026-11-12, playing at 练气九层 with 3600 灵石 and eleven 秘境令 unused: *目前灵石3.6K了, 没有消耗的地方, 奖励调低点* ·
-*灵石还要有用的地方, 目前开销不够* · *耗材要好好设计一下, 目前秘境令基本上用不完, 没刷秘境就圆满了. 打怪也用不到丹药, 符箓.
-饭桶吞的灵石也不够多, 现在饭桶直接吞, 可否改成吞耗材, 让用户去买. 另, 闭关涨修为也要消耗灵石, 修炼可以从灵石里吸取灵力* ·
-*现在日常小游戏, 任务已经够刷到圆满了, 可以减少一些, 让用户买秘境令*. Measured that day (tools/balance.mjs --wealth): a
-typical player took in 58 灵石 a day and spent 7; `economy.earn` 0.5 made it 32.
+His calls that day, playing at 练气九层 with 3600 灵石 and eleven 秘境令 unused: *目前灵石3.6K了, 没有消耗的地方, 奖励调低点* ·
+*灵石还要有用的地方, 目前开销不够* · *耗材要好好设计一下, 目前秘境令基本上用不完, 没刷秘境就圆满了* · *现在日常小游戏, 任务已经够刷到圆满了,
+可以减少一些* · and, of rules being made up by hand, *游戏设计没有模版么? 我们还要发明规则?* — so the shapes below are
+taken from shipped games (doc/research-2026-11-12-economy-templates.md); where the book says otherwise, the book wins.
+Measured: a typical player took in 58 灵石 a day and spent 7; `economy.earn` 0.5 (built that day) made it 32.
 
-- **Each loop has its own thing to use up, and the thing is bought.** 闭关: 灵石 itself. The 饭桶: 炉炭 (new, in
-  grades). 斗法: 丹药 and 符 (they matter once the fights are fair, § 斗法 v4). The 秘境: the 秘境令.
-- **A layer's 修为 comes from three places, and only one of them is free.** The story, the small games, the errands and
-  the day's 人间功课 fill about half a layer; the 秘境 (a 令 a run) and 闭关 (灵石 an hour) fill the rest. Today the free
-  half alone reaches 圆满.
-- **Never a wall.** With no 灵石 a 闭关 still grows 修为, slowly (吐纳), and the free half keeps paying on its falling
-  replay share: a player who buys nothing finishes the layer in more days, never not at all.
-- **秘境令 is bought.** The free drops shrink to an occasional one (兽潮's night); the shelf sells it, each one dearer
-  than the last that day. A run pays more of the layer than it does now.
-- **闭关 draws on 灵石: 聚灵, then 吐纳** (his, the same day: *闭关时, 让用户选灵石消耗数量, 对应不同的修为增长速度* · *但要有个上限* ·
-  *闭关上限10%只是个例子, 可以闭关时间不变, 比如6h, 前面2h烧完灵石涨8%, 后面每小时不烧灵石, 缓慢涨之类的. 你帮我设计一下*).
-  A 闭关 is as long as he likes, as now (≤ 12 h). Going in he lays down 灵石, none to a full 阵; they are drawn first,
+- **体力 is the day's budget, and the 秘境 is what it buys** (原神's 树脂). The 秘境令 goes (*秘境令去掉可以*): a run is paid
+  once at the door (*进门一次付清*) — about what its rooms cost together today — and nothing inside costs 体力, so he is
+  never stranded in a run. Leaving early ends the run and keeps part of the loot, as now. 体力 can be topped up with 灵石
+  a few times a day, each time dearer.
+- **The free half.** The story, the small games, the errands and the day's 人间功课 fill about half a layer; the 秘境 and
+  闭关 fill the rest. Today the free half alone reaches 圆满. Never a wall: a player who spends nothing finishes later,
+  not never.
+- **闭关 draws on 灵石: 聚灵, then 吐纳** (*凡人里修炼是要吸取灵石的灵力的, 我们闭关还是可以让用户选择用灵石加速, 用我们前面定好的* — the
+  book over the genre, whose games sell permanent speed instead). A 闭关 is as long as he likes, as now (≤ 12 h). Going
+  in he lays 灵石 around him, none to a full 阵 (the 聚灵阵: the ring of 灵石 a cultivator sits in); they are drawn first,
   at one steady pace, and when they are spent he breathes on (吐纳) at a trickle until he comes out.
-  - **A 灵石 is worth the same 修为 at every layer** (`per_stone` 3 — under the 4 a full bar pays back per 灵石, so the two
-    never make a loop): he can do the sum in his head, and a higher layer simply takes more of them.
-  - **The full 阵 is a share of the layer** (`array` 8%), drawn in `hours` 2: 练气九层 (910) 24 灵石 → 72 修为; 练气一层
-    (550) 15 → 45. Fewer 灵石 burn for less time at the same pace.
-  - **The cap is the day's, not the 闭关's** (`per_day`: one full 阵): two short 闭关 share it; a third lays down none.
-  - **吐纳** is `trickle` 0.25% of the layer an hour, a whole number, at least 1 (练气九层 2): a night of it is 2–3%.
-  - Coming out early hands back what was not yet drawn; nothing is drawn once the bar is full. 体力, 补转, 安神香 and
-    a pill taken going in stay as they are; the old free 「a night = 10% of the layer」 is gone.
-  - The card going in says it as he would: 「布 24 块：两个时辰吸尽，修为 +72；之后吐纳，每时辰 +2」 and 「今日还可布 N 块」.
-- **The 饭桶 eats 炉炭, not 灵石.** Bought at the shelf, graded; more lifts the pot along today's falling curve.
-- **The 旁炉 is put away** (his, the same day: *旁炉好像用处不大, 先去掉?*): its tab and its rule are switched off by data;
-  a save keeps what it fired.
-- **Numbers.** Shares, sizes and prices are knobs in balance.json's master; they are set only after the pacing tool shows
-  days a layer and the 灵石 flow, before and after, for the light, typical and heavy player.
-- **Order.** 闭关's 灵石 and the 饭桶's 炉炭 first (they bite at once); the lower free share and the bought 令 with them;
-  丹药 and 符 with the fair fights; card crafting with the collection.
+  - A 灵石 is worth the same 修为 at every layer (`per_stone` 3 — under the 4 a full bar pays back per 灵石, so no loop).
+  - The full 阵 is a share of the layer (`array`), drawn in `hours` 2: at 8%, 练气九层 (910) lays 24 灵石 for 72 修为.
+  - The cap is the day's (`per_day`: one full 阵), shared by short 闭关.
+  - **The 阵 grows** (the genre's permanent level, proposed with *都按你说的来*): it starts small and each level, bought
+    once with a climbing sum of 灵石, lets it hold more — the long sink for a large purse.
+  - 吐纳 is `trickle` 0.25% of the layer an hour, whole, at least 1. Coming out early hands back what was not drawn;
+    nothing is drawn once the bar is full. 体力, 补转, 安神香 and a pill going in stay as they are; the free 「a night =
+    10% of the layer」 goes.
+- **Pills are not counted** (*不用限制次数*): 丹毒 already limits them, as the book has it.
+- **The 饭桶 is a lottery over the game's own things** (*游戏物品有个池子吗? 直接用来作为饭桶的池子吧* · *有几样物品, 只有饭桶可以出* ·
+  *可以把未来出现的物品, 让饭桶有机会先开出来, 给个惊喜, 或者预告* · *不必鼓励丢垃圾进去… 丢高级物品也有机会出更高级的* · *一定概率出好东西,
+  一定概率出差的东西, 不能每次都赚*). Its pool is the item book (items.json) by rule, not a hand list: every thing a player
+  may hold, less what the story alone gives (`never`), each weighed by how near its worth stands to what the roll asks;
+  a few things only it gives; and, rarely, a thing from further on than he has reached, as a glimpse. Junk in, junk
+  out: no floor lifts a poor pot. It never gives 灵石. Whether it eats a bought fuel instead of 灵石 is open.
+- **The 旁炉 is put away** (*旁炉好像用处不大, 先去掉?* — built that day: panglu.json `on: false`).
+- **Numbers.** Shares, sizes and prices are knobs in balance.json's master, set only after the pacing tool shows days a
+  layer and the 灵石 flow, before and after, for the light, typical and heavy player. His own save may be moved straight
+  to the new numbers (*我现在的进度无所谓, 可以直接修改到新模型下*).
+- **Order.** The 秘境 on 体力 and the lower free share; 闭关's 灵石; the 饭桶 over the item book; 丹药 and 符 with the fair
+  fights; the cards with § 斗法 v4.
 
 ## 体力 and 闭关 【已建】
 
