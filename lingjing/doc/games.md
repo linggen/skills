@@ -1530,7 +1530,7 @@ after; idle never wins. `n` is story order (古七 before 今三), and the climb
 
 **喂饭桶 · 开炉** (`kailu`, 10-20; Hanli: 「现在可以, 但东西太少, 以后在扩吧. 装备武器饰品都可以出」): the 饭桶's lottery, in
 the 物品 panel once he holds it (古四) and in the 游戏厅 (`daily`, a sample pot, no save; `?force=best`). Up to three things
-and 灵石 (10 a 层 of his realm) into the mouth (the steam takes the pot's lean colour), 压盖 on a gold puff lifts the grade a notch, 「咔哒」 and
+and 炉炭 (a piece a 层 of his realm) into the mouth (the steam takes the pot's lean colour), 压盖 on a gold puff lifts the grade a notch, 「咔哒」 and
 out it spins: 凡 grey ~70 · 有用 blue ~25 · 珍品 purple ~4 · 逆天 gold ~1 for a plain pot. No cap (Hanli 10-20: 「饭桶就是
 什么都出的」): the odds of high things rise smoothly with the pot's 品阶 (its best input) and his realm, 灵石 add to it.
 Pity: five 凡 in a row, the next is 有用 or better. Quirks: 3% it spits the pot back, 4% two things. The first of each
@@ -1571,6 +1571,11 @@ Average return in / out, before → after (worth that went in is no fuel / most 
 
 Mean 1.06 → 0.785. (The last pot is pill-led: a gear-led 三阶 pot cannot reach the pills, the family follows the lead.) A save's 卷一 book is thinner than the
 whole book, so a pot there gives back a little less still.
+**2026-11-12, it eats 炉炭, not 灵石.** The pot's input is a count of 炉炭 (`lutan`, a treasure with `effect.kailu: 'fuel'`; sold where pills are, a price class
+of its own: 4 minutes of income, 10 灵石 at level 1) taken from the 储物袋 and burnt with the pot. A piece lifts the pot and counts in its worth as 10 灵石 did
+(fantong.json `fuel.stones`); the most a pot takes is his 层 count (`fuel.per_layer` 1, at least `min` 1). Look carries `fuel` { item, name, art, max, have,
+stones } in place of `lingshi`; the verb is `feed --ids=… --fuel=n`; a call that still sends `lingshi` is read as no fuel. 方子 ask a count of pieces (`recipes.list[].fuel`).
+The pot never gives 炉炭 (`never.out`) and never takes it as a thing (`why.fuel`).
 All data: fantong.json (rows, tiers, odds); rules/fantong.mjs (on a save) and
 rules/fantong-roll.mjs (pure); the Phaser play tools/kailu/ → games/kailu/; the pane fantong-kailu.js.
 

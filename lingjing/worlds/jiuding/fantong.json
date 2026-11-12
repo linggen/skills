@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "_about": "喂饭桶 · 开炉 — the 饭桶's lottery (Hanli, 2026-10-20: 「现在可以, 但东西太少, 以后在扩吧. 装备武器饰品都可以出」; the 割绳子 in front of it is gone, 「喂饭桶那个没啥玩的」). Once he holds the 饭桶 (`needs`, the 小铜炉 古四 grants at wm-danlu) he puts up to three things and 灵石 (`lingshi`: 10 a 层 of his realm) into its mouth, presses the lid on a gold puff (压盖: the one skill step, `press`), and it spits something out (games/kailu.js on the shell). The rules roll it (rules/fantong.mjs, seeded by the day, the save's feed count, what went in and the 灵石 — never the press, so timing can't re-roll); the page only shows. The book's 饭桶 gives anything at all (Hanli 10-20: 「剧情里, 饭桶就是什么都出的, 但要关联喂入物品等级和人物等级」): there is no cap — the odds of high things rise smoothly with what goes in (`tiers`), his realm, the 灵石 (`odds.power`). Every output is an items.json row with a name and a `hint` — the one line of small print on it or its wrapper, never its effect (Hanli, 2026-10-06). The first time a thing lands it goes into the 饭桶图鉴 (录). Hanli will widen the table: add rows, never code. Bag only (Hanli 2026-10-27: 「下面的物品都不是储物袋中的, 可以用储物袋中的吗? 以后玩家得到新东西, 可以来测试」 · 「让玩家可以清空身上不用的物品」): the tray is his 储物袋, with its counts, and nothing else; what goes in leaves the bag — the bucket is where his spare things and his junk turn into something (the woodpile's 凡物 that once stood always at hand are gone; 周衡's culls come into the bag with 药园残株).",
+  "_about": "喂饭桶 · 开炉 — the 饭桶's lottery (Hanli, 2026-10-20: 「现在可以, 但东西太少, 以后在扩吧. 装备武器饰品都可以出」; the 割绳子 in front of it is gone, 「喂饭桶那个没啥玩的」). Once he holds the 饭桶 (`needs`, the 小铜炉 古四 grants at wm-danlu) he puts up to three things and 炉炭 (`fuel`: one a 层 of his realm, bought at the pill shelves) into its mouth, presses the lid on a gold puff (压盖: the one skill step, `press`), and it spits something out (games/kailu.js on the shell). The rules roll it (rules/fantong.mjs, seeded by the day, the save's feed count, what went in and the 炉炭 — never the press, so timing can't re-roll); the page only shows. The book's 饭桶 gives anything at all (Hanli 10-20: 「剧情里, 饭桶就是什么都出的, 但要关联喂入物品等级和人物等级」): there is no cap — the odds of high things rise smoothly with what goes in (`tiers`), his realm, the 炉炭 (`odds.power`). Every output is an items.json row with a name and a `hint` — the one line of small print on it or its wrapper, never its effect (Hanli, 2026-10-06). The first time a thing lands it goes into the 饭桶图鉴 (录). Hanli will widen the table: add rows, never code. Bag only (Hanli 2026-10-27: 「下面的物品都不是储物袋中的, 可以用储物袋中的吗? 以后玩家得到新东西, 可以来测试」 · 「让玩家可以清空身上不用的物品」): the tray is his 储物袋, with its counts, and nothing else; what goes in leaves the bag — the bucket is where his spare things and his junk turn into something (the woodpile's 凡物 that once stood always at hand are gone; 周衡's culls come into the bag with 药园残株).",
   "needs": { "item": "danlu" },
   "max_in": 3,
   "limit": {
@@ -13,7 +13,7 @@
     "out": {
       "_about": "What never comes OUT (2026-11-12, the pool is the item book — `book`): a key or a scroll (the story alone gives them), her bell (the companion's `bell`), the book's first feed (wm-diyilu: 踏马符, 牛脂甘露, 含笑半步颠, 止笑丸, 九转回春丹 — the story hands each over on its own beat), 炉炭 (bought, never given); with them every thing the story flags `story` unless `book.gates` lets the bucket give it from a 回 on, and the book's two fixed pots (`recipes.story`, in and out). `items` above stay INPUT rules only: realm pills may still come out (Hanli 10-20: 「破境丹, 筑基丹都可以出, 不用限制」).",
       "kinds": ["key", "scroll"],
-      "items": ["moon-bell", "tama-fu", "niuzhi-ganlu", "hanxiao-bandian", "zhixiao-wan", "mend-pill-9"]
+      "items": ["lutan", "moon-bell", "tama-fu", "niuzhi-ganlu", "hanxiao-bandian", "zhixiao-wan", "mend-pill-9"]
     }
   },
   "keep": {
@@ -46,17 +46,19 @@
     "4": ["foundation-pill-9", "xian-pill"]
   },
   "odds": {
-    "_about": "The roll: first a grade (凡 junk · 有用 useful · 珍品 rare · 逆天 best — grey, blue, purple, gold), then a thing of the pot's family (`families`) worth about what the grade asks: the pot's worth (what went in, and its 灵石) × the grade's `x`, at least its `floor` (balance.json `kailu`, tools/numbers.mjs weighs it). `grades`: the weights at power 0 (a 凡物 fed by a 练气零层 with no 灵石: 70/25/4/1). POWER = `power.in` × the pot's tier + `power.realm` × his realm + `power.lingshi` × ln(1 + the 灵石) — each stone lifts less than the one before (Hanli 11-04: 「多放可以提升出品品质」; 1.08 keeps three stones where 0.5 a stone had them, thirty about doubles 珍品+逆天). His realm counts `realm_per_tier` a whole realm (练气 0–2.7 by 层, 筑基 3+, …). Each grade's weight × `growth[grade]`^power — so a high thing is never impossible, only rare, and grows likelier smoothly with both what goes in and who feeds it. 压盖 (`press` 1): the grade rolled goes up one notch (逆天 stays).",
+    "_about": "The roll: first a grade (凡 junk · 有用 useful · 珍品 rare · 逆天 best — grey, blue, purple, gold), then a thing of the pot's family (`families`) worth about what the grade asks: the pot's worth (what went in, and its 炉炭 at ten 灵石 a piece) × the grade's `x`, at least its `floor` (balance.json `kailu`, tools/numbers.mjs weighs it). `grades`: the weights at power 0 (a 凡物 fed by a 练气零层 with no 炉炭: 70/25/4/1). POWER = `power.in` × the pot's tier + `power.realm` × his realm + `power.lingshi` × ln(1 + ten × the 炉炭) — each stone lifts less than the one before (Hanli 11-04: 「多放可以提升出品品质」; 1.08 keeps three stones where 0.5 a stone had them, thirty about doubles 珍品+逆天). His realm counts `realm_per_tier` a whole realm (练气 0–2.7 by 层, 筑基 3+, …). Each grade's weight × `growth[grade]`^power — so a high thing is never impossible, only rare, and grows likelier smoothly with both what goes in and who feeds it. 压盖 (`press` 1): the grade rolled goes up one notch (逆天 stays).",
     "grades": { "junk": 70, "useful": 25, "rare": 4, "best": 1 },
     "power": { "in": 1, "realm": 0.5, "lingshi": 0.795 },
     "realm_per_tier": 3,
     "growth": { "junk": 0.85, "useful": 1, "rare": 1.227, "best": 1.324 },
     "glimpse": 0.02
   },
-  "lingshi": {
-    "_about": "灵石 fed with the pot (0 to his cap): power (`odds.power.lingshi`, by ln) and worth (balance.json `kailu.lingshi`) — 「这才是一口正经饭」. The cap (Hanli 11-04: 「按当前层数*10, 筑基圆满就是(9+9)*10」): `per_layer` × his 层 counted on across the realms (练气一层 1 … 九层 9, 筑基一层 10 … 九层 18 — 筑基圆满 180), at least `min` (练气零层). A 方子 asks its exact count: more stones and the pot rolls as an ordinary one.",
-    "per_layer": 10,
-    "min": 10
+  "fuel": {
+    "_about": "炉炭 fed with the pot (Hanli 2026-11-12: 「现在饭桶直接吞, 可否改成吞耗材, 让用户去买」): bought at the shelves that sell pills (items.json `lutan`, a price class of its own), taken from the 储物袋 and spent with the pot. Each piece lifts the pot (`odds.power.lingshi`, by ln of `stones` × the pieces: a piece counts as that many 灵石 did, ten) and counts toward its worth as they did. The most a pot takes (Hanli 11-04: 「按当前层数」): `per_layer` × his 层 counted on across the realms (练气一层 1 … 九层 9, 筑基一层 10 … 九层 18), at least `min` (练气零层). A 方子 asks its exact count of pieces: more, and the pot rolls as an ordinary one. A call that still sends `lingshi` is read as no fuel.",
+    "item": "lutan",
+    "per_layer": 1,
+    "min": 1,
+    "stones": 10
   },
   "once": {
     "_about": "Things of these kinds come out once ever (state.found — he has had it, by any door): the 饭桶 never hands him a second sword, robe, pendant, pouch or bell of hers. Hanli 10-20: equipment drops, \"each only once its 回 is reached\".",
@@ -102,12 +104,12 @@
     "recipe": "huiqi"
   },
   "recipes": {
-    "_about": "古七's 方子 (认出三张方子): exactly the right thing (alone) with the right 灵石 says which pill — the roll uses the recipe's `grades` (out of 100), 有用 gives `out`, 珍品 or 逆天 gives `best` (`n` of it, when the book says how many); the 纹 stay the roll's. Recorded on the save the first time one lands (or, `pages`, when its pages are all found), and shown in 录. `hui`: the 回 it opens in.",
+    "_about": "古七's 方子 (认出三张方子): exactly the right thing (alone) with the right count of 炉炭 says which pill — the roll uses the recipe's `grades` (out of 100), 有用 gives `out`, 珍品 or 逆天 gives `best` (`n` of it, when the book says how many); the 纹 stay the roll's. Recorded on the save the first time one lands (or, `pages`, when its pages are all found), and shown in 录. `hui`: the 回 it opens in.",
     "list": [
-      { "id": "huangjing", "in": "huangjing-gen", "lingshi": 1, "out": "qi-pill", "best": "qi-pill-3", "hui": "h11", "grades": { "junk": 40, "useful": 55, "rare": 5 } },
-      { "id": "huangqi", "in": "huangqi-canzhu", "lingshi": 0, "out": "mend-pill", "best": "mend-pill-3", "hui": "h11", "grades": { "junk": 40, "useful": 55, "rare": 5 } },
-      { "id": "huiqi", "in": "fuling", "lingshi": 1, "out": "huiqi-pill", "best": "huiqi-pill", "hui": "h11", "pages": true, "grades": { "junk": 40, "useful": 60 } },
-      { "id": "jiujie", "in": "huangjing-10", "lingshi": 0, "out": "qi-pill-3", "best": "qi-pill-3", "n": 3, "hui": "h09", "grades": { "useful": 100 }, "_about": "古八's 九节聚气 (09-dabi; story DESIGN § 九节聚气方): 闵丹师's 君 — a ten-year 黄精, his month's wage for the 看炉 (the board `danfang-kanlu` gives it) — fed alone, 「滚出三颗丹来，颗颗三道纹」, every time: the book's own pot, three 三转聚气丹." }
+      { "id": "huangjing", "in": "huangjing-gen", "fuel": 1, "out": "qi-pill", "best": "qi-pill-3", "hui": "h11", "grades": { "junk": 40, "useful": 55, "rare": 5 } },
+      { "id": "huangqi", "in": "huangqi-canzhu", "fuel": 0, "out": "mend-pill", "best": "mend-pill-3", "hui": "h11", "grades": { "junk": 40, "useful": 55, "rare": 5 } },
+      { "id": "huiqi", "in": "fuling", "fuel": 1, "out": "huiqi-pill", "best": "huiqi-pill", "hui": "h11", "pages": true, "grades": { "junk": 40, "useful": 60 } },
+      { "id": "jiujie", "in": "huangjing-10", "fuel": 0, "out": "qi-pill-3", "best": "qi-pill-3", "n": 3, "hui": "h09", "grades": { "useful": 100 }, "_about": "古八's 九节聚气 (09-dabi; story DESIGN § 九节聚气方): 闵丹师's 君 — a ten-year 黄精, his month's wage for the 看炉 (the board `danfang-kanlu` gives it) — fed alone, 「滚出三颗丹来，颗颗三道纹」, every time: the book's own pot, three 三转聚气丹." }
     ],
     "story": {
       "_about": "The book's two fixed outputs (Hanli 10-20: 「剧情里小满的飞剑就是饭桶出的」): exactly these inputs, together, give this thing every time, with the biggest gold reveal. The story already hands both over on its own way on (09-snow `feed` grants 火柴 and takes the gourd; 09-xie `go` grants 顺风溜) — that grant stays the book's, so here each is a GUARD: its inputs are refused until the scene `after` is done, and once it is, the pot gives the thing only if he doesn't already hold it (else 「这一口，它吃过了」). Neither output is in any pool, so no lottery hands them out early. 顺风溜's inputs (鯥皮, 翅膜) and 火柴's 盾片 are not items yet: a row whose inputs aren't all items is dormant (the gourd alone stands for 火柴's pot until the shards are an item).",
@@ -137,15 +139,14 @@
       "full": "饭桶还撑着，{when}后再喂。",
       "no_bucket": "手里没有饭桶。",
       "not_feedable": "这个不能喂。",
-      "no_lingshi": "灵石不够。",
+      "no_fuel": "炉炭不够。",
       "twin": "一锅出了两样，又吐出来：{name}。",
       "spat_back": "饭桶嚼了两口，「呸」——原样吐了回来。",
       "had": "饭桶闻了闻，扭过头去——这一口，它吃过了。",
-      "lingshi": "灵石",
       "page": "又一张方子残页（{n}/{need}）。",
       "too_many": "一锅最多三样。",
       "_why": "The short chip on a tile of the bag that cannot go in now (rules/fantong.mjs whyNot; Hanli 11-02): the bucket itself, worn, the story's, the one kept for a breakthrough.",
-      "why": { "needs": "开炉要用", "worn": "穿着", "story": "剧情要用", "keep": "留 {n} 个{for}用" },
+      "why": { "needs": "开炉要用", "fuel": "烧炉用", "worn": "穿着", "story": "剧情要用", "keep": "留 {n} 个{for}用" },
       "grades": { "junk": "凡", "useful": "有用", "rare": "珍品", "best": "逆天" },
       "_quips": "银月's line at the reveal, by grade (games/kailu.js says one in the shell's bubble): the data's until 台词预取 writes hers.",
       "quips": {
@@ -165,14 +166,13 @@
       "full": "The Rice Bucket is still full — feed it again {when}.",
       "no_bucket": "You have no Rice Bucket.",
       "not_feedable": "That won't go in.",
-      "no_lingshi": "Not enough spirit stones.",
+      "no_fuel": "Not enough furnace charcoal.",
       "twin": "Two from one pot — out comes: {name}.",
       "spat_back": "The Rice Bucket chews twice, goes *ptoo*, and spits the lot back whole.",
       "had": "The Rice Bucket sniffs and turns away: it has eaten this mouthful before.",
-      "lingshi": "Spirit stones",
       "page": "Another torn recipe page ({n}/{need}).",
       "too_many": "Three things to a pot at most.",
-      "why": { "needs": "fires the pot", "worn": "worn", "story": "the story needs it", "keep": "keep {n} for {for}" },
+      "why": { "needs": "fires the pot", "fuel": "burns in the pot", "worn": "worn", "story": "the story needs it", "keep": "keep {n} for {for}" },
       "grades": { "junk": "Common", "useful": "Useful", "rare": "Treasure", "best": "Heaven-defying" },
       "quips": {
         "junk": ["So-so.", "It eats with relish and spits with relish.", "That one… you keep it."],

@@ -28,7 +28,7 @@ import { effectGrant } from '../scripts/rules/errands.mjs';
 import { ownXiuwei } from '../scripts/rules/chores.mjs';
 import { wallOf } from '../scripts/rules/rotation.mjs';
 import { huiOrder, huiLabel, huiOf, chapterHuis } from '../scripts/rules/hui.mjs';
-import { chances, lingshiCap, realmOf } from '../scripts/rules/fantong.mjs';
+import { chances, fuelCap, realmOf } from '../scripts/rules/fantong.mjs';
 import { odds } from '../scripts/rules/fantong-roll.mjs';
 import { BALANCE_FILE, balanceText, bookWalk, grindLayers, play, sealedBeat, table as paceTable } from './balance.mjs';
 import { derive, diffOf, inputsOf, lineWalk } from './master.mjs';
@@ -477,9 +477,9 @@ function creatures(ctx, weighed) {
    卷一's last, at that 回's layer: its average return (the worth that comes out ÷ the worth that went in, items.json
    `sell` or the 品阶's worth) must never be over 1 — the bucket is no farm (Hanli 2026-11-12); the rest of the five rules (none
    under 0.55, the mean of twelve pots in 0.75–0.95, fuel worth buying, a step up) are tests/fantong.test.mjs's, on the whole book.
-   Bought at the shop, a pot must never sell back for more than it cost. Each pot again with 灵石 (Hanli 11-04: 10 a 层,
-   「多放可以提升出品品质」): 3, 10 and the save's own cap, and once more at 筑基圆满 with its 180. The stones count in what went in. ── */
-const KAILU_STONES = [0, 3, 10];
+   Bought at the shop, a pot must never sell back for more than it cost. Each pot again with 炉炭 (Hanli 11-04: a piece a 层 since 11-12,
+   「多放可以提升出品品质」): 1, 3 and the save's own cap, and once more at 筑基圆满 with its 18. The pieces count in what went in at their price. ── */
+const KAILU_FUEL = [0, 1, 3]; // pieces of 炉炭 (a piece counts as 10 灵石)
 const KAILU_POTS = [
   { family: 'pill', name: '三味草药', ids: ['huangjing', 'fuling', 'chaihu'] },
   { family: 'gear', name: '三样兽材', ids: ['zhu-ya', 'chai-ya', 'lang-pi'] },
@@ -506,22 +506,22 @@ function kailu(ctx) {
   const tiers = content.ladder?.tiers ?? [], zj = tiers[1];
   if (zj) {
     const s = { ...ctx.saveFor(paying(content, ctx.layerAt(huis.at(-1)))), tier: zj.id, step: (zj.thresholds?.length ?? 1) - 1 };
-    rows.push(...kailuPots(ctx, s, null, `${zh(zj.name) ?? zj.id}圆满`, [lingshiCap(content, s, t)], false));
+    rows.push(...kailuPots(ctx, s, null, `${zh(zj.name) ?? zj.id}圆满`, [fuelCap(content, s, t)], false));
   }
   return rows;
 }
-function kailuPots(ctx, s, h, layer, stones = [...KAILU_STONES, lingshiCap(ctx.content, s, ctx.content.fantong)], gated = true) {
+function kailuPots(ctx, s, h, layer, stones = [...KAILU_FUEL, fuelCap(ctx.content, s, ctx.content.fantong)], gated = true) {
   const { content } = ctx, t = content.fantong, items = new Map(content.items.items.map(i => [i.id, i])), rows = [];
   for (const pot of KAILU_POTS) for (const ls of [...new Set(stones)]) {
     // Ungated (the top of 卷一's next realm, every 回's row open): still no thing of a 卷 above that realm's (its level past the
     // realm's band — 2026-11-10, batch 2: a 卷八 琅玕 is worth its 卷's income), and the pot's 灵石 rows at I where he stands.
     const band = (Math.floor((stoneLevel(content, s) - 1) / 9) + 1) * 9, lv = id => items.get(id)?.level ?? 1;
-    const at = n => (gated ? chances(t, { ids: pot.ids, lingshi: n, realm: realmOf(content, s, t), content, state: s })
-      : odds(t, { ids: pot.ids, lingshi: n, realm: realmOf(content, s, t), open: r => !r.item || lv(r.item) <= band }));
-    const o = at(ls), gain = ls ? round((o.value - at(0).value) / ls, 2) : null;
+    const at = n => (gated ? chances(t, { ids: pot.ids, fuel: n, realm: realmOf(content, s, t), content, state: s })
+      : odds(t, { ids: pot.ids, fuel: n, realm: realmOf(content, s, t), open: r => !r.item || lv(r.item) <= band }));
+    const o = at(ls), gain = ls ? round((o.value - at(0).value) / (ls * (t.fuel?.stones ?? 10)), 2) : null; // (per 灵石 a piece counts as)
     const buys = pot.ids.map(id => items.get(id)?.buy ?? 0);
-    rows.push({ id: `${pot.family}@${h ?? layer}${ls ? `+${ls}灵石` : ''}`, name: ls ? `${pot.name} + ${ls} 灵石` : pot.name, family: pot.family, leans: o.family, hui: h ?? layer, layer, ids: pot.ids, lingshi: ls, gain,
-      worth: round(o.worth, 1), value: round(o.value, 1), ratio: o.worth ? round(o.value / o.worth, 2) : null, buy: buys.every(b => b > 0) ? buys.reduce((a, b) => a + b, 0) + ls : null });
+    rows.push({ id: `${pot.family}@${h ?? layer}${ls ? `+${ls}炉炭` : ''}`, name: ls ? `${pot.name} + ${ls} 炉炭` : pot.name, family: pot.family, leans: o.family, hui: h ?? layer, layer, ids: pot.ids, fuel: ls, gain,
+      worth: round(o.worth, 1), value: round(o.value, 1), ratio: o.worth ? round(o.value / o.worth, 2) : null, buy: buys.every(b => b > 0) ? buys.reduce((a, b) => a + b, 0) + ls * (items.get(t.fuel?.item)?.buy ?? 0) : null });
   }
   return rows;
 }
@@ -752,7 +752,7 @@ const RED = {
   ],
   kailu: [
     // Never above what went in (2026-11-12, Hanli: 「不能每次都赚」): the hard rule of the five in tests/fantong.test.mjs; the rest of them (none under 0.55, the mean, fuel worth buying, a step up) are held there, on the whole book.
-    [r => r.ratio != null && r.ratio > 1, r => `开炉 ${r.name} (${r.hui}, ${r.layer}): gives back ${pct(r.ratio)} of what went in${r.lingshi ? `, each 灵石 ${r.gain}` : ''} — over 100%, a farm`],
+    [r => r.ratio != null && r.ratio > 1, r => `开炉 ${r.name} (${r.hui}, ${r.layer}): gives back ${pct(r.ratio)} of what went in${r.fuel ? `, each 灵石 a piece counts as ${r.gain}` : ''} — over 100%, a farm`],
     [r => r.buy && r.value >= r.buy, r => `开炉 ${r.name} (${r.hui}): bought for ${r.buy}, it gives back ${r.value} — a farm`],
     [r => r.family !== 'junk' && r.leans !== r.family, r => `开炉 ${r.name}: leans to ${r.leans}, meant for ${r.family}`],
   ],

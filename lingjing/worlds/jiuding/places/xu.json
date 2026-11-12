@@ -85,7 +85,7 @@
     0.795,
     0.4898
    ],
-   "has": {"shop": {"name": {"zh": "南门药铺", "en": "The south-gate apothecary"}, "keeper": {"zh": "灵草 · 丹药", "en": "herbs and pills"}, "goods": ["lingzhi", "ginseng", "mend-pill", "huiqi-pill"]}, "games": ["alchemy-daily"], "scene": "04-town"},
+   "has": {"shop": {"name": {"zh": "南门药铺", "en": "The south-gate apothecary"}, "keeper": {"zh": "灵草 · 丹药", "en": "herbs and pills"}, "goods": ["lingzhi", "ginseng", "mend-pill", "huiqi-pill", "lutan"]}, "games": ["alchemy-daily"], "scene": "04-town"},
    "line": {
     "zh": "徐州的城，坊市在南门里。",
     "en": "The city of Xu; the market lies inside the south gate."
@@ -848,7 +848,7 @@
     0.8272,
     0.4381
    ],
-   "has": {"shop": {"name": {"zh": "钱掌柜的摊子", "en": "Money Qian's stall"}, "keeper": {"zh": "押宝 · 收当", "en": "bets and pawns"}, "goods": ["qi-pill", "mend-pill", "luobo", "bamboo-sword", "straw-cloak", "wangqi-1", "feijian-duan", "wulei-fu", "canwu-jian", "huiqi-pill", "tieji-bao", "sanhuo-jian", "caoren-zha"]}, "games": ["yabao"]},
+   "has": {"shop": {"name": {"zh": "钱掌柜的摊子", "en": "Money Qian's stall"}, "keeper": {"zh": "押宝 · 收当", "en": "bets and pawns"}, "goods": ["qi-pill", "mend-pill", "luobo", "bamboo-sword", "straw-cloak", "wangqi-1", "feijian-duan", "wulei-fu", "canwu-jian", "huiqi-pill", "tieji-bao", "sanhuo-jian", "caoren-zha", "lutan"]}, "games": ["yabao"]},
    "line": {
     "zh": "山脚的坊市，一条街，卖符纸的、卖灵草的、卖萝卜的。钱掌柜的铺子最大，算盘打得最响。",
     "en": "The market at the foot of the mountain: one street of talisman paper, spirit herbs and radishes. Shopkeeper Qian's is the biggest stall, and his abacus the loudest."
@@ -944,7 +944,7 @@
     "_about": "货郎上山 (Hanli, 2026-10-15: 「按A做, 货郎上山摆摊」): while 外门弟子 may not go down (观内), a pedlar pays the 观 its 摊钱 and sets up under the cypresses for a day, every third day — 古六's precedent (外人上不得山; 钱掌柜 pays ten 灵石 and is let up at 大比, here at the 五行台). Not 石坳村's 走南路的货郎 (古二's teller of the 岷江 baby): another pedlar, unnamed. No 押宝. Sells 符 at 20 (Hanli 2026-10-15 「yes」: 钱掌柜's 符箓 are canon); never buys it back. rules/visiting.mjs.",
     "name": {"zh": "货郎的担子", "en": "The pedlar's pole"},
     "keeper": {"zh": "丹药 · 杂货 · 收药材皮货", "en": "pills and sundries; buys herbs and hides"},
-    "goods": ["mend-pill", "qi-pill", "talisman", "ganliang", "straw-cloak"],
+    "goods": ["mend-pill", "qi-pill", "talisman", "ganliang", "straw-cloak", "lutan"],
     "odd": ["jade-ring", "jade-fish", "grey-robe"],
     "buys": {"kinds": ["material"], "rate": 0.6, "say": {"zh": "「药材皮货我收。别的，担子挑不下山。」", "en": "\"Herbs and hides I take. Anything else won't fit on the pole going down.\""}},
     "visits": {"every": 3, "offset": 0, "where": {"zh": "演武场", "en": "the training ground"},
@@ -983,7 +983,7 @@
      "zhishi-shen"
     ],
     "games_pool": {"from": ["wuziqi", "xiangqi"], "today": 1},
-    "shop": {"_about": "外门库房 (2026-10-27, Hanli on 古四: 「现在看地图也不知到商店在哪里」 — 外门弟子无令不得下山, so the 坊市 is shut to him until the story sends him down, and the pedlar comes one day in three): 周衡 keeps the 公中 store in the stewards' hall and sells to disciples against 灵石, from 古四's 小周天 on. Stock for the 练气一层 hand: 回春丹 · 回气丹, 钱掌柜's three cards (consigned), a 竹剑.", "name": {"zh": "外门库房", "en": "The outer gate's store"}, "kind": "ku", "keeper": {"zh": "周衡 · 公中的账", "en": "Zhou Heng, on the common account"}, "goods": ["mend-pill", "huiqi-pill", "tieji-bao", "sanhuo-jian", "caoren-zha", "bamboo-sword"], "opens": {"done": "wm-zhoutian"}}
+    "shop": {"_about": "外门库房 (2026-10-27, Hanli on 古四: 「现在看地图也不知到商店在哪里」 — 外门弟子无令不得下山, so the 坊市 is shut to him until the story sends him down, and the pedlar comes one day in three): 周衡 keeps the 公中 store in the stewards' hall and sells to disciples against 灵石, from 古四's 小周天 on. Stock for the 练气一层 hand: 回春丹 · 回气丹, 钱掌柜's three cards (consigned), a 竹剑.", "name": {"zh": "外门库房", "en": "The outer gate's store"}, "kind": "ku", "keeper": {"zh": "周衡 · 公中的账", "en": "Zhou Heng, on the common account"}, "goods": ["mend-pill", "huiqi-pill", "tieji-bao", "sanhuo-jian", "caoren-zha", "bamboo-sword", "lutan"], "opens": {"done": "wm-zhoutian"}}
    },
    "line": {
     "zh": "正殿西边一间空屋，没有神像，只有两面墙。东墙挂乌木牌，杂役，外门也揭得；揭一块，办一桩。下山的牌子，揭了才有令。",

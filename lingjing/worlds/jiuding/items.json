@@ -3268,6 +3268,40 @@
       },
       "_about": "人间功课 (gongke.json `ward`): a backup or a security check kept leaves one; worn at the abode it stands as the 护山大阵 on the 人间功课 board — a sight, no number.",
       "art_source": "The talisman picture until its own ink is painted."
+    },
+    {
+      "id": "lutan",
+      "kind": "treasure",
+      "level": 1,
+      "name": {
+        "zh": "炉炭",
+        "en": "Furnace charcoal"
+      },
+      "art": "art/items/danlu.webp",
+      "about": {
+        "zh": "一块黑亮的炭，丹房里烧炉用的。饭桶的肚子也是炉：塞进去一块，火旺一分，出来的东西成色好一点。",
+        "en": "A glossy black lump from the pill house's coal bin. The Rice Bucket's belly is a furnace too: feed it a piece and the fire burns hotter, and what comes out is a little finer."
+      },
+      "hint": {
+        "zh": "火旺一分。",
+        "en": "A hotter fire."
+      },
+      "sold": [
+        "徐",
+        "冀",
+        "兖",
+        "青",
+        "扬",
+        "荆",
+        "梁",
+        "雍",
+        "豫"
+      ],
+      "effect": {
+        "kailu": "fuel"
+      },
+      "_about": "开炉's fuel (Hanli 2026-11-12: 「现在饭桶直接吞, 可否改成吞耗材, 让用户去买」): a pot takes up to his 层 count of them (fantong.json `fuel`), each lifting it and counting toward its worth as `fuel.stones` 灵石 did; spent with the pot. Bought where pills are sold (a price class of its own, master.economy.prices.fuel); never given by the pot.",
+      "art_source": "The 丹炉 picture until its own ink is painted."
     }
   ]
 }

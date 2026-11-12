@@ -2174,8 +2174,8 @@ function lintItems(content, bad) {
     // A pill the master declares an exception (master.pills.exceptions, with its why): its heal and its 修为 together.
     const both = item.kind === 'pill' && content.balance?.master?.pills?.exceptions?.[item.id] && kinds.length === 2 && kinds.includes('fight') && kinds.includes('units');
     if (!both && kinds.length + (arms.length ? 1 : 0) !== 1) bad(where, 'an effect is one of key, units (修为, a size), wear, charm, core, learn, pouch, card, fight, waive, kailu, or arms (atk, def, ward)');
-    // `kailu`: the next 开炉 a grade up, the thing spent with it (净炉符, rules/fantong.mjs liftOf).
-    if (e.kailu != null && e.kailu !== 'lift') bad(where, 'kailu is lift');
+    // `kailu`: `lift`, the next 开炉 a grade up, the thing spent with it (净炉符, rules/fantong.mjs liftOf); `fuel`, 炉炭, bought and fed with the pot (fantong.json `fuel`).
+    if (e.kailu != null && !['lift', 'fuel'].includes(e.kailu)) bad(where, 'kailu is lift or fuel');
     // `waive`: one cost of that kind not paid, the thing spent instead (饱嗝令, rules/core.mjs spendStamina) — a kind with a cost.
     if (e.waive != null && !(content.rewards?.stamina?.cost?.[e.waive] != null && staminaCost(content, e.waive) > 0)) bad(where, `waives ${e.waive}, which costs nothing`);
     // A pill for the 丹囊 (battle.js § pills): one whole number, 气血 (`heal`) or 灵力 (`mana`), on a pill.

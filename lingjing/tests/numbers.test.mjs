@@ -78,8 +78,8 @@ test('a pill\'s card\'s 「抵N日打坐」 holds against N nights of 闭关 at 
 // the save's own cap and 筑基圆满's 180, and none is a farm.
 test('开炉 with 灵石: weighed up to the cap, and never a farm', async () => {
   const r = await measure(loadContent());
-  const stoned = r.kailu.filter(x => x.lingshi > 0);
-  assert.ok(stoned.some(x => x.lingshi >= 180), '筑基圆满 with its 180');
+  const stoned = r.kailu.filter(x => x.fuel > 0);
+  assert.ok(stoned.some(x => x.fuel >= 18), '筑基圆满 with its 18 pieces');
   assert.ok(stoned.every(x => Number.isFinite(x.gain)), 'each with what its stones add');
   const red = r.red.filter(x => x.src === 'kailu');
   assert.deepEqual(red.map(x => x.say), []);

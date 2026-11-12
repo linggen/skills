@@ -106,7 +106,7 @@ const PAGE_DID = {
   // 喂饭桶 (rules/fantong.mjs): what went in, what came out with its small print.
   fantong: (r, a) => (a.action !== 'feed' ? null
     : r.spat_back ? `fed the 饭桶 ${(r.fed?.ids ?? []).join(', ')} — it chewed and spat the pot back whole, nothing spent`
-      : `fed the 饭桶 ${r.fed?.name}${r.fed?.lingshi ? ` with ${r.fed.lingshi} 灵石` : ''}${r.fed?.press ? ', the lid pressed on the gold' : ''}${r.her ? ' (银月 touched it first)' : ''} — out came ${(r.outs ?? [r.out]).filter(Boolean).map(o => `${o.name}${o.wealth ? ` ×${o.n}` : `「${o.hint ?? ''}」`}`).join(' and ')} (${r.grade_name ?? r.grade})${r.with ? ` with ${r.with.name}` : ''}${r.story ? ' — the book\'s own pot' : ''}${r.discovered ? ` — a 方子 found: ${r.discovered.in} → ${r.discovered.out}` : ''}`),
+      : `fed the 饭桶 ${r.fed?.name}${r.fed?.fuel ? ` with ${r.fed.fuel} 炉炭` : ''}${r.fed?.press ? ', the lid pressed on the gold' : ''}${r.her ? ' (银月 touched it first)' : ''} — out came ${(r.outs ?? [r.out]).filter(Boolean).map(o => `${o.name}${o.wealth ? ` ×${o.n}` : `「${o.hint ?? ''}」`}`).join(' and ')} (${r.grade_name ?? r.grade})${r.with ? ` with ${r.with.name}` : ''}${r.story ? ' — the book\'s own pot' : ''}${r.discovered ? ` — a 方子 found: ${r.discovered.in} → ${r.discovered.out}` : ''}`),
   // 旁炉 (rules/panglu.mjs): the herb in, what the batch came to.
   panglu: (r, a) => (a.action !== 'fire' ? null
     : `fired the 旁炉 with ${r.fed?.name} — ${r.outcome === 'zha' ? 'it blew (炸炉), the herb and a little 体力 gone' : r.outcome === 'hu' ? `burnt; ground to ${r.out?.name}` : `out came ${r.out?.name}`}${r.lesson ? '; 闵丹师 taught 「首尾武，中间文」' : ''}`),

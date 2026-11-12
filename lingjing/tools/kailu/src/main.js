@@ -6,7 +6,7 @@ import { KailuScene, W, H, ZOOM_MAX } from './play.js';
 
 /**
  * start({ parent, base, lang, data, reducedMotion, dev, showFps, shell, onEnd }) → { destroy(), refresh() }
- * `data`: { brief, roll(ids, lingshi, press) → Promise<result>, icon(id) → url|null } — the rules' brief of the 饭桶 and
+ * `data`: { brief, roll(ids, fuel, press) → Promise<result>, icon(id) → url|null } — the rules' brief of the 饭桶 and
  * the one door that feeds it (the page's `fantong feed`, or the 游戏厅's sample roll). The canvas only shows.
  * `onEnd({ won, stars, grade, result })` once the reveal is taken (收下), or `{ won: false, left: true }`.
  */
@@ -34,5 +34,5 @@ export function start(opts) {
   // refresh(): the canvas was laid into a new host (the pouch pane redraws round it) — fit it again.
   // setPot / fire: the page's own pot and 开炉 (play.js `outside`), passed to the scene once it stands.
   const scene = () => game.scene.getScene('kailu');
-  return { destroy: () => game.destroy(true), refresh: () => game.scale?.refresh(), setPot: (ids, lingshi) => scene()?.setPot?.(ids, lingshi), fire: () => scene()?.fire?.() };
+  return { destroy: () => game.destroy(true), refresh: () => game.scale?.refresh(), setPot: (ids, fuel) => scene()?.setPot?.(ids, fuel), fire: () => scene()?.fire?.() };
 }

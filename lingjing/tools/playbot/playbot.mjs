@@ -671,14 +671,14 @@ export async function run(opts) {
           }
           // The page holds the fight on screen; the phone's 储物袋 walks beside it (Hanli's 11-04: 狼 kept, the 饭桶 fed
           // from the bag). That door is the phone's own call, made as the phone makes it (lingjing_pouch.dart:
-          // `fantong --action=feed --ids=… --lingshi=0`) on things the fight does not hold — never a tap, and said so.
+          // `fantong --action=feed --ids=… --fuel=0`) on things the fight does not hold — never a tap, and said so.
           if (!verbs.slice(atBag).some((v) => v.verb === 'fantong' && /--action=(feed|fire)/.test(v.flags.join(' ')))) {
             const st = JSON.parse(fs.readFileSync(path.join(data, 'saves', name, 'state.json'), 'utf8'));
             const held = new Set([...(st.fight?.setup?.you?.extra ?? []), ...(st.fight?.setup?.you?.pouch ?? [])].map(String));
             const ids = ['luobo', 'dingtai', 'longxu-cao', 'xizhu', 'duan-dao'].filter((id) => st.bag?.[id] && !held.has(id)).slice(0, 2);
             if (ids.length) {
               const atDoor = verbs.length;
-              await fetch(`${base}/api/skills/lingjing/tools/Verb`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ verb: 'fantong', flags: ['--action=feed', `--ids=${ids.join(',')}`, '--lingshi=0', `--save=${name}`] }) });
+              await fetch(`${base}/api/skills/lingjing/tools/Verb`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ verb: 'fantong', flags: ['--action=feed', `--ids=${ids.join(',')}`, '--fuel=0', `--save=${name}`] }) });
               noteRefusals(atDoor, `${where} · 饭桶 (the phone's 储物袋 call)`);
               played.push({ where: `${where} · 饭桶`, kind: 'phone-door', fed: ids, answer: verbs[verbs.length - 1]?.out?.ok === false ? verbs[verbs.length - 1].out.refused : 'fed' });
             }

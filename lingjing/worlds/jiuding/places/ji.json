@@ -51,7 +51,7 @@
     0.6804,
     0.3278
    ],
-   "has": {"shop": {"name": {"zh": "东街市", "en": "East Street market"}, "goods": ["iron-sword", "pouch-mid", "wangqi-1", "mend-pill", "huiqi-pill"]}, "scene": "01-ye", "games": ["alchemy-daily"]},
+   "has": {"shop": {"name": {"zh": "东街市", "en": "East Street market"}, "goods": ["iron-sword", "pouch-mid", "wangqi-1", "mend-pill", "huiqi-pill", "lutan"]}, "scene": "01-ye", "games": ["alchemy-daily"]},
    "line": {
     "zh": "漳水边的城。城门贴着告示，坊市在东街。",
     "en": "The city on the Zhang. A notice on the gate; the market on East Street."

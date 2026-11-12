@@ -181,6 +181,7 @@
         "grade": {"0": 0.4, "1": 1, "2": 2, "3": 4, "4": 8},
         "card": {"treasure": 6, "scroll": 7.5},
         "charm": 6,
+        "fuel": 4,
         "scroll": 40,
         "pouch": 5,
         "treasure": 45,
@@ -469,7 +470,8 @@
     "chenlian-fu": {"buy": 0, "sell": 0},
     "anshen-xiang": {"buy": 0, "sell": 0},
     "jinglu-fu": {"buy": 0, "sell": 0},
-    "hushan-qi": {"buy": 0, "sell": 0}
+    "hushan-qi": {"buy": 0, "sell": 0},
+    "lutan": {"buy": 10, "sell": 0}
   },
   "_boards": "Hanli 2026-10-16: a small game after 入门 pays 灵石 on its first clear only — plain · good · best (or all three 灵光), in minutes of income × I where he stands (master.economy.boards, batch 2; 5 · 10 · 15 灵石 until 2026-11-10); a replay pays nothing. Before 入门 nothing is paid (state.mjs lockedOf shuts wealth). The rank: a task's `ranks` names it outright; else three stars is best, and of the listed marks the first (the clean clear) is best, the last plain, one between good; a board with no marks (洛书门, 小周天, the 今 boards) pays plain. On top of the task's own grant (rules/tasks.mjs boardPay).",
   "boards": {"plain": 1.5, "good": 3, "best": 4.5},

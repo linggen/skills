@@ -1,6 +1,6 @@
 // play.js — 喂饭桶 · 开炉 (Hanli 10-20): the 饭桶's lottery as one Phaser scene, in four beats.
 //
-//   配料  drag up to three things from the tray into the open mouth (or tap them), add 0–3 灵石; the steam over the
+//   配料  drag up to three things from the tray into the open mouth (or tap them), add 炉炭; the steam over the
 //         mouth takes the colour of the pot's lean, brighter the better the pot.
 //   压盖  the 饭桶 chews; the lid shakes harder and puffs red and gold. Press (and hold) on a gold puff: the lid is
 //         pressed down and the grade goes up a notch. Too early or too late keeps the plain roll.
@@ -8,9 +8,9 @@
 //   收下  the result goes to the shell; the page carries on.
 //
 // On a save's page (`data.outside`, the 物品 panel's 饭桶 · 开炉 — Hanli 11-02: the bag and the 饭桶 on one page) the
-// tray, the three places, the 灵石 and 开炉 are the page's HTML, the same bag as the 储物袋's: the page hands the pot in
-// (`setPot(ids, lingshi)`), fires it (`fire()`), and hears each change of beat (`data.onPhase`) to fold the bag away.
-// Nothing here knows the odds: `data.roll(ids, lingshi, press)` is the rules' (the page's `fantong feed`, or the
+// tray, the three places, the 炉炭 and 开炉 are the page's HTML, the same bag as the 储物袋's: the page hands the pot in
+// (`setPot(ids, fuel)`), fires it (`fire()`), and hears each change of beat (`data.onPhase`) to fold the bag away.
+// Nothing here knows the odds: `data.roll(ids, fuel, press)` is the rules' (the page's `fantong feed`, or the
 // 游戏厅's sample). The press is the only thing this scene decides, and it is only an input to the roll.
 import * as Phaser from 'phaser';
 
@@ -28,12 +28,12 @@ const D = { bg: 0, pot: 10, lid: 12, steam: 14, item: 30, fx: 40, ui: 60, card: 
 export const WORDS = {
   zh: {
     feed: '开 炉', press: '按住，压盖！', early: '压早了', late: '压晚了', good: '压住了！', take: '收 下', back: '再配一锅',
-    stones: '灵石', have: '（有{n}）', empty: '把东西拖进饭桶嘴里，最多三样', none: '没有能喂的东西。', click: '咔哒！', chew: '咯嘣……咯嘣……',
+    fuel: '炉炭', have: '（有{n}）', empty: '把东西拖进饭桶嘴里，最多三样', none: '没有能喂的东西。', click: '咔哒！', chew: '咯嘣……咯嘣……',
     spat: '呸！', burp: '嗝！', fresh: '新！',
   },
   en: {
     feed: 'FIRE IT', press: 'Hold — press the lid!', early: 'Too early', late: 'Too late', good: 'Pressed!', take: 'Take it', back: 'Another pot',
-    stones: 'Spirit stones', have: '(have {n})', empty: 'Drag things into its mouth — three at most', none: 'Nothing here will go in.', click: 'Click!', chew: 'Crunch… crunch…',
+    fuel: 'Charcoal', have: '(have {n})', empty: 'Drag things into its mouth — three at most', none: 'Nothing here will go in.', click: 'Click!', chew: 'Crunch… crunch…',
     spat: 'Ptoo!', burp: 'Burp!', fresh: 'New!',
   },
 };
@@ -67,7 +67,7 @@ export class KailuScene extends Phaser.Scene {
     const art = `${this.cfg.base}art/`;
     for (const k of ['pot-open', 'pot-shut', 'woodpile']) this.load.image(k, `${art}${k}.webp`);
     for (const i of this.brief.inputs ?? []) this.iconLoad(i.id);
-    this.iconLoad('lingshi');
+    this.iconLoad(this.brief.fuel?.item ?? 'lutan', this.brief.fuel?.art ?? null);
     this.missing = new Set();
     this.load.on('loaderror', (f) => this.missing.add(f.key));
   }
@@ -83,7 +83,7 @@ export class KailuScene extends Phaser.Scene {
     this.textures_();
     this.stage();
     this.pot = [];          // the ids in the pot, in order
-    this.lingshi = 0;
+    this.fuel = 0;
     this.left = Object.fromEntries((this.brief.inputs ?? []).map((i) => [i.id, i.around ? Infinity : i.n ?? 1]));
     this.page = 0;
     this.phase = this.brief.ready === false ? 'full' : 'fill';
@@ -207,7 +207,7 @@ export class KailuScene extends Phaser.Scene {
       this.status.setText(this.brief.wait ?? '');
       if (!this.calm) this.zzz();
     } else this.status.setText(this.pot.length ? this.leanLine() : inputs.length ? this.w.empty : this.w.none);
-    if (this.outside) { this.leanShow(); return; } // the places, the 灵石, the tray and 开炉 are the page's
+    if (this.outside) { this.leanShow(); return; } // the places, the 炉炭, the tray and 开炉 are the page's
     // The pot's three places.
     for (let k = 0; k < (this.brief.max_in ?? 3); k++) {
       const x = W / 2 + (k - 1) * 130, id = this.pot[k];
@@ -219,16 +219,16 @@ export class KailuScene extends Phaser.Scene {
       ic.setInteractive({ useHandCursor: true }).on('pointerup', () => this.takeOut(k));
       this.ui.add(ic);
     }
-    // 灵石: − n ＋, what he has.
-    const ls = this.brief.lingshi;
+    // 炉炭: − n ＋, what he has.
+    const ls = this.brief.fuel;
     if (ls && ls.max > 0) {
       const y = SLOT_Y + 70;
-      const st = this.add.image(W / 2 - 150, y, this.iconKey('lingshi')).setDepth(D.ui);
+      const st = this.add.image(W / 2 - 150, y, this.iconKey(ls.item ?? 'lutan')).setDepth(D.ui);
       st.setScale(46 / Math.max(st.width, st.height));
-      this.ui.add([st, this.text(W / 2 - 60, y, `${this.w.stones} ×${this.lingshi}`, 28), this.text(W / 2 + 196, y, fill(this.w.have, { n: ls.have }), 22, { color: '#d9c39a' })]);
+      this.ui.add([st, this.text(W / 2 - 60, y, `${this.w.fuel} ×${this.fuel}`, 28), this.text(W / 2 + 196, y, fill(this.w.have, { n: ls.have }), 22, { color: '#d9c39a' })]);
       const can = this.phase === 'fill';
-      this.ui.add(this.button(W / 2 + 50, y, 56, 50, '−', () => { this.lingshi = Math.max(0, this.lingshi - 1); this.drawFill(); }, { size: 34, color: 0x8a6a3a, disabled: !can || !this.lingshi }));
-      this.ui.add(this.button(W / 2 + 116, y, 56, 50, '+', () => { this.lingshi = Math.min(ls.max, ls.have, this.lingshi + 1); this.drawFill(); }, { size: 34, color: 0x8a6a3a, disabled: !can || this.lingshi >= Math.min(ls.max, ls.have) }));
+      this.ui.add(this.button(W / 2 + 50, y, 56, 50, '−', () => { this.fuel = Math.max(0, this.fuel - 1); this.drawFill(); }, { size: 34, color: 0x8a6a3a, disabled: !can || !this.fuel }));
+      this.ui.add(this.button(W / 2 + 116, y, 56, 50, '+', () => { this.fuel = Math.min(ls.max, ls.have, this.fuel + 1); this.drawFill(); }, { size: 34, color: 0x8a6a3a, disabled: !can || this.fuel >= Math.min(ls.max, ls.have) }));
     }
     this.drawTray();
     const ready = this.phase === 'fill' && this.pot.length > 0;
@@ -300,13 +300,13 @@ export class KailuScene extends Phaser.Scene {
     this.time.delayedCall(220, () => this.puffs.explode(6, MOUTH.x, MOUTH.y));
     this.drawFill();
   }
-  /** The page's pot (outside): what it holds now and its 灵石; a thing new to it flies up into the mouth. */
-  setPot(ids, lingshi = 0) {
+  /** The page's pot (outside): what it holds now and its 炉炭; a thing new to it flies up into the mouth. */
+  setPot(ids, fuel = 0) {
     if (this.phase !== 'fill') return;
     const was = [...this.pot], fresh = [...ids];
     for (const id of was) { const k = fresh.indexOf(id); if (k >= 0) fresh.splice(k, 1); }
     this.pot = [...ids].slice(0, this.brief.max_in ?? 3);
-    this.lingshi = Math.max(0, Number(lingshi) || 0);
+    this.fuel = Math.max(0, Number(fuel) || 0);
     fresh.forEach((id, k) => {
       const it = this.add.image(W / 2, H - 60, this.iconKey(id)).setDepth(D.drag);
       it.setScale(60 / Math.max(it.width, it.height));
@@ -336,14 +336,14 @@ export class KailuScene extends Phaser.Scene {
     return (lead && this.brief.leans?.[lead]) || this.w.empty;
   }
 
-  /* The lean: the colour of the kinds in the pot, brighter with its 品阶 and the 灵石. */
+  /* The lean: the colour of the kinds in the pot, brighter with its 品阶 and the 炉炭. */
   leanShow() {
     const by = {};
     for (const id of this.pot) { const k = this.brief.inputs.find((i) => i.id === id)?.kind ?? 'junk'; by[k] = (by[k] ?? 0) + 1; }
     const top = Object.entries(by).sort((a, b) => b[1] - a[1])[0]?.[0];
     const tint = top ? Phaser.Display.Color.HexStringToColor(this.brief.tints?.[top] ?? '#9aa0a6').color : 0xffffff;
     const tier = Math.max(0, ...this.pot.map((id) => this.brief.inputs.find((i) => i.id === id)?.tier ?? 0));
-    const a = this.pot.length ? Math.min(0.75, 0.22 + 0.12 * tier + 0.07 * this.lingshi) : 0;
+    const a = this.pot.length ? Math.min(0.75, 0.22 + 0.12 * tier + 0.1 * this.fuel) : 0;
     this.lean.setTint(tint);
     this.tweens.killTweensOf(this.lean);
     this.tweens.add({ targets: this.lean, alpha: a, duration: 400 });
@@ -434,7 +434,7 @@ export class KailuScene extends Phaser.Scene {
     this.shake?.stop();
     const press = Boolean(this.pressed?.good);
     let r = null;
-    try { r = await this.cfg.data.roll(this.pot.slice(), this.lingshi, press); } catch (e) { r = { ok: false, say: String(e?.message ?? e) }; }
+    try { r = await this.cfg.data.roll(this.pot.slice(), this.fuel, press); } catch (e) { r = { ok: false, say: String(e?.message ?? e) }; }
     if (!this.scene.isActive()) return;
     if (!r?.ok) { this.refused(r); return; }
     if (r.spat_back) { this.spat(r); return; }
@@ -537,7 +537,7 @@ export class KailuScene extends Phaser.Scene {
       const g = o.grade ?? grade, css = GRADE_CSS[g];
       const tag = this.add.graphics().fillStyle(GRADE_COL[g], 1).fillRoundedRect(x - 70, y0 - 24, 140, 46, 23);
       const tagT = this.text(x, y0 - 2, names[g] ?? g, 28, { color: '#2a1406', stroke: '#ffffff' });
-      const name = this.text(x, y0 + 52, `${o.name}${o.wealth || o.n > 1 ? ` ×${o.n}` : ''}`, wide ? 44 : 34, { color: css, wrap: wide ? W - 80 : 300 });
+      const name = this.text(x, y0 + 52, `${o.name}${o.n > 1 ? ` ×${o.n}` : ''}`, wide ? 44 : 34, { color: css, wrap: wide ? W - 80 : 300 });
       const hint = o.hint ? this.text(x, y0 + 104, `「${o.hint}」`, 24, { color: '#e9d8b4', wrap: wide ? W - 100 : 300 }) : null;
       const fresh = r.first?.includes(o.id) ? this.text(x + 96, y0 - 40, this.w.fresh, 26, { color: '#ff6a3c' }).setAngle(12) : null;
       this.ui.add([tag, tagT, name, ...(hint ? [hint] : []), ...(fresh ? [fresh] : [])]);
@@ -546,9 +546,7 @@ export class KailuScene extends Phaser.Scene {
     else outs.forEach((o, k) => one(o, W / 2 + (k ? 170 : -170), false));
     // Under the cards, never under the shell's bubble at the top: her gag's whole line, a 方子 worked out.
     if (r.her) this.ui.add(this.text(W / 2, 920, r.say ?? '', 20, { color: '#f6e6c4', wrap: W - 80 }));
-    // A pot with nothing better within reach gave 灵石 back: one plain line from the table's words (rules `note`), never a 逆天.
-    if (r.note) this.ui.add(this.text(W / 2, 900, r.note, 24, { color: '#e9d8b4', wrap: W - 100 }));
-    if (r.discovered) this.ui.add(this.text(W / 2, 930, `${r.discovered.in}${r.discovered.lingshi ? ` + ${r.discovered.lingshi} ${this.w.stones}` : ''} → ${r.discovered.out}`, 26, { color: '#9fe39a' }));
+    if (r.discovered) this.ui.add(this.text(W / 2, 930, `${r.discovered.in}${r.discovered.fuel ? ` + ${r.discovered.fuel} ${this.w.fuel}` : ''} → ${r.discovered.out}`, 26, { color: '#9fe39a' }));
     const btn = this.button(W / 2, BTN_Y, 300, 84, this.w.take, () => this.done(), { color: 0x3f9b4a, size: 44 });
     btn.setAlpha(0);
     this.tweens.add({ targets: btn, alpha: 1, duration: 300 });

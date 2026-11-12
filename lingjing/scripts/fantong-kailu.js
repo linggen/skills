@@ -2,7 +2,7 @@
 // in the one shell (games/shell.js), so 银月's line has its bubble. The pouch pane redraws its HTML whenever it changes,
 // so a canvas living in it would die on every redraw: the game is mounted ONCE into a node of its own and that node is
 // laid into whatever host `[data-ft-kailu]` the redraw made (beat-host.js's way). The game feeds through
-// `feed(ids, lingshi, press)` — the page's `fantong feed`, the rules' roll — and shows what comes back; after 收下 it
+// `feed(ids, fuel, press)` — the page's `fantong feed`, the rules' roll — and shows what comes back; after 收下 it
 // comes up again on the brief that feed answered with (full, until the cooldown is over). Nothing here knows the rules.
 //
 // One page, no 饭桶 tab (Hanli 11-03: 「可以, 按你说的做」): the 饭桶 docks in the 储物袋's own page (pouch.js) — beside the
@@ -24,13 +24,13 @@ const kailu = () => (game ??= import('./games/kailu.js'));
 // Its name and how-to, the shell's bar (games/kailu.js `meta`, which the 游戏厅 reads).
 const NAME = { zh: '喂饭桶 · 开炉', en: 'Feed the Rice Bucket' };
 const HOW = {
-  zh: '把最多三样东西拖进饭桶嘴里，可搭灵石。开炉后饭桶嚼着，盖子冒红烟、金烟——金烟冒起时按住压盖，品级升一档。',
-  en: 'Drag up to three things into its mouth, add spirit stones if you like. As it chews the lid puffs red and gold — press it down on a gold puff to lift the grade a notch.',
+  zh: '把最多三样东西拖进饭桶嘴里，可搭炉炭。开炉后饭桶嚼着，盖子冒红烟、金烟——金烟冒起时按住压盖，品级升一档。',
+  en: 'Drag up to three things into its mouth, add furnace charcoal if you like. As it chews the lid puffs red and gold — press it down on a gold puff to lift the grade a notch.',
 };
 
 const WORDS = {
-  zh: { title: '饭桶', fire: '开 炉', stones: '灵石', have: '有 {n}', max: '最多三样', place: '空', none: '不能喂', inPot: '在饭桶里', put: '放进饭桶', spare: '可喂 {n}', most: '最多', fold: '收起', unfold: '展开', out: '开出来的' },
-  en: { title: 'Rice Bucket', fire: 'Fire it', stones: 'Stones', have: 'have {n}', max: 'three at most', place: 'empty', none: "won't go in", inPot: 'in the pot', put: 'Into the bucket', spare: '{n} to spare', most: 'Max', fold: 'Fold', unfold: 'Open', out: 'Out of the pot' },
+  zh: { title: '饭桶', fire: '开 炉', fuel: '炉炭', have: '有 {n}', shop: '药铺有卖', max: '最多三样', place: '空', none: '不能喂', inPot: '在饭桶里', put: '放进饭桶', spare: '可喂 {n}', most: '最多', fold: '收起', unfold: '展开', out: '开出来的' },
+  en: { title: 'Rice Bucket', fire: 'Fire it', fuel: 'Charcoal', have: 'have {n}', shop: 'sold where pills are', max: 'three at most', place: 'empty', none: "won't go in", inPot: 'in the pot', put: 'Into the bucket', spare: '{n} to spare', most: 'Max', fold: 'Fold', unfold: 'Open', out: 'Out of the pot' },
 };
 const say = (t, v) => String(t).replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ''));
 
@@ -51,19 +51,19 @@ export function potOff(brief, pot, id, lang = 'zh', phase = 'fill') {
   if (pot.length >= (brief.max_in ?? 3)) return w.max;
   return phase === 'fill' && brief.ready !== false ? null : '';
 }
-/** The 灵石 quick picks for what he may put in (`most`: the cap, or what he has if less): 0 · 10 · half · all,
+/** The 炉炭 quick picks for what he may put in (`most`: the cap, or what he has if less): 0 · 1 · half · all,
     each once, in order. */
-export function stoneChips(most) {
+export function fuelChips(most) {
   const m = Math.max(0, Math.floor(most ?? 0));
-  return [...new Set([0, 10, Math.round(m / 2), m])].filter((v) => v <= m).sort((a, b) => a - b);
+  return [...new Set([0, 1, Math.round(m / 2), m])].filter((v) => v <= m).sort((a, b) => a - b);
 }
 /** The pot runs (chews, reveals): the 储物袋's grid folds away and the 饭桶 has the page. */
 export const potRuns = (phase) => ['chew', 'wait', 'reveal', 'done'].includes(phase);
 
 /** The 饭桶, docked in the 储物袋's page (Hanli 11-03: 「可以, 按你说的做」 — one page, no 饭桶 tab): the shell round the
-    host the live game is laid into, its three places, 灵石, what came out (its kind · effect · about, the 储物袋's own
+    host the live game is laid into, its three places, 炉炭, what came out (its kind · effect · about, the 储物袋's own
     lines) and 开炉, always in sight. Where it cannot be fed (a cooldown, a day's cap, no 饭桶 yet) it still stands,
-    dimmed, with the rules' reason (`o.off`, or the brief's `wait`). `o`: { brief, off, bag, pot, lingshi, phase, fold,
+    dimmed, with the rules' reason (`o.off`, or the brief's `wait`). `o`: { brief, off, bag, pot, fuel, phase, fold,
     outs, look, words (cards.js), artBase }. */
 export function kailuDockHtml(lang = 'zh', o = {}) {
   const L = lang === 'en' ? 'en' : 'zh', w = WORDS[L], b = o.brief ?? null, pot = o.pot ?? [], max = b?.max_in ?? 3;
@@ -75,10 +75,10 @@ export function kailuDockHtml(lang = 'zh', o = {}) {
     return it ? `<button class="ftk-place on" data-ft-slot="${k}" aria-label="${esc(it.name)}">${it.art ? `<img src="${esc(ctx.artBase + it.art)}" alt="">` : ''}<span>${esc(it.name)}</span></button>`
       : `<span class="ftk-place">${esc(w.place)}</span>`;
   }).join('');
-  const ls = b?.lingshi, lsMax = ls ? Math.min(ls.max ?? 0, ls.have ?? 0) : 0, n = o.lingshi ?? 0;
-  // −/＋ a stone at a time, and quick picks that scale with what he may put in (Hanli 11-04: the cap is 10 a 层).
-  const chips = stoneChips(lsMax).map((v) => `<button class="act quiet ftk-chip" data-ft-ls-set="${v}" aria-pressed="${n === v}"${!filling ? ' disabled' : ''}>${esc(v === lsMax && v > 0 ? w.most : v)}</button>`).join('');
-  const stones = ls && ls.max > 0 ? `<div class="ftk-ls"><span>${esc(w.stones)}</span><button class="act quiet" data-ft-ls="-1"${!filling || n <= 0 ? ' disabled' : ''}>−</button><b>${esc(n)}</b><button class="act quiet" data-ft-ls="1"${!filling || n >= lsMax ? ' disabled' : ''}>＋</button><small class="dim">${esc(say(w.have, { n: ls.have }))}</small></div>`
+  const ls = b?.fuel, lsMax = ls ? Math.min(ls.max ?? 0, ls.have ?? 0) : 0, n = o.fuel ?? 0;
+  // −/＋ a piece at a time, and quick picks that scale with what he may put in (a piece a 层); none held, the shelf is named.
+  const chips = fuelChips(lsMax).map((v) => `<button class="act quiet ftk-chip" data-ft-fuel-set="${v}" aria-pressed="${n === v}"${!filling ? ' disabled' : ''}>${esc(v === lsMax && v > 0 ? w.most : v)}</button>`).join('');
+  const stones = ls && ls.max > 0 ? `<div class="ftk-ls"><span>${esc(ls.name ?? w.fuel)}</span><button class="act quiet" data-ft-fuel="-1"${!filling || n <= 0 ? ' disabled' : ''}>−</button><b>${esc(n)}</b><button class="act quiet" data-ft-fuel="1"${!filling || n >= lsMax ? ' disabled' : ''}>＋</button><small class="dim">${esc(ls.have > 0 ? say(w.have, { n: ls.have }) : w.shop)}</small></div>`
     + (lsMax > 1 ? `<div class="ftk-chips">${chips}</div>` : '') : '';
   const why = !b ? o.off ?? '' : b.ready === false && !runs ? b.wait ?? '' : ''; // its own reveal first: the wait after it
   const wait = why ? `<p class="small dim ftk-wait">${esc(why)}</p>` : '';
@@ -112,10 +112,10 @@ export function fantongKailu({ feed, onFed = () => {}, onPhase = () => {}, onSta
     node.className = 'g-mountnode';
     const me = { node, ctrl, brief, game: null };
     cur = me;
-    onStart(brief); // a fresh pot: the page's places and 灵石 empty again
+    onStart(brief); // a fresh pot: the page's places and 炉炭 empty again
     attach();
-    const roll = async (ids, lingshi, press) => {
-      const r = await feed(ids, lingshi, press);
+    const roll = async (ids, fuel, press) => {
+      const r = await feed(ids, fuel, press);
       if (r?.fantong) latest = r.fantong;
       onFed(r);
       return r;
@@ -136,8 +136,8 @@ export function fantongKailu({ feed, onFed = () => {}, onPhase = () => {}, onSta
       attach();
     },
     attach, stop,
-    /** The page's pot and 灵石 into the live pot; 开炉. */
-    setPot: (ids, lingshi) => cur?.game?.setPot?.(ids, lingshi),
+    /** The page's pot and 炉炭 into the live pot; 开炉. */
+    setPot: (ids, fuel) => cur?.game?.setPot?.(ids, fuel),
     fire: () => cur?.game?.fire?.(),
     get live() { return Boolean(cur); },
   };

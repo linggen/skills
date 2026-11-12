@@ -1,4 +1,4 @@
-// kailu.js — 喂饭桶 · 开炉 (Hanli 2026-10-20): the 饭桶's lottery. Up to three things and 灵石 (10 a 层 of his realm) into its mouth, the lid
+// kailu.js — 喂饭桶 · 开炉 (Hanli 2026-10-20): the 饭桶's lottery. Up to three things and 炉炭 (one a 层 of his realm) into its mouth, the lid
 // pressed on a gold puff (压盖), and out spins one thing in its grade's glow — 凡 grey, 有用 blue, 珍品 purple, 逆天 gold.
 // The play is Phaser (games/kailu/kailu.min.mjs, built from tools/kailu/, loading the one shared
 // scripts/vendor/phaser.min.mjs); the odds are the rules' (rules/fantong.mjs on a save, rules/fantong-roll.mjs bare).
@@ -7,9 +7,9 @@
 //   mount(container, { lang, data, signal, reducedMotion, seed, shell, onEvent, onGame }) → Promise<{ won, stars, grade, result } | { left }>
 //   (`onGame(g)`: the live game's handle, `g.refresh()` after its node is laid into a new host.)
 //
-// `data` (the page, fantong-kailu.js): { brief: the rules' fantong brief, roll(ids, lingshi, press) → the `fantong feed`
-// answer, outside, onPhase(phase) }. `outside`: the tray, the three places, the 灵石 and 开炉 are the page's (the 物品
-// panel's bag, Hanli 11-02) — the handle's setPot(ids, lingshi) and fire() drive the pot, and the stage fills its host. Without it (the 游戏厅, the try page) it plays a sample pot on the bare table with no save and no wait —
+// `data` (the page, fantong-kailu.js): { brief: the rules' fantong brief, roll(ids, fuel, press) → the `fantong feed`
+// answer, outside, onPhase(phase) }. `outside`: the tray, the three places, the 炉炭 and 开炉 are the page's (the 物品
+// panel's bag, Hanli 11-02) — the handle's setPot(ids, fuel) and fire() drive the pot, and the stage fills its host. Without it (the 游戏厅, the try page) it plays a sample pot on the bare table with no save and no wait —
 // `?force=best` (or rare / useful) rolls until that grade, to look at a reveal. 银月's line at the reveal goes to the
 // shell's bubble (`shell.say`); the shell's result line reads the grade, its stars the grade's place (0–3).
 import { comicArt } from './items-comic.js';
@@ -21,8 +21,8 @@ export const meta = {
   bot: 'scripts/games/bots/kailu.js', // the book's pot (a story board): tests/story-gains.test.mjs
   name: { zh: '喂饭桶 · 开炉', en: 'Feed the Rice Bucket' },
   how: {
-    zh: '把最多三样东西拖进饭桶嘴里，可搭灵石。开炉后饭桶嚼着，盖子冒红烟、金烟——金烟冒起时按住压盖，品级升一档。',
-    en: 'Drag up to three things into its mouth, add spirit stones if you like. As it chews the lid puffs red and gold — press it down on a gold puff to lift the grade a notch.',
+    zh: '把最多三样东西拖进饭桶嘴里，可搭炉炭。开炉后饭桶嚼着，盖子冒红烟、金烟——金烟冒起时按住压盖，品级升一档。',
+    en: 'Drag up to three things into its mouth, add furnace charcoal if you like. As it chews the lid puffs red and gold — press it down on a gold puff to lift the grade a notch.',
   },
 };
 
@@ -52,14 +52,13 @@ async function tableOf(lang) {
   const pick = (o) => o?.[lang] ?? o?.zh ?? null;
   const words = t.words?.[lang] ?? t.words?.zh ?? {};
   const input = (id, n, over = {}) => { const kind = over.kind ?? fr.kindOf(t, id, (x) => t.item_info?.[x]); return { id, name: pick(over.name) ?? pick(byId.get(id)?.name) ?? id, art: over.art ?? byId.get(id)?.art, kind, fam: fr.familyOfKind(t, kind), tier: fr.tierOfItem(t, id), n }; };
-  const brief = (inputs, lingshi) => ({
+  const brief = (inputs, fuel) => ({
     ready: true, max_in: t.max_in ?? 3, tints: Object.fromEntries(Object.entries(t.kinds).filter(([k]) => k !== '_about').map(([k, v]) => [k, v.tint])),
-    grades: words.grades ?? {}, quips: words.quips ?? {}, lingshi,
+    grades: words.grades ?? {}, quips: words.quips ?? {}, fuel,
     leans: Object.fromEntries(Object.entries(t.families ?? {}).filter(([k]) => k !== '_about').map(([k, v]) => [k, pick(v.lean)])),
     inputs,
   });
-  const out = (id, grade) => (id === 'lingshi' ? { id, name: words.lingshi ?? (lang === 'en' ? 'Spirit stones' : '灵石'), grade, wealth: true }
-    : { id, name: pick(byId.get(id)?.name) ?? id, hint: pick(byId.get(id)?.hint), art: byId.get(id)?.art ?? null, grade });
+  const out = (id, grade) => ({ id, name: pick(byId.get(id)?.name) ?? id, hint: pick(byId.get(id)?.hint), art: byId.get(id)?.art ?? null, grade });
   return { t, byId, pick, words, input, brief, out, ...fr };
 }
 
@@ -81,26 +80,27 @@ export async function storyPot(lang, story) {
     const outs = story.pot.out.map((id) => out(id, 'best'));
     return { ok: true, outs, out: outs[0], grade: 'best', grade_name: words.grades?.best ?? 'best', story: true, first: outs.map((o) => o.id), power: 0, GRADES };
   };
-  return { brief: brief(inputs, { max: 0, have: 0 }), roll };
+  return { brief: brief(inputs, null), roll };
 }
 
 async function sample(lang, seed, force) {
   const { t, byId, pick, words, input, brief: briefOf, out: brief1, roll, shownOf, kindOf, familyOfKind, tierOfItem, GRADES } = await tableOf(lang);
-  const brief = briefOf(SAMPLE.filter((id) => byId.has(id)).map((id) => input(id, 9)), { max: t.lingshi?.max ?? t.lingshi?.min ?? 10, have: 9 });
+  const brief = briefOf(SAMPLE.filter((id) => byId.has(id)).map((id) => input(id, 9)),
+    { item: t.fuel.item, name: pick(byId.get(t.fuel.item)?.name), art: byId.get(t.fuel.item)?.art ?? null, max: t.fuel.min ?? 1, have: 9, stones: t.fuel.stones });
   let n = 0, dry = 0;
   const seen = new Set();
-  const rollOne = async (ids, lingshi, press) => {
+  const rollOne = async (ids, fuel, press) => {
     let r = null;
     for (let k = 0; k < 4000; k++) { // `force`: the 游戏厅's look at one grade's reveal, rolled for honestly until it comes (the grade SHOWN)
-      r = roll(t, { seed: `${seed}|${n}|${ids.join('+')}|${lingshi}|${k}`, ids, lingshi, press, pity: dry });
+      r = roll(t, { seed: `${seed}|${n}|${ids.join('+')}|${fuel}|${k}`, ids, fuel, press, pity: dry });
       if (!force || shownOf(r) === force) break;
     }
     n += 1;
     if (r.refused) return { ok: true, spat_back: true, say: words.spat_back, outs: [] };
     dry = r.outs.every((o) => o.grade === 'junk') ? dry + 1 : 0;
     // The grade told is the grade of what came out (rules/fantong-roll.mjs `shown`); a stones-only result is no 「新」.
-    const outs = r.outs.flatMap((o) => [{ ...brief1(o.out, shownOf(o)), ...(o.wealth ? { n: o.wealth } : {}) }, ...(o.with ? [brief1(o.with, shownOf(o))] : [])]);
-    const first = outs.filter((o) => !o.wealth).map((o) => o.id).filter((id) => !seen.has(id) && seen.add(id));
+    const outs = r.outs.flatMap((o) => [{ ...brief1(o.out, shownOf(o)), ...(o.n > 1 ? { n: o.n } : {}) }, ...(o.with ? [brief1(o.with, shownOf(o))] : [])]);
+    const first = outs.map((o) => o.id).filter((id) => !seen.has(id) && seen.add(id));
     const shown = shownOf(r);
     return { ok: true, outs, out: outs[0], grade: shown, grade_name: words.grades?.[shown] ?? shown, ...(r.twin ? { twin: true } : {}), first, power: r.power, GRADES };
   };

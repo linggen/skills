@@ -114,7 +114,7 @@ const rules = (verb, args = {}) => new Promise((resolve, reject) => {
 function dealOf(game, data, task) {
   const d = { ...data };
   if (game === 'jinchat' || game === 'drawguess') d.ask = ask(game);
-  if (game === 'kailu') d.roll = (ids, lingshi, press) => rules('fantong', { action: 'feed', ids: ids.join(','), lingshi: lingshi || 0, press: press ? 1 : 0 });
+  if (game === 'kailu') d.roll = (ids, fuel, press) => rules('fantong', { action: 'feed', ids: ids.join(','), fuel: fuel || 0, press: press ? 1 : 0 });
   if (d.begin && typeof d.begin === 'object') {
     const { verb, ...args } = d.begin;
     d.begin = async () => {

@@ -110,7 +110,7 @@ function tujianHtml(book, { lang, artBase, codex, codexKinds, codexOpen }) {
 /* 饭桶方子 — the 方子 found feeding the 饭桶 (rules/fantong.mjs), so he knows what to feed next. */
 function fantongBookHtml(recipes, w) {
   if (!recipes?.length) return '';
-  return `<section class="lusec lufantong"><h3>${esc(w.fantong)}</h3><p class="small dim">${esc(w.fantongNote)}</p>${recipes.map((r) => `<p class="lurecipe"><b>${esc(r.in)}</b>${r.lingshi ? ` + ${esc(r.lingshi)} 灵石` : ''} → <b>${esc(r.out)}</b></p>`).join('')}</section>`;
+  return `<section class="lusec lufantong"><h3>${esc(w.fantong)}</h3><p class="small dim">${esc(w.fantongNote)}</p>${recipes.map((r) => `<p class="lurecipe"><b>${esc(r.in)}</b>${r.fuel ? ` + ${esc(r.fuel)} 炉炭` : ''} → <b>${esc(r.out)}</b></p>`).join('')}</section>`;
 }
 
 /* 饭桶图鉴 — every thing the 饭桶 has spat out, the first time (rules/fantong.mjs fantongBook), junk too: its

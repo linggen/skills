@@ -139,6 +139,8 @@ export function minutesOf(raw, i, { fantong, cards, effects, ladder }) {
     if (e.fight?.mana) return C.mana * e.fight.mana;
     return null;
   }
+  // 开炉's fuel (items.json effect `kailu: 'fuel'`, Hanli 2026-11-12): a price class of its own, minutes of income at its level.
+  if (i.effect?.kailu === 'fuel') return C.fuel;
   const g = GEAR.has(i.kind) ? gearPoints(raw.master.fight?.gear, i) ?? i.effect : null;
   if (g && points(g)) return points(g) * C.gear[i.kind];
   if (i.effect?.card) return (C.card?.[i.kind] ?? C.card?.treasure ?? 0) * (cost(i.effect.card) + 1);

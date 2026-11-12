@@ -76,11 +76,13 @@ export function tierOfItem(t, id) {
 }
 const potTier = (t, ids) => Math.max(0, ...ids.map(id => tierOfItem(t, id)));
 /* The pot's power: what went in, who feeds it, the 灵石 (fantong.json odds.power). */
-export function powerOf(t, { tier = 0, realm = 0, lingshi = 0 }) {
+export function powerOf(t, { tier = 0, realm = 0, fuel = 0 }) {
   const p = t.odds?.power ?? {};
-  return (p.in ?? 1) * tier + (p.realm ?? 0) * realm + stonePower(p, lingshi);
+  return (p.in ?? 1) * tier + (p.realm ?? 0) * realm + stonePower(p, fuel * fuelStones(t));
 }
-/* The 灵石's share of the power: `lingshi` × ln(1 + 灵石) — each stone lifts the pot less than the one before. */
+/* The fuel's share of the power: `lingshi` × ln(1 + its 灵石) — each stone lifts the pot less than the one before. A piece of 炉炭 counts as
+   `fuel.stones` 灵石 did (Hanli 2026-11-12: the 饭桶 eats 炉炭 now), in the power and in the worth. */
+export const fuelStones = t => t.fuel?.stones ?? 10;
 export const stonePower = (p, n) => (n > 0 ? (p.lingshi ?? 0) * Math.log1p(n) : 0);
 
 /* The grade weights at a power: base × growth^power. */
@@ -102,7 +104,7 @@ export function worthOf(t, id, info = null) {
   const i = info?.(id), sell = i?.sell;
   return sell > 0 ? sell : i?.worth ?? t.worth?.tier?.[tierOfItem(t, id)] ?? 0;
 }
-export const potWorth = (t, ids, lingshi = 0, info = null) => ids.reduce((n, id) => n + worthOf(t, id, info), 0) + lingshi * lsWorth(t);
+export const potWorth = (t, ids, fuel = 0, info = null) => ids.reduce((n, id) => n + worthOf(t, id, info), 0) + fuel * fuelStones(t) * lsWorth(t);
 /* A grade's floor: minutes of income at the pot's level (`floor_ls`, batch 2), else a number of 灵石 (`floor`). */
 const floorOf = (t, grade) => { const g = t.worth?.grades?.[grade] ?? {}; return g.floor_ls != null ? g.floor_ls * (t.worth?.income ?? 1) : g.floor ?? 0; };
 export function targetOf(t, grade, worth) {
@@ -175,11 +177,11 @@ const withPotIncome = (t, ids, info) => {
   return { ...t, worth: { ...t.worth, income: incomeOf(x, L), reach_level: (realmOfLevel(L) + 2) * 9 } };
 };
 
-/* The roll: what one pot gives. `ids` what went in, `lingshi`, `realm` (his, as a number), `press` (the lid pressed on
+/* The roll: what one pot gives. `ids` what went in, `fuel` (pieces of 炉炭), `realm` (his, as a number), `press` (the lid pressed on
    a gold puff), `lift` (a thing that clears the furnace, spent on this pot), `herHere`, `pity` (the 凡 in a row before this), `recipe` (the 方子 row this pot is, or null),
    `story` (the book's fixed pot this is, or null), `open(row, beyond)` (a pool row this save may draw — `beyond`: for the
    glimpse; all, if not given), `info(id)` → { kind, sell } (items.json, for the kinds and the worth). */
-export function roll(t0, { seed, ids, lingshi = 0, realm = 0, press = false, lift = false, herHere = false, pity = 0, recipe = null, story = null, open = null, info = null }) {
+export function roll(t0, { seed, ids, fuel = 0, realm = 0, press = false, lift = false, herHere = false, pity = 0, recipe = null, story = null, open = null, info = null }) {
   info ??= infoOfTable(t0);
   const t = withPotIncome(t0, ids, info);
   const u = stream(hash(seed));
@@ -189,8 +191,8 @@ export function roll(t0, { seed, ids, lingshi = 0, realm = 0, press = false, lif
   const off = ev && herHere ? ev.chance ?? 0 : 0;
   if (quirk >= off && quirk < off + (q.refuse ?? 0)) return { refused: true, outs: [] };
   const twin = quirk >= off + (q.refuse ?? 0) && quirk < off + (q.refuse ?? 0) + (q.twin ?? 0);
-  const power = powerOf(t, { tier: potTier(t, ids), realm, lingshi });
-  const family = familyOf(t, ids, info), worth = potWorth(t, ids, lingshi, info);
+  const power = powerOf(t, { tier: potTier(t, ids), realm, fuel });
+  const family = familyOf(t, ids, info), worth = potWorth(t, ids, fuel, info);
   let glimpsed = false; // one glimpse to a pot, the twin's included
   const one = (pityNow) => {
     let grade = weighted(u(), gradeWeights(t, recipe ? 0 : power, recipe?.grades ?? t.odds?.grades));
@@ -226,11 +228,11 @@ export function roll(t0, { seed, ids, lingshi = 0, realm = 0, press = false, lif
    roll): item id → chance, grade → chance, the family it leans to, what went in is worth (`worth`) and what comes out
    is worth on average (`value`, 灵石; tools/numbers.mjs weighs the two). The glimpse is counted: its share of each grade's
    draws goes to the things above the pot's reach, where there are any within reach of the grade's worth. */
-export function odds(t0, { ids, lingshi = 0, realm = 0, press = false, pity = 0, open = null, info = null }) {
+export function odds(t0, { ids, fuel = 0, realm = 0, press = false, pity = 0, open = null, info = null }) {
   info ??= infoOfTable(t0);
   const t = withPotIncome(t0, ids, info);
-  const power = powerOf(t, { tier: potTier(t, ids), realm, lingshi });
-  const family = familyOf(t, ids, info), worth = potWorth(t, ids, lingshi, info);
+  const power = powerOf(t, { tier: potTier(t, ids), realm, fuel });
+  const family = familyOf(t, ids, info), worth = potWorth(t, ids, fuel, info);
   const gw = gradeWeights(t, power), total = gw.reduce((n, [, w]) => n + w, 0);
   const rolled = Object.fromEntries(GRADES.map(g => [g, 0]));
   for (const [g, w] of gw) {

@@ -16,7 +16,6 @@ import { dayKey, itemName, layerNo, pick } from '../state.mjs';
 import { clone, refuse } from './core.mjs';
 import { itemOf } from './errands.mjs';
 import { huiNow, huiOrder } from './hui.mjs';
-import { isLocked } from './locks.mjs';
 import { freeSlot, hasFound, pouchBrief, stow, fullLine } from './pouch.mjs';
 import { LINGSHI, familyOfKind, kindOf, odds, roll, shownOf, tierOfItem } from './fantong-roll.mjs';
 
@@ -40,16 +39,16 @@ export function realmOf(content, state, t = tableOf(content)) {
   return per * (at + Math.min(1, (state.step ?? 0) / steps));
 }
 
-/* The 灵石 a pot may take (Hanli 11-04: 「按当前层数*10, 筑基圆满就是(9+9)*10」): `lingshi.per_layer` × his running
-   层 — counted on across the realms (练气一层 1 … 九层 9, 筑基一层 10 … 九层 18) — and never under `lingshi.min`
-   (练气零层 still 10). A table with a plain `max` keeps it. */
+/* The 炉炭 a pot may take (Hanli 11-04: 「按当前层数」, the 灵石 cap ÷ 10 since 2026-11-12): `fuel.per_layer` × his running
+   层 — counted on across the realms (练气一层 1 … 九层 9, 筑基一层 10 … 九层 18) — and never under `fuel.min`
+   (练气零层 still 1). A table with a plain `max` keeps it. */
 export function layerIndex(content, state) {
   const tiers = content.ladder?.tiers ?? [], at = Math.max(0, tiers.findIndex(x => x.id === state.tier));
   const below = tiers.slice(0, at).reduce((n, x) => n + (x.thresholds?.length ?? 0) - (x.zero ? 1 : 0), 0);
   return below + (tiers[at] ? layerNo(content, tiers[at].id, state.step ?? 0) : 0);
 }
-export function lingshiCap(content, state, t = tableOf(content)) {
-  const L = t?.lingshi ?? {};
+export function fuelCap(content, state, t = tableOf(content)) {
+  const L = t?.fuel ?? {};
   if (L.per_layer == null) return L.max ?? 0;
   return Math.max(L.min ?? 0, L.per_layer * layerIndex(content, state));
 }
@@ -80,15 +79,15 @@ const sameSet = (a, b) => a.length === b.length && [...a].sort().join('|') === [
 const liveStory = (content, t) => (t.recipes?.story?.list ?? []).filter(r => !content || r.in.every(id => itemOf(content, id)));
 const storyFor = (content, t, ids) => liveStory(content, t).find(r => sameSet(r.in, ids)) ?? null;
 const storyIn = (content, t, ids) => liveStory(content, t).filter(r => ids.some(id => r.in.includes(id)));
-const recipeFor = (t, ids, lingshi, found = null, content = null, state = null) => (ids.length === 1
-  ? (t.recipes?.list ?? []).find(r => r.in === ids[0] && (r.lingshi ?? 0) === lingshi && (!r.pages || found?.includes(r.id))
+const recipeFor = (t, ids, fuel, found = null, content = null, state = null) => (ids.length === 1
+  ? (t.recipes?.list ?? []).find(r => r.in === ids[0] && (r.fuel ?? 0) === fuel && (!r.pages || found?.includes(r.id))
     && rowOpen(content, state, t, { hui: r.hui })) ?? null : null);
 
 /* The roll on a save (or bare, for the tests): the 方子 and the book's pot resolved here, the pools gated by `content`
    and `state` when given (rules/fantong-roll.mjs roll). `found`: the 方子 known. */
 export function rollFeed(t, { ids, id, found = null, content = null, state = null, ...o }) {
   ids = ids ?? (id ? [id] : []);
-  return roll(t, { ...o, ids, recipe: recipeFor(t, ids, o.lingshi ?? 0, found, content, state), story: storyFor(content, t, ids),
+  return roll(t, { ...o, ids, recipe: recipeFor(t, ids, o.fuel ?? 0, found, content, state), story: storyFor(content, t, ids),
     open: content && state ? (r, beyond) => rowOpen(content, state, t, r, beyond) : null });
 }
 /* Its exact odds (fantong-roll.mjs odds), gated the same way. */
@@ -106,11 +105,12 @@ function readAhead(content, state, id) {
 const keptOf = (content, t, state, id) => (readAhead(content, state, id) ? t.keep?.items?.[id] ?? 0 : 0);
 const spareOf = (content, t, state, id) => Math.max(0, (state.bag?.[id] ?? 0) - keptOf(content, t, state, id));
 /* Why a thing of the bag may not go in, as a reason the board names on its tile (Hanli 11-02: what cannot be fed
-   still shows, dimmed, with why): `needs` the bucket itself · `worn` · `story` (a thing the story needs, never in,
+   still shows, dimmed, with why): `needs` the bucket itself · `fuel` the 炉炭 · `worn` · `story` (a thing the story needs, never in,
    or the book's pot waiting on its scene) · `keep` (all he has is what the story still reads). null: it may. */
 function whyNot(content, state, t, id) {
   if (!id || !itemOf(content, id)) return 'unknown';
   if (id === t.needs?.item) return 'needs';
+  if (id === t.fuel?.item) return 'fuel'; // bought to burn in the pot, never put in it
   if (Object.values(state.wear ?? {}).includes(id)) return 'worn';
   if (freeSlot(content, state, id)) return 'story';
   if ((t.never?.kinds ?? []).includes(itemOf(content, id).kind) || (t.never?.items ?? []).includes(id)) return 'story';
@@ -167,7 +167,7 @@ export function fantongRecipes(content, state) {
   if (!t) return [];
   const found = state.fantong?.recipes ?? [];
   return (t.recipes?.list ?? []).filter(r => found.includes(r.id)).map(r => ({
-    id: r.id, in: itemName(itemOf(content, r.in), state, lang) ?? r.in, lingshi: r.lingshi ?? 0, out: itemName(itemOf(content, r.out), state, lang) ?? r.out,
+    id: r.id, in: itemName(itemOf(content, r.in), state, lang) ?? r.in, fuel: r.fuel ?? 0, out: itemName(itemOf(content, r.out), state, lang) ?? r.out,
   }));
 }
 
@@ -200,6 +200,12 @@ export function fantongBook(content, state) {
   };
 }
 
+/* The fuel the pot may take: the thing, how many his 层 lets in, how many he holds, and how many 灵石 a piece counts as. */
+function fuelBrief(content, state, t, lang) {
+  const id = t.fuel?.item, item = itemOf(content, id);
+  return item ? { item: id, name: itemName(item, state, lang) ?? id, art: item.art ?? null, max: fuelCap(content, state, t), have: state.bag?.[id] ?? 0, stones: t.fuel.stones ?? 10 } : null;
+}
+
 /* The board's reading: may it eat now, when next, what he can feed, the lean colours. */
 export function fantongBrief(content, state, now) {
   const t = tableOf(content), lang = state.lang;
@@ -212,13 +218,12 @@ export function fantongBrief(content, state, now) {
   });
   // The line the board says of the pot before 开炉 (games/kailu.js, the same rule as the roll's familyOf).
   const leans = Object.fromEntries(Object.entries(t.families ?? {}).filter(([k]) => k !== '_about').map(([k, v]) => [k, pick(v.lean, lang) ?? null]));
-  const locked = isLocked(content, state, 'wealth');
   const tints = Object.fromEntries(Object.entries(t.kinds ?? {}).filter(([k]) => k !== '_about').map(([k, v]) => [k, v.tint ?? null]));
   return {
     name: itemName(itemOf(content, t.needs.item), state, lang), ready: !next, ...(next ? { next_at: next.toISOString(), wait: fullSay(t, lang, next, now) } : {}),
     limit: { ...(t.limit?.cooldown_min ? { cooldown_min: t.limit.cooldown_min } : {}), ...(t.limit?.per_day ? { per_day: t.limit.per_day, today: state.fantong?.day === dayKey(now) ? state.fantong.today ?? 0 : 0 } : {}) },
     inputs, held_back: heldBack(content, state, t), leans, max_in: t.max_in ?? 3, tints, grades: wordsOf(t, lang).grades ?? {}, quips: wordsOf(t, lang).quips ?? {},
-    lingshi: locked ? null : { max: lingshiCap(content, state, t), have: state.wealth ?? 0 },
+    fuel: fuelBrief(content, state, t, lang),
     recipes: fantongRecipes(content, state), fed: state.fantong?.n ?? 0, seen: seenOf(state).length, of: new Set([...fantongAll(t, content, state), ...seenOf(state).map(s => s.id)]).size,
   };
 }
@@ -228,7 +233,7 @@ const ACTIONS = {
   feed: feed,
 };
 
-/* Fantong — `look`, or `feed --ids=a,b,c [--lingshi=n] [--press=1]` (`--id=x` is a pot of one). */
+/* Fantong — `look`, or `feed --ids=a,b,c [--fuel=n] [--press=1]` (`--id=x` is a pot of one). */
 export function fantong(state, content, ctx, args = {}) {
   const t = tableOf(content);
   if (!t) return refuse('no-fantong', null);
@@ -246,7 +251,7 @@ const idsOf = args => (Array.isArray(args.ids) ? args.ids : String(args.ids ?? a
 
 function feed(state, content, ctx, args, t) {
   const lang = state.lang, w = wordsOf(t, lang), now = ctx.now;
-  const ids = idsOf(args), lingshi = Number(args.lingshi ?? 0) || 0, press = Number(args.press ?? 0) > 0;
+  const ids = idsOf(args), fuel = Number(args.fuel ?? 0) || 0, press = Number(args.press ?? 0) > 0;
   if (!ids.length) return refuse('not-feedable', w.not_feedable ?? null);
   if (ids.length > (t.max_in ?? 3)) return refuse('too-many', w.too_many ?? null);
   // Each thing in the pot must be fed — and a stack must hold as many as the pot asks of it.
@@ -257,8 +262,9 @@ function feed(state, content, ctx, args, t) {
     how[id] = feedable(content, state, t, id);
     if (!how[id] || spareOf(content, t, state, id) < n) return refuse('not-feedable', w.not_feedable ?? null, { id });
   }
-  if (!Number.isInteger(lingshi) || lingshi < 0 || lingshi > lingshiCap(content, state, t)) return refuse('bad-lingshi', null);
-  if (lingshi && (isLocked(content, state, 'wealth') || (state.wealth ?? 0) < lingshi)) return refuse('no-lingshi', w.no_lingshi ?? null);
+  // (A call from before 2026-11-12 may still send `lingshi`: it is read as no fuel, without a word.)
+  if (!Number.isInteger(fuel) || fuel < 0 || fuel > fuelCap(content, state, t)) return refuse('bad-fuel', null);
+  if (fuel && (state.bag?.[t.fuel.item] ?? 0) < fuel) return refuse('no-fuel', w.no_fuel ?? null);
   const next = nextAt(t, state, now);
   if (next) return refuse('full', fullSay(t, lang, next, now), { next_at: next.toISOString() });
   // The book's pot, once its thing is his: refused, nothing spent.
@@ -271,7 +277,7 @@ function feed(state, content, ctx, args, t) {
   // A thing in the bag that clears the furnace (effect `kailu: 'lift'`) lifts this pot a notch and is spent with it.
   const lift = liftOf(content, state, ids);
   const roll = rollFeed(t, {
-    seed: `${state.world}|${state.name ?? ''}|${today}|${n}|${[...ids].sort().join('+')}|${lingshi}${f.spat ? `|${f.spat}` : ''}`, ids, lingshi, press, lift: Boolean(lift), herHere,
+    seed: `${state.world}|${state.name ?? ''}|${today}|${n}|${[...ids].sort().join('+')}|${fuel}${f.spat ? `|${f.spat}` : ''}`, ids, fuel, press, lift: Boolean(lift), herHere,
     realm: realmOf(content, state, t), pity: f.dry ?? 0, found: f.recipes ?? [], content, state,
   });
   // It chews and spits the pot back whole: nothing spent, no wait — the gag, not a loss.
@@ -279,12 +285,12 @@ function feed(state, content, ctx, args, t) {
   if (roll.refused) {
     const s = clone(state);
     s.fantong = { ...f, spat: (f.spat ?? 0) + 1 };
-    return { state: s, result: { ok: true, spat_back: true, say: w.spat_back, fed: { ids, lingshi }, outs: [], fantong: fantongBrief(content, s, now) } };
+    return { state: s, result: { ok: true, spat_back: true, say: w.spat_back, fed: { ids, fuel }, outs: [], fantong: fantongBrief(content, s, now) } };
   }
 
   const s = clone(state);
   for (const [id, k] of Object.entries(need)) { s.bag[id] -= k; if (s.bag[id] <= 0) delete s.bag[id]; }
-  if (lingshi) s.wealth = (s.wealth ?? 0) - lingshi;
+  if (fuel) { s.bag[t.fuel.item] -= fuel; if (s.bag[t.fuel.item] <= 0) delete s.bag[t.fuel.item]; }
   const lifted = lift && !roll.story && !roll.event ? lift : null;
   if (lifted) { s.bag[lifted] -= 1; if (s.bag[lifted] <= 0) delete s.bag[lifted]; }
   // Into the pouch: every output (the twin too), and a thing's companion (含笑半步颠 · 止笑丸).
@@ -306,7 +312,7 @@ function feed(state, content, ctx, args, t) {
   const dry = roll.outs.every(o => o.grade === 'junk') && !roll.event ? (f.dry ?? 0) + 1 : 0;
   s.fantong = { ...f, n: n + 1, at: now.toISOString(), day: today, today: (f.day === today ? f.today ?? 0 : 0) + 1, recipes: [...found],
     seen, dry, spat: 0, ...(P ? { pages } : {}),
-    last: { in: ids, out: roll.out, lingshi, grade: roll.grade, shown: shownOf(roll), press } };
+    last: { in: ids, out: roll.out, fuel, grade: roll.grade, shown: shownOf(roll), press } };
   delete s.fantong.stars;
 
   const briefs = landed.map(l => outBrief(content, s, t, l.got, l.grade));
@@ -320,7 +326,7 @@ function feed(state, content, ctx, args, t) {
   const shown = shownOf(roll), nextNow = nextAt(t, s, now);
   const newRecipe = discovered ?? paged;
   return { state: s, result: {
-    ok: true, fed: { ids, id: ids[0], names: ids.map(id => itemName(itemOf(content, id), s, lang) ?? id), name: ids.map(id => itemName(itemOf(content, id), s, lang) ?? id).join(lang === 'en' ? ', ' : '、'), lingshi, press },
+    ok: true, fed: { ids, id: ids[0], names: ids.map(id => itemName(itemOf(content, id), s, lang) ?? id), name: ids.map(id => itemName(itemOf(content, id), s, lang) ?? id).join(lang === 'en' ? ', ' : '、'), fuel, press },
     out, ...(extra ? { with: extra } : {}), ...(twin ? { twin } : {}), outs: briefs,
     // `grade` here is what the page and the play show: the grade of what came out. The grade rolled is `rolled`.
     grade: shown, grade_name: wordsOf(t, lang).grades?.[shown] ?? shown, rolled: roll.grade,

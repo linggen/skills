@@ -96,9 +96,9 @@ import { devArcade } from './dev-arcade.js';
 import { carriesPiece, playSetPiece, setpieceBeats, setpieceOf } from './setpiece.js';
 import { afterBook, atTurn, atTurnCards, bookAhead, boxGivesWay, gameAlone, huiLineOf, momentMay, momentsHold, trayWaits } from './queue.js';
 // 喂饭桶 · 开炉 (fantong-kailu.js): the game is made once here, so every draw may lay it into its host.
-const ftKailu = fantongKailu({ feed: (ids, lingshi, press) => feedFantong(ids, lingshi, press), onFed: (r) => fedFantong(r),
+const ftKailu = fantongKailu({ feed: (ids, fuel, press) => feedFantong(ids, fuel, press), onFed: (r) => fedFantong(r),
   // The pot's beat: while it chews and reveals, the bag folds away (fantong-kailu.js `busy`); a fresh pot empties the places.
-  onPhase: (p) => { if (view.ftPhase !== p) show({ ftPhase: p }); }, onStart: () => keep({ ftPot: [], ftLingshi: 0, ftOuts: null }) });
+  onPhase: (p) => { if (view.ftPhase !== p) show({ ftPhase: p }); }, onStart: () => keep({ ftPot: [], ftFuel: 0, ftOuts: null }) });
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
@@ -418,7 +418,7 @@ const view = {
   ftPot: [], //         the 饭桶's three places, the page's own until 开炉 (fantong-kailu.js)
   ftFold: false, //      the docked 饭桶 folded (a phone held upright: the grid first, 开炉 still in sight)
   ftOuts: null, //       what the last 开炉 brought out, said under the pot while it reveals
-  ftLingshi: 0, //      …and its 灵石
+  ftFuel: 0, //      …and its 炉炭
   ftPhase: 'fill', //   the pot's beat (play.js): fill · chew · wait · reveal · done · full
   pangluLast: null, //   the 旁炉's last batch here (rules/panglu.mjs fire): its outcome and words, shown in its pane
   handin: null, //       an errand handed in: { place, title, seen, paid }, until put away or walked on
@@ -3752,7 +3752,7 @@ function drawPouch() {
   if (!open) { drawnPouch = null; ftKailu.stop(); return; }
   // The 饭桶 docks in the grid's page (fantong-kailu.js): shown once it is read — its brief, or the rules' reason it is not his yet.
   const docked = !view.pouchPane && view.gear && (view.fantong || view.fantongOff);
-  const fantongDock = docked ? kailuDockHtml(lang(), { brief: view.fantong, off: view.fantongOff, bag: view.gear?.bag ?? [], pot: view.ftPot, lingshi: view.ftLingshi,
+  const fantongDock = docked ? kailuDockHtml(lang(), { brief: view.fantong, off: view.fantongOff, bag: view.gear?.bag ?? [], pot: view.ftPot, fuel: view.ftFuel,
     phase: view.ftPhase, fold: view.ftFold, outs: view.ftOuts, look, words: words(), artBase: artBase() }) : null;
   const ftOff = view.fantong && !view.pouchPane ? (id) => potOff(view.fantong, view.ftPot, id, lang(), view.ftPhase ?? 'fill') : null;
   const html = pouchHtml({ ...ctx(), gear: view.gear, gearNote: view.gearNote, artBase: artBase(), catalog: cardCatalog(), fantongDock, pangluLast: view.pangluLast, sealBook: view.sealBook },
@@ -3763,15 +3763,15 @@ function drawPouch() {
 }
 
 /* 开炉's places, from the bag on the same page: a tile in (the first empty place, as many as the bag spares), a place
-   out, the 灵石 up or down, 开炉 — the page's own pot, handed to the live game (fantong-kailu.js); no write until 开炉. */
+   out, the 炉炭 up or down, 开炉 — the page's own pot, handed to the live game (fantong-kailu.js); no write until 开炉. */
 function ftAdd(id) {
   const b = view.fantong, pot = view.ftPot;
   if (!b || b.ready === false || view.ftPhase !== 'fill' || pot.length >= (b.max_in ?? 3) || !(potLeft(b, pot)[id] > 0)) return;
-  ftSet([...pot, id], view.ftLingshi);
+  ftSet([...pot, id], view.ftFuel);
 }
-function ftSet(pot, lingshi) {
-  show({ ftPot: pot, ftLingshi: lingshi });
-  ftKailu.setPot(pot, lingshi);
+function ftSet(pot, fuel) {
+  show({ ftPot: pot, ftFuel: fuel });
+  ftKailu.setPot(pot, fuel);
 }
 /* A tap picks a tile and shows what it is (its detail's 放进饭桶 is ftAdd); on the Mac a tile that may go in can also be
    dragged onto the docked 饭桶, straight in. */
@@ -3786,10 +3786,10 @@ document.addEventListener('drop', (e) => {
   const id = e.dataTransfer?.getData('text/plain');
   if (id) ftAdd(id);
 });
-function ftStones(d, to = null) {
-  const ls = view.fantong?.lingshi;
+function ftFuelSet(d, to = null) {
+  const ls = view.fantong?.fuel;
   if (!ls || view.ftPhase !== 'fill') return;
-  ftSet(view.ftPot, Math.max(0, Math.min(ls.max ?? 0, ls.have ?? 0, to ?? view.ftLingshi + d)));
+  ftSet(view.ftPot, Math.max(0, Math.min(ls.max ?? 0, ls.have ?? 0, to ?? view.ftFuel + d)));
 }
 
 /* 喂饭桶 · 开炉 (rules/fantong.mjs): the brief, read when the pane opens and again when the bucket may eat; a feed is
@@ -3799,7 +3799,7 @@ async function loadFantong() {
   // Not his yet (`no-fantong`): the dock still stands, dimmed, with the rules' words for why.
   if (view.gearOpen) show({ fantong: r?.fantong ?? null, fantongOff: r?.fantong ? null : r?.say || null });
 }
-const feedFantong = (ids, lingshi, press) => write('fantong', { action: 'feed', ids: ids.join(','), lingshi: lingshi || 0, press: press ? 1 : 0 }).catch(failed);
+const feedFantong = (ids, fuel, press) => write('fantong', { action: 'feed', ids: ids.join(','), fuel: fuel || 0, press: press ? 1 : 0 }).catch(failed);
 /* What came out lands in the bag: the panel and the page read it again (the game keeps showing its reveal). */
 async function fedFantong(r) {
   if (!r?.ok) return;
@@ -4335,9 +4335,9 @@ const CLICKS = [
   ['[data-toss-yes]', (el) => run(`bag:toss:${el.dataset.tossYes}`, () => bagTap('toss', el.dataset.tossYes))],
   ['[data-ft-fold]', () => show({ ftFold: !view.ftFold })],
   ['[data-ft-put]', (el) => ftAdd(el.dataset.ftPut)],
-  ['[data-ft-slot]', (el) => { if (view.ftPhase === 'fill') ftSet(view.ftPot.filter((_, k) => k !== Number(el.dataset.ftSlot)), view.ftLingshi); }],
-  ['[data-ft-ls]', (el) => ftStones(Number(el.dataset.ftLs))],
-  ['[data-ft-ls-set]', (el) => ftStones(0, Number(el.dataset.ftLsSet))],
+  ['[data-ft-slot]', (el) => { if (view.ftPhase === 'fill') ftSet(view.ftPot.filter((_, k) => k !== Number(el.dataset.ftSlot)), view.ftFuel); }],
+  ['[data-ft-fuel]', (el) => ftFuelSet(Number(el.dataset.ftFuel))],
+  ['[data-ft-fuel-set]', (el) => ftFuelSet(0, Number(el.dataset.ftFuelSet))],
   ['[data-ft-fire]', () => { if (view.ftPot.length && view.ftPhase === 'fill') ftKailu.fire(); }],
   ['[data-offer-swap]', (el) => run(`offer:swap:${el.dataset.offerSwap}`, () => offerSwap(el.dataset.offerSwap || null))],
   ['[data-offer-drop]', (el) => run(`offer:drop:${el.dataset.offerDrop}`, () => offerTap('swap', { id: el.dataset.offerDrop, take: view.offerSwap }))],
