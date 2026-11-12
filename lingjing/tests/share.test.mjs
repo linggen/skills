@@ -171,17 +171,19 @@ test('share words alternate by local day and a menu refresh preserves the stamp'
   assert.deepEqual(b.how, MENU[0].turns[turnOf(next)].how);
 });
 
-test('reading chores refreshes yesterday’s menu on disk without a new stamp', async () => {
+test('reading chores shows today’s words without changing yesterday’s file', async () => {
   const { readQuests } = await import('../scripts/rules/files.mjs');
   const dir = tmp(), today = new Date(), yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1, 12);
   const file = path.join(dir, 'lingjing.json');
-  fs.writeFileSync(file, JSON.stringify(merged(null, { [SHARE]: yesterday.toISOString() }, MENU, yesterday)));
+  const original = JSON.stringify(merged(null, { [SHARE]: yesterday.toISOString() }, MENU, yesterday));
+  fs.writeFileSync(file, original);
   withQuests(dir, () => {
     const seen = readQuests().find(q => q.id === SHARE);
-    const stored = JSON.parse(fs.readFileSync(file, 'utf8')).quests[0];
+    assert.notDeepEqual(JSON.parse(original).quests[0].title, MENU[0].turns[turnOf(today)].title);
     assert.deepEqual(seen.title, MENU[0].turns[turnOf(today)].title);
-    assert.deepEqual(stored.title, seen.title);
-    assert.equal(stored.done_at, yesterday.toISOString());
+    assert.deepEqual(seen.how, MENU[0].turns[turnOf(today)].how);
+    assert.equal(seen.done_at, yesterday.toISOString());
+    assert.equal(fs.readFileSync(file, 'utf8'), original);
   });
   fs.rmSync(dir, { recursive: true, force: true });
 });

@@ -7,7 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { cardOf, madeWorldDir, overlayOf } from '../content.mjs';
 import { newState } from '../state.mjs';
-import { publish } from '../quest.mjs';
+import { worded } from '../quest.mjs';
 
 /* ── Files and the command line ── */
 
@@ -166,8 +166,6 @@ function withLock(file, fn, busy) {
 }
 
 function readQuests() {
-  const writable = questsWriteDir();
-  if (writable) { try { publish({ dir: writable }); } catch { /* a menu that cannot be written never stops a read */ } }
   const dir = questsDir();
   if (!fs.existsSync(dir)) return [];
   const quests = [];
@@ -177,7 +175,8 @@ function readQuests() {
       for (const q of doc.quests ?? []) quests.push({ ...q, app: doc.app });
     } catch { /* an app's half-written file is skipped, never fatal */ }
   }
-  return oneRowEach(quests, clock());
+  const now = clock();
+  return oneRowEach(quests, now).map(q => worded(q, now));
 }
 
 /* A `done_at` past `now` is no time a thing was done (a clock set wrong, a test's stamp that reached the real file —

@@ -44,6 +44,11 @@ export function later(a, b) {
 
 export const turnOf = (now) => ((Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000) % 2) + 2) % 2;
 
+export function worded(row, now = new Date()) {
+  const turns = MENU.find(m => m.id === row?.id)?.turns;
+  return turns ? { ...row, ...turns[turnOf(now) % turns.length] } : row;
+}
+
 /* The file's next body: the menu, each `done_at` the later of what the file held and `stamps` (id → time); `due` always. */
 export function merged(doc, stamps = {}, menu = MENU, now = new Date()) {
   // A held `done_at` past now was never a share (a wrong clock, a test's stamp): dropped, so a real one can replace it.
