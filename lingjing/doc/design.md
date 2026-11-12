@@ -1491,6 +1491,33 @@ Over v1 (below). rules/fortune.mjs · qian.json · qian-reading.js · qian-facts
   without 忌 · the 宜 kind's tie-break by the last line · 12 kept friends · the friend's 称呼 kept out of the log even when
   kept · her line kept per browser, not in the save · a 签 drawn before v2 shipped may read another 宜 kind now (its tag).
 
+## 耗材 — what 灵石 is for 【设计 2026-11-12】
+
+His calls, 2026-11-12, playing at 练气九层 with 3600 灵石 and eleven 秘境令 unused: *目前灵石3.6K了, 没有消耗的地方, 奖励调低点* ·
+*灵石还要有用的地方, 目前开销不够* · *耗材要好好设计一下, 目前秘境令基本上用不完, 没刷秘境就圆满了. 打怪也用不到丹药, 符箓.
+饭桶吞的灵石也不够多, 现在饭桶直接吞, 可否改成吞耗材, 让用户去买. 另, 闭关涨修为也要消耗灵石, 修炼可以从灵石里吸取灵力* ·
+*现在日常小游戏, 任务已经够刷到圆满了, 可以减少一些, 让用户买秘境令*. Measured that day (tools/balance.mjs --wealth): a
+typical player took in 58 灵石 a day and spent 7; `economy.earn` 0.5 made it 32.
+
+- **Each loop has its own thing to use up, and the thing is bought.** 闭关: 灵石 itself. The 饭桶 and the 旁炉: 炉炭 (new, in
+  grades). 斗法: 丹药 and 符 (they matter once the fights are fair, § 斗法 v4). The 秘境: the 秘境令.
+- **A layer's 修为 comes from three places, and only one of them is free.** The story, the small games, the errands and
+  the day's 人间功课 fill about half a layer; the 秘境 (a 令 a run) and 闭关 (灵石 an hour) fill the rest. Today the free
+  half alone reaches 圆满.
+- **Never a wall.** With no 灵石 a 闭关 still grows 修为, slowly (吐纳), and the free half keeps paying on its falling
+  replay share: a player who buys nothing finishes the layer in more days, never not at all.
+- **秘境令 is bought.** The free drops shrink to an occasional one (兽潮's night); the shelf sells it, each one dearer
+  than the last that day. A run pays more of the layer than it does now.
+- **闭关 draws on 灵石.** An hour of 修为 burns a size of 灵石 set like every price (minutes of income at his level);
+  nothing burns once the bar is full, and the hour's 修为 costs more than the 0.25 a 修为 the full bar pays back, so the
+  two never make a loop.
+- **The 饭桶 eats 炉炭, not 灵石.** Bought at the shelf, graded; more lifts the pot along today's falling curve. A 旁炉
+  batch burns one.
+- **Numbers.** Shares, sizes and prices are knobs in balance.json's master; they are set only after the pacing tool shows
+  days a layer and the 灵石 flow, before and after, for the light, typical and heavy player.
+- **Order.** 闭关's 灵石 and the 饭桶's 炉炭 first (they bite at once); the lower free share and the bought 令 with them;
+  丹药 and 符 with the fair fights; card crafting with the collection.
+
 ## 体力 and 闭关 【已建】
 
 - **体力是控制单次游戏时长的: 1 体力 ≈ 1 分钟** (Hanli 2026-11-02, a standing rule: 「体力是控制单次游戏时长的」 · 「或者简单点, 给用户100体力, 1体力玩大约1分钟?」). The pool (`rewards.json → stamina`) is **100**; a spent pool rests until whole (`rest` 100); shown as points. A full pool is about 100 minutes of the acts that spend it — reading the book's text and walking the story's road spend nothing, so a real sitting runs longer.
