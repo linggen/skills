@@ -1508,8 +1508,8 @@ Measured: a typical player took in 58 灵石 a day and spent 7; `economy.earn` 0
 
 - **体力 is the day's budget, and the 秘境 is what it buys** (原神's 树脂). The 秘境令 goes (*秘境令去掉可以*): a run is paid
   once at the door (*进门一次付清*) — about what its rooms cost together today — and nothing inside costs 体力, so he is
-  never stranded in a run. Leaving early ends the run and keeps part of the loot, as now. 体力 can be topped up with 灵石
-  a few times a day, each time dearer.
+  never stranded in a run. Leaving early ends the run and keeps part of the loot, as now. 体力 is never bought
+  (*花灵石补体力不用做*); what rations the 秘境 is the day's count of runs, as now.
 - **The free half.** The story, the small games, the errands and the day's 人间功课 fill about half a layer; the 秘境 and
   闭关 fill the rest. Today the free half alone reaches 圆满. Never a wall: a player who spends nothing finishes later,
   not never.
@@ -1531,13 +1531,28 @@ Measured: a typical player took in 58 灵石 a day and spent 7; `economy.earn` 0
   一定概率出差的东西, 不能每次都赚*). Its pool is the item book (items.json) by rule, not a hand list: every thing a player
   may hold, less what the story alone gives (`never`), each weighed by how near its worth stands to what the roll asks;
   a few things only it gives; and, rarely, a thing from further on than he has reached, as a glimpse. Junk in, junk
-  out: no floor lifts a poor pot. It never gives 灵石. Whether it eats a bought fuel instead of 灵石 is open.
+  out: no floor lifts a poor pot. It never gives 灵石, and it no longer eats them: what lifts a pot is 炉炭, bought at
+  the shelf (*现在饭桶直接吞, 可否改成吞耗材, 让用户去买*).
 - **The 旁炉 is put away** (*旁炉好像用处不大, 先去掉?* — built that day: panglu.json `on: false`).
 - **Numbers.** Shares, sizes and prices are knobs in balance.json's master, set only after the pacing tool shows days a
   layer and the 灵石 flow, before and after, for the light, typical and heavy player. His own save may be moved straight
   to the new numbers (*我现在的进度无所谓, 可以直接修改到新模型下*).
-- **Order.** The 秘境 on 体力 and the lower free share; 闭关's 灵石; the 饭桶 over the item book; 丹药 and 符 with the fair
-  fights; the cards with § 斗法 v4.
+- **The first numbers** (set by the agent on his word, the same evening: *其他数字你帮我定*; each a knob in the master,
+  moved only with the pacing tool's table beside it):
+  - 秘境: `door` 25 体力 a run (about what eight rooms cost today); `cap_day` 2 runs stays; a run's 修为 doubles
+    (`pay.rate` 0.1 → 0.2: a day's two runs about a fifth of a layer). A 秘境令 still held is simply gone.
+  - The free half: the small games' share of a layer 60% → 35%, the errands' 15% → 10%, the day's 人间功课 10% → 5%
+    (a week's 10%, a month's 15%); the story's own steps as they are. Aim: a typical player's free play comes to about
+    half a layer in the days the layer is meant to take, and one who buys nothing needs no more than twice those days.
+  - 闭关: `per_stone` 3; the 阵 holds 4% of the layer at its first level and 1% more a level to 8% (five levels); a
+    level costs 40 minutes of 练气一层's income, doubling (100 · 200 · 400 · 800 灵石); `per_day` one full 阵; drawn in
+    2 h; `trickle` 0.25% an hour.
+  - 饭桶: a 炉炭 costs 4 minutes of income (10 灵石 at 练气一层) and lifts a pot as 10 灵石 did; a pot takes as many
+    as his 层 counts (练气九层 nine), as the 灵石 cap was; a glimpse of a thing from further on, 2 pots in 100.
+  - 灵石: by the end of 卷一 a typical player spends at least 70% of what he takes in.
+- **Order.** The mechanics behind knobs that leave today's numbers as they are; the pacing tool taught the new sinks
+  and a player who buys nothing; then the numbers above, with its table; his save moved by a tested migration, Mac and
+  phone together. 丹药 and 符 with the fair fights; the cards with § 斗法 v4.
 
 ## 体力 and 闭关 【已建】
 
