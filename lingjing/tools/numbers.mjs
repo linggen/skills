@@ -475,13 +475,10 @@ function creatures(ctx, weighed) {
 /* ── 开炉: what a pot gives back against what went in (balance.json `kailu`; Hanli 2026-10-27: 扔草药出丹, 扔物品出装备,
    其他出符 — 「让玩家可以清空身上不用的物品」). Each family's sample pot, on a save standing at the 饭桶's first 回 and at
    卷一's last, at that 回's layer: its average return (the worth that comes out ÷ the worth that went in, items.json
-   `sell` or the 品阶's worth) must sit in `kailu.band` — under it the bucket loses to the shop, over it the bucket is a
-   farm — and a pot of junk must give something. Bought at the shop, a pot must never sell back for more than it cost.
-   Each pot again with 灵石 (Hanli 11-04: 10 a 层, 「多放可以提升出品品质」): 3, 10 and the save's own cap, and once more at
-   筑基圆满 with its 180. The stones count in what went in. A pot with stones is a farm when it gives back over the band
-   AND its stones come back more than once each (`gain`: what they add, a stone) — a pot of junk with three stones
-   stands over the band on its floors alone, a 九转丹 with three gains its grade's share; neither is a farm. Under the
-   band is said only of a pot with no stones: past what the pools hold the stones are the bucket's price for its luck. ── */
+   `sell` or the 品阶's worth) must never be over 1 — the bucket is no farm (Hanli 2026-11-12); the rest of the five rules (none
+   under 0.55, the mean of twelve pots in 0.75–0.95, fuel worth buying, a step up) are tests/fantong.test.mjs's, on the whole book.
+   Bought at the shop, a pot must never sell back for more than it cost. Each pot again with 灵石 (Hanli 11-04: 10 a 层,
+   「多放可以提升出品品质」): 3, 10 and the save's own cap, and once more at 筑基圆满 with its 180. The stones count in what went in. ── */
 const KAILU_STONES = [0, 3, 10];
 const KAILU_POTS = [
   { family: 'pill', name: '三味草药', ids: ['huangjing', 'fuling', 'chaihu'] },
@@ -723,7 +720,6 @@ export function hardErrors(content) {
 /* ── the red list: one table of rules a source's rows are read by ── */
 
 const pct = x => `${Math.round(x * 100)}%`;
-let KAILU_BAND = () => [0.85, 1.6];
 const offLayers = r => (r.drift ?? []).filter(d => d.ratio != null && Math.abs(Math.log(d.ratio)) > Math.log(1 + LIMITS.claim_off)).filter((d, k, a) => k === 0 || k === a.length - 1);
 const RED = {
   pills: [
@@ -755,9 +751,8 @@ const RED = {
     [r => r.target_h && r.rule_h && r.rule_h / r.target_h > 1 + LIMITS.hours_off, r => `${r.name}: with no 功课 (a plain install) ${r.rule_h} h of play — ${round(r.rule_h / r.target_h, 1)}× the target ${r.target_h} h`],
   ],
   kailu: [
-    [r => r.ratio != null && !r.lingshi && r.ratio < KAILU_BAND()[0], r => `开炉 ${r.name} (${r.hui}, ${r.layer}): gives back ${pct(r.ratio)} of what went in (${r.value} of ${r.worth} 灵石) — under ${pct(KAILU_BAND()[0])}, the shop pays better`],
-    [r => r.ratio != null && r.ratio > KAILU_BAND()[1] && (!r.lingshi || r.gain > 1), r => `开炉 ${r.name} (${r.hui}, ${r.layer}): gives back ${pct(r.ratio)} of what went in${r.lingshi ? `, each 灵石 ${r.gain}` : ''} — over ${pct(KAILU_BAND()[1])}, a farm`],
-    [r => !r.worth && !(r.value > 0), r => `开炉 ${r.name} (${r.hui}): a pot of junk gives nothing`],
+    // Never above what went in (2026-11-12, Hanli: 「不能每次都赚」): the hard rule of the five in tests/fantong.test.mjs; the rest of them (none under 0.55, the mean, fuel worth buying, a step up) are held there, on the whole book.
+    [r => r.ratio != null && r.ratio > 1, r => `开炉 ${r.name} (${r.hui}, ${r.layer}): gives back ${pct(r.ratio)} of what went in${r.lingshi ? `, each 灵石 ${r.gain}` : ''} — over 100%, a farm`],
     [r => r.buy && r.value >= r.buy, r => `开炉 ${r.name} (${r.hui}): bought for ${r.buy}, it gives back ${r.value} — a farm`],
     [r => r.family !== 'junk' && r.leans !== r.family, r => `开炉 ${r.name}: leans to ${r.leans}, meant for ${r.family}`],
   ],
@@ -852,7 +847,6 @@ export async function measure(content = loadContent(), { deals = 0, keep = null 
   };
   const by = earnedBy(content);
   for (const h of report.huis) h.earned = round(by[h.hui]);
-  KAILU_BAND = () => content.balance?.kailu?.band ?? [0.85, 1.6];
   report.red = redList(report);
   return report;
 }

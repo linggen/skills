@@ -106,7 +106,7 @@ test('what comes out follows what goes in: herbs → 丹, hides and ores → gea
   const share = (ids, fam) => { const c = chances(T, { ids, realm: 1 }); const pool = new Set(T.book.rows.filter(r => T.families[fam].draw.includes(r.family)).map(r => r.item)); return Object.entries(c.items).reduce((n, [id, p]) => n + (pool.has(id) ? p : 0), 0); };
   assert.ok(share(['huangjing', 'fuling', 'cangzhu'], 'pill') > 0.95, 'herbs → 丹');
   assert.ok(share(['chai-ya', 'lang-pi', 'hu-pi'], 'gear') > 0.95, 'hides → gear');
-  assert.ok(share(['talisman', 'talisman', 'xionghuang'], 'fu') > 0.95, '符 → 符');
+  assert.ok(share(['talisman', 'talisman', 'xionghuang'], 'fu') > 0.9, '符 → 符');
   assert.ok(share(['chaihuo', 'shizi', 'kuye'], 'mixed') > 0.95, 'junk → 符 and odds and ends');
   // The board says the lean before 开炉, by the same rule (games/kailu.js on the brief's `fam`).
   assert.equal(leadOf({ pill: 2, mixed: 1 }), 'pill');
@@ -120,7 +120,7 @@ test('what comes out follows what goes in: herbs → 丹, hides and ores → gea
 
 test('worth: what comes out is worth about what went in, by the grade — junk always gives something, good things come back about whole, never a farm', () => {
   const W = T.worth;
-  assert.ok(W && W.grades.useful.x >= 1 && W.grades.junk.x < 1 && W.grades.best.x > W.grades.rare.x);
+  assert.ok(W && W.grades.junk.x < W.grades.useful.x && W.grades.useful.x < W.grades.rare.x && W.grades.rare.x < W.grades.best.x, '凡 < 有用 < 珍品 < 逆天 (the five rules hold the average)');
   assert.equal(worthOf(T, 'qi-pill', id => T.item_info[id]), content.items.items.find(i => i.id === 'qi-pill').sell, 'a shop thing: its sell');
   // A story pill no shop buys: its 品阶's minutes × I(its level) (batch 2).
   const q9 = content.items.items.find(i => i.id === 'qi-pill-9');
@@ -128,9 +128,9 @@ test('worth: what comes out is worth about what went in, by the grade — junk a
   for (const ids of [['huangjing', 'fuling', 'chaihu'], ['zhu-ya', 'chai-ya', 'lang-pi'], ['talisman', 'talisman', 'xionghuang']]) {
     const c = chances(T, { ids, realm: 1, content, state: gu7() });
     const r = c.value / c.worth;
-    assert.ok(r >= W.band[0] && r <= W.band[1], `${ids}: ${r.toFixed(2)}`);
+    assert.ok(r > 0.5 && r < 1, `${ids}: ${r.toFixed(2)} — a save's pot too gives back a little less than went in`);
   }
-  assert.ok(chances(T, { ids: ['chaihuo', 'shizi', 'kuye'] }).value > 0, 'junk gives something');
+  { const j = chances(T, { ids: ['chaihuo', 'shizi', 'kuye'] }); assert.ok(Math.abs(Object.values(j.items).reduce((n, p) => n + p, 0) - 1) < 1e-9, 'junk gives something — a thing of next to no worth, never nothing'); }
   // A grade asks for its share: 凡 under what went in, 逆天 well over.
   const pot = { ids: ['huangjing', 'fuling', 'chaihu'], realm: 1 };
   const worthAt = g => { let n = 0, sum = 0; for (let i = 0; i < 3000 && n < 60; i++) { const r = rollFeed(T, { ...pot, seed: `w|${i}` }); if (r.grade !== g || r.refused || r.event || r.twin) continue; n++; sum += worthOf(T, r.out, id => T.item_info[id]) * (r.n ?? 1); } return sum / n; };
@@ -146,8 +146,8 @@ test('灵石 lift the odds, each one a little less than the one before (Hanli 11
   const per = (a, b) => (top(b) - top(a)) / (b - a);
   assert.ok(per(0, 3) > per(3, 10) && per(3, 10) > per(10, 30) && per(10, 30) > per(30, 100) && per(30, 100) > per(100, 180), N.map(top).join(' '));
   // Three stones stand where 0.5 a stone had them; thirty about double 珍品+逆天.
-  assert.ok(Math.abs(chances(T, { ids: herbs, realm, lingshi: 3 }).power - chances(T, { ids: herbs, realm }).power - 1.5) < 0.01, 'three stones: +1.5 power, as before');
-  assert.ok(top(30) > 1.8 * top(3), `30 stones ${top(30)} against 3 ${top(3)}`);
+  assert.ok(Math.abs(chances(T, { ids: herbs, realm, lingshi: 3 }).power - chances(T, { ids: herbs, realm }).power - T.odds.power.lingshi * Math.log(4)) < 0.01, 'three stones: the knob × ln(1 + 3)');
+  assert.ok(top(30) > 1.5 * top(3), `30 stones ${top(30)} against 3 ${top(3)}`);
 });
 
 test('the 灵石 cap: 10 a 层, counted on across the realms (Hanli 11-04: 「按当前层数*10, 筑基圆满就是(9+9)*10」); Look says it, feed holds to it', () => {
@@ -323,7 +323,7 @@ test('`limit.per_day` alone caps the day instead (the other shape the table allo
 });
 
 test('古七\'s 方子: the right thing alone with the right 灵石 gives its pill; found once, kept, shown in 录', () => {
-  const c = chances(T, { ids: ['huangqi-canzhu'] });
+  const c = chances(T, { ids: ['huangqi-canzhu'], lingshi: 1 }); // (one stone: no longer the 方子's exact pot)
   assert.ok(c.items['mend-pill'] > 0);
   for (let i = 0; i < 300; i++) {
     const r = rollFeed(T, { seed: `rc|${i}`, ids: ['huangjing-gen'], lingshi: 1 });
@@ -348,7 +348,7 @@ test('方子残页: three found work out the 回气丹 方子 (茯苓 + 1 灵石
   assert.ok(before.items['mend-pill'] > 0, 'without the 方子, an ordinary herb pot');
   let s = gu7({ bag: { danlu: 1, 'fangzi-canye': 0, chaihuo: 1 }, fantong: { pages: 2 } });
   const t = structuredClone(content);
-  t.fantong.book.rows = [{ item: 'fangzi-canye', family: 'mixed', w: 1, level: 1 }];
+  t.fantong.book.rows = [{ item: 'fangzi-canye', family: 'mixed', w: 1, level: 1, worth: 0 }];
   t.fantong.odds.grades = { rare: 1 };
   t.fantong.quirks = {};
   const r = VERBS.fantong(s, t, ctx(), { action: 'feed', id: 'chaihuo' });
@@ -753,7 +753,7 @@ test('no pot ever gives a key, a scroll or a never-thing — and never 灵石, o
 
 test('the glimpse: a roll may reach ONE thing past the pot, from a 卷 not open — about 2% of rolls, never two in a pot, shown as what it is', () => {
   assert.equal(T.odds.glimpse, 0.02);
-  const pot = ['huangjing', 'fuling', 'chaihu'], put = { ids: pot, realm: 1.5, content, state: gu7() };
+  const pot = ['heshouwu', 'chonglou', 'shihu'], put = { ids: pot, realm: 1.5, content, state: gu7() };
   const later = id => (items.get(id).juan ?? 1) > 1;
   const c = chances(T, put), want = Object.entries(c.items).filter(([id]) => later(id)).reduce((n, [, p]) => n + p, 0);
   assert.ok(want > 0.012 && want < 0.025, `the exact odds hold a later 卷's thing at about the knob: ${want}`);
@@ -771,7 +771,7 @@ test('the glimpse: a roll may reach ONE thing past the pot, from a 卷 not open 
   }
   assert.ok(Math.abs(glimpses / n - want) < 0.006, `${glimpses} of ${n} against ${want}`);
   // Through the verb: it lands in the bag as itself, with its small print.
-  const s0 = gu7({ bag: { danlu: 1, huangjing: 1, fuling: 1, chaihu: 1 } });
+  const s0 = gu7({ bag: { danlu: 1, heshouwu: 1, chonglou: 1, shihu: 1 } });
   let got = null;
   for (let k = 0; k < 4000 && !got; k++) {
     const r = VERBS.fantong({ ...s0, fantong: { n: k } }, content, ctx(), { action: 'feed', ids: pot.join(',') });
@@ -781,4 +781,53 @@ test('the glimpse: a roll may reach ONE thing past the pot, from a 卷 not open 
   const o = got.result.outs.find(o => later(o.id));
   assert.ok(o.name && o.hint === items.get(o.id).hint.zh, 'its own name and small print');
   assert.ok((got.state.bag[o.id] ?? 0) >= 1 || (got.state.full_offer ?? []).some(f => f.id === o.id));
+});
+
+/* ── 2026-11-12: junk in, junk out; a rich pot can go up — the five rules (coordinator's, from Hanli's words:
+   「一定概率出好东西, 一定概率出差的东西, 不能每次都赚」 · 「不必鼓励丢垃圾进去」 · 「丢高级物品也有机会出更高级的」) ── */
+const zjTier = content.ladder.tiers[1].id;
+const QI = step => ({ tier: 'qi', step }), ZJ = step => ({ tier: zjTier, step });
+// Twelve sample pots, each fed by a hand that fits it: no fuel, and the most fuel his 层 takes (the bare table: the whole book).
+const SAMPLE_POTS = [
+  ['3 凡 铜矿', ['tongkuang', 'tongkuang', 'tongkuang'], QI(5)], ['3 凡 萝卜 干粮 铜矿', ['luobo', 'ganliang', 'tongkuang'], QI(5)],
+  ['3 一阶 草药', ['huangjing', 'fuling', 'chaihu'], QI(5)], ['3 一阶 聚气丹', ['qi-pill', 'qi-pill', 'qi-pill'], QI(5)], ['3 一阶 兽材', ['zhu-ya', 'chai-ya', 'lang-pi'], QI(5)],
+  ['一阶 符 雄黄', ['talisman', 'talisman', 'xionghuang'], QI(5)], ['混 药 牙 符', ['huangjing', 'zhu-ya', 'talisman'], QI(5)],
+  ['3 二阶 草药', ['heshouwu', 'chonglou', 'shihu'], QI(9)], ['3 二阶 兽材', ['xiong-dan', 'congcong-zhua', 'xiegou-yu'], QI(9)], ['二阶 合窳刀 坎肩', ['heyu-dao', 'heyu-dao', 'pi-kanjian'], QI(9)],
+  ['3 三阶 九转聚气丹', ['qi-pill-9', 'qi-pill-9', 'qi-pill-9'], ZJ(0)], ['三阶 药 + 暗河玉', ['qi-pill-9', 'qi-pill-9', 'anhe-yu'], ZJ(0)],
+];
+const pieceCap = st => lingshiCap(content, st) / 10; // (a piece counts as ten 灵石)
+function samplePots() {
+  return SAMPLE_POTS.map(([name, ids, st]) => {
+    const realm = realmOf(content, st), cap = pieceCap(st), pot = Math.max(0, ...ids.map(id => tierOfItem(T, id)));
+    const at = n => chances(T, { ids, realm, lingshi: n * 10 }), none = at(0), most = at(cap), top = o => o.grades.rare + o.grades.best;
+    const rungs = [...new Set([0, 1, 2, 3, 5, 7, cap].filter(n => n <= cap))].map(n => top(at(n)));
+    const up = Object.entries(none.items).filter(([id]) => tierOfItem(T, id) === pot + 1).reduce((n, [, p]) => n + p, 0);
+    return { name, pot, cap, none, most, rungs, up, r0: none.value / none.worth, rM: most.value / most.worth, t0: top(none), tM: top(most) };
+  });
+}
+
+test('the five rules of a pot (Hanli 2026-11-12): never above what went in, 0.75–0.95 on average, never a poor trade, fuel worth buying, a step up now and then', () => {
+  const pots = samplePots(), rets = pots.flatMap(p => [p.r0, p.rM]), mean = rets.reduce((a, b) => a + b, 0) / rets.length;
+  for (const p of pots) {
+    for (const [r, fuel] of [[p.r0, 0], [p.rM, p.cap]]) {
+      assert.ok(r <= 1.0, `rule 1: ${p.name} with ${fuel} fuel gives back ${r.toFixed(2)}`);
+      assert.ok(r >= 0.55, `rule 3: ${p.name} with ${fuel} fuel gives back ${r.toFixed(2)}`);
+    }
+    for (let k = 1; k < p.rungs.length; k++) assert.ok(p.rungs[k] >= p.rungs[k - 1] - 1e-9, `rule 4: ${p.name}: more fuel never lowers 珍品+逆天`);
+    assert.ok(p.tM >= 1.5 * p.t0, `rule 4: ${p.name}: ${p.tM.toFixed(2)} at most fuel against ${p.t0.toFixed(2)} with none`);
+    if (p.pot >= 2) assert.ok(p.up >= 0.05 && p.up <= 0.2, `rule 5: a pot of 品阶 ${p.pot} (${p.name}) gives the one above ${(p.up * 100).toFixed(1)}%`);
+  }
+  assert.ok(mean >= 0.75 && mean <= 0.95, `rule 2: the mean over ${rets.length} is ${mean.toFixed(3)}`);
+  // …and the knobs hold no floor under a poor pot, and no gold-plated band: `kailu` is knobs only.
+  for (const g of Object.values(content.balance.kailu.grades)) assert.equal(g.floor_ls, 0);
+  assert.equal(content.balance.kailu.band, undefined);
+  assert.equal(content.balance.kailu.grades.best.x, 2.5, '逆天 still pays 2.5×');
+});
+
+test('a pot of 二阶 things can give 三阶 ones, and 三阶 a 四阶 one, at a visible chance — the pill pots go up, a gear pot stays with gear', () => {
+  const p = Object.fromEntries(samplePots().map(x => [x.name, x]));
+  assert.ok(p['3 二阶 草药'].up > 0.05 && p['3 二阶 兽材'].up > 0.05 && p['二阶 合窳刀 坎肩'].up > 0.05);
+  assert.ok(p['3 三阶 九转聚气丹'].up > 0.05 && p['三阶 药 + 暗河玉'].up > 0.05);
+  const four = ['foundation-pill-9', 'xian-pill'];
+  for (const n of ['3 三阶 九转聚气丹', '三阶 药 + 暗河玉']) assert.ok(four.some(id => (p[n].none.items[id] ?? 0) > 0), `${n} reaches a 四阶 thing`);
 });

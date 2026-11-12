@@ -48,9 +48,9 @@
   "odds": {
     "_about": "The roll: first a grade (凡 junk · 有用 useful · 珍品 rare · 逆天 best — grey, blue, purple, gold), then a thing of the pot's family (`families`) worth about what the grade asks: the pot's worth (what went in, and its 灵石) × the grade's `x`, at least its `floor` (balance.json `kailu`, tools/numbers.mjs weighs it). `grades`: the weights at power 0 (a 凡物 fed by a 练气零层 with no 灵石: 70/25/4/1). POWER = `power.in` × the pot's tier + `power.realm` × his realm + `power.lingshi` × ln(1 + the 灵石) — each stone lifts less than the one before (Hanli 11-04: 「多放可以提升出品品质」; 1.08 keeps three stones where 0.5 a stone had them, thirty about doubles 珍品+逆天). His realm counts `realm_per_tier` a whole realm (练气 0–2.7 by 层, 筑基 3+, …). Each grade's weight × `growth[grade]`^power — so a high thing is never impossible, only rare, and grows likelier smoothly with both what goes in and who feeds it. 压盖 (`press` 1): the grade rolled goes up one notch (逆天 stays).",
     "grades": { "junk": 70, "useful": 25, "rare": 4, "best": 1 },
-    "power": { "in": 1, "realm": 0.5, "lingshi": 1.08 },
+    "power": { "in": 1, "realm": 0.5, "lingshi": 0.795 },
     "realm_per_tier": 3,
-    "growth": { "junk": 0.85, "useful": 1, "rare": 1.25, "best": 1.45 },
+    "growth": { "junk": 0.85, "useful": 1, "rare": 1.227, "best": 1.324 },
     "glimpse": 0.02
   },
   "lingshi": {

@@ -217,7 +217,7 @@
       },
       "_pouch": "A 储物袋's room by its 品 (items.json `pin`: 1 下品 · 2 中品 · 3 上品 — the names say it): `base` × `step`^(品−1) slots, 6 · 12 · 24 as they were (batch 2; content.mjs withBalance folds it on). Its price is `prices.pouch` a slot × I(its level).",
       "pouch": {"base": 6, "step": 2},
-      "kailu_floor": {"junk": 0, "useful": 1.2, "rare": 4.8, "best": 16}
+      "kailu_floor": {"junk": 0, "useful": 0, "rare": 0, "best": 0}
     },
     "breakthrough": {
       "_about": "The breakthrough throw (rules/breakthrough.mjs; ladder.json breakthrough keeps which pills and elements, the numbers are here, folded onto it at load — batch 2, Hanli 2026-11-10). `base` by realm: 筑基 `first` (the book: about one in ten get through without a pill); from 结丹 `start` less `step` a realm, the realm after `plateau` (体修) standing level with the one before it — 55 · 50 · 45 · 40 · 40 · 35 · 30. A pill by its 转: `first` + `step` a 转 + `pin` more at each 品 (下 一–三 · 中 四–六 · 上 七–九) + `nine` more for a 九转 (near-certain) — 25 · 30 · 35 · 45 · 50 · 55 · 65 · 70 · 80. The rest as they were (ladder.json until 2026-11-10; tests/breakthrough-master.test.mjs holds the table it makes to the old one).",
@@ -310,19 +310,18 @@
   "_pay_stage": "`stage` pays a 阶段任务 handed in (rules/gates.mjs stageTurn, Hanli 2026-10-16: 「七层圆满的任务大成了应该可以交任务拿奖励」). At 圆满 the 修为 cannot rise, so it pays 灵石: 60, three scenes' pay (`scene` 20) — about three days of the 回's 杂役 and 开府 — once per gate, never again; a gate crossed before stage quests paid is settled once on the next load (settleStages).",
   "_convert": "修为不要超过上限, 超过后换算为灵石奖励 (Hanli, 2026-11-12; first for the fights' tables, 2026-10-15): every pay lands 修为 only up to the cap (rules/cap.mjs landProgress — the layer's need, or a share mark); the rest is paid as 灵石 at `share` × I(L) ÷ (R(L) × board) a 修为 (rules/playpay.mjs convertRate, master.economy.convert_share; 0.25 at every level today), rounded, at least 1 for any excess (cap.mjs overStones). It never carries into the next layer and never waits in the 丹田 (`banked`, gone 2026-11-12).",
   "convert": {"share": 1},
-  "_kailu": "开炉's worth (rules/fantong-roll.mjs; Hanli 2026-10-27: 扔草药出丹, 扔物品出装备, 其他出符): what a thing is worth to the 饭桶 — its shop `sell` (prices below), else its 品阶's `tier` (fantong.json `tiers`); a 灵石 fed is worth `lingshi`. The grade rolled asks for an output worth the pot's worth × `x`, at least `floor` — 凡 a little under what went in, 有用 about it, 珍品 and 逆天 well over — so a pot of junk always gives something, a pot of good things gives about their worth back and the bucket is no farm. A row's chance falls off with how far its worth stands from that (log scale, `spread`), and nothing past `reach` times either way is drawn. `band`: what tools/numbers.mjs holds a pot's average return to (what comes out ÷ what went in) for the families' sample pots.",
+  "_kailu": "开炉's worth (rules/fantong-roll.mjs; Hanli 2026-10-27: 扔草药出丹, 扔物品出装备, 其他出符): what a thing is worth to the 饭桶 — its shop `sell` (prices below), else its 品阶's `tier` (fantong.json `tiers`); a 灵石 fed is worth `lingshi`. The grade rolled asks for an output worth the pot's worth × `x`, at least `floor` — 凡 a little under what went in, 有用 about it, 珍品 and 逆天 well over — so a pot of junk always gives something, a pot of good things gives about their worth back and the bucket is no farm. A row's chance falls off with how far its worth stands from that (log scale, `spread`), and nothing past `reach` times either way is drawn. No floors (2026-11-12, Hanli: 「不必鼓励丢垃圾进去」 · 「不能每次都赚」): a poor pot is not lifted. What a pot may expect back is held by the five rules in tests/fantong.test.mjs (every pot under 1.00, none under 0.55, the mean of twelve sample pots 0.75–0.95, fuel worth buying, a step up of 5–20%); `kailu` keeps only the knobs, fantong.json `odds` the rest.",
   "kailu": {
     "lingshi": 1,
     "tier": {"0": 0, "1": 2.4, "2": 7.5, "3": 21, "4": 45},
     "grades": {
-      "junk": {"x": 0.8, "floor_ls": 0},
-      "useful": {"x": 1.1, "floor_ls": 1.2},
-      "rare": {"x": 1.6, "floor_ls": 4.8},
-      "best": {"x": 2.5, "floor_ls": 16}
+      "junk": {"x": 0.477, "floor_ls": 0},
+      "useful": {"x": 0.66, "floor_ls": 0},
+      "rare": {"x": 2.2, "floor_ls": 0},
+      "best": {"x": 2.5, "floor_ls": 0}
     },
-    "spread": 0.4,
-    "reach": 3,
-    "band": [0.45, 2.6]
+    "spread": 0.282,
+    "reach": 1.925
   },
   "_prices": "Every shop price, one source: `buy` what a shop asks, `sell` what it gives back — folded onto items.json by content.mjs withBalance, so no item carries its own. Derived (batch 2, 2026-11-10): minutes of income by the thing's class × I(its level) (master.economy.prices, tools/master.mjs pricesOf); a row's shape is the declaration — `buy` 0 (no shop sells it), `sell` 0 or none (no shop buys it back).",
   "prices": {
