@@ -158,7 +158,8 @@ test('the furnace\'s 破境丹 is one 阶 above its owner: 筑基丹 while he is
   const qi = { ...player(), ...hui };
   const fd = { ...player({ tier: 'foundation', step: 0 }), ...hui };
   const of = s => chances(t, { ...pot, content, state: s }).items;
-  assert.ok(of(qi)['foundation-pill'] > 0 && of(qi)['foundation-pill-9'] > 0, '练气: the 筑基丹 rows are open');
+  assert.ok(of(qi)['foundation-pill'] > 0, '练气: the 筑基丹 row is open');
+  assert.ok(!of(qi)['foundation-pill-9'], 'the 九转 is the story\'s (wm-luobo): no pot gives it, at any realm');
   assert.ok(!of(fd)['foundation-pill'] && !of(fd)['foundation-pill-9'], '筑基: no 筑基丹 out of the pot');
   // And the roll itself never hands a 筑基 owner one, over many pots.
   for (let n = 0; n < 300; n++) {

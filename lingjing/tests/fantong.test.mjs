@@ -68,7 +68,7 @@ test('the table lints: every output an item with a name in both tongues and one 
   for (const [n, ids] of Object.entries(T.tiers)) if (n !== '_about') for (const id of ids) assert.ok(items.has(id), `tier ${n}/${id}`);
   // Hanli's approved table (2026-10-20): equipment, weapons and pendants can drop; realm pills can drop.
   const all = new Set(fantongAll(T));
-  for (const id of ['qingtong-jian', 'anhe-yu', 'bamboo-sword', 'shi-zhui', 'foundation-pill', 'foundation-pill-9', 'baoge-ling', 'yinyue-lingdang', 'banjie-fanshao', 'yike-daya', 'yige-ge', 'fangzi-canye']) assert.ok(all.has(id), id);
+  for (const id of ['qingtong-jian', 'anhe-yu', 'bamboo-sword', 'shi-zhui', 'foundation-pill', 'baoge-ling', 'yinyue-lingdang', 'banjie-fanshao', 'yike-daya', 'yige-ge', 'fangzi-canye']) assert.ok(all.has(id), id);
   assert.deepEqual(Object.keys(T.limit).filter(k => k !== '_about'), ['cooldown_min'], 'ships with the hour cooldown only');
 });
 
@@ -224,11 +224,13 @@ test('no cap: the high grades rise with what goes in AND with his realm, and are
   for (const ids of pots) for (let r = 1; r < realms.length; r++) assert.ok(p(ids, realms[r]) > p(ids, realms[r - 1]), `${ids}: realm ${realms[r]}`);
   for (const realm of realms) for (let k = 1; k < pots.length; k++) assert.ok(p(pots[k], realm) > p(pots[k - 1], realm), `tier ${k}: realm ${realm}`);
   assert.ok(p(['chaihuo'], 0) > 0 && p(['chaihuo'], 0) < 0.02, 'a 凡物 by a 零层: 逆天 now and then');
-  // The top thing asks for a pot worth it: a 九转筑基丹 from good herbs and stones, by a high hand, never from a stick.
-  const top = 'foundation-pill-9';
+  // The top thing asks for a pot worth it: a 仙丹 from good herbs and fuel, by a high hand, never from a stick. (The 九转筑基丹 is the
+  // story's, one of a kind — Hanli 2026-11-12 — and comes out of no pot at any realm.)
+  const top = 'xian-pill';
   assert.equal(chances(T, { ids: ['chaihuo'], realm: 4.5 }).items[top] ?? 0, 0);
   assert.ok((chances(T, { ids: ['zixu-zhi', 'lingzhi', 'heshouwu'], realm: 2.7, fuel: 1 }).items[top] ?? 0) > 0);
   assert.equal(tierOfItem(T, top), 4);
+  for (const realm of [0, 2.7, 4.5, 8]) for (const ids of [['zixu-zhi', 'lingzhi', 'heshouwu'], ['qi-pill-9', 'qi-pill-9', 'qi-pill-9'], ['xian-pill']]) assert.equal(chances(T, { ids, realm, fuel: 18 }).items['foundation-pill-9'] ?? 0, 0, `${ids} at ${realm}`);
   // His realm off the save: 练气 by 层, 筑基 past 3.
   assert.equal(realmOf(content, { tier: 'qi', step: 0 }), 0);
   assert.ok(realmOf(content, { tier: 'qi', step: 9 }) > 2.5 && realmOf(content, { tier: 'qi', step: 9 }) < 3);
@@ -270,7 +272,7 @@ test('opens by 回: the base pool at 古四; 古六\'s treasures, 古五\'s gear
   const T0 = { ...T, odds: { ...T.odds, glimpse: 0 } };
   const reach = (s, id) => Object.values(pots).some(ids => [0, 1, 3].some(fuel => (chances(T0, { ids, realm: 3, fuel, content, state: s }).items[id] ?? 0) > 0));
   const gu4 = saveWith();
-  for (const id of ['yaqian', 'qi-pill', 'baina-dai', 'foundation-pill-9', 'bamboo-sword', 'talisman']) assert.ok(reach(gu4, id), `${id} from 古四`);
+  for (const id of ['yaqian', 'qi-pill', 'baina-dai', 'foundation-pill', 'bamboo-sword', 'talisman']) assert.ok(reach(gu4, id), `${id} from 古四`);
   for (const id of ['penti-fu', 'zipai-jing', 'fangzi-canye', 'qingtong-jian', 'duan-dao', 'lipi-kanjian']) assert.ok(!reach(gu4, id), `${id} not yet at 古四`);
   const g7 = gu7();
   for (const id of ['penti-fu', 'zipai-jing', 'fangzi-canye', 'qingtong-jian', 'duan-dao']) assert.ok(reach(g7, id), `${id} by 古七`);
@@ -757,7 +759,9 @@ test('the book is the pool: every thing items.json holds is in it, less what mus
   for (const id of [...N.items, ...Object.keys(gates), ...only]) assert.ok(items.has(id), `${id} exists`);
   assert.ok(N.items.includes(content.companion?.bell ?? 'moon-bell'), 'her bell never comes out');
   assert.ok(N.kinds.includes('key'), 'the story alone gives keys');
-  for (const id of ['foundation-pill', 'foundation-pill-9', 'xian-pill']) assert.ok(BOOK.includes(id), `${id} may still come out (Hanli 10-20)`);
+  for (const id of ['foundation-pill', 'xian-pill']) assert.ok(BOOK.includes(id), `${id} may still come out (Hanli 10-20)`);
+  assert.ok(!BOOK.includes('foundation-pill-9'), 'the 九转筑基丹 is a story thing, one of a kind: in no pool (Hanli 2026-11-12: 「九转筑基丹应该是剧情物品吧」)');
+  assert.ok(!BOOK.includes('mijing-ling') && !T.book.rows.some(r => r.kind === 'key'), 'no key comes out, the 秘境令 included');
   // A story thing is out unless the table lets it come from a 回 on; every kind of items.json leads to a family.
   for (const i of content.items.items.filter(i => i.story)) assert.ok(!BOOK.includes(i.id) || gates[i.id], i.id);
   const covered = new Set(Object.values(T.kinds).flatMap(k => k.item_kinds ?? []));
@@ -782,7 +786,7 @@ test('every thing in the pool is reachable by SOME pot — a generated test over
 });
 
 test('no pot ever gives a key, a scroll or a never-thing — and never 灵石, over 2,000 seeded pots', () => {
-  const N = T.never.out, bad = new Set(content.items.items.filter(i => N.kinds.includes(i.kind) || N.items.includes(i.id)).map(i => i.id));
+  const N = T.never.out, bad = new Set(['foundation-pill-9', ...content.items.items.filter(i => N.kinds.includes(i.kind) || N.items.includes(i.id)).map(i => i.id)]);
   const bag = BOOK.filter(id => !T.never.items.includes(id));
   let a = 11;
   const rnd = () => { a = (Math.imul(a, 1103515245) + 12345) & 0x7fffffff; return a / 0x7fffffff; };
@@ -876,10 +880,16 @@ test('the five rules of a pot (Hanli 2026-11-12): never above what went in, 0.75
   assert.equal(content.balance.kailu.grades.best.x, 2.5, '逆天 still pays 2.5×');
 });
 
-test('a pot of 二阶 things can give 三阶 ones, and 三阶 a 四阶 one, at a visible chance — the pill pots go up, a gear pot stays with gear', () => {
+test('a pot of 二阶 things can give 三阶 ones, and 三阶 the 四阶 仙丹 (on the whole book), at a visible chance — the pill pots go up, a gear pot stays with gear', () => {
   const p = Object.fromEntries(samplePots().map(x => [x.name, x]));
   assert.ok(p['3 二阶 草药'].up > 0.05 && p['3 二阶 兽材'].up > 0.05 && p['二阶 合窳刀 坎肩'].up > 0.05);
   assert.ok(p['3 三阶 九转聚气丹'].up > 0.05 && p['三阶 药 + 暗河玉'].up > 0.05);
-  const four = ['foundation-pill-9', 'xian-pill'];
-  for (const n of ['3 三阶 九转聚气丹', '三阶 药 + 暗河玉']) assert.ok(four.some(id => (p[n].none.items[id] ?? 0) > 0), `${n} reaches a 四阶 thing`);
+  // The 四阶 is the 仙丹 alone now (the 九转筑基丹 is the story's, Hanli 2026-11-12) — on the whole book; in 卷一 it waits for 01-end, so a 三阶 pot's step reads 0 there.
+  for (const n of ['3 三阶 九转聚气丹', '三阶 药 + 暗河玉']) {
+    assert.ok((p[n].none.items['xian-pill'] ?? 0) > 0.05, `${n} reaches the 仙丹`);
+    assert.equal(p[n].none.items['foundation-pill-9'] ?? 0, 0);
+  }
+  const ids = ['qi-pill-9', 'qi-pill-9', 'qi-pill-9'], inJuan1 = chances(T, { ids, realm: 3, content, state: gu7() });
+  assert.equal(inJuan1.items['xian-pill'] ?? 0, 0, 'no 仙丹 in 卷一');
+  assert.equal(inJuan1.items['foundation-pill-9'] ?? 0, 0);
 });

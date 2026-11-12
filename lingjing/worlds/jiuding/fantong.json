@@ -39,16 +39,16 @@
     "mixed": { "draw": ["fu", "mixed"], "lean": { "zh": "杂七杂八 → 多半出符和杂物", "en": "A mixed handful → likely a talisman or odds and ends" } }
   },
   "tiers": {
-    "_about": "品阶 of every thing, in and out (Hanli 10-20: 「玩家等级高, 喂入等级高, 出高等级概率大」): 0 凡物 · 1 一阶 · 2 二阶 · 3 三阶 · 4 the top (九转筑基丹). An item not listed is 0. The pot's tier is its HIGHEST input (one good thing lifts the pot, so the third slot is never a trap — a mean would punish adding a 凡物). An output's tier sets how much the power lifts it (`odds.tier`).",
+    "_about": "品阶 of every thing, in and out (Hanli 10-20: 「玩家等级高, 喂入等级高, 出高等级概率大」): 0 凡物 · 1 一阶 · 2 二阶 · 3 三阶 · 4 the top (仙丹; the 九转筑基丹 is the story's, 2026-11-12 — in no pool, so it has no 品阶 here). An item not listed is 0. The pot's tier is its HIGHEST input (one good thing lifts the pot, so the third slot is never a trap — a mean would punish adding a 凡物). An output's tier sets how much the power lifts it (`odds.tier`).",
     "1": ["jinglu-fu", "chenlian-fu", "anshen-xiang", "dingtai", "yaoyin", "huangjing", "fuling", "cangzhu", "chaihu", "yuanzhi", "banxia", "songmo", "yaodan-1", "deer-hide", "hu-pi", "li-pi", "she-tui", "she-dan", "ying-yu", "chai-ya", "zhu-ya", "lang-pi", "houer-jiu", "tie-sha", "cishi", "xionghuang", "chishizhi", "dansha", "talisman", "lianxi-fu", "tama-fu", "penti-fu", "qi-pill", "mend-pill", "huiqi-pill", "bamboo-sword", "duan-dao", "iron-sword", "pi-kanjian", "shi-zhui", "qiuyu-ci", "baina-dai", "pouch-low", "baoge-ling", "yinyue-lingdang", "fangzi-canye", "sang-paper", "jade-fish"],
     "2": ["hushan-qi", "longxu-cao", "qi-pill-2", "lingzhi", "ginseng", "huangjing-10", "heshouwu", "chonglou", "shihu", "yaodan-2", "xiong-dan", "congcong-zhua", "xiegou-yu", "lingling-pi", "yumu", "jingjing-wei", "bibi-ling", "dangkang-ya", "geju-zong", "qique-zhua", "yunmu", "shujin", "qi-pill-3", "mend-pill-3", "wulei-fu", "yangyang-zhen", "zipai-jing", "niuzhi-ganlu", "lipi-kanjian", "chaiya-zhui", "jade-ring", "heyu-dao", "heyu-ao", "shisui-zhui", "chitong-hulu"],
     "3": ["yaodan-3", "zixu-zhi", "langgan", "qingtong-jian", "anhe-yu", "foundation-pill", "qi-pill-9", "mend-pill-9", "xizhu"],
-    "4": ["foundation-pill-9", "xian-pill"]
+    "4": ["xian-pill"]
   },
   "odds": {
     "_about": "The roll: first a grade (凡 junk · 有用 useful · 珍品 rare · 逆天 best — grey, blue, purple, gold), then a thing of the pot's family (`families`) worth about what the grade asks: the pot's worth (what went in, and its 炉炭 at ten 灵石 a piece) × the grade's `x`, at least its `floor` (balance.json `kailu`, tools/numbers.mjs weighs it). `grades`: the weights at power 0 (a 凡物 fed by a 练气零层 with no 炉炭: 70/25/4/1). POWER = `power.in` × the pot's tier + `power.realm` × his realm + `power.lingshi` × ln(1 + ten × the 炉炭) — each stone lifts less than the one before (Hanli 11-04: 「多放可以提升出品品质」; 1.08 keeps three stones where 0.5 a stone had them, thirty about doubles 珍品+逆天). His realm counts `realm_per_tier` a whole realm (练气 0–2.7 by 层, 筑基 3+, …). Each grade's weight × `growth[grade]`^power — so a high thing is never impossible, only rare, and grows likelier smoothly with both what goes in and who feeds it. 压盖 (`press` 1): the grade rolled goes up one notch (逆天 stays).",
     "grades": { "junk": 70, "useful": 25, "rare": 4, "best": 1 },
-    "power": { "in": 1, "realm": 0.5, "lingshi": 0.795 },
+    "power": { "in": 1, "realm": 0.5, "lingshi": 0.745 },
     "realm_per_tier": 3,
     "growth": { "junk": 0.85, "useful": 1, "rare": 1.227, "best": 1.324 },
     "glimpse": 0.02
@@ -80,7 +80,7 @@
       "penti-fu": { "hui": "h08" }, "yangyang-zhen": { "hui": "h08" }, "zipai-jing": { "hui": "h08" },
       "lipi-kanjian": { "beast": "shanli" }, "chaiya-zhui": { "beast": "chai" },
       "xian-pill": { "after": "01-end" },
-      "foundation-pill": { "breach": true }, "foundation-pill-9": { "breach": true }
+      "foundation-pill": { "breach": true }
     },
     "worth_ls": { "pouch-low": 12, "baina-dai": 13.5 },
     "only": [

@@ -1548,28 +1548,29 @@ a roll may give ONE thing past the pot's reach (`worth.reach_level`), from a 卷
 **2026-11-12, junk in, junk out (the five rules).** No floor lifts a poor pot (`kailu.grades.*.floor_ls` 0; the master's `economy.kailu_floor` 0 with
 them). A pot is held to five rules (tests/fantong.test.mjs, twelve sample pots × no fuel / the most fuel, the whole book): 1. none gives back over 1.00
 of what went in; 2. the mean of the 24 is 0.75–0.95; 3. none under 0.55; 4. more fuel never lowers 珍品+逆天, and at the most it is ≥ 1.5× none;
-5. a 二阶 or 三阶 pot gives a thing of the tier above 5–20% of the time (the pill pots reach 九转筑基丹 / 仙丹; a gear pot stays with gear).
-Knobs, old → new: `odds.power.lingshi` (the fuel's lift) 1.08 → 0.795; `odds.growth` rare 1.25 → 1.227, best 1.45 → 1.324; `kailu.grades.x` junk 0.8 → 0.477,
+5. a 二阶 or 三阶 pot gives a thing of the tier above 5–20% of the time (a 三阶 pot's step is to the 仙丹 alone, on the whole book — in 卷一 it reads 0; a gear pot stays with gear).
+The 九转筑基丹 is the story's, one of a kind (`story: true`, granted at wm-luobo; Hanli 2026-11-12: 「九转筑基丹应该是剧情物品吧」): in no pool, no gate row. Re-tuned that day: `odds.power.lingshi` 0.795 → 0.745 (nothing else moved).
+Knobs, old → new: `odds.power.lingshi` (the fuel's lift) 1.08 → 0.745; `odds.growth` rare 1.25 → 1.227, best 1.45 → 1.324; `kailu.grades.x` junk 0.8 → 0.477,
 useful 1.1 → 0.66, rare 1.6 → 2.2, best 2.5 (kept); `kailu.spread` 0.4 → 0.282; `kailu.reach` 3 → 1.925; floors 0 / 1.2 / 4.8 / 16 → 0. Nothing else
 (`odds.grades`, pity, quirks, recipes, prices) moved. The landscape is bumpy (a rounded value breaks a rule), so the numbers are kept to three places.
 Average return in / out, before → after (worth that went in is no fuel / most fuel; 珍+逆 = 珍品 + 逆天 chance):
 
 | pot | worth in | return, no fuel | return, most fuel | 珍+逆, none | 珍+逆, most | step up |
 |---|---|---|---|---|---|---|
-| 3 凡 铜矿 | 6 / 56 | 1.26 → 0.96 | 0.89 → 0.67 | 7% → 6% | 25% → 16% | |
-| 3 凡 萝卜 干粮 铜矿 | 5 / 55 | 1.41 → 0.92 | 1.24 → 0.87 | 7% → 6% | 25% → 16% | |
-| 3 一阶 草药 | 9 / 59 | 1.05 → 0.68 | 1.47 → 0.97 | 9% → 9% | 32% → 21% | |
-| 3 一阶 聚气丹 | 15 / 65 | 1.06 → 0.65 | 1.46 → 0.97 | 9% → 9% | 32% → 21% | |
-| 3 一阶 兽材 | 22 / 72 | 0.88 → 0.70 | 0.84 → 0.85 | 9% → 9% | 32% → 21% | |
-| 一阶 符 雄黄 | 17 / 67 | 0.73 → 0.64 | 1.35 → 0.90 | 9% → 9% | 32% → 21% | |
-| 混 药 牙 符 | 15 / 65 | 0.97 → 0.66 | 1.35 → 0.92 | 9% → 9% | 32% → 21% | |
-| 3 二阶 草药 | 21 / 111 | 1.07 → 0.86 | 1.39 → 0.98 | 15% → 14% | 52% → 33% | 13% |
-| 3 二阶 兽材 | 45 / 135 | 0.85 → 0.64 | 0.85 → 0.71 | 15% → 14% | 52% → 33% | 20% |
-| 二阶 合窳刀 坎肩 | 34 / 124 | 0.87 → 0.71 | 0.73 → 0.76 | 15% → 14% | 52% → 33% | 13% |
-| 3 三阶 九转聚气丹 | 159 / 259 | 1.03 → 0.73 | 0.73 → 0.65 | 22% → 19% | 63% → 42% | 20% |
-| 三阶 药 + 暗河玉 | 132 / 232 | 1.14 → 0.75 | 0.83 → 0.68 | 22% → 19% | 63% → 42% | 15% |
+| 3 凡 铜矿 | 6 / 56 | 1.26 → 0.96 | 0.89 → 0.66 | 7% → 6% | 25% → 15% |  |
+| 3 凡 萝卜 干粮 铜矿 | 5 / 55 | 1.41 → 0.92 | 1.24 → 0.85 | 7% → 6% | 25% → 15% |  |
+| 3 一阶 草药 | 9 / 59 | 1.05 → 0.68 | 1.43 → 0.93 | 9% → 9% | 32% → 20% |  |
+| 3 一阶 聚气丹 | 15 / 65 | 1.06 → 0.65 | 1.42 → 0.94 | 9% → 9% | 32% → 20% |  |
+| 3 一阶 兽材 | 22 / 72 | 0.88 → 0.70 | 0.84 → 0.83 | 9% → 9% | 32% → 20% |  |
+| 一阶 符 雄黄 | 17 / 67 | 0.73 → 0.64 | 1.35 → 0.88 | 9% → 9% | 32% → 20% |  |
+| 混 药 牙 符 | 15 / 65 | 0.97 → 0.66 | 1.35 → 0.90 | 9% → 9% | 32% → 20% |  |
+| 3 二阶 草药 | 21 / 111 | 1.07 → 0.86 | 1.38 → 0.98 | 15% → 14% | 52% → 32% | 13% |
+| 3 二阶 兽材 | 45 / 135 | 0.85 → 0.64 | 0.85 → 0.70 | 15% → 14% | 52% → 32% | 20% |
+| 二阶 合窳刀 坎肩 | 34 / 124 | 0.87 → 0.71 | 0.73 → 0.75 | 15% → 14% | 52% → 32% | 13% |
+| 3 三阶 九转聚气丹 | 159 / 259 | 1.03 → 0.71 | 0.75 → 0.65 | 22% → 19% | 63% → 40% | 15% |
+| 三阶 药 + 暗河玉 | 132 / 232 | 1.11 → 0.75 | 0.84 → 0.68 | 22% → 19% | 63% → 40% | 12% |
 
-Mean 1.06 → 0.785. (The last pot is pill-led: a gear-led 三阶 pot cannot reach the pills, the family follows the lead.) A save's 卷一 book is thinner than the
+Mean 1.06 → 0.776 (The last pot is pill-led: a gear-led 三阶 pot cannot reach the pills, the family follows the lead.) A save's 卷一 book is thinner than the
 whole book, so a pot there gives back a little less still.
 **2026-11-12, it eats 炉炭, not 灵石.** The pot's input is a count of 炉炭 (`lutan`, a treasure with `effect.kailu: 'fuel'`; sold where pills are, a price class
 of its own: 4 minutes of income, 10 灵石 at level 1) taken from the 储物袋 and burnt with the pot. A piece lifts the pot and counts in its worth as 10 灵石 did
