@@ -287,6 +287,8 @@ test('对对子: the page says what is off in a 下联\'s form — 字数, a 仄
   assert.equal(shapeOf(kou, '鸟宿池边树', TONES).id, 'tail');
   assert.equal(shapeOf(kou, '风吹池上亭', TONES).id, 'same');
   assert.equal(shapeOf(kou, '柳绿花红天', TONES).id, 'copy');
+  // …and where he wrote it: each place as the two characters around it.
+  assert.ok(shapeOf(kou, '柳绿花红天', TONES).near.length >= 2);
   assert.equal(shapeOf(kou, '风吹水上亭', TONES), null, 'well formed — only not this couplet\'s');
   assert.equal(checkDown(kou, '风吹水上亭'), 'wrong');
   const dan = coupletOf(CHATS['qulao-dan'].game, 'zh');

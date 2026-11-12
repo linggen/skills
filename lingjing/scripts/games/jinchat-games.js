@@ -249,8 +249,11 @@ export function checkDown(c, raw) {
 /* A 上联's repeats (花开花落: the 1st and 3rd the same) the 下联 answers in kind (云卷云舒), and repeats nothing the 上联 does not. */
 const echoOk = (up, down) => up.every((c, i) => up.every((d, j) => (c === d) === (down[i] === down[j])));
 export const FREE = '之乎者也而以于其兮';
+/* Where a character stands in his line, each place as the two characters he wrote it in (错落 · 月落), so he sees WHICH one
+   (Hanli 2026-11-12: he changed 月落 and missed the 落 of 错落有致 — 「我第二次没有落, 但AI说有」). */
+const nearsOf = (down, ch) => [...new Set(down.map((x, i) => (x === ch ? (i > 0 ? down[i - 1] + x : x + (down[i + 1] ?? '')) : null)).filter(Boolean))].join('、');
 /** What is wrong with a 下联's form, as facts for the miss (couplet.js's checks, plus the repeats): the first that fails,
-    `{ id, … }` — `len` (n, have) · `tail` (ch: ends 仄) · `same` (ch: the 上联's at its place) · `copy` (ch) · `echo` —
+    `{ id, … }` — `len` (n, have) · `tail` (ch: ends 仄) · `same` (ch: the 上联's at its place) · `copy` (ch, near: where he wrote it) · `echo` —
     or null when the form holds (then it is only not this couplet's 下联). A polyphone or an unknown tone never fails. */
 export function shapeOf(c, raw, tones) {
   const up = hanOf(c.up), down = hanOf(raw);
@@ -258,7 +261,7 @@ export function shapeOf(c, raw, tones) {
   if (f.checks.len !== 'ok') return { id: 'len', n: up.length, have: down.length };
   if (f.checks.tail === 'bad') return { id: 'tail', ch: down.at(-1) };
   if (f.checks.same === 'bad') return { id: 'same', ch: down.find((x, i) => x === up[i]) };
-  if (f.checks.copy === 'bad') return { id: 'copy', ch: f.shared[0] };
+  if (f.checks.copy === 'bad') return { id: 'copy', ch: f.shared[0], near: nearsOf(down, f.shared[0]) };
   if (!echoOk(up, down)) return { id: 'echo' };
   return null;
 }
