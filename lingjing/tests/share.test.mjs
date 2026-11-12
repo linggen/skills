@@ -22,8 +22,8 @@ const content = loadContent();
 const X = content.balance.play_pay.xiuwei, OWN = content.gongke.kinds.share.own, GAME = content.balance.play_pay.story.units;
 const XW = Math.round(OWN.games * GAME * X.rate.base * X.board);
 // …and three small games' 灵石 (batch 2): a small game's play 灵石 (play_pay.wealth.default, minutes of income) × I at 练气一层 —
-// 11 with today's knobs (15, a flat number, until 2026-11-10).
-const WS = Math.round(OWN.games * content.balance.play_pay.wealth.default * content.balance.economy.income.first);
+// 6 with today's earn knob (11 before it; 15, a flat number, until 2026-11-10).
+const WS = Math.round(OWN.games * content.balance.play_pay.wealth.default * content.balance.economy.income.first * content.balance.economy.earn);
 const ROOT = path.resolve(import.meta.dirname, '..');
 const NOW = new Date('2026-11-10T12:00:00');
 const T = id => ({ zh: `做${id}`, en: `Do ${id}` });

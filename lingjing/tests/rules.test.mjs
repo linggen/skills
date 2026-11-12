@@ -16,7 +16,7 @@ import { beforeChapterOne, TO_WAIMEN, TO_HALL, TO_VALLEY, V1_BIRTH, walk } from 
 import { starterFor } from '../scripts/rules/roots.mjs';
 import { tellOf } from '../scripts/rules/tell.mjs';
 import { BEATS, REALMS, costsOf, fight, foeOf, offers as boutOffers, realmStats } from '../scripts/duel.js';
-import { chorePlay, sizedUnits, stonesAt, tableStones, unitsPay } from '../scripts/rules/playpay.mjs';
+import { chorePlay, incomeAt, sizedUnits, stoneLevel, stonesAt, tableStones, unitsPay } from '../scripts/rules/playpay.mjs';
 import { paysOf } from '../scripts/rules/core.mjs';
 // What the book authors is a share of 练气一层, read at the layer he stands on (play_pay.authored, 2026-10-27).
 // A size's 修为 where he stands (2026-11-10: the book declares units, paid units × R there — rules/playpay.mjs unitsPay).
@@ -2883,6 +2883,7 @@ test('抉择: the roll settles it — what was won or lost is the rules\', the w
   const won = must(meet, at([15, 1, 1]), { action: 'choose', n: 0 }, c);
   assert.deepEqual([won.result.success, won.result.line], [true, '过来了。']);
   assert.ok(won.result.paid.progress > 0);
+  assert.equal(won.result.paid.wealth, Math.round(stonesAt(content, base, content.meets.trial.win.hard.ls)));
   // A wound on the road is 体力 now (伤势 was cut): the share of the pool, after the way's own cost.
   const full = { stamina: 100, stamina_at: c.now.toISOString() };
   const hurt = must(meet, at([14, 1, 1], full), { action: 'choose', n: 0 }, c);
@@ -2896,7 +2897,7 @@ test('抉择: the roll settles it — what was won or lost is the rules\', the w
   assert.deepEqual([worn.state.stamina, worn.result.lost.stamina, worn.state.resting], [0, 5 - staminaCost(content, 'trial'), true]);
   const poorer = must(meet, at([1, 5, 1]), { action: 'choose', n: 1 }, c);
   // The easy stake: its minutes of income (meets.json trial.lose.coin) × I where he stands (batch 2).
-  const stake = Math.round(stonesAt(content, base, content.meets.trial.lose.coin.easy));
+  const stake = Math.round(content.meets.trial.lose.coin.easy * incomeAt(content, stoneLevel(content, base)));
   assert.ok(stake > 0);
   assert.deepEqual([poorer.result.success, poorer.result.lost.wealth, poorer.state.wealth], [false, stake, 50 - stake]);
   // 银月 at his side: +2 — a 13 now reaches the hard mark of 15
