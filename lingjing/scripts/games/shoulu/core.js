@@ -106,6 +106,13 @@ export function layLevel(row) {
     towers: row.towers ?? TORDER, unlock: row.unlock ?? {}, gap: row.gap ?? 20, first: row.first ?? 25, hpScale: row.hpScale ?? 0.12, hpMul: row.hpMul ?? 1, diff: difficultyOf(row) };
 }
 export const beastsOf = (row) => [...new Set(row.waves.flat().map(([t]) => t))];
+/** Replace only a last-wave boar elite; keep its original life budget and the other spawns intact. */
+export const eliteKind = (row) => ['qiuyu', 'zheng', 'qique'].find((t) => beastsOf(row).includes(t)) ?? 'qiuyu';
+export function eliteSpawn(row, type, multiplier) {
+  if (type !== 'yezhu') return { type, elite: multiplier };
+  const kind = eliteKind(row);
+  return { type: kind, elite: multiplier * BEASTS.yezhu.hp / BEASTS[kind].hp };
+}
 /** A level's `skin` (a story level before 入门 lays no talismans — 泗水路, 2026-10-28): { <tower>: { name, say, glyph, art, shot } }
     — the talisman's name and line on the build menu, its glyph, its painted art (`tower-<art>-<1…3>.webp`), and `shot`, how
     its sword is drawn ('stone'). The numbers stay the talisman's (TOWERS): only how it looks and is called changes. */
@@ -181,7 +188,11 @@ export function callWave(g, early = false) {
   g.wave += 1;
   emit(g, { banner: g.wave });
   const q = [];
-  for (const [type, n, gap, st, o] of g.L.waves[g.wave - 1]) for (let i = 0; i < countAt(type, n, g.L.diff); i += 1) q.push({ at: g.t + st + i * gap, type, elite: i < (o?.elite ?? 0) ? o.hp ?? ELITE.hp : 0 });
+  for (const [type, n, gap, st, o] of g.L.waves[g.wave - 1]) for (let i = 0; i < countAt(type, n, g.L.diff); i += 1) {
+    const elite = i < (o?.elite ?? 0) ? o.hp ?? ELITE.hp : 0;
+    const beast = elite && g.wave === waves(g) ? eliteSpawn(g.L, type, elite) : { type, elite };
+    q.push({ at: g.t + st + i * gap, ...beast });
+  }
   q.sort((a, b) => a.at - b.at);
   g.queue = q;
   g.nextTimer = g.L.gap;
@@ -981,7 +992,8 @@ function landJieyin(g, { m, id, hit, t, cfg }) {
     if (m.root) b.stunT = Math.max(b.stunT, (BEASTS[b.type].boss ? m.root * 0.4 : m.root) * K);
     if (m.slow) { b.slowT = Math.max(b.slowT, (m.for ?? 2) * K); b.slowF = Math.max(b.slowF, m.slow); }
     if (m.push && !BEASTS[b.type].boss) { b.d = Math.max(0, b.d - m.push * K); place(g, b); }
-    const d = m.dmg ? hurt(g, b, m.dmg * mul * K * (b === t ? 1 : m.around ?? 1), 'jy') : 0;
+    const damage = b === t && b.elite && cfg.eliteShare != null ? b.max * cfg.eliteShare * K : (m.dmg ?? 0) * mul * K * (b === t ? 1 : m.around ?? 1);
+    const d = damage ? hurt(g, b, damage, 'jy') : 0;
     if (d) addFx(g, { k: 'txt', x: b.x, y: b.y - BEASTS[b.type].r - 16, s: `-${Math.round(d)}`, col: '#c23b22', life: 1.5, max: 1.5, vy: -20, size: b === t ? 34 : 24, bold: true });
   }
   addFx(g, { k: 'txt', x: t.x, y: t.y - 30, s: m.name?.zh ?? id, col: '#b0412e', life: 0.9, max: 0.9, vy: -24, size: 15 });

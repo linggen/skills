@@ -580,7 +580,7 @@ export async function mount(container, { lang = 'zh', data = {}, signal, reduced
       for (const e of g.events) onEvent(e);
       g.events.length = 0;
       if (!frozen()) pump(rdt); // the banner and tips wait under the lead card and the pause
-      draw(ctx, g, { paper, sc, dpr, t: now / 1000, heroSel: S.hero, sel, aim: S.aim ? { key: S.aim, x: aimAt?.x, y: aimAt?.y } : null, paused: !shell && paused, lang, says: t.says, bossName: BN[lang].heyu });
+      draw(ctx, g, { paper, sc, dpr, t: now / 1000, heroSel: S.hero, sel, aim: S.aim ? { key: S.aim, x: aimAt?.x, y: aimAt?.y } : null, paused: !shell && paused, lang, says: t.says, beastNames: BN[lang], bossName: BN[lang].heyu });
       hud();
       if (g.over && !shown) showOver();
     }

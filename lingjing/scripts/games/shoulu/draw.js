@@ -212,13 +212,22 @@ function beastArt(c, type, B, t, face, flash, s) {
   c.drawImage(ART.beasts, sx, sy, w, h, -ww / 2, foot - hh + (B.fly ? 0 : Math.abs(Math.sin(t * 10)) * -1.5), ww, hh);
   return true;
 }
-function hpBar(c, b) {
-  const B = BEASTS[b.type], w = B.boss ? 54 : 22, x = b.x - w / 2, y = b.y - B.r - (B.fly ? 14 : 10) - (B.boss ? 14 : 0), h = B.boss ? 6 : 4;
+export function eliteMark(b, names, t) {
+  const B = BEASTS[b.type], scale = 1.5;
+  return { name: names?.[b.type] ?? b.type, scale, x: b.x, y: b.y, ringX: B.r * 2.3, ringY: B.r * 0.8,
+    alpha: 0.55 + 0.2 * Math.sin(t * 3), barY: b.y + (B.fly ? BEAST_H[b.type] * scale / 2 : B.r * 0.85 * scale) - BEAST_H[b.type] * scale - 8 };
+}
+function eliteRing(c, mark) {
+  c.save(); c.strokeStyle = `rgba(222,166,48,${mark.alpha})`; c.shadowColor = '#e8b643'; c.shadowBlur = 12; c.lineWidth = 3;
+  c.beginPath(); c.ellipse(mark.x, mark.y + 10, mark.ringX, mark.ringY, 0, 0, 6.28); c.stroke(); c.restore();
+}
+function hpBar(c, b, mark = null) {
+  const B = BEASTS[b.type], w = B.boss ? 54 : mark ? 40 : 22, x = b.x - w / 2, y = mark ? mark.barY : b.y - B.r - (B.fly ? 14 : 10) - (B.boss ? 14 : 0), h = B.boss ? 6 : mark ? 5 : 4;
   c.fillStyle = 'rgba(42,36,29,0.55)'; c.fillRect(x - 1, y - 1, w + 2, h + 2);
   c.fillStyle = '#e9dfcc'; c.fillRect(x, y, w, h);
   const k = Math.max(0, b.hp / b.max);
   c.fillStyle = k > 0.5 ? '#5c7d4e' : k > 0.25 ? '#b9842f' : '#b0412e'; c.fillRect(x, y, w * k, h);
-  if (b.elite) { c.strokeStyle = '#d9a63a'; c.lineWidth = 1.6; c.strokeRect(x - 2, y - 2, w + 4, h + 4); } // an elite: a gold frame
+  if (mark) { c.save(); c.font = 'bold 15px "Songti SC",serif'; c.textAlign = 'center'; c.lineWidth = 4; c.strokeStyle = '#302116'; c.strokeText(mark.name, b.x, y - 6); c.fillStyle = '#ffe095'; c.fillText(mark.name, b.x, y - 6); c.restore(); }
   if (b.slowT > 0) { c.fillStyle = 'rgba(63,135,166,0.9)'; c.fillRect(x, y + h + 1, w, 1.5); }
   if (b.bareT > 0) { c.strokeStyle = 'rgba(200,215,240,0.95)'; c.lineWidth = 1.2; for (let k = 0; k < 3; k += 1) { const sx = x + 3 + k * (w - 6) / 2; c.beginPath(); c.moveTo(sx - 3, y - 6); c.quadraticCurveTo(sx + 2, y - 9, sx + 3, y - 3); c.stroke(); } }
   if (b.burnT > 0) { c.fillStyle = 'rgba(80,150,240,0.9)'; c.beginPath(); c.arc(x + w + 4, y + 1, 2.4, 0, 6.28); c.fill(); }
@@ -544,6 +553,8 @@ export function draw(ctx, g, v) {
   if (v.aim) drawAim(ctx, g, v.aim);
   drawFurnace(ctx, g, t);
   if (g.keep) drawKeep(ctx, g, t);
+  const marks = new Map(g.beasts.filter((b) => b.elite).map((b) => [b, eliteMark(b, v.beastNames, t)]));
+  for (const mark of marks.values()) eliteRing(ctx, mark);
   const items = [];
   for (const b of g.beasts) items.push({ y: b.y + (b.fly ? 60 : 0), b });
   g.towers.forEach((tw) => { if (tw) items.push({ y: tw.y + 4, tw }); });
@@ -552,10 +563,11 @@ export function draw(ctx, g, v) {
   for (const it of items) {
     if (it.hero) drawHero(ctx, g.hero, t, v.heroSel, v.lang, v.says, g);
     else if (it.tw) drawTower(ctx, g, it.tw, t);
-    else drawBeast(ctx, it.b.type, it.b.x, it.b.y, t + it.b.id, it.b.face, it.b.flash, 1, it.b);
+    else drawBeast(ctx, it.b.type, it.b.x, it.b.y, t + it.b.id, it.b.face, it.b.flash, marks.get(it.b)?.scale ?? 1, it.b);
   }
   if (g.L.snow) drawSnow(ctx, t);
-  for (const b of g.beasts) hpBar(ctx, b);
+  for (const b of g.beasts) if (!b.elite) hpBar(ctx, b);
+  for (const [b, mark] of marks) hpBar(ctx, b, mark);
   for (const p of g.proj) {
     if (p.k === 'stone' || p.look === 'stone') drawStone(ctx, p);
     else if (p.k === 'sword') { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.ang); ctx.strokeStyle = 'rgba(53,86,110,0.25)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-26, 0); ctx.lineTo(-8, 0); ctx.stroke(); drawSword(ctx, 1); ctx.restore(); }
