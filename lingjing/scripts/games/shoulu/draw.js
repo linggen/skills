@@ -215,10 +215,10 @@ function beastArt(c, type, B, t, face, flash, s) {
 export function eliteMark(b, names, t) {
   const B = BEASTS[b.type], scale = 1.5;
   return { name: names?.[b.type] ?? b.type, scale, x: b.x, y: b.y, ringX: B.r * 2.3, ringY: B.r * 0.8,
-    alpha: 0.55 + 0.2 * Math.sin(t * 3), barY: b.y + (B.fly ? BEAST_H[b.type] * scale / 2 : B.r * 0.85 * scale) - BEAST_H[b.type] * scale - 8 };
+    alpha: 0.72 + 0.22 * Math.sin(t * 3), barY: b.y + (B.fly ? BEAST_H[b.type] * scale / 2 : B.r * 0.85 * scale) - BEAST_H[b.type] * scale - 8 };
 }
 function eliteRing(c, mark) {
-  c.save(); c.strokeStyle = `rgba(222,166,48,${mark.alpha})`; c.shadowColor = '#e8b643'; c.shadowBlur = 12; c.lineWidth = 3;
+  c.save(); c.strokeStyle = `rgba(222,166,48,${mark.alpha})`; c.shadowColor = '#e8b643'; c.shadowBlur = 14; c.lineWidth = 4.5;
   c.beginPath(); c.ellipse(mark.x, mark.y + 10, mark.ringX, mark.ringY, 0, 0, 6.28); c.stroke(); c.restore();
 }
 function hpBar(c, b, mark = null) {
