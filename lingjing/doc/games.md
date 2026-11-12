@@ -1538,7 +1538,7 @@ thing lands in the 饭桶图鉴 (录). 古七's 方子, three 方子残页 → �
 饱嗝令 waives the next hosted game's 灵气.
 **2026-11-12 (Hanli's 逆天 that was 灵石 ×124):** a 珍品 or 逆天 roll with no row of its grade in reach gives a THING — the best of the next grade down
 that has one (珍品, 有用, 凡), a whole number of them near the rolled grade's floor and never worth over twice the pot (no farm; `roll` keeps `grade` as
-rolled, `shown` is the thing's own); only a pot with nothing in reach at any grade pays 灵石 back, shown 凡/有用, with `words.stones_back`, no 「新!」 and no 图鉴 entry.
+rolled, `shown` is the thing's own); only a pot with nothing in reach at any grade pays 灵石 back, shown 凡/有用, no 「新!」, no 图鉴 entry and no line explaining it (his, the same day: a pot gives good things at some odds and poor ones at others, never a gain every time).
 All data: fantong.json (rows, tiers, odds); rules/fantong.mjs (on a save) and
 rules/fantong-roll.mjs (pure); the Phaser play tools/kailu/ → games/kailu/; the pane fantong-kailu.js.
 

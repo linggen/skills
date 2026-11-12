@@ -319,9 +319,9 @@ function feed(state, content, ctx, args, t) {
   const named = o => (o.wealth || o.n > 1 ? `${o.name} ×${o.n}` : o.name);
   const line = ev ? pick(ev.say, lang) : fill(w.spit, { name: named(out) });
   const pageLine = P && pages > (f.pages ?? 0) && !paged ? fill(w.page, { n: Math.min(pages, P.need), need: P.need }) : null;
-  // The fallback — nothing better within reach of the pot — says so, once, in the table's words (words.stones_back).
-  const note = landed.some(l => l.back) ? w.stones_back ?? null : null;
-  const say = [line, note, extra ? fill(w.with, { name: named(extra) }) : null, twin ? fill(w.twin, { name: named(twin) }) : null, pageLine,
+  // A pot that pays 灵石 back says nothing more about it (Hanli 2026-11-12: 「饭桶定义就是一定概率出好东西, 一定概率出差的东西, 不能每次都赚」):
+  // it is one of the plain results a pot can have.
+  const say = [line, extra ? fill(w.with, { name: named(extra) }) : null, twin ? fill(w.twin, { name: named(twin) }) : null, pageLine,
     fullLine(s, landed.map(l => l.got))].filter(Boolean).join(' ');
   const shown = shownOf(roll), nextNow = nextAt(t, s, now);
   const newRecipe = discovered ?? paged;
@@ -329,7 +329,7 @@ function feed(state, content, ctx, args, t) {
     ok: true, fed: { ids, id: ids[0], names: ids.map(id => itemName(itemOf(content, id), s, lang) ?? id), name: ids.map(id => itemName(itemOf(content, id), s, lang) ?? id).join(lang === 'en' ? ', ' : '、'), lingshi, press },
     out, ...(extra ? { with: extra } : {}), ...(twin ? { twin } : {}), outs: briefs,
     // `grade` here is what the page and the play show: the grade of what came out. The grade rolled is `rolled`.
-    grade: shown, grade_name: wordsOf(t, lang).grades?.[shown] ?? shown, rolled: roll.grade, ...(note ? { note } : {}),
+    grade: shown, grade_name: wordsOf(t, lang).grades?.[shown] ?? shown, rolled: roll.grade,
     ...(lifted ? { lifted: { id: lifted, name: itemName(itemOf(content, lifted), s, lang) } } : {}),
     ...(ev ? { her: true } : {}), ...(roll.story ? { story: roll.story } : {}), ...(fresh.length ? { first: fresh } : {}), say,
     ...(newRecipe ? { discovered: fantongRecipes(content, s).find(r => r.id === newRecipe) } : {}),

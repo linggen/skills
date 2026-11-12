@@ -101,8 +101,8 @@ async function sample(lang, seed, force) {
     // The grade told is the grade of what came out (rules/fantong-roll.mjs `shown`); a stones-only result is no 「新」.
     const outs = r.outs.flatMap((o) => [{ ...brief1(o.out, shownOf(o)), ...(o.wealth ? { n: o.wealth } : {}) }, ...(o.with ? [brief1(o.with, shownOf(o))] : [])]);
     const first = outs.filter((o) => !o.wealth).map((o) => o.id).filter((id) => !seen.has(id) && seen.add(id));
-    const note = r.outs.some((o) => o.back) ? words.stones_back : null, shown = shownOf(r);
-    return { ok: true, outs, out: outs[0], grade: shown, grade_name: words.grades?.[shown] ?? shown, ...(note ? { note } : {}), ...(r.twin ? { twin: true } : {}), first, power: r.power, GRADES };
+    const shown = shownOf(r);
+    return { ok: true, outs, out: outs[0], grade: shown, grade_name: words.grades?.[shown] ?? shown, ...(r.twin ? { twin: true } : {}), first, power: r.power, GRADES };
   };
   return { brief, roll: rollOne };
 }

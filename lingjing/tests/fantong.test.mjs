@@ -644,16 +644,12 @@ test('stones-only: a pot with no thing in reach at any grade pays 灵石, shown 
     assert.equal(x.out.grade, x.grade, 'the out carries the told grade, so the play draws the same one');
     assert.notEqual(x.grade_name, '逆天');
     assert.equal(x.first, undefined, 'stones are no 「新」');
-    assert.equal(x.note, T.words.zh.stones_back);
-    assert.ok(x.say.includes(T.words.zh.stones_back));
+    assert.equal(x.note, undefined, 'a plain result: no line explains it');
     assert.ok(x.out.n <= inWorth(NOTHING.ids, NOTHING.lingshi), 'stones back, never more than went in');
     assert.ok(!r.state.fantong.seen.some(s => s.id === 'lingshi'), 'the 图鉴 never takes 灵石');
     assert.equal(r.state.fantong.last.shown, x.grade);
     assert.equal(r.state.fantong.last.grade, rolled, 'the roll\'s own grade stays what was rolled');
   }
-  const en = nothingUntil(y => y.rolled === 'best', 'en');
-  assert.equal(en.result.note, T.words.en.stones_back);
-  assert.ok(T.words.zh.stones_back && T.words.en.stones_back);
 });
 
 test('no farm: over 500 seeded pots of mixed inputs, what a top roll falls back to is worth at most twice what went in (and so are the stones paid when nothing is in reach)', () => {
