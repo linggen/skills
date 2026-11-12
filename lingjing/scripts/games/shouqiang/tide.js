@@ -89,7 +89,7 @@ export const tide = {
       growth: r2(lerp(0.36, 0.42, t)),
       difficulty: 1,
       // the 大妖's own size: about a third of the hand-made 山门's on the first nights, a little more at the ceiling
-      ...(bossKind ? { bossHp: r2(lerp(0.3, 0.38, t)) } : {}),
+      ...(bossKind ? { bossHp: r2(lerp(0.3, 0.38, t)), tideSeal: true } : {}),
       ...(sc.art ? { art: sc.art } : {}),
       ...(sc.paths ? { paths: sc.paths } : {}),
       waves,

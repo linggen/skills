@@ -154,9 +154,10 @@ function runSpawns(g) {
 export function hurt(g, b, dmg, kind, extra = {}) {
   if (!inReach(g, b)) return 0;
   const k = g.beastKit[b.kind];
-  let d = dmg * (k.armor?.[kind] ?? 1);
-  if (b.freezeT > 0) d *= at(card(g, 'han-freeze').takes, lv(g, 'han-freeze')) ?? 1;
-  if (b.wailT > 0) d *= k.wail.takes;
+  const fixedSeal = kind === 'spell' && g.level.tideSeal && k.spellShare;
+  let d = dmg * (fixedSeal ? 1 : k.armor?.[kind] ?? 1);
+  if (b.freezeT > 0 && !fixedSeal) d *= at(card(g, 'han-freeze').takes, lv(g, 'han-freeze')) ?? 1;
+  if (b.wailT > 0 && !fixedSeal) d *= k.wail.takes;
   d = Math.max(0, Math.round(d));
   if (!d) return 0;
   const shelled = b.shell > 0 && b.hp > b.shell;
@@ -352,8 +353,8 @@ export function jieyinTarget(g) {
 
 /** The kit with each beast's element (`root`, creatures.json — data, one place) for 五行相克. */
 export function withRoots(kit, creatures = []) {
-  const rootOf = (id) => creatures.find((c) => c.id === id)?.root;
-  const stamp = (beasts) => Object.fromEntries(Object.entries(beasts ?? {}).map(([id, b]) => [id, { ...b, root: b.root ?? rootOf(id) ?? null }]));
+  const creatureOf = (id) => creatures.find((c) => c.id === id);
+  const stamp = (beasts) => Object.fromEntries(Object.entries(beasts ?? {}).map(([id, b]) => [id, { ...b, root: b.root ?? creatureOf(id)?.root ?? null, name: b.name ?? creatureOf(id)?.name ?? null }]));
   return { ...kit, beasts: stamp(kit.beasts) };
 }
 
@@ -423,7 +424,9 @@ function spellLands(g, s) {
     if (m.root) b.stunT = Math.max(b.stunT, m.root * k * K / (b.boss ? c.bossMul ?? 1 : 1));
     if (m.slow) { b.slow = m.slow; b.slowT = Math.max(b.slowT, (m.for ?? 2) * K); }
     if (m.push && !b.boss) { b.y = Math.max(reachY(g) + 10, b.y - m.push * K); b.atWall = false; b.stunT = Math.max(b.stunT, 0.6); }
-    if (m.dmg) hurt(g, b, m.dmg * share * k * K, 'spell', { big: b === t || k > 1 });
+    const fixedShare = g.level.tideSeal && g.beastKit[b.kind].spellShare;
+    const dmg = fixedShare ? b.max * fixedShare * K : m.dmg * share * k * K;
+    if (m.dmg) hurt(g, b, dmg, 'spell', { big: b === t || k > 1 });
   }
 }
 

@@ -2,11 +2,11 @@
  "_about": "守墙关 — wall defense, the 塔防 kit's second level type (Hanli 10-20: 「可否加一个类似这个的关卡, 让塔防多样性」, 「做原型吧」; the reference is 《向僵尸开炮》). Beasts come down the 山道 in waves; 小满 casts from the 山门 wall, 银月 sits beside him; after each wave the player picks 1 of 3 cards (the 守炉 kit as skills). The engine: scripts/games/shouqiang/core.js (pure, seeded, node-testable); the play: scripts/games/shouqiang/shouqiang.min.mjs (Phaser, built from tools/shouqiang/). Board 540×960, y grows down; the wall's face is at `wallY`. Numbers in arrays are per card level (1…max).",
  "beasts": {
   "_about": "hp before the level's hpMul and the wave's growth; speed px/s; bite: wall hp per second at the wall; size: the drawn height px; r: hit radius; armor: damage taken × this per kind (missing = 1); fly: over the burning ground, straight at the wall; frames: the painted ones (art/<id>-<frame>.webp — one walk frame steps by a bob).",
-  "yezhu": {"hp": 25, "speed": 42, "bite": 7, "size": 84, "r": 28, "frames": ["walk-1", "hit"], "gold": 1},
-  "zheng": {"hp": 17, "speed": 84, "bite": 5, "size": 76, "r": 26, "frames": ["walk-1", "walk-2", "hit"], "gold": 1},
-  "qiuyu": {"hp": 43, "speed": 30, "bite": 9, "size": 78, "r": 27, "armor": {"sword": 0.4, "fire": 1.5}, "frames": ["walk-1", "walk-2", "hit"], "gold": 2},
-  "qique": {"hp": 19, "speed": 70, "bite": 6, "size": 80, "r": 26, "fly": true, "armor": {"ground": 0}, "frames": ["walk-1", "walk-2", "hit"], "gold": 1},
-  "heyu": {"hp": 2400, "speed": 14, "bite": 60, "size": 200, "r": 74, "boss": true, "wail": {"every": 7, "for": 2.2, "takes": 2, "calls": ["yezhu", 3]}, "march": {"speed": 40, "roar": 1.6}, "frames": ["walk-1", "hit"], "gold": 20},
+  "yezhu": {"name": {"zh": "野猪", "en": "Wild boar"}, "hp": 25, "speed": 42, "bite": 7, "size": 84, "r": 28, "frames": ["walk-1", "hit"], "gold": 1},
+  "zheng": {"name": {"zh": "狰", "en": "Zheng"}, "hp": 17, "speed": 84, "bite": 5, "size": 76, "r": 26, "frames": ["walk-1", "walk-2", "hit"], "gold": 1},
+  "qiuyu": {"name": {"zh": "犰狳", "en": "Qiuyu"}, "hp": 43, "speed": 30, "bite": 9, "size": 78, "r": 27, "armor": {"sword": 0.4, "fire": 1.5}, "frames": ["walk-1", "walk-2", "hit"], "gold": 2},
+  "qique": {"name": {"zh": "鬿雀", "en": "Qique"}, "hp": 19, "speed": 70, "bite": 6, "size": 80, "r": 26, "fly": true, "armor": {"ground": 0}, "frames": ["walk-1", "walk-2", "hit"], "gold": 1},
+  "heyu": {"name": {"zh": "合窳", "en": "Heyu"}, "spellShare": 0.4, "hp": 2400, "speed": 14, "bite": 60, "size": 200, "r": 74, "boss": true, "wail": {"every": 7, "for": 2.2, "takes": 2, "calls": ["yezhu", 3]}, "march": {"speed": 40, "roar": 1.6}, "frames": ["walk-1", "hit"], "gold": 20},
   "luhuaji": {"hp": 37, "speed": 55, "bite": 5, "size": 66, "r": 22, "shoo": true, "frames": ["walk-1", "walk-2", "hit"], "gold": 0, "_about": "芦花鸡 — 阿禾's speckled hens (00-baicai, 守白菜): not a beast of the world but the book's own (「一只芦花鸡刚从篱笆缝里探过头来」); `shoo`: a hen beaten is chased off, not killed (the play runs it off the field)."}
  },
  "hero": {

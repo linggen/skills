@@ -2,7 +2,7 @@
 // juice, and takes the two inputs the game has: a card pick, and (optional) a tap on a beast to focus it.
 import * as Phaser from 'phaser';
 import { newGame, step, pick, setFocus, focusFar, reachY, castJieyin, W, H } from 'shouqiang-core';
-import { makeTextures, makeNumberFont, makeEmitters, jag } from './fx.js';
+import { makeTextures, makeNumberFont, makeEmitters, jag, FONT } from './fx.js';
 import { Hud, SealGlow, WORDS, bar, setBarW, wordsFor } from './hud.js';
 import { LaneView, SIDE } from './lanes.js';
 import { lookOf, lookArts, loopAt, arcAt, fanAt } from '../../../scripts/games/jieyin/flight.js';
@@ -362,16 +362,20 @@ export class PlayScene extends Phaser.Scene {
 
   makeBeast(b) {
     const k = this.kit(b);
-    const walk1 = `${b.kind}-walk-1`;
+    const art = k.sprite ?? b.kind;
+    const walk1 = `${art}-walk-1`;
     const spr = this.add.image(b.x, b.y, walk1).setOrigin(0.5, 0.86);
     const scale = k.size / spr.height;
     spr.setScale(scale);
     const shadow = this.add.image(b.x, b.y, 'shadow').setDepth(D.shadow).setScale(k.size / 64 * (b.fly ? 0.7 : 1.05), k.size / 64);
     const s = { spr, shadow, scale, kind: b.kind, hitT: 0, flashT: 0, phase: Math.random() * 6, frames: [walk1, this.tex(`${b.kind}-walk-2`, walk1)],
-      hit: this.tex(`${b.kind}-hit`, walk1), stars: null, tint: null, hpW: Math.max(34, k.size * 0.6), hpBg: null, hpFill: null };
-    if (!b.boss) {
-      s.hpBg = bar(this, 0, 0, s.hpW + 4, 9, 4, 0x1b0d06, 0.85).setDepth(D.num - 1).setVisible(false);
-      s.hpFill = bar(this, 0, 0, s.hpW, 5, 2, 0xff4b3a).setDepth(D.num - 1).setVisible(false);
+      hit: this.tex(`${art}-hit`, walk1), stars: null, tint: null, hpW: Math.max(34, k.size * 0.6), hpBg: null, hpFill: null };
+    s.frames[1] = this.tex(`${art}-walk-2`, walk1);
+    s.hpBg = bar(this, 0, 0, s.hpW + 4, 9, 4, 0x1b0d06, 0.85).setDepth(D.num - 1).setVisible(false);
+    s.hpFill = bar(this, 0, 0, s.hpW, 5, 2, 0xff4b3a).setDepth(D.num - 1).setVisible(false);
+    if (b.boss) {
+      s.label = this.add.text(0, 0, k.name?.[this.lang] ?? k.name?.zh ?? '大妖', { fontFamily: FONT, fontSize: '24px', color: '#fff5d5', stroke: '#28130a', strokeThickness: 5 }).setOrigin(0.5, 1).setDepth(D.num);
+      s.ring = this.add.image(b.x, b.y, 'ring').setDepth(D.shadow + 0.1).setTint(0xffb44a).setDisplaySize(k.size, k.size * 0.3).setAlpha(0.8);
     }
     spr.setAlpha(0);
     this.tweens.add({ targets: spr, alpha: 1, duration: 260 });
@@ -392,6 +396,7 @@ export class PlayScene extends Phaser.Scene {
     const lunge = b.atWall && !held ? Math.max(0, Math.sin(s.phase * 0.7)) * 10 : 0;
     s.spr.setPosition(b.x, b.y - lift + lunge - (b.z ?? 0)).setDepth(D.beast + b.y / 1000 + (b.z ? 0.2 : 0));
     s.shadow.setPosition(b.x, b.y + 2).setAlpha(b.fly ? 0.45 : 0.8);
+    s.ring?.setPosition(b.x, b.y + 2);
     const key = s.hitT > 0 ? s.hit : s.frames[(Math.floor(s.phase / Math.PI) & 1)];
     if (s.spr.texture.key !== key) s.spr.setTexture(key);
     const squash = s.hitT > 0 ? 1 + s.hitT * 1.2 : 1;
@@ -413,11 +418,13 @@ export class PlayScene extends Phaser.Scene {
 
   hpBar(s, b, k) {
     if (!s.hpBg) return;
-    const on = b.hp < b.max;
+    const on = b.boss || b.hp < b.max;
     s.hpBg.setVisible(on);
     s.hpFill.setVisible(on);
     if (!on) return;
-    const x = b.x - s.hpW / 2, y = s.spr.y - k.size * 0.95;
+    const cx = Math.max(s.hpW / 2 + 4, Math.min(W - s.hpW / 2 - 4, b.x));
+    const x = cx - s.hpW / 2, y = Math.max(32, s.spr.y - k.size * 0.95);
+    s.label?.setPosition(cx, y - 6);
     s.hpBg.setPosition(x - 2, y - 2);
     setBarW(s.hpFill.setPosition(x, y), (s.hpW * b.hp) / b.max);
   }
@@ -440,6 +447,8 @@ export class PlayScene extends Phaser.Scene {
     this.beasts.delete(id);
     s.stars?.forEach((x) => x.destroy());
     s.shadow.destroy();
+    s.ring?.destroy();
+    s.label?.destroy();
     s.hpBg?.destroy();
     s.hpFill?.destroy();
     if (!dead) return void s.spr.destroy();
@@ -771,8 +780,9 @@ export class PlayScene extends Phaser.Scene {
       if (e.opening) this.moment('open');
       this.time.delayedCall(e.opening ? 250 : 900, () => this.hud.offer(e.cards, this.g, (id) => this.choose(id), { opening: e.opening }));
     },
-    boss() {
-      this.hud.bossBanner();
+    boss(e) {
+      const b = this.g.beasts.find((x) => x.id === e.id);
+      this.hud.bossBanner(b && this.kit(b).name?.[this.lang]);
       this.cameras.main.flash(300, 120, 0, 0);
       this.shake(400, 0.008);
       this.moment('boss');

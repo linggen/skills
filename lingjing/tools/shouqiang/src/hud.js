@@ -177,7 +177,8 @@ export class Hud {
     this.bossBox = s.add.container(0, 0).setDepth(this.d).setVisible(false);
     const bg = bar(s, W / 2 - 190, 92, 380, 22, 11, 0x1b0d06, 0.85);
     this.bossFill = bar(s, W / 2 - 186, 95, 372, 16, 8, 0xd61f2c);
-    this.bossBox.add([bg, this.bossFill, this.text(W / 2, 103, this.w.bossName, 18, { color: '#ffe0e0' })]);
+    this.bossName = this.text(W / 2, 103, this.w.bossName, 18, { color: '#ffe0e0' });
+    this.bossBox.add([bg, this.bossFill, this.bossName]);
   }
 
   wallBar() {
@@ -215,7 +216,10 @@ export class Hud {
     let boss = null;
     for (const b of g.beasts) if (b.boss) boss = b;
     this.bossBox.setVisible(Boolean(boss));
-    if (boss) setBarW(this.bossFill, 372 * Math.max(0, boss.hp / boss.max));
+    if (boss) {
+      setBarW(this.bossFill, 372 * Math.max(0, boss.hp / boss.max));
+      this.bossName.setText(g.beastKit[boss.kind].name?.[this.lang] ?? this.w.bossName);
+    }
     if (this.fps) this.fps.setText(`FPS:${Math.round(fps)}`);
     this.tickCountdown(g);
   }
@@ -275,7 +279,7 @@ export class Hud {
 
   waveBanner(n, of) { this.banner(n === of ? `${this.w.waveN(n)} · ${of}/${of}` : this.w.waveN(n), { size: 50, hold: 800 }); }
   clearBanner() { this.banner(this.w.cleared, { size: 50, color: '#bdfcff', y: 300, hold: 500, ribbon: false }); }
-  bossBanner() { this.banner(this.w.boss, { size: 58, color: '#ffd0d0', y: 260, hold: 1300 }); }
+  bossBanner(name) { this.banner(name ? (this.lang === 'en' ? `${name} comes` : `${name} 来袭`) : this.w.boss, { size: 58, color: '#ffd0d0', y: 260, hold: 1300 }); }
 
   bubbleAt(x, y, str, ms) {
     const s = this.s;

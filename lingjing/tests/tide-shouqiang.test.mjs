@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { BOTS, jieyinState, newGame, pick, sim, step, withRoots } from '../scripts/games/shouqiang/core.js';
+import { BOTS, castJieyin, jieyinState, newGame, pick, sim, step, withRoots } from '../scripts/games/shouqiang/core.js';
 import { tide } from '../scripts/games/shouqiang/tide.js';
 import { levelDealt } from '../scripts/games/shouqiang.js';
 
@@ -45,8 +45,10 @@ test('every sampled night is won by the human-like hand without 结印 (each on 
 
 test('a 大妖 night: the 大妖 comes in the last wave, small, and 结印 is lit while it is up', () => {
   const n = ask('boss', 0, true, 'h07'), lv = levelOf(n);
-  assert.ok(lv.waves.at(-1).some((g) => kit.beasts[g[0]].boss));
+  assert.ok(lv.waves.at(-1).some((g) => g[0] === 'heyu'));
   assert.ok(lv.bossHp > 0 && lv.bossHp < 0.5);
+  assert.equal(kit.beasts.heyu.name.zh, '合窳');
+  assert.equal(kit.beasts.heyu.size, 200);
   const g = newGame(kit, lv, { seed: 'b' });
   let lit = false;
   for (let t = 0; t < 900 && !['won', 'lost'].includes(g.phase); t += 0.1) {
@@ -55,4 +57,23 @@ test('a 大妖 night: the 大妖 comes in the last wave, small, and 结印 is li
     if (g.beasts.some((b) => b.boss && b.hp > 0)) { lit = jieyinState(g).on; break; }
   }
   assert.ok(lit, '结印 offered while the 大妖 is on the field');
+});
+
+test('a damaging seal takes 40% at base mastery: the third lands the kill', () => {
+  for (const mastery of [1, 1.5, 2]) {
+    const lv = { ...levelOf(ask('cast', 0, true, 'h07')), mastery: { feijian: mastery } };
+    const g = newGame(kit, lv), hp = 2400;
+    g.phase = 'wave'; g.cool.sword = g.cool.fox = 999;
+    const b = { id: 999, kind: 'heyu', boss: true, hp, max: hp, x: 270, y: 400, speed: 0, r: 30, hitBy: new Set(), wailIn: 999 };
+    g.beasts.push(b);
+    const damage = Math.round(hp * kit.beasts.heyu.spellShare * mastery);
+    for (let i = 1; i <= 3 && b.hp > 0; i++) {
+      g.cool.jieyin = 0;
+      assert.ok(castJieyin(g, 'feijian'));
+      for (let t = 0; t < 1.2; t += 1 / 60) step(g, 1 / 60);
+      assert.equal(b.hp, hp - i * damage);
+      if (mastery === 1 && i === 2) assert.ok(b.hp > 0);
+    }
+    assert.ok(b.hp <= 0);
+  }
 });
