@@ -1048,9 +1048,15 @@ several times its face. His calls, 2026-11-12: *斗法这里为了平衡, 都是
   beast's side (v3: a lone beast is a party of one).
 - **What he brings in PvE.** Gear stays whole numbers (攻 · 防 · 抗) and is weighed again so a worn set is worth about a
   level (today 攻 2 防 4 decides the late fights). Pills as now. Companions on both sides.
-- **The measure** (mine to set since 2026-11-12, 「其他数字你帮我定」; it replaces the first-meeting band): at equal level a player who thinks a
-  turn ahead wins clearly more than one who plays the first card he sees, and neither always wins. Both lines exist
-  (tools/story-fights.mjs `lookahead` · `careful`); at 练气四层, where the sides are close, they stood 53–88% and 8–40%.
+- **The measure** (mine to set since 2026-11-12, 「其他数字你帮我定」). Two things, and the second does not replace
+  the first. **How hard:** the first-meeting band stands as he set it (2026-10-16, 「灵石要有用，战斗难一点」): about 45%
+  bare, about 65% with two pills, never a wall, sometimes really lost (tests/fight-band*.test.mjs). It is what makes
+  a pill worth buying. **That thought pays:** three lines play every fight (tools/duel-lines.mjs) — `plain` plays the
+  first card he sees, `careful` a sensible card each turn, `lookahead` thinks a turn ahead — and each stands clearly
+  above the one before, none always winning. Which line carries the band is chosen from the three-line table, not
+  before: `lookahead` under fair rules plays far better than the line the band was set with (in the first even run
+  it stood 57% where `careful` stood 10%), and a band pinned to it would be a harder game than he approved. The
+  weakest line with two pills gets its own never-a-wall floor.
 - **PvP** is two sheets at one level with no gear and no pills. Nothing else differs.
 - **Collecting: one of each, its rarity on its frame** (his, later that day: *斗法卡牌不会重复吧, 只能拿一张. 根据稀有度画边框* —
   as a 精英 or a 稀有精英 wears its dragon in 魔兽, and a legendary its frame in 炉石). A card is held once; there are no
