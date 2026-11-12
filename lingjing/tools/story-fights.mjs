@@ -3,7 +3,7 @@
 // 2026-10-15: 都太简单了 — a first meeting should be won about 60% of the time;
 // a careful player wins reliably, a careless one loses).
 //
-//   node tools/story-fights.mjs [--seeds N] [--only id,id] [--line lookahead|careful] [--pills] [--json]
+//   node tools/story-fights.mjs [--seeds N] [--only id,id] [--line lookahead|careful] [--pills] [--bare-gear] [--json]
 //
 // The band's player is `--line lookahead` (scripts/fightline.js): every move
 // tried on a copy and the fight played out from there — it plays as a careful
@@ -171,20 +171,29 @@ function thoughtOut(setup) {
 export const TWO_PILLS = ['mend-pill', 'huiqi-pill'];
 /* The save as the road leaves it at this fight, the pills carried in (`pills`) and who stands with him
    (`party`, over party.json by_hui). */
-export function roadState(f, { pills = null } = {}) {
-  const st = stateAt(f.at);
+/* `bare` (--bare-gear, the card audit): nothing worn, no 符 in the bag, no pill — only his cards and his level speak. */
+export function bareState(state, charmIds = []) {
+  const st = structuredClone(state), worn = new Set(Object.values(st.wear ?? {}));
+  st.wear = {};
+  st.bag = Object.fromEntries(Object.entries(st.bag ?? {}).filter(([id]) => !worn.has(id) && !charmIds.includes(id)));
+  delete st.pill_pick;
+  return st;
+}
+const charmIds = content.cards.cards.filter(c => c.charm).map(c => c.id);
+export function roadState(f, { pills = null, bare = false } = {}) {
+  const st = bare ? bareState(stateAt(f.at), charmIds) : stateAt(f.at);
   if (pills) { st.bag = { ...st.bag }; for (const id of pills) st.bag[id] = (st.bag[id] ?? 0) + 1; st.pill_pick = [...pills]; } else delete st.pill_pick;
   return st;
 }
 /* Everything the fight is given at the door, as the story deals it at this point of the road. */
-export function setupOf(f, { pills = null, party = null } = {}) {
+export function setupOf(f, { pills = null, party = null, bare = false } = {}) {
   // `party`: who stands with him, over the 回's (party.json by_hui) — a pool met alone, or with two.
-  const st = roadState(f, { pills }), foe = party ? { ...foeOf(f), party } : foeOf(f);
+  const st = roadState(f, { pills, bare }), foe = party ? { ...foeOf(f), party } : foeOf(f);
   // A pool's beast is met roaming: its door is a haunt's, and it grows with the party (party.json roaming).
   return fightSetup(content, st, foe, NOW, f.pool ? `haunt:${f.id}` : null);
 }
-export function rateOf(f, seeds = 200, from = 0, line = 'careful', { pills = null, party = null } = {}) {
-  const setup = setupOf(f, { pills, party });
+export function rateOf(f, seeds = 200, from = 0, line = 'careful', { pills = null, party = null, bare = false } = {}) {
+  const setup = setupOf(f, { pills, party, bare });
   let won = 0, lost = 0, turns = 0, left = 0, forced = 0;
   for (let k = from; k < from + seeds; k += 1) {
     const end = (line === 'lookahead' ? thoughtOut : fightOnce)({ ...setup, seed: `band|${k}` });
@@ -200,8 +209,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const seeds = Number(args[args.indexOf('--seeds') + 1]) || 300;
   const only = args.includes('--only') ? args[args.indexOf('--only') + 1].split(',') : null;
   const line = args.includes('--line') ? args[args.indexOf('--line') + 1] : 'lookahead';
-  const pills = args.includes('--pills') ? TWO_PILLS : null;
-  const rows = FIGHTS.filter(f => !only || only.includes(keyOf(f)) || only.includes(f.id)).map(f => ({ fight: f.name, key: keyOf(f), at: f.at, ...rateOf(f, seeds, 0, line, { pills }) }));
+  const pills = args.includes('--pills') ? TWO_PILLS : null, bare = args.includes('--bare-gear');
+  const rows = FIGHTS.filter(f => !only || only.includes(keyOf(f)) || only.includes(f.id)).map(f => ({ fight: f.name, key: keyOf(f), at: f.at, ...rateOf(f, seeds, 0, line, { pills, bare }) }));
   if (args.includes('--json')) console.log(JSON.stringify(rows, null, 1));
   else for (const r of rows) console.log(`${r.fight.padEnd(28)} ${r.at.padEnd(5)} win ${(r.win * 100).toFixed(1).padStart(5)}%  lost ${(r.lost * 100).toFixed(1).padStart(5)}%  dry ${(r.withdrew * 100).toFixed(1).padStart(5)}%  turns ${r.turns.toFixed(1)}  hp left ${(r.left * 100).toFixed(0)}%`);
 }
