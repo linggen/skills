@@ -75,6 +75,8 @@ export const WORDS = {
     secludeFoci: SECLUDE_FOCI.zh,
     secludingTitle: '闭关中 · {what}', secludeGate: '洞府石门紧闭', secludeRestAt: '约 {n} 分钟体力回满', secludeRestFull: '体力已满', secludeIfNow: '此刻出关：', emergeEarly: '出关', secludeTop: '已臻圆满', secludeBarStar: '下一星：{what}', secludeBarTreasure: '下一重', secludeBarXw: '每小时修为 +{n}', secludeAt: '约 {t} 成', hourUnit: '小时', secludeHours: '已闭关 {h} 小时（至多 {cap}）', secludeTooShort: '不足 {min} 小时：出关不长修行。',
     secludeStar: '{name} ★{from} → ★{to} · 灵力 {was}→{cost}', secludeStarLeft: '{name} 离下一星还差 {h} 小时',
+    secludeArray: '聚灵阵 {level}/{top} · 可布 {holds} 块 · 今日还可布 {left} 块 · 囊中 {wallet}', secludeArrayUp: '扩阵 · {price} 灵石', secludeStonesNone: '不布', secludeStonesHalf: '布一半 · {n}', secludeStonesFull: '布满 · {n}',
+    secludePreview: '布 {n} 块：约 {h} 小时吸尽，修为 +{p}；之后吐纳，每小时 +{t}', secludePreviewNone: '不布灵石：吐纳，每小时 +{t}', secludePreviewBack: '修为将满，{back} 块吸不进，出关退回', secludeStonesBack: '灵石退回 {n}',
     secludeGrowXw: '修为 +{n}', secludeGrowTreasure: '{name} {from}重 → {to}重', secludeTreasureLeft: '{name} 离下一重还差 {h} 小时',
     secludeRested: '体力回满', secludeBuzhuan: '补转：丹毒补上{n}转', secludeBuzhuanLeft: '补转：丹毒补上{n}转，还欠{left}转', secludePillTaken: '服了{name}，时辰 ×{m}',
     emergeBtn: '出关 · 领取', emergedTitle: '出关', emergedHours: '闭关 {h} 小时', emergedNone: '这一回没长什么，歇够了。', emergedClose: '收起',
@@ -144,6 +146,8 @@ export const WORDS = {
     secludeFoci: SECLUDE_FOCI.en,
     secludingTitle: 'In seclusion · {what}', secludeGate: 'The cave gate, shut', secludeRestAt: 'stamina full in about {n} min', secludeRestFull: 'Stamina full', secludeIfNow: 'Out now:', emergeEarly: 'Come out', secludeTop: 'At the top', secludeBarStar: 'Next star: {what}', secludeBarTreasure: 'Next layer', secludeBarXw: 'Cultivation +{n} an hour', secludeAt: 'ready ~{t}', hourUnit: 'h', secludeHours: '{h} h in (up to {cap})', secludeTooShort: 'Under {min} h: coming out grows nothing.',
     secludeStar: '{name} ★{from} → ★{to} · Force {was}→{cost}', secludeStarLeft: '{name}: {h} h to the next star',
+    secludeArray: 'Spirit array {level}/{top} · holds {holds} · {left} more today · {wallet} in the purse', secludeArrayUp: 'Widen the array · {price} stones', secludeStonesNone: 'None', secludeStonesHalf: 'Half · {n}', secludeStonesFull: 'Full · {n}',
+    secludePreview: 'Lay {n}: drawn in about {h} h, cultivation +{p}; then breathing, +{t} an hour', secludePreviewNone: 'No stones: breathing, +{t} an hour', secludePreviewBack: 'The bar is nearly full: {back} will not be drawn and come back', secludeStonesBack: 'Stones back {n}',
     secludeGrowXw: 'Cultivation +{n}', secludeGrowTreasure: '{name} layer {from} → {to}', secludeTreasureLeft: '{name}: {h} h to the next layer',
     secludeRested: 'Stamina full', secludeBuzhuan: 'Turns made up: {n} of the pill poison', secludeBuzhuanLeft: 'Turns made up: {n} of the pill poison, {left} still owed', secludePillTaken: 'Took a {name}: hours ×{m}',
     emergeBtn: 'Come out · Collect', emergedTitle: 'Out of seclusion', emergedHours: '{h} h in seclusion', emergedNone: 'Nothing grew this time; you are rested.', emergedClose: 'Put away',
@@ -830,10 +834,26 @@ function seclude(card, ctx) {
     <div class="small dim">${esc(w.secludeHint)}</div>
     <div class="acts"><button class="act${on('progress')}" data-seclude-focus="progress">${esc(say(w.secludeProgress, { n: ch.per_hour ?? 0 }))}</button>
     ${ch.treasure ? `<button class="act${on('treasure')}" data-seclude-focus="treasure">${esc(say(w.secludeTreasure, { h: r.treasure_hours }))} · ${esc(ch.treasure.name)} ${esc(ch.treasure.step)}</button>` : ''}</div>
+    ${ch.julin && pickd.focus === 'progress' ? julinChoice(ch.julin, ctx) : ''}
     ${pills ? `<div class="acts">${pills}</div>` : ''}
     <div class="small dim">${esc(say(w.secludeRule, { cap: r.cap_hours, min: r.min_hours, rest: r.fill_hours ?? r.rest_hours }))}</div>
     ${ctx.secludeNote ? `<div class="donote">${esc(ctx.secludeNote)}</div>` : ''}
     <div class="acts"><button class="act" data-seclude-go>${esc(w.secludeGo)}</button><button class="act quiet" data-seclude-close>${esc(w.secludeLater)}</button></div></div>`;
+}
+
+/* 聚灵阵 on the chooser (rules/seclusion.mjs julinBrief — facts only): the 阵's size and today's remaining, three presets
+   (none · half · full of what he may lay now), what the pick would do, and the next level with its price. */
+function julinChoice(j, ctx) {
+  const w = ctx.words, n = Math.max(0, Math.min(j.most, ctx.secludeStones ?? j.presets.full));
+  const presets = [['none', w.secludeStonesNone], ['half', w.secludeStonesHalf], ['full', w.secludeStonesFull]]
+    .filter(([k], i, all) => k === 'none' || (j.presets[k] > 0 && !(k === 'half' && j.presets.half === j.presets.full)))
+    .map(([k, t]) => `<button class="act quiet${n === j.presets[k] ? ' on' : ''}" data-seclude-stones="${j.presets[k]}">${esc(say(t, { n: j.presets[k] }))}</button>`).join('');
+  // What laying n does, from Look's facts: the stones the bar takes (`room`), at the 阵's pace, each its 修为.
+  const drawn = Math.min(n, Math.floor(j.room / j.per_stone)), back = n - drawn;
+  const line = n > 0 && j.pace > 0 ? say(w.secludePreview, { n, h: round1(drawn / j.pace), p: drawn * j.per_stone, t: j.trickle }) : say(w.secludePreviewNone, { t: j.trickle });
+  const up = j.next ? `<button class="act quiet" data-seclude-array${j.wallet < j.next.price ? ' disabled' : ''}>${esc(say(w.secludeArrayUp, { price: j.next.price }))}</button>` : '';
+  return `<div class="small">${esc(say(w.secludeArray, { level: j.level, top: j.top, holds: j.holds, left: j.left_today, wallet: j.wallet }))}</div>
+    <div class="acts">${presets}${up}</div><div class="small dim secludenext">${esc(line)}${back > 0 ? ` · ${esc(say(w.secludePreviewBack, { back }))}` : ''}</div>`;
 }
 
 /* What 出关 grows, one line each — the running card and the 出关 card both
@@ -845,7 +865,9 @@ const GROWN_LINE = {
   // Past the cap the rest is 灵石 (rules/cap.mjs): the rules' line and its 灵石, beside the 修为 that landed.
   progress: (e, w, count) => {
     const c = e.progress?.converted, more = c?.wealth > 0 ? ` <span class="small dim">${esc(c.say ?? '')} ${esc(w.ls)} +${c.wealth}</span>` : '';
-    return e.progress?.paid ? `${esc(w.xw)} +${count(e.progress.paid)}${more}` : more.trim();
+    // The 阵's stones not drawn, handed back (rules/seclusion.mjs julinGrow).
+    const back = e.progress?.julin?.back > 0 ? ` <span class="small dim">${esc(say(w.secludeStonesBack, { n: e.progress.julin.back }))}</span>` : '';
+    return e.progress?.paid ? `${esc(w.xw)} +${count(e.progress.paid)}${more}${back}` : (more + back).trim();
   },
   treasure: (e, w) => (!e.treasure ? '' : e.treasure.to > e.treasure.from
     ? `<span class="starpop">${esc(say(w.secludeGrowTreasure, { name: e.treasure.name, from: e.treasure.from, to: e.treasure.to }))}</span>`
@@ -857,7 +879,8 @@ export function grownLines(e, w, count = (n) => esc(n)) {
   const bu = e.buzhuan ? esc(say(e.buzhuan.left ? w.secludeBuzhuanLeft : w.secludeBuzhuan, { n: e.buzhuan.made, left: e.buzhuan.left })) : '';
   // 体力 came back all through it (state.mjs settleStamina): full, or what it brought.
   const qi = e.rested ? esc(w.secludeRested) : e.stamina?.gained ? `${esc(w.qi)} +${count(e.stamina.gained)}` : '';
-  const lines = [e.grows ? GROWN_LINE[e.focus]?.(e, w, count) : '', bu, qi].filter(Boolean);
+  // A 阵 laid draws on real hours whatever their length (`progress.julin`): its line stands under `min_hours` too.
+  const lines = [e.grows || e.progress?.julin ? GROWN_LINE[e.focus]?.(e, w, count) : '', bu, qi].filter(Boolean);
   return lines.map((l) => `<div>${l}</div>`).join('');
 }
 
@@ -2130,7 +2153,8 @@ export function cardHtml(card, ctx) {
 
 /* A board whose win is counted against 体力 (a hosted game, an errand's) is
    shut while the pool is empty (his 五子 at 桑间, 2026-09-24). */
-const boardShut = (t, ctx) => Boolean(t && (t.hosted || t.for_errand) && ctx.qi?.st === 'empty');
+// A 秘境 room's board of a run paid at the door (`door_paid`, rules/mijing.mjs mijingRow) costs nothing: dealt on an empty pool.
+const boardShut = (t, ctx) => Boolean(t && (t.hosted || t.for_errand) && !t.door_paid && ctx.qi?.st === 'empty');
 
 /// About how long, in the page's tongue: 时辰 (two hours) or 刻 (a quarter) in zh, hours or minutes in en.
 function waitWords(min, ctx) {

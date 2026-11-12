@@ -115,7 +115,15 @@ export function lockReset(content, state) {
   if (shut.includes('wealth') && state.wealth) fix.wealth = 0;
   if ((fix.progress === 0 || fix.wealth === 0) && state.day) fix.day = { ...state.day, ...(fix.progress === 0 ? { progress: 0 } : {}), ...(fix.wealth === 0 ? { wealth: 0 } : {}) };
   // …save a 闭关 taken on a spent pool (`spent`): the one way back to 体力 is open behind every gate.
-  if (shut.includes('seclusion') && state.seclusion && !state.seclusion.spent) fix.seclusion = undefined;
+  if (shut.includes('seclusion') && state.seclusion && !state.seclusion.spent) {
+    fix.seclusion = undefined;
+    // …and the 灵石 laid in its 阵 (rules/seclusion.mjs `julin`) come back, as coming out with none drawn would give them.
+    const laid = state.seclusion.julin?.laid ?? 0;
+    if (laid > 0) {
+      if (!shut.includes('wealth')) fix.wealth = (state.wealth ?? 0) + laid;
+      if (state.julin?.day === state.seclusion.julin.day) fix.julin = { ...state.julin, drawn: Math.max(0, (state.julin.drawn ?? 0) - laid) };
+    }
+  }
   return fix;
 }
 

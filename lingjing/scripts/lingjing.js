@@ -454,7 +454,7 @@ const view = {
   // info`), the pick and pill, a refusal; `emerged` — 出关's result, counted up
   // on its card until put away; `afterEmerge` — the opening (her greeting,
   // Ling's recap) held until 出关 is tapped (his, 2026-09-24: 出关 first).
-  secludeOpen: false, seclude: null, secludeFocus: null, secludePill: null, secludeNote: null,
+  secludeOpen: false, seclude: null, secludeFocus: null, secludePill: null, secludeNote: null, secludeStones: null,
   emerged: null, afterEmerge: null,
 };
 const keep = (patch) => Object.assign(view, patch);
@@ -499,7 +499,7 @@ const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
 
-const ctx = () => ({ look, homeFrom: homePct, boardTitle: (id) => boardTitles.get(id) ?? null, toldOf: (id) => (toldHeld(boards.get(id)) ? boards.get(id).told : null), pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, oddsFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, qianShaking: view.qianShaking, qianNote: view.qianNote, qianHer: view.qianHer, qianHerWaiting: view.qianHerWaiting, qianFriendOpen: view.qianFriendOpen, qianFriendName: view.qianFriendName, qianFriendBirth: view.qianFriendBirth, qianFriendNoKeep: view.qianFriendNoKeep, qianFriendNote: view.qianFriendNote, qianFriend: view.qianFriend, qianFriendHer: view.qianFriendHer, qianFriendWaiting: view.qianFriendWaiting, qianFriendFresh: view.qianFriendFresh, qianPngReady: view.qianPngReady, qianCan: view.qianCan, qianShareNote: view.qianShareNote, qianShown: view.qianShown, qianBookOpen: view.qianBookOpen, qianBook: view.qianBook, herHere: herHere(), fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, kanjiaPick: view.kanjiaPick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv, shelfNote: view.shelfNote?.place === (look?.place?.id ?? null) ? view.shelfNote : null });
+const ctx = () => ({ look, homeFrom: homePct, boardTitle: (id) => boardTitles.get(id) ?? null, toldOf: (id) => (toldHeld(boards.get(id)) ? boards.get(id).told : null), pillPick: view.pillPick, codex: codexNow(), handedAge, kaifu: view.kaifu, turned: view.turned, bookRow: view.bookRow, offerRow: view.offerRow, tookOffer: view.tookOffer, bookInfo: view.bookInfo, qi: qi(), lang: lang(), words: words(), content: authored, boardFor, duelFor, oddsFor, artBase: artBase(), mapView: view.mapView, castFresh: view.castFresh, casting: view.casting, qianShaking: view.qianShaking, qianNote: view.qianNote, qianHer: view.qianHer, qianHerWaiting: view.qianHerWaiting, qianFriendOpen: view.qianFriendOpen, qianFriendName: view.qianFriendName, qianFriendBirth: view.qianFriendBirth, qianFriendNoKeep: view.qianFriendNoKeep, qianFriendNote: view.qianFriendNote, qianFriend: view.qianFriend, qianFriendHer: view.qianFriendHer, qianFriendWaiting: view.qianFriendWaiting, qianFriendFresh: view.qianFriendFresh, qianPngReady: view.qianPngReady, qianCan: view.qianCan, qianShareNote: view.qianShareNote, qianShown: view.qianShown, qianBookOpen: view.qianBookOpen, qianBook: view.qianBook, herHere: herHere(), fateOpen: view.fateOpen, fateDraft: view.fateDraft, fateError: view.fateError, refineMat: view.refineMat, refineName: view.refineName, refineNote: view.refineNote, aiNote: view.aiNote, duiziDraft: view.duiziDraft, duiziUp: view.duiziUp, duiziRung: view.duiziRung, duiziRevOpen: view.duiziRevOpen, duiziTones: tonesNow(), duiziLate: duiziLate(), panelBusy: view.panelBusy, panelNote: view.panelNote, panelSaid: saidHere(), called: calledDuels(), reading: readingHere(), tellPending: Boolean(look?.tell_owed || drawingTold), momentUp: momentUp(), lookBusy: view.lookBusy, valuePick: view.valuePick, kanjiaPick: view.kanjiaPick, valueText: view.valueText, valueNote: view.valueNote, bornDraft: view.bornDraft, bornError: view.bornError, throwNote: view.throwNote, seclude: view.seclude, secludeFocus: view.secludeFocus, secludePill: view.secludePill, secludeNote: view.secludeNote, secludeStones: view.secludeStones, atlas: atlasPlaces?.provinces ?? null, ink: atlasPlaces?.ink ?? null, inkGeo, mapPv: view.mapPv, shelfNote: view.shelfNote?.place === (look?.place?.id ?? null) ? view.shelfNote : null });
 
 /// The other provinces' places, read once per world, language and realm —
 /// only when the player looks past their own province.
@@ -2681,14 +2681,24 @@ async function openSeclude() {
   const r = await write('seclude', { action: 'info' }).catch(failed);
   if (!r.ok) return show({ doNote: refusal(r) });
   if (r.seclusion) return refresh(); // one is running: its card is the stage
-  show({ secludeOpen: true, seclude: r.choices, secludeFocus: null, secludePill: null, secludeNote: null, bookOpen: false, gearOpen: false });
+  show({ secludeOpen: true, seclude: r.choices, secludeFocus: null, secludePill: null, secludeNote: null, secludeStones: null, bookOpen: false, gearOpen: false });
+}
+/* 聚灵阵 a level up (rules/seclusion.mjs `array`): bought, the chooser read again with the focus kept; refused, its words. */
+async function widenArray() {
+  const r = await write('seclude', { action: 'array' }).catch(failed);
+  if (!r.ok) return show({ secludeNote: refusal(r) });
+  const again = await write('seclude', { action: 'info' }).catch(failed);
+  show({ seclude: again.ok ? again.choices ?? view.seclude : view.seclude, secludeStones: null, secludeNote: null });
+  await refresh();
 }
 
 const focusFacts = (e, zh) => focusName(e, zh);
 async function goSeclude() {
   const f = view.secludeFocus;
   if (!f) return show({ secludeNote: words().secludePick });
-  const r = await write('seclude', { action: 'enter', focus: f.focus, ...(f.id ? { id: f.id } : {}), ...(view.secludePill ? { pill: view.secludePill } : {}) }).catch(failed);
+  // 灵石 laid in the 阵 (focus 修为, the 阵 on): the pick, else the card's default — full.
+  const j = view.seclude?.julin, stones = f.focus === 'progress' && j ? Math.max(0, Math.min(j.most, view.secludeStones ?? j.presets.full)) : 0;
+  const r = await write('seclude', { action: 'enter', focus: f.focus, ...(f.id ? { id: f.id } : {}), ...(view.secludePill ? { pill: view.secludePill } : {}), ...(stones ? { stones } : {}) }).catch(failed);
   if (!r.ok) return show({ secludeNote: refusal(r) });
   keep({ secludeOpen: false, seclude: null, secludeFocus: null, secludePill: null, secludeNote: null });
   await refresh();
@@ -4434,6 +4444,8 @@ const CLICKS = [
   ['[data-seclude-open]', () => run('seclude', () => openSeclude())],
   ['[data-seclude-close]', () => show({ secludeOpen: false, secludeNote: null })],
   ['[data-seclude-focus]', (el) => show({ secludeFocus: { focus: el.dataset.secludeFocus, id: el.dataset.id ?? null }, secludeNote: null })],
+  ['[data-seclude-stones]', (el) => show({ secludeStones: Number(el.dataset.secludeStones) || 0, secludeNote: null })],
+  ['[data-seclude-array]', () => run('seclude-array', () => widenArray())],
   ['[data-seclude-pill]', (el) => show({ secludePill: view.secludePill === el.dataset.secludePill ? null : el.dataset.secludePill })],
   ['[data-seclude-go]', () => run('seclude', () => goSeclude())],
   ['[data-emerge]', () => run('emerge', () => emerge())],

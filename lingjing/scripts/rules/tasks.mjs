@@ -27,7 +27,7 @@ import { creatureOf, encounterOf, foeOf, huntKey, meetBeast, placeOf, poolOf, po
 import { strengthen } from './strengthen.mjs';
 import { kaoDone, kaoHere } from './kao.mjs';
 import { isTide, shouchaoDone, shouchaoFirst, shouchaoHere, shouchaoShut, tonight } from './shouchao.mjs';
-import { isMijingFight, keyDrop, mijingBoardDone, mijingBoardHere, mijingDuel } from './mijing.mjs';
+import { isMijingFight, keyDrop, mijingBoardDone, mijingBoardFree, mijingBoardHere, mijingDuel } from './mijing.mjs';
 import { isBout, qiecuoDone, qiecuoHere, qiecuoOver, qiecuoShut } from './qiecuo.mjs';
 import { yaoshouFought, yaoshouShare } from './yaoshou.mjs';
 import { claimedAt, happeningHosts } from './happenings.mjs';
@@ -55,7 +55,8 @@ function boardLost(state, content, ctx, id) {
   else if (shouchaoHere(content, state, id, ctx.now)) {
     const night = tonight(content, state);
     cost = boardCost(content, t.shouchao?.cost ?? 'game', (content.games?.games ?? []).find(g => g.id === night?.game && !g.cut && !g.replaced) ?? { id: night?.game });
-  } else if (t.hosted && !storyBoard(content, state, id)) cost = playedCost(content, s, id, t);
+  } else if (mijingBoardFree(content, state, id)) cost = 0; // a 秘境 run paid at the door: nothing inside costs 体力
+  else if (t.hosted && !storyBoard(content, state, id)) cost = playedCost(content, s, id, t);
   // Taken down to 0 at most; on a pool already spent the refusal is dropped (a loss stands whatever the pool).
   const before = s.stamina;
   if (cost) spendStamina(content, s, ctx, 'lost', 1, cost);

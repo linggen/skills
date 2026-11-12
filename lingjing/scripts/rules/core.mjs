@@ -76,8 +76,9 @@ function amountsOf(content, state, now, grant) {
   const authored = fight ?? story ?? (levelled ? units * rateOfLevel(content, grant.at_level) : units != null ? unitsPay(content, state, units) : Math.min(grant.progress ?? 0, table.progress));
   // `share`: a replay's falling share (tasks.mjs duel, playpay.mjs fightReplay) — 修为 and 灵石 alike.
   const share = grant.share ?? 1;
-  // 问签 (fortune.mjs qianPayOf): the day's 签 speed, and its 宜 kind's ×pay — 1 before the draw, never below.
-  const want = Math.round(authored * speedOf(content, state) * share * qianPayOf(content, state, now, grant));
+  // 问签 (fortune.mjs qianPayOf): the day's 签 speed, and its 宜 kind's ×pay — 1 before the draw, never below. `exact`: a
+  // number that is what it is (聚灵's 灵石 drawn, 吐纳's breath — rules/seclusion.mjs: the card's preview is what lands).
+  const want = Math.round(grant.exact ? authored * share : authored * speedOf(content, state) * share * qianPayOf(content, state, now, grant));
   const base = Math.max(0, want);
   // 灵石 (batch 2): the book's is a size in minutes of income (`ls`, capped by its table's `ls`) × I where it is paid — the
   // content's `level` if it says one, else where he stands (playpay.mjs stonesAt). A `wealth` number is one the rules built
@@ -308,8 +309,14 @@ function spendStamina(content, s, ctx, kind, n = 1, fixed = null) {
     if (cost && s.stamina === 0) s.resting = true;
     return null;
   }
+  return staminaRefusal(content, s, ctx, cost);
+}
+/* The pool's refusal (`no-stamina`), in its own words: when it would be whole again, begun now. A price that must be paid
+   whole (the 秘境's door, rules/mijing.mjs) refuses with it too, `until` the pool it waits for (there: whole). */
+function staminaRefusal(content, s, ctx, cost, until = null) {
+  const restAt = staminaRest(content, s);
   // Nothing refills by the clock: 闭关, or time away (state.mjs awayFit), brings it back — `returns_at` is when, begun now.
-  const at = staminaReturnsAt(content, s, s.resting ? restAt : 1, ctx.now);
+  const at = staminaReturnsAt(content, s, until ?? (s.resting ? restAt : 1), ctx.now);
   const w = wordsOf(content, s.lang);
   const say = s.lang === 'zh'
     ? `${w.pool}耗尽了。闭关，或回到现实里歇一歇${at ? `，约 ${hourOf(at, 'zh')} 回满` : ''}。`
@@ -760,7 +767,7 @@ export function judge(state, content, ctx, args) {
   return { state: null, result: { ok: true, right: judgeAnswer(content, args.key, args.answer) } };
 }
 
-export { advanceChapter, clone, gainsOf, paysOf, paysOfAll, replaying, hourOf, judgeAnswer, offerTasks, pay, refuse, RIDDLE_TRIES, riddleOpen, setRiddleAside, spendStamina, triedToday };
+export { advanceChapter, clone, gainsOf, paysOf, paysOfAll, replaying, hourOf, judgeAnswer, offerTasks, pay, refuse, RIDDLE_TRIES, riddleOpen, setRiddleAside, spendStamina, staminaRefusal, triedToday };
 
 
 /* One of an item out of the bag (an exit's `take`). Never below nothing: an

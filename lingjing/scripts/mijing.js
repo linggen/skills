@@ -16,7 +16,7 @@ export const MIJING_WORDS = {
     heal: '歇一歇 · 回{n}气血', temper: '炼{name} · 本趟少一点灵力', reward: '挑一样加持（本趟有效）', skip: '都不要', got: '得：{what}',
     hpUp: '气血 +{n}', hpDown: '气血 −{n}', withdrew: '它一口气用尽，走了。', stars: '{n}★', away: '{keys} · 石门在{door}', goDoor: '去石门 ›',
     end: { clear: '通关', dead: '力竭', left: '退出' }, endLine: '{name} · {how} · 走到{reached}/{of}间', paid: '修为 +{p} · 灵石 +{w}', close: '收起',
-    chance: '{n}成把握',
+    chance: '{n}成把握', runs: '今日还可探 {n}/{of} 趟', noRuns: '今日已探够了', doorCost: '进门 体力 {n}',
   },
   en: {
     door: 'The stone door', keys: '{name} × {n}', enter: 'Enter', noKey: 'No realm token', story: 'The story has not got there', before: 'Clear the one before', cleared: 'cleared',
@@ -25,7 +25,7 @@ export const MIJING_WORDS = {
     heal: 'Rest · +{n} Life', temper: 'Temper {name} · cheaper this run', reward: 'Pick a boon (this run only)', skip: 'None', got: 'Found: {what}',
     hpUp: 'Life +{n}', hpDown: 'Life −{n}', withdrew: 'It ran out of breath and left.', stars: '{n}★', away: '{keys} · the door is at {door}', goDoor: 'To the door ›',
     end: { clear: 'Cleared', dead: 'Spent', left: 'Left' }, endLine: '{name} · {how} · {reached}/{of} rooms', paid: 'Cultivation +{p} · stones +{w}', close: 'Close',
-    chance: '{n}0% odds',
+    chance: '{n}0% odds', runs: '{n} of {of} runs left today', noRuns: 'Enough for today', doorCost: 'Entry · {n} stamina',
   },
 };
 const fill = (t, o) => String(t ?? '').replace(/\{(\w+)\}/g, (_, k) => (o[k] ?? ''));
@@ -155,15 +155,18 @@ export function mijingCardHtml(card, ctx) {
   }
   if (m.away) return `<div class="card mijing away" data-card-kind="mijing"><div class="small">${esc(fill(t.away, { keys: fill(t.keys, { name: m.key_name, n: m.keys }), door: m.door?.name ?? '' }))}</div><div class="acts"><button class="act go quiet" data-go="${esc(m.door?.id ?? '')}">${esc(t.goDoor)}</button></div></div>`;
   if (m.door) {
+    // The way in: a 秘境令 held (`key_name`), or — the key off (rules/mijing.mjs keyOn) — a run left of the day's.
+    const keyed = m.key_name != null, can = keyed ? m.keys > 0 : (m.runs_left ?? 0) > 0;
     const rows = m.tiers.map((x) => {
-      const why = x.open ? (m.keys ? '' : t.noKey) : t[x.why] ?? '';
-      const btn = x.open ? `<button class="act${m.keys ? ' primary' : ''}" data-mijing="enter" data-tier="${x.n}"${m.keys ? '' : ' disabled'}>${esc(t.enter)}</button>` : `<span class="small dim">${esc(why)}</span>`;
+      const why = x.open ? (can ? '' : keyed ? t.noKey : t.noRuns) : t[x.why] ?? '';
+      const btn = x.open ? `<button class="act${can ? ' primary' : ''}" data-mijing="enter" data-tier="${x.n}"${can ? '' : ` disabled title="${esc(why)}"`}>${esc(t.enter)}</button>` : `<span class="small dim">${esc(why)}</span>`;
       return `<div class="mj-tier${x.open ? '' : ' shut'}"><span>${esc(x.name)}${x.cleared ? ` <span class="chip">${esc(t.cleared)}</span>` : ''}</span>${btn}</div>`;
     });
     // The 重 past the first not yet open: only the next one shows, so the list never reads as a wall of locks.
     const firstShut = m.tiers.findIndex((x) => !x.open);
     const shown = rows.filter((_, i) => firstShut < 0 || i <= firstShut);
-    return `<div class="card mijing door" data-card-kind="mijing"><div class="mj-head"><div class="cardtitle">${esc(m.place?.name ?? t.door)}</div><span class="chip">${esc(fill(t.keys, { name: m.key_name, n: m.keys }))}</span></div>
+    const chips = [keyed ? fill(t.keys, { name: m.key_name, n: m.keys }) : fill(t.runs, { n: m.runs_left ?? 0, of: m.cap_day ?? 0 }), ...(m.door_cost ? [fill(t.doorCost, { n: m.door_cost })] : [])];
+    return `<div class="card mijing door" data-card-kind="mijing"><div class="mj-head"><div class="cardtitle">${esc(m.place?.name ?? t.door)}</div>${chips.map((c) => `<span class="chip">${esc(c)}</span>`).join('')}</div>
       <div class="mj-tiers">${shown.join('')}</div></div>`;
   }
   return '';

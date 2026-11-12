@@ -9,12 +9,13 @@
 // holds still (`in-seclusion`, like a fight): the only way on is 出关, and the
 // stage puts its card first. Playing stays better than sitting — the numbers
 // are in rewards.json § seclusion.
-import { lockedOf, pick, poolSpent, seclusionMsPerPoint, settleStamina, staminaMax, staminaRest } from '../state.mjs';
+import { dayKey, lockedOf, pick, poolSpent, seclusionMsPerPoint, settleStamina, staminaMax, staminaRest } from '../state.mjs';
 import { boundOf, growTreasure, TREASURE_TOP, treasureBrief } from './arms.mjs';
-import { clone, pay, refuse } from './core.mjs';
+import { clone, pay, paysOf, refuse } from './core.mjs';
 import { itemOf } from './errands.mjs';
 import { cureDandu, eatPill } from './dandu.mjs';
-import { secludeHour } from './playpay.mjs';
+import { needOf, secludeHour } from './playpay.mjs';
+import { joinConverted } from './cap.mjs';
 
 const RULE = content => content.rewards.seclusion ?? null;
 const HOUR = 3600_000;
@@ -31,12 +32,92 @@ function pillsOf(content, state) {
     .map(([id, mult]) => ({ id, name: pick(itemOf(content, id)?.name, state.lang) ?? id, mult, n: state.bag[id] }));
 }
 
+/* ── 聚灵阵: 闭关 draws on 灵石, then breathes on (design.md § 耗材, 2026-11-12: 「凡人里修炼是要吸取灵石的灵力的, 我们闭关还是
+   可以让用户选择用灵石加速」; balance.json `julin`, from master.julin). Off (`on` false), 闭关 is as it was. On, going in on
+   修为 he lays 灵石 — none to what the 阵 holds and the day still allows — and they are drawn first, at one steady pace (a full
+   阵 in `hours`), each worth `per_stone` 修为, never past the bar; then 吐纳, `trickle` of the layer an hour (whole, at least
+   1; a pill's ×hours on it), until he comes out. Out early, what was not drawn comes back. The 阵 is bought up a level at a
+   time (`array` its share of the layer by level, `costs` each level's), once each. ── */
+const J = content => (content.balance?.julin?.on ? content.balance.julin : null);
+const arrayLevel = (content, state) => Math.min(J(content).array.length, Math.max(1, Number(state.julin?.level) || 1));
+/* 灵石 the 阵 holds at his level, on the layer he sits on (0 at 零层: it takes nothing). */
+export function arrayHolds(content, state) {
+  const j = J(content), need = needOf(content, state);
+  return j && need > 0 ? Math.floor((j.array[arrayLevel(content, state) - 1] * need) / j.per_stone) : 0;
+}
+/* Drawn today (laid in a 闭关 begun today, less what came back). */
+const drawnToday = (state, now) => (state.julin?.day === dayKey(now) ? state.julin.drawn ?? 0 : 0);
+/* What the day still allows: `per_day` full 阵s at its size now, less what was drawn today — shared by every 闭关 of the day. */
+const dayLeft = (content, state, now) => Math.max(0, Math.floor(arrayHolds(content, state) * J(content).per_day) - drawnToday(state, now));
+/* 吐纳's 修为 an hour: `trickle` of the layer, whole, at least 1 (0 at 零层). */
+const trickleHour = (content, state) => { const need = needOf(content, state); return need > 0 ? Math.max(1, Math.floor(J(content).trickle * need)) : 0; };
+/* The most he may lay now: what the 阵 holds, the day allows and the purse has. */
+const mostLaid = (content, state, now) => Math.max(0, Math.min(arrayHolds(content, state), dayLeft(content, state, now), Math.floor(state.wealth ?? 0)));
+/* The 修为 the bar still takes where he sits (core.mjs paysOf: the cap and the doors he may step), at most `want`. */
+const roomFor = (content, state, now, want) => (want > 0 ? paysOf(content, state, now, { table: 'seclusion', progress: want, exact: true })?.progress ?? 0 : 0);
+/* Look's facts for the choice (the page writes the words): the 阵's level and size, today's remaining, the purse, the next
+   level's price, the pace, each stone's worth, 吐纳's an hour, and the three presets (none · half · full of what he may lay). */
+export function julinBrief(content, state, now) {
+  const j = J(content);
+  if (!j) return null;
+  const level = arrayLevel(content, state), holds = arrayHolds(content, state), most = mostLaid(content, state, now);
+  const next = level < j.array.length ? { level: level + 1, price: j.costs[level], holds: Math.floor((j.array[level] * needOf(content, state)) / j.per_stone) } : null;
+  // `room`: the 修为 the bar still takes — 灵石 past it are not drawn (and come back).
+  return { level, top: j.array.length, holds, left_today: dayLeft(content, state, now), wallet: Math.floor(state.wealth ?? 0), most,
+    per_stone: j.per_stone, hours: j.hours, pace: holds ? holds / j.hours : 0, trickle: trickleHour(content, state), next,
+    room: roomFor(content, state, now, holds * j.per_stone), presets: { none: 0, half: Math.floor(most / 2), full: most } };
+}
+/* What laying `n` would do, as the card says it (the rules' own reckoning — the card shows this, never its own sums). */
+export function julinPreview(content, state, now, n) {
+  const j = J(content), b = julinBrief(content, state, now);
+  if (!b || !(n > 0) || !b.pace) return { stones: 0, hours: 0, progress: 0, trickle: b?.trickle ?? 0 };
+  const drawn = Math.min(n, Math.floor(b.room / j.per_stone));
+  return { stones: n, hours: Math.round((drawn / b.pace) * 100) / 100, progress: drawn * j.per_stone, ...(drawn < n ? { back: n - drawn } : {}), trickle: b.trickle };
+}
+
+/* 出关 on a sitting with the 阵 laid (`sec.julin`, stamped going in): the stones its real hours drew — never past the bar —
+   then 吐纳 on the rest of the hours (counted: a pill's ×), each paid as it is (`exact`); what was not drawn back to the purse. */
+function julinGrow(content, s, sec, h, ctx) {
+  const L = sec.julin, per = L.per_stone;
+  const byTime = L.pace > 0 ? Math.min(L.laid, Math.floor(h.real * L.pace + 1e-9)) : 0;
+  const drawn = Math.min(byTime, Math.floor(roomFor(content, s, ctx.now, byTime * per) / per));
+  const a = drawn ? pay(content, s, ctx, { table: 'seclusion', progress: drawn * per, exact: true }) : null;
+  const back = L.laid - drawn;
+  if (back > 0) {
+    s.wealth = (s.wealth ?? 0) + back;
+    if (s.julin?.day === L.day) s.julin = { ...s.julin, drawn: Math.max(0, (s.julin.drawn ?? 0) - back) };
+  }
+  // 吐纳: on the hours past the drawing, at the rate stamped going in; under `min_hours` none (as 闭关 always was).
+  const breathe = h.grows ? Math.max(0, h.real - (L.pace > 0 ? drawn / L.pace : 0)) * (sec.mult ?? 1) : 0;
+  const want = Math.floor(breathe * (L.trickle ?? 0) + 1e-9);
+  const b = want ? pay(content, s, ctx, { table: 'seclusion', progress: want, exact: true }) : null;
+  const levels = [...(a?.levels ?? []), ...(b?.levels ?? [])], hold = b?.hold ?? a?.hold, converted = joinConverted(a?.converted ?? null, b?.converted ?? null);
+  return { progress: { paid: (a?.progress ?? 0) + (b?.progress ?? 0), levels, ...(hold ? { hold } : {}), ...(converted ? { converted } : {}),
+    julin: { laid: L.laid, drawn, back, stones: a?.progress ?? 0, trickle: b?.progress ?? 0, per_stone: per } } };
+}
+
+/* A level of the 阵 bought (`seclude --action=array`, the page's): once each, at its price; refused plainly when he cannot. */
+function buyArray(state, content, ctx) {
+  const j = J(content), lang = state.lang;
+  if (!j) return refuse('no-julin', null);
+  if (state.seclusion) return refuse('in-seclusion', pick(SAY_IN, lang));
+  const level = arrayLevel(content, state);
+  if (level >= j.array.length) return refuse('array-top', pick({ zh: '聚灵阵已是最大。', en: 'The array is at its largest.' }, lang));
+  const price = j.costs[level], have = Math.floor(state.wealth ?? 0);
+  if (have < price) return refuse('too-poor', pick({ zh: `灵石不够：要 ${price}，囊中 ${have}。`, en: `Not enough spirit stones: ${price} asked, ${have} held.` }, lang), { price, have });
+  const s = clone(state);
+  s.wealth = (state.wealth ?? 0) - price;
+  s.julin = { ...s.julin, level: level + 1 };
+  return { state: s, result: { ok: true, level: level + 1, price, julin: julinBrief(content, s, ctx.now) } };
+}
+
 /* What may be chosen going in: the page's 闭关 card reads this. */
-function choices(content, state) {
+function choices(content, state, now = new Date()) {
   return {
     progress: true,
-    // 修为 an hour at the layer he sits on, as it lands (a night's share of the layer over its hours).
-    per_hour: Math.round(secludeHour(content, state) ?? 0),
+    // 修为 an hour at the layer he sits on, as it lands (a night's share of the layer over its hours) — with the 阵 on, 吐纳's.
+    per_hour: J(content) ? trickleHour(content, state) : Math.round(secludeHour(content, state) ?? 0),
+    ...(J(content) ? { julin: julinBrief(content, state, now) } : {}),
     treasure: treasureOpen(content, state) ? treasureBrief(content, state) : null,
     pills: pillsOf(content, state),
     // The whole pool's hours in 闭关 (rewards.json stamina.refill), for the chooser's rule line — as `rest_hours` too, the
@@ -86,7 +167,10 @@ function emergeOn(content, s, ctx) {
   delete s.seclusion;
   // Kept for the breakthrough's chance: a 闭关 just done steadies it (breakthrough.mjs).
   s.last_seclusion = { at: ctx.now.toISOString(), hours: round1(h.real) };
-  const grown = h.grows ? GROW[sec.focus === 'card' ? 'progress' : sec.focus](content, s, sec, h.counted, ctx) : {};
+  // A sitting begun on a 功法 before card training went (main, 2026-11-12) settles as 修为. The 阵 laid going in (`julin`): its
+  // stones drawn on real hours whatever the length, then 吐纳 (julinGrow).
+  const focus = sec.focus === 'card' ? 'progress' : sec.focus;
+  const grown = sec.julin && focus === 'progress' ? julinGrow(content, s, sec, h, ctx) : h.grows ? GROW[focus](content, s, sec, h.counted, ctx) : {};
   // 补转: the body makes up the turns a pill's furnace left out, whatever the focus (rules/dandu.mjs).
   const topBefore = staminaMax(content, s), whole = s.stamina >= topBefore;
   const made = cureDandu(content, s, h.real);
@@ -103,7 +187,7 @@ function emergeOn(content, s, ctx) {
    the hours toward its next step — `pool` of `need`, `at` when it lands (his,
    2026-09-24: the running card said 「闭关中 ·」 and nothing of what or how far). */
 const TARGET = {
-  progress: (content, s, sec, counted) => ({ now: s.progress, per_hour: Math.round(secludeHour(content, s) ?? 0), pool: counted, need: 1 }),
+  progress: (content, s, sec, counted) => ({ now: s.progress, per_hour: sec.julin ? sec.julin.trickle ?? 0 : Math.round(secludeHour(content, s) ?? 0), pool: counted, need: 1 }),
   treasure: (content, s, sec, counted) => (boundOf(content, s) ? { name: s.treasure.name, level: s.treasure.level, step: treasureBrief(content, s).step,
     pool: (s.treasure.tempered ?? 0) + counted, need: RULE(content).treasure_hours, done: s.treasure.level >= TREASURE_TOP } : null),
 };
@@ -141,8 +225,10 @@ export function seclude(state, content, ctx, args) {
 }
 
 const ACTIONS = {
-  info: (state, content, ctx) => ({ state: null, result: { ok: true, ...(state.seclusion ? { seclusion: seclusionBrief(content, state, ctx.now) } : { choices: choices(content, state) }) } }),
+  info: (state, content, ctx) => ({ state: null, result: { ok: true, ...(state.seclusion ? { seclusion: seclusionBrief(content, state, ctx.now) } : { choices: choices(content, state, ctx.now) }) } }),
   enter: enterSeclusion,
+  // 聚灵阵 a level up (the page's): once each, its price in 灵石.
+  array: buyArray,
   leave: (state, content, ctx) => {
     if (!state.seclusion) return refuse('not-secluded', null);
     const s = clone(state);
@@ -163,21 +249,41 @@ function enterSeclusion(state, content, ctx, args) {
   if (state.seclusion) return refuse('in-seclusion', pick(SAY_IN, lang));
   const focus = String(args.focus ?? '');
   if (!FOCI.includes(focus)) return refuse('no-such-focus', null, { foci: FOCI, choices: choices(content, state) });
+  // 灵石 laid in the 阵 (`stones`, focus 修为 only): none to the most he may lay now (what it holds, the day allows, he has).
+  const j = J(content), stones = args.stones == null || args.stones === '' ? 0 : Number(args.stones);
+  if (!Number.isInteger(stones) || stones < 0) return refuse('bad-stones', null);
+  if (stones > 0 && (!j || focus !== 'progress')) return refuse('stones-need-progress', pick({ zh: '灵石只在修为上用得着。', en: 'Spirit stones only help cultivation.' }, lang));
   const no = FOCUS_CHECK[focus](content, state, args);
   if (no) return refuse(no[0], pick(no[1], lang), { choices: choices(content, state) });
   const pillId = String(args.pill ?? '').trim();
   const mult = pillId ? RULE(content).pills?.[pillId] : null;
   if (pillId && !mult) return refuse('not-a-seclusion-pill', null, { pills: pillsOf(content, state) });
   if (pillId && !(state.bag?.[pillId] > 0)) return refuse('not-in-bag', null);
+  if (j && stones > mostLaid(content, state, ctx.now)) {
+    const b = julinBrief(content, state, ctx.now);
+    return refuse('too-many-stones', pick({ zh: `至多布 ${b.most} 块。`, en: `At most ${b.most} stones.` }, lang), { most: b.most, holds: b.holds, left_today: b.left_today, wallet: b.wallet });
+  }
   const s = clone(state);
   if (pillId) { s.bag[pillId] -= 1; if (!s.bag[pillId]) delete s.bag[pillId]; eatPill(content, s, pillId); }
   // `spent`: taken on a spent pool behind a story gate that keeps 闭关 shut — it stands there all the same (rules/locks.mjs).
   const spent = lockedOf(content, state).includes('seclusion') && poolSpent(content, state);
-  s.seclusion = { focus, since: ctx.now.toISOString(), ...(pillId ? { pill: pillId, mult } : {}), ...(spent ? { spent: true } : {}) };
+  // The 阵 stamped on the sitting (its pace, each stone's worth, 吐纳's rate, the day it counts against): what 出关 settles by,
+  // whatever the knobs say then. The stones leave the purse now; what is not drawn comes back.
+  const laid = j && focus === 'progress' ? julinLaid(content, s, ctx.now, stones) : null;
+  s.seclusion = { focus, since: ctx.now.toISOString(), ...(pillId ? { pill: pillId, mult } : {}), ...(spent ? { spent: true } : {}), ...(laid ? { julin: laid } : {}) };
   return { state: s, result: { ok: true, entered: seclusionBrief(content, s, ctx.now) } };
 }
 
 const SAY_IN = { zh: '正在闭关。先出关，再做别的。', en: 'You are in seclusion. Come out first.' };
+
+/* The stones laid going in, on `s`: out of the purse, counted against the day; the sitting's stamp. */
+function julinLaid(content, s, now, n) {
+  const j = J(content), holds = arrayHolds(content, s), day = dayKey(now);
+  const stamp = { laid: n, pace: holds ? holds / j.hours : 0, per_stone: j.per_stone, trickle: trickleHour(content, s), day };
+  s.wealth = (s.wealth ?? 0) - n;
+  s.julin = { ...s.julin, level: arrayLevel(content, s), day, drawn: drawnToday(s, now) + n };
+  return stamp;
+}
 
 /* ── While in 闭关, the world holds still ──
    The verbs that change the world are refused `in-seclusion` (the simpler

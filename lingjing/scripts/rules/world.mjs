@@ -151,7 +151,7 @@ function leaveOf(content, state, now) {
   if (scene?.at && !base.has(scene.at) && !(state.done_scenes ?? []).includes(scene.id)) for (const id of roadFrom(content, base, scene.at, now)) open.add(id);
   for (const id of state.pass?.places ?? []) open.add(id);
   // 秘境探险 (rules/mijing.mjs): while a 秘境令 waits in his bag for a 重 open to him (or a run is on), the road to its door.
-  for (const door of mijingDoors(content, state)) if (!base.has(door)) for (const id of roadFrom(content, base, door, now)) open.add(id);
+  for (const door of mijingDoors(content, state, now)) if (!base.has(door)) for (const id of roadFrom(content, base, door, now)) open.add(id);
   return open;
 }
 /* A 令 for this errand, when it declares one and the chapter's map walls it

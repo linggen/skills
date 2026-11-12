@@ -17,8 +17,8 @@
 // fought by the page's own 斗法 room through `duel` (tasks.mjs → mijingDuel: no 灵气, no haunt pay, no day's lock —
 // the 令 paid for the run); a board room's task is hosted while he stands in it (look.mjs tasksBrief → mijingHosted,
 // mijingRow; tasks.mjs win/done → mijingBoardHere, mijingBoardDone); a pick room is answered on the run's own card.
-import { boardCost, dayKey, lockedOf, pick, seedOf } from '../state.mjs';
-import { clone, pay, refuse, spendStamina } from './core.mjs';
+import { boardCost, dayKey, lockedOf, pick, seedOf, settleStamina, staminaLimited, staminaMax } from '../state.mjs';
+import { clone, pay, refuse, spendStamina, staminaRefusal } from './core.mjs';
 import { battle, POUCH_MAX, REALMS, shown, shownSide } from '../battle.js';
 import { cardCatalog, deckFor, fightPill, fightSetup, hpMaxOf, winCard } from './cards.mjs';
 import { hashOf } from './travel.mjs';
@@ -181,9 +181,23 @@ export function tierOpen(content, state, n) {
 /* Why not, in the world's words: the story has not got there, or the 重 before is not yet cleared. */
 const shutWhy = (content, state, t) => (t.after && !passed(content, state, t.after) ? 'story' : !tierOpen(content, state, t.n) ? 'before' : null);
 const atDoor = (content, state) => (tableOf(content)?.doors ?? []).includes(state.place);
-const keysHeld = (content, state) => state.bag?.[tableOf(content)?.key] ?? 0;
-/* The doors whose road stands open now (world.mjs leaveOf): a run on, or a 秘境令 in the bag and a 重 open to him. */
-export const mijingDoors = (content, state) => (tableOf(content) && (runOf(state) || (keysHeld(content, state) > 0 && tierOpen(content, state, 1))) ? tableOf(content).doors ?? [] : []);
+/* The 秘境令 asked at the door (balance.json `mijing.key_on`, master.mijing.key.on): off (design.md § 耗材, 2026-11-12:
+   「秘境令去掉可以」), none is asked or dropped, and one still in a bag is ignored — counted as none. */
+export const keyOn = content => knobs(content).key_on !== false;
+const keysHeld = (content, state) => (keyOn(content) ? state.bag?.[tableOf(content)?.key] ?? 0 : 0);
+/* The 体力 a run costs once at the door (`mijing.door`; 0: the rooms cost their own minutes inside, as before). */
+export const doorFee = content => Math.max(0, Number(knobs(content).door) || 0);
+/* Runs begun today (`mijing.day`, kept with the key off): `cap_day` of them a day, as the keys' drops rationed them. */
+const runsToday = (state, now) => (state.mijing?.day?.day === dayKey(now) ? state.mijing.day.n ?? 0 : 0);
+export const runsLeft = (content, state, now) => Math.max(0, (knobs(content).cap_day ?? 1) - runsToday(state, now));
+/* May he go in today: with the key, a 秘境令 held; without it, a run left of the day's. */
+const mayEnter = (content, state, now) => (keyOn(content) ? keysHeld(content, state) > 0 : runsLeft(content, state, now) > 0);
+/* The doors whose road stands open now (world.mjs leaveOf): a run on, or a 重 open to him and a run he may begin (a 秘境令
+   in the bag, or with the key off one of the day's runs left). */
+export const mijingDoors = (content, state, now = new Date()) => (tableOf(content) && (runOf(state) || (mayEnter(content, state, now) && tierOpen(content, state, 1))) ? tableOf(content).doors ?? [] : []);
+/* A run paid at the door (`door`, stamped when it began): its rooms cost no 体力. A run begun before the door fee keeps
+   paying its rooms. */
+const paidAtDoor = run => (run?.door ?? 0) > 0;
 
 /* ── 秘境令: the key, dropped by a win in a cooldown event ── */
 
@@ -192,7 +206,7 @@ export const mijingDoors = (content, state) => (tableOf(content) && (runOf(state
    the tries, so the same win replayed drops the same. Written on `s`; returns what was stowed, or null. */
 export function keyDrop(content, s, ctx, source) {
   const k = knobs(content), chance = k.drops?.[source], key = tableOf(content)?.key;
-  if (!chance || !key || !tierOpen(content, s, 1)) return null;
+  if (!keyOn(content) || !chance || !key || !tierOpen(content, s, 1)) return null;
   const day = dayKey(ctx.now), n = s.mijing?.drops?.day === day ? s.mijing.drops.n : 0;
   if (n >= (k.cap_day ?? 1)) return null;
   // Drawn by the moment of the win (the same win replayed draws the same), and nothing written on a miss: a save that
@@ -300,17 +314,36 @@ function enterRun(state, content, ctx, args) {
   if (!t) return refuse('no-such-tier', null);
   if (!tierOpen(content, state, n)) return refuse('not-open', null, { why: shutWhy(content, state, t) });
   const key = tableOf(content).key;
-  if (keysHeld(content, state) < 1) return refuse('no-key', pick({ zh: '没有秘境令，石门不开。', en: 'Without a realm token the stone door will not open.' }, state.lang));
+  if (keyOn(content) && keysHeld(content, state) < 1) return refuse('no-key', pick({ zh: '没有秘境令，石门不开。', en: 'Without a realm token the stone door will not open.' }, state.lang));
+  if (!keyOn(content) && runsLeft(content, state, ctx.now) < 1) return refuse('no-runs-left', pick({ zh: '今日的秘境已探够了，明日再来。', en: 'Enough of the realm for today. Come back tomorrow.' }, state.lang), { cap_day: knobs(content).cap_day ?? 1 });
   const s = clone(state);
-  s.bag[key] -= 1;
-  if (!s.bag[key]) delete s.bag[key];
+  // Paid once at the door (design.md § 耗材: 「进门一次付清」): all of it or none — never the last point's grace, so he is
+  // never stranded in a run; refused with the pool's own words.
+  const fee = doorFee(content), paid = fee > 0 ? payDoor(content, s, ctx, fee) : null;
+  if (paid?.refused) return paid.refused;
+  if (keyOn(content)) {
+    s.bag[key] -= 1;
+    if (!s.bag[key]) delete s.bag[key];
+  }
   const runs = (s.mijing?.runs ?? 0) + 1, seed = `${seedOf(s)}|mijing|${n}|${runs}|${args.seed ?? ''}`;
   const hp = hpCap(content, s, []);
   // The map is drawn for the device the run begins on (rules/chores.mjs hostOf: the phone's bundle says 'phone'): a run
   // begun on the phone deals no game it cannot host. One resumed on the other device keeps its map (撤 is the way past).
-  s.mijing = { ...s.mijing, runs, run: { tier: n, seed, map: mapOf(content, t, seed, { host: hostOf() }), at: null, done: [], hp, hp_max: hp, boons: [], stars: {}, loot: { items: {}, wealth: 0 }, inc: incomeAt(content, stoneLevel(content, s)), minutes: 0, met: [], room: null, started: ctx.now.toISOString() } };
+  s.mijing = { ...s.mijing, runs, run: { tier: n, seed, map: mapOf(content, t, seed, { host: hostOf() }), at: null, done: [], hp, hp_max: hp, boons: [], stars: {}, loot: { items: {}, wealth: 0 }, inc: incomeAt(content, stoneLevel(content, s)), minutes: 0, met: [], room: null, started: ctx.now.toISOString(), ...(paid?.door ? { door: paid.door } : {}) } };
+  if (!keyOn(content)) s.mijing.day = { day: dayKey(ctx.now), n: runsToday(state, ctx.now) + 1 };
   delete s.mijing.last;
   return { state: s, result: { ok: true, entered: n, name: pick(t.name, s.lang), say: pick(t.say, s.lang) } };
+}
+
+/* The door's fee, on `s`: the whole of it from the pool, or the pool's own refusal (core.mjs staminaRefusal). With 体力 off
+   (staminaLimited) nothing is taken and the run is not marked paid. */
+function payDoor(content, s, ctx, fee) {
+  settleStamina(content, s, ctx.now);
+  if (!staminaLimited(content)) return null;
+  if (!((s.stamina ?? 0) >= fee)) return { refused: staminaRefusal(content, s, ctx, fee, staminaMax(content, s)) };
+  s.stamina -= fee;
+  if (s.stamina === 0) s.resting = true;
+  return { door: fee };
 }
 
 /* Into a room of the next row: what it holds is drawn now. */
@@ -559,7 +592,7 @@ export function mijingDuel(state, content, ctx, args) {
   if (!args.picks) {
     if (state.fight && state.fight.game !== id) return refuse('in-a-fight', null, { game: state.fight.game });
     const s = clone(state), resuming = s.fight?.game === id;
-    if (!resuming) {
+    if (!resuming && !paidAtDoor(run)) {
       const empty = spendStamina(content, s, ctx, 'duel');
       if (empty) return empty;
     }
@@ -604,6 +637,8 @@ export const isMijingFight = isFightId;
 /* The board the room he stands in deals (its task id), while it is up. */
 const roomBoard = state => { const room = runOf(state)?.room; return room?.phase === 'board' ? room.board?.task ?? null : null; };
 export const mijingBoardHere = (content, state, id) => Boolean(id) && roomBoard(state) === id && (tableOf(content)?.doors ?? []).includes(state.place);
+/* The room's board of a run paid at the door: lost, it costs nothing more (tasks.mjs boardLost). */
+export const mijingBoardFree = (content, state, id) => mijingBoardHere(content, state, id) && paidAtDoor(runOf(state));
 /* Look's task list: the room's board, offered. */
 export function mijingHosted(content, state) {
   const id = roomBoard(state);
@@ -614,7 +649,9 @@ export function mijingHosted(content, state) {
 export function mijingRow(content, state, id) {
   if (!mijingBoardHere(content, state, id)) return {};
   const run = runOf(state), room = run.room, b = room.board, t = tierRow(content, run.tier), task = content.tasks.tasks.find(x => x.id === id);
-  if (b.made) return { mijing: true, title: roomTitle(content, state, run, room, task, t), deal: madeDeal(content, run, task, t, b.made) };
+  // `door_paid`: the run was paid at the door, so the room's board is dealt on an empty pool (cards.js boardShut).
+  const paid = paidAtDoor(run) ? { door_paid: true } : {};
+  if (b.made) return { mijing: true, ...paid, title: roomTitle(content, state, run, room, task, t), deal: madeDeal(content, run, task, t, b.made) };
   const kit = task?.game ? kitOf(content, task.game) : null, row = kit?.levels?.find(l => l.id === b.lv) ?? null;
   const over = {};
   const step = 1 + (knobs(content).td_step ?? 0) * (t.n - 1);
@@ -632,7 +669,7 @@ export function mijingRow(content, state, id) {
     ...(task?.game === 'pintu' && t.backdrop ? { pics: [{ src: `worlds/jiuding/${t.backdrop}`, a: 1.5 }] } : {}),
     ...(kit ? {} : levelsDeal(content, task, b.lv, both)), seed: `${run.seed}|${room.id}` };
   // `level`: the module's own (洛书's givens, 残局's ladder), over Look's realm level.
-  return { mijing: true, title, ...(b.level != null ? { level: b.level } : {}), deal };
+  return { mijing: true, ...paid, title, ...(b.level != null ? { level: b.level } : {}), deal };
 }
 /* The level a board without a kit plays (Look's dealOf hands a game's first games.json row when the task has none of its
    own — a story row's level, 华容道's 刻痕): the deal's `lv` where a games.json row of the game holds it, else none
@@ -676,7 +713,7 @@ export function mijingBoardDone(state, content, ctx, id) {
   if (!state.wins?.[id]) return refuse('not-won', null);
   const s = clone(state), r = s.mijing.run, here = r.room, t = tierRow(content, r.tier);
   // The room's board costs its minutes (state.mjs boardCost, 2026-11-04): the run is play time.
-  const empty = spendStamina(content, s, ctx, 'game', 1, boardCost(content, 'game', (content.games?.games ?? []).find(g => g.task === id && !g.cut && !g.replaced)));
+  const empty = paidAtDoor(r) ? null : spendStamina(content, s, ctx, 'game', 1, boardCost(content, 'game', (content.games?.games ?? []).find(g => g.task === id && !g.cut && !g.replaced)));
   if (empty) return empty;
   delete s.wins[id];
   const stars = Math.max(1, Math.min(3, Number(s.play_stars?.[id] ?? s.stars?.[id] ?? 1) || 1));
@@ -745,12 +782,16 @@ export function mijingBrief(content, state, now) {
   }
   const door = atDoor(content, state);
   if (!tierOpen(content, state, 1) && !last) return null;
-  // Away from the door with a 秘境令 in hand: where the door is (the page's one line and the way there).
+  // Away from the door with a 秘境令 in hand: where the door is (the page's one line and the way there). With the key off
+  // nothing is held to tell of: no away card (the door is a place of his map like any).
   if (!door && !last) {
     const at = tab.doors?.[0], keys = keysHeld(content, state);
-    return keys > 0 && at ? { away: true, keys, key_name: nameOf(content, tab.key, lang), door: placeName(content, state, placeOf(content, at)) } : null;
+    return keyOn(content) && keys > 0 && at ? { away: true, keys, key_name: nameOf(content, tab.key, lang), door: placeName(content, state, placeOf(content, at)) } : null;
   }
   const tiers = (tab.tiers ?? []).map(t => ({ n: t.n, name: pick(t.name, lang), open: tierOpen(content, state, t.n), cleared: (state.mijing?.cleared ?? []).includes(t.n), ...(tierOpen(content, state, t.n) ? {} : { why: shutWhy(content, state, t) }) }));
-  return { door, keys: keysHeld(content, state), key_name: nameOf(content, tab.key, lang), tiers, ...(last ? { last: lastLook(content, last, lang) } : {}),
+  // The way in: a 秘境令 (`keys`, `key_name`) with the key on; with it off, the runs left today (`runs_left` of `cap_day`).
+  // `door_cost`: the 体力 the run costs at the door (0: its rooms' minutes inside).
+  const way = keyOn(content) ? { keys: keysHeld(content, state), key_name: nameOf(content, tab.key, lang) } : { runs_left: runsLeft(content, state, now), cap_day: knobs(content).cap_day ?? 1 };
+  return { door, ...way, door_cost: doorFee(content), tiers, ...(last ? { last: lastLook(content, last, lang) } : {}),
     ...(door ? { place: placeName(content, state, placeOf(content, state.place)) } : {}) };
 }

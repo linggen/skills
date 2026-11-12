@@ -28,7 +28,7 @@ import { bookOf, breakthroughOf, directorBrief, errandFor, handedHere, itemOf, o
 import { divinationBrief, fateBrief, prng, qianForReader, qianLook } from './fortune.mjs';
 import { withoutLocked } from './locks.mjs';
 import { chanceBrief } from './road.mjs';
-import { seclusionBrief } from './seclusion.mjs';
+import { julinBrief, seclusionBrief } from './seclusion.mjs';
 import { chapterLook, nodeLook, recapLook } from './story.mjs';
 import { knownBrief, liveTale, storyDue, taleBrief } from './tale.mjs';
 import { choreGrant, choreHow, isOnce, kaifuBrief, kaifuReady, questDone, todayChores } from './chores.mjs';
@@ -813,6 +813,8 @@ export function look(state, content, ctx) {
     ...(pangluBrief(content, state, ctx.now) ? { panglu: pangluBrief(content, state, ctx.now) } : {}),
     // 闭关 running: the hours in and what 出关 would grow now (rules/seclusion.mjs).
     ...(state.seclusion ? { seclusion: seclusionBrief(content, state, ctx.now) } : {}),
+    // 聚灵阵 (rules/seclusion.mjs, on with balance.json julin.on): what the 闭关 card draws its choice from — facts only.
+    ...(!state.seclusion && content.balance?.julin?.on ? { julin: julinBrief(content, state, ctx.now) } : {}),
     made: { at: state.made?.at ?? null, scenes: Object.keys(state.made?.scenes ?? {}) },
     words: wordsOf(content, lang),
     // 节日 · 节气 (rules/festival.mjs): the player's real day, reckoned on the device.

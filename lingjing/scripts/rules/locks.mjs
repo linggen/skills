@@ -91,7 +91,7 @@ const HIDES = {
   divine: ['divination', 'qian'],
   errands: ['offers', 'work', 'handed', 'tale', 'known', 'story_due', 'story_why', 'lundao'],
   road: ['chance'],
-  seclusion: ['seclusion'],
+  seclusion: ['seclusion', 'julin'],
 };
 
 /* A reading with every shut system taken out, and `locked` naming them. */

@@ -175,10 +175,22 @@ export function pricesOf(raw, { items, fantong, cards, effects, ladder }) {
    stands when they land (rules/mijing.mjs). */
 export function mijingOf(K) {
   return {
-    cap_day: K.key.cap_day, drops: { ...K.key.drops }, pay: { rate: K.pay.rate, short: K.pay.short }, keep_min: K.pay.keep_min,
+    cap_day: K.key.cap_day, drops: { ...K.key.drops }, door: K.door ?? 0, key_on: K.key.on !== false, pay: { rate: K.pay.rate, short: K.pay.short }, keep_min: K.pay.keep_min,
     hurt: { ...K.hurt }, yield: K.yield, foe_step: K.foe_step, boss_more: K.boss_more, td_step: K.td_step,
     wealth: { room: [...K.wealth.room], chest: [...K.wealth.chest], clear: K.wealth.clear, step: K.wealth.step },
     chest_rolls: K.chest_rolls, offer: K.offer, clear: structuredClone(K.clear),
+  };
+}
+
+/* 闭关's 聚灵阵 (master.julin → balance.json `julin`, rules/seclusion.mjs): the share of the layer the 阵 holds at each level
+   (`array` first + step a level, `levels` of them), and each level's price in 灵石 — level 2 `first_minutes` of 练气一层's
+   income (I(1), never × economy.earn: a price), × `growth` each next; level 1 is his from the start (null). */
+export function julinOf(J, raw) {
+  const I1 = incomeAt(worldOf(raw), 1), n = J.levels ?? 1;
+  return {
+    on: Boolean(J.on), per_stone: J.per_stone, hours: J.hours, per_day: J.per_day, trickle: J.trickle,
+    array: Array.from({ length: n }, (_, k) => Math.round((J.array.first + J.array.step * k) * 10000) / 10000),
+    costs: Array.from({ length: n }, (_, k) => (k === 0 ? null : Math.max(1, Math.round(J.first_minutes * I1 * J.growth ** (k - 1))))),
   };
 }
 
@@ -233,6 +245,9 @@ export function derive(raw0, { ladder, items, fantong = null, cards = null }) {
   const X = M.xiuwei;
   pp.xiuwei = { rate: { ...X.rate }, difficulty: { ...X.difficulty }, gap: { ...X.gap }, ...(X.board != null ? { board: X.board } : {}), ...(X.fight != null ? { fight: X.fight } : {}) };
   pp.wall = { day: X.units.wall_day };
+  // An errand's work (rules/playpay.mjs errandGrant; a wall tag's minutes too): its units, the master's (2026-11-12 — it was
+  // written once in play_pay by hand).
+  if (X.units.errand != null) pp.errand = { ...pp.errand, minutes: X.units.errand };
   pp.chore = { ...X.units.chore };
   pp.seclusion = { night: X.units.seclusion_night };
   // A story step's 修为 (rules/playpay.mjs storyPlay, Hanli 2026-11-09): one small game's 体力 at R.
@@ -265,6 +280,7 @@ export function derive(raw0, { ladder, items, fantong = null, cards = null }) {
   raw.kailu = { ...raw.kailu, tier: { ...E.kailu_tier }, ...(E.kailu_floor ? { grades: Object.fromEntries(Object.entries(raw.kailu.grades).map(([g, v]) => { const { floor, ...rest } = v; return [g, { ...rest, floor_ls: E.kailu_floor[g] ?? 0 }]; })) } : {}) };
   raw.prices = pricesOf(raw, { items, fantong, cards, effects: raw.pills.effects, ladder });
   if (M.mijing) raw.mijing = mijingOf(M.mijing);
+  if (M.julin) raw.julin = julinOf(M.julin, raw);
   // 斗法 on the level (batch 3, master.fight): P(L)'s knobs for the rules (rules/power.mjs) and fight_length's cap on P.
   if (M.fight) { raw.duel_hp = { ...M.fight.duel_hp }; raw.power = { ...M.fight.power }; raw.fight_length = structuredClone(M.fight.length); }
   if (M.fight?.gear) raw.gear = Object.fromEntries(Object.entries(M.fight.gear).filter(([k]) => !k.startsWith('_')));
