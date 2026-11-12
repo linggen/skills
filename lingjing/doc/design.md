@@ -1028,6 +1028,41 @@ is the pure core; the page draws it on the stage beside the chat.
 - **Cards are pictured** (7 山海经 plates, 45 FLUX); the art never pushes the
   rule text off a small card.
 
+## 斗法 v4 — fair sheets, one pool, cards to collect 【设计 2026-11-12】
+
+v3 above stands wherever this is silent. Why: the November numbers batches (81 levels) laid a growth curve, a display
+unit and a hidden blow multiplier (`might`) over v3. From 练气五层 a fight ran 15–18 rounds and a beast's card hit for
+several times its face. His calls, 2026-11-12: *斗法这里为了平衡, 都是1点, 2点三点, 好算* · *妖的卡牌和玩家卡牌应该是一个池子* ·
+*把妖和玩家的牌组数量, 气血都差不多的话, 胜率靠策略可以吗? 类似五子棋. 两边是公平的* · *之后可以方便扩展到玩家对战* ·
+*玩家在游戏里可以搜集卡牌, 设计一些掉率低的卡牌. 卡牌给一个颜色的框* · *先把斗法做完善*.
+
+- **A card reads the same in either hand.** Small whole numbers, the face is what lands. No display unit, no `might`,
+  no growth by level on a card. 闭关 trains no card (★ retires; what a held ★ becomes is open).
+- **One sheet for anyone who fights.** 气血 = 20 + level. Ten cards. The same pool. The deck's cost follows the level's
+  curve, a beast's too (measured 2026-11-12: at 练气一层 a beast's cards cost 2.1–2.9 each against his 1.4, so he rarely
+  won at equal 气血; from 五层 his cards and gear won 93–100%).
+- **A beast is harder by its level and its deck, nothing else.** A level above his is a harder fight. The 秘境's
+  `foe_step` · `boss_more` and a roaming beast's `hp` · `power` per companion give way to levels and to members on the
+  beast's side (v3: a lone beast is a party of one).
+- **What he brings in PvE.** Gear stays whole numbers (攻 · 防 · 抗) and is weighed again so a worn set is worth about a
+  level (today 攻 2 防 4 decides the late fights). Pills as now. Companions on both sides.
+- **The measure** (proposed, his yes needed; it replaces the first-meeting band): at equal level a player who thinks a
+  turn ahead wins clearly more than one who plays the first card he sees, and neither always wins. Both lines exist
+  (tools/story-fights.mjs `lookahead` · `careful`); at 练气四层, where the sides are close, they stood 53–88% and 8–40%.
+- **PvP** is two sheets at one level with no gear and no pills. Nothing else differs.
+- **Collecting, two lines.** 品 is how special a card is: it sets where the card is found and how many the ten may hold,
+  never its strength for its cost. 框 (银 · 金 · 宝石 · 钻石) is the same card in a finer printing; it changes nothing in
+  a fight. A beast has a grade of the same four names and drops its own cards in its 框. Each 重 of the 秘境 ends in a
+  graded 大妖; a rarer grade stands there now and then.
+- **Drops.** A clear always gives a card. The chances are knobs in balance.json's master, set only after a simulator
+  shows the typical and the unlucky number of days to the first card of each grade, from the runs a day (the 令's income
+  and `cap_day`) and how often a run is cleared under fair fights (气血 carries from room to room). A count he can see
+  (机缘) ends a dry spell. This amends 得牌's *nothing at random* (2026-09-22): a card's first copy still comes from
+  its `from`.
+- **Later:** cards meet the other games, 塔防 first (a collected card usable there). Not designed.
+- **Order:** the fair base (branch `feat/duel-fixed-numbers`), then 品 · 框 · the 卡册, then graded beasts and drops, then
+  PvP. The save changes; the game says it is a beta (2026-11-12), and Mac and phone ship together.
+
 ## 差事 — the task system, 《魔兽世界》's loop 【已建】
 
 **接 · 记 · 追 · 交** — accept, log, track, turn in (his ask, 2026-09-18).
