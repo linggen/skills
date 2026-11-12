@@ -72,3 +72,14 @@ test('the carried save plays: a 秘境 run paid at the door in 体力 (no 令 as
   assert.equal(j.stones, j.drawn * J.per_stone);
   assert.ok(out.state.wealth <= wealth - j.drawn + (out.result.emerged.progress.converted?.wealth ?? 0) + 1e-9);
 });
+
+test('a thing the world holds once (items.json `one`: the 九转筑基丹) held twice is brought down to one; one held stays', () => {
+  const one = content.items.items.filter(i => i.one).map(i => i.id);
+  assert.ok(one.includes('foundation-pill-9'), 'the 九转筑基丹 is a story thing, one of a kind');
+  const old = oldSave();
+  const two = migrate({ ...old, bag: { ...old.bag, 'foundation-pill-9': 2, 'qi-pill': 4 } }, content);
+  assert.equal(two.bag['foundation-pill-9'], 1);
+  assert.equal(two.bag['qi-pill'], 4, 'any other thing as it was');
+  assert.equal(two.bag[M.key], undefined);
+  assert.equal(migrate({ ...old, bag: { ...old.bag, 'foundation-pill-9': 1 } }, content).bag['foundation-pill-9'], 1);
+});

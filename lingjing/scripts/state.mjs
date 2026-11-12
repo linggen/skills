@@ -686,11 +686,14 @@ const MIGRATIONS = [
 ];
 
 /* v19's carry (econ_carry): the 秘境令 (mijing.json `key`) out of the bag and the 秘境's key counter (`mijing.drops`) gone; the
-   聚灵阵 at its first level, nothing drawn today. A run or a 闭关 under way stays as it is (neither carries the door's or the
+   聚灵阵 at its first level, nothing drawn today; a thing the world holds once (items.json `one`) down to one. A run or a 闭关 under way stays as it is (neither carries the door's or the
    阵's stamp, so each settles by the rule it began under). The fields to change. */
 function econCarry(content, state) {
   const key = content.mijing?.key, fix = {};
   if (key && state.bag && key in state.bag) { const { [key]: _, ...bag } = state.bag; fix.bag = bag; }
+  // A thing the world holds once (items.json `one`: the 九转筑基丹, a story thing — 2026-11-12) held more than once: one.
+  const ones = new Set((content.items?.items ?? []).filter(i => i.one).map(i => i.id)), bag = fix.bag ?? state.bag ?? {};
+  if (Object.entries(bag).some(([id, n]) => ones.has(id) && n > 1)) fix.bag = Object.fromEntries(Object.entries(bag).map(([id, n]) => [id, ones.has(id) ? Math.min(1, n) : n]));
   if (state.mijing?.drops) { const { drops, ...m } = state.mijing; fix.mijing = m; }
   fix.julin = { level: 1 };
   return fix;

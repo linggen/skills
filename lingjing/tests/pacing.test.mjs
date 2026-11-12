@@ -98,11 +98,9 @@ test('gates climb (the lint): no gate asks the layer the highest gate before it 
 // a gate's wait is split only where such a step lands inside it (tools/balance.mjs play: `gap`). 七层's exception is gone:
 // 九节菖蒲's two steps a layer break 七 · 八 · 九层's waits.
 const MAX_WAIT = 2;
-// 2026-11-12 (修为不要超过上限, 超过后换算为灵石奖励 — Hanli): past the cap the rest is 灵石, never banked to come back at the
-// 石室's door, so 古五's 石室 gate (wm-kaikai, 三层圆满 inside the sealed 秘境) waits 3.0 typical days of its rooms' boards: allowed
-// to 3, NOT retuned — Hanli's call (a share gate earlier in 三层, or a smaller hold before the 石室). 2026-11-12 (design.md § 耗材):
-// T₁ re-solved with the paid sinks makes 三层 660 (620 before), and inside the sealed 秘境 no sink reaches him (no 闭关, no run):
-// 3.22 days — allowed to 3.25, for Hanli's same call.
+// 2026-11-12 (修为不要超过上限, 超过后换算为灵石奖励): past the cap the rest is 灵石, never banked to come back at the 石室's door,
+// so 古五's 石室 gate (wm-kaikai, 三层圆满 inside the sealed 秘境) waits its rooms' boards. Set to 3.25 on 2026-11-12 with the
+// 耗材 numbers (design.md § 耗材): inside the sealed 石室 no paid sink reaches him (no 闭关, no run), and 三层 grew ~7% (3.22 days).
 const WAIT_EXCEPT = { 'wm-kaikai': 3.25 };
 test('the typical player waits at most MAX_WAIT days of only small games between two beats of story (a scene, or a 连环差事\'s step)', () => {
   for (const g of runs.typical.gates) {

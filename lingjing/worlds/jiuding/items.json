@@ -301,6 +301,8 @@
         "zh": "九转筑基丹",
         "en": "Nine-Turn Foundation Pill"
       },
+      "_one": "A story thing, one of a kind (2026-11-12: 「九转筑基丹应该是剧情物品吧」): the world holds it once; a save holding more is brought down to one (state.mjs v19).",
+      "one": true,
       "kind": "pill",
       "level": 9,
       "_level": "a 筑基丹 (九转): eaten at 练气九层's throw, as 筑基丹",

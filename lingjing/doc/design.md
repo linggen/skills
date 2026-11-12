@@ -1673,7 +1673,8 @@ Measured: a typical player took in 58 灵石 a day and spent 7; `economy.earn` 0
   (*花灵石补体力不用做*); what rations the 秘境 is the day's count of runs, as now.
 - **The free half.** The story, the small games, the errands and the day's 人间功课 fill about half a layer; the 秘境 and
   闭关 fill the rest. Today the free half alone reaches 圆满. Never a wall: a player who spends nothing finishes later,
-  not never.
+  not never. **Measured, as built (2026-11-12):** the free share is 60–65% of a layer in 古七–古八 and 70% over 卷一, not
+  half — accepted as the outcome (the coordinator, on the numbers handed over: 「其他数字你帮我定」); see the numbers below.
 - **闭关 draws on 灵石: 聚灵, then 吐纳** (*凡人里修炼是要吸取灵石的灵力的, 我们闭关还是可以让用户选择用灵石加速, 用我们前面定好的* — the
   book over the genre, whose games sell permanent speed instead). A 闭关 is as long as he likes, as now (≤ 12 h). Going
   in he lays 灵石 around him, none to a full 阵 (the 聚灵阵: the ring of 灵石 a cultivator sits in); they are drawn first,
@@ -1717,10 +1718,11 @@ Measured: a typical player took in 58 灵石 a day and spent 7; `economy.earn` 0
   - 灵石: by the end of 卷一 a typical player spends at least 70% of what he takes in — the model's 86%.
   - **What the tool shows** (typical · frugal, days a 回): 古四 6.4 · 7.0, 古五 7.2 · 7.4, 古六 6.2 · 6.0, 古七 8.0 · 10.6,
     古八 12.2 · 16.0 — every band holds, and he who buys nothing is never past 1.32× the typical days. The free share
-    (story · games · errands · 功课) is 60–65% of 古七 and 古八 and 70% of 卷一 — short of half: the typical player's 30
-    minutes are all play that pays, a run is 17 of them (he fits eight in 卷一), and what 灵石 buy is held by his purse
-    (`economy.earn` 0.5). The levers that would close it — `earn`, `xiuwei.board`, the model's `practice` — are Hanli's to
-    move. 古四 and 古五 read 88–97% free: the 秘境 opens inside 古五 (wm-hetan) and the 阵 is small there. Inside 古五's
+    (story · games · errands · 功课) is 60–65% of 古七 and 古八 and 70% of 卷一. Why: T₁ re-solved keeps a layer's length
+    (the typical player's days in band), so cutting the games' share does not shrink what free play fills — the share is set
+    by what the paid sinks add a day, and they add what a day's 灵石 can buy (`economy.earn` 0.5, `per_stone` 3) and the
+    runs his 30 minutes fit (a run is 17; eight in 卷一). `earn`, `xiuwei.board` and the model's `practice` stay as they
+    are. 古四 and 古五 read 88–97% free: the 秘境 opens inside 古五 (wm-hetan) and the 阵 is small there. Inside 古五's
     sealed 秘境 no sink reaches him: the 石室's wait (wm-kaikai) is 3.2 days (tests/pacing.test.mjs allows 3.25).
 - **Order.** The mechanics behind knobs that leave today's numbers as they are; the pacing tool taught the new sinks
   and a player who buys nothing; then the numbers above, with its table; his save moved by a tested migration, Mac and
