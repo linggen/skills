@@ -322,7 +322,7 @@
     },
     "spread": 0.4,
     "reach": 3,
-    "band": [0.85, 1.6]
+    "band": [0.45, 2.6]
   },
   "_prices": "Every shop price, one source: `buy` what a shop asks, `sell` what it gives back — folded onto items.json by content.mjs withBalance, so no item carries its own. Derived (batch 2, 2026-11-10): minutes of income by the thing's class × I(its level) (master.economy.prices, tools/master.mjs pricesOf); a row's shape is the declaration — `buy` 0 (no shop sells it), `sell` 0 or none (no shop buys it back).",
   "prices": {

@@ -58,8 +58,8 @@ test('eaten at any realm, it clears every turn of 丹毒 owed, as a 九转 does;
   assert.equal(clean.dandu, undefined);
 });
 
-test('the 饭桶: no 仙丹 in 卷一 — its pool row opens only once 01-end is done', () => {
-  const row = content.fantong.pools.pill.find(r => r.item === 'xian-pill');
+test('the 饭桶: no 仙丹 in 卷一 — its book row opens only once 01-end is done', () => {
+  const row = content.fantong.book.rows.find(r => r.item === 'xian-pill');
   assert.equal(row.after, '01-end');
   assert.ok(content.chapters['01-ji'].scenes['01-end'], '卷一\'s last scene');
   const before = save({ bag: { danlu: 1 }, done_scenes: ['09-laba'] }), after = save({ bag: { danlu: 1 }, done_scenes: ['09-laba', '01-end'] });

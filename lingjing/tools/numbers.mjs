@@ -209,7 +209,7 @@ const sceneHuiOf = content => { const m = new Map(); for (const ch of Object.val
 const earliest = (content, huis) => huis.filter(Boolean).sort((a, b) => huiOrder(content, a) - huiOrder(content, b))[0] ?? null;
 
 /* The 饭桶's rows gated `after` a scene (仙丹: 01-end, 卷一's last) — after 卷一, so never weighed in it. */
-const laterOnly = content => new Set(Object.values(content.fantong?.pools ?? {}).filter(Array.isArray).flat().filter(r => r.after).map(r => r.item));
+const laterOnly = content => new Set((content.fantong?.book?.rows ?? []).filter(r => r.after).map(r => r.item));
 
 /* Each item's first 回 and how: a scene's grant, an errand's, a board's gift, a shop's shelf. */
 export function itemsMet(content) {
@@ -225,7 +225,7 @@ export function itemsMet(content) {
   // design.md § Backlog: since the rerun was retired, 2026-10-28, nothing drops from them.)
   // A row gated `after` a scene (仙丹: 01-end, 卷一's last) is met nowhere in 卷一 — it waits for that scene's next 回.
   const after = laterOnly(content);
-  const fantong = idsIn(content.fantong?.pools);
+  const fantong = new Set((content.fantong?.book?.rows ?? []).map(r => r.item)); // the item book is the pool (2026-11-12)
   for (const i of content.items.items) {
     if (fantong.has(i.id) && !after.has(i.id)) add(i.id, hui.get(content.balance.model.fantong_from), 'fantong');
   }

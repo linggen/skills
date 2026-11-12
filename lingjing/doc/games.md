@@ -1539,6 +1539,12 @@ thing lands in the 饭桶图鉴 (录). 古七's 方子, three 方子残页 → �
 **2026-11-12 (Hanli's 逆天 that was 灵石 ×124):** a 珍品 or 逆天 roll with no row of its grade in reach gives a THING — the best of the next grade down
 that has one (珍品, 有用, 凡), a whole number of them near the rolled grade's floor and never worth over twice the pot (no farm; `roll` keeps `grade` as
 rolled, `shown` is the thing's own); only a pot with nothing in reach at any grade pays 灵石 back, shown 凡/有用, no 「新!」, no 图鉴 entry and no line explaining it (his, the same day: a pot gives good things at some odds and poor ones at others, never a gain every time).
+**2026-11-12, later (the pool is the item book):** the rows a roll draws from are no hand list any more — `withWorth` builds them from items.json
+(rules/fantong-roll.mjs `bookRows`): every thing, less fantong.json `never.out` (keys, scrolls, her bell, the book's first feed, 炉炭), the
+book's fixed pots and a `story` thing no `book.gates` row lets out; a row's family is its kind's (`kinds`, now one for every items.json kind),
+its weight the kind's `weight` times how near its worth stands to what the grade asks. The 饭桶-only things carry `only: 'fantong'` on their item
+and their weights in `book.only`; the humblest of them is what a pot with nothing in reach gives — it never gives 灵石. `odds.glimpse` (0.02):
+a roll may give ONE thing past the pot's reach (`worth.reach_level`), from a 卷 not yet open, its worth still near what the grade asks.
 All data: fantong.json (rows, tiers, odds); rules/fantong.mjs (on a save) and
 rules/fantong-roll.mjs (pure); the Phaser play tools/kailu/ → games/kailu/; the pane fantong-kailu.js.
 

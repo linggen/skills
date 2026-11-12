@@ -9,33 +9,39 @@
   "never": {
     "_about": "What never goes IN, whatever the bag holds: these kinds (a key, a scroll — 《吐纳经》 is hers — an artifact of hers) and these things (爷爷的弓, 爹's). Story things, a key the chapter or an errand still needs, and what he wears are refused by the rules anyway (pouch.mjs freeSlot). What the story still reads from the bag goes here too (2026-10-15): the 筑基丹's 主药 (古五 → 古八; 鼎苔 is held back by count instead, `keep`); every realm's breakthrough pill (ladder.json breakthrough.pill.items — the breakthrough reaches for it in the bag); the five 天材地宝 a 本命法宝 is refined with (items.json effect.core). This list is inputs only: realm pills may still come OUT (Hanli 10-20: 「破镜, 筑基丹都可以出, 不用限制」). Ordinary gear (灰袍) stays feedable.",
     "kinds": ["key", "scroll", "artifact"],
-    "items": ["old-bow", "foundation-pill", "foundation-pill-9", "firm-pill", "pojing-pill", "jingjin", "leijimu", "hanyu", "huojing", "xirang"]
+    "items": ["old-bow", "foundation-pill", "foundation-pill-9", "firm-pill", "pojing-pill", "jingjin", "leijimu", "hanyu", "huojing", "xirang"],
+    "out": {
+      "_about": "What never comes OUT (2026-11-12, the pool is the item book — `book`): a key or a scroll (the story alone gives them), her bell (the companion's `bell`), the book's first feed (wm-diyilu: 踏马符, 牛脂甘露, 含笑半步颠, 止笑丸, 九转回春丹 — the story hands each over on its own beat), 炉炭 (bought, never given); with them every thing the story flags `story` unless `book.gates` lets the bucket give it from a 回 on, and the book's two fixed pots (`recipes.story`, in and out). `items` above stay INPUT rules only: realm pills may still come out (Hanli 10-20: 「破境丹, 筑基丹都可以出, 不用限制」).",
+      "kinds": ["key", "scroll"],
+      "items": ["moon-bell", "tama-fu", "niuzhi-ganlu", "hanxiao-bandian", "zhixiao-wan", "mend-pill-9"]
+    }
   },
   "keep": {
     "_about": "Fed only past what the story still reads from the bag (Hanli 2026-10-21: 鼎苔 from the 秘境 stacked with no use — one steadies the 筑基 throw, ladder.json pill.bonus_of). The bucket sees, and may eat, only the rest; it eats it as a 凡物 (no tier row). A kept thing a breakthrough reaches for (ladder.json breakthrough.pill.items) is kept only while that breakthrough is still ahead: once the foundation is laid the last 鼎苔 is fed like the rest (rules/fantong.mjs readAhead).",
     "items": { "dingtai": 1 }
   },
   "kinds": {
-    "_about": "What a thing IS to the pot (Hanli 2026-10-27: 「我扔的草药, 最好能出丹药. 扔物品出装备, 武器. 其他出符文等」): a kind that lists it (`items`), else the kind whose `item_kinds` holds its items.json kind, else `junk`. Each kind leads to a `family` (below); a kind with none is a mixed handful. `tint`: the colour the steam over the mouth takes as the pot fills (the page's hint, never a number). No item id is named in code.",
-    "junk": { "tint": "#9aa0a6" },
+    "_about": "What a thing IS to the pot (Hanli 2026-10-27: 「我扔的草药, 最好能出丹药. 扔物品出装备, 武器. 其他出符文等」): a kind that lists it (`items`), else the kind whose `item_kinds` holds its items.json kind, else `junk`. Every items.json kind has one (tests/fantong.test.mjs). Each kind leads to a `family` (below); a kind with none is a mixed handful. `tint`: the colour the steam over the mouth takes as the pot fills (the page's hint, never a number). `weight`: the share a thing of this kind has among the pool's rows (default 1; times how near its worth stands to what the grade asks) — the one hand knob on the item book: pills and gear a little over the herbs and hides they are made of. No item id is named in code.",
+    "junk": { "tint": "#9aa0a6", "item_kinds": ["material", "key", "scroll"] },
     "herb": { "tint": "#6fcf6a", "family": "pill", "items": ["lingzhi", "ginseng", "huangjing-gen", "huangqi-canzhu", "luobo", "huangjing", "huangjing-10", "heshouwu", "fuling", "cangzhu", "chaihu", "yuanzhi", "chonglou", "shihu", "banxia", "songmo", "zixu-zhi", "juyou", "longxu-cao", "yaoyin"] },
-    "pill": { "tint": "#9be08f", "family": "pill", "item_kinds": ["pill"] },
+    "pill": { "tint": "#9be08f", "family": "pill", "weight": 3, "item_kinds": ["pill"] },
     "beast": { "tint": "#e0703a", "family": "gear", "items": ["yaodan-1", "yaodan-2", "yaodan-3", "deer-hide", "hu-pi", "li-pi", "she-tui", "she-dan", "ying-yu", "chai-ya", "zhu-ya", "lang-pi", "xiong-dan", "congcong-zhua", "xiegou-yu", "lingling-pi", "yumu", "jingjing-wei", "bibi-ling", "dangkang-ya", "geju-zong", "qique-zhua", "houer-jiu", "yike-daya"] },
     "ore": { "tint": "#5aa9e6", "family": "gear", "items": ["tongkuang", "tie-sha", "yunmu", "cishi", "chishizhi", "langgan", "qi-salt", "shujin"] },
-    "gear": { "tint": "#c9a26b", "family": "gear", "item_kinds": ["weapon", "robe", "pendant", "shoes", "pouch"] },
-    "paper": { "tint": "#e0564a", "family": "fu", "items": ["sang-paper", "dansha", "xionghuang", "tama-defu", "penti-fu", "chenlian-fu", "jinglu-fu"], "item_kinds": ["charm"] }
+    "gear": { "tint": "#c9a26b", "family": "gear", "weight": 2, "item_kinds": ["weapon", "robe", "pendant", "shoes", "pouch"] },
+    "paper": { "tint": "#e0564a", "family": "fu", "weight": 2, "items": ["sang-paper", "dansha", "xionghuang", "tama-defu", "penti-fu", "chenlian-fu", "jinglu-fu"], "item_kinds": ["charm"] },
+    "trinket": { "tint": "#b48ad9", "item_kinds": ["treasure", "artifact"] }
   },
   "families": {
-    "_about": "What comes out follows what goes in (Hanli 2026-10-27): the family most of the pot's things lead to — one ahead of every other; a tie, or junk ahead, is a mixed handful — draws from its `pools`; when none of them holds a thing within reach of what the grade asks (rules/fantong-roll.mjs rowsFor), its `then`. `lean`: the one line the board shows before 开炉, so he can steer the pot.",
-    "pill": { "pools": ["pill"], "then": "mixed", "lean": { "zh": "多是草药 → 多半出丹", "en": "Mostly herbs → likely a pill" } },
-    "gear": { "pools": ["gear"], "then": "mixed", "lean": { "zh": "多是兽材矿料 → 多半出兵器、法衣、佩", "en": "Mostly hides, bones and ore → likely a weapon, a robe or a pendant" } },
-    "fu": { "pools": ["fu"], "then": "mixed", "lean": { "zh": "多是符纸朱砂 → 多半出符", "en": "Mostly talisman paper and cinnabar → likely a talisman" } },
-    "mixed": { "pools": ["fu", "common"], "lean": { "zh": "杂七杂八 → 多半出符和杂物", "en": "A mixed handful → likely a talisman or odds and ends" } }
+    "_about": "What comes out follows what goes in (Hanli 2026-10-27): the family most of the pot's things lead to — one ahead of every other; a tie, or junk ahead, is a mixed handful — draws from the item book's rows of the families it `draw`s on (a row's family is its kind's, `kinds`; rules/fantong-roll.mjs rowsFor); when none of them holds a thing within reach of what the grade asks, its `then`. `lean`: the one line the board shows before 开炉, so he can steer the pot.",
+    "pill": { "draw": ["pill"], "then": "mixed", "lean": { "zh": "多是草药 → 多半出丹", "en": "Mostly herbs → likely a pill" } },
+    "gear": { "draw": ["gear"], "then": "mixed", "lean": { "zh": "多是兽材矿料 → 多半出兵器、法衣、佩", "en": "Mostly hides, bones and ore → likely a weapon, a robe or a pendant" } },
+    "fu": { "draw": ["fu"], "then": "mixed", "lean": { "zh": "多是符纸朱砂 → 多半出符", "en": "Mostly talisman paper and cinnabar → likely a talisman" } },
+    "mixed": { "draw": ["fu", "mixed"], "lean": { "zh": "杂七杂八 → 多半出符和杂物", "en": "A mixed handful → likely a talisman or odds and ends" } }
   },
   "tiers": {
     "_about": "品阶 of every thing, in and out (Hanli 10-20: 「玩家等级高, 喂入等级高, 出高等级概率大」): 0 凡物 · 1 一阶 · 2 二阶 · 3 三阶 · 4 the top (九转筑基丹). An item not listed is 0. The pot's tier is its HIGHEST input (one good thing lifts the pot, so the third slot is never a trap — a mean would punish adding a 凡物). An output's tier sets how much the power lifts it (`odds.tier`).",
-    "1": ["huangjing", "fuling", "cangzhu", "chaihu", "yuanzhi", "banxia", "songmo", "yaodan-1", "deer-hide", "hu-pi", "li-pi", "she-tui", "she-dan", "ying-yu", "chai-ya", "zhu-ya", "lang-pi", "houer-jiu", "tie-sha", "cishi", "xionghuang", "chishizhi", "dansha", "talisman", "lianxi-fu", "tama-fu", "penti-fu", "qi-pill", "mend-pill", "huiqi-pill", "bamboo-sword", "duan-dao", "iron-sword", "pi-kanjian", "shi-zhui", "qiuyu-ci", "baina-dai", "pouch-low", "baoge-ling", "yinyue-lingdang", "fangzi-canye", "sang-paper", "jade-fish"],
-    "2": ["lingzhi", "ginseng", "huangjing-10", "heshouwu", "chonglou", "shihu", "yaodan-2", "xiong-dan", "congcong-zhua", "xiegou-yu", "lingling-pi", "yumu", "jingjing-wei", "bibi-ling", "dangkang-ya", "geju-zong", "qique-zhua", "yunmu", "shujin", "qi-pill-3", "mend-pill-3", "wulei-fu", "yangyang-zhen", "zipai-jing", "niuzhi-ganlu", "lipi-kanjian", "chaiya-zhui", "jade-ring", "heyu-dao", "heyu-ao", "shisui-zhui", "chitong-hulu"],
+    "1": ["jinglu-fu", "chenlian-fu", "anshen-xiang", "dingtai", "yaoyin", "huangjing", "fuling", "cangzhu", "chaihu", "yuanzhi", "banxia", "songmo", "yaodan-1", "deer-hide", "hu-pi", "li-pi", "she-tui", "she-dan", "ying-yu", "chai-ya", "zhu-ya", "lang-pi", "houer-jiu", "tie-sha", "cishi", "xionghuang", "chishizhi", "dansha", "talisman", "lianxi-fu", "tama-fu", "penti-fu", "qi-pill", "mend-pill", "huiqi-pill", "bamboo-sword", "duan-dao", "iron-sword", "pi-kanjian", "shi-zhui", "qiuyu-ci", "baina-dai", "pouch-low", "baoge-ling", "yinyue-lingdang", "fangzi-canye", "sang-paper", "jade-fish"],
+    "2": ["hushan-qi", "longxu-cao", "qi-pill-2", "lingzhi", "ginseng", "huangjing-10", "heshouwu", "chonglou", "shihu", "yaodan-2", "xiong-dan", "congcong-zhua", "xiegou-yu", "lingling-pi", "yumu", "jingjing-wei", "bibi-ling", "dangkang-ya", "geju-zong", "qique-zhua", "yunmu", "shujin", "qi-pill-3", "mend-pill-3", "wulei-fu", "yangyang-zhen", "zipai-jing", "niuzhi-ganlu", "lipi-kanjian", "chaiya-zhui", "jade-ring", "heyu-dao", "heyu-ao", "shisui-zhui", "chitong-hulu"],
     "3": ["yaodan-3", "zixu-zhi", "langgan", "qingtong-jian", "anhe-yu", "foundation-pill", "qi-pill-9", "mend-pill-9", "xizhu"],
     "4": ["foundation-pill-9", "xian-pill"]
   },
@@ -44,7 +50,8 @@
     "grades": { "junk": 70, "useful": 25, "rare": 4, "best": 1 },
     "power": { "in": 1, "realm": 0.5, "lingshi": 1.08 },
     "realm_per_tier": 3,
-    "growth": { "junk": 0.85, "useful": 1, "rare": 1.25, "best": 1.45 }
+    "growth": { "junk": 0.85, "useful": 1, "rare": 1.25, "best": 1.45 },
+    "glimpse": 0.02
   },
   "lingshi": {
     "_about": "灵石 fed with the pot (0 to his cap): power (`odds.power.lingshi`, by ln) and worth (balance.json `kailu.lingshi`) — 「这才是一口正经饭」. The cap (Hanli 11-04: 「按当前层数*10, 筑基圆满就是(9+9)*10」): `per_layer` × his 层 counted on across the realms (练气一层 1 … 九层 9, 筑基一层 10 … 九层 18 — 筑基圆满 180), at least `min` (练气零层). A 方子 asks its exact count: more stones and the pot rolls as an ordinary one.",
@@ -64,69 +71,28 @@
     "refuse": 3,
     "twin": 4
   },
-  "pools": {
-    "_about": "Per family (`families`), the things it may give. `item` (with `n`, default 1) or `wealth` [min, max] 灵石. `w` its weight; a row's chance also rises the nearer its worth stands to what the grade asks (`worth`: its own, when the shops price it too low for what it is — else its `sell`, else its 品阶's). `hui` the 回 the save must have reached (huiOrder ≤ the 回 it stands in) — the base pool opens with the 饭桶 (古四, h05); `beast`: only once he has beaten that beast (state.beasts won); `with` / `with_chance`: a second thing out with it, now and then. `after`: only once he has finished that scene (仙丹: 卷一's last, 01-end — never in 卷一; design.md § 丹药). `breach`: a 破境丹 — drawn only while its 阶 (items.json `tier`) is the realm one above his (story DESIGN § 六·五; design.md § 丹药): 筑基丹 while he is 练气, nothing of it once he has laid the foundation. A thing of a `once` kind comes once ever; with the gear spent, a hide-and-ore pot still gives the 妖丹 and the 器料 here, then 符 and odds and ends (`then`). Nothing of a later 卷 (items.json `juan`) is ever drawn. The book's two fixed outputs (火柴, 顺风溜: `recipes.story`) are in no pool. 2026-10-28 (Hanli: 「踏马符游戏里出现地方不对…应该安排一个饭桶的剧情固定游戏」): what the book's first feed (wm-diyilu) gave — 踏马符, 牛脂甘露, 含笑半步颠 and 止笑丸, the 九转回春丹 — is in NO pool; the story hands each over on its own beat (踏马符: the board diyilu-tama, a fixed 开炉).",
-    "pill": [
-      { "item": "huiqi-pill", "w": 3 },
-      { "item": "mend-pill", "w": 3 },
-      { "item": "fangzi-canye", "w": 2, "hui": "h11" },
-      { "item": "qi-pill", "w": 3 },
-      { "item": "qi-pill-3", "w": 2 },
-      { "item": "mend-pill-3", "w": 2 },
-      { "item": "qi-pill-9", "w": 1 },
-      { "item": "xian-pill", "w": 1, "after": "01-end" },
-      { "item": "foundation-pill", "w": 1, "breach": true },
-      { "item": "foundation-pill-9", "w": 1, "breach": true }
-    ],
-    "gear": [
-      { "item": "duan-dao", "w": 2, "hui": "h07" },
-      { "item": "pi-kanjian", "w": 2, "hui": "h07" },
-      { "item": "shi-zhui", "w": 2, "hui": "h07" },
-      { "item": "bamboo-sword", "w": 2 },
-      { "item": "pouch-low", "w": 2, "worth_ls": 12 },
-      { "item": "baina-dai", "w": 2, "worth_ls": 13.5 },
-      { "item": "lipi-kanjian", "w": 2, "beast": "shanli" },
-      { "item": "chaiya-zhui", "w": 2, "beast": "chai" },
-      { "item": "qingtong-jian", "w": 2, "hui": "h07" },
-      { "item": "anhe-yu", "w": 2, "hui": "h07" },
-      { "item": "tie-sha", "w": 1 },
-      { "item": "yaodan-1", "w": 1 },
-      { "item": "yaodan-1", "n": 2, "w": 1 },
-      { "item": "yunmu", "w": 1 },
-      { "item": "shujin", "w": 1 },
-      { "item": "langgan", "w": 1 },
-      { "item": "yaodan-2", "w": 1 }
-    ],
-    "fu": [
-      { "item": "tama-defu", "w": 1 },
-      { "item": "talisman", "w": 3 },
-      { "item": "lianxi-fu", "w": 2 },
-      { "item": "lianxi-fu", "n": 2, "w": 1 },
-      { "item": "talisman", "n": 3, "w": 2 },
-      { "item": "talisman", "n": 5, "w": 1 },
-      { "item": "penti-fu", "w": 1, "hui": "h08" },
-      { "item": "sang-paper", "w": 2 },
-      { "item": "xionghuang", "w": 1 },
-      { "item": "dansha", "w": 2 },
-      { "item": "wulei-fu", "w": 1, "hui": "h07" },
-      { "item": "wulei-fu", "n": 2, "w": 1, "hui": "h07" },
-      { "item": "yangyang-zhen", "w": 1, "hui": "h08" },
-      { "item": "zipai-jing", "w": 1, "hui": "h08" }
-    ],
-    "common": [
+  "book": {
+    "_about": "THE POOL IS THE ITEM BOOK (Hanli 2026-11-12: 「游戏物品有个池子吗? 直接用来作为饭桶的池子吧… 不必鼓励丢垃圾进去, 池子里的东西可以多一些」): the rows a roll draws from are built by rule from items.json (rules/fantong-roll.mjs bookRows, folded in by withWorth) — every thing a player may hold, less what must never come out (`never.out`, the book's fixed pots `recipes.story`, a thing the story flags `story`), its family from its kind (`kinds`), its weight the kind's `weight` times how near its worth stands to what the grade asks. A new item in items.json is in the pool the day it is written. `gates`: a thing that opens only later (`hui` the 回 the save must have reached — huiOrder ≤ the 回 it stands in; `beast`: only once he has beaten that beast; `after`: only once he has finished that scene — 仙丹: 卷一's last, 01-end, never in 卷一; `breach`: a 破境丹, drawn only while its 阶 (items.json `tier`) is the realm one above his — 筑基丹 while he is 练气, nothing of it once he has laid the foundation); a `story` thing named here is one the bucket may give from that 回 on (古六's treasures). `worth_ls`: a rare thing the shops price too low or not at all, its own worth in minutes of income at its level. A thing of a `once` kind comes once ever, and nothing of a later 卷 (items.json `juan`) is drawn — but for the glimpse (`odds.glimpse`). `only`: the 饭桶-ONLY things (each marked `only: 'fantong'` on its items.json row; tests/fantong.test.mjs holds the two lists the same) — sold nowhere, found nowhere else — at the weight `w` they have among the rows, with the family (`family`) or gate they carry when their kind says otherwise; the humblest of them is what a pot with nothing in reach gives.",
+    "gates": {
+      "duan-dao": { "hui": "h07" }, "pi-kanjian": { "hui": "h07" }, "shi-zhui": { "hui": "h07" }, "qingtong-jian": { "hui": "h07" }, "anhe-yu": { "hui": "h07" }, "wulei-fu": { "hui": "h07" },
+      "penti-fu": { "hui": "h08" }, "yangyang-zhen": { "hui": "h08" }, "zipai-jing": { "hui": "h08" },
+      "lipi-kanjian": { "beast": "shanli" }, "chaiya-zhui": { "beast": "chai" },
+      "xian-pill": { "after": "01-end" },
+      "foundation-pill": { "breach": true }, "foundation-pill-9": { "breach": true }
+    },
+    "worth_ls": { "pouch-low": 12, "baina-dai": 13.5 },
+    "only": [
       { "item": "yaqian", "w": 3 },
       { "item": "guoba", "w": 3 },
       { "item": "xiao-shizi", "w": 2 },
       { "item": "yicuo-hui", "w": 3 },
-      { "item": "kuye", "w": 2 },
       { "item": "banjie-fanshao", "w": 2 },
       { "item": "yike-daya", "w": 2 },
       { "item": "yige-ge", "w": 2 },
-      { "item": "ganliang", "w": 3 },
-      { "ls": [0.3, 0.9], "w": 3 },
-      { "ls": [3, 3], "w": 2 },
       { "item": "baoge-ling", "w": 2, "worth_ls": 12 },
-      { "item": "yinyue-lingdang", "w": 1, "worth_ls": 18 }
+      { "item": "yinyue-lingdang", "w": 1, "worth_ls": 18 },
+      { "item": "fangzi-canye", "w": 2, "family": "pill", "hui": "h11" },
+      { "item": "tama-defu", "w": 1 }
     ]
   },
   "pages": {

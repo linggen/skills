@@ -60,17 +60,17 @@ function breachFits(content, state, id) {
   const tiers = content.ladder?.tiers ?? [], at = tiers.findIndex(x => x.id === state.tier);
   return tiers.findIndex(x => x.id === itemOf(content, id)?.tier) === at + 1;
 }
-function rowOpen(content, state, t, row) {
+function rowOpen(content, state, t, row, beyond = false) {
   if (!state || !content) return true; // the bare roll (tests, the 游戏厅's sample) sees every row
   if (row.hui && huiOrder(content, row.hui) > huiOrder(content, huiNow(content, state))) return false;
   if (row.breach && !breachFits(content, state, row.item)) return false;
   // `after`: a scene he has finished (仙丹: 卷一's last, 01-end — never in 卷一; design.md § 丹药).
   if (row.after && !(state.done_scenes ?? []).includes(row.after)) return false;
   if (row.beast && !(state.beasts?.[row.beast]?.won > 0)) return false;
-  if (row.ls) return !isLocked(content, state, 'wealth'); // no 灵石 out while 灵石 are not his yet
   if (!row.item) return true;
   const item = itemOf(content, row.item);
-  if (!item || (item.juan ?? 1) > 1) return false;
+  // A later 卷's thing is drawn by nothing but the glimpse (`beyond`: the preview, fantong-roll.mjs rowsFor) — the one door a 卷 not open has.
+  if (!item || ((item.juan ?? 1) > 1 && !beyond)) return false;
   if ((t.once?.kinds ?? []).includes(item.kind) && hasFound(state, row.item)) return false;
   return true;
 }
@@ -89,10 +89,10 @@ const recipeFor = (t, ids, lingshi, found = null, content = null, state = null) 
 export function rollFeed(t, { ids, id, found = null, content = null, state = null, ...o }) {
   ids = ids ?? (id ? [id] : []);
   return roll(t, { ...o, ids, recipe: recipeFor(t, ids, o.lingshi ?? 0, found, content, state), story: storyFor(content, t, ids),
-    open: content && state ? (r) => rowOpen(content, state, t, r) : null });
+    open: content && state ? (r, beyond) => rowOpen(content, state, t, r, beyond) : null });
 }
 /* Its exact odds (fantong-roll.mjs odds), gated the same way. */
-export const chances = (t, { content = null, state = null, ...o }) => odds(t, { ...o, open: content && state ? (r) => rowOpen(content, state, t, r) : null });
+export const chances = (t, { content = null, state = null, ...o }) => odds(t, { ...o, open: content && state ? (r, beyond) => rowOpen(content, state, t, r, beyond) : null });
 
 /* ── What may go in: what his 储物袋 holds, and nothing else (Hanli 2026-10-27) ── */
 /* What the bucket may have of a stack: all but the `keep` the story still reads from the bag (鼎苔: one for the 筑基). */
@@ -156,7 +156,6 @@ const fullSay = (t, lang, next, now) => fill(wordsOf(t, lang).full, { when: wait
 
 /* An output as the board shows it: name, the one line of small print, its picture, its grade. */
 function outBrief(content, state, t, got, grade) {
-  if (got.id === LINGSHI) return { id: LINGSHI, name: wordsOf(t, state.lang).lingshi ?? '灵石', n: got.n, wealth: true, grade };
   const item = itemOf(content, got.id);
   return { id: got.id, name: itemName(item, state, state.lang) ?? got.id, hint: pick(item?.hint, state.lang), art: item?.art ?? null, grade,
     ...(item?.zhuan ? { zhuan: item.zhuan } : {}), n: got.n, ...(got.offered ? { offered: true } : {}), ...(got.new ? { new: true } : {}) };
@@ -172,14 +171,14 @@ export function fantongRecipes(content, state) {
   }));
 }
 
-/* Every thing the table can give: the pools, the 方子, the gag, the book's two. With `content` and `state`, only
+/* Every thing the table can give: the item book's rows, the 方子, the gag, the book's two. With `content` and `state`, only
    what this save can get by the lottery — the 图鉴's whole (rows its 回 and 卷 open, never the book's two, which the
    story hands over; a thing it has already had stays counted). */
 export function fantongAll(t, content = null, state = null) {
   const ids = new Set(), save = Boolean(content && state);
-  for (const [k, rows] of Object.entries(t.pools ?? {})) for (const r of k === '_about' ? [] : rows) {
+  for (const r of t.book?.rows ?? []) {
     if (save && !rowOpen(content, state, t, r) && !hasFound(state, r.item)) continue;
-    if (r.item) ids.add(r.item); // a 灵石 row is no entry in the book: the 图鉴 holds things
+    ids.add(r.item);
     if (r.with) ids.add(r.with);
   }
   for (const r of t.recipes?.list ?? []) if (!save || rowOpen(content, state, t, { hui: r.hui })) { ids.add(r.out); ids.add(r.best); }
@@ -290,12 +289,9 @@ function feed(state, content, ctx, args, t) {
   if (lifted) { s.bag[lifted] -= 1; if (s.bag[lifted] <= 0) delete s.bag[lifted]; }
   // Into the pouch: every output (the twin too), and a thing's companion (含笑半步颠 · 止笑丸).
   const landed = [];
-  const land = (id, grade, k = 1, wealth = 0, back = false) => {
-    if (wealth) { s.wealth = (s.wealth ?? 0) + wealth; landed.push({ got: { id: LINGSHI, n: wealth }, grade, ...(back ? { back } : {}) }); return; }
-    landed.push({ got: stow(content, s, id, k, 'fantong'), grade });
-  };
+  const land = (id, grade, k = 1) => landed.push({ got: stow(content, s, id, k, 'fantong'), grade });
   // The grade he is TOLD is the grade of what came out (`shown`); the one rolled stays the roll's (pity, 压盖, the odds).
-  for (const o of roll.outs) { land(o.out, shownOf(o), o.n ?? 1, o.wealth ?? 0, o.back); if (o.with) land(o.with, shownOf(o)); }
+  for (const o of roll.outs) { land(o.out, shownOf(o), o.n ?? 1); if (o.with) land(o.with, shownOf(o)); }
   const found = new Set(f.recipes ?? []);
   const discovered = roll.recipe && !found.has(roll.recipe) ? roll.recipe : null;
   if (discovered) found.add(discovered);
@@ -303,10 +299,10 @@ function feed(state, content, ctx, args, t) {
   const P = t.pages, pages = (f.pages ?? 0) + (P ? landed.filter(l => l.got.id === P.item).length : 0);
   const paged = P && pages >= P.need && !found.has(P.recipe) ? P.recipe : null;
   if (paged) found.add(paged);
-  // 图鉴: the first time each THING comes out — 灵石 are no entry and never 「新」 (a stones-only result is not a find).
+  // 图鉴: the first time each THING comes out.
   const seen = [...(f.seen ?? [])];
   const fresh = [];
-  for (const l of landed) if (l.got.id !== LINGSHI && !seen.some(x => x.id === l.got.id)) { seen.push({ id: l.got.id, grade: l.grade, at: today }); fresh.push(l.got.id); }
+  for (const l of landed) if (!seen.some(x => x.id === l.got.id)) { seen.push({ id: l.got.id, grade: l.grade, at: today }); fresh.push(l.got.id); }
   const dry = roll.outs.every(o => o.grade === 'junk') && !roll.event ? (f.dry ?? 0) + 1 : 0;
   s.fantong = { ...f, n: n + 1, at: now.toISOString(), day: today, today: (f.day === today ? f.today ?? 0 : 0) + 1, recipes: [...found],
     seen, dry, spat: 0, ...(P ? { pages } : {}),
@@ -316,11 +312,9 @@ function feed(state, content, ctx, args, t) {
   const briefs = landed.map(l => outBrief(content, s, t, l.got, l.grade));
   const out = briefs[0], extra = roll.outs[0]?.with ? briefs[1] : null, twin = roll.twin ? briefs.at(-1) : null;
   const ev = roll.event ? (t.events ?? []).find(e => e.id === roll.event) : null;
-  const named = o => (o.wealth || o.n > 1 ? `${o.name} ×${o.n}` : o.name);
+  const named = o => (o.n > 1 ? `${o.name} ×${o.n}` : o.name);
   const line = ev ? pick(ev.say, lang) : fill(w.spit, { name: named(out) });
   const pageLine = P && pages > (f.pages ?? 0) && !paged ? fill(w.page, { n: Math.min(pages, P.need), need: P.need }) : null;
-  // A pot that pays 灵石 back says nothing more about it (Hanli 2026-11-12: 「饭桶定义就是一定概率出好东西, 一定概率出差的东西, 不能每次都赚」):
-  // it is one of the plain results a pot can have.
   const say = [line, extra ? fill(w.with, { name: named(extra) }) : null, twin ? fill(w.twin, { name: named(twin) }) : null, pageLine,
     fullLine(s, landed.map(l => l.got))].filter(Boolean).join(' ');
   const shown = shownOf(roll), nextNow = nextAt(t, s, now);

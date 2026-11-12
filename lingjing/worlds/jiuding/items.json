@@ -42,6 +42,10 @@
         "zh": "山中所生，灵兽所喜。",
         "en": "Grows in the hills; spirit beasts love it."
       },
+      "hint": {
+        "zh": "山里长的，灵兽爱吃。",
+        "en": "Grown in the hills; beasts love it."
+      },
       "sold": [
         "徐"
       ],
@@ -89,6 +93,10 @@
         "zh": "形如人，年久者有灵。",
         "en": "Shaped like a person; an old one has a spirit of its own."
       },
+      "hint": {
+        "zh": "长得像个小人。",
+        "en": "It looks like a little man."
+      },
       "sold": [
         "徐"
       ]
@@ -128,6 +136,10 @@
         "zh": "泗水多雨。编得厚实，挡得住一拳。",
         "en": "It rains often on the Si. Woven thick, it turns a blow."
       },
+      "hint": {
+        "zh": "雨天挡一拳。",
+        "en": "Takes a punch in the rain."
+      },
       "sold": [
         "徐"
       ],
@@ -145,6 +157,10 @@
       "about": {
         "zh": "沉鼎观弟子的粗布袍，入门那天发的。",
         "en": "The coarse robe of a Sunken Cauldron Abbey disciple, given on the day of entry."
+      },
+      "hint": {
+        "zh": "入门那天发的。",
+        "en": "Handed out on day one."
       },
       "effect": {}
     },
@@ -178,6 +194,10 @@
       "about": {
         "zh": "汉墓里出来的东西，握着微温。",
         "en": "Something from a Han tomb; faintly warm in the hand."
+      },
+      "hint": {
+        "zh": "握着微微温。",
+        "en": "Faintly warm in the hand."
       },
       "sold": [
         "徐"
@@ -238,6 +258,10 @@
       "about": {
         "zh": "邺城铁匠打的，燕赵的样式。佩之借金。",
         "en": "Forged in Ye, in the style of Yan and Zhao. Worn, it lends 金."
+      },
+      "hint": {
+        "zh": "燕赵的样式。",
+        "en": "Yan-Zhao pattern."
       },
       "sold": [
         "冀"
@@ -317,6 +341,10 @@
         "zh": "筑基者服之，根基愈固，结丹之路愈近。",
         "en": "For one who has laid the Foundation: the base grows firmer, the Core comes nearer."
       },
+      "hint": {
+        "zh": "根基稳一分。",
+        "en": "A firmer foundation."
+      },
       "sold": [
         "兖"
       ],
@@ -341,6 +369,10 @@
       "about": {
         "zh": "结丹以后破境时带在身上，雷落下来多一分把握。破境时化去。",
         "en": "Carried into a breakthrough from the Core on, it steadies you under the lightning. It is spent in the attempt."
+      },
+      "hint": {
+        "zh": "破境时多一分把握。",
+        "en": "A better chance at the breach."
       },
       "sold": [
         "青",
@@ -633,6 +665,10 @@
         "zh": "齐有渔盐之利。海边晒出来的盐，雪一样白。",
         "en": "Qi's wealth is fish and salt: sea salt dried on the shore, white as snow."
       },
+      "hint": {
+        "zh": "雪一样白。",
+        "en": "White as snow."
+      },
       "sold": [
         "青"
       ],
@@ -652,6 +688,10 @@
       "about": {
         "zh": "齐纨鲁缟，天下第一。披在银月肩上。",
         "en": "The silk of Qi, the finest under heaven; laid over Yinyue's shoulders."
+      },
+      "hint": {
+        "zh": "天下第一的绢。",
+        "en": "The finest silk there is."
       },
       "sold": [
         "青"
@@ -823,6 +863,10 @@
         "zh": "山骨之精，千年始凝。",
         "en": "The mountain's own bone, a thousand years in the setting."
       },
+      "hint": {
+        "zh": "山骨千年凝成。",
+        "en": "A thousand years in the mountain bone."
+      },
       "sold": [
         "青",
         "梁",
@@ -847,6 +891,10 @@
         "zh": "为雷所击而不死之木，纹里带火。",
         "en": "Wood the lightning struck and did not kill; the grain still carries fire."
       },
+      "hint": {
+        "zh": "雷劈不死的木头。",
+        "en": "Wood the lightning could not kill."
+      },
       "sold": [
         "兖",
         "扬"
@@ -870,6 +918,10 @@
         "zh": "触之如冰，暑月不温。",
         "en": "Cold to the hand, and no summer warms it."
       },
+      "hint": {
+        "zh": "夏天也是冰的。",
+        "en": "Cold even in summer."
+      },
       "sold": [
         "青"
       ],
@@ -892,6 +944,10 @@
         "zh": "地火烧尽余下的一点，落水不熄。",
         "en": "What is left when the earth-fire burns out; water does not put it out."
       },
+      "hint": {
+        "zh": "落水不熄。",
+        "en": "Burns on in water."
+      },
       "sold": [
         "冀",
         "荆"
@@ -913,6 +969,10 @@
       "about": {
         "zh": "鲧窃帝之息壤以堙洪水——取之一掬，自生不已。",
         "en": "The soil Gun stole from the Emperor to dam the flood: a handful of it grows and does not stop."
+      },
+      "hint": {
+        "zh": "取一掬，自己再长。",
+        "en": "Take a handful; it grows again."
       },
       "sold": [
         "兖",
@@ -977,6 +1037,10 @@
         "zh": "内有一线光行走不停。",
         "en": "A thread of light walks inside it and never stops."
       },
+      "hint": {
+        "zh": "里头有线光在走。",
+        "en": "A thread of light runs inside."
+      },
       "sold": []
     },
     {
@@ -991,6 +1055,10 @@
       "about": {
         "zh": "缺口的环，古人佩以决事。土气厚，挡得住土行法术。",
         "en": "A ring with a gap, worn by the ancients when a thing had to be decided. Its earth is thick enough to turn an earth spell."
+      },
+      "hint": {
+        "zh": "缺口的环。",
+        "en": "A ring with a gap."
       },
       "sold": [
         "徐"
@@ -1011,6 +1079,10 @@
       "about": {
         "zh": "扬州厥包橘柚。淮南的橘，过了淮就成了枳。",
         "en": "Yang sent oranges and pomelos in baskets as tribute. An orange of the south turns bitter north of the Huai."
+      },
+      "hint": {
+        "zh": "过了淮就成了枳。",
+        "en": "Past the Huai it turns to trifoliate."
       },
       "sold": [
         "扬",
@@ -1106,6 +1178,10 @@
         "zh": "靛青绸面，绣着云纹。换上它，便换下身上那只——储物袋一次只用一只。",
         "en": "Indigo silk worked with clouds. Carry it and it takes the place of the one you carry — one pouch at a time."
       },
+      "hint": {
+        "zh": "云纹靛青，容得多。",
+        "en": "Indigo cloud-weave; holds more."
+      },
       "sold": [
         "冀",
         "兖"
@@ -1127,6 +1203,10 @@
       "about": {
         "zh": "绛红织锦，玉扣系口，袋里自成一方天地。换上它，便换下身上那只——储物袋一次只用一只。",
         "en": "Crimson brocade with a jade toggle; a small world inside. Carry it and it takes the place of the one you carry — one pouch at a time."
+      },
+      "hint": {
+        "zh": "玉扣系口，自成一方天。",
+        "en": "Jade clasp; a small world inside."
       },
       "sold": [
         "青",
@@ -1325,6 +1405,10 @@
       "about": {
         "zh": "黑松岭那头雄鹿的皮，完整，油光水滑——够交马家的租。",
         "en": "The hide of the stag from Black Pine Ridge, whole and glossy — enough for the Mas' rent."
+      },
+      "hint": {
+        "zh": "完整，油光水滑。",
+        "en": "Whole and glossy."
       }
     },
     {
@@ -1377,6 +1461,10 @@
         "zh": "只长在站过鼎的地方：鼎在那里站了上千年，地面泡透了鼎气，长出一层青得发黑的苔。筑基丹的主药；生吃，筑基多一分把握。天下只有鼎址才有。",
         "en": "It grows only where a cauldron once stood: a thousand years of standing soaks the ground with the cauldron's breath, and a moss comes up so green it is nearly black. The chief herb of the Foundation pill; eaten raw, it steadies a Foundation breakthrough a little. Only a cauldron's old footing grows it."
       },
+      "hint": {
+        "zh": "长在站过鼎的地方。",
+        "en": "Grows where a cauldron stood."
+      },
       "sold": [],
       "_about": "古五 (the author, 2026-10-02): the 秘境's own — round the four 七拃 pits in the stone chamber, and in the cracks of the dry underground river below the wind shaft, where the cauldron's breath seeped down. Every one of the nine cauldrons' old footings will have it (OUTLINE 扣子簿). No effect of its own: carried into the Foundation breakthrough it is the last thing reached for (ladder.json breakthrough.pill), a small bonus.",
       "art_source": "Painted for Lingjing by the local picture model (FLUX.2 klein 4B), 2026-10-05: one square footing pit in the stone chamber floor, its rim ringed with blackish-green moss."
@@ -1393,6 +1481,10 @@
       "about": {
         "zh": "秦始皇派人在泗水捞鼎，水里钻出一条龙，咬断了绳子，崩掉几根龙须，落在河底扎了根。须子又长又硬，泛一点金。只长在泗水底下。吃下去，冲得开经脉。",
         "en": "When the First Emperor's men fished the Si for the cauldron, a dragon rose and bit the rope through, and a few whiskers snapped off, sank, and took root in the riverbed. Long, stiff blades with a gleam of gold. It grows only under the Si. Eaten, it forces the meridians open."
+      },
+      "hint": {
+        "zh": "泗水底下才有。",
+        "en": "Only under the Si."
       },
       "sold": [],
       "effect": {
@@ -1415,6 +1507,10 @@
         "zh": "秘境十年翻一回身，吸一口气；那口气在最深处凝成珠子，指甲盖大，攥在手心里一跳一跳，像攥着一颗心。跟息壤同出一源。吞一颗，修为涨一截。",
         "en": "Once in ten years the hidden realm turns over and draws one breath; in its deepest place that breath sets into a bead the size of a fingernail, which beats in the palm like a held heart. Of one source with the living soil. Swallow one, and your cultivation climbs a stretch."
       },
+      "hint": {
+        "zh": "攥着，一跳一跳。",
+        "en": "Throbs in the fist."
+      },
       "sold": [],
       "effect": {
         "units": 30,
@@ -1436,6 +1532,10 @@
       "about": {
         "zh": "秘境暗河崖壁上的一道铜矿，往年淹在水底下。九鼎是收九州之铜铸的。",
         "en": "From a copper vein in the wall of the hidden realm's underground river, under water in other years. The nine cauldrons were cast from the copper of the nine provinces."
+      },
+      "hint": {
+        "zh": "九鼎是铜铸的。",
+        "en": "The nine cauldrons were cast of it."
       },
       "sold": [],
       "_about": "古五 (the author, 2026-10-02): the year's low water bared a copper vein; 孙二狗 dug half a lump with his fingernails. A find at shimen (meets.json).",
@@ -1472,6 +1572,10 @@
       "about": {
         "zh": "伙房的萝卜，白的，带着泥。银月说：带根萝卜去。",
         "en": "A radish from the kitchen, white, with the soil still on. Yinyue said: take a radish."
+      },
+      "hint": {
+        "zh": "白的，带着泥。",
+        "en": "White, with the soil on."
       },
       "sold": [
         "徐"
@@ -1644,7 +1748,7 @@
       "art_source": "The ginseng's picture until its own is painted."
     },
     {
-      "id": "yaqian",
+      "id": "yaqian", "only": "fantong",
       "kind": "material",
       "level": 1,
       "name": {
@@ -1665,7 +1769,7 @@
       "art_source": "The 竹剑's picture until its own is painted."
     },
     {
-      "id": "guoba",
+      "id": "guoba", "only": "fantong",
       "kind": "material",
       "level": 1,
       "name": {
@@ -1686,7 +1790,7 @@
       "art_source": "The 干粮's picture until its own is painted."
     },
     {
-      "id": "xiao-shizi",
+      "id": "xiao-shizi", "only": "fantong",
       "kind": "material",
       "level": 1,
       "name": {
@@ -1707,7 +1811,7 @@
       "art_source": "The 铜矿石's picture until its own is painted."
     },
     {
-      "id": "yicuo-hui",
+      "id": "yicuo-hui", "only": "fantong",
       "kind": "material",
       "level": 1,
       "name": {
@@ -1772,7 +1876,7 @@
       "art_source": "The 回春丹's picture until its own is painted."
     },
     {
-      "id": "tama-defu",
+      "id": "tama-defu", "only": "fantong",
       "kind": "material",
       "level": 1,
       "name": {
@@ -1869,7 +1973,7 @@
       "art_source": "The 中品储物袋's picture until its own is painted."
     },
     {
-      "id": "banjie-fanshao",
+      "id": "banjie-fanshao", "only": "fantong",
       "kind": "material",
       "level": 1,
       "name": {
@@ -1890,7 +1994,7 @@
       "art_source": "The bamboo-sword picture until its own ink is painted; the small games show its comic icon (art/items-comic/banjie-fanshao.webp)."
     },
     {
-      "id": "yike-daya",
+      "id": "yike-daya", "only": "fantong",
       "kind": "material",
       "level": 1,
       "name": {
@@ -1911,7 +2015,7 @@
       "art_source": "The chai-ya picture until its own ink is painted; the small games show its comic icon (art/items-comic/yike-daya.webp)."
     },
     {
-      "id": "yige-ge",
+      "id": "yige-ge", "only": "fantong",
       "kind": "material",
       "level": 1,
       "name": {
@@ -1932,7 +2036,7 @@
       "art_source": "The yicuo-hui picture until its own ink is painted; the small games show its comic icon (art/items-comic/yige-ge.webp)."
     },
     {
-      "id": "fangzi-canye",
+      "id": "fangzi-canye", "only": "fantong",
       "kind": "material",
       "level": 1,
       "name": {
@@ -1953,7 +2057,7 @@
       "art_source": "The sang-paper picture until its own ink is painted; the small games show its comic icon (art/items-comic/fangzi-canye.webp)."
     },
     {
-      "id": "baoge-ling",
+      "id": "baoge-ling", "only": "fantong",
       "kind": "treasure",
       "level": 1,
       "name": {
@@ -1977,7 +2081,7 @@
       "art_source": "The talisman picture until its own ink is painted; the small games show its comic icon (art/items-comic/baoge-ling.webp)."
     },
     {
-      "id": "yinyue-lingdang", "slot": "pendant",
+      "id": "yinyue-lingdang", "only": "fantong", "slot": "pendant",
       "kind": "artifact",
       "level": 1,
       "name": {
@@ -2015,6 +2119,10 @@
         "zh": "犰狳那张鸟嘴，磨尖了，缠上布条当刺使。佩之借木。",
         "en": "The qiuyu's bird beak, ground to a point and wrapped in cloth for a grip. Worn, it lends 木."
       },
+      "hint": {
+        "zh": "鸟嘴磨尖当刺。",
+        "en": "A beak ground to a point."
+      },
       "sold": [],
       "effect": {"root": "wood"},
       "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
@@ -2034,6 +2142,10 @@
       "about": {
         "zh": "合窳的一颗獠牙，比人的小臂还长，刃口天生就快。佩之借土。",
         "en": "One of the heyu's tusks, longer than a forearm, its edge sharp from birth. Worn, it lends 土."
+      },
+      "hint": {
+        "zh": "獠牙比小臂还长。",
+        "en": "A tusk longer than a forearm."
       },
       "sold": [],
       "effect": {"root": "earth"},
@@ -2101,6 +2213,10 @@
         "zh": "合窳的黄皮硝过，缝成一件短袄，刀砍上去打滑。",
         "en": "The heyu's yellow hide, cured and sewn into a short coat. A blade slides off it."
       },
+      "hint": {
+        "zh": "刀砍上去打滑。",
+        "en": "Blades slide off it."
+      },
       "sold": [],
       "effect": {},
       "_about": "刷副本 (2026-10-15): a drop of the 秘境's outer ring only (rewards.json drop_tables mijing-outer), never sold.",
@@ -2143,6 +2259,10 @@
       "about": {
         "zh": "凶崖石缝里渗出来的石髓，凝成一颗，穿绳挂着。土气厚，挡得住土行法术。",
         "en": "Stone marrow seeped from a crack of the Cliff of Danger and set into a bead, hung on a cord. Its earth is thick enough to turn an earth spell."
+      },
+      "hint": {
+        "zh": "石缝里渗出来的。",
+        "en": "Seeped from a crack in the rock."
       },
       "sold": [],
       "effect": {},

@@ -1,15 +1,17 @@
 // rules/fantong-roll.mjs — the 饭桶's roll, pure: no imports, no save, no files. rules/fantong.mjs plays it on a
 // save (gating the pools by the 回, the beasts beaten, the once-things, the 卷); the 游戏厅's sample (games/kailu.js)
 // plays it in the browser on the bare table. Same seed, same pot, same thing — on either side. Its one import is the pure
-// I(L) (rules/income.mjs, batch 2): what a thing is worth to the pot, at its level.
+// I(L) (rules/income.mjs, batch 2): what a thing is worth to the pot, at its level. The pool a roll draws from is the item book itself
+// (items.json), put together by `bookRows` in withWorth: every thing a player may hold, less what must never come out
+// (fantong.json `never.out`), the 饭桶-only things (items.json `only: 'fantong'`) at the weights `book.only` gives them.
 import { incomeOf, realmOfLevel } from './income.mjs';
 
 export const GRADES = ['junk', 'useful', 'rare', 'best'];
-export const LINGSHI = 'lingshi'; // what a `wealth` row's output is called on the board and in the 图鉴
+export const LINGSHI = 'lingshi'; // the 灵石: a pot's input; never its output since 2026-11-12 (an old save's 图鉴 may still hold the name)
 /* THE GRADE ROLLED vs THE GRADE SHOWN (Hanli 2026-11-12: a 逆天 that was only 124 灵石, 「新!」 on it, and a 储物袋 with no 逆天
    thing in it). `grade` is what the dice said — pity, 压盖, the odds and the tests all read that. `shown` (on every out)
-   is what the player is TOLD: the grade of what actually came out. A result that is only 灵石 is never called 珍品 or
-   逆天 (ordinaryOf); the fallback of a pot with nothing within reach also carries `back: true`, so the page can say so. */
+   is what the player is TOLD: the grade of what actually came out. The 饭桶 never gives 灵石: a pot with nothing within
+   reach at any grade gives its humblest own thing, told as an ordinary grade (ordinaryOf). */
 export const shownOf = o => o.shown ?? o.grade; // an out's told grade (recipes, the story's pot and her gag carry no `shown`: theirs is the grade)
 export const ordinaryOf = grade => GRADES[Math.min(Math.max(0, GRADES.indexOf(grade)), 1)]; // 凡 or 有用, never above
 
@@ -92,15 +94,14 @@ export function gradeWeights(t, power, base = t.odds?.grades) {
    the grade rolled asks for an output worth `x` times that (at least its `floor`), so a pot of junk always gives
    something and a pot of good things gives about their worth back — never a farm. ── */
 const lsWorth = t => t.worth?.lingshi ?? 1;
-/* Its worth: its shop `sell`, else what the table knows of it (`item_info.worth`: its 品阶's minutes × I(its level), batch 2,
-   withWorth), else its 品阶's `worth.tier` as a number of 灵石. */
+/* Its worth: its shop `sell`, else what the table knows of it (`item_info.worth`: a shop's thing the shop does not buy back, its
+   `buy` less the buy-back share; else its 品阶's minutes × I(its level), batch 2, withWorth), else its 品阶's `worth.tier` as
+   a number of 灵石. */
 export function worthOf(t, id, info = null) {
   if (id === LINGSHI) return lsWorth(t);
   const i = info?.(id), sell = i?.sell;
   return sell > 0 ? sell : i?.worth ?? t.worth?.tier?.[tierOfItem(t, id)] ?? 0;
 }
-/* A 灵石 row's stones (fantong.json `ls`: minutes of income, batch 2) × `inc`, the I at the pot's level (potIncome). */
-const stonesOfRow = (row, inc) => (row.ls ? row.ls.map(m => Math.max(1, Math.round(m * inc))) : null);
 export const potWorth = (t, ids, lingshi = 0, info = null) => ids.reduce((n, id) => n + worthOf(t, id, info), 0) + lingshi * lsWorth(t);
 /* A grade's floor: minutes of income at the pot's level (`floor_ls`, batch 2), else a number of 灵石 (`floor`). */
 const floorOf = (t, grade) => { const g = t.worth?.grades?.[grade] ?? {}; return g.floor_ls != null ? g.floor_ls * (t.worth?.income ?? 1) : g.floor ?? 0; };
@@ -108,9 +109,8 @@ export function targetOf(t, grade, worth) {
   const g = t.worth?.grades?.[grade] ?? {};
   return Math.max(floorOf(t, grade), worth * (g.x ?? 1));
 }
-/* A row's worth: its own `worth` when the table sets one (a rare thing the shops never price), else its thing's × `n`;
-   a `wealth` row its middle. */
-export const rowWorth = (t, row, info = null, inc = t.worth?.income ?? 1) => row.worth ?? (row.ls ? lsWorth(t) * (stonesOfRow(row, inc)[0] + stonesOfRow(row, inc)[1]) / 2 : worthOf(t, row.item, info) * (row.n ?? 1));
+/* A row's worth: its own `worth` when the table sets one (a rare thing the shops never price), else its thing's × `n`. */
+export const rowWorth = (t, row, info = null) => row.worth ?? worthOf(t, row.item, info) * (row.n ?? 1);
 /* A row's weight for a target: its `w`, by how near its worth stands to the target (log scale, `worth.spread`);
    nothing past `worth.reach` times either way. */
 export function rowWeight(t, row, target, info = null) {
@@ -118,31 +118,36 @@ export function rowWeight(t, row, target, info = null) {
   if (Math.abs(d) > Math.log(W.reach ?? 3) + 1e-9) return 0;
   return (row.w ?? 1) * Math.exp(-(d * d) / (2 * (W.spread ?? 0.6) ** 2));
 }
-/* The rows a family draws from: its `pools`, open for this save; when none is within reach, its `then`. Returns the
-   [row, weight] list of the first family in that chain that has one, or null. */
-export function rowsFor(t, family, target, open = null, info = null, keep = null) {
-  const tried = new Set();
+/* The rows a family draws from: the item book's (`t.book.rows`, withWorth), those of the families it `draw`s on, open for
+   this save; when none is within reach, its `then`. Returns the [row, weight] list of the first family in that chain that has
+   one, or null. A pot reaches no thing above the realm after its own (`worth.reach_level`, withPotIncome: a pot of 练气 things
+   draws to 筑基's top, never a 卷八 琅玕 at its 卷's worth — batch 2). `beyond`: the GLIMPSE's rows — the things above that
+   level, and only those (`open(row, true)`: the save's 卷 gate is lifted for them, nothing else). */
+export function rowsFor(t, family, target, open = null, info = null, keep = null, beyond = false) {
+  const tried = new Set(), top = t.worth?.reach_level ?? Infinity;
   for (let f = family; f && !tried.has(f); f = t.families?.[f]?.then) {
     tried.add(f);
-    // A pot reaches no thing above the realm after its own (`worth.reach_level`, withPotIncome: a pot of 练气 things draws to
-    // 筑基's top, never a 卷八 琅玕 at its 卷's worth — batch 2).
-    const top = t.worth?.reach_level ?? Infinity;
-    const rows = (t.families?.[f]?.pools ?? [f]).flatMap(p => t.pools?.[p] ?? []).filter(r => (!open || open(r)) && (!r.item || (info?.(r.item)?.level ?? 1) <= top) && (!keep || keep(r)));
+    const draw = t.families?.[f]?.draw ?? [f];
+    const rows = (t.book?.rows ?? []).filter(r => draw.includes(r.family) && ((r.level ?? 1) > top) === beyond && (!open || open(r, beyond)) && (!keep || keep(r)));
     const ws = rows.map(r => [r, rowWeight(t, r, target, info)]).filter(([, w]) => w > 0);
     if (ws.length) return { family: f, rows: ws };
   }
   return null;
 }
+/* THE GLIMPSE (Hanli 2026-11-12: 「可以把未来出现的物品, 让饭桶有机会先开出来, 给个惊喜, 或者预告」): with a small chance
+   (`odds.glimpse`) a roll gives ONE thing from further on than the pot reaches — its worth still near what the grade asks (a
+   preview, never a windfall: only the level ceiling is lifted, not the worth window), shown as what it is. */
+const glimpseOf = t => t.odds?.glimpse ?? 0;
 /* A TOP ROLL GIVES A THING (Hanli 2026-11-12: 90 灵石 and three pieces of gear rolled 逆天, and 124 灵石 came back).
-   A roll of 珍品 or 逆天 that finds no row of its own grade within reach does not fall to 灵石 while any THING is within
-   reach at a lower grade: it takes the rows within reach of the next grade down (珍品, then 有用, then 凡) — things only,
-   none worth more than twice the pot (`FALLBACK_X`: no farm) — and gives a whole number of them that brings the worth near
-   the rolled grade's `floor`, never past that twice. Only a pot with no thing in reach at any grade pays 灵石 (`back`).
-   Same stream, same draws: the pick and the count use the dice the plain row would have. The thing is shown at ITS grade. */
+   A roll of 珍品 or 逆天 that finds no row of its own grade within reach takes the rows within reach of the next grade down
+   (珍品, then 有用, then 凡) — none worth more than twice the pot (`FALLBACK_X`: no farm) — and gives a whole number of them
+   that brings the worth near the rolled grade's `floor`, never past that twice. Only a pot with no thing in reach at any
+   grade gives its humblest own thing (`humblest`). Same stream, same draws: the pick and the count use the dice the plain
+   row would have. The thing is shown at ITS grade. */
 export const FALLBACK_X = 2;
 const fallbackRows = (t, family, grade, worth, open, info) => {
   if (GRADES.indexOf(grade) < 2) return null;
-  const keep = r => r.item && rowWorth(t, r, info) <= worth * FALLBACK_X;
+  const keep = r => rowWorth(t, r, info) <= worth * FALLBACK_X;
   for (let k = GRADES.indexOf(grade) - 1; k >= 0; k--) {
     const got = rowsFor(t, family, targetOf(t, GRADES[k], worth), open, info, keep);
     if (got) return { ...got, shown: GRADES[k], rolled: grade };
@@ -154,15 +159,15 @@ const fallbackCount = (t, row, grade, worth, info) => {
   const w = rowWorth(t, row, info);
   return w > 0 ? Math.max(1, Math.min(Math.floor(worth * FALLBACK_X / w), Math.round(floorOf(t, grade) / w))) : 1;
 };
-/* Nothing within reach anywhere: its worth in 灵石 (a thing as sold where it lay — creatures.json `_loot`'s way), but
-   never more than went in (or the grade's `floor`): a pot that outruns every pool — a pile of 灵石 — gives its stones
-   back, never the grade's multiple of them (no 灵石 farm). */
-const worthInStones = (t, target, worth = Infinity, grade = null) =>
-  Math.max(1, Math.round(Math.min(target, Math.max(worth, floorOf(t, grade))) / lsWorth(t)));
+/* Nothing within reach anywhere: the humblest of the 饭桶's own things (items.json `only: 'fantong'`) — never 灵石. */
+const humblest = (t, open, info) => {
+  const rows = (t.book?.rows ?? []).filter(r => r.only && (!open || open(r, false)));
+  return rows.reduce((low, r) => (!low || rowWorth(t, r, info) < rowWorth(t, low, info) ? r : low), null);
+};
 
-/* The pot's level is its highest thing's (items.json `level`, as its 品阶 is its highest — potTier), and its 灵石 rows are minutes
+/* The pot's level is its highest thing's (items.json `level`, as its 品阶 is its highest — potTier), and its floors are minutes
    of I there (batch 2): what comes out follows what went in, never where he stands, so a pot of low things never pays a high
-   level's stones (no farm). */
+   level's worth (no farm). */
 const withPotIncome = (t, ids, info) => {
   const x = t.worth?.income_of;
   if (!x) return t;
@@ -172,8 +177,8 @@ const withPotIncome = (t, ids, info) => {
 
 /* The roll: what one pot gives. `ids` what went in, `lingshi`, `realm` (his, as a number), `press` (the lid pressed on
    a gold puff), `lift` (a thing that clears the furnace, spent on this pot), `herHere`, `pity` (the 凡 in a row before this), `recipe` (the 方子 row this pot is, or null),
-   `story` (the book's fixed pot this is, or null), `open(row)` (a pool row this save may draw; all, if not given),
-   `info(id)` → { kind, sell } (items.json, for the kinds and the worth). */
+   `story` (the book's fixed pot this is, or null), `open(row, beyond)` (a pool row this save may draw — `beyond`: for the
+   glimpse; all, if not given), `info(id)` → { kind, sell } (items.json, for the kinds and the worth). */
 export function roll(t0, { seed, ids, lingshi = 0, realm = 0, press = false, lift = false, herHere = false, pity = 0, recipe = null, story = null, open = null, info = null }) {
   info ??= infoOfTable(t0);
   const t = withPotIncome(t0, ids, info);
@@ -186,34 +191,41 @@ export function roll(t0, { seed, ids, lingshi = 0, realm = 0, press = false, lif
   const twin = quirk >= off + (q.refuse ?? 0) && quirk < off + (q.refuse ?? 0) + (q.twin ?? 0);
   const power = powerOf(t, { tier: potTier(t, ids), realm, lingshi });
   const family = familyOf(t, ids, info), worth = potWorth(t, ids, lingshi, info);
-  const stones = !open || open({ ls: [1, 1] });
+  let glimpsed = false; // one glimpse to a pot, the twin's included
   const one = (pityNow) => {
     let grade = weighted(u(), gradeWeights(t, recipe ? 0 : power, recipe?.grades ?? t.odds?.grades));
-    const pickU = u(), withU = u(), nU = u();
+    const pickU = u(), withU = u(), nU = u(), glimpseU = u(), glimpsePickU = u(); // (the glimpse's dice come after the roll's own)
     if (pityNow && grade === 'junk') grade = 'useful';
     if (press) grade = GRADES[Math.min(GRADES.length - 1, GRADES.indexOf(grade) + 1)];
     // A furnace swept clean (items.json effect `kailu: 'lift'`, a 人间功课's 净炉符): one notch more, as a press is.
     if (lift) grade = GRADES[Math.min(GRADES.length - 1, GRADES.indexOf(grade) + 1)];
     // A 方子 may give more than one (`n`: 古八's 九节聚气, 「滚出三颗丹来」).
     if (recipe && grade !== 'junk') return { out: grade === 'useful' ? recipe.out : recipe.best, grade, recipe: recipe.id, ...(recipe.n > 1 ? { n: recipe.n } : {}) };
-    const target = targetOf(t, grade, worth), plain = rowsFor(t, family, target, open, info), fb = plain ? null : fallbackRows(t, family, grade, worth, open, info);
+    const target = targetOf(t, grade, worth);
+    const far = !recipe && !glimpsed && glimpseU < glimpseOf(t) ? rowsFor(t, family, target, open, info, null, true) : null;
+    if (far) {
+      glimpsed = true;
+      const row = weighted(glimpsePickU, far.rows);
+      return { out: row.item, grade, shown: grade, family: far.family, glimpse: true };
+    }
+    const plain = rowsFor(t, family, target, open, info), fb = plain ? null : fallbackRows(t, family, grade, worth, open, info);
     const got = plain ?? fb;
-    // Nothing within reach: its 灵石 handed back — a refund, so never scaled by `earn` (only what play earns is).
-    if (!got) return { out: LINGSHI, wealth: stones ? worthInStones(t, target, worth, grade) : 1, grade, shown: ordinaryOf(grade), back: true, family };
+    // Nothing within reach: the humblest thing of the bucket's own, told as an ordinary grade.
+    if (!got) return { out: humblest(t, open, info)?.item ?? null, grade, shown: ordinaryOf(grade), family, humble: true };
     const row = weighted(pickU, got.rows);
-    const ls = stonesOfRow(row, (t.worth?.income ?? 1) * (t.worth?.earn ?? 1));
-    const n = ls ? ls[0] + Math.floor(nU * (ls[1] - ls[0] + 1)) : (row.n ?? 1) * (fb ? fallbackCount(t, row, grade, worth, info) : 1);
-    return { out: row.item ?? LINGSHI, ...(ls ? { wealth: n } : n > 1 ? { n } : {}), grade, shown: ls ? ordinaryOf(grade) : fb ? fb.shown : grade, family: got.family,
+    const n = (row.n ?? 1) * (fb ? fallbackCount(t, row, grade, worth, info) : 1);
+    return { out: row.item, ...(n > 1 ? { n } : {}), grade, shown: fb ? fb.shown : grade, family: got.family,
       ...(row.with && withU * 100 < (row.with_chance ?? 100) ? { with: row.with } : {}) };
   };
   const first = one(pity >= (t.pity?.after ?? Infinity));
-  const outs = [first, ...(twin ? [one(false)] : [])];
+  const outs = [first, ...(twin ? [one(false)] : [])].filter(o => o.out);
   return { ...first, outs, power, family, worth, ...(twin ? { twin: true } : {}) };
 }
 
 /* The exact odds of one pot's first output, before the quirks and the 方子 (the tests' and the tuning's view of
    roll): item id → chance, grade → chance, the family it leans to, what went in is worth (`worth`) and what comes out
-   is worth on average (`value`, 灵石; tools/numbers.mjs weighs the two). */
+   is worth on average (`value`, 灵石; tools/numbers.mjs weighs the two). The glimpse is counted: its share of each grade's
+   draws goes to the things above the pot's reach, where there are any within reach of the grade's worth. */
 export function odds(t0, { ids, lingshi = 0, realm = 0, press = false, pity = 0, open = null, info = null }) {
   info ??= infoOfTable(t0);
   const t = withPotIncome(t0, ids, info);
@@ -227,36 +239,67 @@ export function odds(t0, { ids, lingshi = 0, realm = 0, press = false, pity = 0,
     if (press) k = Math.min(GRADES.length - 1, k + 1);
     rolled[GRADES[k]] += w / total;
   }
-  const stones = !open || open({ ls: [1, 1] });
   const items = {}, grades = Object.fromEntries(GRADES.map(g => [g, 0]));
   let value = 0;
+  const give = (got, p, count = () => 1) => {
+    const sum = got.rows.reduce((a, [, w]) => a + w, 0);
+    for (const [r, w] of got.rows) { items[r.item] = (items[r.item] ?? 0) + p * w / sum; value += p * (w / sum) * rowWorth(t, r, info) * count(r); }
+  };
   for (const [g, p] of Object.entries(rolled)) {
     if (!p) continue;
     grades[g] += p;
     const target = targetOf(t, g, worth), plain = rowsFor(t, family, target, open, info), fb = plain ? null : fallbackRows(t, family, g, worth, open, info);
+    const far = glimpseOf(t) ? rowsFor(t, family, target, open, info, null, true) : null, share = far ? glimpseOf(t) : 0;
+    if (far) give(far, p * share);
     const got = plain ?? fb;
-    if (!got) { items[LINGSHI] = (items[LINGSHI] ?? 0) + p; value += p * (stones ? worthInStones(t, target, worth, g) : 1) * lsWorth(t); continue; }
-    const sum = got.rows.reduce((a, [, w]) => a + w, 0);
-    for (const [r, w] of got.rows) { const id = r.item ?? LINGSHI; items[id] = (items[id] ?? 0) + p * w / sum; value += p * (w / sum) * rowWorth(t, r, info) * (fb ? fallbackCount(t, r, g, worth, info) : 1); }
+    if (!got) {
+      const low = humblest(t, open, info);
+      if (low) { items[low.item] = (items[low.item] ?? 0) + p * (1 - share); value += p * (1 - share) * rowWorth(t, low, info); }
+      continue;
+    }
+    give(got, p * (1 - share), r => (fb ? fallbackCount(t, r, g, worth, info) : 1));
   }
   return { items, grades, power, family, worth, value };
 }
 
 /* ── The world's pieces the roll reads, put together the same way on both sides ── */
+/* THE ITEM BOOK AS THE POOL (Hanli 2026-11-12: 「游戏物品有个池子吗? 直接用来作为饭桶的池子吧」): every thing items.json holds,
+   less what must never come out — fantong.json `never.out` (its kinds, its things), the book's own fixed pots (`recipes.story`
+   in and out), a thing the story flags `story` unless `book.gates` lets the bucket give it from a 回 on. The 饭桶-only things
+   (items.json `only: 'fantong'`) are always in, at the weights `book.only` gives them. A row: its thing, the family its kind
+   leads to, its weight (the kind's `weight`, else 1), its level (the glimpse's ceiling) and its gates (`book.gates`: hui · beast ·
+   after · breach). `infoOf(id)` → { kind } (the table's own kindOf). */
+export const outBarred = (t, item) => {
+  const N = t.never?.out ?? {}, gates = t.book?.gates ?? {};
+  const story = (t.recipes?.story?.list ?? []).some(r => r.out === item.id || r.in.includes(item.id));
+  return (N.kinds ?? []).includes(item.kind) || (N.items ?? []).includes(item.id) || story || Boolean(item.story && !gates[item.id]);
+};
+export function bookRows(t, items, infoOf) {
+  const B = t.book ?? {}, own = new Map((B.only ?? []).map(r => [r.item, r]));
+  return items.filter(i => own.has(i.id) || (!i.only && !outBarred(t, i))).map(i => {
+    const kind = kindOf(t, i.id, infoOf), mine = own.get(i.id), { item, ...rest } = mine ?? {};
+    const worth_ls = mine?.worth_ls ?? B.worth_ls?.[i.id];
+    return { item: i.id, kind, family: familyOfKind(t, kind), level: i.level ?? 1, w: t.kinds?.[kind]?.weight ?? 1, ...(B.gates?.[i.id] ?? {}),
+      ...rest, ...(mine ? { only: true } : {}), ...(worth_ls != null ? { worth_ls } : {}) };
+  });
+}
 /* The table with its worth (balance.json `kailu`) and what it knows of each thing (`item_info`: id → { kind, sell },
    the shop's `sell` from balance.json `prices`): content.mjs withBalance folds both in; the 游戏厅's sample does the same. */
 export function withWorth(t, balance, items = null) {
   if (!t) return t;
-  // What each thing is worth to the pot (batch 2): its shop `sell`, else its 品阶's minutes (balance.json kailu.tier) × I(its
-  // level); a row's own worth (`worth_ls`, a rare thing the shops never price) its minutes × I(its thing's level).
+  // What each thing is worth to the pot (batch 2): its shop `sell`, else — a shop's thing the shop does not buy back — its
+  // `buy` less the buy-back share, else its 品阶's minutes (balance.json kailu.tier) × I(its level); a row's own worth
+  // (`worth_ls`, a rare thing the shops never price) its minutes × I(its thing's level).
   const x = balance?.economy?.income ?? null, tierM = balance?.kailu?.tier ?? {}, lv = new Map((items ?? []).map(i => [i.id, i.level ?? 1]));
+  const back = balance?.master?.economy?.sell_back ?? 1 / 3;
   const of = (id, m) => (x ? Math.round(m * incomeOf(x, lv.get(id) ?? 1)) : m);
   const tbl = { ...t, ...(balance?.kailu ? { worth: { ...balance.kailu, earn: balance?.economy?.earn ?? 1, ...(x ? { income: incomeOf(x, 1), income_of: x } : {}) } } : {}) };
   const info = items ? Object.fromEntries(items.map(i => {
-    const sell = balance?.prices?.[i.id]?.sell ?? i.sell ?? 0;
-    return [i.id, { kind: i.kind, sell, level: i.level ?? 1, ...(x && !(sell > 0) ? { worth: of(i.id, tierM[tierOfItem(tbl, i.id)] ?? 0) } : {}) }];
+    const sell = balance?.prices?.[i.id]?.sell ?? i.sell ?? 0, buy = balance?.prices?.[i.id]?.buy ?? i.buy ?? 0;
+    const worth = sell > 0 ? null : buy > 0 ? Math.max(1, Math.round(buy * back)) : x ? of(i.id, tierM[tierOfItem(tbl, i.id)] ?? 0) : null;
+    return [i.id, { kind: i.kind, sell, level: i.level ?? 1, ...(worth != null ? { worth } : {}) }];
   })) : t.item_info;
-  const pools = x && t.pools ? Object.fromEntries(Object.entries(t.pools).map(([k, rows]) => [k, Array.isArray(rows) ? rows.map(r => (r.worth_ls != null ? { ...r, worth: of(r.item, r.worth_ls) } : r)) : rows])) : t.pools;
-  return { ...tbl, ...(pools ? { pools } : {}), ...(info ? { item_info: info } : {}) };
+  const rows = items && t.book ? bookRows(tbl, items, id => info[id]).map(r => (r.worth_ls != null ? { ...r, worth: of(r.item, r.worth_ls) } : r)) : null;
+  return { ...tbl, ...(rows ? { book: { ...t.book, rows } } : {}), ...(info ? { item_info: info } : {}) };
 }
 const infoOfTable = t => (t.item_info ? id => t.item_info[id] ?? null : null);
