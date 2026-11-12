@@ -10,9 +10,7 @@
 // stage puts its card first. Playing stays better than sitting — the numbers
 // are in rewards.json § seclusion.
 import { lockedOf, pick, poolSpent, seclusionMsPerPoint, settleStamina, staminaMax, staminaRest } from '../state.mjs';
-import { costOf } from '../battle.js';
 import { boundOf, growTreasure, TREASURE_TOP, treasureBrief } from './arms.mjs';
-import { cardCatalog, ownedCards, rootsOf, usable } from './cards.mjs';
 import { clone, pay, refuse } from './core.mjs';
 import { itemOf } from './errands.mjs';
 import { cureDandu, eatPill } from './dandu.mjs';
@@ -23,26 +21,8 @@ const HOUR = 3600_000;
 const round1 = n => Math.round(n * 10) / 10;
 
 /* The one-word foci, each with what it grows and whether it may be chosen. */
-const FOCI = ['card', 'progress', 'treasure'];
+const FOCI = ['progress', 'treasure'];
 
-/* A 功法 he holds and can cast, not yet at the top star: what 闭关 can temper. */
-function spellsOf(content, state) {
-  const catalog = cardCatalog(content), roots = rootsOf(content, state), top = RULE(content).star_top;
-  return ownedCards(content, state).map(id => catalog[id])
-    .filter(c => c && c.kind === 'spell' && !c.charm && !c._token && usable(c, roots))
-    .map(c => ({ c, star: state.card_stars?.[c.id] ?? 0 }))
-    .filter(x => x.star < top);
-}
-/* A spell as the chooser shows it: its 灵力 now (stars counted), what the
-   next star does — `cost` (灵力 −1) or `power` (+1, once it costs 1) — and
-   the hours still owed for it (his, 2026-09-24: the chips read as levels). */
-const spellBrief = (content, state, { c, star }) => {
-  const study = round1(state.card_study?.[c.id] ?? 0), cost = costOf({ stars: { [c.id]: star } }, c);
-  return {
-    id: c.id, name: pick(c.name, state.lang), star, top: RULE(content).star_top, cost, element: c.element ?? null,
-    study, left: round1(Math.max(0, RULE(content).star_hours - study)), next: cost > 1 ? 'cost' : 'power',
-  };
-};
 const treasureOpen = (content, state) => Boolean(boundOf(content, state)) && state.treasure.level < TREASURE_TOP;
 
 /* The pills that quicken it, held now. */
@@ -54,7 +34,6 @@ function pillsOf(content, state) {
 /* What may be chosen going in: the page's 闭关 card reads this. */
 function choices(content, state) {
   return {
-    spells: spellsOf(content, state).map(x => spellBrief(content, state, x)),
     progress: true,
     // 修为 an hour at the layer he sits on, as it lands (a night's share of the layer over its hours).
     per_hour: Math.round(secludeHour(content, state) ?? 0),
@@ -75,19 +54,6 @@ function hoursOf(content, sec, now) {
 /* Each focus, grown by `hours`, on the state in hand — one entry per focus,
    so a new focus is a row here, never another branch. */
 const GROW = {
-  card: (content, s, sec, hours) => {
-    const r = RULE(content), id = sec.card, catalog = cardCatalog(content);
-    const from = s.card_stars?.[id] ?? 0;
-    const pool = (s.card_study?.[id] ?? 0) + hours;
-    const to = Math.min(r.star_top, from + Math.floor(pool / r.star_hours));
-    const left = to >= r.star_top ? 0 : pool - (to - from) * r.star_hours;
-    s.card_stars = { ...s.card_stars, [id]: to };
-    s.card_study = { ...s.card_study, [id]: round1(left) };
-    if (!s.card_study[id]) delete s.card_study[id];
-    if (!Object.keys(s.card_study).length) delete s.card_study;
-    const c = catalog[id];
-    return { card: { id, name: pick(c?.name, s.lang), from, to, cost: costOf({ stars: { [id]: to } }, c), was: c?.cost, study: round1(left), need: r.star_hours } };
-  },
   progress: (content, s, sec, hours, ctx) => {
     // An hour's share of the layer he sits on (balance.json play_pay.seclusion, rules/playpay.mjs secludeHour).
     const want = Math.floor(hours * (secludeHour(content, s) ?? 0));
@@ -120,7 +86,7 @@ function emergeOn(content, s, ctx) {
   delete s.seclusion;
   // Kept for the breakthrough's chance: a 闭关 just done steadies it (breakthrough.mjs).
   s.last_seclusion = { at: ctx.now.toISOString(), hours: round1(h.real) };
-  const grown = h.grows ? GROW[sec.focus](content, s, sec, h.counted, ctx) : {};
+  const grown = h.grows ? GROW[sec.focus === 'card' ? 'progress' : sec.focus](content, s, sec, h.counted, ctx) : {};
   // 补转: the body makes up the turns a pill's furnace left out, whatever the focus (rules/dandu.mjs).
   const topBefore = staminaMax(content, s), whole = s.stamina >= topBefore;
   const made = cureDandu(content, s, h.real);
@@ -128,7 +94,7 @@ function emergeOn(content, s, ctx) {
   if (whole && staminaMax(content, s) > topBefore) s.stamina = staminaMax(content, s);
   const gained = Math.max(0, (s.stamina ?? 0) - (before ?? 0)), rested = gained > 0 && s.stamina >= staminaMax(content, s);
   if (s.resting && s.stamina >= staminaRest(content, s)) delete s.resting;
-  return { focus: sec.focus, since: sec.since, hours: round1(h.real), counted: round1(h.counted), cap: r.cap_hours, min: r.min_hours,
+  return { focus: sec.focus === 'card' ? 'progress' : sec.focus, since: sec.since, hours: round1(h.real), counted: round1(h.counted), cap: r.cap_hours, min: r.min_hours,
     grows: h.grows, ...(sec.pill ? { pill: { id: sec.pill, name: pick(itemOf(content, sec.pill)?.name, s.lang), mult: sec.mult } } : {}),
     stamina: { gained, now: s.stamina, max: staminaMax(content, s) }, ...(rested ? { rested: true } : {}), ...(made ? { buzhuan: { made, left: s.dandu ?? 0 } } : {}), ...grown };
 }
@@ -137,19 +103,12 @@ function emergeOn(content, s, ctx) {
    the hours toward its next step — `pool` of `need`, `at` when it lands (his,
    2026-09-24: the running card said 「闭关中 ·」 and nothing of what or how far). */
 const TARGET = {
-  card: (content, s, sec, counted) => {
-    // The stars the hours already earned count at once: the bar is toward the next.
-    const r = RULE(content), c = cardCatalog(content)[sec.card], pool = (s.card_study?.[sec.card] ?? 0) + counted;
-    const star = Math.min(r.star_top, (s.card_stars?.[sec.card] ?? 0) + Math.floor(pool / r.star_hours)), cost = costOf({ stars: { [sec.card]: star } }, c);
-    return { name: pick(c?.name, s.lang), star, top: r.star_top, cost, next: cost > 1 ? 'cost' : 'power',
-      pool, need: r.star_hours, done: star >= r.star_top };
-  },
   progress: (content, s, sec, counted) => ({ now: s.progress, per_hour: Math.round(secludeHour(content, s) ?? 0), pool: counted, need: 1 }),
   treasure: (content, s, sec, counted) => (boundOf(content, s) ? { name: s.treasure.name, level: s.treasure.level, step: treasureBrief(content, s).step,
     pool: (s.treasure.tempered ?? 0) + counted, need: RULE(content).treasure_hours, done: s.treasure.level >= TREASURE_TOP } : null),
 };
 function targetOf(content, state, now) {
-  const sec = state.seclusion, h = hoursOf(content, sec, now), t = TARGET[sec.focus]?.(content, state, sec, h.counted);
+  const sec = state.seclusion, h = hoursOf(content, sec, now), t = TARGET[sec.focus === 'card' ? 'progress' : sec.focus]?.(content, state, sec, h.counted);
   if (!t) return null;
   const into = t.pool % t.need, left = (t.need - into) / (sec.mult ?? 1);
   const cap = new Date(new Date(sec.since).getTime() + RULE(content).cap_hours * HOUR);
@@ -194,10 +153,6 @@ const ACTIONS = {
 
 /* Refused going in, by focus — null when the focus may be taken. */
 const FOCUS_CHECK = {
-  card: (content, state, args) => {
-    const spell = spellsOf(content, state).find(x => x.c.id === String(args.id ?? ''));
-    return spell ? null : ['not-a-spell', { zh: '这张牌不能在闭关里温养。', en: 'That card cannot be tempered in seclusion.' }];
-  },
   progress: () => null,
   treasure: (content, state) => (treasureOpen(content, state) ? null
     : [boundOf(content, state) ? 'treasure-top' : 'no-treasure', boundOf(content, state) ? { zh: '本命法宝已是九重。', en: 'Your treasure is at its ninth layer.' } : { zh: '还没有本命法宝。', en: 'No treasure is bound yet.' }]),
@@ -218,7 +173,7 @@ function enterSeclusion(state, content, ctx, args) {
   if (pillId) { s.bag[pillId] -= 1; if (!s.bag[pillId]) delete s.bag[pillId]; eatPill(content, s, pillId); }
   // `spent`: taken on a spent pool behind a story gate that keeps 闭关 shut — it stands there all the same (rules/locks.mjs).
   const spent = lockedOf(content, state).includes('seclusion') && poolSpent(content, state);
-  s.seclusion = { focus, since: ctx.now.toISOString(), ...(focus === 'card' ? { card: String(args.id) } : {}), ...(pillId ? { pill: pillId, mult } : {}), ...(spent ? { spent: true } : {}) };
+  s.seclusion = { focus, since: ctx.now.toISOString(), ...(pillId ? { pill: pillId, mult } : {}), ...(spent ? { spent: true } : {}) };
   return { state: s, result: { ok: true, entered: seclusionBrief(content, s, ctx.now) } };
 }
 

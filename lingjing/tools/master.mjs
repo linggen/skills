@@ -264,7 +264,7 @@ export function derive(raw0, { ladder, items, fantong = null, cards = null }) {
   raw.prices = pricesOf(raw, { items, fantong, cards, effects: raw.pills.effects, ladder });
   if (M.mijing) raw.mijing = mijingOf(M.mijing);
   // 斗法 on the level (batch 3, master.fight): P(L)'s knobs for the rules (rules/power.mjs) and fight_length's cap on P.
-  if (M.fight) { raw.power = { ...M.fight.power }; raw.fight_length = structuredClone(M.fight.length); }
+  if (M.fight) { raw.duel_hp = { ...M.fight.duel_hp }; raw.power = { ...M.fight.power }; raw.fight_length = structuredClone(M.fight.length); }
   if (M.fight?.gear) raw.gear = Object.fromEntries(Object.entries(M.fight.gear).filter(([k]) => !k.startsWith('_')));
   // The breakthrough throw's numbers (master.breakthrough; ladder.json keeps its pills and elements).
   if (M.breakthrough) raw.breakthrough = breakthroughOf(M.breakthrough, ladder.tiers.map(t => t.id));

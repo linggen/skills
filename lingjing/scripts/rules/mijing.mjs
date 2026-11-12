@@ -19,7 +19,7 @@
 // mijingRow; tasks.mjs win/done → mijingBoardHere, mijingBoardDone); a pick room is answered on the run's own card.
 import { boardCost, dayKey, lockedOf, pick, seedOf } from '../state.mjs';
 import { clone, pay, refuse, spendStamina } from './core.mjs';
-import { battle, POUCH_MAX, shown, shownSide } from '../battle.js';
+import { battle, POUCH_MAX, REALMS, shown, shownSide } from '../battle.js';
 import { cardCatalog, deckFor, fightPill, fightSetup, hpMaxOf, winCard } from './cards.mjs';
 import { hashOf } from './travel.mjs';
 import { stow, fullLine } from './pouch.mjs';

@@ -42,7 +42,7 @@ export function bestMove(st) {
 const pillNow = (st, os) => os.find(o => o.ok && o.action.kind === 'pill' && !o.action.target && (
   (o.pill.heal && st.you.hp <= st.you.hpMax - o.pill.heal)
   || (o.pill.mana && st.you.hand.some(id => { const c = st.catalog?.[id]; return c && c.cost > st.you.mana && c.cost <= st.you.mana + o.pill.mana; }))));
-const plain = st => { const os = offers(st); return pillNow(st, os) ?? os.find(o => o.ok && o.action.kind === 'play') ?? os.find(o => o.ok && o.action.kind === 'attack') ?? os.find(o => o.ok && o.action.kind === 'power'); };
+export const plain = st => { const os = offers(st); return pillNow(st, os) ?? os.find(o => o.ok && o.action.kind === 'play') ?? os.find(o => o.ok && o.action.kind === 'attack') ?? os.find(o => o.ok && o.action.kind === 'power'); };
 const copyOf = simCopy; // battle.js: the fight copied to think on (its log left behind)
 function playOut(st, line) {
   for (let g = 0; g < 300 && st.outcome === 'open'; g += 1) {
@@ -65,7 +65,15 @@ function careful(st) {
   return best;
 }
 
-export function lookahead(st, { deep = false } = {}) {
+/* Which line plays the fight out from a move tried. `plain` is a face-rush that reads no board and no pile — enough
+   where the beast's 气血 is cut and it WITHDRAWS when its deck runs dry (MODES.pve: it can never out-last him, so a
+   quick strike is all a rollout needs). Where both sides stand on one sheet and a dry deck costs the beast 反噬 as it costs
+   him (`mode.foeDry` is not 'withdraw': 斗法 v4, setup.even; pvp), trades, the cards left in the pile and the beast's
+   board decide the fight, and a face-rush playout mis-values every move (it plays 吐纳 on an empty pile, never trades a
+   body, never holds a card): the rollout is `careful`'s. Read off the fight given, never assumed; `deep` forces either. */
+export const fairMode = st => Boolean(st?.mode) && st.mode.foeDry !== 'withdraw';
+
+export function lookahead(st, { deep = fairMode(st) } = {}) {
   let best = { kind: 'end' }, top = -Infinity;
   for (const o of [...offers(st).filter(x => x.ok && x.action.kind !== 'end'), { action: { kind: 'end' } }]) {
     const c = copyOf(st);

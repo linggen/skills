@@ -785,8 +785,7 @@ function gearBrief(content, state, now = new Date()) {
           // A party member's card (cards.json owner: 阿禾's, 孙二狗's, 银月) is theirs to play, never in his ten.
           ...(c.owner ? { member: pick(content.party?.members?.[c.owner]?.name, state.lang) ?? c.owner } : Array.isArray(state.deck) && canPick(content, state) ? (picked.has(c.id) ? { deck: true, picked: true } : ten.has(c.id) ? { fill: true } : {}) : ten.has(c.id) ? { deck: true } : {}),
           ...(!usable(c, roots) ? { off_root: true } : {}),
-          // 闭关's ★ (rules/seclusion.mjs), and the 灵力 it costs with them.
-          ...(state.card_stars?.[c.id] ? { stars: state.card_stars[c.id], cost: costOf({ stars: state.card_stars }, c) } : {}) }));
+          }));
     })(),
   };
 }

@@ -25,8 +25,8 @@ import { chapterLabel, huiLabel, huiNow, sceneHui } from './hui.mjs';
    before. A pick kept from before the rule waits, unread, until 结丹. */
 const PICK_FROM = 'core';
 const canPick = (content, state) => tierIndex(content, state) >= content.ladder.tiers.findIndex(t => t.id === PICK_FROM);
-export function deckFor(content, state) {
-  const auto = autoDeck(content, state);
+export function deckFor(content, state, o = {}) {
+  const auto = autoDeck(content, state, o);
   if (!Array.isArray(state.deck) || !canPick(content, state)) return auto;
   const owned = new Set(ownedCards(content, state)), roots = rootsOf(content, state), catalog = cardCatalog(content);
   const picked = [...new Set(state.deck)].filter(id => owned.has(id) && catalog[id] && !catalog[id].owner && usable(catalog[id], roots)).slice(0, MODES.pve.deck);
@@ -36,7 +36,7 @@ export function deckFor(content, state) {
   // The fill is dealt along the curve from what is left: not his picks, not
   // what he took out.
   const left = ownedCards(content, state).filter(id => !out.has(id) && !picked.includes(id));
-  const fill = autoDeck(content, { ...state, cards: [...left, ...(ownedCards(content, state).includes('yinyue') ? ['yinyue'] : [])] });
+  const fill = autoDeck(content, { ...state, cards: [...left, ...(ownedCards(content, state).includes('yinyue') ? ['yinyue'] : [])] }, o);
   return [...picked, ...fill].slice(0, MODES.pve.deck);
 }
 const pickedCards = (content, state) => (Array.isArray(state.deck) && canPick(content, state) ? deckFor(content, state).filter(id => state.deck.includes(id)) : []);
@@ -78,8 +78,8 @@ export function strikeOf(content, state) {
    place of the nearest cost put 震怒 out before 双龙, and 火柴 lost to the bronze sword there). The rest of the ten stand as they were
    unworn. (Until 2026-11-04 the strike joined his hand and the ten were dealt again from it: with a big hand the curve could
    leave the strike out and reshuffle the rest — Hanli's 灵草谷, 「带了火柴还是遁走了」: no 火柴 in the ten, and 金刃 gone.) */
-export function fightDeck(content, state) {
-  const ten = deckFor(content, state), id = strikeOf(content, state);
+export function fightDeck(content, state, o = {}) {
+  const ten = deckFor(content, state, o), id = strikeOf(content, state);
   if (!id || ten.includes(id)) return ten;
   if (ten.length < MODES.pve.deck) return [...ten, id];
   const catalog = cardCatalog(content), picked = new Set(pickedCards(content, state));
@@ -87,7 +87,9 @@ export function fightDeck(content, state) {
   const at = ten.reduce((best, _, i) => (rank(i) <= rank(best) ? i : best), 0);
   return ten.map((c, i) => (i === at ? id : c));
 }
-function autoDeck(content, state) {
+/* `ten` (斗法 v4, rules/cards.mjs evenDuel): the two sides on one sheet, so his deck is ten however few cards he holds: the
+   v3 two of a card, and a third (or more) of the cheapest-dealt only where two of each still falls short of ten. */
+function autoDeck(content, state, { ten = false } = {}) {
   // Only what has been obtained (his, 2026-09-22) — 得牌 below.
   const owned = new Set(ownedCards(content, state));
   // His own: a card a party member plays (cards.json `owner`: 阿禾's 青藤, 孙二狗's 山根桩,
@@ -100,7 +102,8 @@ function autoDeck(content, state) {
   const held = pool.filter(c => usable(c, roots));
   // Under ten, a card goes in twice (炉石's two copies; cards.md § 4): the first
   // hand of a mortal is a few things, not ten — 娘的饼, 一箭, 吐纳.
-  const mine = held.length >= MODES.pve.deck ? held : [...held, ...held];
+  const copies = ten && held.length ? Math.ceil(MODES.pve.deck / held.length) : 2;
+  const mine = held.length >= MODES.pve.deck ? held : Array.from({ length: Math.max(2, copies) }, () => held).flat();
   // A DECK, not a pile. The gate measured the difference and it is the whole
   // game: a curve deck won 84% where ten cards drawn at random won 47%
   // (2026-09-18). So the ten are dealt along a curve, and the curve BENDS WITH
@@ -196,10 +199,17 @@ function rootsOf(content, state) {
 /* His level for a fight: L (playpay.mjs levelOf) where the 81 levels and the power knobs are, else null (零层, or a world
    without them: the old numbers). */
 export const fightLevel = (content, state) => atLevel(content, content?.ladder ? levelOf(content, state.tier, state.step ?? 0)?.level : null);
+/* 斗法 v4 (design.md): ONE sheet for both sides, one switch. While balance.json `duel_hp.foe` is absent every fight is reckoned
+   as it was (his 气血 P(his level) on the levelled units, the beast its class share); while it stands, both are whole numbers
+   read off the level (`duel_hp` base + per_level × level), the card's own numbers shown as they are (unit 1), gear and pills at
+   the wearer's level. */
+export const fixedSheet = content => Boolean(content?.balance?.duel_hp?.foe);
 /* 气血 at full (batch 3, rules/power.mjs): P(his level) — one formula for the fight, the 秘境's run and a heal pill's share;
    零层 (and a world without the knobs) the old reading: the realm's, half a point a step (in 段 a third of that a 层). */
 export function hpMaxOf(state, content = null) {
   const L = content ? fightLevel(content, state) : null;
+  const hp = content?.balance?.duel_hp;
+  if (fixedSheet(content) && hp) return hp.base + hp.per_level * (L ?? 0);
   if (L != null) return Math.round(powerOf(powerKnobs(content), L));
   return Math.round((CARD_REALMS[state.tier] ?? CARD_REALMS.qi).hp + (content ? hpStep(content, state.tier, state.step ?? 0) : state.step ?? 0) * 0.5);
 }
@@ -213,6 +223,7 @@ export const foeLevel = (content, state, creature) => {
 /* Each side's level on the door (battle.js begin): his and the beast's, their P, the anchor P₁ — and the beast's realm is the
    realm of its level (境界压制 where they differ). Nothing where he stands at 零层. */
 function levelsAt(content, state, creature) {
+  if (fixedSheet(content)) return null;
   const L = fightLevel(content, state), Lf = foeLevel(content, state, creature), x = powerKnobs(content);
   if (L == null || Lf == null) return null;
   const tier = content.ladder.tiers[Math.min(content.ladder.tiers.length - 1, Math.floor((Lf - 1) / 9))]?.id ?? state.tier;
@@ -233,7 +244,7 @@ export const lengthClass = state => realmRow(state).hp / CARD_REALMS.qi.hp;
 const firstHp = state => Math.round(realmRow(state).hp + (state.tier === 'qi' ? 0.5 : 0));
 export const anchorOf = (content, state) => Math.round((powerKnobs(content).first * firstHp(state)) / firstHp({ tier: 'qi' }));
 /* What one of his units shows as at this level (1 where he has no level). */
-export const unitAt = (content, state) => { const L = fightLevel(content, state); return L == null ? 1 : powerOf(powerKnobs(content), L) / anchorOf(content, state); };
+export const unitAt = (content, state) => { if (fixedSheet(content)) return 1; const L = fightLevel(content, state); return L == null ? 1 : powerOf(powerKnobs(content), L) / anchorOf(content, state); };
 /* What a worn thing's numbers are worth at the door, in his units: × P(its own level) ÷ P(his) (batch 3) — an arm of a higher
    level is a stronger arm; without levels (零层), as before. */
 /* `power.things`: 'own' — a worn thing and a pill count at their own level (one made for 练气一层 is a 练气一层 thing at
@@ -241,7 +252,7 @@ export const unitAt = (content, state) => { const L = fightLevel(content, state)
 export const ownLevel = content => powerKnobs(content)?.things === 'own';
 const gearFactor = (content, state, item) => {
   const L = fightLevel(content, state), x = powerKnobs(content);
-  return L == null || !(item?.level >= 1) || !ownLevel(content) ? 1 : powerOf(x, item.level) / powerOf(x, L);
+  return fixedSheet(content) || L == null || !(item?.level >= 1) || !ownLevel(content) ? 1 : powerOf(x, item.level) / powerOf(x, L);
 };
 
 /* The fight open on the save, when it is THIS one (`game` its id) — a door
@@ -276,7 +287,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   const gear = gearFight(content, state), lifts = withHer ? herLifts(content, state) : null;
   // Before the root test (the 三试 comes first) he fights with what no root claims:
   // the rootless things he holds (deckFor reads no roots, so a 功法 stays out).
-  const deck = fightDeck(content, state), stars = starsIn(state, deck);
+  const deck = fightDeck(content, state, { ten: evenDuel(content, state, creature) });
   // 新: a card gained and not yet played (cards_new), marked in the hand until it is.
   const fresh = (state.cards_new ?? []).filter(id => deck.includes(id));
   // 丹囊: the pills he carries in (his last pick, as the bag still holds them).
@@ -290,7 +301,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
     ...(lv ? { anchor: lv.anchor } : {}),
     seed: deal ? `${duelSeed(state, creature, now)}|${deal}` : duelSeed(state, creature, now),
     you: {
-      tier: state.tier, step: hpStep(content, state.tier, state.step ?? 0), root: main, deck, extra: [...(creature.extra ?? []), ...gear.charms],
+      tier: state.tier, step: fixedSheet(content) ? 0 : hpStep(content, state.tier, state.step ?? 0), ...(fixedSheet(content) ? { base: hpMaxOf(state, content) } : {}), root: main, deck, extra: [...(creature.extra ?? []), ...gear.charms],
       // The fight's own word (an exit game's `foe.fatigue: false`, world.mjs weighed): no 反噬 on a dry deck.
       ...(creature.fatigue === false ? { fatigue: false } : {}),
       ...(party.length ? { party } : {}),
@@ -300,8 +311,6 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
       // 望气: how much of the beast's plan he can read — the scroll (items
       // `learn`), or the day's reading at 吉/大吉.
       ...(insight ? { insight } : {}),
-      // 闭关's ★ on the 功法 in the ten (rules/seclusion.mjs; battle.js costOf).
-      ...(stars ? { stars } : {}),
       // What he wears, as numbers (§ 装备入局).
       ...(gear.power ? { power: gear.power } : {}),
       ...(gear.armor ? { armor: gear.armor } : {}),
@@ -310,7 +319,8 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
       ...(lv ? lv.you : {}),
     },
     // An elite is its harder deck and nothing else (redesign-v2 § 四).
-    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...fightLength(content, state, creature, beastToParty(content, creature, party, game), lv?.foe.level), ...(creature.signature ? { signature: creature.signature } : {}), ...(creature.feint ? { feint: creature.feint } : {}), ...(creature.trial ? { trial: creature.trial } : {}), ...(lv ? lv.foe : {}) },
+    ...(evenDuel(content, state, creature) ? { even: true } : {}),
+    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...evenDeck(content, state, creature, fightLength(content, state, creature, beastToParty(content, creature, party, game), lv?.foe.level)), ...(creature.signature ? { signature: creature.signature } : {}), ...(creature.feint ? { feint: creature.feint } : {}), ...(creature.trial ? { trial: creature.trial } : {}), ...(lv ? lv.foe : {}) },
   };
 }
 
@@ -363,8 +373,69 @@ export function lengthRule(content, state) {
   const dpt = ((d.first ?? 0) + (d.per_level ?? 0) * (L - 1)) / lengthClass(state);
   return { minutes, rounds, dpt, hp: Math.round(dpt * rounds), heals: r.heals ?? null, healMax: Math.max(1, Math.round(dpt)), carry: r.carry ?? 0 };
 }
+/* 斗法 on fixed numbers (balance.json `duel_hp.foe`, Hanli 2026-11-12: one pool of cards, a card the same in either
+   hand): a beast's 气血 is a whole number read off its level — his own 气血 at that level (`duel_hp` base + per_level × level)
+   times its rank's share (`duel_hp.foe.share`; the rank is the creature's `rank`, else read off its old `hp` by
+   `duel_hp.foe.by_hp`) times what the party beside him adds (beastToParty) — and its cards hit as written: no `might`.
+   A 试 (`trial`), a foe that says `long` and 零层 are left as they were. */
+export function foeRank(content, creature) {
+  const f = content?.balance?.duel_hp?.foe;
+  if (creature.rank) return creature.rank;
+  const hp = creature.hp ?? 1;
+  return (f?.by_hp ?? []).find(([upto]) => hp < upto)?.[1] ?? f?.top ?? 'strong';
+}
+/* 斗法 v4 (design.md): the two sides on one sheet. On when balance.json `duel_hp.foe.deck` says so and the beast is one the
+   fixed numbers reach (duelFoe). */
+const evenDuel = (content, state, creature) => Boolean(content?.balance?.duel_hp?.foe?.deck && duelFoe(content, state, creature, {}));
+/* A beast's ten (`duel_hp.foe.deck`: { size, base, per_level, keep }): its own cards from the cheapest, as many as his deck
+   holds, their cost together no more than its level allows (base + per_level × level) — a dear card past that gives way to a
+   one-cost card of its own root from the pool (never more than two of one, at least `keep` of its own stay), and a deck
+   under it takes its dearest cards back. Counted, never random: the same beast at the same level holds the same ten. */
+export function beastTen(content, creature, level) {
+  const k = content.balance.duel_hp.foe.deck, catalog = cardCatalog(content), cost = id => catalog[id]?.cost ?? 1;
+  const own = [...(creature.deck ?? [])].sort((a, b) => cost(a) - cost(b) || (a < b ? -1 : 1));
+  if (!own.length) return [];
+  const size = k.size ?? MODES.pve.deck, budget = Math.round((k.base ?? 13) + (k.per_level ?? 1.5) * level);
+  const ten = Array.from({ length: size }, (_, i) => own[i % own.length]).sort((a, b) => cost(a) - cost(b) || (a < b ? -1 : 1));
+  const rest = own.slice(size), sum = () => ten.reduce((n, id) => n + cost(id), 0);
+  // Under its budget: its dearest cards come back in for its cheapest.
+  for (let i = 0; rest.length && i < size; i += 1) {
+    const dear = rest[rest.length - 1];
+    if (sum() - cost(ten[i]) + cost(dear) > budget || cost(dear) <= cost(ten[i])) break;
+    ten[i] = rest.pop();
+  }
+  // Over it: the dearest give way to one-cost cards of its root.
+  const fill = Object.values(catalog).filter(c => c.cost === 1 && !c.owner && !c._token && (c.element === creature.root || c.element == null) && !c.pill && !c.mortal)
+    .sort((a, b) => (a.element === creature.root ? 0 : 1) - (b.element === creature.root ? 0 : 1) || (a.id < b.id ? -1 : 1)).map(c => c.id);
+  const count = id => ten.filter(x => x === id).length, mine = () => ten.filter(id => own.includes(id)).length;
+  ten.sort((a, b) => cost(b) - cost(a) || (a < b ? -1 : 1));
+  for (let i = 0; i < size && sum() > budget && mine() > (k.keep ?? 4); i += 1) {
+    const f = fill.find(id => count(id) < 2 && cost(id) < cost(ten[i]));
+    if (!f) break;
+    ten[i] = f;
+  }
+  return ten;
+}
+function evenDeck(content, state, creature, foe) {
+  if (!evenDuel(content, state, creature)) return foe;
+  const L = foeLevel(content, state, creature) ?? fightLevel(content, state);
+  return { ...foe, deck: beastTen(content, creature, L) };
+}
+function duelFoe(content, state, creature, grown) {
+  const b = content?.balance, f = b?.duel_hp?.foe;
+  if (!f || creature.trial || creature.long) return null;
+  const L = fightLevel(content, state);
+  if (L == null) return null;
+  const Lf = foeLevel(content, state, creature) ?? L;
+  const grew = (grown.hp ?? 1) / (creature.hp ?? 1);
+  const hp_fixed = Math.max(1, Math.round((b.duel_hp.base + b.duel_hp.per_level * Lf) * (f.share?.[foeRank(content, creature)] ?? 1) * grew));
+  const rule = lengthRule(content, state);
+  return { ...grown, hp_fixed, ...(rule?.heals != null ? { heals: rule.heals, healMax: rule.healMax } : {}) };
+}
 /* `Lf`: the beast's level at this door (its 气血's share is read at it); none, the old realm's row. */
 export function fightLength(content, state, creature, grown, Lf = null) {
+  const fixed = duelFoe(content, state, creature, grown);
+  if (fixed) return fixed;
   const rule = !creature.trial && !creature.long ? lengthRule(content, state) : null;
   if (!rule) return grown;
   // A beast's share of 气血 in his units: 零层's 20 × P(its level) ÷ P(his) (battle.js begin); no level, the old realm's row.
@@ -402,12 +473,6 @@ export function pouchBrief(content, state) {
   const pills = content.items.items.filter(i => i.effect?.fight && (state.bag?.[i.id] ?? 0) > 0)
     .map(i => ({ id: i.id, name: pick(i.name, state.lang), n: state.bag[i.id], ...i.effect.fight, ...heal(i), ...(i.art ? { art: i.art } : {}) }));
   return pills.length ? { max: POUCH_MAX, pick: pouchFor(content, state).map(p => p.id), pills } : null;
-}
-
-/* The ★ 闭关 gave the cards in this deck — null when none has any. */
-function starsIn(state, deck) {
-  const got = Object.entries(state.card_stars ?? {}).filter(([id, n]) => n > 0 && deck.includes(id));
-  return got.length ? Object.fromEntries(got) : null;
 }
 
 const cardCatalog = content => Object.fromEntries((content.cards?.cards ?? []).map(c => [c.id, c]));

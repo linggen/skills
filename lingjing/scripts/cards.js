@@ -825,16 +825,9 @@ function seclude(card, ctx) {
   const ch = ctx.seclude, w = ctx.words, pickd = ctx.secludeFocus ?? {};
   if (!ch) return '';
   const r = ch.rule, on = (focus, id) => (pickd.focus === focus && (id == null || pickd.id === id) ? ' on' : '');
-  // Every spell wears its stars, lit and not (★☆☆), and its 灵力 in the round
-  // badge; the one picked says what its next star does and how long it takes.
-  const stars = (s) => `<span class="stars">${'★'.repeat(s.star)}${'☆'.repeat(Math.max(0, (s.top ?? 3) - s.star))}</span>`;
-  const spells = ch.spells.map((s) => `<button class="gcard pick${on('card', s.id)}" data-seclude-focus="card" data-id="${esc(s.id)}"><b class="cost" title="${esc(w.mana)} ${esc(s.cost)}">${esc(s.cost)}</b> ${esc(s.name)} ${stars(s)}</button>`).join('');
-  const chosen = pickd.focus === 'card' ? ch.spells.find((s) => s.id === pickd.id) : null;
-  const next = chosen ? say(w.secludeNext, { name: chosen.name, from: chosen.star, to: chosen.star + 1, h: chosen.left, what: chosen.next === 'cost' ? say(w.secludeNextCost, { was: chosen.cost, cost: chosen.cost - 1 }) : w.secludeNextPower }) : w.secludeStarRule;
   const pills = (ch.pills ?? []).map((p) => `<button class="act quiet${ctx.secludePill === p.id ? ' on' : ''}" data-seclude-pill="${esc(p.id)}">${esc(say(w.secludePill, { name: p.name, m: p.mult }))} · ×${esc(p.n)}</button>`).join('');
   return `<div class="card seclude">${closeX(ctx.lang, 'data-seclude-close', w.secludeLater)}<div class="cardtitle">${esc(w.secludeTitle)}</div>
     <div class="small dim">${esc(w.secludeHint)}</div>
-    ${spells ? `<div class="small">${esc(say(w.secludeSpells, { h: r.star_hours }))}</div><div class="gcards">${spells}</div><div class="small dim secludenext">${esc(next)}</div>` : ''}
     <div class="acts"><button class="act${on('progress')}" data-seclude-focus="progress">${esc(say(w.secludeProgress, { n: ch.per_hour ?? 0 }))}</button>
     ${ch.treasure ? `<button class="act${on('treasure')}" data-seclude-focus="treasure">${esc(say(w.secludeTreasure, { h: r.treasure_hours }))} · ${esc(ch.treasure.name)} ${esc(ch.treasure.step)}</button>` : ''}</div>
     ${pills ? `<div class="acts">${pills}</div>` : ''}
@@ -1660,7 +1653,7 @@ export function deckHtml(g, ctx) {
     const whose = c.member ? say(w.cardsMember, { name: c.member }) : '';
     const tip = esc(c.hand ? w.cardsHand : whose || (c.off_root ? w.cardsOff : ''));
     // 闭关's ★ beside the name; `cost` is already what it costs with them.
-    const face = `<b class="cost" title="${esc(w.mana)} ${esc(c.cost)}">${esc(c.cost)}</b> ${esc(c.name)}${c.stars ? ` <span class="stars">${'★'.repeat(c.stars)}</span>` : ''}${c.hand ? ` · ${esc(w.cardsHand)}` : ''}${whose ? ` · ${esc(whose)}` : ''}`;
+    const face = `<b class="cost" title="${esc(w.mana)} ${esc(c.cost)}">${esc(c.cost)}</b> ${esc(c.name)}${c.hand ? ` · ${esc(w.cardsHand)}` : ''}${whose ? ` · ${esc(whose)}` : ''}`;
     return c.hand || c.member || c.off_root || !g.can_pick ? `<span class="${cls}" title="${tip}">${face}</span>` : `<button class="${cls}" data-deck="${esc(c.id)}">${face}</button>`;
   };
   const short = 10 - mine;

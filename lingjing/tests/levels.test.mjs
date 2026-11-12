@@ -169,3 +169,24 @@ test('power.things: a worn thing and a heal pill count at the wearer\'s level (\
   assert.ok(own.you.power < wearer.you.power, 'and the 练气四层 sword');
   assert.ok(own.you.pouch[0].heal < wearer.you.pouch[0].heal, 'and the 练气一层 回春丹');
 });
+
+/* 斗法 v4: ONE sheet for both sides, one switch (balance.json `duel_hp.foe`; absent: everything above, as it was). */
+const onOneSheet = { ...content, balance: { ...content.balance, duel_hp: { ...content.balance.duel_hp, foe: { share: { weak: 1, normal: 1, strong: 1 }, by_hp: [], top: 'strong', deck: { size: 10, base: 13, per_level: 1.5, keep: 4 } } } } };
+
+test('one sheet: with the switch on his 气血 is 20 + level, the card\'s own numbers are shown, and the beast stands on it too', () => {
+  const s = stateAt('h05'), beast = content.creatures.creatures.find(c => c.id === 'chai');
+  const setup = (c, step, tier = 'qi') => fightSetup(c, { ...s, tier, step }, { ...beast, party: [] }, NOW, 'haunt:test');
+  const { base, per_level } = content.balance.duel_hp;
+  const one = begin(setup(onOneSheet, 1), catalog), eight = begin(setup(onOneSheet, 8), catalog), found = begin(setup(onOneSheet, 0, 'foundation'), catalog);
+  assert.deepEqual([one.you.hpMax, eight.you.hpMax, found.you.hpMax], [1, 8, 10].map(L => base + per_level * L));
+  assert.equal(shown(eight, 3), 3);
+  assert.equal(eight.unit, undefined);
+  assert.equal(setup(onOneSheet, 8).you.level, undefined);
+  assert.equal(setup(onOneSheet, 8).foe.level, undefined);
+  assert.equal(eight.foe.hpMax, base + per_level * 8, 'the beast\'s 气血 is the same whole number at its level');
+  assert.equal(setup(onOneSheet, 8).foe.deck.length, 10, 'and its deck is ten');
+  // …and with the switch off the very same door is the levelled one.
+  const off = begin(setup(content, 8), catalog);
+  assert.equal(shown(off, off.you.hpMax), hpMaxOf({ ...s, tier: 'qi', step: 8 }, content), 'his 气血 on the page is P(his level)');
+  assert.ok(off.unit > 1);
+});

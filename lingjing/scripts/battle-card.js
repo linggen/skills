@@ -437,7 +437,7 @@ function leafHtml(c, ctx, o = {}) {
       <span class="bcost">${o.cost ?? c.cost}</span>
       ${c.element ? `<span class="belem">${GLYPH[c.element] ?? ''}</span>` : ''}
       ${pic ? `<img class="bpic" src="${esc(pic)}" alt="" loading="lazy">` : '<span class="bpic none"></span>'}
-      <span class="bname">${name(c, ctx.lang)}${o.stars ? ` <span class="stars">${'★'.repeat(o.stars)}</span>` : ''}</span>
+      <span class="bname">${name(c, ctx.lang)}</span>
       <small class="btext">${o.text ?? esc(sayEffect(c, ctx))}</small>
       ${body}
       ${o.why ? `<small class="bwhy">${esc(o.why)}</small>` : ''}
@@ -489,7 +489,7 @@ function handHtml(st, ctx, picked) {
     const shownWhy = why && why !== 'not-your-turn' ? (w.why[why] ?? why) : null;
     const text = `${esc(sayEffect({ ...c, effect: shownEffect(st, st.you, effectOf(st.you, c)), keywords: keywordsOf(st.you, c) }, ctx))}${liftOf(st.you, c, ctx)}${onBeast(st, c, ctx)}${backlash(st, c, ctx)}`;
     return `<button class="bcard el-${esc(c.element ?? 'none')}${herOf(id, ctx)}${held ? ' held' : ''}${why ? ' dim' : ''}${!why && !held ? ' can' : ''}" data-spot="hand" data-index="${index}" data-id="${esc(id)}" style="${fanOf(index, n)}"${why ? ` title="${esc(w.why[why] ?? why)}"` : ''}>
-      ${leafHtml(c, ctx, { cost: costOf(st.you, c), atk: shown(st, b.atk), hp: shown(st, b.hp), stars: starsOf(st.you, c), text, why: shownWhy })}${sealHtml(c, st, ctx)}${freshHtml(id, ctx)}
+      ${leafHtml(c, ctx, { cost: costOf(st.you, c), atk: shown(st, b.atk), hp: shown(st, b.hp), text, why: shownWhy })}${sealHtml(c, st, ctx)}${freshHtml(id, ctx)}
     </button>`;
   }).join('');
 }

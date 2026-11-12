@@ -298,7 +298,10 @@ export const missingCards = (setup, catalog) =>
     .filter((id, i, all) => all.indexOf(id) === i && !catalog?.[id]);
 
 export function begin(setup, catalog) {
-  const mode = MODES[setup.mode] ?? MODES.pve;
+  // `setup.even` (rules/cards.mjs fightSetup, 斗法 v4): the two sides on one sheet — the beast's 气血 its own whole number,
+  // its deck the same size as his, and a dry deck costs it 反噬 as it costs him (no withdrawing).
+  const base = MODES[setup.mode] ?? MODES.pve;
+  const mode = setup.even ? { ...base, foeHp: 1, foeDeck: base.deck, foeDry: null } : base;
   const seed = setup.seed ?? 'x';
   const unknown = missingCards(setup, catalog);
   if (unknown.length) throw new Error(`no card row for ${unknown.join(', ')}`);
@@ -312,7 +315,8 @@ export function begin(setup, catalog) {
   // `foe.hp` (creatures.json `hp`) scales that share for one beast: the
   // story's fights are weighed one by one (tools/story-fights.mjs), and a
   // beast too frail to threaten anyone stands taller by data, never by name.
-  const foe = sideOf('foe', { ...setup.foe, hpScale: mode.foeHp * (setup.foe.hp ?? 1), ...(ff != null ? { base: (REALMS[setup.you.tier] ?? REALMS.qi).hp * ff, f: ff } : {}) }, catalog, mode, seed);
+  // `foe.hp_fixed` (rules/cards.mjs duelFoe): 斗法 on fixed numbers — the beast's 气血 as a whole number, read off its level.
+  const foe = sideOf('foe', { ...setup.foe, hpScale: mode.foeHp * (setup.foe.hp ?? 1), ...(ff != null ? { base: (REALMS[setup.you.tier] ?? REALMS.qi).hp * ff, f: ff } : {}), ...(setup.foe.hp_fixed != null ? { base: setup.foe.hp_fixed, step: 0, hpScale: 1 } : {}) }, catalog, mode, seed);
   // `uid`: each body that stands gets its own number, in the order it arrives —
   // two of the same card on one rank are two bodies, and the log and the
   // screen must tell them apart (Hanli, 2026-10-15: hitting the second 夫诸 lit
@@ -808,7 +812,7 @@ export const keywordsOf = (side, c) => {
    Each star takes 1 off the card's 灵力 while it costs more than 1; a star
    past that adds 1 to what it does. Only this side's, only a 功法 — the
    beast's cards are its own. The gate weighs it (tools/battle-sim.mjs). */
-export const starsOf = (side, c) => (c?.kind === 'spell' ? side?.stars?.[c.id] ?? 0 : 0);
+export const starsOf = () => 0;
 const starCut = (side, c) => Math.min(starsOf(side, c), Math.max(0, (c?.cost ?? 0) - 1));
 export const costOf = (side, c) => (c?.cost ?? 0) - starCut(side, c);
 const starLift = (side, c) => starsOf(side, c) - starCut(side, c);

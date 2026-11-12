@@ -48,30 +48,21 @@ test('the numbers: a day away is capped, a short sit grows nothing, and sitting 
   assert.ok(R.cap_hours * secludeHour(content, player()) <= content.rewards.tables.seclusion.progress, 'the table caps nothing a night pays');
 });
 
-test('a spell: a ★ each 6 h counted, the hours over kept for the next seclusion, at most ★3', () => {
-  let r = inAndOut(player(), 13, { focus: 'card', id: 'wulei' });
-  const e = r.result.emerged;
-  assert.equal(e.hours, 12, 'real hours capped at 12');
-  assert.deepEqual([e.card.from, e.card.to, e.card.was, e.card.cost], [0, 2, 5, 3]);
-  assert.deepEqual(r.state.card_stars, { wulei: 2 });
-  assert.equal(r.state.card_study, undefined, 'nothing left over at exactly 12');
-  assert.equal(r.state.seclusion, undefined);
-  // 4 h more: no star, 4 kept; 3 h more: the third star, and nothing kept at the top.
-  r = inAndOut(r.state, 4, { focus: 'card', id: 'wulei' });
-  assert.deepEqual([r.result.emerged.card.to, r.state.card_study.wulei], [2, 4]);
-  r = inAndOut(r.state, 3, { focus: 'card', id: 'wulei' });
-  assert.deepEqual([r.state.card_stars.wulei, r.state.card_study?.wulei], [3, undefined]);
-  // At the top it is no longer offered, and refused.
-  assert.ok(!seclude(r.state, T0, { action: 'info' }).result.choices.spells.some(x => x.id === 'wulei'));
-  assert.equal(seclude(r.state, T0, { action: 'enter', focus: 'card', id: 'wulei' }).result.refused, 'not-a-spell');
-  // A beast's card, one not held, or one of a root he lacks is no spell to temper.
-  for (const id of ['fuzhu', 'hantan', 'jinzhua']) assert.equal(seclude(player(), T0, { action: 'enter', focus: 'card', id }).result.refused, 'not-a-spell', id);
+test('card focus is unavailable and an old card seclusion pays ordinary cultivation', () => {
+  const old = player({card_stars: { wulei: 2 }, card_study: { wulei: 3 }, seclusion: {focus: 'card', card: 'wulei', since: T0.toISOString()} });
+  assert.equal(seclude(player(), T0, {action: 'enter', focus: 'card'}).result.refused, 'no-such-focus');
+  assert.equal(seclude(player(), T0, {action: 'info'}).result.choices.spells, undefined);
+  const out = seclude(old, at(4), {action: 'leave'});
+  assert.equal(out.result.emerged.focus, 'progress');
+  assert.equal(out.result.emerged.progress.paid, Math.floor(4 * secludeHour(content, old)));
+  assert.deepEqual(out.state.card_stars, old.card_stars);
+  assert.deepEqual(out.state.card_study, old.card_study);
 });
 
 test('under an hour nothing grows but 体力: it comes back all through the sitting, the whole pool in refill.seclusion_hours, whatever the focus', () => {
   const Q = content.rewards.stamina, H = Q.refill.seclusion_hours, perHour = Q.max / H;
   // Under min_hours (2 h for the pool since 2026-11-04, Hanli: 「可以, 2小时回满」): a quarter of the pool's hours.
-  const short = inAndOut(player(), 0.25 * H, { focus: 'card', id: 'wulei' });
+  const short = inAndOut(player(), 0.25 * H, { focus: 'progress' });
   assert.equal(short.result.emerged.grows, false);
   assert.equal(short.state.card_stars, undefined);
   assert.equal(short.state.stamina, 5 + Math.floor(0.25 * H * perHour), 'a quarter of the hours, a quarter of the pool — linear on real minutes');
@@ -125,11 +116,11 @@ test('本命法宝: one 重 per 8 h, the hours over kept; none bound or at 九�
 });
 
 test('a 聚气丹 taken going in: spent, the hours counted ×1.5 — the cap on real hours stands', () => {
-  const inn = seclude(player(), T0, { action: 'enter', focus: 'card', id: 'huodan', pill: 'qi-pill' });
+  const inn = seclude(player(), T0, { action: 'enter', focus: 'progress', pill: 'qi-pill' });
   assert.equal(inn.state.bag['qi-pill'], undefined, 'spent');
   const out = seclude(inn.state, at(20), { action: 'leave' });
   assert.deepEqual([out.result.emerged.hours, out.result.emerged.counted], [12, 18]);
-  assert.equal(out.state.card_stars.huodan, 3);
+  assert.ok(out.result.emerged.progress.paid > 0);
   assert.equal(seclude(player({ bag: {} }), T0, { action: 'enter', focus: 'progress', pill: 'qi-pill' }).result.refused, 'not-in-bag');
   assert.equal(seclude(player(), T0, { action: 'enter', focus: 'progress', pill: 'foundation-pill' }).result.refused, 'not-a-seclusion-pill');
 });
@@ -144,10 +135,10 @@ test('the clock is the rules\': `since` is ctx.now, and nothing the page passes 
 });
 
 test('in 闭关 the world holds still: Look carries it, the stage is its card alone, nothing is asked', () => {
-  const s = seclude(player(), T0, { action: 'enter', focus: 'card', id: 'wulei' }).state;
+  const s = seclude(player(), T0, { action: 'enter', focus: 'progress' }).state;
   const l = look(s, content, ctx(at(7)));
   assert.equal(l.seclusion.hours, 7);
-  assert.deepEqual([l.seclusion.card.from, l.seclusion.card.to], [0, 1], 'what 出关 would grow now');
+  assert.ok(l.seclusion.progress.paid > 0);
   assert.deepEqual(l.stage, [{ card: 'seclusion' }]);
   assert.equal(l.ask, null);
   for (const [verb, args] of [['move', {}], ['resolve', {}], ['duel', {}], ['trade', {}], ['quest', { action: 'take' }], ['tale', { action: 'make' }]]) {
@@ -161,49 +152,13 @@ test('in 闭关 the world holds still: Look carries it, the stage is its card al
   assert.equal(fightHold({ ...player(), fight: { game: 'x' } }, 'seclude', { action: 'info' }), null);
 });
 
-test('the command line: in and out on a save on disk, a Move refused between, what the page did written down', () => {
-  const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-seclude-'));
-  try {
-    fs.writeFileSync(path.join(data, 'state.json'), JSON.stringify(player()));
-    const cli = (now, ...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'),
-      env: { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: now.toISOString() }, encoding: 'utf8' }).stdout);
-    assert.equal(cli(T0, 'seclude', '--action=enter', '--focus=card', '--id=leiming').ok, true);
-    const moved = cli(at(1), 'move', '--place=sibei');
-    assert.equal(moved.refused, 'in-seclusion');
-    assert.ok(moved.say);
-    const l = cli(at(9), 'look', '--for=ling');
-    assert.equal(l.seclusion.hours, 9);
-    const out = cli(at(9), 'seclude', '--action=leave');
-    assert.deepEqual([out.emerged.card.to, out.emerged.rested], [1, true]);
-    const saved = JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8'));
-    assert.equal(saved.version, STATE_VERSION, 'no new version: the fields are new and default absent');
-    assert.deepEqual(saved.card_stars, { leiming: 1 });
-    assert.ok(saved.page_did.some(d => d.verb === 'seclude' && /came out of seclusion after 9 h: .*★0→★1, 体力 full/.test(d.what)), JSON.stringify(saved.page_did));
-  } finally {
-    fs.rmSync(data, { recursive: true, force: true });
-  }
-});
-
-test('a ★ in the fight: −1 灵力 a star down to 1, then +1 to its number; only his, only a 功法', () => {
-  const c = id => content.cards.cards.find(x => x.id === id);
-  const side = { stars: { wulei: 3, qingteng: 2, peiyuan: 1, fuzhu: 3 } };
-  assert.deepEqual([costOf(side, c('wulei')), effectOf(side, c('wulei')).damage], [2, 6]);
-  assert.deepEqual([costOf(side, c('qingteng')), effectOf(side, c('qingteng')).damage], [1, 4]);
-  assert.equal(effectOf(side, c('peiyuan')).buff.atk, 2);
-  assert.equal(costOf(side, c('fuzhu')), c('fuzhu').cost, 'a beast is not tempered');
-  assert.equal(costOf({}, c('wulei')), 5);
-  // The door carries the stars of the ten dealt, and the fight takes the cheaper cost.
-  const s = { ...player(), card_stars: { wulei: 3, jinzhua: 3 } };
-  const creature = content.creatures.creatures.find(x => x.deck);
-  const setup = fightSetup(content, s, creature, T0);
-  assert.deepEqual(setup.you.stars, setup.you.deck.includes('wulei') ? { wulei: 3 } : undefined);
-  const catalog = Object.fromEntries(content.cards.cards.map(x => [x.id, x]));
-  const st = begin({ ...setup, you: { ...setup.you, deck: ['wulei', ...setup.you.deck.filter(id => id !== 'wulei')].slice(0, 10), stars: { wulei: 3 } } }, catalog);
-  st.you.hand = ['wulei']; st.you.mana = 2;
-  const o = offers(st).find(x => x.id === 'wulei');
-  assert.deepEqual([o.cost, o.ok], [2, true]);
-  assert.equal(act(st, o.action).ok, true);
-  assert.equal(st.you.mana, 0);
+test('old stars do not alter card costs or effects', () => {
+  const c = content.cards.cards.find(x => x.id === 'wulei');
+  const side = { stars: { wulei: 3 } };
+  assert.equal(costOf(side, c), c.cost);
+  assert.deepEqual(effectOf(side, c), effectOf({}, c));
+  const setup = fightSetup(content, player({card_stars: {wulei: 3}}), content.creatures.creatures.find(x => x.deck), T0);
+  assert.equal(setup.you.stars, undefined);
 });
 
 test('the page: the chooser, the running card with 出关, and 出关\'s count-up — every number the rules\', zh and en', () => {
@@ -211,14 +166,14 @@ test('the page: the chooser, the running card with 出关, and 出关\'s count-u
     const s = { ...player(), lang };
     const w = WORDS[lang];
     const choices = seclude(s, T0, { action: 'info' }).result.choices;
-    const chooser = cardHtml({ card: 'seclude' }, { look: look(s, content, ctx()), lang, words: w, seclude: choices, secludeFocus: { focus: 'card', id: 'wulei' } });
-    assert.match(chooser, /data-seclude-focus="card" data-id="wulei"/);
+    const chooser = cardHtml({ card: 'seclude' }, { look: look(s, content, ctx()), lang, words: w, seclude: choices, secludeFocus: { focus: 'progress' } });
+    assert.doesNotMatch(chooser, /data-seclude-focus="card"/);
     assert.match(chooser, /data-seclude-pill="qi-pill"/);
     assert.match(chooser, /data-seclude-go/);
-    const running = seclude(s, T0, { action: 'enter', focus: 'card', id: 'wulei' }).state;
+    const running = seclude(s, T0, { action: 'enter', focus: 'progress' }).state;
     const card = cardHtml({ card: 'seclusion' }, { look: look(running, content, ctx(at(7))), lang, words: w });
     assert.match(card, /data-emerge/);
-    assert.match(card, /★0 → ★1/);
+    assert.doesNotMatch(card, /★/);
     const out = seclude(running, at(7), { action: 'leave' }).result.emerged;
     const html = emergedHtml(out, { lang, words: w });
     assert.match(html, /data-countup="7"/);
@@ -233,11 +188,10 @@ test('the page: the chooser, the running card with 出关, and 出关\'s count-u
 
 test("出关's facts for 银月 (seclude-facts.js, the Mac's page and the phone's bundle): the rules' numbers, never a line", () => {
   const s = player();
-  const running = seclude(s, T0, { action: 'enter', focus: 'card', id: 'wulei' }).state;
+  const running = seclude(s, T0, { action: 'enter', focus: 'progress' }).state;
   const e = seclude(running, at(7), { action: 'leave' }).result.emerged;
   const zh = emergeFacts(e, true), en = emergeFacts(e, false);
-  assert.ok(zh.startsWith(`玩家刚出关：闭关 7 小时，专心修${e.card.name}`), zh);
-  if (e.card.to > e.card.from) assert.match(zh, new RegExp(`${e.card.name}练到了${e.card.to}星`));
+  assert.ok(zh.startsWith('玩家刚出关：闭关 7 小时，专心修修为'), zh);
   assert.ok(en.startsWith('The player has just come out of seclusion: 7 h'), en);
   const short = emergeFacts({ focus: 'progress', hours: 0.5, grows: false }, true);
   assert.equal(short, '玩家刚出关：闭关 0.5 小时，专心修修为，时辰太短，没长什么。');

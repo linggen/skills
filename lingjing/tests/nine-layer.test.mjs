@@ -164,6 +164,14 @@ test('the curve: every 层 of a realm in 段 its own threshold and level (2026-1
   for (let k = 1; k < 9; k++) assert.ok(hp(k) > hp(k - 1), `筑基 ${k + 1}层 more than ${k}层`);
 });
 
+test('one sheet: with balance.json `duel_hp.foe` his 气血 grows linearly by level (base + per_level × level), not on the power curve', () => {
+  const on = { ...content, balance: { ...content.balance, duel_hp: { ...content.balance.duel_hp, foe: {} } } };
+  const hp = k => hpMaxOf({ tier: 'foundation', step: k }, on);
+  const { base, per_level } = content.balance.master.fight.duel_hp;
+  assert.deepEqual([0, 3, 6, 8].map(hp), [10, 13, 16, 18].map(L => base + per_level * L), 'duel 气血 at every 层');
+  for (let k = 1; k < 9; k++) assert.ok(hp(k) > hp(k - 1), `筑基 ${k + 1}层 more than ${k}层`);
+});
+
 test('old saves: v14\'s 小成 · 中成 · 大成 are those 段, the 修为 walked to the same point of the 段 — once', () => {
   const was = FD.thresholds_were['14'];
   // Walked on the ladder it was written for (v17's, thresholds_were["18"]), then read by its percent onto the curve (v18,
