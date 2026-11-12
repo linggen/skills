@@ -15,7 +15,11 @@ import { begin, shown } from '../scripts/battle.js';
 import { stageCards, CARD_KINDS } from '../scripts/stage.mjs';
 import { WORDS, trayHtml, bookPopHtml } from '../scripts/cards.js';
 
-const content = loadContent();
+// The run as the key and the rooms' own 体力 built it: the world with its door fee 0 and its 秘境令 on (balance.json mijing
+// `door` · `key_on`, their neutral values). Since 2026-11-12's 耗材 numbers the world pays at the door with the key off —
+// that run is tests/economy-knobs.test.mjs's; everything else here is the world's own.
+const world = loadContent();
+const content = { ...world, balance: { ...world.balance, mijing: { ...world.balance.mijing, door: 0, key_on: true } } };
 const M = content.mijing;
 const NOW = new Date(2026, 9, 28, 10, 0);
 const ctx = (now = NOW) => ({ now, quests: [] });

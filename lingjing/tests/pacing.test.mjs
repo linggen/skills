@@ -12,12 +12,13 @@ import { pay } from '../scripts/rules/core.mjs';
 import { capLook, settleHeld, shareMark, underCap } from '../scripts/rules/cap.mjs';
 import { gatesOf } from '../scripts/rules/gates.mjs';
 import { convertRate } from '../scripts/rules/playpay.mjs';
-import { play } from '../tools/balance.mjs';
+import { play, playersOf } from '../tools/balance.mjs';
 
 process.env.LINGJING_STAMINA_LIMIT = '0';
 const content = loadContent();
 const MAX = 3;
-const players = content.balance.model.players;
+// The players the pacing tool plays (playersOf: the economy's when balance.json model.econ.on, design.md § 耗材).
+const players = playersOf(content);
 // The grinder: the heavy player who also plays about two side boards a scene (his log, 2026-11-02 at wm-qianye: 四层 48 → 710
 // in six actions, about +110 each) — the one who fills a layer the moment its door opens.
 const PLAYERS = { ...players, grinder: { ...players.heavy, scene_share: 0.35 } };
@@ -99,8 +100,10 @@ test('gates climb (the lint): no gate asks the layer the highest gate before it 
 const MAX_WAIT = 2;
 // 2026-11-12 (修为不要超过上限, 超过后换算为灵石奖励 — Hanli): past the cap the rest is 灵石, never banked to come back at the
 // 石室's door, so 古五's 石室 gate (wm-kaikai, 三层圆满 inside the sealed 秘境) waits 3.0 typical days of its rooms' boards: allowed
-// to 3, NOT retuned — Hanli's call (a share gate earlier in 三层, or a smaller hold before the 石室).
-const WAIT_EXCEPT = { 'wm-kaikai': 3 };
+// to 3, NOT retuned — Hanli's call (a share gate earlier in 三层, or a smaller hold before the 石室). 2026-11-12 (design.md § 耗材):
+// T₁ re-solved with the paid sinks makes 三层 660 (620 before), and inside the sealed 秘境 no sink reaches him (no 闭关, no run):
+// 3.22 days — allowed to 3.25, for Hanli's same call.
+const WAIT_EXCEPT = { 'wm-kaikai': 3.25 };
 test('the typical player waits at most MAX_WAIT days of only small games between two beats of story (a scene, or a 连环差事\'s step)', () => {
   for (const g of runs.typical.gates) {
     assert.ok((g.gap ?? g.days ?? 0) <= (WAIT_EXCEPT[g.scene] ?? MAX_WAIT), `${g.scene} (${g.layer.step}层): ${(g.gap ?? g.days)?.toFixed(2)} days of play between beats — add a share gate earlier in the layer, or a chain step`);

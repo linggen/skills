@@ -19,7 +19,7 @@ const v17 = (extra = {}) => ({ ...structuredClone(base), version: 17, ...extra }
 const pos = s => [s.tier, s.step, s.progress];
 
 test('the ladder before the curve is kept (ladder.json thresholds_were["18"]) for every tier and every 今 tier, and the save version moved', () => {
-  assert.equal(STATE_VERSION, 18);
+  assert.ok(STATE_VERSION >= 18, 'v18 carried the curve (v19 since 2026-11-12: 耗材)');
   for (const t of content.ladder.tiers) assert.equal(t.thresholds_were?.['18']?.length, t.thresholds.length, t.id);
   for (const t of content.ladder.lines.jin.tiers) assert.equal(t.thresholds_were?.['18']?.length, t.thresholds.length, t.id);
   assert.deepEqual(tier('qi').thresholds_were['18'], [0, 470, 520, 570, 630, 690, 760, 830, 920, 1010], '练气 as it stood on 2026-11-10');

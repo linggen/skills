@@ -3,7 +3,7 @@
 import { afterParts, parseAfter, readThrough, sceneBoards } from './rules/parts.mjs';
 import { herSlotsCarry, slotsCarry } from './rules/wear.mjs';
 
-export const STATE_VERSION = 18;
+export const STATE_VERSION = 19;
 export const FIRST_WORLD = 'jiuding'; // the world every save before worlds was playing
 
 export function firstChapter(content) {
@@ -678,7 +678,23 @@ const MIGRATIONS = [
   // the ladder it was written against (ladder.json `thresholds_were["18"]`, ladderOf17), then the bar is read by its percent
   // of its 层 — the 层 kept, the bar as full as it stood, the stretch and the 丹田's bank with it, each line's too.
   [18, m => { m.ladder_curve = true; }],
+  // v19 (2026-11-12, design.md § 耗材 — Hanli: 「秘境令去掉可以」 · 「我现在的进度无所谓, 可以直接修改到新模型下」): the 秘境 is
+  // paid in 体力 at the door, and 闭关 draws on 灵石 in a 聚灵阵. Marked, carried by fitWorld (econCarry — the key's id is the
+  // world's): the 秘境令 held goes, with the day's count of keys dropped; the 阵 stands at its first level with today's draw
+  // unused. Everything else is kept; 修为 past the bar is the cap's on load (rules/cap.mjs settleCap), never done by hand.
+  [19, m => { m.econ_carry = true; }],
 ];
+
+/* v19's carry (econ_carry): the 秘境令 (mijing.json `key`) out of the bag and the 秘境's key counter (`mijing.drops`) gone; the
+   聚灵阵 at its first level, nothing drawn today. A run or a 闭关 under way stays as it is (neither carries the door's or the
+   阵's stamp, so each settles by the rule it began under). The fields to change. */
+function econCarry(content, state) {
+  const key = content.mijing?.key, fix = {};
+  if (key && state.bag && key in state.bag) { const { [key]: _, ...bag } = state.bag; fix.bag = bag; }
+  if (state.mijing?.drops) { const { drops, ...m } = state.mijing; fix.mijing = m; }
+  fix.julin = { level: 1 };
+  return fix;
+}
 
 /* v17: had a save in a scene now read through its boards read its passage whole? Told, and either the scene was one
    passage before the cut (null below), or its one rest after its first board then (named below) was told too. */
@@ -989,6 +1005,8 @@ export function fitWorld(saved, content) {
     // rules/skips.mjs keepBoard, Hanli 11-03): his to take up, never offered by itself. At most 20.
     ...(state.skipped?.length ? { skipped: [], kept: keptFrom(state) } : {}),
   };
+  // v19's mark (MIGRATIONS): the 秘境令 gone, the 聚灵阵 at its first level.
+  if (state.econ_carry) Object.assign(fix, econCarry(content, { ...state, ...fix }));
   // v17's mark (MIGRATIONS): the scene he stands in, read whole before it was cut through its boards, owes no part again.
   if (state.read_whole_check) { const sc = chapter?.scenes?.[state.scene]; if (readWhole(state, sc)) fix.read_whole = sc.id; }
   // Cards retired since (RETIRED_CARDS) go — after their old names were carried onto the new (renamedCards above).
@@ -1013,6 +1031,7 @@ export function fitWorld(saved, content) {
   // 银月 held out of the 木牌 for a board cut since: back in.
   const drop = known && state.her_game?.task && !known.has(state.her_game.task) ? ['her_game'] : [];
   if (state.read_whole_check) drop.push('read_whole_check');
+  if (state.econ_carry) drop.push('econ_carry');
   // A system cut whole leaves its state behind (密室 2026-10-27: the room open, a rerun's 暗室, the day's count): gone.
   // A card duel open (state.fight) whose id is a board now (the 大比's three rounds, 格斗 since 2026-10-31): let go, unplayed —
   // the board stands in the scene (offered above), and no verb is held for a fight that no longer exists.

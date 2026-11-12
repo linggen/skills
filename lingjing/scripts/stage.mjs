@@ -233,7 +233,8 @@ export function stageCards(look, { focus = [], fight = false } = {}) {
   if (look.seclusion) return [{ card: 'seclusion' }];
   const head = [];
   if (look.building?.paint?.length) head.push({ card: 'building' });
-  if (look.stamina?.empty) head.push({ card: 'empty' });
+  // …save inside a 秘境 run paid at the door (rules/mijing.mjs `door_paid`): its rooms cost nothing, the run goes on.
+  if (look.stamina?.empty && !(look.mijing?.inside && look.mijing.door_paid)) head.push({ card: 'empty' });
   if (look.quest) head.push({ card: 'quest' });
   // 传闻: the step before him — one card, in the queue near the search's.
   if (taleHere(look)) head.push({ card: 'tale' });

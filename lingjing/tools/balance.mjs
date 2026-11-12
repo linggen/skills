@@ -346,9 +346,10 @@ export function play(content, player, { model = content.balance.model, ladder = 
     const breathe = Math.max(0, hours - (pace > 0 ? n / pace : 0)), t = need() > 0 ? Math.max(1, Math.floor(JL.trickle * need())) : 0;
     gain(Math.floor(breathe * t + 1e-9), false, 'seclusion', 'trickle');
   };
-  /* The 阵's next level, bought at the day's end when the purse holds its price and a full 阵 beside it (`arrays`). */
+  /* The 阵's next level, bought at the day's end when the purse holds its price and a full 阵 beside it (`arrays`, and he sits
+     闭关 at all). */
   const buyArrays = () => {
-    if (!JL || !player.arrays || zero()) return;
+    if (!JL || !player.arrays || !player.seclude || zero()) return; // a player who never sits 闭关 buys no 阵
     while (J.level < JL.array.length) {
       const price = JL.costs[J.level];
       if (W.now < price + holdsNow()) break;
@@ -573,11 +574,12 @@ export function play(content, player, { model = content.balance.model, ladder = 
         if (!gated) break;
         if (takeDue()) continue;
         const waiting = [...gates.values()].find(g => g.wait == null);
+        // A 秘境 run first (the economy's players, `mijing`): what 体力 buys is the grind's first pick, before the pool's
+        // fights, the wall's tags and the free practice boards.
+        { const m = playRun(left); if (m) { left -= m; if (waiting) waiting.did.runs = (waiting.did.runs ?? 0) + 1; continue; } }
         if (extra < player.gate_fights && fought + extra < poolCap && evLeft(hour()) > 0 && left >= T.fight && spend(C.duel)) { left -= T.fight; extra += 1; poolFight(); if (waiting) waiting.did.fights += 1; continue; }
         // …then the day's wall tags he has not taken yet.
         if (wallsLeft() > 0.01 && wallsOpen().length) { const share = wallsLeft(); wallsOn = day; wallsTaken = 1; const used = playWalls(left, share); if (used) { left -= used; if (waiting) waiting.did.walls += share; continue; } }
-        // …then a 秘境 run (the economy's players, `mijing`): what 体力 buys, before the free practice boards.
-        { const m = playRun(left); if (m) { left -= m; if (waiting) waiting.did.runs = (waiting.did.runs ?? 0) + 1; continue; } }
         // …then the practice boards (play_pay, 2026-10-27): a board's minutes at the layer's share, `model.practice.factor`
         // for its ★ and the replay's falling share across a sitting.
         const P = model.practice;
@@ -776,7 +778,11 @@ export async function solveCurve() {
   const ok = d => moved.every(h => d[h] <= bandOf(h)[1] - S.inset);
   let a = lo, b = hi;
   for (let k = 0; k < 18; k++) { const m = (a + b) / 2; if (ok(await daysAt(m))) a = m; else b = m; }
-  const T1 = Math.round(a * 1000) / 1000, at = await daysAt(T1);
+  // Rounded to the knob's three places, the 层 (rounded to 10) may step over a 回's mark: stepped down a thousandth until the
+  // rule holds at the T₁ written (2026-11-12, the 耗材 numbers: 0.932 put 古八 at 8.7 days).
+  let T1 = Math.round(a * 1000) / 1000;
+  while (T1 > lo && !ok(await daysAt(T1))) T1 = Math.round((T1 - 0.001) * 1000) / 1000;
+  const at = await daysAt(T1);
   // 今: climbed falls as T₁ grows.
   const J = M.lines.jin?.solve, rules = J ? await import('../scripts/rules/lines.mjs').then(async L => ({ lineGrant: L.lineGrant, linePay: L.linePay, lineStart: (await import('../scripts/state.mjs')).lineStart, now: NOW })) : null;
   let jin = null;

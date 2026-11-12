@@ -1,6 +1,6 @@
 // 耗材's mechanics behind their knobs (design.md § 耗材 — what 灵石 and 体力 are for, 2026-11-12): the 秘境 paid once at the
 // door (`mijing.door`) and its key switched off (`mijing.key_on`); 闭关 drawing on 灵石 — 聚灵, then 吐纳 (`julin`). Each at
-// its non-neutral values in a fixture that overrides the knob, and the world's own values neutral: today's game.
+// its non-neutral values in a fixture that sets the knob, and at the neutral values (NEUTRAL) the game as it was.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
@@ -25,17 +25,19 @@ const ctx = (now = NOW) => ({ now, quests: [] });
 const withKnobs = ({ mijing = {}, julin = {} } = {}) => ({ ...content, balance: { ...content.balance, mijing: { ...content.balance.mijing, ...mijing }, julin: { ...content.balance.julin, ...julin } } });
 const DOOR = withKnobs({ mijing: { door: 25, key_on: false } });
 const JULIN = withKnobs({ julin: { on: true } });
+const NEUTRAL = withKnobs({ mijing: { door: 0, key_on: true }, julin: { on: false } });
 const call = (c, verb, s, args, now = NOW) => VERBS[verb](s, c, ctx(now), args);
 
-test('neutral: the knobs as the world ships them leave today\'s game — no door fee, the key asked, 闭关 without the 阵', () => {
-  assert.equal(content.balance.mijing.door, 0);
-  assert.equal(content.balance.mijing.key_on, true);
-  assert.equal(content.balance.julin.on, false);
+test('the world ships the first numbers (design.md § 耗材): the door\'s 25 体力, no 秘境令, the 阵 on', () => {
+  assert.deepEqual([content.balance.mijing.door, content.balance.mijing.key_on, content.balance.julin.on], [25, false, true]);
+});
+
+test('neutral: no door fee, the key asked, 闭关 without the 阵 — the game as it was', () => {
   const s = sitter();
-  const info = call(content, 'seclude', s, { action: 'info' });
+  const info = call(NEUTRAL, 'seclude', s, { action: 'info' });
   assert.equal(info.result.choices.julin, undefined, 'no 阵 on the chooser');
-  assert.equal(call(content, 'seclude', s, { action: 'array' }).result.refused, 'no-julin');
-  assert.equal(call(content, 'seclude', s, { action: 'enter', focus: 'progress', stones: 5 }).result.refused, 'stones-need-progress');
+  assert.equal(call(NEUTRAL, 'seclude', s, { action: 'array' }).result.refused, 'no-julin');
+  assert.equal(call(NEUTRAL, 'seclude', s, { action: 'enter', focus: 'progress', stones: 5 }).result.refused, 'stones-need-progress');
 });
 
 let cached = null;
@@ -123,7 +125,7 @@ test('the key off: none asked, none dropped, none shown; a 令 still held is ign
   assert.ok(!(view.tray ?? []).some(r => r.id === 'mijing'), 'no tray row of keys');
   // The road to the door: open with a run left, though no 令 is held.
   const bare = atDoor(0);
-  assert.deepEqual(mijingDoors(content, bare, NOW), [], 'key on, none held: shut');
+  assert.deepEqual(mijingDoors(NEUTRAL, bare, NOW), [], 'key on, none held: shut');
   assert.deepEqual(mijingDoors(DOOR, bare, NOW), M.doors, 'key off: open on the day\'s runs');
 });
 
@@ -222,7 +224,7 @@ test('Look carries the 阵\'s facts and the card draws the choice; a sitting dro
   const s = sitter();
   const view = look(s, JULIN, ctx());
   assert.equal(view.julin?.holds, arrayHolds(JULIN, s));
-  assert.equal(look(s, content, ctx()).julin, undefined, 'neutral: none');
+  assert.equal(look(s, NEUTRAL, ctx()).julin, undefined, 'neutral: none');
   const choices = call(JULIN, 'seclude', s, { action: 'info' }).result.choices;
   const html = cardHtml({ card: 'seclude' }, { lang: 'zh', words: WORDS.zh, seclude: choices, secludeFocus: { focus: 'progress' }, look: view });
   assert.match(html, new RegExp(`布 ${choices.julin.holds} 块：约 ${JULIN.balance.julin.hours} 小时吸尽，修为 \\+${choices.julin.holds * 3}；之后吐纳，每小时 \\+${choices.julin.trickle}`));
@@ -235,4 +237,42 @@ test('Look carries the 阵\'s facts and the card draws the choice; a sitting dro
   assert.ok('seclusion' in fix, 'the sitting is dropped');
   assert.equal(fix.julin.drawn, 0, 'the day\'s draw given back');
   assert.equal(fix.wealth, 0, 'there the purse itself is shut (灵石 before 入门 are none)');
+});
+
+test('the shipped world through Look: at the door the day\'s runs and the fee, no key; inside a paid run at 0 体力 the run stands, no spent-pool card', async () => {
+  const { stageCards } = await import('../scripts/stage.mjs');
+  const s = { ...atDoor(5), stamina: 25, stamina_at: NOW.toISOString() };
+  const door = look(s, content, ctx());
+  assert.deepEqual([door.mijing.door, door.mijing.runs_left, door.mijing.door_cost, door.mijing.keys], [true, 2, 25, undefined]);
+  assert.ok(stageCards(door).some(c => c.card === 'mijing'), 'the door\'s card on the stage');
+  const html = cardHtml({ card: 'mijing' }, { look: door, lang: 'zh', words: WORDS.zh });
+  assert.match(html, /data-mijing="enter" data-tier="1">/, 'the way in open');
+  const inn = call(content, 'mijing', s, { action: 'enter', tier: 1 });
+  assert.equal(inn.state.stamina, 0);
+  const inside = look(inn.state, content, ctx());
+  assert.ok(inside.mijing.inside);
+  const cards = stageCards(inside).map(c => c.card);
+  assert.ok(cards.includes('mijing') && !cards.includes('empty'), `the run's card stands, no spent-pool card: ${cards}`);
+  assert.equal(inside.mijing.door_paid, 25);
+});
+
+test('the command line takes the 阵: `seclude --action=array` and `--stones=N` on a save on disk', async () => {
+  const fs = await import('node:fs'), os = await import('node:os'), path = await import('node:path'), { spawnSync } = await import('node:child_process');
+  const data = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-julin-'));
+  try {
+    fs.writeFileSync(path.join(data, 'state.json'), JSON.stringify(sitter({ wealth: 150 })));
+    const cli = (now, ...args) => JSON.parse(spawnSync(process.execPath, ['scripts/rules.mjs', ...args], { cwd: path.resolve(import.meta.dirname, '..'),
+      env: { ...process.env, LINGJING_DATA: data, LINGJING_QUESTS: path.join(data, 'none'), LINGJING_NOW: now.toISOString() }, encoding: 'utf8' }).stdout);
+    const up = cli(NOW, 'seclude', '--action=array');
+    assert.deepEqual([up.ok, up.level, up.price], [true, 2, 100]);
+    const holds = up.julin.holds;
+    const inn = cli(NOW, 'seclude', '--action=enter', '--focus=progress', `--stones=${holds}`);
+    assert.equal(inn.ok, true, JSON.stringify(inn));
+    const out = cli(at(content.balance.julin.hours), 'seclude', '--action=leave');
+    assert.equal(out.emerged.progress.julin.drawn, holds);
+    const saved = JSON.parse(fs.readFileSync(path.join(data, 'state.json'), 'utf8'));
+    assert.equal(saved.julin.level, 2);
+  } finally {
+    fs.rmSync(data, { recursive: true, force: true });
+  }
 });

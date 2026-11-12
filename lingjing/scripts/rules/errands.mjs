@@ -147,6 +147,11 @@ function errandsOf(content, state, lang, now) {
     .filter(Boolean);
 }
 
+/* A beast's open haunt, on his chapter's map first (a road opened past one — the way to the 秘境's door — is a way through). */
+function beastAt(content, state, creature, now) {
+  const onMap = new Set(content.chapters?.[state.chapter]?.map?.places ?? []), open = hauntsOf(content, creature).map(p => placeOf(content, p.id)).filter(p => p && placeOpen(content, state, p, now));
+  return open.find(p => onMap.has(p.id)) ?? open[0] ?? null;
+}
 /* Where the next count is met — a creature's haunt, a place to reach, the
    market that sells it. One line, so the player is never left guessing.
    `now` is the caller's clock, never the wall's: a test's or a replay's day
@@ -158,7 +163,7 @@ function whereFor(content, state, quest, need, lang, now, line = null) {
   // read 「就在此处」 at 执事堂 for a 灵芝 its 库房 never stocks (Hanli 10-28).
   if (open.kind === 'carry') { const at = line?.steps?.find(s => !s.done)?.at; return at ? whereAt(content, state, placeOf(content, at.id), lang, now) : null; }
   const at = open.kind === 'visit' ? placeOf(content, open.place)
-    : open.kind === 'subdue' || open.kind === 'tame' ? (hauntsOf(content, open.creature).map(p => placeOf(content, p.id)).find(p => p && placeOpen(content, state, p, now)) ?? hauntsOf(content, open.creature)[0])
+    : open.kind === 'subdue' || open.kind === 'tame' ? (beastAt(content, state, open.creature, now) ?? hauntsOf(content, open.creature)[0])
       : open.kind === 'carry' ? nearestPlace(content, state, now, p => p.has?.shop)
         // a game: the nearest place that hosts it (his, 2026-09-23: 没有去碣石的按钮)
         : open.kind === 'board' ? (open.at ? placeOf(content, open.at) : nearestPlace(content, state, now, p => gamesToday(content, p, now).includes(open.task)))

@@ -121,7 +121,8 @@ test('(5) wm-zhoutian: its board pays 0 at 零层; the 三关 night lifts him to
 
 test('(6) an exit that tells its own gain pays it, no floor on top: 09-shenshi\'s 八层', () => {
   // Its 阶段任务 asks 七层圆满 first (gates.mjs): the bar full where he stands.
-  const { s, now } = at('00-zhuji/09-shenshi', { exit: 'winter', boards: 'skip', progress: 836 });
+  const { s: s1, now } = at('00-zhuji/09-shenshi', { exit: 'winter', boards: 'skip' });
+  const s = { ...s1, progress: threshold(content, s1) }; // full (836 on the ladder before 2026-11-12's 耗材 numbers)
   const marked = must(resolve, s, now, { exit: 'winter' });
   const control = must(resolve, s, now, { exit: 'winter' }, unmarked('09-shenshi'));
   assert.ok(marked.result.paid.progress > 0);

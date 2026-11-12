@@ -778,6 +778,8 @@ export function mijingBrief(content, state, now) {
       map: { layers: run.map.layers.map(row => row.map(mark)), boss: mark(run.map.boss), ways: run.map.ways },
       at: run.at, next: [...next], room: roomBrief(content, state, run), depth: run.done.length, of: run.map.layers.length + 1,
       walked: [...run.done, ...(run.at && !done.has(run.at) ? [run.at] : [])], yield: knobs(content).yield ?? 0.25,
+      // Paid at the door: nothing inside costs 体力, so an empty pool shuts nothing here (stage.mjs keeps the run first).
+      ...(paidAtDoor(run) ? { door_paid: run.door } : {}),
     };
   }
   const door = atDoor(content, state);

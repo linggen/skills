@@ -1699,18 +1699,29 @@ Measured: a typical player took in 58 灵石 a day and spent 7; `economy.earn` 0
   layer and the 灵石 flow, before and after, for the light, typical and heavy player. His own save may be moved straight
   to the new numbers (*我现在的进度无所谓, 可以直接修改到新模型下*).
 - **The first numbers** (set by the agent on his word, the same evening: *其他数字你帮我定*; each a knob in the master,
-  moved only with the pacing tool's table beside it):
-  - 秘境: `door` 25 体力 a run (about what eight rooms cost today); `cap_day` 2 runs stays; a run's 修为 doubles
-    (`pay.rate` 0.1 → 0.2: a day's two runs about a fifth of a layer). A 秘境令 still held is simply gone.
-  - The free half: the small games' share of a layer 60% → 35%, the errands' 15% → 10%, the day's 人间功课 10% → 5%
-    (a week's 10%, a month's 15%); the story's own steps as they are. Aim: a typical player's free play comes to about
-    half a layer in the days the layer is meant to take, and one who buys nothing needs no more than twice those days.
-  - 闭关: `per_stone` 3; the 阵 holds 4% of the layer at its first level and 1% more a level to 8% (five levels); a
-    level costs 40 minutes of 练气一层's income, doubling (100 · 200 · 400 · 800 灵石); `per_day` one full 阵; drawn in
-    2 h; `trickle` 0.25% an hour.
+  moved only with the pacing tool's table beside it). **Built 2026-11-12** (balance.json master `mijing` · `julin` ·
+  `lines.gu` · `xiuwei.units`; `node tools/balance.mjs --econ`, T₁ re-solved with the economy's players, `model.econ`):
+  - 秘境: `door` 25 体力 a run (about what eight rooms cost today) · `key.on` false (a 令 still held is gone, v19) ·
+    `cap_day` 2 runs stays · `pay.rate` 0.1 → **0.3** (moved from 0.2: on the re-solved layers 0.2 made a day's two runs
+    11–12% of a layer, not the fifth the design asks; 0.3 is 18–19% at 练气一层, under the fifth tests/mijing.test.mjs holds).
+  - The free half: the small games' share 60% → 35%, the errands' 15% → 10% (a reference; an errand pays its
+    `units.errand` 5), the day's 人间功课 10 → 5 units (a week's 10, a month's 15); the story's own steps as they are.
+    T₁ re-solved: 0.975 h (need(1) 590, 练气九层 970) — the solve wins the layer back from `games.share`, so the free share
+    is set by what the paid sinks add a day.
+  - 闭关: `per_stone` 3 (× the 0.25 灵石 a 修为 past the bar pays back: no loop) · the 阵 holds 4% of the layer at level 1, 1%
+    more a level to 8% (five levels) · a level 40 minutes of 练气一层's income, doubling (100 · 200 · 400 · 800 灵石) ·
+    `per_day` one full 阵 · drawn in 2 h · `trickle` 0.25% an hour (8 h = 2%, under the 3.6% night it replaces) — all as
+    written.
   - 饭桶: a 炉炭 costs 4 minutes of income (10 灵石 at 练气一层) and lifts a pot as 10 灵石 did; a pot takes as many
     as his 层 counts (练气九层 nine), as the 灵石 cap was; a glimpse of a thing from further on, 2 pots in 100.
-  - 灵石: by the end of 卷一 a typical player spends at least 70% of what he takes in.
+  - 灵石: by the end of 卷一 a typical player spends at least 70% of what he takes in — the model's 86%.
+  - **What the tool shows** (typical · frugal, days a 回): 古四 6.4 · 7.0, 古五 7.2 · 7.4, 古六 6.2 · 6.0, 古七 8.0 · 10.6,
+    古八 12.2 · 16.0 — every band holds, and he who buys nothing is never past 1.32× the typical days. The free share
+    (story · games · errands · 功课) is 60–65% of 古七 and 古八 and 70% of 卷一 — short of half: the typical player's 30
+    minutes are all play that pays, a run is 17 of them (he fits eight in 卷一), and what 灵石 buy is held by his purse
+    (`economy.earn` 0.5). The levers that would close it — `earn`, `xiuwei.board`, the model's `practice` — are Hanli's to
+    move. 古四 and 古五 read 88–97% free: the 秘境 opens inside 古五 (wm-hetan) and the 阵 is small there. Inside 古五's
+    sealed 秘境 no sink reaches him: the 石室's wait (wm-kaikai) is 3.2 days (tests/pacing.test.mjs allows 3.25).
 - **Order.** The mechanics behind knobs that leave today's numbers as they are; the pacing tool taught the new sinks
   and a player who buys nothing; then the numbers above, with its table; his save moved by a tested migration, Mac and
   phone together. 丹药 and 符 with the fair fights; the cards with § 斗法 v4.
@@ -1735,7 +1746,10 @@ Measured: a typical player took in 58 灵石 a day and spent 7; `economy.earn` 0
 - **闭关** (2026-09-24, rules/seclusion.mjs, page-only `seclude`): real hours
   (≤12) on ONE focus — 法术 (one ★ per 6 h, to ★3), 修为 (an hour's share of the layer, a 聚气丹
   ×1.5), 本命法宝 (from 结丹; one 重 per 8 h); 体力 comes back all through it, whole in an hour (above); the world holds still
-  (`in-seclusion`); 出关 · 领取 on opening.
+  (`in-seclusion`); 出关 · 领取 on opening. **Since 2026-11-12 (§ 耗材) 修为 is 聚灵 then 吐纳** (balance.json `julin`): going in
+  he lays 灵石 (none · half · full on the card; `seclude enter --stones`), drawn first, then `trickle` an hour; the 阵's
+  levels bought on the card (`seclude --action=array`). The night's rate (`play_pay.seclusion.night`) stands only with
+  `julin.on` false, and as the yardstick of a pill's 「抵N日」.
 
 ## 银月 in the game 【已建】
 
@@ -2140,6 +2154,9 @@ card `scripts/mijing.js` · numbers `balance.json master.mijing`.
   比武切磋 once built: `keyDrop(content, s, ctx, 'qiecuo')`), under the day's cap. The 秘境 has no cooldown of its own.
   **2026-11-12:** away from the stone door, held keys live in the bottom tray's 秘境 row (count and 去石门), also in
   全部 › 其他; they do not put a card on the stage. At the door, inside a run and after a run the card stands as before.
+  **Since 2026-11-12 (§ 耗材) the key is off** (`key.on` false): a run costs `door` 体力 once at the door (refused whole
+  when short) and no room inside costs any; `cap_day` runs a day; the road to the door opens on a run left; a save's
+  秘境令 went in v19. With `key.on` true and `door` 0 it is the run above.
 - **The map:** 3–4 rows of 6–8 rooms with branches, a 大妖 at the head; every room on a way to it (since 2026-11-10 every
   重 has four: 一重 · 二重 went 3 → 4 rows, 8 rooms, so a run of the shorter new games stays 15–25 minutes — 17.3 each). A room has something
   to play (`deals.weight` 80) or is a pick — 奇遇 (data decides, 银月 says it), 灵泉 (rest or temper a 功法), 宝箱 — by

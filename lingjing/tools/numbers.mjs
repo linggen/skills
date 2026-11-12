@@ -30,7 +30,7 @@ import { wallOf } from '../scripts/rules/rotation.mjs';
 import { huiOrder, huiLabel, huiOf, chapterHuis } from '../scripts/rules/hui.mjs';
 import { chances, fuelCap, realmOf } from '../scripts/rules/fantong.mjs';
 import { odds } from '../scripts/rules/fantong-roll.mjs';
-import { BALANCE_FILE, balanceText, bookWalk, grindLayers, play, sealedBeat, table as paceTable } from './balance.mjs';
+import { BALANCE_FILE, balanceText, bookWalk, grindLayers, play, playersOf, sealedBeat, table as paceTable } from './balance.mjs';
 import { derive, diffOf, inputsOf, lineWalk } from './master.mjs';
 import { boardLine, lineGrant, linePay, linesOf, lineWorld } from '../scripts/rules/lines.mjs';
 import { lineStart, lockedOf } from '../scripts/state.mjs';
@@ -135,7 +135,8 @@ function nightOf(content, s) {
 /* The model's days on each layer, per player, and the typical player's 灵石 a minute there (the day's end layer). */
 function modelLayers(content) {
   const out = {};
-  for (const [who, p] of Object.entries(content.balance.model.players)) {
+  // The players the pacing tool plays (balance.mjs playersOf: the economy's when model.econ.on).
+  for (const [who, p] of Object.entries(playersOf(content))) {
     let prev = 0;
     for (const [d, D] of play(content, p).ledger.entries()) {
       if (!D.at) continue;
@@ -418,7 +419,7 @@ function errands(ctx) {
 /* The typical player's 灵石 earned by the end of each 回 (the model plays no 杂役 and no 开府: pessimistic). */
 function earnedBy(content) {
   const out = {};
-  for (const D of play(content, content.balance.model.players.typical).ledger) if (D.hui) out[D.hui] = D.earned;
+  for (const D of play(content, playersOf(content).typical).ledger) if (D.hui) out[D.hui] = D.earned;
   let last = 0;
   for (const h of huisOf(content)) { out[h] = Math.max(out[h] ?? 0, last); last = out[h]; }
   return out;

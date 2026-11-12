@@ -136,12 +136,12 @@ test('修屋顶 is handed in for 灵石 and, since 2026-10-27, its minutes\' 修
 test('real life: the workout is the day\'s 功课 (修为; a few 灵石 at 零层); the day\'s pick and 开府 pay 灵石', () => {
   const s = { ...newState(content, 'zh', NOW), chapter: '00-waimen', scene: null, place: 'waimen', ended: ['00-prologue'], tier: 'qi', step: 1, progress: 0, traits: ROOTS };
   const payOf = q => paysOf(content, s, NOW, choreGrant(content, q, s));
-  // 2026-11-02 (Hanli 「不要按照百分比给」): a chore pays its period's 体力-units × R — a day 10, a week 20, a month 30 since
-  // 2026-11-10's doubling of the app-linked chores (练气一层 20 · 40 · 60; 10 · 20 · 30 before).
+  // 2026-11-02 (Hanli 「不要按照百分比给」): a chore pays its period's 体力-units × R — a day 5, a week 10, a month 15 since
+  // 2026-11-12's 耗材 numbers (the free half: 练气一层 10 · 20 · 30; 20 · 40 · 60 from 2026-11-10's doubling, 10 · 20 · 30 before).
   const pp = content.balance.play_pay, X = pp.xiuwei, at = units => Math.round(units * X.rate.base);
   assert.deepEqual(payOf({ id: 'health-workout', period: 'day', reward: 20 }), { progress: at(pp.chore.day), wealth: 0 });
   assert.deepEqual(payOf({ id: 'shifu-scan', period: 'week', pool: true, reward: 30 }), { progress: at(pp.chore.week), wealth: tableStones(content, s, 'life') });
-  assert.deepEqual([at(pp.chore.day), at(pp.chore.week), at(pp.chore.month)], [20, 40, 60], 'a month\'s: rarer, so more');
+  assert.deepEqual([at(pp.chore.day), at(pp.chore.week), at(pp.chore.month)], [10, 20, 30], 'a month\'s: rarer, so more');
   assert.deepEqual(payOf({ id: 'cfo-import', period: 'month', pool: true, reward: 30 }), { progress: at(pp.chore.month), wealth: tableStones(content, s, 'life') });
   assert.equal(chorePlay(content, { ...s, step: 3 }, 'day'), Math.round(pp.chore.day * X.rate.base * X.rate.growth ** 2), '三层: R(3) — the pay grows 5% a level, never with the 层\'s need');
   assert.deepEqual(choreGrant(content, { id: 'health-workout', period: 'day', reward: 20 }).progress, 0, 'no save, no layer: nothing read off it');

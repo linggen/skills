@@ -22,7 +22,7 @@ const R = content.rewards.seclusion;
 const T0 = new Date('2026-10-05T22:00:00');
 const at = h => new Date(T0.getTime() + h * 3600_000);
 const ctx = (now = T0) => ({ now, quests: [] });
-const seclude = (s, now, args) => VERBS.seclude(s, content, ctx(now), args);
+const seclude = (s, now, args, c = content) => VERBS.seclude(s, c, ctx(now), args);
 
 /* A 结丹 player with spells in hand, 体力 low, a 聚气丹 in the bag. */
 function player(extra = {}) {
@@ -33,11 +33,14 @@ function player(extra = {}) {
     stamina: 5, stamina_at: T0.toISOString(), ...extra,
   };
 }
-const inAndOut = (s, hours, args) => {
-  const inn = seclude(s, T0, { action: 'enter', ...args });
+const inAndOut = (s, hours, args, c = content) => {
+  const inn = seclude(s, T0, { action: 'enter', ...args }, c);
   assert.equal(inn.result.ok, true, JSON.stringify(inn.result));
-  return seclude(inn.state, at(hours), { action: 'leave' });
+  return seclude(inn.state, at(hours), { action: 'leave' }, c);
 };
+/* 闭关 without the 聚灵阵 (balance.json julin `on` false, its neutral value): the night's rate as before 2026-11-12 — with the
+   阵 on (the world since the 耗材 numbers) 修为 is 聚灵 then 吐纳, tests/economy-knobs.test.mjs. */
+const NIGHT = { ...content, balance: { ...content.balance, julin: { ...content.balance.julin, on: false } } };
 
 test('the numbers: a day away is capped, a short sit grows nothing, and sitting pays less than playing', () => {
   assert.deepEqual([R.cap_hours, R.min_hours, R.rest_hours, R.star_hours, R.star_top, R.treasure_hours], [12, 1, 8, 6, 3, 8]);
@@ -87,15 +90,15 @@ test('under an hour nothing grows but 体力: it comes back all through the sitt
 });
 
 test('修为: per hour counted, through the tables like any grant; at the realm\'s peak the bar stops full and the rest is 灵石 (2026-11-12)', () => {
-  const r = inAndOut(player(), 10, { focus: 'progress' });
-  const p0 = player(), hour = secludeHour(content, p0);
+  const r = inAndOut(player(), 10, { focus: 'progress' }, NIGHT);
+  const p0 = player(), hour = secludeHour(NIGHT, p0);
   assert.equal(r.result.emerged.progress.paid, Math.floor(10 * hour), 'ten hours at an hour\'s share of the layer');
   assert.equal(r.state.progress, p0.progress + Math.floor(10 * hour));
   // At the peak of 结丹 the bar fills to its need; the rest is 灵石, and 出关's card says it (`converted`).
   const top = content.ladder.tiers.find(t => t.id === 'core').thresholds;
   const start = player({ step: top.length - 1, progress: top.at(-1) - 10 });
-  const peak = inAndOut(start, 12, { focus: 'progress' });
-  const got = Math.floor(12 * secludeHour(content, player({ step: top.length - 1 })));
+  const peak = inAndOut(start, 12, { focus: 'progress' }, NIGHT);
+  const got = Math.floor(12 * secludeHour(NIGHT, player({ step: top.length - 1 })));
   assert.equal(peak.result.emerged.progress.paid, 10, 'what fit');
   assert.deepEqual([peak.result.emerged.progress.converted.progress, peak.result.emerged.progress.converted.wealth > 0], [got - 10, true], 'the rest as 灵石');
   assert.equal(peak.state.progress, top.at(-1), 'full, never past');

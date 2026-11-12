@@ -77,8 +77,10 @@ function stepOf(content, state, need, now, w, lang) {
     return { text: at ? w.board(bareName(at.name), game) : cap(w.play(game), lang), at, task: need.task, game };
   }
   if (need.kind === 'subdue' || need.kind === 'tame') {
-    const haunts = hauntsOf(content, need.creature);
-    const p = haunts.find(x => placeOpen(content, state, x, now)) ?? haunts[0];
+    // An open haunt on his chapter's map first: a road opened past it (the way to the 秘境's door, world.mjs leaveOf) is a
+    // way through, not where the errand sends him.
+    const haunts = hauntsOf(content, need.creature), onMap = new Set(content.chapters?.[state.chapter]?.map?.places ?? []);
+    const p = haunts.find(x => onMap.has(x.id) && placeOpen(content, state, x, now)) ?? haunts.find(x => placeOpen(content, state, x, now)) ?? haunts[0];
     const at = placeRef(content, state, p), c = pick(creatureOf(content, need.creature)?.name, lang) ?? need.creature;
     return { text: w[need.kind](bareName(at?.name), c), at };
   }
