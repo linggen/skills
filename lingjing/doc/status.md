@@ -91,14 +91,14 @@ Checked 11-10, already done before (were on old lists): the kept card's 丹囊/�
   二 · 三层 7.0 · 7.46 for 6.8 · 7.1).
 - Gear by class: `pin` (品; a pendant its `wards`), master.fight.gear makes 攻 · 防 · 抗 (same points, same prices). Things count at
   the wearer's level (`power.things` 'wearer'); 'own' (at the thing's level) takes 冰夷双龙 to 22% and the 冀 pools, 当康, 苍鹰 down
-  (every 卷一 arm and heal pill is 练气一–七层) — Hanli's call, with a 筑基 arm and pill in 卷一 first.
+  (every 卷一 arm and heal pill is 练气一–七层). **Decided 2026-11-13 (for Hanli): 'wearer' stays** — re-measured, 冰夷双龙 39.3% (band 35–70%) under 'wearer', 19.7% under 'own'; 'own' waits for a 筑基 arm and pill in 卷一 (content, not a number).
 - Skill games: 妖兽出没's wave tier is his place in the band (was 0); 切磋's climb on the level (same numbers); 格斗, the TD kits and
   兽潮's internals and their climb by nights as they were.
 - Bot rates in band (tests/fight-band · fight-band-pools · fight-length, 81/81); 练气四–七层 lose the old +½ 气血 a 层 (当康 53 → 44%,
   猲狙 57 → 48%, 灵草谷犰狳 79 → 71%). Pace per 回 unchanged.
 
 **Batch 4 holds:** the 秘境 run's 修为; 筑基+ pacing with 卷二 and 卷二's band; the 今 line's own mix; 饭桶 `lingshi.per_layer` and the
-arcade's stage wallet; `power.things`; 格斗 fighters' levels on their boards (the creatures rows carry them).
+arcade's stage wallet; `power.things` ('wearer' kept 11-13); 格斗 fighters' levels on their boards (the creatures rows carry them).
 
 ## 师父传印 (2026-11-11 — branch wt/chuanyin, phone wt/seals)
 
