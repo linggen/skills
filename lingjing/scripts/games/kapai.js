@@ -27,7 +27,7 @@
 // A story mount settles { …, r } — what the rules answered; the story's own pay and 所得 follow it.
 import { act, begin, foeStep, foeTurn, idle, idleWhy, playerOffers as offers, replayInto, shown, simCopy, tokenOf, view } from '../battle.js';
 import { newCoach, note as coachNote, summary as coachSummary } from '../duelcoach.js';
-import { lendOf } from '../rules/cards.mjs';
+import { lendOf } from '../rules/lend.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, cardFaceHtml, dropOf, endOf, pickOf } from '../battle-card.js';
 import { banner, ghostsOf, hurry, playLog, since } from '../battle-anim.js';
 import { wireDrag } from '../battle-drag.js';

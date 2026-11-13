@@ -13,6 +13,7 @@ import { levelOf } from './playpay.mjs';
 import { atLevel, clampTo, powerKnobs, powerOf } from './power.mjs';
 import { chapterLabel, huiLabel, huiNow, sceneHui, zhNumber } from './hui.mjs';
 import { PINS, pinRow } from './pin.mjs';
+import { lendOf } from './lend.mjs';
 
 /* ── 斗法 v3: the ten cards a player takes in ──
    Until the skill tree picks a deck, the deck is WHO THEY ARE: the cards of
@@ -291,14 +292,7 @@ export function recordDuelOutcome(state, foe, outcome, lesson) {
   }
 }
 
-export function lendOf(content, lost, lesson) {
-  const k = content?.balance?.duel_lend ?? {}, n = Math.min(k.cap ?? 3, Math.max(0, Math.floor(lost || 0)));
-  if (!n || !k.order?.length) return null;
-  const cards = [k.by_lesson?.[lesson] ?? k.order[0]];
-  if (n >= 2) cards.push(k.order.find(id => !cards.includes(id)));
-  if (n >= 3) cards.push(k.ward);
-  return { cards: cards.filter(Boolean) };
-}
+export { lendOf };
 
 export function fightSetup(content, state, creature, now, game = null, deal = null, read = 0) {
   const open = openFight(state, game);
