@@ -226,6 +226,8 @@ body[data-newer] .beta-tag { visibility: visible; }
    the cooldowns last and muted. */
 #tray { display: flex; flex-wrap: nowrap; gap: 8px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; padding-bottom: 2px; }
 #tray .card { margin: 0; padding: 8px 10px; flex: 0 0 auto; width: 220px; }
+/* A note in the row (the away 闭关's 「体力 +90」, a refused tap) is a card of the row: it keeps a readable width and the row scrolls — flex-shrink alone squeezed it to one character wide (seen at 840 px, 2026-11-12). */
+#tray .donote { flex: 0 0 auto; box-sizing: border-box; width: 220px; margin: 0; align-self: flex-start; }
 #tray .card.task.plot { border-color: var(--th-main); }
 #tray .card.task.timed { border-color: var(--jade); }
 #tray .card.task.timed .act { border-color: var(--jade); background: var(--jade-soft); color: var(--jade); }
@@ -1019,6 +1021,7 @@ button.gcard { cursor: pointer; font: inherit; }
   .footchips { overflow-x: auto; scrollbar-width: none; }
   .tray { padding: 8px 12px 10px; }
   #tray .card { width: 190px; }
+  #tray .donote { width: 190px; }
   body.fighting .slots { inset: 0; }
 }
 /* 接下: the row is sealed 已接下, holds, then fades out of the card. */
