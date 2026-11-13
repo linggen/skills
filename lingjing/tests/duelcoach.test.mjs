@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { begin, act } from '../scripts/battle.js';
-import { unseen, honestBest, newCoach, note, summary } from '../scripts/duelcoach.js';
+import { unseen, honestBest, newCoach, note, summary, killNow } from '../scripts/duelcoach.js';
 
 const cards = {
   hit: { id: 'hit', name: 'Hit', kind: 'spell', cost: 2, effect: { damage: 5 } },
@@ -46,7 +46,7 @@ test('note records kill and the two widest gaps', () => {
 });
 
 test('note identifies unspent and wasted moves', () => {
-  const st = opened(); st.you.hand = ['hit', 'heal']; st.foe.hp = 8;
+  const st = opened(); st.you.hand = ['hit', 'heal']; st.foe.hp = 20;
   st.you.hp = 3; st.you.board = [minion(1, 3, 5)]; st.foe.board = [minion(2, 10, 10)];
   const coach = newCoach();
   note(coach, st, { kind: 'end' }, { samples: 1 });
@@ -62,6 +62,15 @@ test('note identifies a face attack instead of a necessary trade', () => {
   st.you.board = [minion(1, 3, 5)]; st.foe.board = [minion(2, 4, 3)];
   const coach = newCoach(); note(coach, st, { kind: 'attack', index: 0 }, { samples: 1 });
   assert.equal(coach.gaps[0]?.lesson, 'trade');
+});
+
+test('win shares and multi-move lethal are measured on the true position', () => {
+  const st = opened(); st.you.hand = ['hit']; st.you.mana = 2; st.foe.hp = 6;
+  st.you.board = [minion(1, 1, 2)];
+  const line = killNow(st); assert.ok(line && line.length >= 2);
+  assert.ok(honestBest(st).all.every(x => x.wins >= 0 && x.wins <= 1));
+  const coach = newCoach(); note(coach, st, { kind: 'end' }, { samples: 1 });
+  assert.equal(coach.gaps[0]?.lesson, 'kill'); assert.equal(typeof coach.gaps[0].wins_gap, 'number');
 });
 
 test('summary reports close losses and remaining pills', () => {

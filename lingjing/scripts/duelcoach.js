@@ -12,18 +12,19 @@ export function unseen(st, seed) {
   return copy;
 }
 
-export function honestBest(st, { samples = 4, seed = 1 } = {}) {
+export function honestBest(st, { samples = 8, seed = 1 } = {}) {
   if (!Number.isInteger(samples) || samples < 1) throw new RangeError('samples must be a positive integer');
   if (st.outcome !== 'open' || st.whose !== 'you') return { action: null, value: null, all: [] };
   const actions = [...offers(st).filter(o => o.ok && o.action.kind !== 'end').map(o => o.action), { kind: 'end' }];
   const all = actions.map(action => {
-    let total = 0;
+    let total = 0, wins = 0;
     for (let i = 0; i < samples; i += 1) {
       const copy = unseen(st, `${seed}|${i}`);
       act(copy, action, 'you');
       total += playOut(copy, careful);
+      if (copy.outcome === 'won') wins += 1;
     }
-    return { action, value: total / samples };
+    return { action, value: total / samples, wins: wins / samples };
   });
   const best = all.reduce((a, b) => b.value > a.value ? b : a);
   return { action: best.action, value: best.value, all };
@@ -55,9 +56,29 @@ function describe(st, a) {
   else if (!a.target && damage(st, a)) out.target = 'face';
   return out;
 }
+// Search only known, draw-free lines within this turn, with a shared work cap.
+function winningLines(st, forbidden = null) {
+  let left = 2000;
+  function visit(pos, path) {
+    if (pos.outcome === 'won') return path;
+    if (pos.outcome !== 'open' || pos.whose !== 'you' || --left < 0) return null;
+    for (const o of offers(pos)) {
+      const a = o.action;
+      if (!o.ok || a.kind === 'end' || (!path.length && forbidden && key(a) === key(forbidden))) continue;
+      const copy = result(pos, a);
+      if (!copy || copy.log.some(e => e.act === 'drew' || e.act === 'fatigue')) continue;
+      const found = visit(copy, [...path, a]);
+      if (found) return found;
+    }
+    return null;
+  }
+  return visit(st, []);
+}
+export const killNow = st => winningLines(st);
 function lesson(st, did, better) {
   const d = result(st, did), b = result(st, better);
-  if (b?.outcome === 'won' && d?.outcome !== 'won') return 'kill';
+  const winning = killNow(st);
+  if (winning && winningLines(st, did) && !(d && (d.outcome === 'won' || (d.whose === 'you' && killNow(d))))) return 'kill';
   if (did.kind === 'end' && better.kind !== 'end') return 'unspent';
   if (did.kind === 'play' && d && snapshot(st) === snapshot(d, true)) return 'wasted';
   if (!did.target && damage(st, did) && bodyTarget(better)) return 'trade';
@@ -77,8 +98,12 @@ export function note(coach, st, action, opts) {
   if (!chosen) return;
   const gap = best.value - chosen.value;
   if (gap <= 0) return;
-  coach.gaps.push({ turn: st.turn, lesson: lesson(st, action, best.action), gap, did: describe(st, action), better: describe(st, best.action) });
-  coach.gaps.sort((a, b) => b.gap - a.gap);
+  const name = lesson(st, action, best.action);
+  const winsGap = best.all.find(x => key(x.action) === key(best.action)).wins - chosen.wins;
+  const certain = x => ['kill', 'unspent', 'wasted'].includes(x.lesson);
+  if (!certain({ lesson: name }) && winsGap < 0.34) return;
+  coach.gaps.push({ turn: st.turn, lesson: name, gap, wins_gap: winsGap, did: describe(st, action), better: describe(st, best.action) });
+  coach.gaps.sort((a, b) => Number(certain(b)) - Number(certain(a)) || b.wins_gap - a.wins_gap || b.gap - a.gap);
   coach.gaps.length = Math.min(2, coach.gaps.length);
 }
 export function summary(coach, st) {
