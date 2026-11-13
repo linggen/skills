@@ -2,7 +2,7 @@
 // Fast on purpose: no long run lives here (the long runs are the tool's own).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cardPoints, carefulFor, effectValue, mirrorRate, paperTable, parTen, playSheets, ranks, spearman, swapIns } from '../tools/duel-audit.mjs';
+import { budgetRow, cardPoints, carefulFor, effectValue, mirrorRate, paperTable, parTen, playSheets, ranks, scopeOf, sheetSetup, spearman, swapIns } from '../tools/duel-audit.mjs';
 import { bareState, content, setupOf, FIGHTS, keyOf } from '../tools/story-fights.mjs';
 
 const card = id => content.cards.cards.find(c => c.id === id);
@@ -68,4 +68,38 @@ test('--bare-gear: nothing worn, no talisman in the bag, no pill picked; default
   assert.deepEqual(setupOf(g, { party: [], bare: true }).you.extra, []);
   const st = bareState({ wear: { robe: 'grey-robe' }, bag: { 'grey-robe': 1, 'tama-fu': 1, stone: 3 }, pill_pick: ['mend-pill'] }, ['tama-fu']);
   assert.deepEqual(st, { wear: {}, bag: { stone: 3 } });
+});
+
+test('scope: the 卷一 ordinary deck cards, and why a card is left out', () => {
+  const why = id => scopeOf(card(id));
+  assert.equal(why('huodan').in, true);
+  assert.equal(why('zheng').in, true); // a 卷一 legend, tamed
+  assert.equal(why('huochai').why, 'no source'); // a gear's card
+  assert.equal(why('yinyue').why, 'owner');
+  assert.equal(why('wulei').why, 'foe art');
+  assert.equal(why('tuou').why, 'foe art');
+  assert.equal(why('bashe').why, 'later 卷');
+});
+
+test('sheets: a level is 20 + L 气血 and the realm of its level; fatigue off is the setup\'s own flag, on both seats', () => {
+  const ten = parTen(paperTable());
+  const s = sheetSetup(ten, ten, 'x', { levelYou: 9, levelFoe: 10, fatigue: false });
+  assert.deepEqual([s.you.base, s.you.tier, s.foe.hp_fixed, s.foe.tier], [29, 'qi', 30, 'foundation']);
+  assert.equal(s.you.fatigue, false);
+  assert.equal(s.foe.fatigue, false);
+  assert.equal(sheetSetup(ten, ten, 'x').you.fatigue, undefined);
+});
+
+test('the lookahead line plays either seat to an end; a level up is a seat with more 气血', () => {
+  const ten = parTen(paperTable());
+  assert.notEqual(playSheets(ten, ten, 'mirror|3', { line: 'lookahead' }).outcome, 'open');
+  const m = mirrorRate(ten, ten, 3, { level: 5, levelB: 7 });
+  assert.equal(m.games, 6);
+});
+
+test('deck cost by level: the beast ten is counted against the budget', () => {
+  const f = FIGHTS.find(x => keyOf(x) === 'gui@sishui'), r = budgetRow(f);
+  assert.equal(r.size, 10);
+  assert.equal(r.diff, r.its - r.his);
+  assert.equal(r.budget, Math.round(13 + 1.5 * r.foeLevel));
 });
