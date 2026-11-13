@@ -10,7 +10,7 @@ const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
 const cost = d => d.reduce((n, id) => n + (catalog[id]?.cost ?? 1), 0);
 const names = { roaming: '路上', story: '故事', room: '秘境房间', xiong: '凶兽', boss: '大妖' };
 const targets = { roaming: 65, story: 50, room: 55, xiong: 45, boss: 40 };
-function encounters() {
+export function encounters() {
   const road = FIGHTS.filter(f => !f.pool?.startsWith('mijing-') && !f.teach && !f.trial && (standingOf(f) || f.scene)).map(f => ({ key: keyOf(f), name: f.name, group: f.pool ? 'roaming' : 'story', state: roadState(f), setup: setupOf(f, { party: [] }) }));
   const dungeon = [];
   for (const tier of content.mijing.tiers.filter(t => t.source?.hui)) {
@@ -22,7 +22,7 @@ function encounters() {
   }
   return [...road, ...dungeon].filter(e => e.setup.even);
 }
-function simulate(setup, line, seeds, lent = 0) {
+export function simulate(setup, line, seeds, lent = 0) {
   let wins = 0, losses = 0, near = 0, plies = 0, unfinished = 0;
   for (let k = 0; k < seeds; k++) {
     const cfg = structuredClone(setup); cfg.you.extra.push(...(lendOf(content, lent)?.cards ?? []));
