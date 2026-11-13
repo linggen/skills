@@ -19,7 +19,7 @@ test('the lint is clean: every 出处 names a thing that exists, every owner a m
 });
 
 test('every card that can be held says where it comes from, 书 or 游戏', () => {
-  const none = cards.filter(c => !c._token && !c.gear && !(c.from ?? []).length).map(c => c.id); // a sword's strike is the sword's (cards.mjs strikeOf)
+  const none = cards.filter(c => !c._token && !c.gear && !c.lent && !(c.from ?? []).length).map(c => c.id); // a sword's strike is the sword's (cards.mjs strikeOf)
   assert.deepEqual(none, []);
   for (const c of cards) for (const f of c.from ?? []) assert.ok(['书', '游戏'].includes(f.src), `${c.id}: ${f.kind} has no 书/游戏`);
 });

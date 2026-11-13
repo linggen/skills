@@ -46,10 +46,6 @@
   },
   "_from": "出处 (cards.md, Hanli 2026-10-16: 每张牌都在剧情里收集或者购买)：`from` 是一串来源，每个 {kind, src: 书|游戏, line}。story (scene：离开那一场时得) · beat (task：小游戏赢了得) · beast (creature：打赢它得 —— 它拿这张牌打过你) · shop (item：买那件东西得) · tame (creature：收服) · summon (只由一件东西召来) · tale (传闻了结) · member (小队里那个人的牌，由他出) · foe (只是对手的牌)。`owner`：谁出这张牌 (battle.js § sideOf)；没有 owner 的是小满的。",
   "cards": [
-    {"id":"yy-pounce","kind":"spell","name":{"zh":"月影扑","en":"Moonshadow Pounce"},"cost":1,"element":"metal","lent":true,"effect":{"damage":3},"art":"art/cards/yinyue.webp"},
-    {"id":"yy-fire","kind":"spell","name":{"zh":"狐火","en":"Foxfire"},"cost":2,"element":"metal","lent":true,"effect":{"sweep":1},"art":"art/cards/yinyue.webp"},
-    {"id":"yy-howl","kind":"spell","name":{"zh":"啸月","en":"Moon Howl"},"cost":1,"element":"metal","lent":true,"effect":{"turnRally":1},"art":"art/cards/yinyue.webp"},
-    {"id":"yy-fur","kind":"spell","name":{"zh":"狐毛","en":"Fox Fur"},"cost":0,"element":"metal","lent":true,"effect":{"furWard":1},"art":"art/cards/yinyue.webp"},
     {
       "id": "xiaoyao",
       "kind": "minion",
@@ -2851,7 +2847,11 @@
           "src": "游戏"
         }
       ]
-    }
+    },
+    {"id":"yy-pounce","kind":"spell","name":{"zh":"月影扑","en":"Moonshadow Pounce"},"cost":1,"element":"metal","lent":true,"effect":{"damage":3},"art":"art/cards/yinyue.webp"},
+    {"id":"yy-fire","kind":"spell","name":{"zh":"狐火","en":"Foxfire"},"cost":2,"element":"metal","lent":true,"effect":{"sweep":1},"art":"art/cards/yinyue.webp"},
+    {"id":"yy-howl","kind":"spell","name":{"zh":"啸月","en":"Moon Howl"},"cost":1,"element":"metal","lent":true,"effect":{"turnRally":1},"art":"art/cards/yinyue.webp"},
+    {"id":"yy-fur","kind":"spell","name":{"zh":"狐毛","en":"Fox Fur"},"cost":0,"element":"metal","lent":true,"effect":{"furWard":1},"art":"art/cards/yinyue.webp"}
   ],
   "_curve": "单体伤害约 1.2 点/费，群伤约 0.7 点/费每个 —— 因为克制会翻倍，曲线要按翻倍之后算 (2026-09-18 闸: 五雷法 5费9点 打在克的行上是 18 点，一张牌打掉练气英雄九成气血，影响力 +33.8%)。",
   "_gear": "装备入局 (rules.mjs § 装备入局，2026-09-24 his: 让装备算数)。穿戴的东西在门口折成这几个数，锁进出战配置：法器的器攻 × weapon_power（四舍五入）加到主灵根一击（竹剑 2 → +1，铁剑 3 → +2）；本命法宝是炼它的那把剑的数，每 treasure_levels 重再 +1（温养、强化长的就是这个）；法器与本命法宝取大的一样，一只手；法衣的防 × armor_per_def 是开局的护体，先挨打，不算伤势；佩的抗 × ward_per_point 是那一行打在你身上每下少几点（至少 1）。剑借的行、本命法宝的行，算你的灵根：那一行的功法能进牌组。数值由 tools/battle-sim.mjs 的闸量过：每一样不超过 15 个百分点。",

@@ -176,7 +176,7 @@ export function pricesOf(raw, { items, fantong, cards, effects, ladder }) {
 export function mijingOf(K) {
   return {
     cap_day: K.key.cap_day, drops: { ...K.key.drops }, door: K.door ?? 0, key_on: K.key.on !== false, pay: { rate: K.pay.rate, short: K.pay.short }, keep_min: K.pay.keep_min,
-    hurt: { ...K.hurt }, yield: K.yield, foe_step: K.foe_step, boss_more: K.boss_more, td_step: K.td_step,
+    hurt: { ...K.hurt }, yield: K.yield, foe_step: K.foe_step, boss_more: K.boss_more, rematch: K.rematch, td_step: K.td_step,
     wealth: { room: [...K.wealth.room], chest: [...K.wealth.chest], clear: K.wealth.clear, step: K.wealth.step },
     chest_rolls: K.chest_rolls, offer: K.offer, clear: structuredClone(K.clear),
   };
@@ -279,6 +279,7 @@ export function derive(raw0, { ladder, items, fantong = null, cards = null }) {
   raw.convert = { share: E.convert_share };
   raw.kailu = { ...raw.kailu, tier: { ...E.kailu_tier }, ...(E.kailu_floor ? { grades: Object.fromEntries(Object.entries(raw.kailu.grades).map(([g, v]) => { const { floor, ...rest } = v; return [g, { ...rest, floor_ls: E.kailu_floor[g] ?? 0 }]; })) } : {}) };
   raw.prices = pricesOf(raw, { items, fantong, cards, effects: raw.pills.effects, ladder });
+  if (M.duel_lend) raw.duel_lend = structuredClone(M.duel_lend);
   if (M.mijing) raw.mijing = mijingOf(M.mijing);
   if (M.julin) raw.julin = julinOf(M.julin, raw);
   // 斗法 on the level (batch 3, master.fight): P(L)'s knobs for the rules (rules/power.mjs) and fight_length's cap on P.

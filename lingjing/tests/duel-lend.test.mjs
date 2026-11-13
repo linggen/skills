@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
-import { fightSetup, lendOf, recordDuelOutcome, kaceBrief, gainCard, cardsFrom, deckFor } from '../scripts/rules/cards.mjs';
+import { fightSetup, lendOf, recordDuelOutcome, kaceBrief, gainCard, cardsFrom, deckFor, deck } from '../scripts/rules/cards.mjs';
 import { begin, act, endTurn } from '../scripts/battle.js';
 import { duelBrief } from '../scripts/rules/look.mjs';
 import { parseArgs } from '../scripts/rules/files.mjs';
@@ -64,6 +64,9 @@ test('lent cards are not collected, granted or built into a deck', () => {
   const s = { ...state, cards: [...(state.cards ?? []), ...ids] };
   const book = kaceBrief(content, s); assert.ok(book.cards.every(c => !ids.includes(c.id)));
   assert.ok(deckFor(content, s).every(id => !ids.includes(id)));
-  for (const id of ids) assert.equal(gainCard(content, s, id), null);
+  for (const id of ids) {
+    assert.equal(gainCard(content, s, id), null);
+    assert.equal(deck({ ...s, tier: 'core' }, content, { now }, { action: 'toggle', id }).result.refused, 'not-held');
+  }
   assert.ok(cardsFrom(content, 'beast', beast.id).every(c => !c.lent));
 });
