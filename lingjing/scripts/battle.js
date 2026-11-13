@@ -129,6 +129,7 @@ export const KEYWORDS = ['taunt', 'battlecry']; // 护主 · 入阵 — the only
    may point at. Growing this list is a considered act: every verb multiplies
    the interactions the gate has to hold. */
 export const EFFECTS = {
+  poison: { at: 'minion' }, // 毒: one opposing body
   damage: { at: 'enemy' }, //   打 N 点，可指向随从或对方英雄
   sweep: { at: 'none' }, //     群伤：对方阵前每一个
   heal: { at: 'none' }, //      回自己 N 点气血
@@ -344,6 +345,11 @@ function startTurn(st) {
   side.drain = 0;
   side.powerUsed = false;
   side.pillUsed = false;
+  for (const m of [...side.board]) {
+    if (!m.poison) continue;
+    st.log.push({ act: 'poison', who: side.who, id: m.id, uid: m.uid, n: m.poison });
+    hurtMinion(st, side, m, m.poison, { from: 'poison' });
+  }
   for (const m of side.board) m.sick = false;
   for (const m of side.board) m.struck = false;
   // 锁: a body chained on the other side's turn sits out this one, exactly this one.
@@ -628,6 +634,10 @@ function resolve(st, side, effect, target, { arrival = false } = {}) {
       hurt(st, them, landed(st, side.who, effect.damage, effect.element), { from: 'spell', element: effect.element ?? null });
     }
   }
+  if (effect.poison != null && target?.kind === 'minion') {
+    const m = them.board[target.index];
+    if (m) m.poison = Math.max(m.poison ?? 0, effect.poison);
+  }
   if (effect.sweep != null) {
     for (const m of [...them.board]) hurtMinion(st, them, m, hit(effect.sweep, effect.element, m.element), { from: 'sweep', element: effect.element ?? null });
   }
@@ -652,8 +662,16 @@ function resolve(st, side, effect, target, { arrival = false } = {}) {
     const n = side.healMax != null ? Math.min(scaled(side, effect.heal), side.healMax) : scaled(side, effect.heal);
     if (side.healsLeft != null) side.healsLeft -= 1;
     // The most wounded of the row (阿禾 heals whoever needs it); the lead on a tie.
-    const a = woundedAlly(side);
-    if (a) {
+    const m = target?.kind === 'minion' && target.side === 'mine' ? side.board[target.index] : null;
+    const a = m ? null : woundedAlly(side);
+    if (m) {
+      m.hp = Math.min(m.hpMax, m.hp + n);
+      st.log.push({ act: 'heal', who: side.who, id: m.id, uid: m.uid, amount: n, hp: m.hp });
+      if (m.poison) {
+        m.poison = 0;
+        st.log.push({ act: 'cleanse', who: side.who, id: m.id, uid: m.uid });
+      }
+    } else if (a) {
       a.hp = Math.min(a.hpMax, a.hp + n);
       st.log.push({ act: 'heal', who: side.who, member: a.id, amount: n, hp: a.hp });
     } else {
@@ -762,6 +780,8 @@ export function legal(st, action, who = 'you') {
     if (side.mana < costOf(side, c)) return 'no-mana';
     if (c.kind === 'minion' && side.board.length >= st.mode.board) return 'board-full';
     const at = EFFECTS[Object.keys(EFFECTS).find(k => c.effect?.[k] != null)]?.at;
+    if (c.effect?.heal != null && action.target?.side === 'mine' && (action.target.kind !== 'minion' || !side.board[action.target.index])) return 'no-target';
+    if (c.effect?.poison != null && (!action.target || action.target.kind !== 'minion' || action.target.side === 'mine' || !them.board[action.target.index])) return 'no-target';
     if (at === 'enemy' && action.target?.kind === 'minion' && !them.board[action.target.index]) return 'no-target';
     if (at === 'friendly' && !side.board.length) return 'no-friendly';
     if (at === 'minion') {
@@ -993,6 +1013,7 @@ export function foeStep(st) {
    empty pile (which would send it into the mist). */
 const VERB_USE = {
   damage: () => true,
+  poison: (st, side) => other(st, side).board.length > 0,
   drain: () => true,
   summon: (st, side) => side.board.length < st.mode.board,
   rally: (st, side) => side.board.length > 0,
@@ -1007,7 +1028,7 @@ const VERB_USE = {
   mana: (st, side) => side.mana < side.manaCap,
 };
 /* Why a spell would land on nothing now, by its first idle verb — null when it does something (worthPlaying). */
-const IDLE_WHY = { sweep: 'rank-empty', heal: 'hp-full', draw: 'pile-empty', mana: 'mana-full', chain: 'none-fits', swallow: 'none-fits', summon: 'board-full', rally: 'no-friendly', buff: 'no-friendly' };
+const IDLE_WHY = { poison: 'none-fits', sweep: 'rank-empty', heal: 'hp-full', draw: 'pile-empty', mana: 'mana-full', chain: 'none-fits', swallow: 'none-fits', summon: 'board-full', rally: 'no-friendly', buff: 'no-friendly' };
 export function idleWhy(st, side, c) {
   if (!c || worthPlaying(st, side, c)) return null;
   const e = effectOf(side, c);
@@ -1019,7 +1040,8 @@ export function idleWhy(st, side, c) {
 export function playerOffers(st) {
   return offers(st).map(o => {
     if (!o.ok || o.action.kind !== 'play') return o;
-    const why = idleWhy(st, st.you, o.card);
+    const m = o.action.target?.side === 'mine' ? st.you.board[o.action.target.index] : null;
+    const why = m && o.card.effect?.heal != null && st.you.healsLeft !== 0 && (m.hp < m.hpMax || m.poison) ? null : idleWhy(st, st.you, o.card);
     return why ? { ...o, ok: false, why } : o;
   });
 }
@@ -1047,7 +1069,7 @@ function aimFor(st, side, c) {
   // (Hanli 10-22: 「护主牌没发挥作用」 — 00-fox's 「挡住它咬」).
   if (c.effect?.bite) return guardOf(them);
   // 锁 / 吞: the hardest hitter it may take — for 锁 one not already chained.
-  if (c.effect?.chain != null || c.effect?.swallow != null) {
+  if (c.effect?.poison != null || c.effect?.chain != null || c.effect?.swallow != null) {
     const e = effectOf(side, c);
     const ok = them.board.map((m, index) => ({ m, index })).filter(({ m }) => fits(e, m))
       .sort((a, b) => (Boolean(a.m.chain) - Boolean(b.m.chain)) || (b.m.atk - a.m.atk) || (b.m.hp - a.m.hp));
@@ -1149,7 +1171,7 @@ export function view(st) {
     ...(s.dodge ? { dodge: s.dodge } : {}),
     ...(s.wards?.length ? { wards: s.wards.map(w => ({ ...w })) } : {}),
     ...(s.pouch?.length || s.pillUsed ? { pouch: s.pouch.map(p => ({ ...p })), pillUsed: s.pillUsed } : {}),
-    board: s.board.map(m => ({ id: m.id, uid: m.uid ?? null, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, shield: Boolean(m.shield), ready: !m.sick && !m.struck && !m.held, chained: Boolean(m.chain || m.held), drought: m.drought ?? 0 })),
+    board: s.board.map(m => ({ id: m.id, uid: m.uid ?? null, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, shield: Boolean(m.shield), poison: m.poison ?? 0, ready: !m.sick && !m.struck && !m.held, chained: Boolean(m.chain || m.held), drought: m.drought ?? 0 })),
   });
   // 望气术: the plan is shown only to a player who can read it (setup.you.insight).
   const sight = st.you.insight ?? 0;
@@ -1179,6 +1201,7 @@ export function offers(st) {
   // looks playable (seen in the browser, 2026-09-18 — 焰心 with an empty rank).
   const targets = c => {
     const at = EFFECTS[Object.keys(EFFECTS).find(k => c.effect?.[k] != null)]?.at;
+    if (c.effect?.heal != null && at === 'none') return [undefined, ...st.you.board.map((m, index) => ({ kind: 'minion', index, side: 'mine' }))];
     if (at === 'enemy' || at === 'minion') return [undefined, ...them.board.map((m, index) => ({ kind: 'minion', index }))];
     if (at === 'friendly') return st.you.board.length ? st.you.board.map((m, index) => ({ kind: 'minion', index })) : [undefined];
     return [undefined];
