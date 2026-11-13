@@ -316,7 +316,7 @@ export const POOLS = {
 };
 
 const DUEL_LINES = {
-  zh: { kill: '那一回合本可了结它。数清楚再出手。', trade: '只顾打它的脸，它的爪牙谁来收？', unspent: '灵力留着过年？用尽再收手。', wasted: '那张牌白扔了。牌不是这么用的。', guard: '护主立在那里，你当它是摆设？', element: '相克都不看，蛮打给谁看。', near: '只差{n}点。哼，再来。', far: '差得远。换牌，或者换件法器。', lend: '罢了，借你一张{card}。别丢本座的脸。', win: '这回像样了。……牌还来。' },
+  zh: { kill: '那一回合本可了结它。数清楚再出手。', trade: '只顾打它的脸，它的爪牙谁来收？', unspent: '灵力留着过年？用尽再收手。', wasted: '那张牌白扔了。牌不是这么用的。', guard: '护主立在那里，你当它是摆设？', element: '相克都不看，蛮打给谁看。', near: '只差{n}点。哼，再来。', far: '差得远。换牌，或者换件法器。', lend: '罢了，借你{card}。别丢本座的脸。', win: '这回像样了。……牌还来。' },
   en: { kill: 'You could have finished it that turn. Count before you strike.', trade: 'Only its face? Who will deal with its minions?', unspent: 'Saving your mana for a holiday? Spend it first.', wasted: 'That card was wasted. That is not how to play.', guard: 'A guard stands there. Is it decoration?', element: 'Ignoring elements and striking blindly?', near: 'Only {n} Life short. Hmph. Again.', far: 'Far off. Change your deck or gear.', lend: 'Very well. Borrow my {card}. Do not shame this king.', win: 'Better this time. …Give my cards back.' },
 };
 const DUEL_FACTS = {
@@ -341,7 +341,10 @@ export function duelFallback({ outcome, lost = 0, summary, lend, zh = true }) {
   if (outcome === 'won') return lost > 0 ? p.win : null;
   if (outcome !== 'lost') return null;
   const line = p[summary?.gaps?.[0]?.lesson] ?? (summary?.near ? p.near.replace('{n}', summary.foe_hp_left) : p.far);
-  return [line, ...(lend?.names ?? []).map((card) => p.lend.replace('{card}', card))].join('\n');
+  // One sentence for all she lends (two cards once read as the same line said twice).
+  const names = lend?.names ?? [];
+  const cards = zh ? (names.length === 1 ? `一张${names[0]}` : names.join('、')) : names.join(', ');
+  return [line, ...(names.length ? [p.lend.replace('{card}', cards)] : [])].join('\n');
 }
 
 /* The pool for a moment, a weight and her mode, in turn. */
