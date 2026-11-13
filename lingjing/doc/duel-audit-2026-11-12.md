@@ -886,3 +886,169 @@ fight by fight, which the spread above does not meet. Run time about 3 minutes.
   (the set that keeps it at 60-85, careful / lookahead +1 / careful at gear 0.2, reads 82% there but puts 11 fights in band with gear worth 6).
 
 Run times: uniform grids 6 runs x 35-90 s wall (eight processes), each final of three conditions and three lines at 100 seeds about 5 minutes wall (2570 s CPU on a loaded machine), the timings 20 s.
+
+
+## The fit, third try — skill by level
+
+The idea: the spread follows the story's progress, not the class. The beast's line is chosen by its LEVEL (`foe` below L1, `careful` from L1, `lookahead` from L2), its class shifts the rung (`class_step`),
+a level offset by class stays (`step`, 0 or +1, clamped at his realm), the gear multiplier is re-fitted last, the deck-budget curve is one for both. Nothing in cards.json or balance.json changes; every read is
+behind `duel_hp.foe` (the switch is off), so the live rules read nothing new.
+
+**What was built.** `ai` in the rule set takes a second shape, read by `lineByLevel` / `LINE_LADDER` (`scripts/rules/cards.mjs`): `{ "by_level": [L1, L2], "class_step": { weak · normal · strong → rungs } }`; rung = (level >= L1) + (level >= L2) + class step,
+clamped to 0..2 over `foe` · `careful` · `lookahead`; the level is the beast's own (after its `step`). The by-class shape of the second try still reads. In the tool: `FIT` is now this set (`FIT_BY_CLASS` keeps the second), `--patch '{"huochai":{"atk":4,"hp":3}}'`
+changes card fields in memory for one run (a proposal weighed, nothing written; `withCards`). Tests: `tests/duel-audit.test.mjs` 18 pass in 0.7 s (a rung table with both clamps; the real door names the line only with the switch on; `withCards` puts the card back).
+
+### Method: the search is composed from cells, then confirmed
+
+The beast's line and its level offset are all that change a fight under fixed gear and budget, so each of the 36 fights was played once per (line, offset) cell — 3 lines x 2 offsets = 6 uniform runs of the probe, 40 seeds, gear 0.2 — and any threshold set is read off those
+cells (the same fights are independent given the beast's line and level). 1292 distinct sets per budget; a set must land `lookahead` at 40-50% with `careful` 12+ points under and `plain` under `careful`. Then the best are played for real at 100 seeds.
+
+### What each step did (36 fights, `lookahead` with the road's gear, fights inside 30-62%; 40 seeds composed unless said)
+
+| step | knobs | mean L / C / P | in band | under 15 |
+|---|---|---|---|---|
+| 0 the second fit (by class: weak careful, normal and strong lookahead, strong +1) | | 46.2 / 14.7 / 7.2 | 13 (11 at 100 seeds) | 6 |
+| 1 pure level (one ladder for all classes, no offset) | best of the grid: `[1,1]` | 42.1 / 12.8 / - | 7 | 12 |
+| 2 + the class steps (weak -1, normal 0/+1, strong 0/+1) | best | 49.2 / 16.2 / - | 10 | 6 |
+| 3 + the level offset by class (no class step) | `[1,2]`, offset 0/+1/+1 | 42.2 / 13.8 / 6.9 | 14 | 10 |
+| 4 all three | `[1,1]`, weak -1, offset 0/+1/+1 | 42.8 / 14.0 / 6.9 | 14 | 9 |
+| 4b `[1,6]` pure level, offset 0/+1/+1 (budget 13 + 1.3) | | 58.3 / 29.9 / 11.5 | 15 | 3 |
+| 4c the same with class step normal +1 (**chosen**, S4) | `[1,6]`, 0/+1/0, offset 0/+1/+1 | 45.3 / 16.2 / 8.1 | 13 | 8 |
+| 5 the budget curve: 10 + 1.8 x level | best all-three | 44.4 / 14.2 / 6.9 | 12 | 5 |
+| 5b 7 + 2.2 x level | best all-three | 44.8 / 16.5 / 7.5 | 12 | 7 |
+| 5c 15 + 1.3 x level | best all-three | 41.1 / 16.7 / 7.7 | 15 | 10 |
+| 5d 14 + 1.5 x level | best all-three | 41.1 / 15.8 / 7.9 | 14 | 10 |
+| 6 at 100 seeds, S1 (`[1,1]`, weak -1, offset 0/+1/+1; the 40-seed best of 14) | | 42.5 / 14.7 / 6.5 | **11** | 9 |
+| 6b at 100 seeds, S4 | | 45.0 / 16.5 / 7.6 | **11** | 8 |
+| the oracle: each fight takes whichever of the six cells lands nearest 46% | per-beast, outside the knobs | 54.9 / 18.1 / 9.9 | 25 | 0 |
+
+The 40-seed grid is a maximum over 1292 sets with an SE of about 7 points per fight, so its winners are inflated: 14 and 15 became 11 at 100 seeds. Reading the rows: **a pure-level ladder is worth nothing next to the class ladder
+(7 against 10-14); the level offset does the pulling; the budget curve moves nothing past noise** (the five curves tried all end at 12-15 composed, 13 + 1.3 matched his ten best).
+
+### The final knob block, ready for `duel_hp.foe`
+
+```json
+{
+ "share": { "weak": 1, "normal": 1, "strong": 1 },
+ "by_hp": [[1.3, "weak"], [2, "normal"]],
+ "top": "strong",
+ "deck": { "size": 10, "base": 13, "per_level": 1.3, "keep": 4 },
+ "gear": 0.2,
+ "ai": { "by_level": [1, 6], "class_step": { "weak": 0, "normal": 1, "strong": 0 } },
+ "step": { "normal": 1, "strong": 1 }
+}
+```
+
+Read: a beast plays `careful` from level 1 and `lookahead` from level 6; a normal-class beast plays one rung higher (`lookahead` from level 1); weak and strong sit on the ladder; normal and strong beasts stand one level above their story level (never over his realm line).
+`strike` and `deck.by_rank` stay gone. Gear 0.2 kept: worth is **+11.4** (target 8-12), so the multiplier needed no re-fit.
+
+### The per-fight table (100 seeds; lookahead / careful / plain %)
+
+| fight | class (old hp) · level → line | gear L/C/P | bare L/C/P | two pills L/C/P | worth |
+|---|---|---|---|---|---|
+| yezhu@yaoyuan-wai | weak (0.9) · L1 → careful | 42/5/0 | 41/5/0 | 61/9/2 | +1 |
+| shanli@yaoyuan-wai | weak (0.9) · L1 → careful | 31/21/3 | 36/23/4 | 51/30/43 | -5 |
+| fushe@yaoyuan-wai | weak (0.9) · L1 → careful | 42/5/0 | 29/2/0 | 61/11/0 | +13 |
+| yezhu@mengshan | weak (0.95) · L1 → careful | 90/62/2 | 88/59/2 | 95/76/23 | +2 |
+| xiegou@yaoyuan-wai | weak (1.1) · L1 → careful | 23/23/9 | 24/28/9 | 35/35/40 | -1 |
+| longzhi@songlin | weak (1.25) · L1 → careful | 59/20/12 | 62/26/22 | 68/29/56 | -3 |
+| lingling@yaoyuan-wai | weak (0.8) · L2 → careful | 3/4/1 | 5/4/1 | 19/9/6 | -2 |
+| qiuyu@mijing-ya | weak (1.1) · L2 → careful | 5/0/0 | 2/0/0 | 21/0/0 | +3 |
+| lang@yaoyuan-wai | normal (1.3) · L2 (+1) → lookahead | 8/0/0 | 8/0/0 | 19/2/3 | +0 |
+| xiong@mengshan | normal (1.4) · L2 (+1) → lookahead | 32/12/0 | 35/6/2 | 63/18/8 | -3 |
+| chihu@yaoyuan-wai | normal (1.4) · L2 (+1) → lookahead | 27/13/3 | 20/10/2 | 40/27/15 | +7 |
+| xiong@yaoyuan-wai | normal (1.4) · L2 (+1) → lookahead | 32/12/0 | 35/6/2 | 63/18/8 | -3 |
+| lang@mengshan | normal (1.45) · L2 (+1) → lookahead | 4/0/0 | 2/0/0 | 7/2/4 | +2 |
+| zheng@yaoyuan-wai | normal (1.45) · L2 (+1) → lookahead | 25/8/0 | 16/9/3 | 46/15/12 | +9 |
+| lang@songlin | normal (1.45) · L2 (+1) → lookahead | 4/0/0 | 2/0/0 | 7/2/4 | +2 |
+| congcong@yaoyuan-wai | normal (1.45) · L2 (+1) → lookahead | 41/2/6 | 42/2/5 | 65/15/13 | -1 |
+| mihou@yaoyuan-wai | normal (1.65) · L2 (+1) → lookahead | 2/5/0 | 3/8/1 | 20/4/7 | -1 |
+| qiuyu@mijing-anhe | weak (1.2) · L3 → careful | 26/7/0 | 5/0/0 | 39/23/2 | +21 |
+| gui@wm-wangzuo/open | normal (1.3) · L3 (+1) → lookahead | 39/1/0 | 35/0/0 | 53/5/2 | +4 |
+| heyu@mijing-anhe | strong (2.2) · L4 (+1) → careful | 82/49/5 | 70/24/0 | 93/67/16 | +12 |
+| jingjing@yaoyuan-wai | normal (1.75) · L5 (+1) → lookahead | 1/0/0 | 0/0/0 | 4/0/1 | +1 |
+| yuanhu@yaoyuan-wai | normal (1.85) · L5 (+1) → lookahead | 0/0/0 | 0/0/0 | 2/0/0 | +0 |
+| cangying@yaoyuan-wai | strong (2.05) · L5 (+1) → careful | 75/36/37 | 77/38/36 | 79/50/54 | -2 |
+| qiuyu@09-lingcao/fight (own band 60-85) | strong (3.1) · L6 (+1) → lookahead | 30/2/1 | 6/0/0 | 51/16/19 | +24 |
+| bibi@yaoyuan-wai | strong (4.3) · L6 (+1) → lookahead | 86/47/28 | 53/10/9 | 97/61/62 | +33 |
+| dangkang@yaoyuan-wai | strong (4.5) · L6 (+1) → lookahead | 81/13/8 | 40/0/0 | 90/19/46 | +41 |
+| chai@yaoyuan-wai | strong (4.55) · L6 (+1) → lookahead | 100/53/36 | 78/12/8 | 100/64/58 | +22 |
+| geju@yaoyuan-wai | strong (3) · L8 (+1) → lookahead | 80/30/19 | 5/0/2 | 83/36/53 | +75 |
+| qique@yaoyuan-wai | strong (4) · L8 (+1) → lookahead | 93/41/20 | 37/4/4 | 95/57/51 | +56 |
+| renyu@sishui | strong (2.75) · L11 (+1) → lookahead | 46/5/6 | 36/2/3 | 75/7/27 | +10 |
+| renyu@liuwan | strong (2.75) · L11 (+1) → lookahead | 46/5/6 | 36/2/3 | 75/7/27 | +10 |
+| tianma@taihang | strong (3) · L11 (+1) → lookahead | 69/18/12 | 8/0/0 | 77/25/40 | +61 |
+| gui@sishui | strong (3.3) · L11 (+1) → lookahead | 72/16/9 | 58/8/0 | 91/24/27 | +14 |
+| heyu@sishui | strong (3.6) · L11 (+1) → lookahead | 64/15/6 | 66/10/0 | 84/17/34 | -2 |
+| linghu@taihang | strong (3.6) · L11 (+1) → lookahead | 97/48/38 | 82/19/3 | 96/61/55 | +15 |
+| heyu@liuwan | strong (3.6) · L11 (+1) → lookahead | 64/15/6 | 66/10/0 | 84/17/34 | -2 |
+| **mean of 36** | | 45.0/16.5/7.6 | 33.6/9.1/3.4 | 58.6/23.8/23.7 | +11.4 |
+
+### Means and the targets
+
+| | gear | bare | two pills |
+|---|---|---|---|
+| `lookahead` | **45.0** | 33.6 | 58.6 |
+| `careful` | 16.5 | 9.1 | 23.8 |
+| `plain` | 7.6 | 3.4 | 23.7 |
+
+- `lookahead` 45.0 (45 +- 5) yes. Gear worth +11.4 (8-12) yes. `careful` 28.5 under `lookahead` (12+) yes; `plain` under `careful` with gear and bare yes, and level with it (23.7 / 23.8) when both carry the pills.
+- **Fights inside 30-62%: 11 of 36** (the second fit: 11 of 35). The target "as many as possible" did not move at 100 seeds. 12 stand under 30 (8 under 15, one at 0), 13 over 62 (灵草谷 at 30 is out of its own 60-85).
+- Nobody under 15: **not met** (8 fights: 妴胡 0, 精精 1, 猕猴 2, 灵灵 3, 狼 x3 at 4-8, 犰狳 秘境 凶崖 5). Two pills, 50-90%: 17 of 36 inside, as in the second fit.
+
+### Out of band, and what drives each
+
+"Lines that land it" are the six uniform cells at 40 seeds (a line, with or without the level offset) that would put that one fight at 30-62%: where it says `none`, no allowed knob moves the fight.
+
+| fight | lookahead gear % | level · line | his ten | its ten | 气血 its | lines that land it (30-62, 40 seeds, gear) |
+|---|---|---|---|---|---|---|
+| yezhu@mengshan | 90 | L1 · careful | 14 | 14 | 21 | lookahead 40, lookahead +1 30 |
+| xiegou@yaoyuan-wai | 23 | L1 · careful | 16 | 15 | 21 | none |
+| lingling@yaoyuan-wai | 3 | L2 · careful | 14 | 16 | 22 | foe +1 55 |
+| qiuyu@mijing-ya | 5 | L2 · careful | 14 | 16 | 22 | none |
+| lang@yaoyuan-wai | 8 | L2 · lookahead | 16 | 15 | 22 | careful +1 45 |
+| chihu@yaoyuan-wai | 27 | L2 · lookahead | 16 | 16 | 22 | careful +1 60 |
+| lang@mengshan | 4 | L2 · lookahead | 14 | 15 | 22 | foe 43, careful +1 40 |
+| zheng@yaoyuan-wai | 25 | L2 · lookahead | 14 | 16 | 22 | careful 53 |
+| lang@songlin | 4 | L2 · lookahead | 14 | 15 | 22 | foe 43, careful +1 40 |
+| mihou@yaoyuan-wai | 2 | L2 · lookahead | 14 | 16 | 22 | careful +1 38 |
+| qiuyu@mijing-anhe | 26 | L3 · careful | 14 | 16 | 23 | foe 55 |
+| heyu@mijing-anhe | 82 | L4 · careful | 14 | 18 | 24 | lookahead +1 60 |
+| jingjing@yaoyuan-wai | 1 | L5 · lookahead | 17 | 20 | 25 | careful 38 |
+| yuanhu@yaoyuan-wai | 0 | L5 · lookahead | 17 | 19 | 25 | careful 38, careful +1 35 |
+| cangying@yaoyuan-wai | 75 | L5 · careful | 17 | 20 | 25 | none |
+| bibi@yaoyuan-wai | 86 | L6 · lookahead | 20 | 21 | 26 | none |
+| dangkang@yaoyuan-wai | 81 | L6 · lookahead | 20 | 19 | 26 | none |
+| chai@yaoyuan-wai | 100 | L6 · lookahead | 20 | 20 | 26 | none |
+| geju@yaoyuan-wai | 80 | L8 · lookahead | 22 | 22 | 28 | none |
+| qique@yaoyuan-wai | 93 | L8 · lookahead | 22 | 21 | 28 | none |
+| tianma@taihang | 69 | L11 · lookahead | 25 | 27 | 31 | none |
+| gui@sishui | 72 | L11 · lookahead | 25 | 27 | 31 | none |
+| heyu@sishui | 64 | L11 · lookahead | 25 | 27 | 31 | lookahead +1 60 |
+| linghu@taihang | 97 | L11 · lookahead | 25 | 25 | 31 | none |
+| heyu@liuwan | 64 | L11 · lookahead | 25 | 27 | 31 | lookahead +1 60 |
+
+- **No ladder over level can separate them**, because fights at one level are driven in opposite directions. Level 5: 精精 and 妴胡 (1 and 0 under `lookahead`) land at 35-38 under `careful`; 苍鹰 sits at 75-83 under `careful` and the foe policy and at 3-5 under `lookahead`, so no line lands it.
+  Level 6: bibi · dangkang · chai stand at 83-100 under all six cells, and 灵草谷's fight (30-33 under `lookahead`) at 83-88 under `careful`. Level 11: `lookahead` +1 gives 60-97 and anything simpler 88-100. The beast's twelve against his ten decides it.
+- **Early (L1-L5), under 30:** his ten costs 14-17 and holds two draw-only cards and a heal; the beast's twelve are efficient 3/1 · 2/2 bodies and 2-damage blows at the same cost (15-16 against 14). Under `lookahead` he wins 2-27% (the table); the same decks under `careful` land 38-60 (lang, mihou, chihu, zheng),
+  while 蒙山's 野猪 and 熊 read 90-100 under `careful` and 30-48 under `lookahead`. Between the two rungs a fight moves 40-60 points; the allowed ladder has three rungs and the early decks sit between them.
+- **Late (L6-L11), over 62:** his ten holds two sweeps and two 5-damage blows (the mirror's strong cards); the beast's holds walls, buffs and heavy bodies a 灵力 of 8 cannot play together. `lookahead` is the top rung and a level offset is worth about 3 points, so nothing in the list lifts them.
+- The costs do not explain it (his 14-25 against its 14-27, mean gap -0.2): the curve follows his ten, and the decks differ in what the cost buys.
+
+### The band tests with the set on
+
+`node --test lingjing/tests/fight-band.test.mjs lingjing/tests/fight-band-pools.test.mjs` with `duel_hp.foe` set to the block above in a scratch edit of `worlds/jiuding/balance.json` (restored byte for byte; `git status` clean): **11 pass, 28 fail of 39** (392 s wall on a loaded machine).
+The tests hold each fight to about 45% bare and about 65% with two pills, fight by fight; the spread above does not meet it. Same count as the second fit.
+
+### PROPOSAL (not applied): the three changes outside the knob list that move most
+
+Measured on the chosen set, 100 seeds, `lookahead` with gear, in memory only.
+
+1. **A skill line per beast, as content (`ai` on the creature in creatures.json).** The oracle above: each of the 36 beasts on the one of the six lines that lands nearest 46% reads **25 of 36 inside 30-62%, nobody under 15** (mean 54.9, `careful` 18.1, `plain` 9.9; 40 seeds, picked from noisy cells,
+   so the real count is lower; the 40-seed grid's 14-15 read 11 at 100). It is the only change that moves 6-8 fights at once, because it answers the finding above (one level, opposite needs). It breaks "never a number on one beast"; the line is a word, not a number.
+2. **The strong class's 气血 share at 1.2 (`share.strong`; the knob exists, the fit set it to 1).** With the chosen set: mean 45.0 to 38.0; the twelve level 6-11 fights 74.8 to 57.7 (2 to 4 inside the band); fights inside 30-62%: 11 to 13; under 15: 8 to 8. The mean falls below the target, so it wants the gear multiplier or the budget re-fitted upward after it.
+3. **火柴 as a 4/3 for 4 (cards.json; mirror +28 to about +9, the audit's proposal 2).** The worn sword puts its strike card in his ten wherever it is worn. 100 seeds: gear worth 11.4 to **5.1**, mean with gear 45.0 to 38.7, the twelve late fights 74.8 to 57.7 (2 to 3 inside); in band 11 to 11, under 15: 8 to 9. It lowers the late fights and the gear's weight together, the same lever the first fit found in `strike`.
+
+Not measured, named for the next run: his early deck's fill rule (the thin 14-cost road hand with 吐纳 x2 and 娘的饼 x2 is the common side of the eight fights under 15).
+
+Run times (machine at load 10-130 from other work): six uniform cells at 40 seeds about 6 min wall (12 processes), two more budget sets about 10 min, the 100-seed confirmation of two sets x gear / bare / pills about 17 min, the three proposal runs about 20 min, fast tests 0.7 s (`duel-audit`) and 15 s (`duel-lines`), band tests 392 s.

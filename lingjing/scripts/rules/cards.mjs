@@ -440,10 +440,20 @@ export const beastClamp = (content, state, creature) => {
   const Lf = foeLevel(content, state, creature), step = content?.balance?.duel_hp?.foe?.step?.[foeRank(content, creature)];
   return Boolean(step && Lf != null && Lf + step > beastLevel(content, state, creature));
 };
-/* `duel_hp.foe.ai` (斗法 v4, the fit): the line that plays the beast's seat by its class (`foeRank`): 'foe' (the foe policy, battle.js foeStep),
-   'careful' or 'lookahead' (scripts/fightline.js LINES). Only where the even duel stands; absent, the foe policy plays. */
+/* `duel_hp.foe.ai` (斗法 v4, the fit): the line that plays the beast's seat. Two shapes. By class: { weak · normal · strong → 'foe' (the foe
+   policy, battle.js foeStep) · 'careful' · 'lookahead' (scripts/fightline.js LINES) }. By level (third try): { by_level: [L1, L2], class_step:
+   { weak · normal · strong → steps } } — the foe policy below L1, `careful` from L1, `lookahead` from L2, the beast's class shifting the rung
+   (clamped to the three lines): skill follows the story's progress, the class shifts it a step. Only where the even duel stands; absent, the foe policy plays. */
+export const LINE_LADDER = ['foe', 'careful', 'lookahead'];
+export function lineByLevel(ai, level, rank) {
+  if (!ai) return null;
+  if (!Array.isArray(ai.by_level)) return ai[rank] ?? null;
+  const rung = ai.by_level.filter(from => level >= from).length + (ai.class_step?.[rank] ?? 0);
+  return LINE_LADDER[Math.max(0, Math.min(LINE_LADDER.length - 1, rung))];
+}
 const evenAi = (content, state, creature) => {
-  const line = evenDuel(content, state, creature) ? content.balance.duel_hp.foe.ai?.[foeRank(content, creature)] : null;
+  if (!evenDuel(content, state, creature)) return {};
+  const line = lineByLevel(content.balance.duel_hp.foe.ai, beastLevel(content, state, creature) ?? fightLevel(content, state), foeRank(content, creature));
   return line && line !== 'foe' ? { ai: line } : {};
 };
 function evenDeck(content, state, creature, foe) {
