@@ -269,7 +269,7 @@ function sideOf(who, cfg, catalog, mode, seed) {
     who, tier: cfg.tier, root: cfg.root ?? null, ...(cfg.f != null && cfg.f !== 1 ? { f: cfg.f } : {}), ...(cfg.level != null ? { level: cfg.level } : {}),
     hp: now, hpMax: hp, mana: 0, manaMax: (mode.startMana ?? 1) - 1, manaCap: realm.mana, powerHit: realm.power + (cfg.power ?? 0), boost: cfg.boost ?? null,
     armor: Math.max(0, cfg.armor ?? 0), ward: cfg.ward ?? null,
-    deck, hand: [...(cfg.extra ?? [])], board: [], fatigue: 0, ...(cfg.fatigue === false ? { tireless: true } : {}), powerUsed: false, played: [],
+    deck, hand: [...(cfg.extra ?? [])], board: [], laid: [], laidSpent: [], fatigue: 0, ...(cfg.fatigue === false ? { tireless: true } : {}), powerUsed: false, played: [],
     signature: cfg.signature ?? null, charge: null, lifts: cfg.lifts ?? null, insight: cfg.insight ?? 0, intent: null,
     stars: cfg.stars ?? null, drain: 0,
     // A 试 (a story trial, creatures.json `trial`): the beast is not driven
@@ -539,7 +539,17 @@ export const landed = (st, who, n, element) => {
   return Math.max(1, h - wardOf(them, element));
 };
 
+function triggerLaid(st, owner, when) {
+  const i = (owner.laid ?? []).findIndex(x => x.when === when);
+  if (i < 0 || (st.laidChoice && st.laidChoice !== owner.laid[i])) return null;
+  const [laid] = owner.laid.splice(i, 1);
+  (owner.laidSpent ??= []).push({ id: laid.id, uid: laid.uid, when: laid.when });
+  st.log.push({ act: 'laid-off', who: owner.who, id: laid.id, uid: laid.uid, when });
+  return laid;
+}
+
 function hurt(st, side, amount, why = {}) {
+  if (amount > 0 && (why.from === 'attack' || why.from === 'spell') && triggerLaid(st, side, 'struck')) return;
   // 一滚: a blow at the lead turned aside while a dodge is held (never 反噬).
   if (side.dodge > 0 && why.from) {
     side.dodge -= 1;
@@ -600,6 +610,7 @@ function stand(st, side, m) {
   m.uid = st.uid;
   if (keywordsOf(side, st.catalog[m.id]).includes('shield')) m.shield = true;
   side.board.push(m);
+  if (triggerLaid(st, other(st, side), 'enters')) m.chain = 1;
   return m;
 }
 
@@ -778,6 +789,9 @@ export function legal(st, action, who = 'you') {
     if (!c) return 'not-in-hand';
     if (ownerGone(side, c)) return 'member-gone';
     if (side.mana < costOf(side, c)) return 'no-mana';
+    if (c.lay && (side.laid ?? []).some(x => x.id === id)) return 'laid-same';
+    if (c.lay && (side.laid ?? []).length >= 2) return 'laid-full';
+    if (c.lay) return null;
     if (c.kind === 'minion' && side.board.length >= st.mode.board) return 'board-full';
     const at = EFFECTS[Object.keys(EFFECTS).find(k => c.effect?.[k] != null)]?.at;
     if (c.effect?.heal != null && action.target?.side === 'mine' && (action.target.kind !== 'minion' || !side.board[action.target.index])) return 'no-target';
@@ -893,17 +907,36 @@ export function act(st, action, who = 'you') {
     side.hand.splice(action.index, 1);
     side.mana -= costOf(side, c);
     side.played.push(id);
+    if (c.lay) {
+      st.uid = (st.uid ?? 0) + 1;
+      (side.laid ??= []).push({ id, uid: st.uid, when: c.lay.when, effect: c.lay.effect });
+      st.log.push({ act: 'laid', who: side.who });
+      return { ok: true };
+    }
     bindAt(st, them, c, action.target);
     if (c.kind === 'minion') {
       const { atk, hp: raw } = bodyOf(side, c), hp = scaled(side, raw), keys = keywordsOf(side, c);
       const drought = effectOf(side, c)?.drought;
       const m = { id, name: c.name, element: c.element, atk, hp, hpMax: hp, taunt: keys.includes('taunt'), sick: true, struck: false, ...(drought ? { drought } : {}) };
+      const cry = keys.includes('battlecry') ? effectOf(side, c) : null;
+      const kinds = ['enters'];
+      if (cry?.damage > 0 && !action.target) kinds.push('struck');
+      st.laidChoice = (them.laid ?? []).find(x => kinds.includes(x.when)) ?? null;
       stand(st, side, m);
       st.log.push({ act: 'played', who: side.who, id, uid: m.uid, kind: 'minion' });
-      if (keys.includes('battlecry')) resolve(st, side, { ...effectOf(side, c), element: c.element }, action.target, { arrival: true });
+      if (cry) resolve(st, side, { ...cry, element: c.element }, action.target, { arrival: true });
+      delete st.laidChoice;
     } else {
       st.log.push({ act: 'played', who: side.who, id, kind: 'spell' });
-      resolve(st, side, { ...effectOf(side, c), element: c.element }, action.target);
+      const e = effectOf(side, c);
+      const kinds = ['casts'];
+      if (e?.damage != null && !action.target && e.damage > 0) kinds.push('struck');
+      if (e?.summon && side.board.length < st.mode.board && st.catalog[e.summon.id] && (e.summon.n ?? 1) > 0) kinds.push('enters');
+      st.laidChoice = (them.laid ?? []).find(x => kinds.includes(x.when)) ?? null;
+      resolve(st, side, { ...e, element: c.element }, action.target);
+      const cast = st.laidChoice?.when === 'casts' ? triggerLaid(st, them, 'casts') : null;
+      if (cast?.effect?.damage) hurt(st, side, landed(st, them.who, cast.effect.damage, cast.effect.element), { from: 'laid', element: cast.effect.element ?? null });
+      delete st.laidChoice;
     }
     return { ok: true };
   }
@@ -1046,7 +1079,7 @@ export function playerOffers(st) {
   });
 }
 export function worthPlaying(st, side, c) {
-  if (c.kind === 'minion') return true;
+  if (c.kind === 'minion' || c.lay) return true;
   const e = effectOf(side, c);
   const verbs = Object.keys(e ?? {}).filter(k => VERB_USE[k] && e[k] != null);
   return !verbs.length || verbs.some(k => VERB_USE[k](st, side, e));
@@ -1175,8 +1208,8 @@ export function view(st) {
   });
   // 望气术: the plan is shown only to a player who can read it (setup.you.insight).
   const sight = st.you.insight ?? 0;
-  const intent = sight && st.foe.intent ? { sight, cards: [...st.foe.intent.cards], power: st.foe.intent.power, gathering: st.foe.intent.gathering } : null;
-  return { outcome: st.outcome, turn: st.turn, whose: st.whose, you: { ...side(st.you), hand: st.you.hand }, foe: { ...side(st.foe), ...(intent ? { intent } : {}) }, log: st.log, scale: st.scale, ...(st.unit ? { unit: st.unit } : {}) };
+  const intent = sight && st.foe.intent ? { sight, cards: st.foe.intent.cards.filter(id => !st.catalog[id]?.lay), power: st.foe.intent.power, gathering: st.foe.intent.gathering } : null;
+  return { outcome: st.outcome, turn: st.turn, whose: st.whose, you: { ...side(st.you), hand: st.you.hand, laid: (st.you.laid ?? []).map(x => ({ id: x.id, uid: x.uid, name: st.catalog[x.id]?.name, when: x.when })) }, foe: { ...side(st.foe), laid: (st.foe.laid ?? []).length, ...(intent ? { intent } : {}) }, log: st.log, scale: st.scale, ...(st.outcome !== 'open' && ((st.you.laidSpent ?? []).length || (st.you.laid ?? []).length || (st.foe.laidSpent ?? []).length || (st.foe.laid ?? []).length) ? { laidResult: { you: { spent: st.you.laidSpent ?? [], unspent: (st.you.laid ?? []).map(({ id, uid, when }) => ({ id, uid, when })) }, foe: { spent: st.foe.laidSpent ?? [], unspent: (st.foe.laid ?? []).map(({ id, uid, when }) => ({ id, uid, when })) } } } : {}), ...(st.unit ? { unit: st.unit } : {}) };
 }
 
 /* Nothing left but to end the turn — no card affordable, no body that may
