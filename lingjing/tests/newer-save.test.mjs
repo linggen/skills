@@ -106,7 +106,8 @@ test('a parked save from newer rules never stops the game in play, is never list
     assert.ok(!listed.saves.some((x) => x.id === 'p1'), 'not listed');
   }
   const before = fs.readFileSync(path.join(dir, 'state.json'), 'utf8');
-  assert.equal(verb(dir, ['load', '--id=p1']).refused, 'newer-save');
+  // On the test's own clock: on the wall clock a later hour of 11-13 wrote a `recap` into the save (found 2026-11-13).
+  assert.equal(verb(dir, ['load', '--id=p1'], { LINGJING_NOW: '2026-11-13T10:00:01Z' }).refused, 'newer-save');
   assert.equal(fs.readFileSync(path.join(dir, 'saves', 'p1.json'), 'utf8'), shelf, 'the parked save byte for byte');
   // The game in play is the player's own, current save: a refused load leaves it where it stood (the clock's own
   // `last_seen` stamp aside, which any verb of his writes).
