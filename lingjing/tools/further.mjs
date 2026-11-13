@@ -82,12 +82,14 @@ export function problems(rule, skillDir = SKILL) {
     if (kinds.length !== 1) return out.push(`by[${i}]: exactly one of ${KINDS.join('|')}`);
     const k = kinds[0];
     if (typeof e[k] !== 'string' || !e[k]) out.push(`by[${i}].${k}: a key of the file`);
-    const known = new Set([k, 'within', 'rise', ...(k === 'rank' ? ['order'] : [])]);
+    const known = new Set([k, 'within', 'rise', ...(k === 'rank' ? ['order'] : []), ...(k === 'number' ? ['newest'] : [])]);
     for (const x of Object.keys(e)) if (!known.has(x)) out.push(`by[${i}]: unknown \`${x}\``);
     if (e.within !== undefined && !(Array.isArray(e.within) && e.within.every((w) => typeof w === 'string'))) {
       out.push(`by[${i}].within: a list of keys`);
     }
     if (e.rise !== undefined && typeof e.rise !== 'boolean') out.push(`by[${i}].rise: true or false`);
+    if (e.newest !== undefined && !Number.isInteger(e.newest)) out.push(`by[${i}].newest: a whole number`);
+    if (e.newest !== undefined && e.within) out.push(`by[${i}].newest: not with within`);
     if (k === 'rank') {
       const o = e.order;
       if (!o || !plain(o.file) || typeof o.list !== 'string') return out.push(`by[${i}].order: {file, list, key?}`);
@@ -99,6 +101,7 @@ export function problems(rule, skillDir = SKILL) {
       }
     }
   });
+  if (rule.by.filter((e) => e.newest !== undefined).length > 1) out.push('further.by: one entry with `newest` at most');
   return out;
 }
 
@@ -129,12 +132,16 @@ export function resolved(skillDir = SKILL) {
   };
 }
 
-/** The newest save these rules play (state.mjs STATE_VERSION), read off the rule's own file by its `number` entry on
- *  `version`: the phone's sync never pulls, pushes over or plays a save past it (lingjing_sync.dart). Null when the
- *  rule does not decide by the version first. */
-export function newest(rule) {
-  const first = rule?.by?.[0];
-  return first && first.number === 'version' && !first.within ? { file: rule.file, number: 'version', max: STATE_VERSION } : null;
+/** The newest save these rules play, read off the rule's `number` entry that declares `newest` (SKILL.md: the save's
+ *  `version`, wherever it stands in the order — since 2026-11-12 after `done_scenes`): the phone's sync never pulls,
+ *  pushes over or plays a save past it (lingjing_sync.dart), and the engine lets such a save win outright. The
+ *  declared number must be state.mjs STATE_VERSION — a rules bump that forgets SKILL.md is refused here, so neither
+ *  the phone's build nor this check ships a stale ceiling. Null when no entry declares one. */
+export function newest(rule, version = STATE_VERSION) {
+  const e = rule?.by?.find((x) => x?.number && x.newest !== undefined && !x.within);
+  if (!e) return null;
+  if (e.newest !== version) throw new Error(`SKILL.md cloud.further: \`newest\` is ${e.newest}, the rules play ${version} (state.mjs STATE_VERSION)`);
+  return { file: rule.file, number: e.number, max: version };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

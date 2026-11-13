@@ -146,8 +146,8 @@ test('cloud.further is declared in the shape the engine reads, its order resolvi
   assert.deepEqual(problems(rule), []);
   const r = resolved();
   assert.deepEqual(r.by.map((e) => Object.keys(e).find((k) => ['count', 'rank', 'number', 'time'].includes(k))),
-    ['number', 'count', 'rank', 'number', 'number', 'time', 'time']);
-  assert.equal(r.by[0].number, 'version', 'the save\'s version decides first: an older build never wins over a carried save');
+    ['count', 'number', 'rank', 'number', 'number', 'time', 'time']);
+  assert.equal(r.by[1].number, 'version', 'scenes done first (comparable at every version), then the save\'s version (2026-11-12)');
   assert.equal(r.by[2].order[0], 'qi', 'the ladder, lowest realm first');
   assert.deepEqual(r.by.filter((e) => e.rise).map((e) => e.rank ?? e.number), ['tier', 'step']);
 });
@@ -157,7 +157,7 @@ test('cloud.further is declared in the shape the engine reads, its order resolvi
    A key that is progress in here would hide a real move from both: lint it against the game's own writes. */
 const STAMPS = ['last_seen', 'updated', 'stamina', 'stamina_at', 'resting', 'away',
   'shown', 'shown_at', 'weather_told', 'story_told', 'festival_told', 'recap', 'page_seen', 'asked_at', 'node',
-  'guided', 'told_scenes', 'tell_owed', 'pool_hold'];
+  'guided', 'told_scenes', 'tell_owed', 'pool_hold', 'reading'];
 
 test('cloud.ignore lists the stamps and none of the progress', async () => {
   const { readFurtherText, readIgnore, ignoreProblems, resolved } = await import('../tools/further.mjs');

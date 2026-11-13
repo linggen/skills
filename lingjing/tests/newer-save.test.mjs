@@ -126,9 +126,9 @@ test('the page says the rules\' own words, in both languages, short and plain', 
   assert.match(js, /if \(!authored && !newer\) \$\('focus'\)/, 'and no runtime word is drawn over it');
 });
 
-test('the sync rule decides by the version first, and the phone is handed the newest version these rules play', () => {
+test('the sync rule declares the newest version these rules play, and the phone is handed it', () => {
   const rule = resolved();
-  assert.deepEqual(rule.by[0], { number: 'version' });
+  assert.deepEqual(rule.by[1], { number: 'version', newest: STATE_VERSION });
   assert.deepEqual(newest(rule), { file: 'data/state.json', number: 'version', max: STATE_VERSION });
   assert.equal(newest({ file: 'x', by: [{ count: 'done_scenes' }] }), null);
 });

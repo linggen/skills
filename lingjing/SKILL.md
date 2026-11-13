@@ -36,12 +36,17 @@ cloud:
   # phone↔cloud and phone↔Mac (skill-spec § Cloud `further`). `rise`: a move
   # up these is a milestone (the first one while the save is local-only is a
   # fact for 银月). JSON, so the phone's asset script reads it as is.
-  # The save's version decides first (2026-11-10): a build that has not carried the save forward (v17 beside v18's
-  # ladder) never wins over one that has — its 层 and 修为 are read on another ladder and cannot be compared.
+  # Scenes done decide first, then the save's version (2026-11-12): the count of scenes done means the same at every
+  # version — a migration carries `done_scenes` forward whole — so a save further on in play never loses to one that
+  # only migrated first (11-12: the phone's v18 save at 116 scenes lost to the Mac's 105, migrated to v19 seconds
+  # before). The phone brings both saves to its own rules' version before it compares; the engine cannot migrate, so
+  # there the version still decides the 层 and 修为 (read on another ladder at another version) at equal scenes.
+  # `newest` is the newest version these rules play (state.mjs STATE_VERSION; tools/further.mjs refuses a mismatch):
+  # a save past it is from a newer build and wins outright, so an older build never writes over it.
   further:
     {"file": "data/state.json", "by": [
-      {"number": "version"},
       {"count": "done_scenes"},
+      {"number": "version", "newest": 19},
       {"rank": "tier", "order": {"file": "worlds/jiuding/ladder.json", "list": "tiers", "key": "id"}, "rise": true},
       {"number": "step", "within": ["tier", "version"], "rise": true},
       {"number": "progress", "within": ["tier", "version"]},
@@ -52,15 +57,16 @@ cloud:
   # after read verbs at different times, tests/cloud-ignore.test.mjs). The clock and every player verb: `last_seen`,
   # `updated`, and the 体力 refill `stamina`, `stamina_at`, `resting`, `away`. What the page or Ling's Look only shows
   # or tells once: `shown`, `shown_at`, `weather_told`, `story_told`, `festival_told`, `recap`, `page_seen`,
-  # `asked_at`, `node`, `guided`, `told_scenes`, `tell_owed`, and the 小游戏池's hold `pool_hold`. A save that differs
-  # only in these has not moved: no push, no conflict copy, no "both moved". Never here: anything a move earns (the
+  # `asked_at`, `node`, `guided`, `told_scenes`, `tell_owed`, the 小游戏池's hold `pool_hold`, and the page's passage
+  # hold `reading` (renewed every 4 minutes while a passage stands open; 11-12 it kept the Mac's save "moved" and
+  # never at rest all evening). A save that differs only in these has not moved: no push, no conflict copy, no "both moved". Never here: anything a move earns (the
   # scenes, 修为, 层, wealth, bag, cards, `been`, the day's `chance` whose `taken` is earned…), nor `story_at`, which
   # `further` reads, nor `companion`/`kaifu` (progress and stamp in one key). 体力 is earned only with `chores` or
   # `last_seclusion` written beside it and spent only by a move that writes more, so leaving it out hides no move.
   # `updated` is still read by `further` as its last tie-break; it is only left out of "did it move".
   ignore: ["last_seen", "updated", "stamina", "stamina_at", "resting", "away",
     "shown", "shown_at", "weather_told", "story_told", "festival_told", "recap", "page_seen", "asked_at", "node",
-    "guided", "told_scenes", "tell_owed", "pool_hold"]
+    "guided", "told_scenes", "tell_owed", "pool_hold", "reading"]
 # The rules always know what the player must choose next, and the scene is
 # the question: every tool answer carries `ask`, and the engine asks it when
 # Ling ends a turn on words alone (2026-09-17 — Terra dropped it three times

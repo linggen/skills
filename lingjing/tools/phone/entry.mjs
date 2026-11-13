@@ -7,6 +7,9 @@
 //   Lingjing.look() / tell() / resolve(exit) / task(action, id) / win(id, stars) / init() / playTo(at)
 //   Lingjing.dump() / Lingjing.restore(json) the player's files (the save, its log, parked worlds) — the host keeps them
 //   Lingjing.env(key, value)                 LINGGEN_LANGUAGE, LINGJING_NOW …, as the engine reads them
+//   Lingjing.migrate(stateText)              a save's state brought to these rules' version (state.mjs migrate), as
+//                                            JSON text — nothing written; null when it is not a state or is newer
+//                                            than these rules. The host's sync compares two saves at one version.
 //   Lingjing.her(kind, look, opts)           银月's word at a page moment (scripts/hersay.js, the Mac's own): her mode
 //                                            from the Look, the facts and ask for her model, and her pool's lines —
 //                                            JSON text { mode, facts, pool } (null when she is absent or the moment
@@ -24,7 +27,7 @@ import { chooseBoard } from '../../scripts/board-choice.js';
 import { parseArgs } from '../../scripts/rules/files.mjs';
 import { forLing, run } from '../../scripts/rules.mjs';
 import { newerRefusal } from '../../scripts/rules/newer.mjs';
-import { STATE_VERSION } from '../../scripts/state.mjs';
+import { STATE_VERSION, migrate } from '../../scripts/state.mjs';
 import { drainSink } from '../../scripts/rules/analytics.mjs';
 import { MOMENTS, REGISTER, REGISTER_ASLEEP, gearFacts, herMode, mijingWhat, momentFacts, poolOf, shortFacts } from '../../scripts/hersay.js';
 import { friendFacts, qianFacts } from '../../scripts/qian-facts.js';
@@ -112,6 +115,18 @@ function her(kind, look = {}, { lang = 'zh', weight = 'full', what = null, resul
   return JSON.stringify({ mode, id: short?.id ?? gear?.item ?? null, ...(gear ? { key: `${gear.game}|${gear.lost}` } : {}), facts: momentFacts(kind, said, zh ? 'zh' : 'en', { weight, mode }), pool: poolOf(kind, { mode, lang: zh ? 'zh' : 'en', weight, variant }) });
 }
 
+/* A save's state at these rules' version, for comparing two copies (the host's sync): the rules' own migrate, pure —
+   nothing read from or written to /data. Not a state, or newer than these rules (NewerSave): null. */
+function migrated(text) {
+  try {
+    const state = JSON.parse(text);
+    if (!state || typeof state !== 'object' || Array.isArray(state)) return null;
+    return JSON.stringify(migrate(state));
+  } catch {
+    return null;
+  }
+}
+
 let ENV_NOW = false;
 const api = {
   // The newest save version these rules play (state.mjs STATE_VERSION): the host's sync never hands them a newer one.
@@ -122,6 +137,7 @@ const api = {
   env: (key, value) => { if (value == null) delete process.env[key]; else process.env[key] = String(value); if (key === 'LINGJING_NOW') ENV_NOW = value != null; },
   dump: () => JSON.stringify(dump(DATA)),
   restore: (json) => { restore(typeof json === 'string' ? JSON.parse(json) : json); },
+  migrate: (text) => migrated(text),
   // The verbs the story screen uses, named (each one is `call` and nothing more).
   init: (args = {}, opts) => call('init', args, opts),
   look: (args = {}, opts) => call('look', args, opts),
