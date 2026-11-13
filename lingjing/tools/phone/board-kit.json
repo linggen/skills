@@ -157,7 +157,7 @@
     },
     "kapai": {
       "_about": "斗法 (games/kapai.js): every 卷一 fight (第一回's fox, then the 外门's, 筑基's and 冀州's duels): the room, its sheets, the card table, and the art of every card and every creature (`art: \"cards\"`: each cards.json and creatures.json row's `art`, wherever it lies) — a hand grows across the story, so the cards a fight deals are not known before it. The party's faces (阿禾 …) are the story's, in the common pack. `dynamic`: fx.js names the painting libraries it loads on demand for the stage's moments; the room only uses its `squash`, so none of them is shipped for the fight.",
-      "module": "scripts/games/kapai.js",
+      "module": "scripts/games/kapai.js", "modules": ["scripts/duelcoach-worker.js"],
       "dirs": [],
       "css": [
         "scripts/lingjing.css",
