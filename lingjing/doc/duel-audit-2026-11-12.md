@@ -1095,3 +1095,19 @@ Sequential Node run: `node lingjing/tools/duel-lines.mjs --mirror-lines --seeds 
 Honest lookahead took **22.41 ms mean and 87.41 ms p95 per decision** in Node (299,268 decisions, both seats, measured during the sequential run; machine load and board mix affect timings).
 
 Against foe / careful / lookahead, the honest player’s 82.1 / 79.4 / 34.9 differs from the earlier peeking 95.0 / 74.9 / 49.4: -12.9 / +4.5 / -14.5 points. This is not an isolated estimate of information leakage: the earlier figures used 35 fights and 40 seeds, while this run includes all 36 even-rule fights and 60 seeds, and the current rebase also changed the battle rules. The near-loss shares show how often defeats were close, not a separate win rate. No card, deck content or live fair-rules switch was changed.
+
+### The dial
+
+Sequential `--mirror-lines --wits 0.15,0.3,0.5 --seeds 30`: same 36 deck-mirror encounters and `band|0..29` as above, 1,080 games per cell, none unfinished; the 0 and 1 endpoints are the earlier 60-seed, 2,160-game cells. Each entry is player win % / near-loss % of losses. The mixed line chooses honest lookahead per decision with the stated wit, otherwise careful.
+
+| beast wit | careful player | honest lookahead player |
+|---:|---:|---:|
+| 0 (careful) | 42.8 / 49.8 | 79.4 / 71.2 |
+| 0.15 | 35.8 / 43.6 | 69.6 / 69.5 |
+| 0.30 | 28.1 / 41.6 | 60.6 / 61.5 |
+| 0.50 | 18.9 / 36.4 | 49.8 / 56.6 |
+| 1 (honest lookahead) | 6.7 / 23.4 | 34.9 / 45.0 |
+
+Careful against careful with the beast one / two levels higher within the same realm (fixed HP +1 / +2, everything else unchanged): **41.9% / 37.8%** wins, near-loss shares 47.5% / 47.8%, respectively (1,080 games each). The 60-seed equal-level baseline is 42.8%, so these comparisons also contain seed-count noise.
+
+**45% is not reachable by this dial**: even wit 0 measures 42.8%; linear interpolation between 0 and 0.15 puts 40% at approximately wit **0.06**, an estimate across different sample sizes. Relative to the 42.8% baseline, +1 / +2 levels cost about 0.9 / 5.0 percentage points, comparable to roughly 0.02 / 0.11 wit by the same local interpolation; the separate seed counts and nonlinearity make these rough comparisons, not fitted guarantees.

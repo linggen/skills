@@ -16,7 +16,7 @@
 // careful holds by construction there; careful against plain is what shows the fight rewards thought at all. Seeds fixed
 // (`band|0..N-1`), output stable. A fight the even rules do not reach (a 试, a 零层 fight) shows `-` under ON.
 import { FIGHTS, TWO_PILLS, content, keyOf, rateOf, setupOf } from './story-fights.mjs';
-import { plain, plainFor, carefulFor, lookaheadFor } from '../scripts/fightline.js';
+import { plain, plainFor, carefulFor, lookaheadFor, mixFor } from '../scripts/fightline.js';
 import { act, begin, foeStep, foeTurn } from '../scripts/battle.js';
 import { performance } from 'node:perf_hooks';
 
@@ -150,10 +150,43 @@ export function mirrorLines({ seeds = 60 } = {}) {
   });
 }
 
+/// The same mirror and deals, with a mixed beast or a within-realm level increase.
+export function mirrorWits({ seeds = 30, wits = [0.15, 0.3, 0.5] } = {}) {
+  if (!Number.isInteger(seeds) || seeds < 1 || wits.some(w => !Number.isFinite(w) || w < 0 || w > 1)) throw new RangeError('invalid seeds or wit');
+  return withRules(true, () => {
+    const fights = FIGHTS.map(f => ({ f, setup: setupOf(f, { party: [], bare: true }) })).filter(x => x.setup.even && !x.f.teach);
+    const cells = {};
+    const cases = [...['careful', 'lookahead'].flatMap(you => wits.map(wit => ({ you, wit, up: 0 }))), ...[1, 2].map(up => ({ you: 'careful', wit: 0, up }))];
+    for (const { you, wit, up } of cases) {
+      let wins = 0, losses = 0, near = 0, unfinished = 0;
+      for (const { setup } of fights) for (let k = 0; k < seeds; k++) {
+        const config = structuredClone(setup);
+        config.you.extra = []; config.foe.deck = [...config.you.deck]; config.foe.ai = null;
+        // On the even sheet 20 + level is the fixed HP. Keep the realm unchanged.
+        config.foe.hp_fixed += up;
+        const st = begin({ ...config, seed: `band|${k}` }, catalog);
+        for (let g = 0; g < 300 && st.outcome === 'open'; g++) {
+          const who = st.whose;
+          const action = who === 'you' ? (you === 'careful' ? carefulFor(st, who) : lookaheadFor(st, who)) : mixFor(st, who, { wit });
+          if (!act(st, action ?? { kind: 'end' }, who).ok) throw new Error('line returned an illegal move');
+        }
+        if (st.outcome === 'won') wins++;
+        else if (st.outcome === 'lost') { losses++; if (st.foe.hp <= st.foe.hpMax * 0.25) near++; }
+        else unfinished++;
+      }
+      const key = up ? `${you}/level+${up}` : `${you}/mix:${wit}`;
+      cells[key] = { wins, losses, near, unfinished, games: fights.length * seeds };
+      console.error(`${key}: ${JSON.stringify(cells[key])}`);
+    }
+    return { seeds, fights: fights.length, cells };
+  });
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2), arg = (k, d) => (args.includes(k) ? args[args.indexOf(k) + 1] : d);
   if (args.includes('--mirror-lines')) {
-    console.log(JSON.stringify(mirrorLines({ seeds: Number(arg('--seeds', 60)) }), null, 2));
+    const wits = arg('--wits', null);
+    console.log(JSON.stringify(wits === null ? mirrorLines({ seeds: Number(arg('--seeds', 60)) }) : mirrorWits({ seeds: Number(arg('--seeds', 30)), wits: wits.split(',').map(Number) }), null, 2));
     process.exit(0);
   }
   const seeds = Number(arg('--seeds', 40)), only = arg('--only', null)?.split(','), rules = arg('--rules', 'both'), bare = args.includes('--bare-gear'), pills = args.includes('--pills') ? TWO_PILLS : null, knobs = args.includes('--fit') ? FIT : args.includes('--knobs') ? JSON.parse(arg('--knobs', '{}')) : KNOBS_OFF;
