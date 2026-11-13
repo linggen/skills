@@ -1083,7 +1083,7 @@ several times its face. His calls, 2026-11-12: *斗法这里为了平衡, 都是
 - **Order:** the fair base (branch `feat/duel-fixed-numbers`), then 品 · 框 · the 卡册, then graded beasts and drops, then
   PvP. The save changes; the game says it is a beta (2026-11-12), and Mac and phone ship together.
 
-### 品 · 框 · the 卡册 【设计 2026-11-12; no chances yet】
+### 品 · 框 · the 卡册 【设计 2026-11-12; 品 · 框 · the 卡册 已建 2026-11-12 (branch `feat/card-pin`); no chances yet】
 
 **品 is read off where a card is found; it is never typed on the card.** So it survives the cost audit, and
 cards.json gains no field: rules/cards.mjs derives it from `from` and from where the card's beast stands (mijing.json).
@@ -1114,7 +1114,18 @@ not a target; it stands as a pyramid without being forced into one. 灰狼 · �
   drops; a drop empties it. The chance is never shown, the count always.
 - **A 重 with nothing left** wears 收齐. Its clears pay loot and 灵石 as ever; no roll, no count.
 - **The 卡册:** every card that can be collected. Held, in its frame; not held, a dim back in its frame with one line
-  of where it is found. Counts by 品 and by 重. Mac and phone together.
+  of where it is found. Counts by 品 and by 重. Mac and phone together. 【已建 on the Mac, 2026-11-12: counts by 品 and
+  overall; by 重 waits on the drops】
+- **As built (2026-11-12) 【已建】.** `rules/pin.mjs` `pinOf` — a table from `from.kind` to 品, a 大妖's own card 宝石 by
+  mijing.json, the lowest grade of several sources; on today's data 凡 21 · 银 26 · 金 9 · 宝石 4 · 钻石 18, as above
+  (tests/pin.test.mjs names the cards if it moves). The three 符 (符 · 踏马符 · 五雷符) are 凡 and held while in the bag.
+  `whereOf` the one line (a 回 and who, a shop's keeper, the beast beaten, a 重 and its 大妖, the 卷 a legend is tamed
+  in). The 卡册 is a read, `deck --action=book` (`kace`), asked when its view opens — never on Look. The frame
+  (battle.css § 框, card-reveal.css): one mark over the card, out of its flow — 银 one silver line, 金 a double gold
+  line, 宝石 and a red gem at the head, 钻石 and a pale gem and four corner marks; on the hand, the rank (the beast's
+  side too), the 牌组, 所得 and 得牌. A 凡 card's markup is main's byte for byte. The 卡册 is the 牌组's second view
+  (kace.js): leaves by 品, and the companions' leaf face up, not counted. **Not built:** drops and their chances,
+  机缘, graded beasts and the rarer 大妖, 收齐, counts by 重, the phone's view.
 - **v3's 「under ten held, two of a card」 stands**: the early deck may play a held card twice; the 卡册 holds it once.
 - **Waits on:** the fair base landing (it edits the same rules), then 品 derived + 框 + the 卡册 (no chance involved,
   can ship alone), then the simulator (runs a day from § 耗材, the clear rate from fair fights), then new cards and

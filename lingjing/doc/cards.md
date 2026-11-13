@@ -30,6 +30,22 @@ Several cards want renaming to the book's word: 水雾→冰锥, 金爪→金刃
 
 Sources are marked **书** (the book says it) or **游戏** (game-only: a shop or a fight reward). Every card is gained before it can be played. Quotes are from `story/jiuding-lu/0N-第N回.md`.
 
+## 0.1 品 · the 卡册 (built 2026-11-12, design.md § 斗法 v4 · 品 · 框 · the 卡册)
+
+品 is read off where a card is found (`rules/pin.mjs`), never written in cards.json. On today's data:
+
+| 品 | From | Cards |
+|---|---|---|
+| 凡 (no frame) | `story` · `beat` · `tale` · `shop` | 21 |
+| 银 | `beast` — what a beast (or a person) leaves the first time | 26 |
+| 金 | `foe` — a beast's own card | 9 |
+| 宝石 | `foe` — the own card of a 重's 大妖 (mijing.json): 蠪侄 · 九首 · 火鸦 · 雷仆 | 4 |
+| 钻石 | `tame` · `summon` | 18 |
+
+78 to collect. Not collected (28): the companions' 12 (阿禾 9 · 孙二狗 2 · 银月 1; the 卡册 shows them on their own
+leaf), six people's arts (山精 · 土偶 · 五雷法 · 燎原 · 金梭 · 剑影), ten with no source (tokens, blows, 火柴's strike).
+A card with several sources takes the commonest (回气丹: a scene and a tale, 凡).
+
 ## 1. 斗法小队, 回 by 回
 
 | 回 | Beside 小满 | Book |
