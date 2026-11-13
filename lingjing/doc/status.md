@@ -108,7 +108,7 @@ The master's weekly seal, the 印谱, mastery (doc/games.md § 师父传印): ru
 
 - **Not seen on a device or a live page:** everything landed after the morning verify run (cultivation floor, full bar, holds, share gates, 画猜 hint, the three page fixes, the phone's 在 Mac 上玩). The morning run's playbot review opened 12 of 79 shots and must be redone before a release gate.
 - **九层 stays** (Hanli: 「九层保持现状」): 圆满 at 瞿老's door, the night 09-qulao → 09-shijie → 09-cliff is the 筑基 beat.
-- **七层** took the typical player 5.6 days in one block (one scene before its gate); on wt/pay-by-layer the 连环差事 九节菖蒲 breaks it (≤ 1.4 days, § The numbers system) — Hanli reviews its text.
+- **七层** took the typical player 5.6 days in one block (one scene before its gate); on wt/pay-by-layer the 连环差事 九节菖蒲 breaks it (≤ 1.4 days, § The numbers system) — Hanli reviews its text. **Settled 2026-11-13 (checked for Hanli): no number moved.** On today's 耗材 numbers the longest stretch of games between beats in 七层 (09-shenshi) is 1.51 days typical · 1.87 frugal · 3.0 light, under the 2-day rule (tests/pacing.test.mjs); the old 「830 → ~600」 option is moot (七层 is 860 by the curve now, and a hand-set threshold would break the empty `numbers.mjs --apply` and move saves that carry by percent).
 - **格斗 repaint paused** (Hanli: 「先这样吧. 以后有时间, 让gpt画吧」): the silhouette + FLUX method gives extra limbs; tools at tag `wip/2026-11-10-fighter-pose`. Five fighters still at 33 frames. Candidates later: GPT over a colour-coded pose sheet, or Blender renders.
 - 画猜: a 「看图鉴」 help button was offered, not built; the hint's layout at 375 not looked at.
 - Phone: 问签 is told apart from 银月's talking games by its opener name in Dart (`macChatOnly`); the rules should say which rows are the Mac chat's.
