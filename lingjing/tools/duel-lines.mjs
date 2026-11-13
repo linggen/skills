@@ -3,9 +3,11 @@
 // companions), played by both lines over fixed seeds, with the even rules ON (balance.json `duel_hp.foe.deck`, set here in
 // memory — the file is not touched) and OFF (the rules as they stand).
 //
-//   node tools/duel-lines.mjs [--seeds N] [--only key,id] [--rules on|off|both] [--bare-gear] [--pills] [--fit | --knobs '{json}'] [--patch '{json}'] [--json]
+//   node tools/duel-lines.mjs [--seeds N] [--only key,id] [--rules on|off|both] [--bare-gear] [--pills] [--fit | --knobs '{json}'] [--patch '{json}'] [--creatures '{json}'] [--decks '{key: [ids]}'] [--json]
 //   --pills: his 丹囊 carries the band's two pills; --fit / --knobs: the fit's knob block over EVEN (in memory).
 //   --patch: card fields changed in memory for the run, e.g. '{"huochai":{"atk":4,"hp":3}}' (a proposal weighed, nothing written).
+//   --creatures: creature fields changed in memory, e.g. '{"lang":{"wit":"plain"}}' (a wit or a deck weighed before it is written).
+//   --decks: a beast's deck by fight key, changed in memory (a proposal weighed; creatures.json is not edited).
 //   --bare-gear: nothing worn, no 符, no pill on his side (default off: the output is as it was).
 //
 // Three lines: `thinking` is `lookahead` (scripts/fightline.js), `careless` is `careful` (tools/trial-sim.mjs fightOnce, one-ply
@@ -23,9 +25,14 @@ export const EVEN = { share: { weak: 1, normal: 1, strong: 1 }, by_hp: [], top: 
 /* The knob block of the fit (docs: duel-audit-2026-11-12.md § The fit), over EVEN, in memory only — balance.json is not touched and the
    live rules read none of it while `duel_hp.foe` is absent. `gear`: × on a worn thing's fight points (whole numbers after); `deck.by_rank`: the
    ten's budget by the beast's class (`by_hp` reads the class off creatures.json `hp`); `step`: levels above his by class (never past his realm).
-   Left empty here: EVEN alone is today's even set; `FIT` below is the set the third try ends on (skill by level). */
+   Left empty here: EVEN alone is today's even set; `FIT` below is the set the fourth try ends on (skill by standing). */
 export const KNOBS_OFF = {};
 export const FIT = {
+  gear: 0.2, deck: { per_level: 1.3 },
+  ai: { by_standing: { roaming: [[1, 'foe'], [5, 'careful']], room: 'careful', xiong: 'lookahead', boss: { line: 'lookahead', up: 1 }, story: 'careful' } },
+};
+/* The third try's set (skill by level, class shifting it), kept for the record. */
+export const FIT_BY_LEVEL = {
   gear: 0.2, deck: { per_level: 1.3 }, by_hp: [[1.3, 'weak'], [2.0, 'normal']],
   ai: { by_level: [1, 6], class_step: { weak: 0, normal: 1, strong: 0 } }, step: { normal: 1, strong: 1 },
 };
@@ -42,6 +49,22 @@ export function withCards(patch, f) {
   const held = Object.entries(patch ?? {}).map(([id, fields]) => { const c = catalog[id]; if (!c) throw new Error(`no card ${id}`); return [c, Object.fromEntries(Object.keys(fields).map(k => [k, c[k]])), fields]; });
   for (const [c, , fields] of held) Object.assign(c, fields);
   try { return f(); } finally { for (const [c, old] of held) for (const [k, v] of Object.entries(old)) { if (v === undefined) delete c[k]; else c[k] = v; } }
+}
+
+/// Fields of creatures changed in memory (`{ id: { wit, deck, ... } }`) for the run of `f`, put back after: a wit or a deck weighed before it is written.
+export function withCreatures(patch, f) {
+  const held = Object.entries(patch ?? {}).map(([id, fields]) => { const c = content.creatures.creatures.find(x => x.id === id); if (!c) throw new Error(`no creature ${id}`); return [c, Object.fromEntries(Object.keys(fields).map(k => [k, c[k]])), fields]; });
+  for (const [c, , fields] of held) Object.assign(c, fields);
+  try { return f(); } finally { for (const [c, old] of held) for (const [k, v] of Object.entries(old)) { if (v === undefined) delete c[k]; else c[k] = v; } }
+}
+
+/// A fight's beast deck changed in memory for the run of `g` (a pool entry carries its own over the creature's, story-fights foeOf), put back after.
+export function withDeck(f, deck, g) {
+  if (!deck) return g();
+  if (!f.pool) return withCreatures({ [f.id]: { deck } }, g);
+  const e = Object.values(content.places).map(p => p.pools?.[f.pool]).find(Boolean)?.beasts.find(b => b.creature === f.id);
+  const had = e.deck; e.deck = deck;
+  try { return g(); } finally { if (had === undefined) delete e.deck; else e.deck = had; }
 }
 
 /// Run `f` with the even switch on or off (the content's balance edited in memory, put back after). `knobs`: a block merged over EVEN.
@@ -95,10 +118,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2), arg = (k, d) => (args.includes(k) ? args[args.indexOf(k) + 1] : d);
   const seeds = Number(arg('--seeds', 40)), only = arg('--only', null)?.split(','), rules = arg('--rules', 'both'), bare = args.includes('--bare-gear'), pills = args.includes('--pills') ? TWO_PILLS : null, knobs = args.includes('--fit') ? FIT : args.includes('--knobs') ? JSON.parse(arg('--knobs', '{}')) : KNOBS_OFF;
   const patch = JSON.parse(arg('--patch', '{}'));
-  const rows = withCards(patch, () => FIGHTS.filter(f => !only || only.includes(keyOf(f)) || only.includes(f.id)).map(f => ({
+  const creatures = JSON.parse(arg('--creatures', '{}')), decks = JSON.parse(arg('--decks', '{}'));
+  const rows = withCreatures(creatures, () => withCards(patch, () => FIGHTS.filter(f => !only || only.includes(keyOf(f)) || only.includes(f.id)).map(f => ({
     key: keyOf(f), name: f.name, at: f.at,
-    ...(rules !== 'off' ? { even: duel(f, { on: true, seeds, bare, pills, knobs }) } : {}), ...(rules !== 'on' ? { main: duel(f, { on: false, seeds, bare }) } : {}),
-  })));
+    ...(rules !== 'off' ? { even: withDeck(f, decks[keyOf(f)], () => duel(f, { on: true, seeds, bare, pills, knobs })) } : {}), ...(rules !== 'on' ? { main: duel(f, { on: false, seeds, bare }) } : {}),
+  }))));
   if (args.includes('--json')) console.log(JSON.stringify({ seeds, rows, summary: summary(rows) }, null, 1));
   else {
     const pc = x => (x * 100).toFixed(0).padStart(4);

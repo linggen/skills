@@ -432,12 +432,12 @@ export function beastTen(content, creature, level) {
    realm line he has not crossed (`beastClamp` says when the clamp bit). Without the knob, foeLevel. */
 const realmEnd = L => (Math.floor((Math.max(1, L) - 1) / 9) + 1) * 9;
 export function beastLevel(content, state, creature) {
-  const Lf = foeLevel(content, state, creature), step = content?.balance?.duel_hp?.foe?.step?.[foeRank(content, creature)];
+  const Lf = foeLevel(content, state, creature), step = standingUp(content, creature) || content?.balance?.duel_hp?.foe?.step?.[foeRank(content, creature)];
   if (Lf == null || !step) return Lf;
   return Math.max(1, Math.min(Lf + step, Math.max(Lf, realmEnd(fightLevel(content, state)))));
 }
 export const beastClamp = (content, state, creature) => {
-  const Lf = foeLevel(content, state, creature), step = content?.balance?.duel_hp?.foe?.step?.[foeRank(content, creature)];
+  const Lf = foeLevel(content, state, creature), step = standingUp(content, creature) || content?.balance?.duel_hp?.foe?.step?.[foeRank(content, creature)];
   return Boolean(step && Lf != null && Lf + step > beastLevel(content, state, creature));
 };
 /* `duel_hp.foe.ai` (斗法 v4, the fit): the line that plays the beast's seat. Two shapes. By class: { weak · normal · strong → 'foe' (the foe
@@ -451,9 +451,22 @@ export function lineByLevel(ai, level, rank) {
   const rung = ai.by_level.filter(from => level >= from).length + (ai.class_step?.[rank] ?? 0);
   return LINE_LADDER[Math.max(0, Math.min(LINE_LADDER.length - 1, rung))];
 }
+/* Skill by standing (`duel_hp.foe.ai.by_standing`, the builder's ruling 2026-11-13: the two sides are equal, what differs is how well the beast plays and that
+   follows where it stands): { roaming · room · xiong · boss · story → a line, or [[from his level, line], ...], or { line, up } }. `creature.standing` is set
+   by the door (not wired: the switch is off); a creature with none keeps the by-level default above. `up`: levels above its own the beast stands at (a 大妖). */
+export function lineByStanding(by, standing, level) {
+  const v = by?.[standing];
+  if (v == null) return null;
+  if (typeof v === 'string') return v;
+  if (Array.isArray(v)) return v.filter(([from]) => level >= from).at(-1)?.[1] ?? v[0][1];
+  return v.line ?? null;
+}
+const standingUp = (content, creature) => content?.balance?.duel_hp?.foe?.ai?.by_standing?.[creature.standing]?.up ?? 0;
 const evenAi = (content, state, creature) => {
   if (!evenDuel(content, state, creature)) return {};
-  const line = lineByLevel(content.balance.duel_hp.foe.ai, beastLevel(content, state, creature) ?? fightLevel(content, state), foeRank(content, creature));
+  const ai = content.balance.duel_hp.foe.ai;
+  const line = ai?.by_standing && creature.standing ? lineByStanding(ai.by_standing, creature.standing, fightLevel(content, state))
+    : lineByLevel(ai, beastLevel(content, state, creature) ?? fightLevel(content, state), foeRank(content, creature));
   return line && line !== 'foe' ? { ai: line } : {};
 };
 function evenDeck(content, state, creature, foe) {
