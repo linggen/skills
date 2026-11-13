@@ -3,6 +3,7 @@
 // most — read off a copy of the fight, never an opinion (the same measure as tools/battle-sim.mjs).
 // Pure; it never touches the fight it reads. The crawler then makes that move with real taps.
 import { EFFECTS, LINES, act, foeTurn, legal, offers, simCopy } from './battle.js';
+import { unseen } from './duel-unseen.js';
 
 const sum = (board, f) => board.reduce((n, m) => n + f(m), 0);
 const snap = (st) => ({
@@ -131,13 +132,20 @@ function rolloutFor(st, who, depth) {
 }
 /// The lookahead line for `who`: each move tried on a copy and the fight played out from there by the careful line on both seats (a cap of `depth`
 /// moves bounds the cost: the fight to its end by default, 300); the best ending is played. null ends the turn.
-export function lookaheadFor(st, who = 'you', { depth = 300 } = {}) {
+export function lookaheadFor(st, who = 'you', { depth = 300, samples = 4, seed } = {}) {
+  if (!Number.isInteger(samples) || samples < 1) throw new RangeError('samples must be a positive integer');
+  const opp = who === 'you' ? 'foe' : 'you';
+  const base = seed ?? JSON.stringify([who, st.turn, st[who].hand, st[who].deck.length, st[opp].hand.length, st[opp].deck.length]);
+  const copies = Array.from({ length: samples }, (_, i) => unseen(st, `${base}|${i}`, who));
   let best = null, top = -Infinity;
   for (const a of [...movesOf(st, who), { kind: 'end' }]) {
-    const copy = copyOf(st);
-    if (!act(copy, a, who).ok) continue;
-    const v = rolloutFor(copy, who, depth);
-    if (v > top) { top = v; best = a; }
+    let total = 0;
+    for (const sample of copies) {
+      const copy = copyOf(sample);
+      if (!act(copy, a, who).ok) { total = -Infinity; break; }
+      total += rolloutFor(copy, who, depth);
+    }
+    if (total > top) { top = total; best = a; }
   }
   return best?.kind === 'end' ? null : best;
 }

@@ -1,16 +1,8 @@
 // Facts for the duel's coach. All simulations are copies and use seeded shuffles.
-import { act, dealt, effectOf, offers, shuffle, simCopy } from './battle.js';
+import { act, dealt, effectOf, offers, simCopy } from './battle.js';
 import { careful, playOut } from './fightline.js';
-
-export function unseen(st, seed) {
-  const copy = simCopy(st);
-  const handSize = copy.foe.hand.length;
-  const pool = shuffle([...copy.foe.hand, ...copy.foe.deck], `${seed}|foe`);
-  copy.foe.hand = pool.slice(0, handSize);
-  copy.foe.deck = pool.slice(handSize);
-  copy.you.deck = shuffle(copy.you.deck, `${seed}|you`);
-  return copy;
-}
+import { unseen } from './duel-unseen.js';
+export { unseen } from './duel-unseen.js';
 
 export function honestBest(st, { samples = 8, seed = 1 } = {}) {
   if (!Number.isInteger(samples) || samples < 1) throw new RangeError('samples must be a positive integer');

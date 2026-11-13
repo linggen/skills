@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { begin, act } from '../scripts/battle.js';
 import { unseen, honestBest, newCoach, note, summary, killNow } from '../scripts/duelcoach.js';
 import { handle } from '../scripts/duelcoach-worker.js';
+import { lookaheadFor, carefulFor } from '../scripts/fightline.js';
 
 const cards = {
   hit: { id: 'hit', name: 'Hit', kind: 'spell', cost: 2, effect: { damage: 5 } },
@@ -27,6 +28,18 @@ test('unseen preserves visible state, counts and pooled cards, deterministically
   assert.deepEqual([...a.foe.hand, ...a.foe.deck].sort(), ['a', 'b', 'c', 'd']);
   assert.deepEqual([...a.you.deck].sort(), ['a', 'b', 'c', 'd']);
   assert.ok(Array.from({ length: 8 }, (_, i) => unseen(st, i + 2)).some(x => JSON.stringify([x.foe.hand, x.foe.deck, x.you.deck]) !== JSON.stringify([a.foe.hand, a.foe.deck, a.you.deck])));
+});
+
+test('foe unseen preserves its hand and is invariant to hidden rearrangement', () => {
+  const st = opened(); st.whose = 'foe'; st.foe.hand = ['hit', 'heal']; st.foe.deck = ['a', 'b', 'c'];
+  st.you.hand = ['a', 'b']; st.you.deck = ['c', 'd'];
+  const changed = structuredClone(st);
+  changed.foe.deck.reverse(); changed.you.hand = ['d', 'c']; changed.you.deck = ['b', 'a'];
+  const a = unseen(st, 42, 'foe'), b = unseen(changed, 42, 'foe');
+  assert.deepEqual(a, b); assert.deepEqual(a.foe.hand, st.foe.hand);
+  assert.equal(a.you.hand.length, 2); assert.equal(a.you.deck.length, 2);
+  assert.deepEqual(lookaheadFor(st, 'foe', { depth: 4 }), lookaheadFor(changed, 'foe', { depth: 4 }));
+  assert.deepEqual(carefulFor(st, 'foe'), carefulFor(changed, 'foe'));
 });
 
 test('honestBest finds an immediate victory', () => {
