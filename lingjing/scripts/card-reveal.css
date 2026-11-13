@@ -22,23 +22,28 @@
 .rv-card[data-el="water"] .rv-art { box-shadow: inset 0 0 0 1px rgba(58, 108, 163, .5); }
 .rv-card[data-el="fire"]  .rv-art { box-shadow: inset 0 0 0 1px rgba(192, 74, 48, .5); }
 .rv-card[data-el="earth"] .rv-art { box-shadow: inset 0 0 0 1px rgba(156, 118, 65, .5); }
-/* 框 on the big card (battle.css § 框): 银 one silver line · 金 a double gold line · 宝石 and a red gem at the head · 钻石
-   and a pale gem and four corner marks. 凡 none. Laid over the paper, never in its flow. */
-.rv-frame { position: absolute; inset: 6px; z-index: 1; border-radius: 7px; pointer-events: none; }
-.rv-card.pin-yin .rv-paper { border-color: #7896B0; }
-.rv-card.pin-yin .rv-frame { box-shadow: inset 0 0 0 3px rgba(104, 136, 164, 0.95); }
-.rv-card:is(.pin-jin, .pin-baoshi, .pin-zuanshi) .rv-paper { border-color: #A9822B; }
-.rv-card:is(.pin-jin, .pin-baoshi, .pin-zuanshi) .rv-frame { border: 5px double rgba(169, 130, 43, 0.95); }
-.rv-card:is(.pin-baoshi, .pin-zuanshi) .rv-frame::after { content: ''; position: absolute; left: 50%; top: -5px; width: 14px; height: 14px; margin-left: -7px;
-  transform: rotate(45deg); border-radius: 2px; border: 1.5px solid #A9822B; box-shadow: 0 0 0 2px rgba(251, 246, 234, 0.9); }
-.rv-card.pin-baoshi .rv-frame::after { background: radial-gradient(circle at 35% 30%, #E07A68, #9A2C21 70%); }
-.rv-card.pin-zuanshi .rv-frame::after { background: radial-gradient(circle at 35% 30%, #FFFFFF, #B9D3E2 60%, #6F93AE); }
-.rv-card.pin-zuanshi .rv-frame::before { content: ''; position: absolute; inset: -4px; --k: #A9822B; --l: 18px; --t: 3px;
-  background:
-    linear-gradient(var(--k), var(--k)) top left / var(--l) var(--t) no-repeat, linear-gradient(var(--k), var(--k)) top left / var(--t) var(--l) no-repeat,
-    linear-gradient(var(--k), var(--k)) top right / var(--l) var(--t) no-repeat, linear-gradient(var(--k), var(--k)) top right / var(--t) var(--l) no-repeat,
-    linear-gradient(var(--k), var(--k)) bottom left / var(--l) var(--t) no-repeat, linear-gradient(var(--k), var(--k)) bottom left / var(--t) var(--l) no-repeat,
-    linear-gradient(var(--k), var(--k)) bottom right / var(--l) var(--t) no-repeat, linear-gradient(var(--k), var(--k)) bottom right / var(--t) var(--l) no-repeat; }
+
+/* 框 v2: the border image rounds each side to whole 回纹 cells. The face is a separate layer. */
+:is(.bleaf, .bminion, .rv-paper):has(> :is(.bpin, .rv-frame)) { container-type: inline-size; }
+:is(.bpin, .rv-frame) { position: absolute; inset: 0; z-index: 3; box-sizing: border-box; pointer-events: none; --band: max(3px, 6cqw); border: var(--band) solid transparent; border-radius: 0; }
+.pin-yin > .bpin, .pin-yin .rv-frame { border-color: #A9B2BC; box-shadow: inset 0 0 0 1px #5E6B79, 0 0 0 1px #5E6B79; --corner: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M22 5H12C2 1 1 15 8 18c7 3 12-5 7-9-4-3-9 1-6 5 2 2 5 0 4-2M5 12v10%22 fill=%22none%22 stroke=%22%2355616F%22 stroke-width=%222%22 stroke-linecap=%22round%22/%3E%3C/svg%3E"); }
+:is(.pin-jin, .pin-baoshi, .pin-zuanshi) > .bpin, :is(.pin-jin, .pin-baoshi, .pin-zuanshi) .rv-frame { border-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2242%22 height=%2242%22 viewBox=%220 0 42 42%22%3E%3Crect width=%2242%22 height=%2242%22 fill=%22%23BE9A3C%22/%3E%3Cpath d=%22M0 8h42M0 34h42M0 34V8h17v20H6V18h7M25 34V8h17v20H31V18h7%22 fill=%22none%22 stroke=%22%235A3F0C%22 stroke-width=%222.5%22/%3E%3Cpath d=%22M1 1h40v40H1z%22 fill=%22none%22 stroke=%22%236E5216%22 stroke-width=%222%22/%3E%3C/svg%3E") 14 / var(--band) / 0 round; }
+.pin-zuanshi > .bpin, .pin-zuanshi .rv-frame { border-image-source: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2242%22 height=%2242%22 viewBox=%220 0 42 42%22%3E%3Crect width=%2242%22 height=%2242%22 fill=%22%23DCCB92%22/%3E%3Cpath d=%22M0 8h42M0 34h42M0 34V8h17v20H6V18h7M25 34V8h17v20H31V18h7%22 fill=%22none%22 stroke=%22%237A6528%22 stroke-width=%222.5%22/%3E%3Cpath d=%22M1 1h40v40H1z%22 fill=%22none%22 stroke=%22%238A7536%22 stroke-width=%222%22/%3E%3C/svg%3E"); }
+:is(.pin-baoshi, .pin-zuanshi) > .bpin, :is(.pin-baoshi, .pin-zuanshi) .rv-frame { box-shadow: inset 0 0 0 1.5px #8E2323; --corner: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M3 13C0 8 4 5 8 7 6 2 11 0 14 4c5-1 8 4 4 7-1 5-5 8-9 6L4 22l2-6z%22 fill=%22%23DDC275%22 stroke=%22%236E5216%22 stroke-width=%221.4%22/%3E%3Ccircle cx=%2211%22 cy=%2211%22 r=%222%22 fill=%22%238E2323%22/%3E%3C/svg%3E"); }
+.pin-zuanshi > .bpin, .pin-zuanshi .rv-frame { box-shadow: inset 0 0 0 1.5px #8DB8D0; --corner: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%228%22 fill=%22%23CFE4F0%22 stroke=%22%238A7536%22 stroke-width=%222%22/%3E%3Ccircle cx=%229%22 cy=%229%22 r=%223%22 fill=%22white%22/%3E%3C/svg%3E"); }
+:is(.pin-yin, .pin-baoshi, .pin-zuanshi) > .bpin::before, :is(.pin-yin, .pin-baoshi, .pin-zuanshi) .rv-frame::before { content: ''; position: absolute; inset: calc(-1 * var(--band)); background: var(--corner) top left / calc(var(--band) * 2.3) calc(var(--band) * 2.3) no-repeat, var(--corner) top right / calc(var(--band) * 2.3) calc(var(--band) * 2.3) no-repeat, var(--corner) bottom left / calc(var(--band) * 2.3) calc(var(--band) * 2.3) no-repeat, var(--corner) bottom right / calc(var(--band) * 2.3) calc(var(--band) * 2.3) no-repeat; }
+:is(.pin-baoshi, .pin-zuanshi) > .bpin::after, :is(.pin-baoshi, .pin-zuanshi) .rv-frame::after { content: ''; position: absolute; left: 50%; top: calc(-1 * var(--band)); width: max(8px, calc(var(--band) * 2)); height: max(8px, calc(var(--band) * 2)); margin: 0; transform: translate(-50%, -30%) rotate(45deg); border: 2px solid #DDC275; border-radius: 0; background: linear-gradient(135deg, #E48A7C 35%, #8E2323 36%); box-shadow: 0 0 0 1px #6E5216; }
+.pin-zuanshi > .bpin::after, .pin-zuanshi .rv-frame::after { background: linear-gradient(135deg, white 35%, #8DB8D0 36%, #CFE4F0 70%); }
+@container (max-width: 76px) {
+  :is(.pin-jin, .pin-baoshi) > .bpin, :is(.pin-jin, .pin-baoshi) .rv-frame { border-image-source: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2230%22 height=%2230%22%3E%3Crect width=%2230%22 height=%2230%22 fill=%22%23BE9A3C%22/%3E%3Cpath d=%22M0 15h30M15 0v30%22 stroke=%22%235A3F0C%22 stroke-width=%223%22 stroke-dasharray=%225 4%22/%3E%3C/svg%3E"); }
+  .pin-zuanshi > .bpin, .pin-zuanshi .rv-frame { border-image-source: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2230%22 height=%2230%22%3E%3Crect width=%2230%22 height=%2230%22 fill=%22%23DCCB92%22/%3E%3Cpath d=%22M0 15h30M15 0v30%22 stroke=%22%237A6528%22 stroke-width=%223%22 stroke-dasharray=%225 4%22/%3E%3C/svg%3E"); }
+  .pin-yin > .bpin, .pin-yin .rv-frame { --corner: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%228%22 fill=%22%23D2D8DE%22 stroke=%22%235E6B79%22 stroke-width=%222%22/%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%222%22 fill=%22%2355616F%22/%3E%3C/svg%3E"); }
+}
+
+.rv-card.pin-zuanshi .rv-frame { background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,.55) 50%, transparent 65%) -200% 0 / 50% 100% no-repeat; animation: rv-pin-sheen 5.6s linear infinite; }
+@keyframes rv-pin-sheen { 0% { background-position: 300% 0; } 24%, 100% { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .rv-card.pin-zuanshi .rv-frame { animation: none; background: none; } }
+.rv-card:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) .rv-cost { left: 10%; top: 10%; }
 .rv-art { width: 86%; margin-top: 9%; aspect-ratio: 1; overflow: hidden; border-radius: 4px; background: #e9dfc7; }
 .rv-art img { width: 100%; height: 100%; object-fit: cover; display: block; filter: sepia(.12) contrast(1.02); }
 .rv-name { margin-top: 6%; font-family: var(--serif); font-size: calc(var(--cw) * .12); font-weight: 700; color: #1d1b17; letter-spacing: .12em; }

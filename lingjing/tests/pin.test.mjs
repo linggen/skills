@@ -134,13 +134,15 @@ test('a card\'s numbers read the same in every frame: the frame adds a mark, nev
   for (const id of Object.values(FRAMED)) assert.equal(strip(cardFaceHtml(id, ctxOf({ pins }))), cardFaceHtml(id, ctxOf()));
 });
 
-test('the frames are drawn in CSS on the card itself — no picture asset, the mark out of the leaf\'s flow', () => {
+test('v2 frames use snapped SVG patterns, phone colours and motion-safe small marks', () => {
   const css = fs.readFileSync(new URL('../scripts/battle.css', import.meta.url), 'utf8');
   const rv = fs.readFileSync(new URL('../scripts/card-reveal.css', import.meta.url), 'utf8');
-  assert.match(css, /\.bpin \{ position: absolute;/);
-  assert.match(rv, /\.rv-frame \{ position: absolute;/);
-  for (const pin of ['yin', 'jin', 'baoshi', 'zuanshi']) { assert.match(css, new RegExp(`pin-${pin}`)); assert.match(rv, new RegExp(`pin-${pin}`)); }
-  const framing = [...css.matchAll(/[^}]*pin-[a-z]+[^{]*\{[^}]*\}/g), ...rv.matchAll(/[^}]*(?:pin-|rv-frame)[^{]*\{[^}]*\}/g)].map(m => m[0]).join('\n');
-  assert.doesNotMatch(framing, /url\(/, 'no image in a frame');
-  assert.doesNotMatch(framing, /padding|font-size/, 'a frame never moves the words');
+  for (const sheet of [css, rv]) {
+    for (const pin of ['yin', 'jin', 'baoshi', 'zuanshi']) assert.match(sheet, new RegExp(`pin-${pin}`));
+    for (const color of ['#A9B2BC', '#BE9A3C', '#DCCB92', '#8E2323', '#8DB8D0']) assert.ok(sheet.includes(color) || sheet.includes(color.replace('#', '%23')), color);
+    assert.match(sheet, /border-image:[^;]*round/);
+    assert.match(sheet, /@container \(max-width: 76px\)/);
+    assert.match(sheet, /prefers-reduced-motion: reduce[\s\S]*?animation: none/);
+    assert.match(sheet, /5\.6s/);
+  }
 });

@@ -1085,6 +1085,17 @@ several times its face. His calls, 2026-11-12: *斗法这里为了平衡, 都是
 
 ### 品 · 框 · the 卡册 【设计 2026-11-12; 品 · 框 · the 卡册 已建 2026-11-12 (branch `feat/card-pin`); no chances yet】
 
+**框 v2**
+
+| 项 | 规则 |
+|---|---|
+| 带与留白 | 内侧带宽 `max(3px, 牌宽 6%)`；牌面内缩带宽 + 1.5px，文字不缩小 |
+| 凡 / 银 | 凡无框；银 `#A9B2BC`，素边与四角云纹 |
+| 金 | `#BE9A3C`，四边整格回纹、四角回字 |
+| 宝石 | 金色回纹，`#8E2323` 内线、顶部红宝石、四角如意 |
+| 钻石 | `#DCCB92` 回纹，`#8DB8D0` 内线与顶部冰钻、四角圆宝石；流光周期 5.6 秒，暗牌及减少动态效果时停止 |
+| 小牌 | 宽约 76px 以下（带宽 < 4.6px）回纹改虚线、云纹改圆钉；宝石和内线保留 |
+
 **品 is read off where a card is found; it is never typed on the card.** So it survives the cost audit, and
 cards.json gains no field: rules/cards.mjs derives it from `from` and from where the card's beast stands (mijing.json).
 

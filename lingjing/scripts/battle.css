@@ -353,33 +353,34 @@
 .bcard.her .bleaf { border-color: #7896B0; box-shadow: 0 0 0 1px rgba(120, 150, 176, 0.55), 0 6px 16px rgba(120, 150, 176, 0.35); }
 .bcard.her .bleaf .bname { color: #3E5B73; }
 
-/* 框 — a card's 品 as its frame (design.md § 斗法 v4 · 品 · 框 · the 卡册; rules/pin.mjs). 凡 wears none. One mark laid over
-   the leaf (.bpin, out of the flow: the rule text keeps every pixel it had) and the leaf's own edge in the frame's metal.
-   The grades differ in shape, not only hue, so a card dimmed to grey still reads: 银 one thin line · 金 a double line ·
-   宝石 the double line and a gem at the head · 钻石 the double line, the gem and four corner marks. The same on a body on
-   the rank (a thinner line there: the rank's double edge is 护主's) and on the big card of 得牌 (card-reveal.css). */
-.bpin { position: absolute; inset: 2px; z-index: 1; border-radius: 5px; pointer-events: none; }
-.bleaf.pin-yin { border-color: #7896B0; }
-.bleaf.pin-yin .bpin { box-shadow: inset 0 0 0 2px rgba(104, 136, 164, 0.95); }
-.bleaf:is(.pin-jin, .pin-baoshi, .pin-zuanshi) { border-color: #A9822B; }
-.bleaf:is(.pin-jin, .pin-baoshi, .pin-zuanshi) .bpin { border: 3px double rgba(169, 130, 43, 0.95); }
-.bpin::after { content: none; position: absolute; left: 50%; top: -5px; width: 8px; height: 8px; margin-left: -4px; transform: rotate(45deg); border-radius: 1px; }
-:is(.pin-baoshi, .pin-zuanshi) > .bpin::after { content: ''; border: 1px solid #A9822B; box-shadow: 0 0 0 1px rgba(248, 244, 234, 0.9); }
-.pin-baoshi > .bpin::after { background: radial-gradient(circle at 35% 30%, #E07A68, #9A2C21 70%); }
-.pin-zuanshi > .bpin::after { background: radial-gradient(circle at 35% 30%, #FFFFFF, #B9D3E2 60%, #6F93AE); }
-.pin-zuanshi > .bpin::before { content: ''; position: absolute; inset: -2px; border-radius: 6px;
-  --k: #A9822B; --l: 9px; --t: 2px;
-  background:
-    linear-gradient(var(--k), var(--k)) top left / var(--l) var(--t) no-repeat, linear-gradient(var(--k), var(--k)) top left / var(--t) var(--l) no-repeat,
-    linear-gradient(var(--k), var(--k)) top right / var(--l) var(--t) no-repeat, linear-gradient(var(--k), var(--k)) top right / var(--t) var(--l) no-repeat,
-    linear-gradient(var(--k), var(--k)) bottom left / var(--l) var(--t) no-repeat, linear-gradient(var(--k), var(--k)) bottom left / var(--t) var(--l) no-repeat,
-    linear-gradient(var(--k), var(--k)) bottom right / var(--l) var(--t) no-repeat, linear-gradient(var(--k), var(--k)) bottom right / var(--t) var(--l) no-repeat; }
-/* A body on the rank: its edge is 护主's (a double ink line), so the frame stays inside it, single, and the gem sits low. */
-.bminion > .bpin { inset: 2px; border-radius: 4px; z-index: 1; }
-.bminion.pin-yin > .bpin { box-shadow: inset 0 0 0 2px rgba(104, 136, 164, 0.95); }
-.bminion:is(.pin-jin, .pin-baoshi, .pin-zuanshi) > .bpin { box-shadow: inset 0 0 0 2px rgba(169, 130, 43, 0.95); }
-.bminion > .bpin::after { top: 1px; width: 7px; height: 7px; margin-left: -3.5px; }
-.bminion.pin-zuanshi > .bpin::before { --l: 7px; inset: 0; }
+
+/* 框 v2: the border image rounds each side to whole 回纹 cells. The face is a separate layer. */
+:is(.bleaf, .bminion, .rv-paper):has(> :is(.bpin, .rv-frame)) { container-type: inline-size; }
+:is(.bpin, .rv-frame) { position: absolute; inset: 0; z-index: 3; box-sizing: border-box; pointer-events: none; --band: max(3px, 6cqw); border: var(--band) solid transparent; border-radius: 0; }
+.pin-yin > .bpin, .pin-yin .rv-frame { border-color: #A9B2BC; box-shadow: inset 0 0 0 1px #5E6B79, 0 0 0 1px #5E6B79; --corner: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M22 5H12C2 1 1 15 8 18c7 3 12-5 7-9-4-3-9 1-6 5 2 2 5 0 4-2M5 12v10%22 fill=%22none%22 stroke=%22%2355616F%22 stroke-width=%222%22 stroke-linecap=%22round%22/%3E%3C/svg%3E"); }
+:is(.pin-jin, .pin-baoshi, .pin-zuanshi) > .bpin, :is(.pin-jin, .pin-baoshi, .pin-zuanshi) .rv-frame { border-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2242%22 height=%2242%22 viewBox=%220 0 42 42%22%3E%3Crect width=%2242%22 height=%2242%22 fill=%22%23BE9A3C%22/%3E%3Cpath d=%22M0 8h42M0 34h42M0 34V8h17v20H6V18h7M25 34V8h17v20H31V18h7%22 fill=%22none%22 stroke=%22%235A3F0C%22 stroke-width=%222.5%22/%3E%3Cpath d=%22M1 1h40v40H1z%22 fill=%22none%22 stroke=%22%236E5216%22 stroke-width=%222%22/%3E%3C/svg%3E") 14 / var(--band) / 0 round; }
+.pin-zuanshi > .bpin, .pin-zuanshi .rv-frame { border-image-source: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2242%22 height=%2242%22 viewBox=%220 0 42 42%22%3E%3Crect width=%2242%22 height=%2242%22 fill=%22%23DCCB92%22/%3E%3Cpath d=%22M0 8h42M0 34h42M0 34V8h17v20H6V18h7M25 34V8h17v20H31V18h7%22 fill=%22none%22 stroke=%22%237A6528%22 stroke-width=%222.5%22/%3E%3Cpath d=%22M1 1h40v40H1z%22 fill=%22none%22 stroke=%22%238A7536%22 stroke-width=%222%22/%3E%3C/svg%3E"); }
+:is(.pin-baoshi, .pin-zuanshi) > .bpin, :is(.pin-baoshi, .pin-zuanshi) .rv-frame { box-shadow: inset 0 0 0 1.5px #8E2323; --corner: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M3 13C0 8 4 5 8 7 6 2 11 0 14 4c5-1 8 4 4 7-1 5-5 8-9 6L4 22l2-6z%22 fill=%22%23DDC275%22 stroke=%22%236E5216%22 stroke-width=%221.4%22/%3E%3Ccircle cx=%2211%22 cy=%2211%22 r=%222%22 fill=%22%238E2323%22/%3E%3C/svg%3E"); }
+.pin-zuanshi > .bpin, .pin-zuanshi .rv-frame { box-shadow: inset 0 0 0 1.5px #8DB8D0; --corner: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%228%22 fill=%22%23CFE4F0%22 stroke=%22%238A7536%22 stroke-width=%222%22/%3E%3Ccircle cx=%229%22 cy=%229%22 r=%223%22 fill=%22white%22/%3E%3C/svg%3E"); }
+:is(.pin-yin, .pin-baoshi, .pin-zuanshi) > .bpin::before, :is(.pin-yin, .pin-baoshi, .pin-zuanshi) .rv-frame::before { content: ''; position: absolute; inset: calc(-1 * var(--band)); background: var(--corner) top left / calc(var(--band) * 2.3) calc(var(--band) * 2.3) no-repeat, var(--corner) top right / calc(var(--band) * 2.3) calc(var(--band) * 2.3) no-repeat, var(--corner) bottom left / calc(var(--band) * 2.3) calc(var(--band) * 2.3) no-repeat, var(--corner) bottom right / calc(var(--band) * 2.3) calc(var(--band) * 2.3) no-repeat; }
+:is(.pin-baoshi, .pin-zuanshi) > .bpin::after, :is(.pin-baoshi, .pin-zuanshi) .rv-frame::after { content: ''; position: absolute; left: 50%; top: calc(-1 * var(--band)); width: max(8px, calc(var(--band) * 2)); height: max(8px, calc(var(--band) * 2)); margin: 0; transform: translate(-50%, -30%) rotate(45deg); border: 2px solid #DDC275; border-radius: 0; background: linear-gradient(135deg, #E48A7C 35%, #8E2323 36%); box-shadow: 0 0 0 1px #6E5216; }
+.pin-zuanshi > .bpin::after, .pin-zuanshi .rv-frame::after { background: linear-gradient(135deg, white 35%, #8DB8D0 36%, #CFE4F0 70%); }
+@container (max-width: 76px) {
+  :is(.pin-jin, .pin-baoshi) > .bpin, :is(.pin-jin, .pin-baoshi) .rv-frame { border-image-source: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2230%22 height=%2230%22%3E%3Crect width=%2230%22 height=%2230%22 fill=%22%23BE9A3C%22/%3E%3Cpath d=%22M0 15h30M15 0v30%22 stroke=%22%235A3F0C%22 stroke-width=%223%22 stroke-dasharray=%225 4%22/%3E%3C/svg%3E"); }
+  .pin-zuanshi > .bpin, .pin-zuanshi .rv-frame { border-image-source: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2230%22 height=%2230%22%3E%3Crect width=%2230%22 height=%2230%22 fill=%22%23DCCB92%22/%3E%3Cpath d=%22M0 15h30M15 0v30%22 stroke=%22%237A6528%22 stroke-width=%223%22 stroke-dasharray=%225 4%22/%3E%3C/svg%3E"); }
+  .pin-yin > .bpin, .pin-yin .rv-frame { --corner: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%228%22 fill=%22%23D2D8DE%22 stroke=%22%235E6B79%22 stroke-width=%222%22/%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%222%22 fill=%22%2355616F%22/%3E%3C/svg%3E"); }
+}
+
+.bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) { padding: max(4.5px, calc(6% + 1.5px)); padding-bottom: max(14px, calc(6% + 1.5px)); }
+.bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) .bcost { top: max(5px, 9%); left: max(5px, 9%); }
+.bminion:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) { padding: max(4.5px, calc(6% + 1.5px)); }
+.bcard.dim .bleaf:has(> .bpin), .deckfaces .bcard.face.out .bleaf:has(> .bpin) { filter: none; opacity: 1; }
+.bcard.dim .bleaf:has(> .bpin) > :not(.bpin), .deckfaces .bcard.face.out .bleaf:has(> .bpin) > :not(.bpin) { filter: grayscale(.8); opacity: .62; }
+.bminion.dim:has(> .bpin) { opacity: 1; }
+.pin-zuanshi:not(.kback) > .bpin { background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,.55) 50%, transparent 65%) -200% 0 / 50% 100% no-repeat; animation: pin-sheen 5.6s linear infinite; }
+.bcard.dim .pin-zuanshi > .bpin, .bcard.out .pin-zuanshi > .bpin, .bminion.dim.pin-zuanshi > .bpin { animation: none; background: none; }
+@keyframes pin-sheen { 0% { background-position: 300% 0; } 24%, 100% { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .pin-zuanshi > .bpin { animation: none; background: none; } }
 
 /* The day's cast and the 五行 sums, on the card. */
 .blift { color: var(--jade, #4F7D52); font-weight: 600; }
@@ -811,3 +812,10 @@ body.fighting .focus > .gshell > .gshell-bar { padding-bottom: 4px; background: 
   background: radial-gradient(circle, rgba(31, 28, 24, .07), transparent 68%); }
 .bleaf.kback .kname { margin-top: 4px; font-size: 14px; font-weight: 600; letter-spacing: .04em; line-height: 1.2; color: #6A6458; text-wrap: balance; }
 .bleaf.kback .kwhere { display: block; margin-top: 3px; font-family: var(--ui); font-size: 10.5px; line-height: 1.3; color: #7C766B; }
+
+/* Keep the band bright when the phone dims an unaffordable face. */
+@media (max-width: 700px) { .battle .bhand > .bcard.dim .bleaf:has(> .bpin) { filter: none; opacity: 1; } }
+.bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > .bpin { inset: 0; }
+.deckfaces .bcard:has(.bpin) .deckfresh { top: 8%; right: 8%; }
+/* The phone hand's fixed padding must not cover a framed face. */
+.battle .bhand > .bcard .bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) { padding: max(4.5px, calc(var(--cw) * .06 + 1.5px)); padding-bottom: max(14px, calc(var(--cw) * .06 + 1.5px)); }
