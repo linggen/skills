@@ -1070,6 +1070,13 @@ several times its face. His calls, 2026-11-12: *斗法这里为了平衡, 都是
     and gear against this beast, and in the fight he may ask her once — she points a move. After a win that follows a
     loss: what he did right, by name. One line each, never a lecture; her register, never pity.
   - **A loss to the 大妖 is fought again once, in place** (her line first; the second loss ends the run as before).
+  - **She lends her strength after a loss** (Hanli 2026-11-13: *这个主意好, 但是加几点气血好像用处不大, 主灵根攻击也可以加1点*).
+    Each loss to one beast adds a rung for the next fight with it, shown on the fight (「银月借力」), gone at the win:
+    first his 主灵根一击 +1; second 气血 +2 as well; third (the cap) she takes one killing blow for him, once. Knob
+    `balance.duel_lend`; each rung is tuned to about 8–10 points of win rate, by measure. A win with nothing lent pays a
+    little more. Shape after 《哈迪斯》's God Mode (each death eases the next run, to a cap) — to be checked before it is cited.
+    Her word is said only of what is certain (a kill missed, a card wasted, 灵力 unspent) or of a gap that holds across
+    many shuffles — never of noise.
   - **Measured beside the win rate: the near-loss share** — of the fights he loses, the share that end with the beast
     under a quarter of its 气血 (aim: most of them). A fight lost by a mile is a deck to mend, not a word of hers. And
     headroom: one beast against the first-card, careful and thinking lines of his seat — a fight is fit when the
