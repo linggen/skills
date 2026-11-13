@@ -4,7 +4,8 @@
 //
 // A seal counts once it is held `knobs.holdMs` (a hand passes through other shapes between seals; a flash of one is
 // nothing); a WRONG seal must be held longer (`knobs.wrongMs`) before it is a mistake — the way from one seal to the
-// next can pass through a third. A frame or two with no seal (`knobs.graceMs`) does not break a hold. The seal just counted, held on or
+// next can pass through a third. A brief missing or different answer (`knobs.graceMs`) pauses an uncounted hold;
+// a sustained new answer takes over. A counted seal changes immediately. The seal just counted, held on or
 // made again, is never a mistake. Two modes (the level's `mode`):
 //   sequence  the big move: every seal of `sequence` in order casts it ('cast'); a wrong seal held = 走火 ('fizzle'),
 //             back to the first seal — a comic puff, no other cost.
@@ -40,10 +41,15 @@ export function fits(s, seal, knobs = {}) {
 function hold(s, seal, dt, knobs) {
   if (seal == null) {
     const gap = s.gap + dt;
-    return gap > knobs.graceMs ? { ...s, cur: null, held: 0, gap: 0, latched: false } : { ...s, gap };
+    return gap > knobs.graceMs ? { ...s, cur: null, held: 0, gap: 0, latched: false, pending: null, pendingMs: 0 } : { ...s, gap, pending: null, pendingMs: 0 };
   }
-  if (seal !== s.cur) return { ...s, cur: seal, held: 0, gap: 0, latched: false };
-  return { ...s, held: s.held + dt, gap: 0 };
+  if (seal !== s.cur) {
+    if (s.cur == null || s.latched) return { ...s, cur: seal, held: 0, gap: 0, latched: false, pending: null, pendingMs: 0 };
+    const gap = s.gap + dt, pendingMs = seal === s.pending ? s.pendingMs + dt : 0;
+    if (gap > knobs.graceMs) return { ...s, cur: seal, held: pendingMs, gap: 0, latched: false, pending: null, pendingMs: 0 };
+    return { ...s, gap, pending: seal, pendingMs };
+  }
+  return { ...s, held: s.held + dt, gap: 0, pending: null, pendingMs: 0 };
 }
 
 function counted(s, knobs) {
