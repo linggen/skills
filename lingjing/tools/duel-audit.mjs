@@ -2,9 +2,10 @@
 // Analysis only; it changes no card, no number, no rule. Three views:
 //
 //   node tools/duel-audit.mjs cards                     the paper table: points for the cost, every card that can be in a deck
+//   node tools/duel-audit.mjs scope|budget|length [--bare-gear] [--seeds N]|level [--at L --up 1,2 --line l]
 //   node tools/duel-audit.mjs fights [--seeds N] [--only key,key] [--all]
 //                                                       his ten against the beast's ten, level, who runs dry first (bare gear)
-//   node tools/duel-audit.mjs mirror [--seeds N] [--cards id,id|--tails 15|--all] [--level L] [--json]
+//   node tools/duel-audit.mjs mirror [--seeds N] [--cards id,id|--tails 15|--all] [--level L] [--no-fatigue] [--line careful|lookahead] [--scope] [--exclude id,id] [--json]
 //                                                       two identical sheets, deck A against deck A with one card swapped for the card under test
 //
 // PAPER FORMULA (one line, the same for every card, v3's yardstick 1.2 damage per cost single / 0.7 per target sweep):
@@ -16,7 +17,8 @@
 // (cost curve 1 1 2 2 2 3 3 4 4 5), deck B is A with the card of the same cost swapped for the card under test; BOTH sides
 // are played by the `careful` line (fightline.js's, here for either side), A as first mover on one deal and as second on the
 // next, so the first-move edge cancels. The delta is B's win rate − 50.
-import { act, begin, EFFECTS, legal, simCopy } from '../scripts/battle.js';
+import { act, begin, EFFECTS, foeTurn, legal, simCopy } from '../scripts/battle.js';
+import { lookahead } from '../scripts/fightline.js';
 import { FIGHTS, content, keyOf, roadState, setupOf, foeOf } from './story-fights.mjs';
 import { withRules } from './duel-lines.mjs';
 import { fightLevel, foeLevel } from '../scripts/rules/cards.mjs';
@@ -72,6 +74,25 @@ export function paperTable(cards = content.cards.cards, tokens = Object.fromEntr
     .sort((a, b) => b.points - a.points || a.id.localeCompare(b.id));
 }
 
+/* ── 5. Scope: what a player can hold in 卷一 ── */
+
+const creatureOf = (c, id) => c.creatures.creatures.find(x => x.id === id);
+const sceneJuan = (c, id) => Object.values(c.chapters).find(ch => ch.scenes?.[id])?.juan;
+/// Is the card an ordinary deck card of 卷一 (held from its book, bought, or won from a 卷一 beast or person)? `why` names the cut otherwise:
+/// 'owner' (a companion's, 银月 too), 'no source' (a gear's card), 'foe art' (a person's own art: from.kind foe, creature foe-*), 'later 卷'.
+export function scopeOf(card, c = content) {
+  if (card.owner) return { in: false, why: String(card.owner).startsWith('foe-') ? 'foe art' : 'owner' };
+  const from = card.from ?? [];
+  if (!from.length) return { in: false, why: 'no source' };
+  if (from.every(f => f.kind === 'foe' && String(f.creature).startsWith('foe-'))) return { in: false, why: 'foe art' };
+  const here = f => {
+    if (f.kind === 'story' || f.kind === 'beat') return f.scene ? sceneJuan(c, f.scene) === 1 : true;
+    if (f.kind === 'beast' || f.kind === 'foe' || f.kind === 'tame') return (creatureOf(c, f.creature)?.juan ?? 1) === 1;
+    return f.kind === 'shop' || f.kind === 'tale' || f.kind === 'summon';
+  };
+  return from.some(here) ? { in: true, why: '' } : { in: false, why: 'later 卷' };
+}
+
 /* ── 4. The mirror ── */
 
 const SLOTS = [1, 1, 2, 2, 2, 3, 3, 4, 4, 5];
@@ -125,28 +146,63 @@ export function carefulFor(st, who) {
   return best;
 }
 
-/// The even setup of two sheets at one level: no root, no gear, no pill, no party.
-export function sheetSetup(deckYou, deckFoe, seed, level = 10) {
-  const hp = 20 + level, tier = level > 27 ? 'nascent' : level > 18 ? 'core' : level > 9 ? 'foundation' : 'qi';
-  return { mode: 'pve', even: true, seed, you: { tier, step: 0, base: hp, root: null, deck: deckYou }, foe: { tier, root: null, deck: deckFoe, hp_fixed: hp } };
+/// Mirror options: a number is the level; else { level (10), levelYou, levelFoe (a seat one level up), fatigue (false: a dry pile costs nothing,
+/// the setup's `fatigue: false`), line ('careful' | 'lookahead') }.
+const optsOf = o => { const x = typeof o === 'number' ? { level: o } : o ?? {}, level = x.level ?? 10; return { level, levelYou: x.levelYou ?? level, levelFoe: x.levelFoe ?? level, fatigue: x.fatigue !== false, line: x.line ?? 'careful', from: x.from ?? 0 }; };
+const tierAt = level => (level > 27 ? 'nascent' : level > 18 ? 'core' : level > 9 ? 'foundation' : 'qi');
+
+/// The even setup of two sheets: no root, no gear, no pill, no party; each seat's 气血 is 20 + its level, its realm the level's.
+export function sheetSetup(deckYou, deckFoe, seed, o = 10) {
+  const x = optsOf(o), off = x.fatigue ? {} : { fatigue: false };
+  return {
+    mode: 'pve', even: true, seed,
+    you: { tier: tierAt(x.levelYou), step: 0, base: 20 + x.levelYou, root: null, deck: deckYou, ...off },
+    foe: { tier: tierAt(x.levelFoe), root: null, deck: deckFoe, hp_fixed: 20 + x.levelFoe, ...off },
+  };
 }
 
-/// One fight, both sides by the careful line: 'won' (his side), 'lost', or 'open' when it never ended in 400 moves.
-export function playSheets(deckYou, deckFoe, seed, level = 10) {
-  const st = begin(sheetSetup(deckYou, deckFoe, seed, level), catalog);
+/* The lookahead line for either seat: every move tried on a copy and the fight played out from there, BOTH seats by the careful line
+   (fightline.js lookahead does this for his seat and lets the beast's own policy answer); the move whose ending is best is made. */
+function rollout(st, who) {
+  const opp = who === 'you' ? 'foe' : 'you';
+  for (let g = 0; g < 300 && st.outcome === 'open'; g += 1) {
+    const w = st.whose;
+    act(st, carefulFor(st, w) ?? { kind: 'end' }, w);
+  }
+  if (st.outcome === 'open') return -st[opp].hp;
+  const winner = st.outcome === 'won' ? 'you' : 'foe';
+  return winner === who ? 1000 + st[who].hp : -1000 - st[opp].hp;
+}
+export function lookaheadFor(st, who) {
+  let best = null, top = -Infinity;
+  for (const a of [...movesOf(st, who), { kind: 'end' }]) {
+    const copy = simCopy(st);
+    if (!act(copy, a, who).ok) continue;
+    const v = rollout(copy, who);
+    if (v > top) { top = v; best = a; }
+  }
+  return best?.kind === 'end' ? null : best;
+}
+const LINES = { careful: carefulFor, lookahead: lookaheadFor };
+
+/// One fight, both seats by the same line: 'won' (the `you` seat), 'lost', or 'open' when it never ended in 400 moves.
+export function playSheets(deckYou, deckFoe, seed, o = 10) {
+  const x = optsOf(o), line = LINES[x.line], st = begin(sheetSetup(deckYou, deckFoe, seed, x), catalog);
   for (let g = 0; g < 400 && st.outcome === 'open'; g += 1) {
-    const who = st.whose, a = carefulFor(st, who);
+    const who = st.whose, a = line(st, who);
     act(st, a ?? { kind: 'end' }, who);
   }
   return st;
 }
 
-/// B (deck with the card swapped in) against A, each deal twice with the seats swapped; B's win rate, draws half.
-export function mirrorRate(deckA, deckB, seeds, level = 10) {
+/// B (deck with the card swapped in) against A, each deal twice with the seats swapped; B's win rate, draws half. `o.levelB`: B a level up.
+export function mirrorRate(deckA, deckB, seeds, o = 10) {
+  const x = optsOf(o), levelB = typeof o === 'object' && o.levelB != null ? o.levelB : x.level;
   let score = 0, turns = 0, games = 0;
-  for (let k = 0; k < seeds; k += 1) {
+  for (let k = x.from; k < x.from + seeds; k += 1) {
     for (const bFirst of [true, false]) {
-      const st = bFirst ? playSheets(deckB, deckA, `mirror|${k}`, level) : playSheets(deckA, deckB, `mirror|${k}`, level);
+      const seat = bFirst ? { levelYou: levelB, levelFoe: x.level } : { levelYou: x.level, levelFoe: levelB };
+      const st = bFirst ? playSheets(deckB, deckA, `mirror|${k}`, { ...x, ...seat }) : playSheets(deckA, deckB, `mirror|${k}`, { ...x, ...seat });
       const bWon = bFirst ? st.outcome === 'won' : st.outcome === 'lost';
       score += st.outcome === 'open' ? 0.5 : bWon ? 1 : 0;
       turns += st.turn;
@@ -158,7 +214,7 @@ export function mirrorRate(deckA, deckB, seeds, level = 10) {
 
 /// One card against every base: B = base with the card in place of each slot of its cost in turn; the delta (B's win rate − 50) is the
 /// mean over the slots and over the bases that do not already hold the card.
-export function mirrorCard(card, bases, seeds, level = 10) {
+export function mirrorCard(card, bases, seeds, level = 10) { // `level`: a number or the mirror options (optsOf)
   const per = bases.filter(b => !b.deck.includes(card.id)).map(b => {
     const runs = swapIns(b.deck, card).map(w => ({ ...w, ...mirrorRate(b.deck, w.deck, seeds, level) }));
     const win = runs.reduce((n, w) => n + w.win, 0) / runs.length, turns = runs.reduce((n, w) => n + w.turns, 0) / runs.length;
@@ -218,6 +274,54 @@ function describeEven(f, { seeds = 20, bare = true } = {}) {
   };
 }
 
+/* ── 2. How long the even fights run, and what empties first ── */
+
+/// A fight's length under the even rules, the band's line for him (fightline.js lookahead) and the beast's own policy, mean over `seeds`:
+/// the plies it runs, the ply at which each pile first stands empty (and in what share of fights), 反噬's share of what the LOSER's hero took,
+/// and in how many fights the killing blow was 反噬. `null` where the even rules do not reach the fight.
+export function lengthOf(f, { seeds = 40, bare = false } = {}) {
+  return withRules(true, () => {
+    const setup = setupOf(f, { party: [], bare });
+    if (!setup.even) return null;
+    const t = { turns: 0, empty: { you: [], foe: [] }, fat: 0, taken: 0, killed: 0, lost: 0, games: 0 };
+    for (let k = 0; k < seeds; k += 1) {
+      const st = begin({ ...setup, seed: `band|${k}` }, catalog), seen = {};
+      for (let g = 0; g < 300 && st.outcome === 'open'; g += 1) {
+        if (st.whose === 'foe') foeTurn(st); else act(st, lookahead(st), 'you');
+        for (const w of ['you', 'foe']) if (seen[w] == null && st[w].deck.length === 0) seen[w] = st.turn;
+      }
+      for (const w of ['you', 'foe']) if (seen[w] != null) t.empty[w].push(seen[w]);
+      t.turns += st.turn; t.games += 1;
+      if (st.outcome === 'open') continue;
+      const loser = st.outcome === 'won' ? 'foe' : 'you', hits = st.log.filter(e => e.act === 'hurt' && e.who === loser);
+      const amount = e => (e.amount ?? 0) + (e.absorbed ?? 0);
+      t.taken += hits.reduce((n, e) => n + amount(e), 0);
+      t.fat += hits.filter(e => e.kind === 'fatigue').reduce((n, e) => n + amount(e), 0);
+      if (hits.at(-1)?.kind === 'fatigue') t.killed += 1;
+      t.lost += 1;
+    }
+    const mean = xs => (xs.length ? r2(xs.reduce((n, x) => n + x, 0) / xs.length) : null);
+    return {
+      key: keyOf(f), name: f.name, turns: r2(t.turns / t.games),
+      empty: { you: mean(t.empty.you), foe: mean(t.empty.foe), youShare: r2(t.empty.you.length / seeds), foeShare: r2(t.empty.foe.length / seeds) },
+      fatigueShare: t.taken ? r2(t.fat / t.taken) : 0, killedByFatigue: r2(t.killed / Math.max(1, t.lost)),
+    };
+  });
+}
+
+/* ── 7. Deck cost by level ── */
+
+/// His ten's total cost (as fightDeck builds it under the even rules), the beast's ten's, and the budget the beast's follows (13 + 1.5 x level).
+export function budgetRow(f) {
+  return withRules(true, () => {
+    const setup = setupOf(f, { party: [], bare: true }), st = roadState(f, { bare: true }), beast = foeOf(f);
+    if (!setup.even) return null;
+    const L = fightLevel(content, st), Lf = foeLevel(content, st, beast) ?? L, k = content.balance.duel_hp.foe.deck;
+    const his = sumCost(setup.you.deck), its = sumCost(setup.foe.deck), budget = Math.round(k.base + k.per_level * Lf);
+    return { key: keyOf(f), level: L, his, foeLevel: Lf, its, budget, diff: its - his, size: setup.you.deck.length };
+  });
+}
+
 /* ── CLI ── */
 
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -231,19 +335,36 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const rows = FIGHTS.filter(f => !only || only.includes(keyOf(f))).map(f => describeFight(f, { seeds })).filter(r => r.foe.ten.length);
     console.log(JSON.stringify(rows, null, 1));
   } else if (cmd === 'mirror') {
-    const seeds = Number(arg('--seeds', 200)), level = Number(arg('--level', 10)), tails = Number(arg('--tails', 15));
-    const tailIds = [...table.slice(0, tails), ...table.slice(-tails)].map(r => r.id);
-    const bases = [{ name: 'mix', deck: parTen(table, new Set(tailIds)) }, { name: 'bodies', deck: parTen(table, new Set(tailIds), { bodies: true }) }], t0 = Date.now(), rows = [];
+    const seeds = Number(arg('--seeds', 200)), tails = Number(arg('--tails', 15)), scoped = args.includes('--scope');
+    const o = { level: Number(arg('--level', 10)), fatigue: !args.includes('--no-fatigue'), line: arg('--line', 'careful'), from: Number(arg('--from', 0)) };
+    const ofScope = r => !scoped || scopeOf(catalog[r.id]).in, listed = table.filter(ofScope);
+    const tailIds = [...listed.slice(0, tails), ...listed.slice(-tails)].map(r => r.id), keep = new Set([...tailIds, ...(arg('--exclude', '') ?? '').split(',').filter(Boolean)]);
+    const bases = [{ name: 'mix', deck: parTen(table, keep) }, { name: 'bodies', deck: parTen(table, keep, { bodies: true }) }], t0 = Date.now(), rows = [];
     const inBase = id => bases.every(b => b.deck.includes(id));
-    const pickIds = arg('--cards', null)?.split(',') ?? (args.includes('--all') ? table.map(r => r.id).filter(id => !inBase(id)) : tailIds);
+    const pickIds = arg('--cards', null)?.split(',') ?? (args.includes('--all') ? listed.map(r => r.id).filter(id => !inBase(id)) : tailIds);
     for (const b of bases) console.error(`deck ${b.name}: ${show(b.deck)}  (cost ${sumCost(b.deck)})`);
     for (const id of pickIds) {
-      const row = table.find(r => r.id === id), per = mirrorCard(catalog[id], bases, seeds, level);
+      const row = table.find(r => r.id === id) ?? { name: catalog[id].name.zh, cost: catalog[id].cost, points: cardPoints(catalog[id]).points }, per = mirrorCard(catalog[id], bases, seeds, o);
       rows.push({ id, name: row.name, cost: row.cost, points: row.points, ...per });
       console.error(`${id} ${row.points} -> ${per.delta} (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
     }
     const rho = spearman(rows.map(r => r.points), rows.map(r => r.delta));
-    if (json) console.log(JSON.stringify({ seeds, level, decks: Object.fromEntries(bases.map(b => [b.name, b.deck])), rows, spearman: r2(rho) }, null, 1));
+    if (json) console.log(JSON.stringify({ seeds, ...o, decks: Object.fromEntries(bases.map(b => [b.name, b.deck])), rows, spearman: r2(rho) }, null, 1));
     else { for (const r of rows) console.log(`${String(r.points).padStart(5)} ${String(r.delta).padStart(6)} (${r.bases.map(b => b.delta).join(' / ')}) ${r.cost} ${r.id.padEnd(12)} ${r.name}`); console.log(`spearman ${r2(rho)}`); }
+  } else if (cmd === 'scope') {
+    const rows = table.map(r => ({ ...r, ...scopeOf(catalog[r.id]) }));
+    if (json) console.log(JSON.stringify(rows, null, 1));
+    else for (const r of rows) console.log(`${r.in ? 'in ' : 'OUT'} ${r.points.toFixed(2)} ${r.id.padEnd(12)} ${r.name} ${r.why}`);
+  } else if (cmd === 'level') {
+    // identical decks, one seat one level (or two) up: win-rate points per level, both lines
+    const seeds = Number(arg('--seeds', 400)), at = Number(arg('--at', 5)), line = arg('--line', 'careful'), ups = (arg('--up', '1,2')).split(',').map(Number);
+    const ten = parTen(table, new Set()), rows = [];
+    for (const up of ups) { const m = mirrorRate(ten, ten, seeds, { level: at, levelB: at + up, line }); rows.push({ at, up, line, win: r2(m.win), points: r2((m.win - 0.5) * 100), games: m.games }); console.error(JSON.stringify(rows.at(-1))); }
+    console.log(JSON.stringify({ deck: ten, rows }, null, 1));
+  } else if (cmd === 'length') {
+    const only = arg('--only', null)?.split(','), seeds = Number(arg('--seeds', 40)), bare = args.includes('--bare-gear');
+    console.log(JSON.stringify(FIGHTS.filter(f => !only || only.includes(keyOf(f))).map(f => lengthOf(f, { seeds, bare })).filter(Boolean), null, 1));
+  } else if (cmd === 'budget') {
+    console.log(JSON.stringify(FIGHTS.map(budgetRow).filter(Boolean), null, 1));
   } else console.log('usage: node tools/duel-audit.mjs cards|fights|mirror  (see the head of this file)');
 }
