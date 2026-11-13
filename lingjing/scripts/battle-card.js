@@ -614,6 +614,8 @@ export function sayEffect(c, ctx) {
   const e = c.effect ?? {};
   const bits = [];
   if (e.damage != null) bits.push(zh ? `打 ${e.damage} 点` : `${e.damage} damage`);
+  if (e.furWard) bits.push(zh ? '挡下一次致命一击，留 1 气血' : 'Survive the next killing blow at 1 Life');
+  if (e.turnRally) bits.push(zh ? `己方全体本回合 +${e.turnRally} 攻` : `Your rank +${e.turnRally} attack this turn`);
   if (e.sweep != null) bits.push(zh ? `${pro(ctx).its}阵前每个 ${e.sweep} 点` : `${e.sweep} to each of ${pro(ctx).its} rank`);
   if (e.heal != null) bits.push(zh ? `回 ${e.heal} 气血` : `heal ${e.heal}`);
   if (e.armor != null) bits.push(zh ? `护体 +${e.armor}` : `Armor +${e.armor}`);

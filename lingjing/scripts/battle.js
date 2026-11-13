@@ -155,6 +155,8 @@ export const EFFECTS = {
   // One more, 2026-11-07 (Hanli: 蛫's 「可以御火」 must be true — option a): 御 {element, half, turns} — blows of that
   // element at its lead land halved (round down, at least 1) until the end of the other side's next `turns` turns.
   ward: { at: 'none' },
+  furWard: { at: 'none' },
+  turnRally: { at: 'none' },
 };
 
 /* One standing beast state beside the card verbs, 2026-10-16 — 装睡 (犰狳,
@@ -320,11 +322,6 @@ export function begin(setup, catalog) {
   // beast too frail to threaten anyone stands taller by data, never by name.
   // `foe.hp_fixed` (rules/cards.mjs duelFoe): 斗法 on fixed numbers — the beast's 气血 as a whole number, read off its level.
   const foe = sideOf('foe', { ...setup.foe, hpScale: mode.foeHp * (setup.foe.hp ?? 1), ...(ff != null ? { base: (REALMS[setup.you.tier] ?? REALMS.qi).hp * ff, f: ff } : {}), ...(setup.foe.hp_fixed != null ? { base: setup.foe.hp_fixed, step: 0, hpScale: 1 } : {}) }, catalog, mode, seed);
-  if (setup.lend) {
-    you.hp += setup.lend.hp ?? 0; you.hpMax += setup.lend.hp ?? 0;
-    you.powerHit += setup.lend.strike ?? 0;
-    if (setup.lend.ward) { you.lendWard = setup.lend.ward; if (!you.ward) you.ward = 1; }
-  }
   // `uid`: each body that stands gets its own number, in the order it arrives —
   // two of the same card on one rank are two bodies, and the log and the
   // screen must tell them apart (Hanli, 2026-10-15: hitting the second 夫诸 lit
@@ -499,7 +496,10 @@ export function endTurn(st) {
   if (st.outcome !== 'open') return;
   outlived(st, done);
   if (st.outcome !== 'open') return;
-  for (const m of done.board) m.held = false; // its chained turn is over
+  for (const m of done.board) {
+    m.held = false;
+    if (m.turnAtk) { m.atk -= m.turnAtk; delete m.turnAtk; }
+  }
   // 御: a ward on the other side lasts to the end of this side's turn, `left` of them.
   const opp = other(st, done);
   if (opp.wards?.length) {
@@ -731,6 +731,11 @@ function resolve(st, side, effect, target, { arrival = false, leadHeal = false }
       const m = stand(st, side, { id, name: c.name, element: c.element, atk: c.atk, hp, hpMax: hp, taunt: Boolean(c.keywords?.includes('taunt')), sick: true, struck: false });
       st.log.push({ act: 'summoned', who: side.who, id, uid: m.uid });
     }
+  }
+  if (effect.furWard) side.lendWard = 1;
+  if (effect.turnRally) for (const m of side.board) {
+    m.atk += effect.turnRally;
+    m.turnAtk = (m.turnAtk ?? 0) + effect.turnRally;
   }
   if (effect.rally) {
     for (const m of side.board) {

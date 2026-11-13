@@ -18,8 +18,8 @@ const byPin = () => {
   return out;
 };
 
-test('today\'s data gives the design\'s split: 凡 21 · 银 26 · 金 9 · 宝石 4 · 钻石 18 = 78 collected, 28 not', () => {
-  const g = byPin(), want = { fan: 21, yin: 26, jin: 9, baoshi: 4, zuanshi: 18, none: 28 };
+test('today\'s data gives the design\'s split: 凡 21 · 银 26 · 金 9 · 宝石 4 · 钻石 18 = 78 collected, 32 not', () => {
+  const g = byPin(), want = { fan: 21, yin: 26, jin: 9, baoshi: 4, zuanshi: 18, none: 32 };
   for (const [pin, n] of Object.entries(want)) assert.equal(g[pin].length, n, `${pin}: ${g[pin].join(' ')}`);
   assert.equal(Object.keys(pinsOf(content)).length, 78);
 });
@@ -66,6 +66,7 @@ test('not collected: a companion\'s card, a person\'s art, tokens and blows', ()
   for (const id of ['qingteng', 'shangen', 'tiegu', 'yinyue', 'linmu']) assert.equal(pinOf(content, card(id)), null, `${id} is a companion's`);
   for (const id of ['shanjing', 'tuou', 'wulei', 'fenghuo', 'jinsuo', 'jianying']) assert.equal(pinOf(content, card(id)), null, `${id} is a person's art`);
   for (const id of ['tengmiao_token', 'shewei', 'niaohui', 'yigun', 'shizi', 'huochai']) assert.equal(pinOf(content, card(id)), null, `${id} has no source`);
+  for (const c of content.cards.cards.filter(c => c.lent)) assert.equal(pinOf(content, c), null, `${c.id} is lent`);
   assert.equal(pinOf(content, null), null);
 });
 

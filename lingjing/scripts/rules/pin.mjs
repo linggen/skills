@@ -30,7 +30,7 @@ export const rowPin = (content, f) => BY_KIND[f?.kind]?.(f, content) ?? null;
 
 /* The row a card is graded by: the commonest way it can be had (the lowest grade); null when none is a way. */
 export function pinRow(content, card) {
-  if (!card || card.owner) return null; // a companion's card is theirs; a person's art (owner foe-*) theirs too
+  if (!card || card.owner || card.lent) return null; // a companion's card is theirs; a person's art (owner foe-*) theirs too
   const rows = (card.from ?? []).map(f => ({ f, pin: rowPin(content, f) })).filter(r => r.pin);
   if (!rows.length) return null; // tokens and blows: no `from` at all
   return rows.reduce((a, b) => (PINS.indexOf(b.pin) < PINS.indexOf(a.pin) ? b : a));

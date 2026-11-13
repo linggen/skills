@@ -284,14 +284,13 @@ export function recordDuelOutcome(state, foe, outcome) {
   }
 }
 
-export function lendOf(content, lost) {
-  const rungs = content?.balance?.duel_lend?.rungs ?? [];
-  const chosen = rungs.slice(0, Math.max(0, Math.floor(lost || 0)));
-  if (!chosen.length) return null;
-  return chosen.reduce((sum, rung) => {
-    for (const [key, value] of Object.entries(rung)) if (typeof value === 'number') sum[key] = (sum[key] ?? 0) + value;
-    return sum;
-  }, {});
+export function lendOf(content, lost, lesson) {
+  const k = content?.balance?.duel_lend ?? {}, n = Math.min(k.cap ?? 3, Math.max(0, Math.floor(lost || 0)));
+  if (!n || !k.order?.length) return null;
+  const cards = [k.by_lesson?.[lesson] ?? k.order[0]];
+  if (n >= 2) cards.push(k.order.find(id => !cards.includes(id)));
+  if (n >= 3) cards.push(k.ward);
+  return { cards: cards.filter(Boolean) };
 }
 
 export function fightSetup(content, state, creature, now, game = null, deal = null, read = 0) {
@@ -303,6 +302,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   const main = state.fate?.element?.id ?? state.fate?.element ?? mainRoot(state) ?? 'wood';
   // 小队 (party.json, cards.md § 5): who stands beside him in this fight. 银月 is a member, never
   // a card in hand: asleep in the 木牌 through 卷一, she stands in the row from the 卷 she wakes in.
+  const lend = lendOf(content, state.duel_lost?.[creature.id]);
   const party = partyFor(content, state, creature, game);
   const withHer = party.some(m => m.id === 'yinyue');
   const gear = gearFight(content, state), lifts = withHer ? herLifts(content, state) : null;
@@ -319,11 +319,11 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   const pouch = pouchFor(content, state).map(p => (p.heal && into(p) !== 1 ? { ...p, heal: Math.max(1, Math.round(p.heal / into(p))) } : p));
   return {
     mode: 'pve',
-    ...(lendOf(content, state.duel_lost?.[creature.id]) ? { lend: lendOf(content, state.duel_lost?.[creature.id]) } : {}),
+    ...(lend ? { lend } : {}),
     ...(lv ? { anchor: lv.anchor } : {}),
     seed: deal ? `${duelSeed(state, creature, now)}|${deal}` : duelSeed(state, creature, now),
     you: {
-      tier: state.tier, step: fixedSheet(content) ? 0 : hpStep(content, state.tier, state.step ?? 0), ...(fixedSheet(content) ? { base: hpMaxOf(state, content) } : {}), root: main, deck, extra: [...(creature.extra ?? []), ...gear.charms],
+      tier: state.tier, step: fixedSheet(content) ? 0 : hpStep(content, state.tier, state.step ?? 0), ...(fixedSheet(content) ? { base: hpMaxOf(state, content) } : {}), root: main, deck, extra: [...(creature.extra ?? []), ...gear.charms, ...(lend?.cards ?? [])],
       // The fight's own word (an exit game's `foe.fatigue: false`, world.mjs weighed): no 反噬 on a dry deck.
       ...(creature.fatigue === false ? { fatigue: false } : {}),
       ...(party.length ? { party } : {}),
@@ -521,7 +521,7 @@ const starterOf = (content, traits) => {
 };
 /* The cards a source gives: every card whose `from` names it (kind and key: a scene, a task, a creature, an item). */
 export const cardsFrom = (content, kind, key) => (content.cards?.cards ?? [])
-  .filter(c => !c._token && !c.gear && (c.from ?? []).some(f => f.kind === kind && (f.scene ?? f.task ?? f.creature ?? f.item) === key));
+  .filter(c => !c._token && !c.gear && !c.lent && (c.from ?? []).some(f => f.kind === kind && (f.scene ?? f.task ?? f.creature ?? f.item) === key));
 /* Every card a source gives, into his hand: a scene left, a board won (cards.md § 2). */
 export function grantFrom(content, state, kind, key, from) {
   return cardsFrom(content, kind, key).map(c => gainCard(content, state, c.id, from)).filter(Boolean);
@@ -535,7 +535,7 @@ function ownedAtStart(content, state) {
     ...(state.cast ?? []).filter(id => catalog[id]),
   ])];
 }
-export const ownedCards = (content, state) => state.cards ?? ownedAtStart(content, state);
+export const ownedCards = (content, state) => (state.cards ?? ownedAtStart(content, state)).filter(id => !cardCatalog(content)[id]?.lent);
 
 /* One card into the hand he keeps; null when it is unknown or already his.
    `from` is where it came from — kept in `card_from` for the 牌谱 (redesign-v2
@@ -543,7 +543,7 @@ export const ownedCards = (content, state) => state.cards ?? ownedAtStart(conten
    the scene, when one is played, names its 回 (rules/hui.mjs). */
 function gainCard(content, state, id, from = null) {
   const card = cardCatalog(content)[id];
-  if (!card || card._token || card.gear) return null; // a sword's strike is the sword's (strikeOf), never handed over
+  if (!card || card._token || card.gear || card.lent) return null; // a sword's strike is the sword's (strikeOf), never handed over
   const owned = ownedCards(content, state);
   if (owned.includes(id)) { state.cards = owned; return null; }
   state.cards = [...owned, id];

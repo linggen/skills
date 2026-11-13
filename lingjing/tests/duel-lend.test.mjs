@@ -2,65 +2,53 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
-import { fightSetup, lendOf } from '../scripts/rules/cards.mjs';
-import { begin, act, foeTurn, tokenOf } from '../scripts/battle.js';
-import { lookahead } from '../scripts/fightline.js';
-import { playTo } from '../scripts/rules/progress.mjs';
-import { duel } from '../scripts/rules.mjs';
+import { fightSetup, lendOf, recordDuelOutcome, kaceBrief, gainCard, cardsFrom, deckFor } from '../scripts/rules/cards.mjs';
+import { begin, act, endTurn } from '../scripts/battle.js';
 
 const content = loadContent(), now = new Date('2026-10-21T11:40:00Z');
 const state = newState(content, 'zh', now);
-const beast = content.creatures.creatures.find(c => c.deck?.length && !c.person);
+const beast = content.creatures.creatures.find(c => c.deck?.length);
 const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
-const setup = n => fightSetup(content, { ...state, duel_lost: { [beast.id]: n } }, beast, now);
+const ids = ['yy-howl', 'yy-pounce', 'yy-fire', 'yy-fur'];
 
-test('lend ladder caps and accumulates', () => {
+test('ladder chooses a lesson then fills and caps', () => {
   assert.equal(lendOf(content, 0), null);
-  assert.deepEqual(lendOf(content, 1), { strike: 1 });
-  assert.deepEqual(lendOf(content, 2), { strike: 1, hp: 2 });
-  assert.deepEqual(lendOf(content, 99), { strike: 1, hp: 2, ward: 1 });
+  assert.deepEqual(lendOf(content, 1), { cards: ['yy-howl'] });
+  assert.deepEqual(lendOf(content, 2, 'trade'), { cards: ['yy-fire', 'yy-howl'] });
+  assert.deepEqual(lendOf(content, 9, 'kill'), { cards: ['yy-pounce', 'yy-howl', 'yy-fur'] });
 });
-test('fight starts with its lend and no lend changes nothing', () => {
+test('foe loss count is shared by all duel settlements', () => {
+  const s = {}; recordDuelOutcome(s, 'person', 'lost'); recordDuelOutcome(s, 'person', 'lost');
+  assert.equal(s.duel_lost.person, 2); recordDuelOutcome(s, 'person', 'won'); assert.equal(s.duel_lost.person, undefined);
+});
+test('borrowed cards start in hand, never the pile; zero leaves setup alone', () => {
   const base = fightSetup(content, state, beast, now);
-  assert.deepEqual(base, setup(0));
-  const initial = begin(base, catalog);
+  assert.deepEqual(base, fightSetup(content, { ...state, duel_lost: {} }, beast, now));
   for (const n of [1, 2, 3]) {
-    const s = begin(setup(n), catalog);
-    assert.equal(s.you.powerHit, initial.you.powerHit + 1);
-    assert.equal(s.you.hpMax, initial.you.hpMax + (n >= 2 ? 2 : 0));
-    assert.equal(s.you.hp, initial.you.hp + (n >= 2 ? 2 : 0));
-    if (n === 3) assert.equal(s.you.lendWard, 1);
-    assert.equal(s.foe.lendWard, undefined);
+    const setup = fightSetup(content, { ...state, duel_lost: { [beast.id]: n } }, beast, now);
+    const fight = begin(setup, catalog);
+    for (const id of setup.lend.cards) { assert.ok(fight.you.hand.includes(id)); assert.ok(!fight.you.deck.includes(id)); }
   }
 });
-test('a settled loss is counted and a win clears the same beast', () => {
-  process.env.LINGJING_STAMINA_LIMIT = '0';
-  const at = playTo(content, newState(content, 'zh', now), '01-rise', { now });
-  const game = content.chapters['01-ji'].scenes['01-rise'].exits.find(e => e.id === 'stand').game;
-  const ctx = { now: at.now, quests: [] };
-  const start = duel(at.state, content, ctx, { id: game.id });
-  assert.equal(start.result.ok, true);
-  const loss = duel(start.state, content, ctx, { id: game.id, picks: Array(80).fill('end').join(',') });
-  assert.equal(loss.result.outcome, 'lost');
-  assert.equal(loss.state.duel_lost[game.creature], 1);
-  const again = duel(loss.state, content, ctx, { id: game.id });
-  assert.equal(again.result.ok, true);
-  const fight = begin(again.result.duel.setup, catalog), actions = [];
-  for (let i = 0; i < 200 && fight.outcome === 'open'; i++) {
-    if (fight.whose !== 'you') { foeTurn(fight); continue; }
-    const a = lookahead(fight, { deep: true }); actions.push(tokenOf(a)); act(fight, a);
-  }
-  assert.equal(fight.outcome, 'won');
-  const win = duel(again.state, content, ctx, { id: game.id, picks: actions.join(',') });
-  assert.equal(win.result.outcome, 'won'); assert.equal(win.state.duel_lost[game.creature], undefined);
+test('the four lent cards resolve, including temporary attack and one lethal save', () => {
+  const st = begin({ mode: 'pvp', you: { tier: 'qi', deck: [], extra: ids }, foe: { tier: 'qi', deck: [] } }, catalog);
+  st.you.mana = 10;
+  const body = (id, hp) => ({ id, uid: Math.random(), atk: 1, hp, hpMax: hp });
+  st.you.board = [body('a', 5)]; st.foe.board = [body('b', 5), body('c', 5)];
+  const play = (id, target) => assert.equal(act(st, { kind: 'play', index: st.you.hand.indexOf(id), ...(target ? { target } : {}) }).ok, true);
+  play('yy-howl'); assert.equal(st.you.board[0].atk, 2);
+  play('yy-pounce', { kind: 'minion', index: 0 }); assert.equal(st.foe.board[0].hp, 2);
+  play('yy-fire'); assert.deepEqual(st.foe.board.map(x => x.hp), [1, 4]);
+  play('yy-fur'); assert.equal(st.you.lendWard, 1);
+  endTurn(st); assert.equal(st.you.board[0].atk, 1);
+  st.foe.hand = ['yy-pounce', 'yy-pounce']; st.foe.mana = 10; st.you.hp = 2;
+  assert.equal(act(st, { kind: 'play', index: 0 }, 'foe').ok, true); assert.equal(st.you.hp, 1);
+  assert.equal(act(st, { kind: 'play', index: 0 }, 'foe').ok, true); assert.equal(st.outcome, 'lost');
 });
-
-test('ward prevents one lethal blow', () => {
-  const cat = { hit: { id: 'hit', kind: 'spell', cost: 0, effect: { damage: 30 } } };
-  const st = begin({ mode: 'pvp', you: { tier: 'qi', deck: [] }, foe: { tier: 'qi', deck: [] }, lend: { ward: 1 } }, cat);
-  st.whose = 'foe'; st.foe.hand = ['hit', 'hit'];
-  assert.equal(act(st, { kind: 'play', index: 0 }, 'foe').ok, true);
-  assert.equal(st.you.hp, 1); assert.equal(st.log.filter(x => x.act === 'ward').length, 1);
-  assert.equal(act(st, { kind: 'play', index: 0 }, 'foe').ok, true);
-  assert.equal(st.outcome, 'lost');
+test('lent cards are not collected, granted or built into a deck', () => {
+  const s = { ...state, cards: [...(state.cards ?? []), ...ids] };
+  const book = kaceBrief(content, s); assert.ok(book.cards.every(c => !ids.includes(c.id)));
+  assert.ok(deckFor(content, s).every(id => !ids.includes(id)));
+  for (const id of ids) assert.equal(gainCard(content, s, id), null);
+  assert.ok(cardsFrom(content, 'beast', beast.id).every(c => !c.lent));
 });

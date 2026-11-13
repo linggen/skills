@@ -46,6 +46,10 @@
   },
   "_from": "出处 (cards.md, Hanli 2026-10-16: 每张牌都在剧情里收集或者购买)：`from` 是一串来源，每个 {kind, src: 书|游戏, line}。story (scene：离开那一场时得) · beat (task：小游戏赢了得) · beast (creature：打赢它得 —— 它拿这张牌打过你) · shop (item：买那件东西得) · tame (creature：收服) · summon (只由一件东西召来) · tale (传闻了结) · member (小队里那个人的牌，由他出) · foe (只是对手的牌)。`owner`：谁出这张牌 (battle.js § sideOf)；没有 owner 的是小满的。",
   "cards": [
+    {"id":"yy-pounce","kind":"spell","name":{"zh":"月影扑","en":"Moonshadow Pounce"},"cost":1,"element":"metal","lent":true,"effect":{"damage":3},"art":"art/cards/yinyue.webp"},
+    {"id":"yy-fire","kind":"spell","name":{"zh":"狐火","en":"Foxfire"},"cost":2,"element":"metal","lent":true,"effect":{"sweep":1},"art":"art/cards/yinyue.webp"},
+    {"id":"yy-howl","kind":"spell","name":{"zh":"啸月","en":"Moon Howl"},"cost":1,"element":"metal","lent":true,"effect":{"turnRally":1},"art":"art/cards/yinyue.webp"},
+    {"id":"yy-fur","kind":"spell","name":{"zh":"狐毛","en":"Fox Fur"},"cost":0,"element":"metal","lent":true,"effect":{"furWard":1},"art":"art/cards/yinyue.webp"},
     {
       "id": "xiaoyao",
       "kind": "minion",
