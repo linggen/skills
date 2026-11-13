@@ -67,15 +67,15 @@
       "say": [
         {
           "zh": "闵丹师守了三十年炉子，今天腰疼，叫你替一个时辰。",
-          "en": "Thirty years at the furnace, and today Min's back aches: take a turn for him."
+          "en": "Thirty years at the furnace, and today Pill-master Min's back aches: take a turn for him."
         },
         {
           "zh": "丹房缺个看火的，闵丹师在门口朝你招手。",
-          "en": "The furnace wants a watcher; Min beckons you from the door."
+          "en": "The furnace wants a watcher; Pill-master Min beckons you from the door."
         },
         {
-          "zh": "一炉聚气丹等着配药，闵丹师说：手稳的来。",
-          "en": "A batch of qi pills waits for its herbs. Min says: steady hands only."
+          "zh": "丹房今天人手不够，闵丹师说：手稳的来。",
+          "en": "The furnace room is short of hands today. Pill-master Min says: steady hands only."
         }
       ],
       "_deals": "守炉 is yaoyuan-kanlu (09-dabi's 丹房看炉, folded in: it stands at 药园 only through this and 药园巡夜 now, and an errand that asks for it still finds it); 配一炉丹 and 药材连连看 are one board, alchemy-daily (连连看 of the herbs).",
@@ -105,15 +105,15 @@
       "say": [
         {
           "zh": "天一黑，药园架子底下就窸窸窣窣，阿禾提着灯等你。",
-          "en": "After dark something rustles under the herb trellises; A He waits with a lamp."
+          "en": "After dark something rustles under the herb trellises; Ahe waits with a lamp."
         },
         {
           "zh": "阿禾说夜里有东西啃灵草，一个人守不过来。",
-          "en": "A He says something gnaws the herbs at night; one pair of eyes is not enough."
+          "en": "Ahe says something gnaws the herbs at night; one pair of eyes is not enough."
         },
         {
-          "zh": "柴垛那边又闻见黄鼠狼的骚气，阿禾叫你一起去。",
-          "en": "The weasel smell is back by the woodpile; A He wants you along."
+          "zh": "夜里药园不太平，阿禾叫你一起去。",
+          "en": "The herb garden is restless at night; Ahe wants you along."
         }
       ],
       "_deals": "捉虫 (yaoyuan-zhuochong), 赶黄鼠狼 (chaifang-huangshulang — the 柴房's weasels come over the wall by night) and the 药园's night watch at the furnace (yaoyuan-kanlu: 「药气飘上后山」 · 「天亮的时候」).",
@@ -148,11 +148,11 @@
       "say": [
         {
           "zh": "孙二狗被罚来搬书架，一个人搬不动，喊你搭把手。",
-          "en": "Sun Ergou was set to move the shelves as a punishment; he cannot shift them alone."
+          "en": "Sun Ergou was set to move the shelves as a punishment; he cannot shift them alone and calls you over."
         },
         {
-          "zh": "一卷残图受了潮，碎成好几块，孙二狗捧着不敢动。",
-          "en": "A damp old diagram has come apart in pieces; Sun Ergou holds it and dares not move."
+          "zh": "藏经阁晒书，孙二狗捧着一摞书，不知往哪放。",
+          "en": "Books are out to air; Sun Ergou holds an armful and does not know where they go."
         },
         {
           "zh": "书架堵了过道，孙二狗挠头：得想法子腾条路。",
@@ -254,7 +254,7 @@
           "when": ["mao", "chen", "si", "wu", "wei", "shen", "you", "xu", "hai"],
           "say": [
             { "zh": "天都黑了，褚先生还留着灯，说这周的印非教你不可。", "en": "Dark already, yet Master Chu keeps the lamp lit: this week's seal must be taught." },
-            { "zh": "讲堂人散尽，褚先生独坐案前，专等你来学印。", "en": "The hall has emptied; Master Chu sits alone at his desk, waiting just for you." },
+            { "zh": "讲堂人散尽，褚先生独坐案前，专等你来学印。", "en": "The hall has emptied; Master Chu sits alone at his desk, waiting to teach you the seal." },
             { "zh": "褚先生把你留在堂上：课下了，印还得传。", "en": "Master Chu keeps you after hours: class is out, but the seal is still to be passed on." }
           ]
         },
@@ -289,8 +289,8 @@
       ],
       "say": [
         {
-          "zh": "马小宝在伙房门口摆开一盘残局，挑着眉毛等人。",
-          "en": "Ma Xiaobao has set out an endgame by the kitchen door, eyebrows raised."
+          "zh": "马小宝在伙房门口摆开棋盘，挑着眉毛等人。",
+          "en": "Ma Xiaobao has set out a board by the kitchen door, eyebrows raised."
         },
         {
           "zh": "饭堂桌上摊着一盘没下完的棋，马小宝说：你来？",
@@ -327,15 +327,15 @@
       "say": [
         {
           "zh": "瞿老递来一封信：执事堂等着要，一炷香里送到。",
-          "en": "Old Qu hands you a letter: the stewards' hall wants it within a stick of incense."
+          "en": "Elder Qu hands you a letter: the stewards' hall wants it within a stick of incense."
         },
         {
           "zh": "山下送来急信，瞿老腿脚不便，叫你跑一趟。",
-          "en": "An urgent letter from below; Old Qu's knees are bad, so you run it."
+          "en": "An urgent letter from below; Elder Qu's knees are bad, so you run it."
         },
         {
           "zh": "瞿老把信塞给你：别走大路，一口气上去。",
-          "en": "Old Qu presses the letter on you: not the long way — straight up in one breath."
+          "en": "Elder Qu presses the letter on you: not the long way — straight up in one breath."
         }
       ],
       "deals": [
