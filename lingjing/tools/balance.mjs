@@ -836,7 +836,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     if (process.argv.includes('--events')) for (const e of eventTable(content)) console.log(`妖兽出没 ${e.who.padEnd(8)} ${e.days} days: 修为 ${Math.round(e.xw)}/day = ${pct(e.layer)} of the layer · ${pct(e.of_day)} of the day's 修为 · 灵石 ${Math.round(e.ls)}/day`);
     // --qi-buy: the typical player spending all his 灵石 on 聚气丹 each night, against him spending none (batch 2's balance check).
     if (process.argv.includes('--qi-buy')) {
-      const p = content.balance.model.players.typical, base = play(content, p).rows, buy = play(content, { ...p, qi_buy: 1 }).rows;
+      const p = playersOf(content, { old }).typical, base = play(content, p).rows, buy = play(content, { ...p, qi_buy: 1 }).rows;
       console.log(`聚气丹 (${content.items.items.find(i => i.id === 'qi-pill')?.buy} 灵石) bought with every 灵石, typical: ` + base.map(r => `${r.hui} ${round(r.days)}→${round(buy.find(x => x.hui === r.hui)?.days)}`).join(' · '));
     }
     if (process.argv.includes('--wealth')) for (const w of wealthTable(content, { old })) console.log(`灵石 ${w.who.padEnd(8)} ${w.days} days: in ${w.in}/day · pills out ${w.out}/day (${w.pills} pills) · end ${w.end} · lowest ${w.low}`);

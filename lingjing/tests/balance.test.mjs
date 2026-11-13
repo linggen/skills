@@ -18,7 +18,7 @@ import { settleHeld } from '../scripts/rules/cap.mjs';
 import { choreGrant } from '../scripts/rules/chores.mjs';
 import { chorePlay, convertRate, fightPlay, stonesAt, tableStones } from '../scripts/rules/playpay.mjs';
 import { turnedPays } from '../scripts/turned.js';
-import { BALANCE_FILE, bookWalk, errandPays, play, table } from '../tools/balance.mjs';
+import { BALANCE_FILE, bookWalk, errandPays, play, playersOf, table } from '../tools/balance.mjs';
 
 const content = loadContent();
 const B = content.balance, M = B.model;
@@ -240,11 +240,12 @@ test('v13 (数值系统 phase 2): a 练气二层 save keeps its 层, its bar and
 
 // Batch 2 (2026-11-10): 灵石 buys 修为 only dearer than playing for it — master.economy.prices.pill_ratio. A typical player who
 // spends every 灵石 on the shelf's 聚气丹 (tools/balance.mjs --qi-buy) saves at most a twentieth of 卷一's days.
-test('buying 修为 is no farm: every 灵石 on 聚气丹 saves the typical player at most 5% of 卷一', () => {
-  const p = M.players.typical, days = rows => rows.reduce((n, r) => n + (r.days ?? 0), 0);
+// 2026-11-13 (pill_ratio 10 → 3, decided for Hanli): measured on the economy's typical player (playersOf, design.md § 耗材), who
+// lays his 灵石 in the 聚灵阵 (3 修为 a 灵石). At 10 the pill paid 0.4 修为 a 灵石 and an all-in buyer was slower (48.6 → 50.6
+// days); at 4 even; at 3 (1.3 a 灵石, still under the 阵's 3) he gains 1.8%.
+test('buying 修为 is no farm and no trap: every 灵石 on 聚气丹 saves the typical player something, at most 5% of 卷一', () => {
+  const p = playersOf(content).typical, days = rows => rows.reduce((n, r) => n + (r.days ?? 0), 0);
   const base = days(play(content, p).rows), buyer = days(play(content, { ...p, qi_buy: 1 }).rows);
   assert.ok(buyer < base, `the pills do something: ${base} → ${buyer}`);
-  // 2026-11-12 (修为 past the cap is 灵石, Hanli): a longer 卷一 (45 → 50 typical days) gives the pills more to save — 5.8%;
-  // allowed to 6%, NOT retuned (pill_ratio is Hanli's call).
-  assert.ok(buyer >= base * 0.94, `${base} → ${buyer} days`);
+  assert.ok(buyer >= base * 0.95, `${base} → ${buyer} days`);
 });
