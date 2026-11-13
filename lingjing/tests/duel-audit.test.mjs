@@ -5,8 +5,8 @@ import assert from 'node:assert/strict';
 import { budgetRow, cardPoints, carefulFor, effectValue, mirrorRate, paperTable, parTen, playSheets, ranks, scopeOf, sheetSetup, spearman, swapIns } from '../tools/duel-audit.mjs';
 import { bareState, content, setupOf, roadState, foeOf, FIGHTS, keyOf } from '../tools/story-fights.mjs';
 import { fightLevel, foeLevel } from '../scripts/rules/cards.mjs';
-import { act, begin, foeTurn, legal, simCopy } from '../scripts/battle.js';
-import { lookaheadFor, plainFor, movesOf } from '../scripts/fightline.js';
+import { act, begin, foeStep, foeTurn, legal, simCopy } from '../scripts/battle.js';
+import { lookaheadFor, mixFor, plainFor, movesOf } from '../scripts/fightline.js';
 
 const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
 const card = id => content.cards.cards.find(c => c.id === id);
@@ -203,4 +203,35 @@ test('the fourth fit: skill by standing is read off the data, set by the door, a
   // a 大妖 stands a level above its own, never across the realm line
   const boss = at('gui@wm-wangzuo/open'), st = roadAt(boss, {}), b = foeAt(boss);
   withRules(true, () => assert.equal(beastLevel(content, st, b), foeLevel(content, st, b) + 1), FIT);
+});
+
+test('mix endpoints, deterministic coin and registry on both seats', () => {
+  const ten = parTen(paperTable());
+  for (let i = 0; i < 3; i++) {
+    const st = begin(sheetSetup(ten, ten, `find|${i}`), catalog);
+    for (const who of ['you', 'foe']) {
+      if (who === 'foe') act(st, { kind: 'end' }, 'you');
+      assert.deepEqual(mixFor(st, who, { wit: 0 }), carefulFor(st, who));
+      assert.deepEqual(mixFor(st, who, { wit: 1 }), lookaheadFor(st, who));
+      assert.deepEqual(mixFor(st, who, { wit: 0.3 }), mixFor(st, who, { wit: 0.3 }));
+    }
+  }
+  const setup = sheetSetup(ten, ten, 'registry');
+  setup.foe.ai = 'mix'; setup.foe.wit = 0;
+  const st = begin(setup, catalog); act(st, { kind: 'end' }, 'you');
+  const expected = carefulFor(st, 'foe');
+  assert.deepEqual(foeStep(st), expected ?? { kind: 'end' });
+  assert.throws(() => mixFor(st, 'foe', { wit: 2 }), /wit/);
+});
+
+test('mix chooses lookahead at approximately its wit when the lines differ', () => {
+  const ten = parTen(paperTable()), st = begin(sheetSetup(ten, ten, 'find|0'), catalog);
+  const careful = carefulFor(st), look = lookaheadFor(st);
+  assert.notDeepEqual(careful, look);
+  let chosen = 0;
+  for (let i = 0; i < 400; i++) {
+    st.turnMoves = i;
+    if (JSON.stringify(mixFor(st, 'you', { wit: 0.3 })) === JSON.stringify(look)) chosen++;
+  }
+  assert.ok(Math.abs(chosen / 400 - 0.3) < 0.04, `share ${chosen / 400}`);
 });

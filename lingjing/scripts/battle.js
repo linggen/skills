@@ -277,7 +277,7 @@ function sideOf(who, cfg, catalog, mode, seed) {
     signature: cfg.signature ?? null, charge: null, lifts: cfg.lifts ?? null, insight: cfg.insight ?? 0, intent: null,
     stars: cfg.stars ?? null, drain: 0,
     // 斗法 v4 (the fit): the line that plays this seat when it is a beast's (`LINES`, scripts/fightline.js); none: the foe policy below.
-    ai: cfg.ai ?? null,
+    ai: cfg.ai ?? null, ...(cfg.wit != null ? { wit: cfg.wit } : {}),
     // A 试 (a story trial, creatures.json `trial`): the beast is not driven
     // off, it is PASSED — it yields at `yield` of its 气血, and a player
     // still standing when its cards run out has passed too (not withdrawn).
@@ -345,6 +345,7 @@ export function begin(setup, catalog) {
 
 function startTurn(st) {
   const side = st[st.whose];
+  st.turnMoves = 0;
   side.manaMax = Math.min(side.manaCap, side.manaMax + 1);
   // 夔's drum: a drain laid on this side takes off this turn's 灵力, then is gone.
   side.mana = Math.max(0, side.manaMax - (side.drain ?? 0));
@@ -939,6 +940,7 @@ export function bodyOf(side, c) {
 export function act(st, action, who = 'you') {
   const why = legal(st, action, who);
   if (why) return { ok: false, why };
+  st.turnMoves = (st.turnMoves ?? 0) + 1;
   const side = st[who];
   const them = other(st, side);
   if (action.kind === 'end') { endTurn(st); return { ok: true }; }

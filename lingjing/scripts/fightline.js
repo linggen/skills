@@ -2,7 +2,7 @@
 // the page's scratch-only seam: of everything the rules let through now, the move that does the
 // most — read off a copy of the fight, never an opinion (the same measure as tools/battle-sim.mjs).
 // Pure; it never touches the fight it reads. The crawler then makes that move with real taps.
-import { EFFECTS, LINES, act, foeTurn, legal, offers, simCopy } from './battle.js';
+import { EFFECTS, LINES, act, foeTurn, hashOf, legal, offers, simCopy } from './battle.js';
 import { unseen } from './duel-unseen.js';
 
 const sum = (board, f) => board.reduce((n, m) => n + f(m), 0);
@@ -132,10 +132,13 @@ function rolloutFor(st, who, depth) {
 }
 /// The lookahead line for `who`: each move tried on a copy and the fight played out from there by the careful line on both seats (a cap of `depth`
 /// moves bounds the cost: the fight to its end by default, 300); the best ending is played. null ends the turn.
+const visibleSeed = (st, who) => {
+  const opp = who === 'you' ? 'foe' : 'you';
+  return JSON.stringify([who, st.turn, st[who].hand, st[who].deck.length, st[opp].hand.length, st[opp].deck.length]);
+};
 export function lookaheadFor(st, who = 'you', { depth = 300, samples = 4, seed } = {}) {
   if (!Number.isInteger(samples) || samples < 1) throw new RangeError('samples must be a positive integer');
-  const opp = who === 'you' ? 'foe' : 'you';
-  const base = seed ?? JSON.stringify([who, st.turn, st[who].hand, st[who].deck.length, st[opp].hand.length, st[opp].deck.length]);
+  const base = seed ?? visibleSeed(st, who);
   const copies = Array.from({ length: samples }, (_, i) => unseen(st, `${base}|${i}`, who));
   let best = null, top = -Infinity;
   for (const a of [...movesOf(st, who), { kind: 'end' }]) {
@@ -149,4 +152,14 @@ export function lookaheadFor(st, who = 'you', { depth = 300, samples = 4, seed }
   }
   return best?.kind === 'end' ? null : best;
 }
-Object.assign(LINES, { careful: carefulFor, lookahead: lookaheadFor });
+/// A deterministic per-decision coin; never read the deal seed or hidden order.
+export function mixFor(st, who = 'you', { wit = 0 } = {}) {
+  if (!Number.isFinite(wit) || wit < 0 || wit > 1) throw new RangeError('wit must be between 0 and 1');
+  if (wit === 0) return carefulFor(st, who);
+  if (wit === 1) return lookaheadFor(st, who);
+  const h = hashOf(`${visibleSeed(st, who)}|${st.turn}|${st.turnMoves ?? 0}|mix`);
+  const coin = ((h * 48271) % 2147483647) / 2147483647;
+  return coin < wit ? lookaheadFor(st, who) : carefulFor(st, who);
+}
+// The registry reads side.ai by name; wit travels with that seat.
+Object.assign(LINES, { careful: carefulFor, lookahead: lookaheadFor, mix: (st, who) => mixFor(st, who, { wit: st[who].wit }) });
