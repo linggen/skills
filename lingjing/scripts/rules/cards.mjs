@@ -276,8 +276,15 @@ const openFight = (state, game) => (game && state.fight?.game === game ? state.f
 export const heldMark = (state, mark) => [mark].flat().some(m => (state.marks ?? []).includes(m));
 export const readOf = (state, game) => (game?.sight && heldMark(state, game.sight.mark) ? game.sight.level ?? 1 : 0);
 
-export function recordDuelOutcome(state, foe, outcome) {
-  if (outcome === 'lost') state.duel_lost = { ...state.duel_lost, [foe]: (state.duel_lost?.[foe] ?? 0) + 1 };
+export function recordDuelOutcome(state, foe, outcome, lesson) {
+  if (outcome === 'lost') {
+    state.duel_lost = { ...state.duel_lost, [foe]: (state.duel_lost?.[foe] ?? 0) + 1 };
+    if (['kill', 'unspent', 'wasted', 'trade', 'guard', 'element', 'other'].includes(lesson)) state.duel_lesson = { ...state.duel_lesson, [foe]: lesson };
+  }
+  if (outcome === 'won' && state.duel_lesson?.[foe] != null) {
+    state.duel_lesson = { ...state.duel_lesson };
+    delete state.duel_lesson[foe];
+  }
   if (outcome === 'won' && state.duel_lost?.[foe] != null) {
     state.duel_lost = { ...state.duel_lost };
     delete state.duel_lost[foe];
@@ -302,7 +309,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   const main = state.fate?.element?.id ?? state.fate?.element ?? mainRoot(state) ?? 'wood';
   // 小队 (party.json, cards.md § 5): who stands beside him in this fight. 银月 is a member, never
   // a card in hand: asleep in the 木牌 through 卷一, she stands in the row from the 卷 she wakes in.
-  const lend = lendOf(content, state.duel_lost?.[creature.id]);
+  const lend = lendOf(content, state.duel_lost?.[creature.id], state.duel_lesson?.[creature.id]);
   const party = partyFor(content, state, creature, game);
   const withHer = party.some(m => m.id === 'yinyue');
   const gear = gearFight(content, state), lifts = withHer ? herLifts(content, state) : null;

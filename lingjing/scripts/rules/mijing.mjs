@@ -607,7 +607,7 @@ export function mijingDuel(state, content, ctx, args) {
   if (played.outcome === 'open') return refuse('unfinished', null, { turn: played.turn });
   delete s.fight;
   const won = played.outcome === 'won';
-  recordDuelOutcome(s, creature.id, played.outcome);
+  recordDuelOutcome(s, creature.id, played.outcome, args.lesson);
   const firsts = creature.person ? {} : meetBeast(s, creature.id, won, ctx.now);
   // What the fight spent of his own: the pills taken and the 符 played (tasks.mjs duel's rule), win or lose.
   const catalog = cardCatalog(content), charms = new Set((setup.you?.extra ?? []).filter(c => catalog[c]?.charm));

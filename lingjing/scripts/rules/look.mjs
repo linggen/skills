@@ -389,7 +389,8 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
     // Everything the fight is given at the door, and nothing else.
     // A pool's beast with its pool's deck (world.mjs foeOf); a scene's, its own.
     setup,
-    ...(setup.lend ? { lend: setup.lend } : {}),
+    ...(state.duel_lost?.[creature.id] ? { lost: state.duel_lost[creature.id] } : {}),
+    ...(setup.lend ? { lend: { ...setup.lend, names: setup.lend.cards.map(id => pick(content.cards.cards.find(c => c.id === id)?.name, lang) ?? id) } } : {}),
 
     today: open ? { outcome: open.outcome } : null,
     // A story fight (`retry`) lost or run dry today is not over: the story waits on its win, and 出手 is open again at

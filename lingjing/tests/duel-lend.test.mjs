@@ -4,6 +4,8 @@ import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { fightSetup, lendOf, recordDuelOutcome, kaceBrief, gainCard, cardsFrom, deckFor } from '../scripts/rules/cards.mjs';
 import { begin, act, endTurn } from '../scripts/battle.js';
+import { duelBrief } from '../scripts/rules/look.mjs';
+import { parseArgs } from '../scripts/rules/files.mjs';
 
 const content = loadContent(), now = new Date('2026-10-21T11:40:00Z');
 const state = newState(content, 'zh', now);
@@ -20,6 +22,19 @@ test('ladder chooses a lesson then fills and caps', () => {
 test('foe loss count is shared by all duel settlements', () => {
   const s = {}; recordDuelOutcome(s, 'person', 'lost'); recordDuelOutcome(s, 'person', 'lost');
   assert.equal(s.duel_lost.person, 2); recordDuelOutcome(s, 'person', 'won'); assert.equal(s.duel_lost.person, undefined);
+});
+test('lesson is validated, remembered, shown in the brief and cleared on a win', () => {
+  const s = structuredClone(state), id = beast.id;
+  recordDuelOutcome(s, id, 'lost', parseArgs(['--lesson=trade']).lesson);
+  recordDuelOutcome(s, id, 'lost', 'invalid');
+  assert.equal(s.duel_lesson[id], 'trade');
+  assert.equal(fightSetup(content, s, beast, now).lend.cards[0], 'yy-fire');
+  const brief = duelBrief(content, s, { id: 'test-lesson', creature: id }, now);
+  assert.equal(brief.lost, 2);
+  assert.deepEqual(brief.lend.names, brief.lend.cards.map(card => catalog[card].name.zh));
+  recordDuelOutcome(s, id, 'won');
+  assert.equal(s.duel_lost[id], undefined);
+  assert.equal(s.duel_lesson[id], undefined);
 });
 test('borrowed cards start in hand, never the pile; zero leaves setup alone', () => {
   const base = fightSetup(content, state, beast, now);
