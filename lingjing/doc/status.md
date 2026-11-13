@@ -102,7 +102,7 @@ arcade's stage wallet; `power.things` ('wearer' kept 11-13); 格斗 fighters' le
 
 ## 师父传印 (2026-11-11 — branch wt/chuanyin, phone wt/seals)
 
-The master's weekly seal, the 印谱, mastery (doc/games.md § 师父传印): rules/seals.mjs + worlds/jiuding/chuanyin.json; the lesson, the drill and the errand step as boards of 结印 (`chuanyin-*`); 九节菖蒲 gains 看炉前的印 (`guan-jiujie-4a`, 八层 70%, after 秦雁's; `opens.unless`); the validator's red 14 → 14, `numbers.mjs --apply` empty. **Held for Hanli:** 讲堂早课 stands only 卯 · 辰 · 巳 (a player who looks in only in the evening meets no lesson); mastery's 熟 · 精 thresholds and +10% · +20%; the five wuxing seals all open together at the 讲堂's marks. Not seen on a device or the live page (checked in a static harness with a headless browser and in unit tests).
+The master's weekly seal, the 印谱, mastery (doc/games.md § 师父传印): rules/seals.mjs + worlds/jiuding/chuanyin.json; the lesson, the drill and the errand step as boards of 结印 (`chuanyin-*`); 九节菖蒲 gains 看炉前的印 (`guan-jiujie-4a`, 八层 70%, after 秦雁's; `opens.unless`); the validator's red 14 → 14, `numbers.mjs --apply` empty. **Held for Hanli:** 讲堂早课 stands only 卯 · 辰 · 巳 (a player who looks in only in the evening meets no lesson); mastery's 熟 · 精 thresholds (**decided 2026-11-13: 12 · 36 → 8 · 24 hp**, doc/games.md § 师父传印) and +10% · +20%; the five wuxing seals all open together at the 讲堂's marks. Not seen on a device or the live page (checked in a static harness with a headless browser and in unit tests).
 
 ## Open after 11-10
 

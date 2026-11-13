@@ -14,8 +14,8 @@
     "cast": { "hands": 2, "tap": 1 },
     "levels": [
       { "id": "sheng", "at": 0, "name": { "zh": "生", "en": "Raw" } },
-      { "id": "shu", "at": 12, "power": 0.1, "name": { "zh": "熟", "en": "Practised" } },
-      { "id": "jing", "at": 36, "power": 0.2, "name": { "zh": "精", "en": "Adept" } }
+      { "id": "shu", "at": 8, "power": 0.1, "name": { "zh": "熟", "en": "Practised" } },
+      { "id": "jing", "at": 24, "power": 0.2, "name": { "zh": "精", "en": "Adept" } }
     ]
   },
   "_book": "The seals he can be taught, in the order the master teaches them (the book's, 06-第六回: 火弹、冰锥、金刃、木藤、土墙, the flying sword first). Each is a spell some tower-defence kit resolves, so its 威力 is true: `move` the kit move ids it strengthens (shoulu's hosts.shoulu.moves, shouqiang's jieyin.moves, sadoushou's jieyinSets); `figures` its gestures, ids of jieyin.json `seals` — all one-hand, the same on a phone and a Mac — the last the spell's 文; `from` the gate the kits use (marks the save must hold, none: from the start); `seed` the marks that say the story's own 讲堂 lesson (qianye-qiajue) already taught it: an old save holding one has it learned at 生, undated (so the week's wait never counts from it).",
