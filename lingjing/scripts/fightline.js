@@ -42,7 +42,7 @@ export function bestMove(st) {
 const pillNow = (st, os) => os.find(o => o.ok && o.action.kind === 'pill' && !o.action.target && (
   (o.pill.heal && st.you.hp <= st.you.hpMax - o.pill.heal)
   || (o.pill.mana && st.you.hand.some(id => { const c = st.catalog?.[id]; return c && c.cost > st.you.mana && c.cost <= st.you.mana + o.pill.mana; }))));
-export const plain = st => { const os = offers(st); return pillNow(st, os) ?? os.find(o => o.ok && o.action.kind === 'play') ?? os.find(o => o.ok && o.action.kind === 'attack') ?? os.find(o => o.ok && o.action.kind === 'power'); };
+export const plain = st => { const os = offers(st); return pillNow(st, os) ?? os.find(o => o.ok && o.action.kind === 'play') ?? os.find(o => o.ok && o.action.kind === 'attack') ?? os.find(o => o.ok && o.action.kind === 'power') ?? os.find(o => o.ok && o.action.kind === 'skill'); };
 const copyOf = simCopy; // battle.js: the fight copied to think on (its log left behind)
 function playOut(st, line) {
   for (let g = 0; g < 300 && st.outcome === 'open'; g += 1) {

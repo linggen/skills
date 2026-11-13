@@ -129,6 +129,8 @@ export const KEYWORDS = ['taunt', 'battlecry']; // 护主 · 入阵 — the only
    may point at. Growing this list is a considered act: every verb multiplies
    the interactions the gate has to hold. */
 export const EFFECTS = {
+  armor: { at: 'none' }, // 护体: add to the lead's armor
+  hold: { at: 'minion' }, // 定身: one opposing body misses its next turn
   poison: { at: 'minion' }, // 毒: one opposing body
   damage: { at: 'enemy' }, //   打 N 点，可指向随从或对方英雄
   sweep: { at: 'none' }, //     群伤：对方阵前每一个
@@ -268,7 +270,7 @@ function sideOf(who, cfg, catalog, mode, seed) {
   return {
     who, tier: cfg.tier, root: cfg.root ?? null, ...(cfg.f != null && cfg.f !== 1 ? { f: cfg.f } : {}), ...(cfg.level != null ? { level: cfg.level } : {}),
     hp: now, hpMax: hp, mana: 0, manaMax: (mode.startMana ?? 1) - 1, manaCap: realm.mana, powerHit: realm.power + (cfg.power ?? 0), boost: cfg.boost ?? null,
-    armor: Math.max(0, cfg.armor ?? 0), ward: cfg.ward ?? null,
+    armor: Math.max(0, cfg.armor ?? 0), ward: cfg.ward ?? null, ...(cfg.skill ? { skill: cfg.skill } : {}),
     deck, hand: [...(cfg.extra ?? [])], board: [], laid: [], laidSpent: [], fatigue: 0, ...(cfg.fatigue === false ? { tireless: true } : {}), powerUsed: false, played: [],
     signature: cfg.signature ?? null, charge: null, lifts: cfg.lifts ?? null, insight: cfg.insight ?? 0, intent: null,
     stars: cfg.stars ?? null, drain: 0,
@@ -393,13 +395,15 @@ function plan(st) {
   endTurn(sim);
   const cards = [];
   let power = false;
+  let skill = false;
   for (let guard = 0; guard < 20 && sim.outcome === 'open' && sim.whose === 'foe'; guard += 1) {
     const did = foeStep(sim);
     if (did?.kind === 'play') cards.push(sim.foe.played[sim.foe.played.length - 1]);
     else if (did?.kind === 'power') power = true;
+    else if (did?.kind === 'skill') skill = true;
     else break;
   }
-  st.foe.intent = { cards, power, gathering: sim.foe.charge?.phase === 'gathering' && st.foe.charge?.phase === 'gathering' };
+  st.foe.intent = { cards, power, ...(st.foe.skill ? { skill } : {}), gathering: sim.foe.charge?.phase === 'gathering' && st.foe.charge?.phase === 'gathering' };
 }
 
 /* ── 杀招 — the one turn in every fight that decides it ──
@@ -630,7 +634,7 @@ function settle(st) {
 
 const other = (st, side) => (side.who === 'you' ? st.foe : st.you);
 
-function resolve(st, side, effect, target, { arrival = false } = {}) {
+function resolve(st, side, effect, target, { arrival = false, leadHeal = false } = {}) {
   if (!effect) return;
   const them = other(st, side);
   const hit = (n, element, root) => dealt(st, side.who, n, element, root);
@@ -652,9 +656,9 @@ function resolve(st, side, effect, target, { arrival = false } = {}) {
   if (effect.sweep != null) {
     for (const m of [...them.board]) hurtMinion(st, them, m, hit(effect.sweep, effect.element, m.element), { from: 'sweep', element: effect.element ?? null });
   }
-  if ((effect.chain != null || effect.swallow != null) && target?.kind === 'minion') {
+  if ((effect.chain != null || effect.hold != null || effect.swallow != null) && target?.kind === 'minion') {
     const m = them.board[target.index];
-    if (m && effect.chain != null) {
+    if (m && (effect.chain != null || effect.hold != null)) {
       m.chain = 1;
       st.log.push({ act: 'chained', who: them.who, id: m.id, uid: m.uid });
     }
@@ -662,6 +666,10 @@ function resolve(st, side, effect, target, { arrival = false } = {}) {
       st.log.push({ act: 'swallowed', who: them.who, id: m.id, uid: m.uid, by: side.who });
       withdraw(st, them, m);
     }
+  }
+  if (effect.armor != null) {
+    side.armor += scaled(side, effect.armor);
+    st.log.push({ act: 'armor', who: side.who, amount: scaled(side, effect.armor), armor: side.armor });
   }
   if (effect.drain) {
     them.drain = (them.drain ?? 0) + effect.drain;
@@ -674,7 +682,7 @@ function resolve(st, side, effect, target, { arrival = false } = {}) {
     if (side.healsLeft != null) side.healsLeft -= 1;
     // The most wounded of the row (阿禾 heals whoever needs it); the lead on a tie.
     const m = target?.kind === 'minion' && target.side === 'mine' ? side.board[target.index] : null;
-    const a = m ? null : woundedAlly(side);
+    const a = m || leadHeal ? null : woundedAlly(side);
     if (m) {
       m.hp = Math.min(m.hpMax, m.hp + n);
       st.log.push({ act: 'heal', who: side.who, id: m.id, uid: m.uid, amount: n, hp: m.hp });
@@ -760,6 +768,21 @@ const allyGone = (side, target) => target?.kind === 'ally' && (!side.allies?.[ta
 /* A card of a member who has 退 is not played (its cards leave the hand anyway). */
 const ownerGone = (side, c) => Boolean(c?.owner && (side.allies ?? []).find(x => x.id === c.owner)?.gone);
 
+function skillTargetWhy(side, them, effect, target) {
+  const at = EFFECTS[Object.keys(EFFECTS).find(k => effect?.[k] != null)]?.at;
+  if (effect?.heal != null && target && (target.kind !== 'minion' || target.side !== 'mine' || !side.board[target.index])) return 'no-target';
+  if (at === 'friendly') {
+    if (!side.board.length) return 'no-friendly';
+    if (target && (target.kind !== 'minion' || target.side === 'theirs' || !side.board[target.index])) return 'no-target';
+  }
+  if (at === 'minion') {
+    if (!them.board.length) return 'no-target';
+    if (!target || target.kind !== 'minion' || target.side === 'mine' || !them.board[target.index]) return 'no-target';
+    if (!fits(effect, them.board[target.index])) return 'too-big';
+  }
+  return null;
+}
+
 export function legal(st, action, who = 'you') {
   if (st.outcome !== 'open') return 'fight-over';
   if (st.whose !== who) return 'not-your-turn';
@@ -774,6 +797,12 @@ export function legal(st, action, who = 'you') {
     if (action.target?.kind === 'ally' && (!side.allies[action.target.index] || side.allies[action.target.index].gone)) return 'no-target';
     if (action.target && action.target.kind !== 'ally') return 'no-target';
     return null;
+  }
+  if (action.kind === 'skill') {
+    if (!side.skill) return 'no-skill';
+    if (side.powerUsed) return 'power-used';
+    if (side.mana < POWER_COST) return 'no-mana';
+    return skillTargetWhy(side, them, side.skill.effect, action.target);
   }
   if (action.kind === 'power') {
     if (side.powerUsed) return 'power-used';
@@ -795,7 +824,7 @@ export function legal(st, action, who = 'you') {
     if (c.kind === 'minion' && side.board.length >= st.mode.board) return 'board-full';
     const at = EFFECTS[Object.keys(EFFECTS).find(k => c.effect?.[k] != null)]?.at;
     if (c.effect?.heal != null && action.target?.side === 'mine' && (action.target.kind !== 'minion' || !side.board[action.target.index])) return 'no-target';
-    if (c.effect?.poison != null && (!action.target || action.target.kind !== 'minion' || action.target.side === 'mine' || !them.board[action.target.index])) return 'no-target';
+    if ((c.effect?.poison != null || c.effect?.hold != null) && (!action.target || action.target.kind !== 'minion' || action.target.side === 'mine' || !them.board[action.target.index])) return 'no-target';
     if (at === 'enemy' && action.target?.kind === 'minion' && !them.board[action.target.index]) return 'no-target';
     if (at === 'friendly' && !side.board.length) return 'no-friendly';
     if (at === 'minion') {
@@ -894,6 +923,13 @@ export function act(st, action, who = 'you') {
   const them = other(st, side);
   if (action.kind === 'end') { endTurn(st); return { ok: true }; }
   if (action.kind === 'pill') { takePill(st, side, action); return { ok: true }; }
+  if (action.kind === 'skill') {
+    side.mana -= POWER_COST;
+    side.powerUsed = true;
+    st.log.push({ act: 'skill', who: side.who, id: side.skill.id, effect: side.skill.effect });
+    resolve(st, side, side.skill.effect, action.target, { leadHeal: true });
+    return { ok: true };
+  }
   if (action.kind === 'power') {
     side.mana -= POWER_COST;
     side.powerUsed = true;
@@ -1018,7 +1054,14 @@ export function foeStep(st) {
     act(st, action, 'foe');
     return action;
   }
-  const strikes = intent ? intent.power && !gathering : !gathering;
+  const strikes = intent ? (intent.power || intent.skill) && !gathering : !gathering;
+  const skillAction = side.skill ? { kind: 'skill', target: aimFor(st, side, side.skill) } : null;
+  const powerAction = { kind: 'power', target: aimPower(st, side) };
+  if (strikes && skillAction && (intent?.skill || legal(st, powerAction, 'foe')) && !legal(st, skillAction, 'foe')) {
+    if (intent) intent.skill = false;
+    act(st, skillAction, 'foe');
+    return skillAction;
+  }
   if (intent) intent.power = false;
   if (strikes && !legal(st, { kind: 'power', target: aimPower(st, side) }, 'foe')) {
     const action = { kind: 'power', target: aimPower(st, side) };
@@ -1045,6 +1088,8 @@ export function foeStep(st) {
    a sweep at an empty rank, a 锁/吞 with nothing it fits, a draw from an
    empty pile (which would send it into the mist). */
 const VERB_USE = {
+  armor: () => true,
+  hold: (st, side) => other(st, side).board.length > 0,
   damage: () => true,
   poison: (st, side) => other(st, side).board.length > 0,
   drain: () => true,
@@ -1061,7 +1106,7 @@ const VERB_USE = {
   mana: (st, side) => side.mana < side.manaCap,
 };
 /* Why a spell would land on nothing now, by its first idle verb — null when it does something (worthPlaying). */
-const IDLE_WHY = { poison: 'none-fits', sweep: 'rank-empty', heal: 'hp-full', draw: 'pile-empty', mana: 'mana-full', chain: 'none-fits', swallow: 'none-fits', summon: 'board-full', rally: 'no-friendly', buff: 'no-friendly' };
+const IDLE_WHY = { hold: 'none-fits', poison: 'none-fits', sweep: 'rank-empty', heal: 'hp-full', draw: 'pile-empty', mana: 'mana-full', chain: 'none-fits', swallow: 'none-fits', summon: 'board-full', rally: 'no-friendly', buff: 'no-friendly' };
 export function idleWhy(st, side, c) {
   if (!c || worthPlaying(st, side, c)) return null;
   const e = effectOf(side, c);
@@ -1102,7 +1147,7 @@ function aimFor(st, side, c) {
   // (Hanli 10-22: 「护主牌没发挥作用」 — 00-fox's 「挡住它咬」).
   if (c.effect?.bite) return guardOf(them);
   // 锁 / 吞: the hardest hitter it may take — for 锁 one not already chained.
-  if (c.effect?.poison != null || c.effect?.chain != null || c.effect?.swallow != null) {
+  if (c.effect?.hold != null || c.effect?.poison != null || c.effect?.chain != null || c.effect?.swallow != null) {
     const e = effectOf(side, c);
     const ok = them.board.map((m, index) => ({ m, index })).filter(({ m }) => fits(e, m))
       .sort((a, b) => (Boolean(a.m.chain) - Boolean(b.m.chain)) || (b.m.atk - a.m.atk) || (b.m.hp - a.m.hp));
@@ -1146,7 +1191,7 @@ export function tokenOf(a) {
   const at = a.target ? `@${a.target.side === 'mine' ? 'm' : 'e'}${a.target.index}` : '';
   if (a.kind === 'play') return `play:${a.index}${at}`;
   if (a.kind === 'attack') return `attack:${a.index}${at}`;
-  if (a.kind === 'power') return `power${at}`;
+  if (a.kind === 'power' || a.kind === 'skill') return `${a.kind}${at}`;
   if (a.kind === 'pill') return `pill:${a.index}${a.target?.kind === 'ally' ? `@a${a.target.index}` : ''}`;
   return 'end';
 }
@@ -1157,7 +1202,7 @@ export function actionOf(token) {
   const target = !aim ? undefined : aim[0] === 'a' ? { kind: 'ally', index: Number(aim.slice(1)) } : { kind: 'minion', index: Number(aim.slice(1)), side: aim[0] === 'm' ? 'mine' : 'theirs' };
   if (kind === 'pill') return { kind: 'pill', index: Number(index), ...(target ? { target } : {}) };
   if (kind === 'play' || kind === 'attack') return { kind, index: Number(index), target };
-  if (kind === 'power') return { kind: 'power', target };
+  if (kind === 'power' || kind === 'skill') return { kind, target };
   return { kind: 'end' };
 }
 
@@ -1192,10 +1237,18 @@ export function battle(actions, setup, catalog) {
 }
 
 /* What the page draws and the rules read — never the whole state. */
+function skillView(st, side) {
+  const targets = effectTargets(st, side, side.skill.effect);
+  const reasons = targets.map(target => legal(st, { kind: 'skill', target }, side.who));
+  const why = reasons.find(x => x === null) === null ? null : reasons[0];
+  return { id: side.skill.id, name: side.skill.name, ready: why === null, ...(why ? { why } : {}) };
+}
+
 export function view(st) {
   const side = s => ({
     hp: s.hp, hpMax: s.hpMax, mana: s.mana, manaMax: s.manaMax, manaCap: s.manaCap,
     root: s.root, deck: s.deck.length, hand: s.hand.length, fatigue: s.fatigue, ...(s.level != null ? { level: s.level } : {}), ...(s.f ? { f: s.f } : {}),
+    ...(s.skill ? { skill: skillView(st, s) } : {}),
     powerUsed: s.powerUsed, powerHit: s.powerHit, boost: s.boost, armor: s.armor ?? 0, ward: s.ward ?? null,
     signature: s.signature, charge: s.charge?.phase ?? null, lifts: s.lifts, stars: s.stars ?? null, drain: s.drain ?? 0,
     ...(s.trial ? { trial: s.trial, ...(s.trial.survive ? { endured: s.endured ?? 0 } : {}) } : {}),
@@ -1226,23 +1279,25 @@ export const idle = st => st.outcome === 'open' && st.whose === 'you' && !player
 
 /* Every action the player could take right now, each ok or with its why and
    what it spends. The card draws only what is here; nothing hides in a tooltip. */
+function effectTargets(st, side, effect) {
+  const them = other(st, side);
+  const at = EFFECTS[Object.keys(EFFECTS).find(k => effect?.[k] != null)]?.at;
+  if (effect?.heal != null && at === 'none') return [undefined, ...side.board.map((m, index) => ({ kind: 'minion', index, side: 'mine' }))];
+  if (at === 'enemy' || at === 'minion') return [undefined, ...them.board.map((m, index) => ({ kind: 'minion', index }))];
+  if (at === 'friendly') return side.board.length ? side.board.map((m, index) => ({ kind: 'minion', index })) : [undefined];
+  return [undefined];
+}
+
 export function offers(st) {
   const out = [];
   const them = st.foe;
   // A card ALWAYS gets at least one row, even when it has nowhere to point:
   // otherwise the card face has no refusal to show and a card nobody can play
   // looks playable (seen in the browser, 2026-09-18 — 焰心 with an empty rank).
-  const targets = c => {
-    const at = EFFECTS[Object.keys(EFFECTS).find(k => c.effect?.[k] != null)]?.at;
-    if (c.effect?.heal != null && at === 'none') return [undefined, ...st.you.board.map((m, index) => ({ kind: 'minion', index, side: 'mine' }))];
-    if (at === 'enemy' || at === 'minion') return [undefined, ...them.board.map((m, index) => ({ kind: 'minion', index }))];
-    if (at === 'friendly') return st.you.board.length ? st.you.board.map((m, index) => ({ kind: 'minion', index })) : [undefined];
-    return [undefined];
-  };
   st.you.hand.forEach((id, index) => {
     const c = card(st, id);
     if (!c) return;
-    for (const target of targets(c)) {
+    for (const target of effectTargets(st, st.you, c.effect)) {
       const action = { kind: 'play', index, target };
       const why = legal(st, action, 'you');
       out.push({ action, card: c, id, cost: costOf(st.you, c), why, ok: why === null });
@@ -1252,6 +1307,13 @@ export function offers(st) {
     const action = { kind: 'power', target };
     const why = legal(st, action, 'you');
     out.push({ action, cost: POWER_COST, why, ok: why === null });
+  }
+  if (st.you.skill) {
+    for (const target of effectTargets(st, st.you, st.you.skill.effect)) {
+      const action = { kind: 'skill', target };
+      const why = legal(st, action, 'you');
+      out.push({ action, cost: POWER_COST, why, ok: why === null });
+    }
   }
   st.you.board.forEach((m, index) => {
     for (const target of [undefined, ...them.board.map((t, i) => ({ kind: 'minion', index: i }))]) {
