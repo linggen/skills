@@ -1043,6 +1043,37 @@ several times its face. His calls, 2026-11-12: *斗法这里为了平衡, 都是
 - **One sheet for anyone who fights.** 气血 = 20 + level. Ten cards. The same pool. The deck's cost follows the level's
   curve, a beast's too (measured 2026-11-12: at 练气一层 a beast's cards cost 2.1–2.9 each against his 1.4, so he rarely
   won at equal 气血; from 五层 his cards and gear won 93–100%).
+- **How well a beast plays follows its standing, and no line sees a hidden card** (Hanli 2026-11-13: *让妖和玩家平等,
+  然后给妖写不同级别的策略 … 类似象棋对战, 抽牌靠运气, 赢牌靠策略* · *秘境的精英妖, 可以带精英牌*). Four lines, by standing —
+  not by the beast's class:
+
+  | Line | Who | How it plays |
+  |---|---|---|
+  | 蒙昧 (`foe`) | a roaming beast below 练气五层 | the dearest card first; a spell kills what it can, else the face; no trade weighed |
+  | 寻常 (`careful`) | roaming from 练气五层 · a 秘境 room · a story fight | each move, the one that leaves the best board; this move only |
+  | 通灵 (`lookahead`) | a 秘境's 凶兽 · its 大妖 (one level up) | every move tried and the fight played on; counts the kill, holds a card |
+  | a fourth | the rarest (a 卷's last) | remembers the cards he has played — written only if 通灵 proves too easy |
+
+  A line thinks on what its seat can see: before each playout the cards it cannot see (the other hand, both piles' order)
+  are shuffled, several times, and the endings averaged. The 2026-11-12 `lookahead` read the true hand and draw order;
+  every figure measured with it is measured again. Inside a line a beast may lean (a wolf rushes, a tortoise guards) by
+  weights, never by a fifth line. An elite beast of the 秘境 may carry elite cards — from the one pool, a 品 above the
+  room's. No model plays a card: the lines are plain search (a few ms a move, on the phone too).
+- **银月 is the duel's coach — she keeps him playing** (Hanli 2026-11-13: *让yinyue知道赢的策略是什么, 可以在适当时候指点玩家,
+  鼓励玩家 … 让玩家有挫折, 但是不放弃*). The rules give her facts, she writes the word (§ 银月 in the game):
+  - **What she knows.** At each move of his the thinking line's best move is weighed against the one he made; the
+    fight keeps the two widest gaps, each named by its lesson: a kill not counted · the face struck where a trade stood ·
+    灵力 left unspent · a card thrown away (a draw on an empty pile, a sweep at one body) · the 护主 left standing ·
+    the wrong element · a pill never taken. And how near it was: the beast's 气血 left at his loss.
+  - **When she speaks.** Before a first meeting: nothing — it is his to find. After one loss to a beast: the lesson and
+    how near it was. After two: the turn itself (which card, what the better move was). After three: his deck, pills
+    and gear against this beast, and in the fight he may ask her once — she points a move. After a win that follows a
+    loss: what he did right, by name. One line each, never a lecture; her register, never pity.
+  - **A loss to the 大妖 is fought again once, in place** (her line first; the second loss ends the run as before).
+  - **Measured beside the win rate: the near-loss share** — of the fights he loses, the share that end with the beast
+    under a quarter of its 气血 (aim: most of them). A fight lost by a mile is a deck to mend, not a word of hers. And
+    headroom: one beast against the first-card, careful and thinking lines of his seat — a fight is fit when the
+    careless line wins about 40% and the thinking one 60–70%; if thinking wins no more, luck decides it and no word helps.
 - **A beast is harder by how well it plays, then by its level and its deck — never by a bigger sheet** (amended
   2026-11-12, measured: on one sheet with his own ten a beast still lost 95% of fights to the thinking line; a level
   inside a realm is worth about 3 points; meeting the band by sheet alone took 气血 ×1.6 or a ten costing twice his).
