@@ -53,7 +53,7 @@ import { thinker, stillAsked } from './think.js';
 import { DUIZI_WORDS, duiziChecksHtml, duiziFormOf, duiziTableOf } from './aigames-cards.js';
 import { createVoice, nodeMoment } from './voice.js';
 import { bigPlay, createFightSay, cuesOf, fightFacts, strongFoe } from './fightsay.js';
-import { CLOSE_AT, POOR_AT, createHerSay, gearFacts, gearKey, gearWhat, herMode, mijingEndWhat, mijingWayWhat, shortFacts, wayFacts, whyFacts } from './hersay.js';
+import { CLOSE_AT, POOR_AT, createHerSay, duelFacts, gearFacts, gearKey, gearWhat, herMode, mijingEndWhat, mijingWayWhat, shortFacts, wayFacts, whyFacts } from './hersay.js';
 import { factsFor, prefetchLines } from './games/prefetch.js';
 import { skipLingAsk } from './games/drawguess-ling.js';
 import { PREFETCH_TITLE, askHer as askHerLines } from './games/prefetch-ling.js';
@@ -4888,7 +4888,9 @@ function herFightOver(b, r) {
     ? (zh ? `胜了${c.name ?? ''}，${v.turn}回合，${hp}${close ? '，险胜' : ''}${r.first_win ? '，头一回赢它' : ''}。` : `Beat ${c.name ?? ''} in ${v.turn} turns, ${hp}${close ? ', a close one' : ''}${r.first_win ? ', the first win over it' : ''}.`)
     // The step first: her facts are cut from the end under the cap (hersay.js momentFacts).
     : wayFacts(r.way, zh) + (zh ? `输给了${c.name ?? ''}，撑了${v.turn}回合；它还剩气血${S(v.foe.hp)}/${S(v.foe.hpMax)}${r.beat?.guards ? `，叫出${r.beat.guards}个护主` : ''}。` : ` Lost to ${c.name ?? ''} after ${v.turn} turns; it had ${S(v.foe.hp)}/${S(v.foe.hpMax)} Life left${r.beat?.guards ? `, ${r.beat.guards} guards called` : ''}.`);
-  const out = herSay.fight({ outcome: r.outcome, way: r.outcome === 'won' ? null : gear ? 'gear' : r.way?.[0]?.kind ?? null, story: Boolean(c.goal || c.person || c.elite || c.title), strong: strongFoe(b.brief), close, newBeast: Boolean(r.first_win), repeat, what, saidInFight: Boolean(b.say?.st.told.has(r.outcome)) });
+  const duel = b.coaching && (r.outcome === 'lost' || (r.outcome === 'won' && b.brief.lost > 0)) ? { outcome: r.outcome, beast: c.name, lost: b.brief.lost ?? 0, summary: b.coaching, lend: b.nextLend } : null;
+  const duelWhat = duel ? duelFacts({ ...duel, zh }) : '';
+  const out = herSay.fight({ outcome: r.outcome, duel, way: r.outcome === 'won' ? null : gear ? 'gear' : r.way?.[0]?.kind ?? null, story: Boolean(c.goal || c.person || c.elite || c.title), strong: strongFoe(b.brief), close, newBeast: Boolean(r.first_win), repeat, what: duelWhat ? `${duelWhat}${gear ? gearWhat(gear, c.name ?? '', zh) : ''}` : what, saidInFight: duel ? false : Boolean(b.say?.st.told.has(r.outcome)) });
   // A 稀有 arm out of the fight: a rare find (hersay.js rare).
   const rare = (r.dropped ?? []).find((d) => d.rarity === 'rare');
   if (r.outcome === 'won' && rare) herSay.say('rare', zh ? `${c.name ?? ''}掉了一件稀有的${rare.name ?? ''}。` : `${c.name ?? ''} dropped a rare ${rare.name ?? ''}.`, { key: `drop|${b.id}|${Date.now()}` });
@@ -4977,7 +4979,9 @@ function boutHooks(b) {
     onPlayed: ({ before, mark, mine }) => herCues(b, before, mark, mine),
     onAsk: () => askHerInFight(b),
     // A loss with a way forward: her word comes as the closing card stands, on it beside the button (boutCtx).
-    settle: async () => {
+    settle: async (_st, coaching, lend) => {
+      b.coaching = coaching;
+      b.nextLend = lend;
       const r = await writeBout(b);
       if (r?.ok && r.outcome === 'lost' && r.way?.length) b.lossOut = herFightOver(b, r);
       return r;
@@ -5064,7 +5068,8 @@ function markBout(b) {
   });
 }
 async function writeBout(b) {
-  const r = await write('duel', { id: b.id, picks: b.actions.join(',') }).catch(failed);
+  const lesson = b.st.outcome === 'lost' ? b.coaching?.gaps?.[0]?.lesson : null;
+  const r = await write('duel', { id: b.id, picks: b.actions.join(','), ...(lesson ? { lesson } : {}) }).catch(failed);
   return r ?? failed('no answer');
 }
 /* The room has closed (its closing card read, or the rules refused): what the fight left. The room closes

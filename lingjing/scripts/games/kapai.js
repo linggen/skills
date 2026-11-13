@@ -25,7 +25,9 @@
 //   settle(st) → Promise<r> the rules' answer; the closing card waits for it, and a refusal (r.ok false) has none
 //   holdMs(end)             how long the closing card stands (`end`: the foe's last word is in it)
 // A story mount settles { …, r } — what the rules answered; the story's own pay and 所得 follow it.
-import { act, begin, foeStep, foeTurn, idle, idleWhy, playerOffers as offers, replayInto, tokenOf, view } from '../battle.js';
+import { act, begin, foeStep, foeTurn, idle, idleWhy, playerOffers as offers, replayInto, shown, simCopy, tokenOf, view } from '../battle.js';
+import { newCoach, note as coachNote, summary as coachSummary } from '../duelcoach.js';
+import { lendOf } from '../rules/cards.mjs';
 import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, cardFaceHtml, dropOf, endOf, pickOf } from '../battle-card.js';
 import { banner, ghostsOf, hurry, playLog, since } from '../battle-anim.js';
 import { wireDrag } from '../battle-drag.js';
@@ -149,6 +151,7 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
   host.className = 'g-kapai';
   container.replaceChildren(host);
   const fight = await fightFrom(data, lang);
+  const balance = await json('balance.json').catch(() => null);
   // A fight the story's door dealt keeps its seed: the rules replay the picks on it (the 游戏厅's rows carry none).
   const setup = { ...fight.setup, seed: fight.setup.seed ?? `kapai|${seed}` };
   // Reopened mid-fight (the door's `picks`): the moves already made are replayed, so it stands where it stood.
@@ -161,6 +164,11 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
   const st0 = data.st ?? replayInto(begin(setup, fight.catalog), prior);
   // A fight reopened (the door's `resumed`, or the moves it hands back) is no first meeting.
   const resumed = Boolean(data.resumed) || prior.length > 0;
+  const coach = newCoach(), pendingNotes = new Set();
+  const deferNote = (copy, action) => {
+    const p = new Promise((resolve) => setTimeout(() => { try { coachNote(coach, copy, action); } catch { /* advice must never stop play */ } resolve(); }, 0));
+    pendingNotes.add(p); p.finally(() => pendingNotes.delete(p));
+  };
   const room = { ...fight, setup, lang, st: st0, picked: null, openLog: false, help: false, note: null, busy: false, mine: false, queue: [], ended: false, settling: false, yielded: false };
   const hook = (name, ...a) => { try { return story[name]?.(...a); } catch (e) { console.warn('[kapai]', name, e); return undefined; } };
   const ctx = () => { const base = ctxOf(room), more = hook('ctx', room) ?? {}; return { ...base, ...more, says: { ...base.says, ...(more.says ?? {}) } }; };
@@ -255,7 +263,13 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       room.settling = true;
       clearTimeout(idleTimer);
       // The story's rules answer first; the closing card waits for their word, not for the last blow.
-      const r = story.settle ? await Promise.resolve().then(() => story.settle(room.st)).catch((e) => ({ ok: false, error: String(e?.message ?? e) })) : null;
+      await Promise.race([Promise.all([...pendingNotes]), new Promise((resolve) => setTimeout(resolve, 300))]);
+      const coaching = coachSummary(coach, room.st);
+      coaching.foe_hp_left = shown(room.st, coaching.foe_hp_left);
+      coaching.foe_hp_max = shown(room.st, coaching.foe_hp_max);
+      const next = room.st.outcome === 'lost' ? lendOf({ balance }, (fight.brief.lost ?? 0) + 1, coaching.gaps[0]?.lesson) : null;
+      const lend = next ? { ...next, names: next.cards.map((id) => name(fight.catalog[id]?.name) ?? id) } : null;
+      const r = story.settle ? await Promise.resolve().then(() => story.settle(room.st, coaching, lend)).catch((e) => ({ ok: false, error: String(e?.message ?? e) })) : null;
       room.result = r;
       const out = { ...resultOf(room.st), ...(fight.next ? { next: fight.next } : {}), ...(r ? { r } : {}) };
       if (done) return;
@@ -279,11 +293,14 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       // A spell that would land on nothing is never played: its one line says what is missing (Hanli 11-04, 痒痒针).
       const nothing = out.action.kind === 'play' ? idleWhy(room.st, room.st.you, room.st.catalog?.[room.st.you.hand[out.action.index]]) : null;
       if (nothing) { room.picked = null; room.note = nothing; draw(); return drain(); }
+      let copy = null; try { copy = simCopy(room.st); } catch { /* coaching is optional */ }
       const mark = room.st.log.length, before = view(room.st), res = act(room.st, out.action, 'you');
       room.picked = null;
       if (!res.ok) { room.note = res.why; draw(); return drain(); }
       hook('onMove', tokenOf(out.action));
-      await playOut(mark, { who: 'you', action: out.action });
+      const playing = playOut(mark, { who: 'you', action: out.action });
+      if (copy) deferNote(copy, out.action);
+      await playing;
       if (gone()) return;
       hook('onStep');
       hook('onPlayed', { before, mark, mine: true });
@@ -298,9 +315,13 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       // A tap kept behind the end is for a turn that is over: let go.
       room.queue.length = 0;
       const mark = st.log.length, before = view(st);
-      if (!act(st, { kind: 'end' }, 'you').ok) return;
+      let copy = null; try { copy = simCopy(st); } catch { /* coaching is optional */ }
+      const action = { kind: 'end' };
+      if (!act(st, action, 'you').ok) return;
       hook('onMove', 'end');
-      await playOut(mark);
+      const playing = playOut(mark);
+      if (copy) deferNote(copy, action);
+      await playing;
       if (gone()) return;
       hook('onStep');
       if (st.whose === 'foe' && st.outcome === 'open') {
