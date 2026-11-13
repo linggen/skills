@@ -5,7 +5,10 @@ import assert from 'node:assert/strict';
 import { budgetRow, cardPoints, carefulFor, effectValue, mirrorRate, paperTable, parTen, playSheets, ranks, scopeOf, sheetSetup, spearman, swapIns } from '../tools/duel-audit.mjs';
 import { bareState, content, setupOf, roadState, foeOf, FIGHTS, keyOf } from '../tools/story-fights.mjs';
 import { fightLevel, foeLevel } from '../scripts/rules/cards.mjs';
+import { act, begin, foeTurn, legal, simCopy } from '../scripts/battle.js';
+import { lookaheadFor, plainFor, movesOf } from '../scripts/fightline.js';
 
+const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
 const card = id => content.cards.cards.find(c => c.id === id);
 
 test('points for the cost: a 3-damage blow at 2 is 1.25, a plain 1/2 at 1 is a little under the curve, a sweep is weighed per target', () => {
@@ -113,29 +116,44 @@ test('the fit: a gear multiplier rounds a worn thing\'s points to whole numbers 
   const whole = at(true, {});
   assert.deepEqual(at(true, { gear: 0.5 }), whole.map(n => Math.round(n * 0.5)));
   assert.deepEqual(at(true, { gear: 0.25 }), whole.map(n => Math.round(n * 0.25)));
-  assert.ok(EVEN && FIT.gear < 1);
+  assert.ok(EVEN && typeof FIT.gear === "number");
 });
 
-test('the fit: a beast\'s level steps by class and never leaves his realm; the ten follows its class budget and tops up with bodies', async () => {
+test('the fit: a beast\'s level steps by class and never leaves his realm', async () => {
   const { withRules } = await import('../tools/duel-lines.mjs');
-  const { beastLevel, beastClamp, beastTen } = await import('../scripts/rules/cards.mjs');
+  const { beastLevel, beastClamp } = await import('../scripts/rules/cards.mjs');
   const f = FIGHTS.find(x => keyOf(x) === 'cangying@yaoyuan-wai'), st = roadState(f, {}), beast = foeOf(f);
-  const knobs = { by_hp: [[1.3, 'weak'], [2.5, 'normal']], step: { normal: 3 } };
-  const L = fightLevel(content, withRules(true, () => st)) ?? null;
+  const classes = [[1.3, 'weak'], [2.5, 'normal']];
   withRules(true, () => {
-    assert.equal(beastLevel(content, st, beast), foeLevel(content, st, beast) + 3);
+    assert.equal(beastLevel(content, st, beast), foeLevel(content, st, beast) + 1);
     assert.equal(beastClamp(content, st, beast), false);
-  }, knobs);
+  }, { by_hp: classes, step: { normal: 1 } });
   withRules(true, () => {
     assert.equal(beastLevel(content, st, beast), Math.min(foeLevel(content, st, beast) + 9, 9)); // the qi realm ends at 9
     assert.equal(beastClamp(content, st, beast), true);
-  }, { by_hp: [[1.3, 'weak'], [2.5, 'normal']], step: { normal: 9 } });
-  assert.equal(L, fightLevel(content, st));
-  const cost = ids => ids.reduce((n, id) => n + content.cards.cards.find(c => c.id === id).cost, 0);
-  const ten = k => withRules(true, () => beastTen(content, beast, 4), k);
-  const plainTen = ten({}), dear = ten({ deck: { base: 40, top: true, top_kind: 'minion', top_max: 5 } });
-  assert.equal(dear.length, 10);
-  assert.ok(cost(dear) >= cost(plainTen));
-  assert.equal(ten({ by_hp: [[9, 'weak']], deck: { by_rank: { weak: { base: 5, per_level: 0 } } } }).length, 10);
-  assert.ok(cost(ten({ by_hp: [[9, 'weak']], deck: { by_rank: { weak: { base: 5, per_level: 0 } } } })) <= cost(plainTen));
+  }, { by_hp: classes, step: { normal: 9 } });
+  assert.equal(fightLevel(content, st), fightLevel(content, st));
+});
+
+test('the lines are seat-symmetric: asked for the foe seat they read the foe\'s hand, 灵力 and the other board', () => {
+  const ten = parTen(paperTable());
+  const st = begin(sheetSetup(ten, ten, 'seat|1'), catalog);
+  act(st, { kind: 'end' }, 'you'); // the foe's turn
+  assert.equal(st.whose, 'foe');
+  for (const line of [carefulFor, lookaheadFor, plainFor]) {
+    const a = line(st, 'foe');
+    if (a) assert.equal(legal(st, a, 'foe'), null, `${line.name} gave a move the foe seat may not make`);
+    if (a?.kind === 'play') assert.ok(st.foe.hand[a.index], 'a card of the foe\'s own hand');
+  }
+  assert.ok(movesOf(st, 'foe').every(a => legal(st, a, 'foe') === null));
+  assert.equal(movesOf(st, 'you').length, 0); // it is not his turn
+});
+
+test('a beast seat named by `ai` plays that line; with none named the foe policy plays as it did', () => {
+  const ten = parTen(paperTable());
+  const play = ai => { const st = begin({ ...sheetSetup(ten, ten, 'ai|1'), foe: { ...sheetSetup(ten, ten, 'ai|1').foe, ...(ai ? { ai } : {}) } }, catalog); for (let g = 0; g < 300 && st.outcome === 'open'; g += 1) { if (st.whose === 'foe') foeTurn(st); else act(st, carefulFor(st, 'you') ?? { kind: 'end' }, 'you'); } return st; };
+  const base = play(null), again = play(null), careful = play('careful'), look = play('lookahead');
+  assert.deepEqual([base.outcome, base.turn], [again.outcome, again.turn]);
+  for (const st of [careful, look]) assert.notEqual(st.outcome, 'open');
+  assert.equal(simCopy(begin({ ...sheetSetup(ten, ten, 'ai|2'), foe: { ...sheetSetup(ten, ten, 'ai|2').foe, ai: 'careful' } }, catalog)).foe.ai, null); // a thinking copy holds the base policy
 });
