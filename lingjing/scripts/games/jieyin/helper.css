@@ -58,6 +58,7 @@
 .jyh-off { position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; border-radius: 50%; border: 1px solid #fff3c4; padding: 0;
   font: 16px / 1 sans-serif; color: #fff; background: #2a1206; cursor: pointer; }
 .jyh-video { position: absolute; width: 2px; height: 2px; opacity: 0; pointer-events: none; }
+.jyh-handle { display: none; }
 
 @keyframes jyh-breathe { 50% { box-shadow: 0 0 0 4px #fff3c4, 0 0 34px rgba(255, 140, 50, 1); } }
 @keyframes jyh-bob { 50% { transform: translateY(-4px); } }
@@ -177,6 +178,21 @@
   .jyh-soon[data-side] .jyh-soon-on { align-self: center; }
 }
 @keyframes jyh-soon-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* On phones the field is the positioning box; nothing is put in the shell's height-taking side. */
+@media (max-width: 699px) {
+  .jyh-dock:not([data-side]), .jyh-dock[data-narrow]:not([data-side]) {
+    --safe-left: env(safe-area-inset-left, 0px); --safe-right: env(safe-area-inset-right, 0px);
+    --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px);
+    position: absolute; left: var(--jyh-x, 6px); top: var(--jyh-y, 12%); bottom: auto; right: auto;
+    width: min(48%, 190px); min-width: 0; z-index: 20; opacity: .5;
+  }
+  .jyh-dock.is-tracked:not([data-side]) { opacity: 1; }
+  .jyh-dock:not([data-side]) .jyh-handle { display: block; position: absolute; z-index: 3; left: 0; top: 0;
+    width: 32px; height: 32px; border: 1px solid #fff3c4; border-radius: 50%; background: #6b3021; color: white; touch-action: none; }
+  .jyh-dock.is-folded:not([data-side]) { width: 32px; height: 32px; }
+  .jyh-dock.is-folded:not([data-side]) > :not(.jyh-handle):not(.jyh-video) { display: none !important; }
+}
 
 /* Reduced motion: no bloom, no stamp, no card sliding in — the light stays on, 「成」 stands, the card simply is. */
 @media (prefers-reduced-motion: reduce) {

@@ -65,6 +65,14 @@ const CSS = { jieyinCss: new URL('./jieyin.css', import.meta.url), jieyinHelper:
 const SEEN = 'lingjing.jieyin.first'; // this device has had the first-time line (never the save)
 const CHOICE = 'lingjing.jieyin.camera'; // the player's own switch on this device: 'on' | 'off' (none: on by itself)
 
+// Kept only for this page session, never in the save.
+let phonePlace = null, phoneFolded = false;
+export const clampDock = (point, box, size) => ({
+  x: Math.max(box.left, Math.min(point.x, Math.max(box.left, box.right - size.width))),
+  y: Math.max(box.top, Math.min(point.y, Math.max(box.top, box.bottom - size.height))),
+});
+export const foldDock = (folded) => !folded;
+
 export const WORDS = {
   zh: { btn: '结印', label: '对着摄像头结印', off: '收印', asking: '请允许摄像头……', rest: '歇一歇', ready: '好了，结印！', tapHere: '点这里结印', who: '小满', make: '照这个手势', camOn: '摄像头开着', camOff: '关掉摄像头', done: '成', camNow: '现在开摄像头' },
   en: { btn: 'Seals', label: 'Make hand seals at the camera', off: 'Stop', asking: 'Allow the camera…', rest: 'Rest', ready: 'Ready — make the seals!', tapHere: 'Tap here for hand seals', who: 'Xiaoman', make: 'Make this', camOn: 'The camera is on', camOff: 'Switch the camera off', done: 'Done', camNow: 'Camera on now' },
@@ -202,7 +210,7 @@ function dockEl(doc, w) {
   d.hidden = true;
   d.innerHTML = `<div class="jyh-hint"></div><b class="jyh-state"></b><b class="jyh-done" aria-hidden="true">${plain(w.done)}</b><ol class="jyh-chips"></ol>`
     + `<button type="button" class="jyh-off" aria-label="${plain(w.camOff)}" title="${plain(w.camOff)}">×</button><i class="jyh-cam" title="${plain(w.camOn)}"></i>`
-    + `<video class="jyh-video" playsinline muted></video>`;
+    + `<button type="button" class="jyh-handle" aria-label="${w.btn}" aria-expanded="true">☰</button><video class="jyh-video" playsinline muted></video>`;
   return d;
 }
 
@@ -239,7 +247,8 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
   let side = null, laid = false;
   const dockAt = () => {
     if (host.isConnected === false) return; // between two frames of a re-laid card
-    const s = sideOf(host, doc);
+    const phone = win.matchMedia?.('(max-width: 699px)')?.matches ?? false;
+    const s = phone ? null : sideOf(host, doc);
     if (laid && s === side) return; // a re-laid frame brings a new side: they move into it
     side = s;
     laid = true;
@@ -249,6 +258,47 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
   dockAt();
   const $ = (s) => dock.querySelector(s);
   for (const el of [btn, dock, soon]) for (const t of ['pointerdown', 'pointerup', 'click']) el.addEventListener(t, (e) => e.stopPropagation());
+  const handle = $('.jyh-handle');
+  const narrow = () => win.matchMedia?.('(max-width: 699px)')?.matches ?? false;
+  let drag = null;
+  const fold = () => { dock.classList.toggle('is-folded', phoneFolded); handle.setAttribute('aria-expanded', String(!phoneFolded)); };
+  fold();
+  // Reserve the field's top HUD and bottom control strip; the shell controls are outside the field.
+  const position = () => {
+    if (!narrow() || dock.hidden || !host.getBoundingClientRect) return;
+    const b = host.getBoundingClientRect(), d = dock.getBoundingClientRect();
+    if (!b.width || !b.height || !d.width || !d.height) return;
+    const css = win.getComputedStyle?.(dock);
+    const inset = (name) => parseFloat(css?.getPropertyValue(name)) || 0;
+    const bounds = { left: Math.max(b.left + 6, inset('--safe-left')), right: Math.min(b.right - 6, win.innerWidth - inset('--safe-right')),
+      top: Math.max(b.top + b.height * .12, inset('--safe-top')), bottom: Math.min(b.bottom - b.height * .15, win.innerHeight - inset('--safe-bottom')) };
+    const p = clampDock(phonePlace ? { x: b.left + phonePlace.x * b.width, y: b.top + phonePlace.y * b.height } : { x: bounds.left, y: bounds.top }, bounds, d);
+    dock.style.setProperty('--jyh-x', `${p.x - b.left}px`); dock.style.setProperty('--jyh-y', `${p.y - b.top}px`);
+  };
+  handle.addEventListener('pointerdown', (e) => {
+    if (!narrow()) return;
+    e.stopPropagation(); e.preventDefault();
+    const d = dock.getBoundingClientRect();
+    drag = { id: e.pointerId, x: e.clientX, y: e.clientY, left: d.left, top: d.top, moved: false };
+    handle.setPointerCapture?.(e.pointerId);
+  });
+  handle.addEventListener('pointermove', (e) => {
+    if (!drag || drag.id !== e.pointerId) return;
+    e.stopPropagation();
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (Math.hypot(dx, dy) > 5) drag.moved = true;
+    if (!drag.moved) return;
+    const b = host.getBoundingClientRect();
+    phonePlace = { x: (drag.left + dx - b.left) / b.width, y: (drag.top + dy - b.top) / b.height };
+    position();
+  });
+  handle.addEventListener('pointerup', (e) => {
+    if (!drag || drag.id !== e.pointerId) return;
+    e.stopPropagation(); e.preventDefault();
+    if (!drag.moved) { phoneFolded = foldDock(phoneFolded); fold(); }
+    drag = null; position();
+  });
+  handle.addEventListener('pointercancel', () => { drag = null; });
   const hint = handHint($('.jyh-hint'), { lang, size: 'dock', seals: kit.seals, knobs: kit.hint }); // the gesture frame: big enough to read
 
   const offered = new Set(moves), D = kit.doufa;
@@ -312,6 +362,8 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
     if (!holding && dock.classList.contains('is-cast')) dock.classList.remove('is-cast');
     btn.hidden = still || holding || !st.on || (wanted && ready); // still: the host is paused (its lead card, the shell's bar) — nothing shows
     dock.hidden = still || !((wanted && st.on && ready) || holding);
+    dock.classList.toggle('is-tracked', hands.length > 0 || holding || Boolean(prog?.step));
+    position();
     // The ready card: between the waves, the next bringing the 大妖 (st.soon) — gone as that wave starts.
     soon.hidden = still || !st.soon || st.on || (away && !side);
     soon.classList.toggle('is-cam', wanted);
