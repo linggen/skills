@@ -186,6 +186,15 @@ html[data-board=fighter] #stage .gf-field { width: min(100%, calc((100vh - 200px
   .g-fighter.is-touch .gf-dial i { transform: rotate(var(--a)) translateY(calc(var(--gfb) * -1)) rotate(calc(-1 * var(--a))); }
   .g-fighter.is-touch .gf-dial b { width: calc(var(--gfb) * 1.08); height: calc(var(--gfb) * 1.08); margin: calc(var(--gfb) * -.54) 0 0 calc(var(--gfb) * -.54); }
 }
+/* Narrow boards: reserve a row for the hands and keep the toggle between field and pad. */
+@container (max-width: 430px) {
+  .g-fighter .gf-field { overflow: visible; }
+  .g-fighter canvas { border-radius: inherit; }
+  .g-fighter .gf-pad { position: static; padding-top: 44px; }
+  .g-fighter:not(.is-touch) .gf-padtoggle { top: 100%; bottom: auto; width: auto; height: auto; min-height: 44px; }
+  .g-fighter.is-touch .gf-pad { padding-top: 0; --gfb: clamp(44px, 12.5cqi, 48px); }
+  .g-fighter.is-touch button[data-k] { min-width: 44px; min-height: 44px; }
+}
 /* Turned on its side on a phone: the field as tall as the page (the app's bar above it holds ✕ and Ⅱ) and as wide as
    the screen, up to WIDE_MAX (2.4 : 1; Hanli 11-03: 「两边目前黑的比较多」) — the world drawn wider at its sides, the
    boards as they are (draw.js fieldOf) — the hands over its lower corners, see-through, clear of the notch and the home
@@ -197,6 +206,9 @@ html[data-board=fighter] #stage .gf-field { width: min(100%, calc((100vh - 200px
     padding: 0 max(10px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); }
   html[data-board=fighter][data-input=touch] #stage .g-fighter.is-touch .gf-pad > * { pointer-events: auto; opacity: .62; }
   html[data-board=fighter][data-input=touch] #stage .g-fighter.is-touch .gf-pad > :is(.is-held, :has(.is-down)) { opacity: .85; }
+}
+@container (max-width: 430px) {
+  html[data-board=fighter][data-input=touch] #stage .g-fighter.is-touch .gf-pad { position: static; padding: 0 8px 8px; }
 }
 `;
 function sheet(doc) {
