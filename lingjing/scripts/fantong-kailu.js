@@ -29,9 +29,15 @@ const HOW = {
 };
 
 const WORDS = {
-  zh: { title: '饭桶', fire: '开 炉', fuel: '炉炭', have: '有 {n}', shop: '药铺有卖', max: '最多三样', place: '空', none: '不能喂', inPot: '在饭桶里', put: '放进饭桶', spare: '可喂 {n}', most: '最多', fold: '收起', unfold: '展开', out: '开出来的' },
-  en: { title: 'Rice Bucket', fire: 'Fire it', fuel: 'Charcoal', have: 'have {n}', shop: 'sold where pills are', max: 'three at most', place: 'empty', none: "won't go in", inPot: 'in the pot', put: 'Into the bucket', spare: '{n} to spare', most: 'Max', fold: 'Fold', unfold: 'Open', out: 'Out of the pot' },
+  zh: { title: '饭桶', fire: '开 炉', fuel: '炉炭', have: '有 {n}', lack: '还没有', shop: '药铺有卖', soldAt: '{where}有卖', max: '最多三样', place: '空', none: '不能喂', inPot: '在饭桶里', put: '放进饭桶', spare: '可喂 {n}', most: '最多', fold: '收起', unfold: '展开', out: '开出来的' },
+  en: { title: 'Rice Bucket', fire: 'Fire it', fuel: 'Charcoal', have: 'have {n}', lack: 'none yet', shop: 'sold where pills are', soldAt: 'sold at {where}', max: 'three at most', place: 'empty', none: "won't go in", inPot: 'in the pot', put: 'Into the bucket', spare: '{n} to spare', most: 'Max', fold: 'Fold', unfold: 'Open', out: 'Out of the pot' },
 };
+/** Where the 炉炭 is sold, from Look's `shops` (each with its goods): up to two shelf names; none named, the general word. */
+export function fuelShelves(look, item, lang = 'zh') {
+  const names = [...new Set((look?.shops ?? []).filter((s) => item && s?.goods?.includes(item) && s.shop).map((s) => s.shop))].slice(0, 2);
+  const w = WORDS[lang === 'en' ? 'en' : 'zh'];
+  return names.length ? say(w.soldAt, { where: names.join(lang === 'en' ? ' · ' : '、') }) : w.shop;
+}
 const say = (t, v) => String(t).replace(/\{(\w+)\}/g, (_, k) => String(v[k] ?? ''));
 
 /** What the pot may still take of each thing: the brief's spare count less what is in the pot now. */
@@ -78,7 +84,9 @@ export function kailuDockHtml(lang = 'zh', o = {}) {
   const ls = b?.fuel, lsMax = ls ? Math.min(ls.max ?? 0, ls.have ?? 0) : 0, n = o.fuel ?? 0;
   // −/＋ a piece at a time, and quick picks that scale with what he may put in (a piece a 层); none held, the shelf is named.
   const chips = fuelChips(lsMax).map((v) => `<button class="act quiet ftk-chip" data-ft-fuel-set="${v}" aria-pressed="${n === v}"${!filling ? ' disabled' : ''}>${esc(v === lsMax && v > 0 ? w.most : v)}</button>`).join('');
-  const stones = ls && ls.max > 0 ? `<div class="ftk-ls"><span>${esc(ls.name ?? w.fuel)}</span><button class="act quiet" data-ft-fuel="-1"${!filling || n <= 0 ? ' disabled' : ''}>−</button><b>${esc(n)}</b><button class="act quiet" data-ft-fuel="1"${!filling || n >= lsMax ? ' disabled' : ''}>＋</button><small class="dim">${esc(ls.have > 0 ? say(w.have, { n: ls.have }) : w.shop)}</small></div>`
+  // None held: no stepper to press (a dead control) — the name, 「还没有」, and where it is sold.
+  const stones = ls && ls.max > 0 && !(ls.have > 0) ? `<div class="ftk-ls lack"><span>${esc(ls.name ?? w.fuel)}</span><small class="dim">${esc(w.lack)} · ${esc(fuelShelves(o.look, ls.item, L))}</small></div>`
+    : ls && ls.max > 0 ? `<div class="ftk-ls"><span>${esc(ls.name ?? w.fuel)}</span><button class="act quiet" data-ft-fuel="-1"${!filling || n <= 0 ? ' disabled' : ''}>−</button><b>${esc(n)}</b><button class="act quiet" data-ft-fuel="1"${!filling || n >= lsMax ? ' disabled' : ''}>＋</button><small class="dim">${esc(say(w.have, { n: ls.have }))}</small></div>`
     + (lsMax > 1 ? `<div class="ftk-chips">${chips}</div>` : '') : '';
   const why = !b ? o.off ?? '' : b.ready === false && !runs ? b.wait ?? '' : ''; // its own reveal first: the wait after it
   const wait = why ? `<p class="small dim ftk-wait">${esc(why)}</p>` : '';

@@ -624,11 +624,16 @@ test('the docked 饭桶\'s 炉炭: −/＋ a piece, quick picks that scale with 
   assert.match(dock({ fuel: 4 }), /data-ft-fuel="1" disabled>＋/, 'at what he holds ＋ rests');
   assert.match(html, /有 4/);
   assert.doesNotMatch(html, /data-ft-ls|灵石/, 'no 灵石 on the dock');
-  // None held: the stepper stands (the cap is his 层), the shelf is named, nothing to raise.
+  // None held (seen on the page 2026-11-12: 「炉炭 − 0 ＋ 药铺有卖」, two dead buttons): no stepper, no picks — the name, 「还没有」,
+  // and where it is sold, by the shelves Look names (else the general word).
   const bare = VERBS.fantong(saveWith({ step: 5 }), content, ctx(), { action: 'look' }).result.fantong;
   const none = dock({}, 'zh', bare);
-  assert.match(none, /药铺有卖/);
-  assert.match(none, /data-ft-fuel="1" disabled>＋/);
+  assert.match(none, /<div class="ftk-ls lack"><span>炉炭<\/span><small class="dim">还没有 · 药铺有卖<\/small><\/div>/);
+  assert.doesNotMatch(none, /data-ft-fuel|ftk-chips/, 'nothing to press');
+  const shops = [{ shop: '外门库房', goods: ['mend-pill', 'lutan'] }, { shop: '货郎的担子', goods: ['lutan'] }, { shop: '南门药铺', goods: ['lutan'] }, { shop: '铁匠', goods: ['iron-sword'] }];
+  assert.match(dock({ look: { shops } }, 'zh', bare), /还没有 · 外门库房、货郎的担子有卖/, 'the shelves that sell it, two at most, the ones that do not left out');
+  assert.match(dock({ look: { shops } }, 'en', bare), /none yet · sold at/);
+  assert.match(dock({ look: { shops: [{ shop: '铁匠', goods: ['iron-sword'] }] } }, 'zh', bare), /还没有 · 药铺有卖/, 'no shelf named: the general word');
 });
 
 /* ── 2026-11-12: a result that is only 灵石 is never CALLED 珍品 or 逆天, and never 「新」 ── */
