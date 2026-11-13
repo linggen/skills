@@ -12,17 +12,14 @@ import { newState } from '../scripts/state.mjs';
 import { VERBS, look } from '../scripts/rules.mjs';
 import { WORDS, agendaRowHtml } from '../scripts/cards.js';
 import { choreGo, choreGrant, ownOf, ownXiuwei } from '../scripts/rules/chores.mjs';
-import { storyPlay } from '../scripts/rules/playpay.mjs';
+import { storyPlay, stonesAt } from '../scripts/rules/playpay.mjs';
 import { MENU, SHARE, merged, publish, stamp, stampCli, turnOf } from '../scripts/quest.mjs';
 import { TO_WAIMEN, walk } from './prologue.mjs';
 
 const content = loadContent();
-// Three small games where he stands (Hanli 2026-11-10: 「传音改成真正的3倍」; gongke.json share.own `games` 3): a story step's
-// 体力 as small-game play, × R × play_pay.xiuwei.board — 90 at 练气一层 with today's knobs (18 when it was 9 units unfactored).
-const X = content.balance.play_pay.xiuwei, OWN = content.gongke.kinds.share.own, GAME = content.balance.play_pay.story.units;
-const XW = Math.round(OWN.games * GAME * X.rate.base * X.board);
-// …and three small games' 灵石 (batch 2): a small game's play 灵石 (play_pay.wealth.default, minutes of income) × I at 练气一层 —
-// 6 with today's earn knob (11 before it; 15, a flat number, until 2026-11-10).
+// One small game's 修为 and three games' 灵石 at 练气一层.
+const OWN = content.gongke.kinds.share.own;
+const XW = storyPlay(content, { tier: 'qi', step: 1 });
 const WS = Math.round(OWN.games * content.balance.play_pay.wealth.default * content.balance.economy.income.first * content.balance.economy.earn);
 const ROOT = path.resolve(import.meta.dirname, '..');
 const NOW = new Date('2026-11-10T12:00:00');
@@ -56,18 +53,23 @@ test('the table lints; the share is a daily kind that pays by its own, with no m
   assert.match(lint(bad).join('\n'), /gongke share.*adds no meaning pay/);
 });
 
-test('a share pays three small games\' 修为 where he stands (90 at 练气一层) and three small games\' 灵石, once a day: a second pays nothing, the next day pays again', () => {
+test('a share pays one small game of 修为 and three games of 灵石, once a day', () => {
   const s = { ...joined(), step: 1, progress: 0 };
   const g = choreGrant(content, row(), s, NOW);
   assert.deepEqual([g.progress, g.wealth, g.stamina], [XW, WS, 0]);
-  assert.equal(OWN.games, 3);
-  assert.equal(XW, 90, 'three small games at 练气一层 (30 each) with today\'s knobs');
-  // …at every layer: three times what one small game pays there (rules/playpay.mjs storyPlay), rising with the layer.
-  for (const step of [1, 5, 9]) {
-    const at = { tier: 'qi', step };
-    assert.ok(Math.abs(Math.round(ownXiuwei(content, at, OWN)) - 3 * storyPlay(content, at)) <= 1, `练气${step}层`);
+  assert.deepEqual([OWN.games, OWN.xiuwei_games], [3, 1]);
+  for (const at of [{ tier: 'qi', step: 1 }, { tier: 'foundation', step: 0 }]) {
+    const paid = choreGrant(content, row(), at, NOW);
+    const stones = Math.round(stonesAt(content, at, 3 * content.balance.play_pay.wealth.default));
+    assert.equal(paid.progress, Math.round(ownXiuwei(content, at, { games: 1 })), JSON.stringify(at));
+    assert.equal(paid.wealth, stones, JSON.stringify(at));
+    const fallback = structuredClone(content);
+    fallback.gongke.kinds.share.own = { table: 'life', games: 3 };
+    const old = choreGrant(fallback, row(), at, NOW);
+    assert.equal(old.progress, Math.round(ownXiuwei(content, at, { games: 3 })));
+    assert.equal(old.wealth, stones);
   }
-  assert.ok(ownXiuwei(content, { tier: 'qi', step: 9 }, OWN) > ownXiuwei(content, { tier: 'qi', step: 5 }, OWN));
+  assert.equal(ownXiuwei(content, s, { games: 3, xiuwei_games: 0 }), 0);
   const quests = [row()];
   const one = turn(s, quests, SHARE);
   assert.equal(one.result.ok, true);

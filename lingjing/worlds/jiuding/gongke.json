@@ -4,8 +4,8 @@
   "per_day": { "ls": 9, "units": 10, "items": 2 },
   "_shares": "`shares_per_day`: how many of a day's daily chores (period `day`) pay their own share of the layer in 修为 (playpay.mjs chorePlay); the rest pay their 灵石, 体力 and meaning (rules/chores.mjs choreGrant). 2026-11-02 (Hanli 「任务设计可以, 按你说的做」): six dailies replaced one fixed workout; one share keeps a day's chore 修为 near where it was (one daily's 10%, plus the pick — now always a weekly or monthly, 20–30%, where the old pick was 10–30%). Waits on Hanli's word.",
   "shares_per_day": 1,
-  "_doubled": "App-linked chores pay double (Hanli 2026-11-10: 「练体等…app联动的任务, 奖励都翻倍」): every kind above that comes from an app (body · rest · heal · ledger · sweep · ward · greet · song) pays twice its meaning — `units` and `wealth` — and `per_day` doubles with them (wealth 15 → 30, units 5 → 10; `items` is a count, not pay); the chore's own pay doubles in the master table (balance.json master.xiuwei.units.chore: a day 5 → 10, a week 10 → 20, a month 15 → 30; the `gongke_zero` table's 灵石 5 → 10), and the week's 月俸 (the `chore_week` table, 30 → 60 灵石; `chore_kind`'s 灵石 cap 10 → 20 so 算账's 16 lands). 传音 (`share`) is set at three small games on its own (`own`) and is not doubled again.",
-  "_own": "`own` on a kind (Hanli, 2026-11-10: 「分享动作就给奖励」, in 灵境: 「给修为和灵石奖励, 加进每日任务」): the chore's own pay, outside everything above — not the meaning (no `progress`/`wealth` on the kind, so `per_day` never touches it), not a `shares_per_day` slot (it neither takes one nor counts toward the day's; the paid record carries `apart`), not the chore's own `reward`. It pays `games` small games' 修为 at the layer he stands on — each one story step's 3 体力 as small-game play (rules/chores.mjs ownXiuwei: × R × play_pay.xiuwei.board), so it follows the knobs: 90 at 练气一层 today (Hanli 2026-11-10: 「分享任务给3倍奖励」, then 「传音改成真正的3倍」; it was 9 units without the small game's factor, 18) — its own class in the master (master.xiuwei.classes.share_games), weighed there by tools/numbers.mjs) and `wealth` 灵石, capped by `table`. The one declaration of the share's pay. Paid once a day, as any daily (the chore's period).",
+  "_doubled": "App-linked chores pay double (Hanli 2026-11-10: 「练体等…app联动的任务, 奖励都翻倍」): every kind above that comes from an app (body · rest · heal · ledger · sweep · ward · greet · song) pays twice its meaning — `units` and `wealth` — and `per_day` doubles with them (wealth 15 → 30, units 5 → 10; `items` is a count, not pay); the chore's own pay doubles in the master table (balance.json master.xiuwei.units.chore: a day 5 → 10, a week 10 → 20, a month 15 → 30; the `gongke_zero` table's 灵石 5 → 10), and the week's 月俸 (the `chore_week` table, 30 → 60 灵石; `chore_kind`'s 灵石 cap 10 → 20 so 算账's 16 lands). 传音 (`share`) pays one small game of 修为 and three of 灵石 on its own (`own`) and is not doubled again.",
+  "_own": "`own` on a kind is the chore's own pay, outside the meaning cap and shares_per_day; its paid record carries `apart`. `xiuwei_games` sets its 修为 in small games at the current layer, falling back to `games` when absent; `games` sets its 灵石 in small games. Each 修为 game is a story step as small-game play (rules/chores.mjs ownXiuwei). Since 2026-11-13 the builder found three games of 修为 too much for a tap: share pays one game of 修为 and three of 灵石, once a day.",
   "kinds": {
     "body": {
       "daily": true,
@@ -52,7 +52,7 @@
     "share": {
       "name": { "zh": "传音", "en": "Sending word" },
       "about": { "zh": "把今日的签、近况传给山外的朋友。银月说：道不孤，必有邻。", "en": "Today's fortune and how things stand, sent to friends beyond the mountains. Yinyue says: the Way does not walk alone; it will have neighbours." },
-      "own": { "table": "life", "games": 3 }
+      "own": { "table": "life", "games": 3, "xiuwei_games": 1 }
     }
   }
 }

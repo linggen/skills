@@ -141,9 +141,9 @@ export function ownOf(content, q) {
   const own = content.gongke?.kinds?.[q.kind]?.own;
   return own && content.rewards.tables[own.table] ? own : null;
 }
-/* The 修为 a chore's own pay declares where he stands: `games` small games (a story step's units each, as board play), else `units`. */
-export const ownXiuwei = (content, state, own) => (own?.games
-  ? xiuweiOf(content, state, own.games * (content.balance?.play_pay?.story?.units ?? 0), { board: true })
+/* 修为 uses `xiuwei_games` small games, falling back to `games`, else `units`. */
+export const ownXiuwei = (content, state, own) => ((own?.xiuwei_games != null || own?.games)
+  ? xiuweiOf(content, state, (own.xiuwei_games ?? own.games) * (content.balance?.play_pay?.story?.units ?? 0), { board: true })
   : xiuweiOf(content, state, own?.units ?? 0, { board: own?.board === true }));
 /* What it pays: 修为 only with a save (a layer to stand on) and never at 练气零层 (the formula reads 0 there). */
 const ownGrant = (content, own, q, state) => ({
