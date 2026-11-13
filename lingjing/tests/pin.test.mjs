@@ -75,8 +75,12 @@ const pins = pinsOf(content);
 const FRAMED = { yin: 'xiongzai', jin: 'huilang', baoshi: 'jiushou', zuanshi: 'zheng' }; // a 随从 of each grade
 const ctxOf = (extra = {}) => ({ lang: 'zh', words: BW.zh, catalog, board: 5, artBase: '', ...extra });
 
-/* The plain card's markup, rendered exactly as tests/fixtures/pin-fan-main.json was from main before the frames. */
+/* The plain card's markup, rendered exactly as tests/fixtures/pin-fan-main.json was from main before the frames — from
+   the four cards the fixture froze with it (its `catalog`), so a later change to their numbers is not read as a frame's. */
+const MAIN = JSON.parse(fs.readFileSync(new URL('./fixtures/pin-fan-main.json', import.meta.url), 'utf8'));
 function plainRender(extra = {}) {
+  const catalog = Object.fromEntries(MAIN.catalog.map(x => [x.id, { ...x, name: x.name.zh }]));
+  const ctxOf = (more = {}) => ({ lang: 'zh', words: BW.zh, catalog, board: 5, artBase: '', ...more });
   const deck = ['mucao', 'huodan', 'mucao', 'huodan', 'tuqiang', 'mucao', 'huodan', 'tuqiang', 'mucao', 'jinren'];
   const st = begin({ mode: 'pve', seed: 'fan-snap', you: { tier: 'qi', root: 'fire', deck }, foe: { tier: 'qi', root: 'wood', deck } }, catalog);
   act(st, { kind: 'play', index: st.you.hand.indexOf('tuqiang') });
@@ -90,13 +94,13 @@ function plainRender(extra = {}) {
   const spoils = spoilsHtml({ cards: [{ id: 'huodan' }], items: [] }, { ...ctx(), words: { ...BW.zh, ...WORDS.zh } });
   const g = { cards: [{ id: 'mucao', name: '木草泥马', cost: 1, kind: 'minion', element: 'wood', deck: true }, { id: 'huodan', name: '火弹术', cost: 2, kind: 'spell', element: 'fire' }] };
   const deckView = deckHtml(g, { lang: 'zh', words: WORDS.zh, catalog, look: {}, artBase: '', ...extra });
-  const reveal = revealHtml(content.cards.cards.find(c => c.id === 'mucao'), { lang: 'zh', line: '得自饭桶', artBase: '' });
+  const reveal = revealHtml(MAIN.catalog.find(c => c.id === 'mucao'), { lang: 'zh', line: '得自饭桶', artBase: '' });
   const foeFace = cardFaceHtml('mucao', ctx(), st);
-  return { foeFace, mineBoard: st.you.board.length, foeBoard: st.foe.board.length, fight, face, spoils, deck: deckView, reveal };
+  return { catalog: MAIN.catalog, foeFace, mineBoard: st.you.board.length, foeBoard: st.foe.board.length, fight, face, spoils, deck: deckView, reveal };
 }
 
 test('a 凡 card is drawn byte for byte as on main, frames or none: the hand, the rank, the beast\'s side, 牌组, 所得, 得牌', () => {
-  const main = JSON.parse(fs.readFileSync(new URL('./fixtures/pin-fan-main.json', import.meta.url), 'utf8'));
+  const main = MAIN;
   assert.deepEqual(plainRender(), main, 'no pins handed');
   assert.deepEqual(plainRender({ pins }), main, 'with every pin handed: plain cards wear nothing');
   assert.equal(main.mineBoard, 1); assert.equal(main.foeBoard, 1);

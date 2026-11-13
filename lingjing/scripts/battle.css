@@ -519,6 +519,8 @@
   .bleaf { padding: 5px 4px 12px; }
   .bleaf .bname { font-size: 12.5px; }
   .bleaf .btext { font-size: 9.5px; line-height: 1.25; }
+  /* 框 inside the narrower padding (4px a side here): the frame keeps clear of the rule text. */
+  .bleaf > .bpin { inset: 1px; }
   .bleaf .bcost { width: 22px; height: 24px; font-size: 13px; top: 2px; left: 2px; }
   .bleaf .belem { top: 7px; right: 7px; font-size: 10px; }
   .bleaf .batk, .bleaf .bhp { --gem: 20px; bottom: -5px; }
