@@ -16,8 +16,9 @@
 // careful holds by construction there; careful against plain is what shows the fight rewards thought at all. Seeds fixed
 // (`band|0..N-1`), output stable. A fight the even rules do not reach (a 试, a 零层 fight) shows `-` under ON.
 import { FIGHTS, TWO_PILLS, content, keyOf, rateOf, setupOf } from './story-fights.mjs';
-import { plain } from '../scripts/fightline.js';
-import { act, begin, foeTurn } from '../scripts/battle.js';
+import { plain, plainFor, carefulFor, lookaheadFor } from '../scripts/fightline.js';
+import { act, begin, foeStep, foeTurn } from '../scripts/battle.js';
+import { performance } from 'node:perf_hooks';
 
 const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
 export const EVEN = { share: { weak: 1, normal: 1, strong: 1 }, by_hp: [], top: 'strong', deck: { size: 10, base: 13, per_level: 1.5, keep: 4 } };
@@ -114,8 +115,47 @@ export function summary(rows) {
   };
 }
 
+/// Mirror the road's bare ten onto the beast, retaining the story fight's roots and other rules.
+export function mirrorLines({ seeds = 60 } = {}) {
+  const names = ['plain', 'careful', 'lookahead'], enemies = ['foe', 'careful', 'lookahead'];
+  const lines = { plain: plainFor, careful: carefulFor, lookahead: lookaheadFor };
+  const times = [], cells = {};
+  return withRules(true, () => {
+    const fights = FIGHTS.map(f => ({ f, setup: setupOf(f, { party: [], bare: true }) })).filter(x => x.setup.even && !x.f.teach);
+    for (const you of names) for (const foe of enemies) {
+      let wins = 0, losses = 0, near = 0, unfinished = 0;
+      for (const { setup } of fights) for (let k = 0; k < seeds; k += 1) {
+        const config = structuredClone(setup);
+        config.you.extra = [];
+        config.foe.deck = [...config.you.deck];
+        config.foe.ai = null;
+        const st = begin({ ...config, seed: `band|${k}` }, catalog);
+        for (let g = 0; g < 300 && st.outcome === 'open'; g += 1) {
+          if (st.whose === 'foe' && foe === 'foe') { foeStep(st); continue; }
+          const who = st.whose, name = who === 'you' ? you : foe;
+          const start = name === 'lookahead' ? performance.now() : 0;
+          const action = lines[name](st, who);
+          if (name === 'lookahead') times.push(performance.now() - start);
+          if (!act(st, action ?? { kind: 'end' }, who).ok) throw new Error('line returned an illegal move');
+        }
+        if (st.outcome === 'won') wins += 1;
+        else if (st.outcome === 'lost') { losses += 1; if (st.foe.hp <= st.foe.hpMax * 0.25) near += 1; }
+        else unfinished += 1;
+      }
+      cells[`${you}/${foe}`] = { wins, losses, near, unfinished, games: fights.length * seeds };
+      console.error(`${you}/${foe}: ${JSON.stringify(cells[`${you}/${foe}`])}`);
+    }
+    times.sort((a, b) => a - b);
+    return { seeds, fights: fights.length, cells, timing: { moves: times.length, mean: times.reduce((a, b) => a + b, 0) / times.length, p95: times[Math.ceil(times.length * 0.95) - 1] } };
+  });
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2), arg = (k, d) => (args.includes(k) ? args[args.indexOf(k) + 1] : d);
+  if (args.includes('--mirror-lines')) {
+    console.log(JSON.stringify(mirrorLines({ seeds: Number(arg('--seeds', 60)) }), null, 2));
+    process.exit(0);
+  }
   const seeds = Number(arg('--seeds', 40)), only = arg('--only', null)?.split(','), rules = arg('--rules', 'both'), bare = args.includes('--bare-gear'), pills = args.includes('--pills') ? TWO_PILLS : null, knobs = args.includes('--fit') ? FIT : args.includes('--knobs') ? JSON.parse(arg('--knobs', '{}')) : KNOBS_OFF;
   const patch = JSON.parse(arg('--patch', '{}'));
   const creatures = JSON.parse(arg('--creatures', '{}')), decks = JSON.parse(arg('--decks', '{}'));

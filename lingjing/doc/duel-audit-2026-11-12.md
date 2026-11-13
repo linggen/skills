@@ -1070,3 +1070,28 @@ Run times (machine at load 10-130 from other work): the 100-seed confirmation of
 | `plain` | 10.2 | 6.2 | 32.4 |
 
 Gear worth +11.6; `careful` 29 under `lookahead`; 11 of 36 inside 30-62 (10 of 35 without 灵草谷); 7 under 30, 4 under 15, none at 0; 18 over 62; two pills 50-90: 19 of 36. The band tests were run with S4 only.
+
+
+## 2026-11-13 — honest lines
+
+Sequential Node run: `node lingjing/tools/duel-lines.mjs --mirror-lines --seeds 60`. Each cell covers 36 even-rule story fights and 60 `band|0..59` deals per fight (2,160 games); bare, no pills or party, his own ten copied to the beast, player first. The original fight setup retains its roots, beast signature and other encounter rules; this is a deck mirror, not identical seats. Lent extras are removed. No game reached the 300-action cap. Honest lookahead uses four unseen samples and careful rollouts for both sides. Near-loss share is the fraction of losses with the beast at or below 25% of maximum 气血.
+
+### Player win rate (%)
+
+| player / beast | foe | careful | honest lookahead |
+|---|---:|---:|---:|
+| plain | 16.1 | 26.4 | 1.8 |
+| careful | 53.8 | 42.8 | 6.7 |
+| honest lookahead | 82.1 | 79.4 | 34.9 |
+
+### Near-loss share (% of losses)
+
+| player / beast | foe | careful | honest lookahead |
+|---|---:|---:|---:|
+| plain | 37.2 | 39.2 | 7.0 |
+| careful | 53.5 | 49.8 | 23.4 |
+| honest lookahead | 72.5 | 71.2 | 45.0 |
+
+Honest lookahead took **22.41 ms mean and 87.41 ms p95 per decision** in Node (299,268 decisions, both seats, measured during the sequential run; machine load and board mix affect timings).
+
+Against foe / careful / lookahead, the honest player’s 82.1 / 79.4 / 34.9 differs from the earlier peeking 95.0 / 74.9 / 49.4: -12.9 / +4.5 / -14.5 points. This is not an isolated estimate of information leakage: the earlier figures used 35 fights and 40 seeds, while this run includes all 36 even-rule fights and 60 seeds, and the current rebase also changed the battle rules. The near-loss shares show how often defeats were close, not a separate win rate. No card, deck content or live fair-rules switch was changed.
