@@ -142,15 +142,25 @@ export function gameOf(f) {
   return Object.values(content.chapters).map(ch => ch.scenes?.[sid]).find(Boolean)?.exits.find(e => e.id === eid)?.game;
 }
 
+/* A fight's STANDING, read off what the data already says (no word on the beast): a fight the story marks (`teach` · `trial` · its own `band`) keeps its own say (null);
+   a pool of a 秘境 place (`mijing-…`) is a 凶兽's when the 重's `xiong` list names the creature, else a 妖兽's room; a scene that is a 重's `boss` at that 回 is a 大妖's;
+   any other scene is the story's; any other pool a roaming beast's (妖兽出没). */
+export function standingOf(f) {
+  if (f.teach || f.trial || f.band) return null;
+  const tiers = content.mijing?.tiers ?? [];
+  if (f.pool?.startsWith('mijing-')) return tiers.find(t => t.id.endsWith(f.pool.slice(7)))?.xiong?.some(x => x.creature === f.id) ? 'xiong' : 'room';
+  if (f.pool) return 'roaming';
+  return tiers.some(t => t.source?.hui === f.at && t.boss?.creature === f.id) ? 'boss' : 'story';
+}
 export function foeOf(f) {
   // A scene's fight as its exit weighs it (the game's `foe`, rules/world.mjs foeOf).
-  if (f.scene) return sceneFoe(content, gameOf(f));
+  const standing = standingOf(f), tag = c => (standing ? { ...c, standing } : c);
+  if (f.scene) return tag(sceneFoe(content, gameOf(f)));
   const c = creatureOf(content, f.id);
-  if (!f.pool) return c;
+  if (!f.pool) return tag(c);
   const entry = Object.values(content.places).map(p => p.pools?.[f.pool]).find(Boolean)?.beasts.find(b => b.creature === f.id);
-  return entry ? { ...c, ...(entry.deck ? { deck: entry.deck } : {}), ...(entry.hp ? { hp: entry.hp } : {}), ...(entry.roaming ? { roaming: entry.roaming } : {}) } : c;
+  return tag(entry ? { ...c, ...(entry.deck ? { deck: entry.deck } : {}), ...(entry.hp ? { hp: entry.hp } : {}), ...(entry.roaming ? { roaming: entry.roaming } : {}) } : c);
 }
-
 const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id, c]));
 /* The thinking line (trial-sim.mjs lookahead): a careful player, for the report. */
 function thoughtOut(setup) {
