@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
 import { newState } from '../scripts/state.mjs';
 import { look, task, trade, win } from '../scripts/rules.mjs';
+import { VERBS } from '../scripts/rules.mjs';
 import { placeOf } from '../scripts/rules/world.mjs';
 import { shelfOf } from '../scripts/rules/look.mjs';
 import * as yabao from '../scripts/games/yabao.js';
@@ -110,4 +111,27 @@ test('story time reads a chapter ended as every scene of it behind him', () => {
   const s = at('ye-kezhan', { done_scenes: ['01-arrive', '01-ye', '01-altar', '01-deep', '01-cauldron', '01-end'] });
   assert.ok(!(look(s, content, ctx).offers ?? []).some(o => o.id === 'ji-kezhan-hebo'));
   assert.deepEqual(look({ ...s, place: 'ye-doufu' }, content, ctx).place.shelf.map(i => i.id), ['ganliang']);
+});
+
+// A sell-back of 0 is no price (seen on the page 2026-11-12: 炉炭's row read 「卖 0」, and the 九转筑基丹 had sold for 0 灵石):
+// one rule for every item — the brief carries no `sell`, and the verb refuses with a plain line; a positive price is unchanged.
+test('a thing that sells back for 0 has no sell action in the bag brief and the sell verb refuses it', () => {
+  const s = at('pengcheng', { bag: { lutan: 2, 'qi-pill': 1 } });
+  assert.equal(content.balance.prices.lutan.sell, 0, 'the case: 炉炭 pays nothing back');
+  const bag = VERBS.gear(s, content, ctx).result.gear.bag;
+  assert.equal(bag.find(b => b.id === 'lutan').sell ?? null, null, 'no price to show');
+  const shelf = look(s, content, ctx).place.shelf;
+  assert.equal(shelf.find(i => i.id === 'lutan').sell ?? null, null, 'nor on the shelf');
+  const r = trade(s, content, ctx, { action: 'sell', id: 'lutan' }).result;
+  assert.equal(r.ok, false);
+  assert.equal(r.refused, 'not-for-sale');
+  assert.match(r.say, /没有市价/);
+  assert.equal(s.wealth, 500, 'nothing was paid');
+  // A positive sell-back is as it was.
+  const qi = content.balance.prices['qi-pill'].sell;
+  assert.ok(qi > 0);
+  assert.equal(bag.find(b => b.id === 'qi-pill').sell, qi);
+  const sold = trade(s, content, ctx, { action: 'sell', id: 'qi-pill' });
+  assert.equal(sold.result.ok, true);
+  assert.equal(sold.state.wealth, 500 + qi);
 });

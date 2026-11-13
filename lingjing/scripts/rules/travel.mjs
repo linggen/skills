@@ -259,7 +259,7 @@ export function trade(state, content, ctx, args) {
       return buyAt(content, s, ctx, item, item.buy);
     }
     if (held < 1) return refuse('not-in-bag', null);
-    if (item.sell == null) return refuse('not-for-sale', pick({ zh: '这东西没有市价。', en: 'That has no market price.' }, lang));
+    if (!(item.sell > 0)) return refuse('not-for-sale', pick({ zh: '这东西没有市价。', en: 'That has no market price.' }, lang));
     // A shop that buys only some kinds (`buys`, a visiting shop) turns the rest away in its own words.
     const price = buyBack(shop, item);
     if (price == null) return refuse('not-bought-here', pick(shop.buys?.say, lang) ?? null);

@@ -40,13 +40,14 @@ function visitorGoods(visitor, now = new Date()) {
 }
 /* What a shop pays for a thing of his: the catalog's `sell`, or — a shop that
    declares `buys` — only the kinds it names, at its rate (rounded down, never
-   below 1). Null when it has no price there. */
+   below 1). Null when it has no price there — and a sell-back of 0 is no price anywhere: a thing that pays nothing is
+   never sold (one rule for every item; 炉炭 and the 九转筑基丹 showed 「卖 0」, 2026-11-12). */
 function buyBack(shop, item) {
-  if (item?.sell == null) return null;
+  if (!(item?.sell > 0)) return null;
   const b = shop?.buys;
   if (!b) return item.sell;
   if (b.kinds && !b.kinds.includes(item.kind)) return null;
-  return item.sell > 0 ? Math.max(1, Math.floor(item.sell * (b.rate ?? 1))) : 0;
+  return Math.max(1, Math.floor(item.sell * (b.rate ?? 1)));
 }
 const fillIn = (text, words) => String(text ?? '').replace(/\{(\w+)\}/g, (m, k) => (words[k] ?? m));
 /* Its own line for when it stands next: today, or in n days. */

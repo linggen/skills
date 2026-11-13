@@ -697,7 +697,7 @@ function itemBrief(content, state, item) {
   const lang = state.lang;
   return {
     id: item.id, kind: item.kind, name: itemName(item, state, lang), about: pick(item.about, lang), art: item.art,
-    buy: item.buy, sell: item.sell, held: state.bag[item.id] ?? 0,
+    buy: item.buy, sell: item.sell > 0 ? item.sell : null, held: state.bag[item.id] ?? 0,
     // A thing bought for its card (`effect.card`) is no thing in the bag: say whether the card is already his (travel.mjs buyCard asks the same).
     ...(item.effect?.card ? { card_held: ownedCards(content, state).includes(item.effect.card) } : {}),
     effect: effectBrief(content, lang, item.effect, state, item.id),
