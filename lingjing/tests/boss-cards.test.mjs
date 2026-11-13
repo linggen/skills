@@ -216,6 +216,22 @@ test('every playable card says what it does on its face (gate 11-07: 回气丹 s
   }
 });
 
+test('new card mechanics have bilingual face words', () => {
+  const cases = [
+    [{ effect: { armor: 2 } }, '护体 +2', 'Armor +2'],
+    [{ effect: { hold: 1 } }, '定住一只，一回合不能出手', 'Hold one body for a turn'],
+    [{ effect: { poison: 3 } }, '毒 3：每回合掉 3 点，治疗可解', 'Poison 3: 3 a turn until healed'],
+    [{ keywords: ['taunt', 'shield'] }, '护主 · 灵光', 'Guard · Ward'],
+    [{ lay: { when: 'struck', effect: {} } }, '伏：挡下打向你的下一击', 'Laid: stops the next blow at you'],
+    [{ lay: { when: 'enters', effect: {} } }, '伏：对方下一只灵兽多等一回合', "Laid: the foe's next body waits a turn"],
+    [{ lay: { when: 'casts', effect: { damage: 2 } } }, '伏：对方下一次用功法，反受 2 点', "Laid: the foe's next spell costs it 2"],
+  ];
+  for (const [card, zh, en] of cases) {
+    assert.equal(sayEffect(card, { lang: 'zh' }), zh);
+    assert.equal(sayEffect(card, { lang: 'en' }), en);
+  }
+});
+
 test('「这一回合没别的可做了」 stands on the seam\'s own row beside 上一手, never in the hints laid over it (gate 11-07)', () => {
   const st = opened([]);
   st.you.mana = 0;

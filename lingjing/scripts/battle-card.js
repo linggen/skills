@@ -159,6 +159,7 @@ export const WORDS = {
       ['打牌', '点一张牌就打出：随从落到你的阵前（最多 4 位），功法当场生效。需要目标的牌，点完牌再点目标 —— 妖，或它阵前的一个。'],
       ['随从', '落场那一回合不能动。下一回合起，点它、再点它要打的，就是出手；互殴两边都受伤。'],
       ['护主', '它阵前站着护主时，先打护主 —— 打不到它本人。'],
+      ['灵光', '挡下第一次伤害'],
       ['主灵根一击', '每回合一次，费 2 灵力，打出你主灵根那一行。手里没牌时它是你的底。'],
       ['五行', '你的行克它 → 伤害多五成；被它克 → 少四分之一。金克木 · 木克土 · 土克水 · 水克火 · 火克金。不用自己算：牌上和瞄准处写的就是实打的点数。'],
       ['怎么算赢', '打光它的气血就赢。它的牌抽完会力竭遁走 —— 不胜不败，也没有奖励，所以拖着不打没用。'],
@@ -204,6 +205,7 @@ export const WORDS = {
       ['Playing', 'Click a card to play it: a minion joins your rank (four stand at most), an art takes effect at once. A card that wants a target: click it, then click the beast or one of its rank.'],
       ['Minions', 'A minion cannot strike the turn it arrives. After that, click it, then click what it strikes — and both take the blow.'],
       ['Guard', 'While a Guard stands in its rank, strike the Guard: the beast itself is out of reach.'],
+      ['Ward', 'Stops the first hit'],
       ['Root Strike', "Once a round, two Force, in your own root. It is what you have when your hand has nothing."],
       ['The five roots', 'Your root over its root lands half again as hard; under it, a quarter lighter. Metal over Wood · Wood over Earth · Earth over Water · Water over Fire · Fire over Metal. No need to reckon it: the card and whatever you aim at show the number that lands.'],
       ['Winning', 'Take all its Life. If its cards run out first it withdraws — neither won nor lost, and nothing is paid, so waiting it out gains nothing.'],
@@ -614,6 +616,9 @@ export function sayEffect(c, ctx) {
   if (e.damage != null) bits.push(zh ? `打 ${e.damage} 点` : `${e.damage} damage`);
   if (e.sweep != null) bits.push(zh ? `${pro(ctx).its}阵前每个 ${e.sweep} 点` : `${e.sweep} to each of ${pro(ctx).its} rank`);
   if (e.heal != null) bits.push(zh ? `回 ${e.heal} 气血` : `heal ${e.heal}`);
+  if (e.armor != null) bits.push(zh ? `护体 +${e.armor}` : `Armor +${e.armor}`);
+  if (e.hold != null) bits.push(zh ? '定住一只，一回合不能出手' : 'Hold one body for a turn');
+  if (e.poison != null) bits.push(zh ? `毒 ${e.poison}：每回合掉 ${e.poison} 点，治疗可解` : `Poison ${e.poison}: ${e.poison} a turn until healed`);
   if (e.draw != null) bits.push(zh ? `抽 ${e.draw} 张` : `draw ${e.draw}`);
   if (e.buff) bits.push(zh ? `一个 +${e.buff.atk ?? 0}/+${e.buff.hp ?? 0}` : `one of yours +${e.buff.atk ?? 0}/+${e.buff.hp ?? 0}`);
   if (e.rally) bits.push(zh ? `全体 +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}` : `all of yours +${e.rally.atk ?? 0}/+${e.rally.hp ?? 0}`);
@@ -625,9 +630,15 @@ export function sayEffect(c, ctx) {
   if (e.ward?.element) bits.push(wardWords(e.ward, zh));
   if (e.dodge != null) bits.push(zh ? (e.dodge > 1 ? `躲过接下来 ${e.dodge} 击` : '躲过下一击') : (e.dodge > 1 ? `dodge the next ${e.dodge} blows` : 'dodge the next blow'));
   if (e.drought != null) bits.push(zh ? `大旱：你每回合末，${pro(ctx).its}阵前每个 ${e.drought} 点` : `Drought: at the end of your turn, ${e.drought} to each of ${pro(ctx).its} rank`);
+  const laid = {
+    struck: zh ? '伏：挡下打向你的下一击' : 'Laid: stops the next blow at you',
+    enters: zh ? '伏：对方下一只灵兽多等一回合' : "Laid: the foe's next body waits a turn",
+    casts: zh ? `伏：对方下一次用功法，反受 ${c.lay?.effect?.damage} 点` : `Laid: the foe's next spell costs it ${c.lay?.effect?.damage}`,
+  };
   const key = c.keywords?.includes('taunt') ? (zh ? '护主' : 'Guard') : null;
+  const shield = c.keywords?.includes('shield') ? (zh ? '灵光' : 'Ward') : null;
   const cry = c.keywords?.includes('battlecry') ? (zh ? '入阵：' : 'On arrival: ') : '';
-  return [key, cry + bits.join('，')].filter(x => x && x.trim()).join(' · ');
+  return [key, shield, c.lay && laid[c.lay.when], cry + bits.join('，')].filter(x => x && x.trim()).join(' · ');
 }
 
 /* ── 杀招 — what is coming, in the numbers that will land ──
