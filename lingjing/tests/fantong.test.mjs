@@ -272,7 +272,11 @@ test('opens by 回: the base pool at 古四; 古六\'s treasures, 古五\'s gear
   const T0 = { ...T, odds: { ...T.odds, glimpse: 0 } };
   const reach = (s, id) => Object.values(pots).some(ids => [0, 1, 3].some(fuel => (chances(T0, { ids, realm: 3, fuel, content, state: s }).items[id] ?? 0) > 0));
   const gu4 = saveWith();
-  for (const id of ['yaqian', 'qi-pill', 'baina-dai', 'foundation-pill', 'bamboo-sword', 'talisman']) assert.ok(reach(gu4, id), `${id} from 古四`);
+  for (const id of ['yaqian', 'qi-pill', 'baina-dai', 'bamboo-sword', 'talisman']) assert.ok(reach(gu4, id), `${id} from 古四`);
+  // The 筑基丹 is the realm above's pill, drawn only within the last three 层 (book.gates `near`, 2026-11-12: 「全观一年一颗」):
+  // this test took it from 古四 at 练气零层 before; it now stands a 练气七层 save where it is reachable, and 古四's is shut.
+  assert.ok(!reach(gu4, 'foundation-pill'), '筑基丹 not from 古四 (练气零层)');
+  assert.ok(reach(saveWith({ tier: 'qi', step: 7 }), 'foundation-pill'), '筑基丹 from 练气七层');
   for (const id of ['penti-fu', 'zipai-jing', 'fangzi-canye', 'qingtong-jian', 'duan-dao', 'lipi-kanjian']) assert.ok(!reach(gu4, id), `${id} not yet at 古四`);
   const g7 = gu7();
   for (const id of ['penti-fu', 'zipai-jing', 'fangzi-canye', 'qingtong-jian', 'duan-dao']) assert.ok(reach(g7, id), `${id} by 古七`);
@@ -897,4 +901,26 @@ test('a pot of 二阶 things can give 三阶 ones, and 三阶 the 四阶 仙丹 
   const ids = ['qi-pill-9', 'qi-pill-9', 'qi-pill-9'], inJuan1 = chances(T, { ids, realm: 3, content, state: gu7() });
   assert.equal(inJuan1.items['xian-pill'] ?? 0, 0, 'no 仙丹 in 卷一');
   assert.equal(inJuan1.items['foundation-pill-9'] ?? 0, 0);
+});
+
+// 2026-11-12: two 筑基丹 out of one pot at 练气二层 (a twin, with two 炉炭) broke the sect's 「全观一年一颗」. The 筑基丹 is in the pool
+// only within the last `near` (3) 层 of the realm below, and one pot never gives more than one 破境丹, twin or not.
+test('the 筑基丹: only from 练气七层 on, and never two out of one pot', () => {
+  const gate = T.book.gates['foundation-pill'];
+  assert.deepEqual([gate.breach, gate.near], [true, 3]);
+  const at = step => saveWith({ tier: 'qi', step, chapter: '00-zhuji', scene: '09-cliff', ended: ['00-prologue', '00-waimen'], done_scenes: [] });
+  const pot = { ids: ['qi-pill', 'qi-pill'], fuel: 2 };
+  const p = step => chances(T, { ...pot, realm: realmOf(content, at(step)), content, state: at(step) }).items['foundation-pill'] ?? 0;
+  for (const step of [0, 2, 6]) assert.equal(p(step), 0, `练气${step}层: not in the pool, however much 炉炭`);
+  for (const step of [7, 8, 9]) assert.ok(p(step) > 0, `练气${step}层: in the pool`);
+  // A twin's second draw is never another 破境丹, and a count of its own never makes two.
+  const twin = { ...T, quirks: { ...T.quirks, refuse: 0, twin: 100 } };
+  let seen = 0;
+  for (let n = 0; n < 4000; n++) {
+    const r = rollFeed(twin, { ...pot, realm: realmOf(content, at(9)), seed: `breach-twin|${n}`, content, state: at(9) });
+    const pills = r.outs.filter(o => o.out === 'foundation-pill');
+    seen += pills.length;
+    assert.ok(pills.length <= 1 && pills.every(o => !(o.n > 1)), `one 筑基丹 at most, one of it (feed ${n})`);
+  }
+  assert.ok(seen > 0, 'the case is met: a twin pot that gives one');
 });

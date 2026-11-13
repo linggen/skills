@@ -259,13 +259,14 @@ export function trade(state, content, ctx, args) {
       return buyAt(content, s, ctx, item, item.buy);
     }
     if (held < 1) return refuse('not-in-bag', null);
+    // A thing the story needs (a key in use, a `story` thing, a taken errand's carry: pouch.mjs freeSlot) is never sold — said first, its own reason.
+    const keep = storyKeep(content, s, item.id);
+    if (keep) return keep;
+    // A sell-back of 0 is no price: nothing pays for it, so nothing sells it (one rule for every item).
     if (!(item.sell > 0)) return refuse('not-for-sale', pick({ zh: '这东西没有市价。', en: 'That has no market price.' }, lang));
     // A shop that buys only some kinds (`buys`, a visiting shop) turns the rest away in its own words.
     const price = buyBack(shop, item);
     if (price == null) return refuse('not-bought-here', pick(shop.buys?.say, lang) ?? null);
-    // A thing the story needs (a key in use, a `story` thing, a taken errand's carry: pouch.mjs freeSlot) is never sold.
-    const keep = storyKeep(content, s, item.id);
-    if (keep) return keep;
     const empty = spendStamina(content, s, ctx, 'shop');
     if (empty) return empty;
     s.bag[item.id] = held - 1;

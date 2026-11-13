@@ -54,15 +54,20 @@ export function fuelCap(content, state, t = tableOf(content)) {
 }
 
 /* ── What exists for this save: the 回 reached, the beasts beaten, the 卷 open, a once-thing not had ── */
-/* A 破境丹 row (`breach`) fits the realm one above his: the furnace makes the pill for the door ahead of him. */
-function breachFits(content, state, id) {
+/* A 破境丹 row (`breach`) fits the realm one above his: the furnace makes the pill for the door ahead of him. With `near`
+   (book.gates, 2026-11-12: the sect has one a year, 「全观一年一颗」) only once he stands within the last `near` 层 of the realm
+   below it — 练气七层 and up for the 筑基丹; before that it is simply not in the pool. */
+function breachFits(content, state, id, near = null) {
   const tiers = content.ladder?.tiers ?? [], at = tiers.findIndex(x => x.id === state.tier);
-  return tiers.findIndex(x => x.id === itemOf(content, id)?.tier) === at + 1;
+  if (tiers.findIndex(x => x.id === itemOf(content, id)?.tier) !== at + 1) return false;
+  if (!(near > 0)) return true;
+  const layers = (tiers[at].thresholds?.length ?? 0) - (tiers[at].zero ? 1 : 0);
+  return layerNo(content, tiers[at].id, state.step ?? 0) > layers - near;
 }
 function rowOpen(content, state, t, row, beyond = false) {
   if (!state || !content) return true; // the bare roll (tests, the 游戏厅's sample) sees every row
   if (row.hui && huiOrder(content, row.hui) > huiOrder(content, huiNow(content, state))) return false;
-  if (row.breach && !breachFits(content, state, row.item)) return false;
+  if (row.breach && !breachFits(content, state, row.item, row.near)) return false;
   // `after`: a scene he has finished (仙丹: 卷一's last, 01-end — never in 卷一; design.md § 丹药).
   if (row.after && !(state.done_scenes ?? []).includes(row.after)) return false;
   if (row.beast && !(state.beasts?.[row.beast]?.won > 0)) return false;

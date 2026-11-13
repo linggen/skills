@@ -80,7 +80,7 @@
       "penti-fu": { "hui": "h08" }, "yangyang-zhen": { "hui": "h08" }, "zipai-jing": { "hui": "h08" },
       "lipi-kanjian": { "beast": "shanli" }, "chaiya-zhui": { "beast": "chai" },
       "xian-pill": { "after": "01-end" },
-      "foundation-pill": { "breach": true }
+      "foundation-pill": { "breach": true, "near": 3 }
     },
     "worth_ls": { "pouch-low": 12, "baina-dai": 13.5 },
     "only": [

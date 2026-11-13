@@ -155,10 +155,14 @@ test('eatPill and cureDandu: a pill of no 转 or a fight pill\'s door are not co
 test('the furnace\'s 破境丹 is one 阶 above its owner: 筑基丹 while he is 练气, none once he has laid the foundation', () => {
   const t = content.fantong, pot = { ids: ['zixu-zhi', 'lingzhi', 'ginseng'], lingshi: 3, realm: 2.7 };
   const hui = { chapter: '00-zhuji', scene: '09-dabi', done_scenes: ['09-futian'] };
-  const qi = { ...player(), ...hui };
+  // Only within the last three 层 of the realm (book.gates `near`, 2026-11-12: 「全观一年一颗」): 练气七层 and up. (This test
+  // stood a 练气五层 here until then; it now stands at 七层, and the early layers are asserted shut.)
+  const qi = { ...player({ step: 7 }), ...hui };
   const fd = { ...player({ tier: 'foundation', step: 0 }), ...hui };
   const of = s => chances(t, { ...pot, content, state: s }).items;
-  assert.ok(of(qi)['foundation-pill'] > 0, '练气: the 筑基丹 row is open');
+  assert.ok(of(qi)['foundation-pill'] > 0, '练气七层: the 筑基丹 row is open');
+  for (const step of [2, 5, 6]) assert.ok(!of({ ...player({ step }), ...hui })['foundation-pill'], `练气${step}层: not in the pool yet`);
+  for (const step of [8, 9]) assert.ok(of({ ...player({ step }), ...hui })['foundation-pill'] > 0, `练气${step}层: open`);
   assert.ok(!of(qi)['foundation-pill-9'], 'the 九转 is the story\'s (wm-luobo): no pot gives it, at any realm');
   assert.ok(!of(fd)['foundation-pill'] && !of(fd)['foundation-pill-9'], '筑基: no 筑基丹 out of the pot');
   // And the roll itself never hands a 筑基 owner one, over many pots.

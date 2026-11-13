@@ -215,12 +215,15 @@ export function roll(t0, { seed, ids, fuel = 0, realm = 0, press = false, lift =
     // Nothing within reach: the humblest thing of the bucket's own, told as an ordinary grade.
     if (!got) return { out: humblest(t, open, info)?.item ?? null, grade, shown: ordinaryOf(grade), family, humble: true };
     const row = weighted(pickU, got.rows);
-    const n = (row.n ?? 1) * (fb ? fallbackCount(t, row, grade, worth, info) : 1);
+    // A 破境丹 comes one at a time, whatever the grade says (the sect's one a year; book.gates `breach`).
+    const n = row.breach ? 1 : (row.n ?? 1) * (fb ? fallbackCount(t, row, grade, worth, info) : 1);
     return { out: row.item, ...(n > 1 ? { n } : {}), grade, shown: fb ? fb.shown : grade, family: got.family,
       ...(row.with && withU * 100 < (row.with_chance ?? 100) ? { with: row.with } : {}) };
   };
   const first = one(pity >= (t.pity?.after ?? Infinity));
-  const outs = [first, ...(twin ? [one(false)] : [])].filter(o => o.out);
+  // …and a twin never gives a second one: two 筑基丹 out of one pot broke 「全观一年一颗」 (seen 2026-11-12, 练气二层).
+  const breach = o => Boolean(t.book?.gates?.[o.out]?.breach);
+  const outs = [first, ...(twin ? [one(false)] : [])].filter((o, i, all) => o.out && !(breach(o) && all.slice(0, i).some(breach)));
   return { ...first, outs, power, family, worth, ...(twin ? { twin: true } : {}) };
 }
 
@@ -259,7 +262,7 @@ export function odds(t0, { ids, fuel = 0, realm = 0, press = false, pity = 0, op
       if (low) { items[low.item] = (items[low.item] ?? 0) + p * (1 - share); value += p * (1 - share) * rowWorth(t, low, info); }
       continue;
     }
-    give(got, p * (1 - share), r => (fb ? fallbackCount(t, r, g, worth, info) : 1));
+    give(got, p * (1 - share), r => (fb && !r.breach ? fallbackCount(t, r, g, worth, info) : 1));
   }
   return { items, grades, power, family, worth, value };
 }
