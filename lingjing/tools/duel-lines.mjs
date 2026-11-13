@@ -3,7 +3,8 @@
 // companions), played by both lines over fixed seeds, with the even rules ON (balance.json `duel_hp.foe.deck`, set here in
 // memory — the file is not touched) and OFF (the rules as they stand).
 //
-//   node tools/duel-lines.mjs [--seeds N] [--only key,id] [--rules on|off|both] [--bare-gear] [--json]
+//   node tools/duel-lines.mjs [--seeds N] [--only key,id] [--rules on|off|both] [--bare-gear] [--pills] [--fit | --knobs '{json}'] [--json]
+//   --pills: his 丹囊 carries the band's two pills; --fit / --knobs: the fit's knob block over EVEN (in memory).
 //   --bare-gear: nothing worn, no 符, no pill on his side (default off: the output is as it was).
 //
 // Three lines: `thinking` is `lookahead` (scripts/fightline.js), `careless` is `careful` (tools/trial-sim.mjs fightOnce, one-ply
@@ -11,16 +12,28 @@
 // strike, the root strike — the design's careless player). `lookahead` rolls out with `careful` in a fair fight, so thinking >=
 // careful holds by construction there; careful against plain is what shows the fight rewards thought at all. Seeds fixed
 // (`band|0..N-1`), output stable. A fight the even rules do not reach (a 试, a 零层 fight) shows `-` under ON.
-import { FIGHTS, content, keyOf, rateOf, setupOf } from './story-fights.mjs';
+import { FIGHTS, TWO_PILLS, content, keyOf, rateOf, setupOf } from './story-fights.mjs';
 import { plain } from '../scripts/fightline.js';
 import { act, begin, foeTurn } from '../scripts/battle.js';
 
 export const EVEN = { share: { weak: 1, normal: 1, strong: 1 }, by_hp: [], top: 'strong', deck: { size: 10, base: 13, per_level: 1.5, keep: 4 } };
 
-/// Run `f` with the even switch on or off (the content's balance edited in memory, put back after).
-export function withRules(on, f) {
+/* The knob block of the fit (docs: duel-audit-2026-11-12.md § The fit), over EVEN, in memory only — balance.json is not touched and the
+   live rules read none of it while `duel_hp.foe` is absent. `gear`: × on a worn thing's fight points (whole numbers after); `deck.by_rank`: the
+   ten's budget by the beast's class (`by_hp` reads the class off creatures.json `hp`); `step`: levels above his by class (never past his realm).
+   Left empty here: EVEN alone is today's even set; `FIT` below is the set the fit ends on. */
+export const KNOBS_OFF = {};
+export const FIT = {
+  gear: 0.25, strike: false, by_hp: [[1.3, 'weak'], [2.5, 'normal']],
+  deck: { top: true, top_kind: 'minion', top_max: 5, base: 27, per_level: 1.5, keep: 2, by_rank: { weak: { base: 10 } } },
+};
+
+const merge = (a, b) => (b && typeof b === 'object' && !Array.isArray(b) ? Object.fromEntries([...new Set([...Object.keys(a ?? {}), ...Object.keys(b)])].map(k => [k, k in b ? merge(a?.[k], b[k]) : a[k]])) : b);
+
+/// Run `f` with the even switch on or off (the content's balance edited in memory, put back after). `knobs`: a block merged over EVEN.
+export function withRules(on, f, knobs = KNOBS_OFF) {
   const hp = content.balance.duel_hp, had = hp.foe;
-  if (on) hp.foe = structuredClone(EVEN); else delete hp.foe;
+  if (on) hp.foe = structuredClone(merge(EVEN, knobs)); else delete hp.foe;
   try { return f(); } finally { if (had === undefined) delete hp.foe; else hp.foe = had; }
 }
 
@@ -42,13 +55,13 @@ function plainRate(setup, seeds, from) {
 }
 
 /// One fight under one rule set: the three lines' win and the turns, alone; null when the even rules do not apply.
-export function duel(fight, { on, seeds = 40, from = 0, bare = false }) {
+export function duel(fight, { on, seeds = 40, from = 0, bare = false, pills = null, knobs = KNOBS_OFF }) {
   return withRules(on, () => {
-    const setup = setupOf(fight, { party: [], bare });
+    const setup = setupOf(fight, { party: [], bare, pills });
     if (on && !setup.even) return null;
-    const think = rateOf(fight, seeds, from, 'lookahead', { party: [], bare }), care = rateOf(fight, seeds, from, 'careful', { party: [], bare }), first = plainRate(setup, seeds, from);
+    const think = rateOf(fight, seeds, from, 'lookahead', { party: [], bare, pills }), care = rateOf(fight, seeds, from, 'careful', { party: [], bare, pills }), first = plainRate(setup, seeds, from);
     return { thinking: think.win, careless: care.win, plain: first.win, gap: think.win - care.win, gapPlain: care.win - first.win, turns: (think.turns + care.turns + first.turns) / 3 };
-  });
+  }, knobs);
 }
 
 /// The summary against the acceptance: thinking >= careless in 90% of fights, mean gap >= 15 points where careless is 10-90%;
@@ -67,10 +80,10 @@ export function summary(rows) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2), arg = (k, d) => (args.includes(k) ? args[args.indexOf(k) + 1] : d);
-  const seeds = Number(arg('--seeds', 40)), only = arg('--only', null)?.split(','), rules = arg('--rules', 'both'), bare = args.includes('--bare-gear');
+  const seeds = Number(arg('--seeds', 40)), only = arg('--only', null)?.split(','), rules = arg('--rules', 'both'), bare = args.includes('--bare-gear'), pills = args.includes('--pills') ? TWO_PILLS : null, knobs = args.includes('--fit') ? FIT : args.includes('--knobs') ? JSON.parse(arg('--knobs', '{}')) : KNOBS_OFF;
   const rows = FIGHTS.filter(f => !only || only.includes(keyOf(f)) || only.includes(f.id)).map(f => ({
     key: keyOf(f), name: f.name, at: f.at,
-    ...(rules !== 'off' ? { even: duel(f, { on: true, seeds, bare }) } : {}), ...(rules !== 'on' ? { main: duel(f, { on: false, seeds, bare }) } : {}),
+    ...(rules !== 'off' ? { even: duel(f, { on: true, seeds, bare, pills, knobs }) } : {}), ...(rules !== 'on' ? { main: duel(f, { on: false, seeds, bare }) } : {}),
   }));
   if (args.includes('--json')) console.log(JSON.stringify({ seeds, rows, summary: summary(rows) }, null, 1));
   else {

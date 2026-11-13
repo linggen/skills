@@ -3,7 +3,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { budgetRow, cardPoints, carefulFor, effectValue, mirrorRate, paperTable, parTen, playSheets, ranks, scopeOf, sheetSetup, spearman, swapIns } from '../tools/duel-audit.mjs';
-import { bareState, content, setupOf, FIGHTS, keyOf } from '../tools/story-fights.mjs';
+import { bareState, content, setupOf, roadState, foeOf, FIGHTS, keyOf } from '../tools/story-fights.mjs';
+import { fightLevel, foeLevel } from '../scripts/rules/cards.mjs';
 
 const card = id => content.cards.cards.find(c => c.id === id);
 
@@ -102,4 +103,39 @@ test('deck cost by level: the beast ten is counted against the budget', () => {
   assert.equal(r.size, 10);
   assert.equal(r.diff, r.its - r.his);
   assert.equal(r.budget, Math.round(13 + 1.5 * r.foeLevel));
+});
+
+test('the fit: a gear multiplier rounds a worn thing\'s points to whole numbers and only where the even switch stands', async () => {
+  const { withRules, EVEN, FIT } = await import('../tools/duel-lines.mjs');
+  const f = FIGHTS.find(x => keyOf(x) === 'qiuyu@09-lingcao/fight');
+  const at = (on, knobs) => withRules(on, () => { const s = setupOf(f, { party: [] }); return [s.you.power ?? 0, s.you.armor ?? 0]; }, knobs);
+  assert.deepEqual(at(false, { gear: 0.25 }), at(false, {})); // switch off: the knob is not read
+  const whole = at(true, {});
+  assert.deepEqual(at(true, { gear: 0.5 }), whole.map(n => Math.round(n * 0.5)));
+  assert.deepEqual(at(true, { gear: 0.25 }), whole.map(n => Math.round(n * 0.25)));
+  assert.ok(EVEN && FIT.gear < 1);
+});
+
+test('the fit: a beast\'s level steps by class and never leaves his realm; the ten follows its class budget and tops up with bodies', async () => {
+  const { withRules } = await import('../tools/duel-lines.mjs');
+  const { beastLevel, beastClamp, beastTen } = await import('../scripts/rules/cards.mjs');
+  const f = FIGHTS.find(x => keyOf(x) === 'cangying@yaoyuan-wai'), st = roadState(f, {}), beast = foeOf(f);
+  const knobs = { by_hp: [[1.3, 'weak'], [2.5, 'normal']], step: { normal: 3 } };
+  const L = fightLevel(content, withRules(true, () => st)) ?? null;
+  withRules(true, () => {
+    assert.equal(beastLevel(content, st, beast), foeLevel(content, st, beast) + 3);
+    assert.equal(beastClamp(content, st, beast), false);
+  }, knobs);
+  withRules(true, () => {
+    assert.equal(beastLevel(content, st, beast), Math.min(foeLevel(content, st, beast) + 9, 9)); // the qi realm ends at 9
+    assert.equal(beastClamp(content, st, beast), true);
+  }, { by_hp: [[1.3, 'weak'], [2.5, 'normal']], step: { normal: 9 } });
+  assert.equal(L, fightLevel(content, st));
+  const cost = ids => ids.reduce((n, id) => n + content.cards.cards.find(c => c.id === id).cost, 0);
+  const ten = k => withRules(true, () => beastTen(content, beast, 4), k);
+  const plainTen = ten({}), dear = ten({ deck: { base: 40, top: true, top_kind: 'minion', top_max: 5 } });
+  assert.equal(dear.length, 10);
+  assert.ok(cost(dear) >= cost(plainTen));
+  assert.equal(ten({ by_hp: [[9, 'weak']], deck: { by_rank: { weak: { base: 5, per_level: 0 } } } }).length, 10);
+  assert.ok(cost(ten({ by_hp: [[9, 'weak']], deck: { by_rank: { weak: { base: 5, per_level: 0 } } } })) <= cost(plainTen));
 });

@@ -489,3 +489,165 @@ and flat for the first three. The beast follows the budget (+1.5 a level, mean 1
 - *The bot.* Lookahead halves the sweeps and more than doubles the penalty of the draw spells; careful rates a sweep about twice as high as lookahead does. The ranking of the extremes is the same on both lines. What the bot cannot explain is the paper figures' failure (-0.09 over the 51):
   the yardstick is a poor predictor whichever line plays.
 - *Reading for the fitting.* The base and its meta (body-heavy tens) matter more than the sampling: use the 5-sign-flip cards (青光 · 珠光 · 猴儿 · 雷仆 · 燎原) as undecided, and take a level to be **3 points**, so "a set worth about a level" means roughly a fifth to a tenth of today's gear.
+
+
+## The fit — the even-rule knob set against the band (in memory only; balance.json and cards.json untouched)
+
+**Result in one paragraph.** The knobs allowed (gear multiplier, the beast's ten by class, level steps by class, a filler rule) do **not** reach the band. The best set found
+(below) brings `lookahead` with gear from 87 to **69%** (target 45), bare from 71 to 58; it puts **14 of 35** fights inside 30-62%, leaves one under 20% (精精 15%), makes gear worth **+11** (target 8-12),
+keeps `careful` 39 points under `lookahead` and `plain` under `careful`, and with two pills reads 80% (18 of 35 inside 50-90). It gets there only by making beast tens cost 29-41 against his 14-25,
+which gives up v4's "one curve". The cause is not the knobs' range but the sheet: **give the beast his own ten and `lookahead` still wins 95% bare (100% with gear)**, because the beast's play is the
+weaker line. Same 35 fights, his ten as the beast's, bare: 95%; beast 气血 x1.3: 79%; x1.6: **48%**; the beast moving first: 93%. A 气血 share near 1.6, or a beast that plays the `careful` line, is what the
+band needs; both are outside the knobs allowed.
+
+### What each step did (40 seeds, the 35 non-tutorial fights; `lookahead` with gear / bare / worth, fights inside 30-62%)
+
+| step | knobs | gear L | bare L | worth | in band |
+|---|---|---|---|---|---|
+| 0 today's even set | EVEN | 87.1 | 71.6 | 15.5 | 1/35 |
+| 1 gear alone | gear 0.75 / 0.5 / 0.25 | 86.1 / 85.3 / 78.2 | 71.6 | 14.5 / 13.7 / 6.6 | 1 / 3 / 2 |
+| 1b the sword's card off | strike false, gear 1 / 0.5 | 86.1 / 83.9 | 71.6 | 14.5 / 12.2 | 2 / 4 |
+| 2 budget alone (own cards only) | deck.base 40 | 72.1 | 54.8 | 17.3 | 11/35, 2 under 20 |
+| 2b budget + top-up with bodies, one budget for all | base 7 / 14 / 20 / 27 / 31 (+1.5 a level) | 94.6 / 82.1 / 66.1 / 61.9 / 70.1 | 83.1 / 64.4 / 45.4 / 44.0 / 51.7 | 11 / 18 / 21 / 18 / 18 | 0 / 3 / 8 / 13 / 8 |
+| 2c budget by class | weak 10, normal and strong 27 | 75.1 | 55.5 | 19.6 | 9/35, none under 20 |
+| 3 level steps by class | normal +1, strong +3 | 70.9 | 50.2 | 20.7 | 7/35, 灵草谷 65 to 20 |
+| 4 the gear multiplier last | 2c with gear 0.25 / 0.2 | 67.3 / 60.6 | 55.5 | 11.8 / 5.1 | 10 / 13 |
+
+A curve-respecting set (budget as it stands, 13 + 1.5 x level, nothing else but `strike: false`, gear 0.5): gear 83.9, bare 71.6, worth 12.2, 4 of 35 in band, 40 seeds.
+
+- **Gear is mostly a card.** At the 火柴 stops the worn sword puts its strike card (火柴, 6/5 for 4, +28 in the mirror) into the ten; a multiplier on 攻/防/抗 does not touch it, and in fights that stand at the middle
+  a worn set of (护体 4, 一击 +2) is worth up to 70 points (人鱼 100 against 22 bare). `strike: false` (a sword lends its number and no card) is a knob outside your list; without it the multiplier could not bring the worth down.
+- **Rounding.** Whole numbers: `Math.round(points x gear)`, a half goes up, zero is none. With 护体 4 and 一击 +2 the states are (4,2) at 1.0, (3,2) at 0.75, (2,1) at 0.5, (1,1) at 0.25, (1,0) at 0.2.
+- **Budget alone cannot do it**: a ten holds 10 of the beast's 12 cards, so only its two dearest can come back. The filler rule (`deck.top`) is needed: under budget the cheapest card gives way to the dearest body of its root
+  (cost at most `top_max`, two of a kind, `keep` own cards stay; only ordinary cards: not a companion's, pill, charm or draw-only spell). Dear spells as filler were worse (燎天 -33 in the mirror), hence `top_kind: minion`.
+- **Level steps** did harm: +1 level is +1 气血 (+3 points), and the strong class holds 灵草谷, whose own band (60-85) fell to 20. The clamp (never past the last level of his realm) never bites at the 36 stops
+  (level 10 is the first of 筑基, the rest sit mid-realm); it would for 猲狙 and 鬿雀 (level 7, +3 gives 10, held at 9). The final set uses no step.
+- **Budget is not strength.** The strong fights (level 10, 古六-古八) stay at 100% with tens of cost 38-41: a ten that dear cannot be played at 灵力 8, and his ten (two sweeps, two 5-damage blows) is better per cost.
+
+### The final knob set, ready for `duel_hp.foe` (EVEN with the fit over it)
+
+```json
+{
+ "share": {
+  "weak": 1,
+  "normal": 1,
+  "strong": 1
+ },
+ "by_hp": [
+  [
+   1.3,
+   "weak"
+  ],
+  [
+   2.5,
+   "normal"
+  ]
+ ],
+ "top": "strong",
+ "deck": {
+  "size": 10,
+  "base": 27,
+  "per_level": 1.5,
+  "keep": 2,
+  "top": true,
+  "top_kind": "minion",
+  "top_max": 5,
+  "by_rank": {
+   "weak": {
+    "base": 10
+   }
+  }
+ },
+ "gear": 0.25,
+ "strike": false
+}
+```
+
+New knobs read only where `duel_hp.foe` stands (the switch stays off in balance.json): `gear`, `strike`, `by_hp` classes (`foeRank`), `deck.by_rank`, `deck.top` · `top_kind` · `top_max`, `step` (unused here).
+In the tool: `FIT` in tools/duel-lines.mjs, used by `duel-lines.mjs --fit` (also `--knobs '{json}'`, `--pills`, `--bare-gear`).
+
+### The per-fight table (100 seeds; lookahead / careful / plain %)
+
+| fight | class (old hp) | gear L/C/P | bare L/C/P | two pills L/C/P | gear worth | his own ten as the beast's, gear |
+|---|---|---|---|---|---|---|
+| lingling@yaoyuan-wai | weak (0.8) | 99/60/0 | 97/59/0 | 100/82/1 | +2 | 100 |
+| fushe@yaoyuan-wai | weak (0.9) | 48/1/0 | 43/0/0 | 64/4/0 | +5 | 100 |
+| shanli@yaoyuan-wai | weak (0.9) | 50/11/0 | 48/11/0 | 74/14/18 | +2 | 100 |
+| yezhu@yaoyuan-wai | weak (0.9) | 95/5/0 | 93/4/0 | 99/9/0 | +2 | 100 |
+| yezhu@mengshan | weak (0.95) | 100/75/0 | 100/72/0 | 100/80/13 | +0 | 100 |
+| qiuyu@mijing-ya | weak (1.1) | 35/0/0 | 28/0/0 | 58/1/0 | +7 | 100 |
+| xiegou@yaoyuan-wai | weak (1.1) | 71/18/3 | 65/12/2 | 86/26/16 | +6 | 100 |
+| qiuyu@mijing-anhe | weak (1.2) | 71/2/0 | 22/0/0 | 69/3/1 | +49 | 100 |
+| longzhi@songlin | weak (1.25) | 64/14/1 | 61/9/1 | 92/32/27 | +3 | 100 |
+| gui@wm-wangzuo/open | normal (1.3) | 30/2/5 | 30/2/5 | 62/2/19 | +0 | 100 |
+| lang@yaoyuan-wai | normal (1.3) | 62/15/14 | 62/15/12 | 82/20/32 | +0 | 100 |
+| chihu@yaoyuan-wai | normal (1.4) | 78/14/7 | 75/14/5 | 97/14/44 | +3 | 100 |
+| xiong@mengshan | normal (1.4) | 38/7/7 | 38/7/7 | 60/9/28 | +0 | 100 |
+| xiong@yaoyuan-wai | normal (1.4) | 38/7/7 | 38/7/7 | 60/9/28 | +0 | 100 |
+| congcong@yaoyuan-wai | normal (1.45) | 50/8/4 | 51/8/4 | 67/13/34 | -1 | 100 |
+| lang@mengshan | normal (1.45) | 58/12/18 | 58/12/16 | 75/14/25 | +0 | 100 |
+| lang@songlin | normal (1.45) | 58/12/18 | 58/12/16 | 75/14/25 | +0 | 100 |
+| zheng@yaoyuan-wai | normal (1.45) | 44/9/0 | 44/9/0 | 79/18/14 | +0 | 100 |
+| mihou@yaoyuan-wai | normal (1.65) | 58/14/10 | 57/13/10 | 75/17/39 | +1 | 100 |
+| jingjing@yaoyuan-wai | normal (1.75) | 15/1/0 | 16/0/0 | 35/2/3 | -1 | 100 |
+| yuanhu@yaoyuan-wai | normal (1.85) | 35/10/10 | 36/10/10 | 37/10/15 | -1 | 100 |
+| cangying@yaoyuan-wai | normal (2.05) | 72/21/28 | 70/21/28 | 72/22/28 | +2 | 100 |
+| heyu@mijing-anhe | normal (2.2) | 94/58/30 | 50/18/11 | 100/76/64 | +44 | 100 |
+| renyu@liuwan | strong (2.75) | 87/36/2 | 24/3/0 | 93/37/12 | +63 | 100 |
+| renyu@sishui | strong (2.75) | 87/36/2 | 24/3/0 | 93/37/12 | +63 | 100 |
+| geju@yaoyuan-wai | strong (3.0) | 64/9/5 | 47/6/3 | 64/8/27 | +17 | 98 |
+| tianma@taihang | strong (3.0) | 40/9/4 | 39/9/4 | 54/10/11 | +1 | 100 |
+| qiuyu@09-lingcao/fight (own band 60-85) | strong (3.1) | 63/8/19 | 43/5/7 | 77/13/31 | +20 | 95 |
+| gui@sishui | strong (3.3) | 100/99/33 | 87/51/12 | 100/99/67 | +13 | 100 |
+| heyu@liuwan | strong (3.6) | 100/100/58 | 100/83/17 | 100/100/94 | +0 | 100 |
+| heyu@sishui | strong (3.6) | 100/100/58 | 100/83/17 | 100/100/94 | +0 | 100 |
+| linghu@taihang | strong (3.6) | 100/72/39 | 100/76/29 | 100/80/68 | +0 | 100 |
+| qique@yaoyuan-wai | strong (4.0) | 100/63/26 | 90/42/22 | 100/68/50 | +10 | 100 |
+| bibi@yaoyuan-wai | strong (4.3) | 97/57/43 | 76/40/33 | 99/61/67 | +21 | 100 |
+| dangkang@yaoyuan-wai | strong (4.5) | 80/33/9 | 14/1/2 | 89/37/37 | +66 | 100 |
+| chai@yaoyuan-wai | strong (4.55) | 99/63/45 | 87/41/34 | 99/68/75 | +12 | 100 |
+| **mean of 35** | | 69.1/30.1/13.9 | 57.9/21.5/8.8 | 80.3/34.2/31.1 | +11.1 | 100 |
+
+### Fights out of band (gear, lookahead outside 30-62%; 灵草谷 keeps its own band: 63%, inside 60-85)
+
+Too easy (above 62%), with the ten costs under the fit (bare):
+
+| fight | lookahead with gear % | his ten cost | beast ten cost | 气血 (his = beast's) |
+|---|---|---|---|---|
+| yezhu@mengshan | 100 | 14 | 12 | 21 |
+| gui@sishui | 100 | 25 | 40 | 30 |
+| heyu@sishui | 100 | 25 | 41 | 30 |
+| linghu@taihang | 100 | 25 | 29 | 30 |
+| heyu@liuwan | 100 | 25 | 41 | 30 |
+| qique@yaoyuan-wai | 100 | 22 | 29 | 27 |
+| lingling@yaoyuan-wai | 99 | 14 | 14 | 22 |
+| chai@yaoyuan-wai | 99 | 20 | 29 | 25 |
+| bibi@yaoyuan-wai | 97 | 20 | 34 | 25 |
+| yezhu@yaoyuan-wai | 95 | 16 | 12 | 21 |
+| heyu@mijing-anhe | 94 | 14 | 32 | 23 |
+| renyu@sishui | 87 | 25 | 38 | 30 |
+| renyu@liuwan | 87 | 25 | 38 | 30 |
+| dangkang@yaoyuan-wai | 80 | 20 | 35 | 25 |
+| chihu@yaoyuan-wai | 78 | 16 | 29 | 21 |
+| cangying@yaoyuan-wai | 72 | 17 | 33 | 24 |
+| qiuyu@mijing-anhe | 71 | 14 | 15 | 23 |
+| xiegou@yaoyuan-wai | 71 | 16 | 15 | 21 |
+| longzhi@songlin | 64 | 14 | 12 | 21 |
+| geju@yaoyuan-wai | 64 | 22 | 38 | 27 |
+
+Too hard: 精精 (15%), a 33-cost ten at level 4, where 苍鹰 and 妴胡 with the same class and level read 72% and 35%.
+What keeps the easy ones out: the level-10 and 古六-古八 beasts (蛫 · 合窳 · 领胡 · 獙獙 · 豺 · 鬿雀) lose at 95-100% to `lookahead` even when they play his own ten; the early weak-class beasts (野猪 · 蠪侄 · 灵灵)
+hold a ten of 12-14 against his 14-16.
+
+### Would the band tests pass with the switch on?
+
+No. With `duel_hp.foe` set to the block above in a scratch balance.json (restored, not committed), `fight-band.test.mjs` and `fight-band-pools.test.mjs` give **16 of 39 passing, 23 failing** (they hold each fight to
+45% bare and 65% with two pills); 灵草谷 and 冰夷双龙 fail too. Run time 2 min 37 s.
+
+### Next knobs, outside the list
+
+1. A 气血 share near 1.6 for the beast (`share`), or a beast that plays the `careful` line: either moves the equal-deck 95% into the band without pricing the ten above his.
+2. Or fit the 45% to `careful` (gear 30, bare 22 here) and let `lookahead` stand above it.
+3. The sword's card (`strike`) and 火柴 as a 6/5 for 4 are one decision with the gear's weight.
+
+Run times: a 40-seed probe of gear and bare with six processes 35 s wall (175 s CPU); the 100-seed final of three conditions and three lines 85 s wall; each equal-deck floor 30 s.
