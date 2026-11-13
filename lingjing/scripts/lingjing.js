@@ -4989,7 +4989,7 @@ function boutHooks(b) {
     // The closing card (won · lost · withdrew, battle-card.js endHtml) stands long enough to be read —
     // longer with the beast's last word in it — or until 收起. Never a gate: the report goes by itself.
     // A loss with a way forward (rules/strengthen.mjs) stands until he takes it or puts it away.
-    holdMs: (end, r) => (r?.way?.length && r.outcome !== 'won' ? WAY_HOLD_MS : end ? SEAL_SAID_MS : SEAL_HOLD_MS),
+    holdMs: (end, r) => (r?.rematch || (r?.way?.length && r.outcome !== 'won') ? WAY_HOLD_MS : end ? SEAL_SAID_MS : SEAL_HOLD_MS),
   };
 }
 function mountBout(b) {
@@ -5127,7 +5127,8 @@ async function settleBout(b, out = {}) {
   // The rules' Look is in and any passage owed is drawn (watchTell): 所得 may stand, after it.
   if (view.spoils?.pending) show({ spoils: { ...view.spoils, pending: false } });
   // The loss card's way forward, tapped (battle-card.js endHtml): taken now, by the page's own verb.
-  if (out.go && r.outcome !== 'won') await takeWay(out.go);
+  if (out.rematch && r.rematch) await onDuelStart(id);
+  else if (out.go && r.outcome !== 'won') await takeWay(out.go);
 }
 
 /* 「换一只」 (rules/match.mjs reroll): another beast of his measure stands at this pool — the rules choose, the page redraws. */

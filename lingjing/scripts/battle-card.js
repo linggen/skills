@@ -496,8 +496,8 @@ function handHtml(st, ctx, picked) {
     // On the beast's turn every card waits alike: the seal and the turn say why once, not each card.
     const shownWhy = why && why !== 'not-your-turn' ? (w.why[why] ?? why) : null;
     const text = `${esc(sayEffect({ ...c, effect: shownEffect(st, st.you, effectOf(st.you, c)), keywords: keywordsOf(st.you, c) }, ctx))}${liftOf(st.you, c, ctx)}${onBeast(st, c, ctx)}${backlash(st, c, ctx)}`;
-    return `<button class="bcard el-${esc(c.element ?? 'none')}${herOf(id, ctx)}${held ? ' held' : ''}${why ? ' dim' : ''}${!why && !held ? ' can' : ''}" data-spot="hand" data-index="${index}" data-id="${esc(id)}" style="${fanOf(index, n)}"${why ? ` title="${esc(w.why[why] ?? why)}"` : ''}>
-      ${leafHtml(c, ctx, { cost: costOf(st.you, c), atk: shown(st, b.atk), hp: shown(st, b.hp), text, why: shownWhy })}${sealHtml(c, st, ctx)}${freshHtml(id, ctx)}
+    return `<button class="bcard el-${esc(c.element ?? 'none')}${herOf(id, ctx)}${c.lent ? ' lent' : ''}${held ? ' held' : ''}${why ? ' dim' : ''}${!why && !held ? ' can' : ''}" data-spot="hand" data-index="${index}" data-id="${esc(id)}" style="${fanOf(index, n)}"${why ? ` title="${esc(w.why[why] ?? why)}"` : ''}>
+      ${leafHtml(c, ctx, { cost: costOf(st.you, c), atk: shown(st, b.atk), hp: shown(st, b.hp), text, why: shownWhy })}${sealHtml(c, st, ctx)}${freshHtml(id, ctx)}${c.lent ? `<span class="blent-mark">${ctx.lang === 'en' ? 'Lent' : '借'}</span>` : ''}
     </button>`;
   }).join('');
 }
@@ -940,7 +940,7 @@ export function battleHtml(st, offers, ctx, picked = null, openLog = false, note
       <button class="bhelpbtn${help ? ' on' : ''}" data-spot="help" title="${esc(w.how)}" aria-label="${esc(w.how)}">?</button>
       <span class="bturn ${st.whose}">${turn}</span>
       ${askHerHtml(ctx)}
-      <span class="bwhere">${esc(ctx.title ?? '')}${ctx.stake ? `<small class="bstake">${esc(ctx.stake)}</small>` : ''}</span>
+      <span class="bwhere">${esc(ctx.title ?? '')}${ctx.stake ? `<small class="bstake">${esc(ctx.stake)}</small>` : ''}${ctx.lend?.names?.length ? `<small class="blend-line">${esc(ctx.lang === 'en' ? `Yinyue lends · ${ctx.lend.names.join(', ')}` : `银月借力 · ${ctx.lend.names.join('、')}`)}</small>` : ''}</span>
     </div>
 
     <button class="bside foe${aim.hero ? ' aiming aimed' : ''}${windUp(st)}" data-spot="hero">
@@ -1033,7 +1033,8 @@ function endHtml(st, ctx) {
       <b class="bseal">${esc(e[end] ?? w[end] ?? '')}</b>
       <div class="closetitle">${esc(title)}</div>
       ${said ? `<p class="closedid">${esc(said)}</p>` : ''}
+      ${st.outcome === 'lost' ? `<p class="closedid">${esc(ctx.lang === 'en' ? `${ctx.foeName} had ${shown(st, st.foe.hp)} Life left` : `${ctx.foeName}只剩 ${shown(st, st.foe.hp)} 点气血`)}</p>${ctx.nextLend?.names?.length ? `<p class="closedid">${esc(ctx.lang === 'en' ? `Next fight, Yinyue lends: ${ctx.nextLend.names.join(', ')}` : `下一场，银月借你：${ctx.nextLend.names.join('、')}`)}</p>` : ''}` : ''}
       ${bubble}
-      <div class="acts">${ctx.way && st.outcome !== 'won' && wayLabel(ctx.way, ctx.lang) ? `<button class="act closeway" data-spot="way">${esc(wayLabel(ctx.way, ctx.lang))}</button>` : ''}<button class="act closeshut" data-spot="close">${esc(e.close)}</button></div>
+      <div class="acts">${ctx.way && st.outcome !== 'won' && wayLabel(ctx.way, ctx.lang) ? `<button class="act closeway" data-spot="way">${esc(wayLabel(ctx.way, ctx.lang))}</button>` : ''}${ctx.rematch ? `<button class="act closeway" data-spot="rematch">${ctx.lang === 'en' ? 'Fight again' : '再战'}</button>` : ''}<button class="act closeshut" data-spot="close">${esc(e.close)}</button></div>
     </div></div>`;
 }

@@ -108,6 +108,7 @@ function ctxOf(room) {
     pillNames: Object.fromEntries(Object.entries(pills).map(([id, p]) => [id, name(p.name)])),
     pillArt: Object.fromEntries(Object.entries(pills).filter(([, p]) => p.art).map(([id, p]) => [id, p.art])),
     ended: Boolean(room.ended), omenOpen: Boolean(room.omenOpen), stake: brief.stake ?? null, way: room.result?.way?.[0] ?? null,
+    lend: brief.lend, nextLend: room.nextLend, rematch: Boolean(room.result?.rematch),
     says: { ...(boutSays(brief.says, room.st.outcome) ?? {}), foe: null, her: null }, herAsk: null,
   };
 }
@@ -269,6 +270,7 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       coaching.foe_hp_max = shown(room.st, coaching.foe_hp_max);
       const next = room.st.outcome === 'lost' ? lendOf({ balance }, (fight.brief.lost ?? 0) + 1, coaching.gaps[0]?.lesson) : null;
       const lend = next ? { ...next, names: next.cards.map((id) => name(fight.catalog[id]?.name) ?? id) } : null;
+      room.nextLend = lend;
       const r = story.settle ? await Promise.resolve().then(() => story.settle(room.st, coaching, lend)).catch((e) => ({ ok: false, error: String(e?.message ?? e) })) : null;
       room.result = r;
       const out = { ...resultOf(room.st), ...(fight.next ? { next: fight.next } : {}), ...(r ? { r } : {}) };
@@ -281,7 +283,7 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       const end = boutSays(fight.brief.says, room.st.outcome)?.end;
       const hold = hook('holdMs', end, r) ?? SEAL_MS;
       await new Promise((go) => { release = go; setTimeout(go, hold); });
-      finish(room.go ? { ...out, go: room.go } : out);
+      finish({ ...out, ...(room.go ? { go: room.go } : {}), ...(room.rematch ? { rematch: true } : {}) });
     }
 
     async function doMove(out) {
@@ -358,6 +360,7 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
     }
 
     function onTap(spot) {
+      if (spot.kind === 'rematch') { room.rematch = true; return release?.(); }
       if (spot.kind === 'close') return release?.();
       // The loss card's way forward (battle-card.js endHtml): the story takes it once the room is closed.
       if (spot.kind === 'way') { room.go = room.result?.way?.[0] ?? null; return release?.(); }

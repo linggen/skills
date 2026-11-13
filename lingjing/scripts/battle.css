@@ -14,6 +14,9 @@
    replays a log the rules already wrote — and it is CSS: a stroke, a bloom, a
    splash, a dissolve. prefers-reduced-motion turns all of it off. */
 
+.blend-line { display: block; color: #607988; font-size: .72em; }
+.bcard.lent .blent-mark { position: absolute; top: .35em; right: .35em; z-index: 3; padding: .1em .3em; border: 1px solid #829ba8; border-radius: .25em; background: #e9f1f2; color: #526b7a; font-size: .7em; }
+
 .battle, .spoils {
   --paper: #F3EEE2;
   --paper-2: #E9E2D2;
