@@ -364,6 +364,7 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
   const lang = state.lang, today = state.duels?.[game.hunt ? `hunt:${game.hunt}` : game.quest ? game.id : game.creature];
   // A trial fight (`retry`) lost or run dry is simply open again.
   const open = today?.day === dayKey(now) && !(game.retry && ['lost', 'withdrew'].includes(today.outcome)) && (!game.hunt || today.outcome === 'open') ? today : null;
+  const setup = fightSetup(content, state, foeOf(content, game), now, game.id, game.deal, readOf(state, game));
   return {
     id: game.id,
     creature: {
@@ -387,7 +388,8 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
     },
     // Everything the fight is given at the door, and nothing else.
     // A pool's beast with its pool's deck (world.mjs foeOf); a scene's, its own.
-    setup: fightSetup(content, state, foeOf(content, game), now, game.id, game.deal, readOf(state, game)),
+    setup,
+    ...(setup.lend ? { lend: setup.lend } : {}),
 
     today: open ? { outcome: open.outcome } : null,
     // A story fight (`retry`) lost or run dry today is not over: the story waits on its win, and 出手 is open again at

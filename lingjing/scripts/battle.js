@@ -320,6 +320,11 @@ export function begin(setup, catalog) {
   // beast too frail to threaten anyone stands taller by data, never by name.
   // `foe.hp_fixed` (rules/cards.mjs duelFoe): 斗法 on fixed numbers — the beast's 气血 as a whole number, read off its level.
   const foe = sideOf('foe', { ...setup.foe, hpScale: mode.foeHp * (setup.foe.hp ?? 1), ...(ff != null ? { base: (REALMS[setup.you.tier] ?? REALMS.qi).hp * ff, f: ff } : {}), ...(setup.foe.hp_fixed != null ? { base: setup.foe.hp_fixed, step: 0, hpScale: 1 } : {}) }, catalog, mode, seed);
+  if (setup.lend) {
+    you.hp += setup.lend.hp ?? 0; you.hpMax += setup.lend.hp ?? 0;
+    you.powerHit += setup.lend.strike ?? 0;
+    if (setup.lend.ward) { you.lendWard = setup.lend.ward; if (!you.ward) you.ward = 1; }
+  }
   // `uid`: each body that stands gets its own number, in the order it arrives —
   // two of the same card on one rank are two bodies, and the log and the
   // screen must tell them apart (Hanli, 2026-10-15: hitting the second 夫诸 lit
@@ -569,6 +574,11 @@ function hurt(st, side, amount, why = {}) {
   const absorbed = Math.min(side.armor ?? 0, amount);
   if (absorbed) side.armor -= absorbed;
   side.hp = Math.max(0, side.hp - (amount - absorbed));
+  if (side.hp === 0 && side.lendWard > 0 && why.from) {
+    side.hp = 1; side.lendWard = 0;
+    if (side.ward === 1) side.ward = null;
+    st.log.push({ act: 'ward', who: side.who });
+  }
   st.log.push({ act: 'hurt', who: side.who, amount: amount - absorbed, hp: side.hp, ...(absorbed ? { absorbed, armor: side.armor } : {}), ...why });
   settle(st);
   if (st.outcome === 'open') gather(st, side);

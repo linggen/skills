@@ -276,6 +276,16 @@ const openFight = (state, game) => (game && state.fight?.game === game ? state.f
 export const heldMark = (state, mark) => [mark].flat().some(m => (state.marks ?? []).includes(m));
 export const readOf = (state, game) => (game?.sight && heldMark(state, game.sight.mark) ? game.sight.level ?? 1 : 0);
 
+export function lendOf(content, lost) {
+  const rungs = content?.balance?.duel_lend?.rungs ?? [];
+  const chosen = rungs.slice(0, Math.max(0, Math.floor(lost || 0)));
+  if (!chosen.length) return null;
+  return chosen.reduce((sum, rung) => {
+    for (const [key, value] of Object.entries(rung)) if (typeof value === 'number') sum[key] = (sum[key] ?? 0) + value;
+    return sum;
+  }, {});
+}
+
 export function fightSetup(content, state, creature, now, game = null, deal = null, read = 0) {
   const open = openFight(state, game);
   if (open?.setup) return open.setup;
@@ -301,6 +311,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   const pouch = pouchFor(content, state).map(p => (p.heal && into(p) !== 1 ? { ...p, heal: Math.max(1, Math.round(p.heal / into(p))) } : p));
   return {
     mode: 'pve',
+    ...(lendOf(content, state.duel_lost?.[creature.id]) ? { lend: lendOf(content, state.duel_lost?.[creature.id]) } : {}),
     ...(lv ? { anchor: lv.anchor } : {}),
     seed: deal ? `${duelSeed(state, creature, now)}|${deal}` : duelSeed(state, creature, now),
     you: {

@@ -564,6 +564,10 @@ export function duel(state, content, ctx, args) {
   if (hunt && yaoshouBatch(content, s, ctx.now)?.up && yaoshouFought(content, s, huntAt, ctx.now)) stampForm(s, 'yaoshou', 'duel', ctx.now);
   const streakWas = hunt && (today.streak ?? 0) < restAfter(content, placeOf(content, game.hunt)) ? today.streak ?? 0 : 0;
   s.duels[key] = { day, outcome: played.outcome, ...(hunt ? { n: (today.n ?? 0) + 1, at: ctx.now.toISOString(), streak: streakWas + (played.outcome === 'won' ? 1 : 0), last: rememberAt(content, today, creature.id, poolOf(content, placeOf(content, game.hunt))) } : {}) };
+  if (!creature.person && played.outcome === 'lost') s.duel_lost = { ...s.duel_lost, [creature.id]: (s.duel_lost?.[creature.id] ?? 0) + 1 };
+  if (!creature.person && played.outcome === 'won' && s.duel_lost?.[creature.id] != null) {
+    s.duel_lost = { ...s.duel_lost }; delete s.duel_lost[creature.id];
+  }
   const firsts = creature.person ? {} : meetBeast(s, creature.id, played.outcome === 'won', ctx.now);
   // 新 is gone once a card is played, win or lose (cards.mjs gainCard).
   unmark(s, played.log);
