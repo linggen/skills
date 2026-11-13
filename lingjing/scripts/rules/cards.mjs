@@ -11,7 +11,8 @@ import { allPlaces, creatureOf, tierIndex } from './world.mjs';
 import { mainRoot } from './roots.mjs';
 import { levelOf } from './playpay.mjs';
 import { atLevel, clampTo, powerKnobs, powerOf } from './power.mjs';
-import { chapterLabel, huiLabel, huiNow, sceneHui } from './hui.mjs';
+import { chapterLabel, huiLabel, huiNow, sceneHui, zhNumber } from './hui.mjs';
+import { PINS, pinRow } from './pin.mjs';
 
 /* ── 斗法 v3: the ten cards a player takes in ──
    Until the skill tree picks a deck, the deck is WHO THEY ARE: the cards of
@@ -43,9 +44,11 @@ const pickedCards = (content, state) => (Array.isArray(state.deck) && canPick(co
 
 export function deck(state, content, ctx, args) {
   const lang = state.lang, action = String(args.action ?? 'toggle');
+  // 卡册 — a read, asked when its view opens (as the 印谱's `seals book`): every card to collect, held or not.
+  if (action === 'book') return { state: null, result: { ok: true, kace: kaceBrief(content, state) } };
   const s = clone(state);
   if (action === 'auto') { delete s.deck; delete s.deck_out; return { state: s, result: { ok: true, gear: gearBrief(content, s, ctx?.now) } }; }
-  if (action !== 'toggle') return refuse('unknown-action', null, { actions: ['toggle', 'auto'] });
+  if (action !== 'toggle') return refuse('unknown-action', null, { actions: ['toggle', 'auto', 'book'] });
   if (!canPick(content, state)) return refuse('needs-tier', pick({ zh: '结丹之后，方能自己组牌。', en: 'You pick your own ten from the Core on.' }, lang), { tier: PICK_FROM });
   const id = String(args.id ?? ''), c = cardCatalog(content)[id];
   if (!c || !ownedCards(content, state).includes(id)) return refuse('not-held', null);
@@ -574,6 +577,67 @@ function cardBook(content, state) {
       },
     };
   });
+}
+
+/* ── 卡册: every card that can be collected (design.md § 斗法 v4 · 品 · 框 · the 卡册) ──
+   品 is read off where a card is found (rules/pin.mjs), never typed on it. The book holds each card once: held, the face the
+   hand shows; not held, its 品 and one line of where it is found — from data that already exists (the card's `from` row,
+   the beast's name, the 重's name), never a chance. A companion's cards stand on their own leaf: shown, not counted. */
+const PIN_WORDS = {
+  fan: { zh: '凡', en: 'Plain' }, yin: { zh: '银', en: 'Silver' }, jin: { zh: '金', en: 'Gold' },
+  baoshi: { zh: '宝石', en: 'Gem' }, zuanshi: { zh: '钻石', en: 'Diamond' },
+};
+const WHERE = {
+  zh: { story: '{hui}得自{who}', storyBare: '{hui}剧情所得', beat: '赢下一局所得', tale: '传闻了结所得', shop: '{who}处可买',
+    beast: '降服{name}所得', bout: '胜{name}所得', jin: '{name}手中的牌', baoshi: '{tier} · 大妖{name}手中的牌',
+    tame: '{at}收服{name}', summon: '{item}召来', juan: '卷{n} · ', hui: '{hui} · ' },
+  en: { story: '{hui}from {who}', storyBare: '{hui}from the story', beat: 'Won in a game', tale: 'Left when a tale is done', shop: 'Sold by {who}',
+    beast: 'Won by subduing {name}', bout: 'Won from {name}', jin: "{name}'s own card", baoshi: "{tier} · the great beast {name}'s own card",
+    tame: '{at}tame {name}', summon: 'Called by {item}', juan: 'Book {n} · ', hui: '{hui} · ' },
+};
+const fillIn = (tpl, v) => tpl.replace(/\{(\w+)\}/g, (_, k) => v[k] ?? '');
+const huiAt = (content, scene, lang, t) => { const h = scene ? huiLabel(content, sceneHui(content, scene), lang, 'short') : null; return h ? fillIn(t.hui, { hui: h }) : ''; };
+const creatureName = (content, id, lang) => pick(creatureOf(content, id)?.name, lang) ?? id;
+const bossTier = (content, id) => (content.mijing?.tiers ?? []).find(t => t.boss?.creature === id) ?? null;
+/* Each source kind's one line; `row` is the card's graded `from` row, `pin` its 品. */
+const WHERE_OF = {
+  story: (content, f, lang, t) => fillIn(pick(f.who, lang) ? t.story : t.storyBare, { hui: huiAt(content, f.scene, lang, t), who: pick(f.who, lang) }),
+  beat: (content, f, lang, t) => t.beat,
+  tale: (content, f, lang, t) => t.tale,
+  shop: (content, f, lang, t) => fillIn(t.shop, { who: pick(f.keeper, lang) ?? '' }),
+  beast: (content, f, lang, t) => { const k = creatureOf(content, f.creature); return fillIn(k?.person || k?.gender ? t.bout : t.beast, { name: creatureName(content, f.creature, lang) }); },
+  foe: (content, f, lang, t, pin) => fillIn(t[pin] ?? t.jin, { name: creatureName(content, f.creature, lang), tier: pick(bossTier(content, f.creature)?.name, lang) ?? '' }),
+  tame: (content, f, lang, t) => {
+    const juan = creatureOf(content, f.creature)?.juan;
+    const at = f.scene ? huiAt(content, f.scene, lang, t) : juan > 1 ? fillIn(t.juan, { n: lang === 'en' ? juan : zhNumber(juan) }) : '';
+    return fillIn(t.tame, { at, name: creatureName(content, f.creature, lang) });
+  },
+  summon: (content, f, lang, t) => fillIn(t.summon, { item: pick(content.items?.items?.find(i => i.id === f.item)?.name, lang) ?? pick(cardCatalog(content)[f.item]?.name, lang) ?? f.item }),
+};
+/// One line of where a card is found, or null for a card not collected.
+export function whereOf(content, card, lang = 'zh') {
+  const r = pinRow(content, card);
+  return r ? WHERE_OF[r.f.kind]?.(content, r.f, lang, WHERE[lang] ?? WHERE.zh, r.pin) ?? null : null;
+}
+/* A held card in the book: what the hand already shows of it. A 符 (a `_token` card bought or handed) is held while it is in the bag. */
+const heldIn = (content, state) => { const owned = new Set(ownedCards(content, state)); return c => owned.has(c.id) || Boolean(c._token && (state.bag?.[c.id] ?? 0) > 0); };
+const faceOf = (content, c, lang) => ({
+  cost: c.cost ?? null, kind: c.kind, element: c.element ?? null, ...(c.atk != null ? { atk: c.atk, hp: c.hp } : {}), ...(c.art ? { art: c.art } : {}),
+  ...(c.is && content.cards?.is_words?.[c.is] ? { is: pick(content.cards.is_words[c.is], lang) } : {}),
+});
+/* A companion's own card: a party member's (party.json members) handed by the book as theirs (`member`). */
+const companionCard = (content, c) => Boolean(c.owner && content.party?.members?.[c.owner] && (c.from ?? []).some(f => f.kind === 'member'));
+export function kaceBrief(content, state) {
+  const lang = state.lang, all = content.cards?.cards ?? [], held = heldIn(content, state), fresh = new Set(state.cards_new ?? []);
+  const row = c => ({ id: c.id, name: pick(c.name, lang), ...(held(c) ? { held: true, ...faceOf(content, c, lang), ...(fresh.has(c.id) ? { fresh: true } : {}) } : {}) });
+  const cards = all.map((c, i) => ({ c, i, r: pinRow(content, c) })).filter(x => x.r)
+    .sort((a, b) => PINS.indexOf(a.r.pin) - PINS.indexOf(b.r.pin) || (a.c.cost ?? 0) - (b.c.cost ?? 0) || a.i - b.i)
+    .map(({ c, r }) => ({ ...row(c), pin: r.pin, where: whereOf(content, c, lang) }));
+  const counts = PINS.map(pin => ({ pin, name: pick(PIN_WORDS[pin], lang), held: cards.filter(c => c.pin === pin && c.held).length, of: cards.filter(c => c.pin === pin).length }));
+  const members = Object.entries(content.party?.members ?? {});
+  const companions = members.map(([id, m]) => ({ id, name: pick(m.name, lang) ?? id, cards: all.filter(c => c.owner === id && companionCard(content, c)).map(row) }))
+    .filter(m => m.cards.length);
+  return { cards, counts, held: cards.filter(c => c.held).length, of: cards.length, companions };
 }
 
 export { canPick, cardBook, cardCatalog, gainCard, gearFight, ownedAtStart, pickedCards, rootsOf, starterOf, usable, winCard };
