@@ -2694,7 +2694,7 @@ async function openSeclude() {
   const r = await write('seclude', { action: 'info' }).catch(failed);
   if (!r.ok) return show({ doNote: refusal(r) });
   if (r.seclusion) return refresh(); // one is running: its card is the stage
-  show({ secludeOpen: true, seclude: r.choices, secludeFocus: null, secludePill: null, secludeNote: null, secludeStones: null, bookOpen: false, gearOpen: false });
+  show({ secludeOpen: true, seclude: r.choices, secludeFocus: r.choices?.progress === true ? { focus: 'progress' } : null, secludePill: null, secludeNote: null, secludeStones: null, bookOpen: false, gearOpen: false });
 }
 /* 聚灵阵 a level up (rules/seclusion.mjs `array`): bought, the chooser read again with the focus kept; refused, its words. */
 async function widenArray() {

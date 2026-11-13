@@ -3,6 +3,8 @@
 // its non-neutral values in a fixture that sets the knob, and at the neutral values (NEUTRAL) the game as it was.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
 import { loadContent } from '../scripts/content.mjs';
 import { dayKey, newState, threshold } from '../scripts/state.mjs';
 import { look, playTo, task, win } from '../scripts/rules.mjs';
@@ -242,6 +244,35 @@ test('聚灵 chooser: the page\'s preview line is the rules\' `previews`, whiche
     assert.ok(html.includes(want), `${k}: ${want}`);
     assert.equal(html.includes(w.secludePreviewBack.replace('{back}', pv.back)), Boolean(pv.back), `${k}: the 退回 note only with back`);
   }
+});
+
+test('seclusion opens on 修为 when offered, keeps a picked focus on repaint, and enters with the full 阵', async () => {
+  const source = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
+  const open = source.match(/async function openSeclude\(\) \{[\s\S]*?\n\}/)[0];
+  const go = source.match(/async function goSeclude\(\) \{[\s\S]*?\n\}/)[0];
+  const j = julinBrief(JULIN, sitter(), NOW);
+  let choices = { progress: true, julin: j, rule: {}, pills: [], treasure: { name: '宝', step: 1 } };
+  const view = {}, calls = [];
+  const sandbox = { view, write: async (verb, args) => { calls.push(args); return args.action === 'info' ? { ok: true, choices } : { ok: false }; },
+    show: patch => Object.assign(view, patch), failed: () => ({}), refusal: () => '', words: () => WORDS.zh };
+  vm.createContext(sandbox);
+  vm.runInContext(`${open}\n${go}`, sandbox);
+  const render = () => cardHtml({ card: 'seclude' }, { seclude: view.seclude, secludeFocus: view.secludeFocus, secludeStones: view.secludeStones, lang: 'zh', words: WORDS.zh });
+  await sandbox.openSeclude();
+  assert.match(render(), /data-seclude-focus="progress"/);
+  assert.match(render(), /聚灵阵/);
+  assert.match(render(), new RegExp(`class="act quiet on" data-seclude-stones="${j.presets.full}"`));
+  await sandbox.goSeclude();
+  assert.equal(calls.at(-1).stones, j.presets.full);
+  view.secludeFocus = { focus: 'treasure' };
+  assert.match(render(), /class="act on" data-seclude-focus="treasure"/);
+  assert.doesNotMatch(render(), /聚灵阵/);
+  assert.match(render(), /class="act on" data-seclude-focus="treasure"/, 'repaint keeps the picked focus');
+  choices = { ...choices, progress: false };
+  await sandbox.openSeclude();
+  assert.equal(view.secludeFocus, null);
+  assert.doesNotMatch(render(), /class="act on" data-seclude-focus/);
+  assert.doesNotMatch(render(), /聚灵阵/);
 });
 
 test('the day\'s cap is shared by several 闭关; laying more than the 阵, the day or the purse allows is refused', () => {
