@@ -145,7 +145,7 @@ function readsHtml(r, w) {
 /// (and 给银月 · {slot}) wherever the rules' gear read says one lands (`wear_on`) — the 储物袋's own `trade use`.
 export function spoilGearHtml(i, ctx) {
   const w = ctx.words, slot = w.gearSlots?.[i.slot] ?? i.slot ?? '';
-  const does = i.effect ? itemDoes(i.effect, ctx) : '';
+  const does = i.effect ? itemDoes(i.effect, ctx, i.use) : '';
   const acts = (i.wear_on ?? []).map((o) => {
     const at = w.gearSlots?.[o.slot] ?? o.slot;
     return o.on === 'her' ? `<button class="act" data-spoil-wear="${esc(i.id)}" data-on="her">${esc(say(w.gearGive, { name: ctx.her?.name ?? '', slot: at }))}</button>`
@@ -158,7 +158,7 @@ export function spoilGearHtml(i, ctx) {
 /// What a thing is and does: its kind · effect, its about, who it wins over — the detail's lines, the 饭桶's info too.
 export function itemFactsHtml(i, ctx) {
   const kind = ctx.look?.words?.[i.kind] ?? i.kind ?? '';
-  return `<div class="small dim">${esc(kind)}${kind ? ' · ' : ''}${esc(itemDoes(i.effect, ctx))}</div>
+  return `<div class="small dim">${esc(kind)}${kind ? ' · ' : ''}${esc(itemDoes(i.effect, ctx, i.use))}</div>
     ${i.about ? `<div class="small about">${esc(i.about)}</div>` : ''}${tamesLine(i, ctx)}`;
 }
 
@@ -168,7 +168,7 @@ function detailHtml(i, g, ctx, pw, ui) {
   if (!i) return `<div class="pdetail empty small dim">${esc(pw.pick)}</div>`;
   const w = ctx.words, e = i.effect ?? {};
   const acts = [];
-  if (e.progress != null) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.take)}</button>`);
+  if (e.progress != null) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(i.use?.button ?? pw.take)}</button>`);
   else if (e.learn) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(pw.study)}</button>`);
   // 换上 · N 格: the room he would have with it (the realm's plus this one's) — a swap, never added to the one he wears.
   else if (e.pouch && !carriedKind(i, g)) acts.push(`<button class="act" data-use="${esc(i.id)}">${esc(say(pw.carry, { n: (g.pouch?.base ?? 0) + e.pouch }))}</button>`);

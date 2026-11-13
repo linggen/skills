@@ -1474,6 +1474,7 @@
     },
     {
       "id": "longxu-cao",
+      "use": {"verb": {"zh": "吃下", "en": "Eat"}},
       "kind": "material",
       "level": 3,
       "name": {
@@ -1499,6 +1500,7 @@
     },
     {
       "id": "xizhu",
+      "use": {"verb": {"zh": "吞下", "en": "Swallow"}},
       "kind": "treasure",
       "level": 3,
       "name": {
@@ -3180,6 +3182,7 @@
     },
     {
       "id": "chenlian-fu",
+      "use": {"verb": {"zh": "捏碎", "en": "Crush"}},
       "kind": "treasure",
       "level": 1,
       "name": {

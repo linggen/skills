@@ -613,12 +613,16 @@ export function pouchSaid(e, w) {
   const d = e.room - e.now;
   return say(d > 0 ? w.effPouch : d < 0 ? w.effPouchLess : w.effPouchSame, { room: e.room, d: Math.abs(d) });
 }
-export function itemDoes(effect, ctx) {
+export function itemDoes(effect, ctx, use = null) {
   const e = effect ?? {}, w = ctx.words;
   const key = Object.keys(DOES).find((k) => e[k] != null);
-  // A pill that both heals and pays 修为 (the 九转回春丹, master.pills.exceptions — batch 2): both, its heal first.
-  if (key === 'progress' && e.fight) return [DOES.fight(e, w), DOES.progress(e, w)].filter(Boolean).join(' · ');
-  return key ? DOES[key](e, w) : w.effNone;
+  let line = key ? DOES[key](e, w) : w.effNone;
+  if (key === 'progress' && use) {
+    if (ctx.lang === 'en') line = line.replace(/^Taken/, use.effect).replace(/take it/g, `${use.button.toLowerCase()} it`);
+    else line = line.replace(/服下/g, use.effect).replace(/再服/g, `再${use.button === '服用' ? '服' : use.button}`);
+  }
+  // A pill that also heals tells both, heal first.
+  return key === 'progress' && e.fight ? [DOES.fight(e, w), line].filter(Boolean).join(' · ') : line;
 }
 
 /// One item, or a shelf of them — words, prices and what is held come from
@@ -656,7 +660,7 @@ function item(card, ctx) {
     // a picture and a name are not enough to buy on (his 2026-09-16).
     const about = i.about ? `<div class="small about">${esc(i.about)}</div>` : '';
     const e = i.effect ?? {};
-    const does = itemDoes(e, ctx);
+    const does = itemDoes(e, ctx, i.use);
     const made = i.made_from ? `<div class="small dim">${esc(say(ctx.words.madeFrom, { item: i.made_from }))}</div>` : '';
     const tames = tamesLine(i, ctx);
     // A pill in the bag is taken by a word, a wear or a weapon put on by one; Trade decides.
@@ -667,7 +671,7 @@ function item(card, ctx) {
     // ever earns a refusal is the stage lying about what can be done.
     const forHer = Boolean(e.wear) && !ctx.look?.companion;
     const wearable = !forHer && (e.wear || e.atk || e.def || e.ward);
-    const use = e.progress != null && i.held ? doBtn(ctx.words.use, 'use', i.id)
+    const use = e.progress != null && i.held ? doBtn(i.use?.button ?? ctx.words.use, 'use', i.id)
       : e.stamina && i.held ? doBtn(ctx.words.useThing, 'use', i.id)
       : wearable && i.held && !i.worn ? doBtn(ctx.words.wear, 'use', i.id) : '';
     const worn = i.worn ? `<span class="chip">${esc(ctx.words.worn)}</span>` : '';

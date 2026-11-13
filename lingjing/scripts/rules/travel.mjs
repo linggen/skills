@@ -7,6 +7,7 @@ import { gainCard, ownedCards } from './cards.mjs';
 import { companionOf, hasCompanion } from './companion.mjs';
 import { clone, offerTasks, pay, paysOf, refuse, spendStamina } from './core.mjs';
 import { capLook, capPillSay } from './cap.mjs';
+import { useVerb } from './use-verb.mjs';
 import { advance, bookOf, directorBrief, effectGrant, itemBrief, itemOf, onStoryRoad, questOf, settleErrands } from './errands.mjs';
 import { arriveOnRoad } from './road.mjs';
 import { forSale, sceneBrief, shelfOf, shopOf, wordsOf } from './look.mjs';
@@ -311,6 +312,12 @@ export function trade(state, content, ctx, args) {
       const would = paysOf(content, clone(s), ctx.now ?? new Date(), effectGrant(e));
       if (!clears && would?.full && !would.progress) {
         // At the 回's cap the way on is the story (Hanli 11-03); elsewhere (a 段 door, a realm's peak) the generic line.
+        if (item.kind !== 'pill' || item.use?.verb) {
+          const verb = useVerb(item, lang), capped = capLook(content, s, lang);
+          return refuse('xw-full', lang === 'en'
+            ? `Your cultivation is full; ${verb.button.toLowerCase()} would do nothing now. ${capped ? 'Follow the story, then ' : ''}${verb.button.toLowerCase()} it after you break through.`
+            : `你现在修为圆满，${verb.effect}也不长修为；${capped ? '走剧情' : ''}破境之后再${verb.button}。`);
+        }
         return refuse('xw-full', capLook(content, s, lang) ? capPillSay(content, lang) : pick({ zh: '你现在修为圆满，服下也不长修为；破境之后再服。', en: 'Your cultivation is full; it would do nothing now. Take it after you break through.' }, lang));
       }
       s.bag[item.id] = held - 1;

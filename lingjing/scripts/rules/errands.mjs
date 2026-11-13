@@ -694,6 +694,8 @@ function effectBrief(content, lang, effect, state = null, id = null) {
 
 /* An item as Look and the card tell it: its words, its prices, its one
    effect, and how many the player holds. */
+import { useVerb } from './use-verb.mjs';
+
 function itemBrief(content, state, item) {
   const lang = state.lang;
   return {
@@ -701,6 +703,7 @@ function itemBrief(content, state, item) {
     buy: item.buy, sell: item.sell > 0 ? item.sell : null, held: state.bag[item.id] ?? 0,
     // A thing bought for its card (`effect.card`) is no thing in the bag: say whether the card is already his (travel.mjs buyCard asks the same).
     ...(item.effect?.card ? { card_held: ownedCards(content, state).includes(item.effect.card) } : {}),
+    use: useVerb(item, lang),
     effect: effectBrief(content, lang, item.effect, state, item.id),
     worn: Object.values(state.wear ?? {}).includes(item.id),
     // `free`: a thing the story needs (pouch.mjs freeSlot) — no slot, never tossed or sold; the card says so.
