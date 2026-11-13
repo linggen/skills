@@ -191,18 +191,18 @@ test('the fourth fit: skill by standing is read off the data, set by the door, a
   const { standingOf, foeOf: foeAt, roadState: roadAt } = await import('../tools/story-fights.mjs');
   const { withRules, FIT } = await import('../tools/duel-lines.mjs');
   const by = FIT.ai.by_standing;
-  assert.deepEqual([[1, 'roaming'], [4, 'roaming'], [5, 'roaming'], [9, 'roaming']].map(([l, s]) => lineByStanding(by, s, l)), ['foe', 'foe', 'careful', 'careful']);
-  assert.deepEqual(['room', 'xiong', 'boss', 'story', 'nothing'].map(s => lineByStanding(by, s, 3)), ['careful', 'lookahead', 'lookahead', 'careful', null]);
+  assert.deepEqual([[1, 'roaming'], [4, 'roaming'], [5, 'roaming'], [9, 'roaming']].map(([l, s]) => lineByStanding(by, s, l)), ['foe', 'foe', 'foe', 'foe']);
+  assert.deepEqual(['room', 'xiong', 'boss', 'story', 'nothing'].map(s => lineByStanding(by, s, 3)), ['foe', 'careful', 'careful', 'foe', null]);
   const at = key => FIGHTS.find(x => keyOf(x) === key);
   assert.deepEqual(['lang@mengshan', 'qiuyu@mijing-anhe', 'heyu@mijing-anhe', 'qiuyu@mijing-ya', 'gui@wm-wangzuo/open', 'qiuyu@09-lingcao/fight', 'foe-yinhu@00-fox/save'].map(k => standingOf(at(k))),
     ['roaming', 'room', 'xiong', 'xiong', 'boss', null, null]); // a marked fight (band · teach · trial) keeps its own say
   const line = key => setupOf(at(key), { party: [] }).foe.ai ?? 'foe';
   const keys = ['lang@mengshan', 'renyu@sishui', 'qiuyu@mijing-anhe', 'heyu@mijing-anhe', 'gui@wm-wangzuo/open', 'qiuyu@09-lingcao/fight'];
   assert.deepEqual(keys.map(k => withRules(false, () => line(k), FIT)), keys.map(() => 'foe')); // switch off: nothing is read
-  assert.deepEqual(keys.map(k => withRules(true, () => line(k), FIT)), ['foe', 'careful', 'careful', 'lookahead', 'lookahead', 'foe']); // a roaming beast: foe below his 五层 (lang at 1), careful from it (renyu at 10)
-  // a 大妖 stands a level above its own, never across the realm line
+  assert.deepEqual(keys.map(k => withRules(true, () => line(k), FIT)), ['foe', 'foe', 'foe', 'careful', 'careful', 'foe']);
+  // The ruling changes no level.
   const boss = at('gui@wm-wangzuo/open'), st = roadAt(boss, {}), b = foeAt(boss);
-  withRules(true, () => assert.equal(beastLevel(content, st, b), foeLevel(content, st, b) + 1), FIT);
+  withRules(true, () => assert.equal(beastLevel(content, st, b), foeLevel(content, st, b)), FIT);
 });
 
 test('mix endpoints, deterministic coin and registry on both seats', () => {

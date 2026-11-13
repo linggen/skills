@@ -30,7 +30,7 @@ export const EVEN = { share: { weak: 1, normal: 1, strong: 1 }, by_hp: [], top: 
 export const KNOBS_OFF = {};
 export const FIT = {
   gear: 0.2, deck: { per_level: 1.3 },
-  ai: { by_standing: { roaming: [[1, 'foe'], [5, 'careful']], room: 'careful', xiong: 'lookahead', boss: { line: 'lookahead', up: 1 }, story: 'careful' } },
+  ai: { by_standing: { roaming: 'foe', room: 'foe', xiong: 'careful', boss: 'careful', story: 'foe' } },
 };
 /* The third try's set (skill by level, class shifting it), kept for the record. */
 export const FIT_BY_LEVEL = {
