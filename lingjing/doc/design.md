@@ -1043,7 +1043,12 @@ several times its face. His calls, 2026-11-12: *斗法这里为了平衡, 都是
 - **One sheet for anyone who fights.** 气血 = 20 + level. Ten cards. The same pool. The deck's cost follows the level's
   curve, a beast's too (measured 2026-11-12: at 练气一层 a beast's cards cost 2.1–2.9 each against his 1.4, so he rarely
   won at equal 气血; from 五层 his cards and gear won 93–100%).
-- **A beast is harder by its level and its deck, nothing else.** A level above his is a harder fight. The 秘境's
+- **A beast is harder by how well it plays, then by its level and its deck — never by a bigger sheet** (amended
+  2026-11-12, measured: on one sheet with his own ten a beast still lost 95% of fights to the thinking line; a level
+  inside a realm is worth about 3 points; meeting the band by sheet alone took 气血 ×1.6 or a ten costing twice his).
+  His own picture was 五子棋 — two fair sides, the better player wins — so the beast's seat is played by a line chosen
+  by its class (today's foe AI · a sensible card each turn · a turn ahead), the same lines that measure his seat.
+  A level above his is a harder fight. The 秘境's
   `foe_step` · `boss_more` and a roaming beast's `hp` · `power` per companion give way to levels and to members on the
   beast's side (v3: a lone beast is a party of one).
 - **What he brings in PvE.** Gear stays whole numbers (攻 · 防 · 抗) and is weighed again so a worn set is worth about a
