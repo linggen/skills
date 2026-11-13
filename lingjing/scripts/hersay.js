@@ -315,6 +315,35 @@ export const POOLS = {
   },
 };
 
+const DUEL_LINES = {
+  zh: { kill: '那一回合本可了结它。数清楚再出手。', trade: '只顾打它的脸，它的爪牙谁来收？', unspent: '灵力留着过年？用尽再收手。', wasted: '那张牌白扔了。牌不是这么用的。', guard: '护主立在那里，你当它是摆设？', element: '相克都不看，蛮打给谁看。', near: '只差{n}点。哼，再来。', far: '差得远。换牌，或者换件法器。', lend: '罢了，借你一张{card}。别丢本座的脸。', win: '这回像样了。……牌还来。' },
+  en: { kill: 'You could have finished it that turn. Count before you strike.', trade: 'Only its face? Who will deal with its minions?', unspent: 'Saving your mana for a holiday? Spend it first.', wasted: 'That card was wasted. That is not how to play.', guard: 'A guard stands there. Is it decoration?', element: 'Ignoring elements and striking blindly?', near: 'Only {n} Life short. Hmph. Again.', far: 'Far off. Change your deck or gear.', lend: 'Very well. Borrow my {card}. Do not shame this king.', win: 'Better this time. …Give my cards back.' },
+};
+const DUEL_FACTS = {
+  zh: { kill: '那回合有斩杀没算到', trade: '该先换掉对面随从却打了脸', unspent: '灵力没用完就结束回合', wasted: '有一张牌白扔了', guard: '对面护主没拆', element: '没用相克的牌' },
+  en: { kill: 'A win was available that turn but missed', trade: 'He hit the face instead of trading into a minion', unspent: 'He ended the turn with mana unspent', wasted: 'A card was wasted', guard: 'The opposing guard remained', element: 'He did not use the stronger element' },
+};
+const duelMove = (m, zh) => m ? [m.name ?? m.card ?? m.kind, m.target === 'face' ? (zh ? '打脸' : 'at the face') : m.target === 'body' ? (zh ? '打随从' : 'at a minion') : ''].filter(Boolean).join(zh ? '，' : ' ') : (zh ? '未知' : 'unknown');
+export function duelFacts({ outcome, beast, lost = 0, summary, lend, zh = true }) {
+  const who = beast || (zh ? '对手' : 'the opponent');
+  if (outcome === 'won') return lost > 0 ? (zh ? `他输给${who}${lost}次后赢了，归还银月的牌。` : `He beat ${who} after ${lost} losses and returns Yinyue's cards.`) : '';
+  if (outcome !== 'lost') return '';
+  const count = lost + 1, g = summary?.gaps?.[0], fact = DUEL_FACTS[zh ? 'zh' : 'en'][g?.lesson];
+  const parts = [zh ? `${who}赢了他，这是第${count}次输给它。` : `${who} beat him; this is loss ${count} to them.`, zh ? `${who}只剩 ${summary?.foe_hp_left ?? 0}/${summary?.foe_hp_max ?? 0} 气血。` : `${who} had ${summary?.foe_hp_left ?? 0}/${summary?.foe_hp_max ?? 0} Life left.`];
+  if (fact) parts.push(`${fact}${zh ? '。' : '.'}`);
+  if (count >= 2 && g) parts.push(zh ? `第${g.turn}回合，他${duelMove(g.did, true)}；更好的选择是${duelMove(g.better, true)}。` : `Turn ${g.turn}: he used ${duelMove(g.did, false)}; the better move was ${duelMove(g.better, false)}.`);
+  if (count >= 3) parts.push(zh ? `还剩${summary?.pills_left ?? 0}颗丹，可能需要换牌或法器。` : `${summary?.pills_left ?? 0} pills remained; a deck or gear change may be needed.`);
+  if (lend?.names?.length) parts.push(zh ? `下一场银月借他：${lend.names.join('、')}。` : `Next fight Yinyue lends: ${lend.names.join(', ')}.`);
+  return parts.join(zh ? '' : ' ');
+}
+export function duelFallback({ outcome, lost = 0, summary, lend, zh = true }) {
+  const p = DUEL_LINES[zh ? 'zh' : 'en'];
+  if (outcome === 'won') return lost > 0 ? p.win : null;
+  if (outcome !== 'lost') return null;
+  const line = p[summary?.gaps?.[0]?.lesson] ?? (summary?.near ? p.near.replace('{n}', summary.foe_hp_left) : p.far);
+  return [line, ...(lend?.names ?? []).map((card) => p.lend.replace('{card}', card))].join('\n');
+}
+
 /* The pool for a moment, a weight and her mode, in turn. */
 export function poolOf(kind, { mode = 'awake', lang = 'zh', weight = 'full', variant = null } = {}) {
   const p = POOLS[mode === 'asleep' ? 'asleep' : 'awake'][lang === 'en' ? 'en' : 'zh'];
@@ -392,8 +421,10 @@ export function createHerSay({ ask, onLine = () => {}, mode = () => 'awake', lan
     if (mem.day !== today()) mem = { ...mem, day: today(), fights: 0, wins: 0, onceDay: {} };
     return mem;
   };
-  let cur = { mode: 'awake', weight: 'full', variant: null };
+  let cur = { mode: 'awake', weight: 'full', variant: null, duel: null };
   const fallbackOf = (kind) => {
+    const duel = cur.duel && duelFallback({ ...cur.duel, zh: lang() !== 'en' });
+    if (duel) return duel;
     const pool = poolOf(kind, { mode: cur.mode, lang: lang(), weight: cur.weight, variant: cur.variant });
     const key = `${cur.mode}|${kind}|${cur.weight}|${cur.variant ?? ''}`, n = st.used[key] ?? 0;
     st.used[key] = n + 1;
@@ -418,12 +449,12 @@ export function createHerSay({ ask, onLine = () => {}, mode = () => 'awake', lan
     return true;
   }
   /* A moment, said now: the pool alone for a reaction (no model, no chat). */
-  function say(kind, what, { weight = 'full', key = null, variant = null } = {}) {
+  function say(kind, what, { weight = 'full', key = null, variant = null, duel = null } = {}) {
     const m = mode();
     if (m === 'absent' || !MOMENTS[kind]) return null;
     if (!allowed(kind, key)) { save(); return null; }
     save();
-    cur = { mode: m, weight, variant };
+    cur = { mode: m, weight, variant, duel };
     if (weight === 'react') {
       const id = ++st.seq;
       st.pending = false;
@@ -452,7 +483,7 @@ export function createHerSay({ ask, onLine = () => {}, mode = () => 'awake', lan
         if (w.weight === 'short') mem.lastShort = t;
         save();
         // Said in the fight already (fightsay's closing word): not a second time.
-        const id = f.saidInFight ? null : say('won', f.what, { weight: w.weight });
+        const id = f.saidInFight ? null : say('won', f.what, { weight: f.duel ? 'full' : w.weight, duel: f.duel });
         if (f.repeat && d.fights === GRIND_AT) say('grind', '');
         return { ...w, id };
       }
@@ -461,7 +492,7 @@ export function createHerSay({ ask, onLine = () => {}, mode = () => 'awake', lan
         const again = t - (mem.lastLoss ?? -Infinity) < MOMENTS.lost.repeatMs;
         mem.lastLoss = t;
         save();
-        return { weight: again ? 'short' : 'full', id: f.saidInFight ? null : say('lost', f.what, { weight: again ? 'short' : 'full', variant: f.way ?? null }) };
+        return { weight: again ? 'short' : 'full', id: f.saidInFight ? null : say('lost', f.what, { weight: again ? 'short' : 'full', variant: f.way ?? null, duel: f.duel }) };
       }
       return null;
     },
