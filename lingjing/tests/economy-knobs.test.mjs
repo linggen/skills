@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadContent } from '../scripts/content.mjs';
-import { newState, threshold } from '../scripts/state.mjs';
+import { dayKey, newState, threshold } from '../scripts/state.mjs';
 import { look, playTo, task, win } from '../scripts/rules.mjs';
 import { VERBS } from '../scripts/rules/verbs.mjs';
 import { keyDrop, mijingBrief, mijingDoors } from '../scripts/rules/mijing.mjs';
@@ -13,7 +13,8 @@ import { convertRate } from '../scripts/rules/playpay.mjs';
 import { winningPicks } from '../scripts/rules/progress.mjs';
 import { cardCatalog } from '../scripts/rules/cards.mjs';
 import { lockReset } from '../scripts/state.mjs';
-import { WORDS, cardHtml } from '../scripts/cards.js';
+import { WORDS, cardHtml, trayHtml, bookPopHtml, itemDoes } from '../scripts/cards.js';
+import { itemBrief } from '../scripts/rules/errands.mjs';
 
 const content = loadContent();
 const M = content.mijing;
@@ -118,15 +119,47 @@ test('the key off: none asked, none dropped, none shown; a 令 still held is ign
   const html = cardHtml({ card: 'mijing' }, { look: { mijing: b }, lang: 'zh', words: WORDS.zh });
   assert.doesNotMatch(html, /秘境令/, 'the door card says nothing of keys');
   assert.match(html, /进门 体力 25/);
-  // Away from the door with 令 in the bag: no card, no tray row (the key is no more).
   const away = { ...s, place: 'waimen' };
-  assert.equal(mijingBrief(DOOR, away, NOW), null);
+  const brief = mijingBrief(DOOR, away, NOW);
+  assert.deepEqual(brief, { away: true, door: brief.door, runs_left: 2, cap_day: 2, door_cost: 25 });
+  assert.equal(brief.door.id, 'shimen');
+  assert.equal(mijingBrief(DOOR, newState(DOOR, 'zh', NOW), NOW), null);
+  assert.ok(mijingBrief(DOOR, inn.state, NOW).inside);
+  const keyed = mijingBrief(NEUTRAL, away, NOW);
+  assert.deepEqual(keyed, { away: true, keys: 11, key_name: keyed.key_name, door: brief.door });
   const view = look(away, DOOR, ctx());
-  assert.ok(!(view.tray ?? []).some(r => r.id === 'mijing'), 'no tray row of keys');
+  assert.ok((view.tray ?? []).some(r => r.id === 'mijing'));
+  const page = { look: view, lang: 'zh', words: WORDS.zh };
+  for (const html of [trayHtml(page), bookPopHtml(page)]) {
+    assert.match(html, /今日还剩 2\/2 趟 · 进门 25 体力 · .*石门/);
+    assert.match(html, /data-go="shimen"[^>]*>去[^<]*石门 ›/);
+  }
+  const spent = look({ ...away, mijing: { day: { day: dayKey(NOW), n: 2 } } }, DOOR, ctx());
+  const spentPage = { ...page, look: spent };
+  assert.match(bookPopHtml(spentPage), /今日的 2 趟已尽 · 明日再来/);
+  assert.equal(spent.tray.find(r => r.id === 'mijing').act, undefined);
+  assert.doesNotMatch(trayHtml(spentPage), /data-tray="mijing"/);
+  const enView = look({ ...away, lang: 'en' }, DOOR, ctx());
+  const enPage = { look: enView, lang: 'en', words: WORDS.en };
+  for (const html of [trayHtml(enPage), bookPopHtml(enPage)]) {
+    assert.match(html, /Hidden realm/);
+    assert.match(html, /2 of 2 runs left today · 25 stamina at the door/);
+  }
+  const enSpent = look({ ...away, lang: 'en', mijing: { day: { day: dayKey(NOW), n: 2 } } }, DOOR, ctx());
+  assert.match(bookPopHtml({ ...enPage, look: enSpent }), /Today&#39;s 2 runs are spent — tomorrow/);
   // The road to the door: open with a run left, though no 令 is held.
   const bare = atDoor(0);
   assert.deepEqual(mijingDoors(NEUTRAL, bare, NOW), [], 'key on, none held: shut');
   assert.deepEqual(mijingDoors(DOOR, bare, NOW), M.doors, 'key off: open on the day\'s runs');
+});
+
+test('fuel effect is carried to the item detail in both languages', () => {
+  const item = { ...content.items.items.find(i => i.id === 'lutan'), id: 'other-fuel' };
+  for (const lang of ['zh', 'en']) {
+    const brief = itemBrief(content, { ...atDoor(), lang }, item);
+    assert.deepEqual(brief.effect, { kailu: 'fuel' });
+    assert.equal(itemDoes(brief.effect, { words: WORDS[lang] }), WORDS[lang].effFuel);
+  }
 });
 
 /* A 练气九层 player with a purse (the 阵 holds 4% of 910 at its first level: 12 stones). */

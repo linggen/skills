@@ -784,11 +784,13 @@ export function mijingBrief(content, state, now) {
   }
   const door = atDoor(content, state);
   if (!tierOpen(content, state, 1) && !last) return null;
-  // Away from the door with a 秘境令 in hand: where the door is (the page's one line and the way there). With the key off
-  // nothing is held to tell of: no away card (the door is a place of his map like any).
+  // Away from the door: the key held, or the day's runs when no key is needed, and where to find the door.
   if (!door && !last) {
     const at = tab.doors?.[0], keys = keysHeld(content, state);
-    return keyOn(content) && keys > 0 && at ? { away: true, keys, key_name: nameOf(content, tab.key, lang), door: placeName(content, state, placeOf(content, at)) } : null;
+    if (!at) return null;
+    const door = placeName(content, state, placeOf(content, at));
+    return keyOn(content) ? (keys > 0 ? { away: true, keys, key_name: nameOf(content, tab.key, lang), door } : null)
+      : { away: true, door, runs_left: runsLeft(content, state, now), cap_day: knobs(content).cap_day ?? 1, door_cost: doorFee(content) };
   }
   const tiers = (tab.tiers ?? []).map(t => ({ n: t.n, name: pick(t.name, lang), open: tierOpen(content, state, t.n), cleared: (state.mijing?.cleared ?? []).includes(t.n), ...(tierOpen(content, state, t.n) ? {} : { why: shutWhy(content, state, t) }) }));
   // The way in: a 秘境令 (`keys`, `key_name`) with the key on; with it off, the runs left today (`runs_left` of `cap_day`).

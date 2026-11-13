@@ -675,6 +675,7 @@ const EFFECT_BRIEF = {
   charm: () => ({ charm: true }),
   // 回春丹 · 回气丹: what it does in a fight (rules/cards.mjs fightPill) — the card's 「斗法里服下」 line, never 「可买卖的货物」.
   fight: e => ({ fight: { ...(e.fight.heal ? { heal: e.fight.heal } : {}), ...(e.fight.mana ? { mana: e.fight.mana } : {}) } }),
+  kailu: e => (e.kailu === 'fuel' ? { kailu: 'fuel' } : null),
   // The room it would leave him with, swapped in, and the room he has now (pouch.mjs roomWith) — the card words the total.
   pouch: (e, content, lang, state, id) => ({ pouch: e.pouch, ...(state && id ? roomWith(content, state, id) ?? {} : {}) }),
   waive: e => ({ waive: e.waive }),
