@@ -890,6 +890,10 @@ The furnace's pills are their own items (`mend-pill-9` 第一炉, `qi-pill-9` fr
   folded onto `effect.progress` by content.mjs withBalance (no pill carries its own number, as with prices). **Tamed**:
   一转 ×1 · 三转 ×1.5 · 九转 ×3 (a quarter more a 转) and one 一阶's worth more a 阶 — the story's ×9 and ×10 are never
   the game's. The curve keeps the numbers the game had (聚气丹 20, 三转 30, 九转 60), each within its table's cap.
+  **Since 2026-11-10 (batch 2) the master's families replace this:** 聚气 a share of need(its level), 筑基 · 固基 that
+  share × `step` 1.5 at their own level (master.pills). Kept at 1.5 on 2026-11-13 (decided for Hanli): ×2 moves no
+  回 by a tenth of a day for any player (筑基丹 is kept for the throw, its 修为 lands on a full bar) and takes 九转筑基丹
+  from 5.4 to 7.2 nights at 练气三层, 32% of the layer, against the pill class's 3 nights.
   Breakthrough pills declare no family (the throw reads their 转, ladder.json `by_zhuan`); the 丹囊's fight pills keep
   their `effect.fight` (the bands).
 - **丹毒 and 补转** (rules/dandu.mjs; balance.json `dandu`): a 修为 pill eaten — 服用 from the pouch, the 闭关 pill, a
