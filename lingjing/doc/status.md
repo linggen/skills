@@ -81,7 +81,7 @@ Checked 11-10, already done before (were on old lists): the kept card's 丹囊/�
 - Bands: 卷一's four chapter maps `levels` [1, 12]; places (places/*.json `levels`): 观 · 山 · 村 [1, 12], 坊市 [4, 12], 石门 [2, 12],
   沉鼎秘境 [2, 4], 泗水 · 彭城 · 冀 [10, 12]; 秘境 重 一–三 [2, 12], 四–五 [4, 12], 六 [7, 12], 七 [10, 12]; creatures `levels` from
   the lowest level they can be met at to 12 (a pool entry's `from` 回 opens at the cap of the 回 before it: 豺 · 獙獙 · 当康 4, 猲狙 ·
-  鬿雀 6). 卷二 onwards and 重 八 · 九: no band (13 or 18 is Hanli's to choose). content.mjs levelLint (in lint and numbers.mjs
+  鬿雀 6). 卷二 onwards and 重 八 · 九: no band yet (卷二 has no map). **卷二's band starts at 13, decided 2026-11-13 (for Hanli):** 卷一 leaves him at h10's cap, 筑基三层 = L12, where the save waits; a band from 18 would clamp every 卷二 beast to at least L18 against his L12–17 — P(18) ÷ P(12) = 1.05⁶ = 1.34× its 气血 and blows on his first step in — and leave 13–17 on no map. Its top waits for 卷二's caps (not chosen here). content.mjs levelLint (in lint and numbers.mjs
   hardErrors): a place inside every banded map it is on (沉鼎秘境's rooms inside 卷一's); a beast listed at a place or a 重 made
   from at or below the lowest level it is met there to the band's top; a thing sold there of a level the map holds and not above
   the place's; a story fight on a banded map at a declared level — 0 errors. A duel with no place band (a quest's, an errand's, a

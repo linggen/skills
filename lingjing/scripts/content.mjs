@@ -676,7 +676,7 @@ function lintDrawWords(content, ids, bad) {
 
 /* ── Levels (batch 3, Hanli 2026-11-10: 卷一's maps are L1–12; a place sits inside its map's band; the beasts and things on a
    map fall inside it — out of band says why) ──
-   A map (a chapter's `map.levels`) with no band (卷二 onwards: Hanli has not chosen its start) is skipped and listed. Returns
+   A map (a chapter's `map.levels`) with no band (卷二 onwards: not built; 卷二's band starts at 13, decided 2026-11-13 — status.md § The numbers system) is skipped and listed. Returns
    { errors: [{where, say}], skipped: [chapter ids], checked: n }. A reason is `levels_why` on the thing out of band (a pool entry,
    a creature, an item, a place). */
 const within = (inner, outer) => Array.isArray(inner) && Array.isArray(outer) && inner[0] >= outer[0] && inner[1] <= outer[1];
