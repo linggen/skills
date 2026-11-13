@@ -655,7 +655,7 @@ Run times: a 40-seed probe of gear and bare with six processes 35 s wall (175 s 
 
 ## The fit, second try — the beast plays
 
-The first fit priced the beast's ten above his and still failed; it is kept as the record (and its `strike`, `top`, class-budget knobs are gone from the code). The rule now: **one sheet, the beast's seat played by a line chosen by its class**.
+The first fit priced the beast's ten above his and still failed (the tool's `FIT` is now the third try's set; this section's set is `FIT_BY_CLASS`); it is kept as the record (and its `strike`, `top`, class-budget knobs are gone from the code). The rule now: **one sheet, the beast's seat played by a line chosen by its class**.
 Nothing in cards.json, balance.json or a card number changes; every new read is behind `duel_hp.foe` (the switch is off), so the live foe policy is exactly today's.
 
 **What was built.** `scripts/fightline.js` now has the lines for either seat — `movesOf` · `carefulFor` · `lookaheadFor` · `plainFor` (`(st, who)`: they read that seat's hand, pile, 灵力 and the other board; the old
@@ -916,14 +916,22 @@ cells (the same fights are independent given the beast's line and level). 1292 d
 | 4c the same with class step normal +1 (**chosen**, S4) | `[1,6]`, 0/+1/0, offset 0/+1/+1 | 45.3 / 16.2 / 8.1 | 13 | 8 |
 | 5 the budget curve: 10 + 1.8 x level | best all-three | 44.4 / 14.2 / 6.9 | 12 | 5 |
 | 5b 7 + 2.2 x level | best all-three | 44.8 / 16.5 / 7.5 | 12 | 7 |
-| 5c 15 + 1.3 x level | best all-three | 41.1 / 16.7 / 7.7 | 15 | 10 |
-| 5d 14 + 1.5 x level | best all-three | 41.1 / 15.8 / 7.9 | 14 | 10 |
+| 5c 15 + 1.3 x level (not confirmed at 100 seeds) | best all-three | 41.1 / 16.7 / 7.7 | 15 | 10 |
+| 5d 14 + 1.5 x level (not confirmed) | best all-three | 41.1 / 15.8 / 7.9 | 14 | 10 |
+| 5e in-shape ladders (weak 0/-1, normal 0, strong 0/+1), any mean: `[1,6]` strong +1, offset 0/+1/+1 | budget 13 + 1.3 | 55.8 / 27.6 / 10.3 | 15 (ex-灵草谷) | 4 |
+| 5f `[1,3]`, no class step, offset 0/+1/+1 | budget 13 + 1.3 | 53.1 / 25.8 / 9.6 | 15 | 6 |
 | 6 at 100 seeds, S1 (`[1,1]`, weak -1, offset 0/+1/+1; the 40-seed best of 14) | | 42.5 / 14.7 / 6.5 | **11** | 9 |
 | 6b at 100 seeds, S4 | | 45.0 / 16.5 / 7.6 | **11** | 8 |
+| 6c at 100 seeds, S5 = 5e (**the level idea in shape**) | `[1,6]`, 0/0/+1, offset 0/+1/+1 | 56.4 / 27.3 / 10.2 | **11** | 4 |
+| 6d at 100 seeds, S6 = 5c's budget, `[1,5]`, 0/0/+1, offset +1/0/+1 | 15 + 1.3 | 55.3 / 28.6 / 11.4 | **9** | 4 |
 | the oracle: each fight takes whichever of the six cells lands nearest 46% | per-beast, outside the knobs | 54.9 / 18.1 / 9.9 | 25 | 0 |
 
-The 40-seed grid is a maximum over 1292 sets with an SE of about 7 points per fight, so its winners are inflated: 14 and 15 became 11 at 100 seeds. Reading the rows: **a pure-level ladder is worth nothing next to the class ladder
-(7 against 10-14); the level offset does the pulling; the budget curve moves nothing past noise** (the five curves tried all end at 12-15 composed, 13 + 1.3 matched his ten best).
+The 40-seed grid is a maximum over 1292 sets with an SE of about 7 points per fight, so its winners are inflated: 14 and 15 became 11 at 100 seeds. Reading the rows:
+
+- **The level ladder does what the idea says to the early fights and the wrong thing to the mean.** With the in-shape ladders (5e, 5f) the early beasts play `careful` and land (lang · mihou · chihu at 38-60); under 15 falls from 8 to 4, under 30 from 12 to 7. But the late beasts stay too weak, so the mean climbs to 55-56 and the fights over 62 go from 13 to 18.
+  The mean filter (40-50) used in the first grid hid these sets; they are in the table now. At 100 seeds S5 reads 11 inside (10 of 35 without 灵草谷), the same as S4 and the second fit.
+- **The level offset does the pulling of the mean**, a class step moves single fights, and **the budget curve moves nothing past noise** (the five curves tried end at 12-15 composed; 13 + 1.3 matched his ten best). `keep` was not varied.
+- Of the two 100-seed finalists the choice is a trade, not a count: S4 meets the mean (45.0) and gear worth (11.4) and leaves 8 fights under 15; S5 leaves 4 under 15 but its mean is 56.4 (bare 44.7: it would reach 45 only with gear worth nothing). **S4 is the final block** because the brief names the mean first; S5 is the set to take if "never a wall for the beast to wall him" outranks the mean.
 
 ### The final knob block, ready for `duel_hp.foe`
 
@@ -993,7 +1001,7 @@ Read: a beast plays `careful` from level 1 and `lookahead` from level 6; a norma
 | `plain` | 7.6 | 3.4 | 23.7 |
 
 - `lookahead` 45.0 (45 +- 5) yes. Gear worth +11.4 (8-12) yes. `careful` 28.5 under `lookahead` (12+) yes; `plain` under `careful` with gear and bare yes, and level with it (23.7 / 23.8) when both carry the pills.
-- **Fights inside 30-62%: 11 of 36** (the second fit: 11 of 35). The target "as many as possible" did not move at 100 seeds. 12 stand under 30 (8 under 15, one at 0), 13 over 62 (灵草谷 at 30 is out of its own 60-85).
+- **Fights inside 30-62%: 11 of 36** — 灵草谷's 30 is one of them, though its own band is 60-85, so **10 of 35 without it, against the second fit's 11 of 35**. The target "as many as possible" did not move at 100 seeds. 12 stand under 30 (8 under 15, one at 0), 13 over 62.
 - Nobody under 15: **not met** (8 fights: 妴胡 0, 精精 1, 猕猴 2, 灵灵 3, 狼 x3 at 4-8, 犰狳 秘境 凶崖 5). Two pills, 50-90%: 17 of 36 inside, as in the second fit.
 
 ### Out of band, and what drives each
@@ -1046,9 +1054,19 @@ Measured on the chosen set, 100 seeds, `lookahead` with gear, in memory only.
 
 1. **A skill line per beast, as content (`ai` on the creature in creatures.json).** The oracle above: each of the 36 beasts on the one of the six lines that lands nearest 46% reads **25 of 36 inside 30-62%, nobody under 15** (mean 54.9, `careful` 18.1, `plain` 9.9; 40 seeds, picked from noisy cells,
    so the real count is lower; the 40-seed grid's 14-15 read 11 at 100). It is the only change that moves 6-8 fights at once, because it answers the finding above (one level, opposite needs). It breaks "never a number on one beast"; the line is a word, not a number.
-2. **The strong class's 气血 share at 1.2 (`share.strong`; the knob exists, the fit set it to 1).** With the chosen set: mean 45.0 to 38.0; the twelve level 6-11 fights 74.8 to 57.7 (2 to 4 inside the band); fights inside 30-62%: 11 to 13; under 15: 8 to 8. The mean falls below the target, so it wants the gear multiplier or the budget re-fitted upward after it.
+2. **The strong class's 气血 share at 1.2 (`share.strong`; a 气血 share other than 1 is outside the brief's knob list, so a proposal only).** With the chosen set: mean 45.0 to 38.0; the twelve level 6-11 fights 74.8 to 57.7 (2 to 4 inside the band); fights inside 30-62%: 11 to 13; under 15: 8 to 8. The mean falls below the target, so it wants the gear multiplier or the budget re-fitted upward after it.
 3. **火柴 as a 4/3 for 4 (cards.json; mirror +28 to about +9, the audit's proposal 2).** The worn sword puts its strike card in his ten wherever it is worn. 100 seeds: gear worth 11.4 to **5.1**, mean with gear 45.0 to 38.7, the twelve late fights 74.8 to 57.7 (2 to 3 inside); in band 11 to 11, under 15: 8 to 9. It lowers the late fights and the gear's weight together, the same lever the first fit found in `strike`.
 
 Not measured, named for the next run: his early deck's fill rule (the thin 14-cost road hand with 吐纳 x2 and 娘的饼 x2 is the common side of the eight fights under 15).
 
-Run times (machine at load 10-130 from other work): six uniform cells at 40 seeds about 6 min wall (12 processes), two more budget sets about 10 min, the 100-seed confirmation of two sets x gear / bare / pills about 17 min, the three proposal runs about 20 min, fast tests 0.7 s (`duel-audit`) and 15 s (`duel-lines`), band tests 392 s.
+Run times (machine at load 10-130 from other work): the 100-seed confirmation of S5 and S6 about 17 min wall; six uniform cells at 40 seeds about 6 min wall (12 processes), two more budget sets about 10 min, the 100-seed confirmation of two sets x gear / bare / pills about 17 min, the three proposal runs about 20 min, fast tests 0.7 s (`duel-audit`) and 14.8 s (`duel-lines`, not touched by this work), band tests 392 s.
+
+### The in-shape alternative at 100 seeds (S5: `ai` `{"by_level":[1,6],"class_step":{"weak":0,"normal":0,"strong":1}}`, `step` `{"normal":1,"strong":1}`, rest as above)
+
+| | gear | bare | two pills |
+|---|---|---|---|
+| `lookahead` | 56.4 | 44.7 | 69.5 |
+| `careful` | 27.3 | 20.6 | 36.3 |
+| `plain` | 10.2 | 6.2 | 32.4 |
+
+Gear worth +11.6; `careful` 29 under `lookahead`; 11 of 36 inside 30-62 (10 of 35 without 灵草谷); 7 under 30, 4 under 15, none at 0; 18 over 62; two pills 50-90: 19 of 36. The band tests were run with S4 only.
