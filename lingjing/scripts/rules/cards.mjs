@@ -280,7 +280,15 @@ export const readOf = (state, game) => (game?.sight && heldMark(state, game.sigh
 export function recordDuelOutcome(state, foe, outcome, lesson) {
   if (outcome === 'lost') {
     state.duel_lost = { ...state.duel_lost, [foe]: (state.duel_lost?.[foe] ?? 0) + 1 };
-    if (['kill', 'unspent', 'wasted', 'trade', 'guard', 'element', 'other'].includes(lesson)) state.duel_lesson = { ...state.duel_lesson, [foe]: lesson };
+    state.duel_streak = (state.duel_streak ?? 0) + 1;
+    if (['kill', 'unspent', 'wasted', 'trade', 'guard', 'element', 'other'].includes(lesson)) {
+      state.duel_lesson = { ...state.duel_lesson, [foe]: lesson };
+      state.duel_streak_lesson = lesson;
+    }
+  }
+  if (outcome === 'won') {
+    delete state.duel_streak;
+    delete state.duel_streak_lesson;
   }
   if (outcome === 'won' && state.duel_lesson?.[foe] != null) {
     state.duel_lesson = { ...state.duel_lesson };
@@ -293,6 +301,7 @@ export function recordDuelOutcome(state, foe, outcome, lesson) {
 }
 
 export { lendOf };
+export const duelLost = (state, foe) => Math.max(state.duel_lost?.[foe] ?? 0, state.duel_streak ?? 0);
 
 export function fightSetup(content, state, creature, now, game = null, deal = null, read = 0) {
   const open = openFight(state, game);
@@ -303,7 +312,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   const main = state.fate?.element?.id ?? state.fate?.element ?? mainRoot(state) ?? 'wood';
   // 小队 (party.json, cards.md § 5): who stands beside him in this fight. 银月 is a member, never
   // a card in hand: asleep in the 木牌 through 卷一, she stands in the row from the 卷 she wakes in.
-  const lend = lendOf(content, state.duel_lost?.[creature.id], state.duel_lesson?.[creature.id]);
+  const lend = lendOf(content, duelLost(state, creature.id), state.duel_lesson?.[creature.id] ?? state.duel_streak_lesson);
   const party = partyFor(content, state, creature, game);
   const withHer = party.some(m => m.id === 'yinyue');
   const gear = gearFight(content, state), lifts = withHer ? herLifts(content, state) : null;

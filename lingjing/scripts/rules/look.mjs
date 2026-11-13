@@ -14,7 +14,7 @@ import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, 
 import { duanCooling, duanOdds } from './breakthrough.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_ROAD_RIDDLE, THEN_SECLUSION, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
-import { fightSetup, heldMark, hpMaxOf, pouchBrief, readOf } from './cards.mjs';
+import { duelLost, fightSetup, heldMark, hpMaxOf, pouchBrief, readOf } from './cards.mjs';
 import { doorOffers } from './pouch.mjs';
 
 const hintsOf = (state, game, lang) => { const h = (game.hints ?? []).filter(x => heldMark(state, x.mark)).map(x => pick(x.say, lang)); return h.length ? { hints: h } : {}; };
@@ -389,7 +389,7 @@ function duelBrief(content, state, game, now, { door = false } = {}) {
     // Everything the fight is given at the door, and nothing else.
     // A pool's beast with its pool's deck (world.mjs foeOf); a scene's, its own.
     setup,
-    ...(state.duel_lost?.[creature.id] ? { lost: state.duel_lost[creature.id] } : {}),
+    ...(duelLost(state, creature.id) ? { lost: duelLost(state, creature.id) } : {}),
     ...(setup.lend ? { lend: { ...setup.lend, names: setup.lend.cards.map(id => pick(content.cards.cards.find(c => c.id === id)?.name, lang) ?? id) } } : {}),
 
     today: open ? { outcome: open.outcome } : null,

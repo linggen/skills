@@ -1071,7 +1071,7 @@ several times its face. His calls, 2026-11-12: *斗法这里为了平衡, 都是
     loss: what he did right, by name. One line each, never a lecture; her register, never pity.
   - **A loss to the 大妖 is fought again once, in place** (her line first; the second loss ends the run as before).
   - **She lends her cards after a loss** (Hanli 2026-11-13: *这个主意好, 但是加几点气血好像用处不大* · *或者设计几张yinyue的牌,
-    加到牌库*). Each loss to one foe adds a rung for the next fight with it, gone at the win. The lend is a card of hers,
+    加到牌库*). The rung count is the greater of losses to this foe and consecutive lost duels against any foe; beating that foe clears its count, and any win clears the streak. The lend is a card of hers,
     in his opening hand (never left to the draw), named on the fight (「银月借力」): 月影扑 (a blow at any mark) · 狐火 (every
     body of theirs) · 啸月 (his bodies strike harder this turn) · 狐毛 (takes one killing blow for him). One loss: one
     card, the one that answers the lesson he missed (a trade passed by → 狐火; a kill short → 月影扑; else 啸月); two: a

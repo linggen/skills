@@ -36,6 +36,35 @@ test('lesson is validated, remembered, shown in the brief and cleared on a win',
   assert.equal(s.duel_lost[id], undefined);
   assert.equal(s.duel_lesson[id], undefined);
 });
+test('a losing streak lends across foes and any win clears it', () => {
+  const s = structuredClone(state), a = beast, b = { ...beast, id: 'test-b' }, c = { ...beast, id: 'test-c' };
+  recordDuelOutcome(s, a.id, 'lost', 'trade');
+  assert.equal(s.duel_streak, 1);
+  assert.deepEqual(fightSetup(content, s, b, now).lend.cards, ['yy-fire']);
+  const other = structuredClone(state);
+  recordDuelOutcome(other, 'other-foe', 'lost', 'trade');
+  const brief = duelBrief(content, other, { id: 'streak-brief', creature: a.id }, now);
+  assert.equal(brief.lost, 1);
+  assert.deepEqual(brief.lend.cards, ['yy-fire']);
+  recordDuelOutcome(s, b.id, 'lost', 'kill');
+  assert.equal(s.duel_streak, 2);
+  assert.deepEqual(fightSetup(content, s, c, now).lend.cards, ['yy-pounce', 'yy-howl']);
+  assert.equal(fightSetup(content, s, a, now).lend.cards[0], 'yy-fire'); // foe lesson takes precedence
+  recordDuelOutcome(s, c.id, 'won');
+  assert.equal(s.duel_streak, undefined);
+  assert.equal(s.duel_streak_lesson, undefined);
+  assert.equal(fightSetup(content, s, c, now).lend, undefined);
+});
+test('a boss retains its losses after winning elsewhere', () => {
+  const s = structuredClone(state), boss = beast;
+  recordDuelOutcome(s, boss.id, 'lost');
+  recordDuelOutcome(s, boss.id, 'lost');
+  recordDuelOutcome(s, 'roaming', 'won');
+  assert.equal(s.duel_streak, undefined);
+  assert.equal(s.duel_lost[boss.id], 2);
+  assert.equal(fightSetup(content, s, boss, now).lend.cards.length, 2);
+  assert.equal(duelBrief(content, s, { id: 'boss', creature: boss.id }, now).lost, 2);
+});
 test('borrowed cards start in hand, never the pile; zero leaves setup alone', () => {
   const base = fightSetup(content, state, beast, now);
   assert.deepEqual(base, fightSetup(content, { ...state, duel_lost: {} }, beast, now));
