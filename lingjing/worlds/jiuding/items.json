@@ -3182,7 +3182,7 @@
     },
     {
       "id": "chenlian-fu",
-      "use": {"verb": {"zh": "捏碎", "en": "Crush"}},
+      "use": {"verb": {"zh": "催动", "en": "Stir"}},
       "kind": "treasure",
       "level": 1,
       "name": {
@@ -3195,8 +3195,8 @@
         "en": "Only someone up before dawn and through a round of practice gets one. One word on yellow paper — diligence — and held in the hand, the breath settles."
       },
       "hint": {
-        "zh": "捏碎了，长一点修为。",
-        "en": "Crush it for a little cultivation."
+        "zh": "催动了，长一点修为。",
+        "en": "Stir it for a little cultivation."
       },
       "sold": [],
       "effect": {
