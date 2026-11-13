@@ -55,9 +55,10 @@
 import { available as cameraHere, dropModel, openEye } from './eye.js';
 import { duelFill, duelStart, duelStep } from './duel.js';
 import { heldAt } from './spell.js';
+import { sealOf, stallTracker, emitStall } from './judge.js';
 import { handHint } from './hint.js';
 import { iconSvg } from './pose.js';
-import { eyeFor, sequenceFor, setOf } from './sets.js';
+import { eyeFor, sequenceFor, setOf, sealsFor } from './sets.js';
 
 const LEVELS = new URL('../../../worlds/jiuding/levels/jieyin.json', import.meta.url);
 const CSS = { jieyinCss: new URL('./jieyin.css', import.meta.url), jieyinHelper: new URL('./helper.css', import.meta.url) }; // the hint's look, then the dock's
@@ -263,8 +264,14 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
   const choice = store ?? choiceStore(win);
   let auto = choice.get() !== 'off', told = perm === 'granted' || choice.get() === 'on';
   const choose = (on) => { auto = on; wanted = on; told = told || on; tried = win.performance.now(); choice.set(on ? 'on' : 'off'); };
+  const traceSeals = sealsFor(kit, set), trace = stallTracker(traceSeals, kit.judge);
   const video = $('video');
-  const see = (r) => { hands = r.world ?? []; image = r.image ?? []; handed = r.handed ?? []; aspect = (video.videoWidth / video.videoHeight) || aspect; };
+  const see = (r) => { hands = r.world ?? []; image = r.image ?? []; handed = r.handed ?? []; aspect = (video.videoWidth / video.videoHeight) || aspect;
+    const st = state(), at = bigId ? duel.big.find((b) => b.id === bigId)?.s.at ?? 0 : 0;
+    const target = at >= 2 ? bigSeq[at] : shape ?? (tiers.fa[0] ? kit.spells?.[tiers.fa[0]]?.wen : bigSeq[0]);
+    const active = wanted && st.on && st.ready && !paused() && !aside() && !doc.hidden;
+    emitStall(trace.feed({ now: win.performance.now(), want: active ? target : null, judged: sealOf(hands, traceSeals, kit.judge, null, { image, aspect }), tracked: !!hands.length, landmarks: hands[0] }), win);
+  };
   const eye = feed ? null : eyeOf({ video, onHands: see, env: win, ...need, handedSwap: kit.orient?.handedSwap ?? true });
 
   // The camera: 'off' → 'asking' → 'on'. A pause while asking wins (eye.js); a refusal or a failed model ends it here.

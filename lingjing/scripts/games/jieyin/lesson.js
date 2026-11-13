@@ -15,7 +15,7 @@
 //
 // Contract (games/mount.js): mountLesson(container, { lang, data, signal, shell, reducedMotion }) → Promise<{ won, left? }>
 import { available, dropModel, loadModel, openEye } from './eye.js';
-import { sealOf } from './judge.js';
+import { sealOf, stallTracker, emitStall } from './judge.js';
 import { choiceStore, permissionOf } from './helper.js';
 import { eyeFor, sealsFor, setOf } from './sets.js';
 import { fits, progress, start, step } from './sequence.js';
@@ -131,7 +131,10 @@ export function mountLesson(container, { lang = 'zh', data = {}, signal, shell, 
       // ── the camera (follow, exam, chain) ──
       const video = $('video');
       let hands = [], image = [], handed = [], aspect = 4 / 3, seq = null, hint = null, camState = 'off', lastT = win.performance.now();
-      const see = (r) => { hands = r.world ?? []; image = r.image ?? []; handed = r.handed ?? []; aspect = (video.videoWidth / video.videoHeight) || aspect; };
+      const trace = stallTracker(seals, kit.judge);
+      const see = (r) => { hands = r.world ?? []; image = r.image ?? []; handed = r.handed ?? []; aspect = (video.videoWidth / video.videoHeight) || aspect;
+        emitStall(trace.feed({ now: win.performance.now(), want: flow.input === 'camera' && camState === 'on' && !shell?.paused?.() ? wanted(flow) : null, judged: sealOf(hands, seals, kit.judge, seq?.cur, { image, aspect }), tracked: !!hands.length, landmarks: hands[0] }), win);
+      };
       const orient = { ...kit.orient, turnMs: 400 };
       const newSeq = () => { seq = start({ mode: flow.phase === 'follow' ? 'one' : 'sequence', sequence: figs, forgive: true }); };
       const ensureCamera = async () => {
@@ -145,7 +148,7 @@ export function mountLesson(container, { lang = 'zh', data = {}, signal, shell, 
         if (feed) { win.jieyinFeed = (h, img = h, a = 4 / 3, which = []) => { hands = h ?? []; image = img ?? []; aspect = a; handed = which; }; camState = 'on'; newSeq(); render(); return; }
         try { await eye.start(); camState = 'on'; newSeq(); render(); } catch (e) { console.warn('[lesson]', e?.reason ?? e); camState = 'off'; toTaps(); }
       };
-      const camOff = () => { if (camState !== 'off') { eye?.pause(); camState = 'off'; hands = []; image = []; handed = []; } };
+      const camOff = () => { if (camState !== 'off') { eye?.pause(); camState = 'off'; hands = []; image = []; handed = []; trace.feed({ now: win.performance.now(), want: null, tracked: false }); } };
       // The camera let go, or put aside: the same step by tapping — in place, no restart.
       function toTaps() {
         flow = switchTo(flow, 'tap');
@@ -280,6 +283,7 @@ export function mountLesson(container, { lang = 'zh', data = {}, signal, shell, 
           if (flow.input === 'camera' && camState === 'on' && seq && !flow.done) {
             const r = step(seq, sealOf(hands, seals, kit.judge, seq.cur, { image, aspect }), dt, kit.judge);
             seq = r.state;
+            if (r.events.some((ev) => ev.type === 'seal')) trace.feed({ now, want: null, tracked: false });
             for (const ev of r.events) if (ev.type === 'seal') apply(confirm(flow));
             hint?.update({ image, aspect, target: wanted(flow), progress: fits(seq, seq.cur, kit.judge) ? progress(seq, kit.judge) : 0, right: fits(seq, seq.cur, kit.judge), now, world: hands, handed, held: [] });
           }

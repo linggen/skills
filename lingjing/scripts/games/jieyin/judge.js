@@ -45,15 +45,52 @@ export const gap = (hand, a, b) => dist(at(hand, a), at(hand, b)) / handSize(han
 export const handsOf = (seal) => (seal?.hands === 2 ? 2 : 1);
 
 /** Does `hand` keep a shape's rules? `slack` (0 strict … knobs.loose) widens every number for a seal already held. */
-export function makes(hand, seal, knobs, slack = 0) {
-  if (!Array.isArray(hand) || hand.length < 21) return false;
+export function whyNot(hand, seal, knobs, slack = 0) {
+  if (!Array.isArray(hand) || hand.length < 21) return 'missing landmarks';
+  if (!seal || !knobs) return 'unknown shape';
   const k = { ext: knobs.ext / (1 + slack), curl: knobs.curl * (1 + slack), near: knobs.near * (1 + slack), far: knobs.far / (1 + slack) };
-  const s = 1 + slack; // a pair's own threshold (its third item) widens with the rest
-  return (seal.ext ?? []).every((f) => reach(hand, f) > k.ext)
-    && (seal.curl ?? []).every((f) => reach(hand, f) < k.curl)
-    && (seal.near ?? []).every(([a, b, t]) => gap(hand, a, b) < (t ? t * s : k.near))
-    && (seal.far ?? []).every(([a, b, t]) => gap(hand, a, b) > (t ? t / s : k.far))
-    && (seal.nearest ?? []).every(([p, to, others]) => gap(hand, p, to) < k.near && others.every((o) => gap(hand, p, o) > gap(hand, p, to)));
+  const s = 1 + slack, n = (v) => v.toFixed(2);
+  for (const f of seal.ext ?? []) { const v = reach(hand, f); if (!(v > k.ext)) return `${f} not extended ${n(v)}<=${n(k.ext)}`; }
+  for (const f of seal.curl ?? []) { const v = reach(hand, f); if (!(v < k.curl)) return `${f} not curled ${n(v)}>=${n(k.curl)}`; }
+  for (const [a, b, t] of seal.near ?? []) { const v = gap(hand, a, b), limit = t ? t * s : k.near; if (!(v < limit)) return `${a} far from ${b} ${n(v)}>=${n(limit)}`; }
+  for (const [a, b, t] of seal.far ?? []) { const v = gap(hand, a, b), limit = t ? t / s : k.far; if (!(v > limit)) return `${a} near ${b} ${n(v)}<=${n(limit)}`; }
+  for (const [p, to, others] of seal.nearest ?? []) {
+    const v = gap(hand, p, to);
+    if (!(v < k.near)) return `${p} far from ${to} ${n(v)}>=${n(k.near)}`;
+    for (const o of others) { const d = gap(hand, p, o); if (!(d > v)) return `${p} nearer ${o} ${n(d)}<=${n(v)}`; }
+  }
+  return null;
+}
+
+export function makes(hand, seal, knobs, slack = 0) { return whyNot(hand, seal, knobs, slack) === null; }
+
+/** Camera-frame stall bookkeeping, scoped to one mounted lesson or fight. */
+export function stallTracker(seals, knobs, { after = 4000, window = 2000 } = {}) {
+  const reported = new Set();
+  let current = null, since = null, samples = [];
+  return {
+    reset() { reported.clear(); current = null; since = null; samples = []; },
+    feed({ now, want, judged, tracked, landmarks }) {
+      if (want !== current) { current = want; since = null; samples = []; }
+      if (!want || !tracked || !landmarks) { since = null; samples = []; return null; }
+      if (since === null) since = now;
+      samples.push({ now, answer: judged ?? 'none' });
+      samples = samples.filter((s) => now - s.now <= window);
+      if (reported.has(want) || now - since < after) return null;
+      reported.add(want);
+      const size = handSize(landmarks), w = landmarks[0];
+      const lm = landmarks.map((p) => ({ x: +((p.x - w.x) / size).toFixed(2), y: +((p.y - w.y) / size).toFixed(2), z: +(((p.z ?? 0) - (w.z ?? 0)) / size).toFixed(2) }));
+      const answers = {}; for (const s of samples) answers[s.answer] = (answers[s.answer] ?? 0) + 1;
+      return { kind: 'seal-stall', want, secs: +((now - since) / 1000).toFixed(2), answers, why: whyNot(landmarks, seals[want], knobs) ?? 'shape matches; hold not accepted', lm };
+    },
+  };
+}
+
+/** The phone host already writes trace messages to its local trace.log. */
+export function emitStall(line, win = globalThis) {
+  if (!line) return;
+  if (win.Linggen?.postMessage) win.Linggen.postMessage(JSON.stringify({ t: 'trace', line }));
+  else console.info('[seal-stall]', JSON.stringify(line));
 }
 
 /* ── Two hands: how they stand to each other, on the picture ── */

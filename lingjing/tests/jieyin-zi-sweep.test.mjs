@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { handSeal, makes } from '../scripts/games/jieyin/judge.js';
+import { handSeal, makes, whyNot, stallTracker, emitStall } from '../scripts/games/jieyin/judge.js';
 import { buildHand, poseOf } from '../scripts/games/jieyin/pose.js';
 import { start, step } from '../scripts/games/jieyin/sequence.js';
 
@@ -38,4 +38,27 @@ test('all holds survive a brief neighbouring answer without counting its time; s
   let events = [];
   for (let i = 0; i < 10; i++) { const r = step(s, 'wu', 67, k); s = r.state; events.push(...r.events); }
   assert.ok(events.some((e) => e.type === 'miss'));
+});
+
+test('stall tracker counts recent camera frames once per shape and resets', () => {
+  const h = shiftTip(poseOf(seals.zi), -0.2);
+  assert.match(whyNot(h, seals.zi, k), /thumb/);
+  assert.equal(whyNot(poseOf(seals.zi), seals.zi, k), null);
+  const trace = stallTracker(seals, k);
+  const feed = (now, want = 'zi', judged = null, tracked = true) => trace.feed({ now, want, judged, tracked, landmarks: h });
+  assert.equal(feed(0), null);
+  assert.equal(feed(1999, 'zi', 'wu'), null);
+  assert.equal(feed(2500, 'zi', 'wu'), null);
+  assert.equal(feed(3999), null);
+  const line = feed(4000);
+  assert.equal(line.secs, 4); assert.deepEqual(line.answers, { wu: 1, none: 2 });
+  assert.equal(line.lm.length, 21); assert.deepEqual(line.lm[0], { x: 0, y: 0, z: 0 });
+  assert.equal(feed(5000), null);
+  assert.equal(feed(6000, 'wu'), null);
+  assert.equal(feed(10000, 'wu', null, false), null);
+  assert.equal(feed(11000, 'wu'), null);
+  assert.equal(feed(15000, 'wu').want, 'wu');
+  trace.reset(); assert.equal(feed(16000), null); assert.equal(feed(20000).want, 'zi');
+  const messages = []; emitStall(line, { Linggen: { postMessage: (m) => messages.push(JSON.parse(m)) } });
+  assert.deepEqual(messages, [{ t: 'trace', line }]);
 });

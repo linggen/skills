@@ -29,7 +29,7 @@ export { demoHow } from './jieyin/auto.js';
 // Dev only: `?dev=1&feed=1` runs without a camera, hands fed from the console (`window.jieyinFeed(hands, picture?)`) — the
 // live check's way to play it through; never a player's.
 import { available, dropModel, loadModel, openEye } from './jieyin/eye.js';
-import { handsOf, sealOf } from './jieyin/judge.js';
+import { handsOf, sealOf, stallTracker, emitStall } from './jieyin/judge.js';
 import { bonusOf, eyeFor, sealsFor, sequenceFor, setOf } from './jieyin/sets.js';
 import { expected, fits, progress, start, starsOf, step } from './jieyin/sequence.js';
 import { iconSvg } from './jieyin/pose.js';
@@ -198,6 +198,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
       const asked = levelAsked(kit, data, win.location?.search ?? '');
       const level = { ...asked, set: set.id, sequence: sequenceFor(kit, asked, set) };
       const seals = sealsFor(kit, set);
+      const trace = stallTracker(seals, kit.judge);
       const seen = !data.demo && (feedOnly || (await available(win))), shows = autoOf(level);
       if (data.demo && !shows) return nocam();
       if (!seen && !shows) return nocam();
@@ -356,6 +357,7 @@ export function mount(container, { lang = 'zh', data = {}, signal, reducedMotion
         handed = which ?? [];
         picture = image;
         aspect = (video.videoWidth / video.videoHeight) || aspect;
+        emitStall(trace.feed({ now: win.performance.now(), want: !shell?.paused?.() && !busy ? expected(s) : null, judged: sealOf(hands, seals, kit.judge, s.cur, { image: picture, aspect }), tracked: !!hands.length, landmarks: hands[0] }), win);
       };
       hud();
       if (shell?.lead) await shell.lead(tr(level.lead, lang));
