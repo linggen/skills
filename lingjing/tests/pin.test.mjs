@@ -134,6 +134,14 @@ test('a card\'s numbers read the same in every frame: the frame adds a mark, nev
   for (const id of Object.values(FRAMED)) assert.equal(strip(cardFaceHtml(id, ctxOf({ pins }))), cardFaceHtml(id, ctxOf()));
 });
 
+test('framed card stats stand above the frame and its corner ornaments', () => {
+  const battle = fs.readFileSync(new URL('../scripts/battle.css', import.meta.url), 'utf8');
+  const reveal = fs.readFileSync(new URL('../scripts/card-reveal.css', import.meta.url), 'utf8');
+  for (const sheet of [battle, reveal]) assert.match(sheet, /:is\(\.bpin, \.rv-frame\)\s*\{[^}]*z-index:\s*3\s*;/);
+  assert.match(battle, /:is\(\.bleaf, \.bminion\):is\(\.pin-yin, \.pin-jin, \.pin-baoshi, \.pin-zuanshi\)\s*>\s*:is\(\.batk, \.bhp\)\s*\{\s*z-index:\s*4\s*;/);
+  assert.match(reveal, /\.rv-card:is\(\.pin-yin, \.pin-jin, \.pin-baoshi, \.pin-zuanshi\)\s+:is\(\.rv-atk, \.rv-hp\)\s*\{\s*z-index:\s*4\s*;/);
+});
+
 test('v2 frames use snapped SVG patterns, phone colours and motion-safe small marks', () => {
   const css = fs.readFileSync(new URL('../scripts/battle.css', import.meta.url), 'utf8');
   const rv = fs.readFileSync(new URL('../scripts/card-reveal.css', import.meta.url), 'utf8');

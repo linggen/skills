@@ -53,6 +53,7 @@
   z-index: 2; border-radius: 50%; font: 700 calc(var(--cw) * .085) / 1 var(--serif); color: #fbf6ea; border: 1.5px solid #fbf6ea;
 }
 .rv-cost { left: 4%; top: 3%; background: #46708c; }
+.rv-card:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) :is(.rv-atk, .rv-hp) { z-index: 4; }
 .rv-atk { left: 4%; bottom: 3%; background: #8a6224; }
 .rv-hp { right: 4%; bottom: 3%; background: #b03a2b; }
 .rv-seal {

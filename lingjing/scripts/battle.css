@@ -371,6 +371,8 @@
   .pin-yin > .bpin, .pin-yin .rv-frame { --corner: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%228%22 fill=%22%23D2D8DE%22 stroke=%22%235E6B79%22 stroke-width=%222%22/%3E%3Ccircle cx=%2212%22 cy=%2212%22 r=%222%22 fill=%22%2355616F%22/%3E%3C/svg%3E"); }
 }
 
+/* Keep the corner stats above the band and its ornaments, without moving them. */
+:is(.bleaf, .bminion):is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > :is(.batk, .bhp) { z-index: 4; }
 .bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) { padding: max(4.5px, calc(6% + 1.5px)); padding-bottom: max(14px, calc(6% + 1.5px)); }
 .bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) .bcost { top: max(5px, 9%); left: max(5px, 9%); }
 .bminion:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) { padding: max(4.5px, calc(6% + 1.5px)); }
