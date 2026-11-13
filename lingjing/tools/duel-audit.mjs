@@ -17,8 +17,8 @@
 // (cost curve 1 1 2 2 2 3 3 4 4 5), deck B is A with the card of the same cost swapped for the card under test; BOTH sides
 // are played by the `careful` line (fightline.js's, here for either side), A as first mover on one deal and as second on the
 // next, so the first-move edge cancels. The delta is B's win rate − 50.
-import { act, begin, EFFECTS, foeTurn, legal, simCopy } from '../scripts/battle.js';
-import { lookahead } from '../scripts/fightline.js';
+import { act, begin, foeTurn } from '../scripts/battle.js';
+import { carefulFor, lookahead, lookaheadFor, movesOf } from '../scripts/fightline.js';
 import { FIGHTS, content, keyOf, roadState, setupOf, foeOf } from './story-fights.mjs';
 import { withRules } from './duel-lines.mjs';
 import { fightLevel, foeLevel } from '../scripts/rules/cards.mjs';
@@ -119,32 +119,8 @@ export function swapIns(deck, card, tokens = catalog) {
   return [...deck.keys()].filter(i => tokens[deck[i]].cost === cost).map(at => ({ at, replaced: deck[at], deck: deck.map((id, i) => (i === at ? card.id : id)) }));
 }
 
-/* The careful line (fightline.js `careful`, small) for either side: every legal move weighed by what it leaves on the board. */
-const bodyOf = side => side.board.reduce((n, m) => n + m.atk + m.hp * 0.6 + (m.taunt ? 2 : 0), 0);
-function movesOf(st, who) {
-  const me = st[who], them = st[who === 'you' ? 'foe' : 'you'], out = [];
-  const aims = [undefined, ...them.board.map((m, index) => ({ kind: 'minion', index }))];
-  me.hand.forEach((id, index) => {
-    const c = st.catalog[id], at = c && EFFECTS[Object.keys(EFFECTS).find(k => c.effect?.[k] != null)]?.at;
-    const targets = at === 'enemy' || at === 'minion' ? aims : at === 'friendly' && me.board.length ? me.board.map((m, i) => ({ kind: 'minion', index: i })) : [undefined];
-    for (const target of targets) out.push({ kind: 'play', index, target });
-  });
-  for (const target of aims) out.push({ kind: 'power', target });
-  me.board.forEach((m, index) => { for (const target of aims) out.push({ kind: 'attack', index, target }); });
-  return out.filter(a => legal(st, a, who) === null);
-}
-/// The move the careful line makes for `who` now, or null (end the turn).
-export function carefulFor(st, who) {
-  const opp = who === 'you' ? 'foe' : 'you';
-  let best = null, top = 0.5;
-  for (const a of movesOf(st, who)) {
-    const copy = simCopy(st);
-    if (!act(copy, a, who).ok) continue;
-    const v = (st[opp].hp - copy[opp].hp) * 2 + (copy[who].hp - st[who].hp) + (bodyOf(copy[who]) - bodyOf(st[who])) * 1.2 + (bodyOf(st[opp]) - bodyOf(copy[opp]));
-    if (v > top) { top = v; best = a; }
-  }
-  return best;
-}
+/* The lines for either seat live in scripts/fightline.js (movesOf · carefulFor · lookaheadFor · plainFor); re-exported for the audit's callers. */
+export { carefulFor, lookaheadFor, movesOf };
 
 /// Mirror options: a number is the level; else { level (10), levelYou, levelFoe (a seat one level up), fatigue (false: a dry pile costs nothing,
 /// the setup's `fatigue: false`), line ('careful' | 'lookahead') }.
@@ -161,28 +137,6 @@ export function sheetSetup(deckYou, deckFoe, seed, o = 10) {
   };
 }
 
-/* The lookahead line for either seat: every move tried on a copy and the fight played out from there, BOTH seats by the careful line
-   (fightline.js lookahead does this for his seat and lets the beast's own policy answer); the move whose ending is best is made. */
-function rollout(st, who) {
-  const opp = who === 'you' ? 'foe' : 'you';
-  for (let g = 0; g < 300 && st.outcome === 'open'; g += 1) {
-    const w = st.whose;
-    act(st, carefulFor(st, w) ?? { kind: 'end' }, w);
-  }
-  if (st.outcome === 'open') return -st[opp].hp;
-  const winner = st.outcome === 'won' ? 'you' : 'foe';
-  return winner === who ? 1000 + st[who].hp : -1000 - st[opp].hp;
-}
-export function lookaheadFor(st, who) {
-  let best = null, top = -Infinity;
-  for (const a of [...movesOf(st, who), { kind: 'end' }]) {
-    const copy = simCopy(st);
-    if (!act(copy, a, who).ok) continue;
-    const v = rollout(copy, who);
-    if (v > top) { top = v; best = a; }
-  }
-  return best?.kind === 'end' ? null : best;
-}
 const LINES = { careful: carefulFor, lookahead: lookaheadFor };
 
 /// One fight, both seats by the same line: 'won' (the `you` seat), 'lost', or 'open' when it never ended in 400 moves.

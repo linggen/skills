@@ -24,8 +24,8 @@ export const EVEN = { share: { weak: 1, normal: 1, strong: 1 }, by_hp: [], top: 
    Left empty here: EVEN alone is today's even set; `FIT` below is the set the fit ends on. */
 export const KNOBS_OFF = {};
 export const FIT = {
-  gear: 0.25, strike: false, by_hp: [[1.3, 'weak'], [2.5, 'normal']],
-  deck: { top: true, top_kind: 'minion', top_max: 5, base: 27, per_level: 1.5, keep: 2, by_rank: { weak: { base: 10 } } },
+  gear: 0.2, deck: { per_level: 1.3 }, by_hp: [[1.3, 'weak'], [2.0, 'normal']],
+  ai: { weak: 'careful', normal: 'lookahead', strong: 'lookahead' }, step: { strong: 1 },
 };
 
 const merge = (a, b) => (b && typeof b === 'object' && !Array.isArray(b) ? Object.fromEntries([...new Set([...Object.keys(a ?? {}), ...Object.keys(b)])].map(k => [k, k in b ? merge(a?.[k], b[k]) : a[k]])) : b);

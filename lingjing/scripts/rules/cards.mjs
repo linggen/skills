@@ -74,8 +74,6 @@ export function deck(state, content, ctx, args) {
 /* A worn weapon's strike (`effect.strike`: a card marked `gear` with that weapon — 火柴's, Hanli 11-03: 「火柴是一把剑, 重复的牌就
    不用了」) is in his deck for a fight while the sword is worn (fightDeck): never a card he holds or is given. */
 export function strikeOf(content, state) {
-  // 斗法 v4 (the fit): `duel_hp.foe.strike: false` — where the even switch stands a sword lends its number to the root strike and no card.
-  if (fixedSheet(content) && content.balance.duel_hp.foe.strike === false) return null;
   const w = wornOf(content, state, 'weapon'), id = w?.effect?.strike, c = id ? cardCatalog(content)[id] : null;
   return c && c.gear === w.id ? id : null;
 }
@@ -362,7 +360,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
     },
     // An elite is its harder deck and nothing else (redesign-v2 § 四).
     ...(evenDuel(content, state, creature) ? { even: true } : {}),
-    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...evenDeck(content, state, creature, fightLength(content, state, creature, beastToParty(content, creature, party, game), lv?.foe.level)), ...(creature.signature ? { signature: creature.signature } : {}), ...(creature.feint ? { feint: creature.feint } : {}), ...(creature.trial ? { trial: creature.trial } : {}), ...(lv ? lv.foe : {}) },
+    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...evenAi(content, state, creature), ...evenDeck(content, state, creature, fightLength(content, state, creature, beastToParty(content, creature, party, game), lv?.foe.level)), ...(creature.signature ? { signature: creature.signature } : {}), ...(creature.feint ? { feint: creature.feint } : {}), ...(creature.trial ? { trial: creature.trial } : {}), ...(lv ? lv.foe : {}) },
   };
 }
 
@@ -434,7 +432,7 @@ const evenDuel = (content, state, creature) => Boolean(content?.balance?.duel_hp
    one-cost card of its own root from the pool (never more than two of one, at least `keep` of its own stay), and a deck
    under it takes its dearest cards back. Counted, never random: the same beast at the same level holds the same ten. */
 export function beastTen(content, creature, level) {
-  const kd = content.balance.duel_hp.foe.deck, k = { ...kd, ...(kd.by_rank?.[foeRank(content, creature)] ?? {}) }, catalog = cardCatalog(content), cost = id => catalog[id]?.cost ?? 1;
+  const k = content.balance.duel_hp.foe.deck, catalog = cardCatalog(content), cost = id => catalog[id]?.cost ?? 1;
   const own = [...(creature.deck ?? [])].sort((a, b) => cost(a) - cost(b) || (a < b ? -1 : 1));
   if (!own.length) return [];
   const size = k.size ?? MODES.pve.deck, budget = Math.round((k.base ?? 13) + (k.per_level ?? 1.5) * level);
@@ -456,26 +454,7 @@ export function beastTen(content, creature, level) {
     if (!f) break;
     ten[i] = f;
   }
-  if (k.top) topUp(ten, own, catalog, creature, budget, k);
   return ten;
-}
-/* `deck.top` (斗法 v4, the fit): a ten still under its budget once its own cards are in takes cards from the pool — its cheapest card makes
-   way, one at a time, for the dearest card of its root (or no root) that the gap still pays for, cost at most `top_max` (6) and, with `top_kind: 'minion'`, a body only, never more
-   than two of one, at least `keep` of its own staying. Only ordinary cards: gained in the book (`from`), not a companion's, a pill, a charm
-   or a spell that does nothing but draw. Counted, never random. */
-function topUp(ten, own, catalog, creature, budget, k) {
-  const cost = id => catalog[id]?.cost ?? 1, sum = () => ten.reduce((n, id) => n + cost(id), 0);
-  const drawOnly = c => c.effect && Object.keys(c.effect).every(e => e === 'draw');
-  const pool = Object.values(catalog).filter(c => (!k.top_kind || c.kind === k.top_kind) && c.from?.length && !c.owner && !c._token && !c.pill && !c.mortal && !c.charm && !drawOnly(c) && (c.element === creature.root || c.element == null))
-    .sort((a, b) => b.cost - a.cost || (a.element === creature.root ? 0 : 1) - (b.element === creature.root ? 0 : 1) || (a.id < b.id ? -1 : 1));
-  const count = id => ten.filter(x => x === id).length, mine = () => ten.filter(id => own.includes(id)).length;
-  ten.sort((a, b) => cost(a) - cost(b) || (a < b ? -1 : 1));
-  for (let i = 0; i < ten.length && sum() < budget && mine() > (k.keep ?? 4); i += 1) {
-    const room = Math.min(cost(ten[i]) + budget - sum(), k.top_max ?? 6);
-    const pick = pool.find(c => c.cost > cost(ten[i]) && c.cost <= room && count(c.id) < 2);
-    if (pick) ten[i] = pick.id;
-  }
-  ten.sort((a, b) => cost(b) - cost(a) || (a < b ? -1 : 1));
 }
 /* The level a beast stands at where the even switch is on (`duel_hp.foe.step`: { weak · normal · strong → levels above his, whole }):
    its own level (foeLevel) plus its class's step, never past the last level of the realm he stands in — a beast is never carried across a
@@ -489,6 +468,12 @@ export function beastLevel(content, state, creature) {
 export const beastClamp = (content, state, creature) => {
   const Lf = foeLevel(content, state, creature), step = content?.balance?.duel_hp?.foe?.step?.[foeRank(content, creature)];
   return Boolean(step && Lf != null && Lf + step > beastLevel(content, state, creature));
+};
+/* `duel_hp.foe.ai` (斗法 v4, the fit): the line that plays the beast's seat by its class (`foeRank`): 'foe' (the foe policy, battle.js foeStep),
+   'careful' or 'lookahead' (scripts/fightline.js LINES). Only where the even duel stands; absent, the foe policy plays. */
+const evenAi = (content, state, creature) => {
+  const line = evenDuel(content, state, creature) ? content.balance.duel_hp.foe.ai?.[foeRank(content, creature)] : null;
+  return line && line !== 'foe' ? { ai: line } : {};
 };
 function evenDeck(content, state, creature, foe) {
   if (!evenDuel(content, state, creature)) return foe;

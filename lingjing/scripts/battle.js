@@ -276,6 +276,8 @@ function sideOf(who, cfg, catalog, mode, seed) {
     deck, hand: [...(cfg.extra ?? [])], board: [], laid: [], laidSpent: [], fatigue: 0, ...(cfg.fatigue === false ? { tireless: true } : {}), powerUsed: false, played: [],
     signature: cfg.signature ?? null, charge: null, lifts: cfg.lifts ?? null, insight: cfg.insight ?? 0, intent: null,
     stars: cfg.stars ?? null, drain: 0,
+    // 斗法 v4 (the fit): the line that plays this seat when it is a beast's (`LINES`, scripts/fightline.js); none: the foe policy below.
+    ai: cfg.ai ?? null,
     // A 试 (a story trial, creatures.json `trial`): the beast is not driven
     // off, it is PASSED — it yields at `yield` of its 气血, and a player
     // still standing when its cards run out has passed too (not withdrawn).
@@ -379,7 +381,10 @@ const plainCopy = v => {
 };
 export function simCopy(st) {
   const { catalog, origin, history, log, ...rest } = st;
-  return Object.assign(plainCopy(rest), { catalog, log: [] });
+  const copy = Object.assign(plainCopy(rest), { catalog, log: [] });
+  // A thinking copy holds the beast to its base policy: a line that reads ahead must not call a line that reads ahead inside it.
+  if (copy.foe) copy.foe.ai = null;
+  return copy;
 }
 
 /* ── 意图 — what the beast will do, decided at the start of your turn ──
@@ -1032,9 +1037,19 @@ function takePill(st, side, action) {
    Order: play what it can afford, biggest first; then its 主灵根一击; then send
    each body at whatever stands in the way. Its deck order is its personality —
    the twelve cards it holds are what this beast IS. */
+/* The lines a seat can be played by (`side.ai`: 'careful' · 'lookahead'), put here by scripts/fightline.js when it is loaded: each is
+   (st, who) → an action, or null to end the turn. A beast whose `ai` names none that is loaded plays the foe policy below. */
+export const LINES = {};
 export function foeStep(st) {
   if (st.outcome !== 'open' || st.whose !== 'foe') return null;
   const side = st.foe;
+  const line = side.ai && LINES[side.ai];
+  if (line && !asleep(side) && side.charge?.phase !== 'gathering') {
+    side.intent = null;
+    const action = line(st, 'foe') ?? { kind: 'end' };
+    if (!act(st, action, 'foe').ok) act(st, { kind: 'end' }, 'foe');
+    return action;
+  }
   // 装睡: it lies still — nothing played, nothing struck (§ asleep).
   if (asleep(side)) {
     side.intent = null;

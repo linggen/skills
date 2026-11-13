@@ -2,7 +2,7 @@
 // the page's scratch-only seam: of everything the rules let through now, the move that does the
 // most — read off a copy of the fight, never an opinion (the same measure as tools/battle-sim.mjs).
 // Pure; it never touches the fight it reads. The crawler then makes that move with real taps.
-import { act, foeTurn, offers, simCopy } from './battle.js';
+import { EFFECTS, LINES, act, foeTurn, legal, offers, simCopy } from './battle.js';
 
 const sum = (board, f) => board.reduce((n, m) => n + f(m), 0);
 const snap = (st) => ({
@@ -83,3 +83,62 @@ export function lookahead(st, { deep = fairMode(st) } = {}) {
   }
   return best;
 }
+
+/* ── The same lines for either seat (斗法 v4, the fit: a beast's seat is played by a line chosen by its class) ──
+   `offers` and the lines above read the `you` seat; these read the seat asked for — its hand, its pile, its 灵力, the other seat's board. */
+
+/// Every legal play, strike and root strike for `who`.
+export function movesOf(st, who = 'you') {
+  const me = st[who], them = st[who === 'you' ? 'foe' : 'you'], out = [];
+  const aims = [undefined, ...them.board.map((m, index) => ({ kind: 'minion', index }))];
+  me.hand.forEach((id, index) => {
+    const c = st.catalog[id], at = c && EFFECTS[Object.keys(EFFECTS).find(k => c.effect?.[k] != null)]?.at;
+    const targets = at === 'enemy' || at === 'minion' ? aims : at === 'friendly' && me.board.length ? me.board.map((m, i) => ({ kind: 'minion', index: i })) : [undefined];
+    for (const target of targets) out.push({ kind: 'play', index, target });
+  });
+  for (const target of aims) out.push({ kind: 'power', target });
+  me.board.forEach((m, index) => { for (const target of aims) out.push({ kind: 'attack', index, target }); });
+  return out.filter(a => legal(st, a, who) === null);
+}
+
+/// The careful line for `who`: the move that leaves the best board, or null (end the turn).
+export function carefulFor(st, who = 'you') {
+  const opp = who === 'you' ? 'foe' : 'you';
+  let best = null, top = 0.5;
+  for (const a of movesOf(st, who)) {
+    const copy = copyOf(st);
+    if (!act(copy, a, who).ok) continue;
+    const v = (st[opp].hp - copy[opp].hp) * 2 + (copy[who].hp - st[who].hp) + (bodyOf(copy[who]) - bodyOf(st[who])) * 1.2 + (bodyOf(st[opp]) - bodyOf(copy[opp]));
+    if (v > top) { top = v; best = a; }
+  }
+  return best;
+}
+
+/// The first-card line for `who`: the first card that can be played, the first body to strike, the root strike.
+export function plainFor(st, who = 'you') {
+  const ms = movesOf(st, who);
+  return ms.find(a => a.kind === 'play') ?? ms.find(a => a.kind === 'attack') ?? ms.find(a => a.kind === 'power') ?? null;
+}
+
+function rolloutFor(st, who, depth) {
+  const opp = who === 'you' ? 'foe' : 'you';
+  for (let g = 0; g < depth && st.outcome === 'open'; g += 1) {
+    const w = st.whose;
+    act(st, carefulFor(st, w) ?? { kind: 'end' }, w);
+  }
+  if (st.outcome === 'open') return -st[opp].hp;
+  return (st.outcome === 'won' ? 'you' : 'foe') === who ? 1000 + st[who].hp : -1000 - st[opp].hp;
+}
+/// The lookahead line for `who`: each move tried on a copy and the fight played out from there by the careful line on both seats (a cap of `depth`
+/// moves bounds the cost: the fight to its end by default, 300); the best ending is played. null ends the turn.
+export function lookaheadFor(st, who = 'you', { depth = 300 } = {}) {
+  let best = null, top = -Infinity;
+  for (const a of [...movesOf(st, who), { kind: 'end' }]) {
+    const copy = copyOf(st);
+    if (!act(copy, a, who).ok) continue;
+    const v = rolloutFor(copy, who, depth);
+    if (v > top) { top = v; best = a; }
+  }
+  return best?.kind === 'end' ? null : best;
+}
+Object.assign(LINES, { careful: carefulFor, lookahead: lookaheadFor });
