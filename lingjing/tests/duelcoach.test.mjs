@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { begin, act } from '../scripts/battle.js';
 import { unseen, honestBest, newCoach, note, summary, killNow } from '../scripts/duelcoach.js';
+import { handle } from '../scripts/duelcoach-worker.js';
 
 const cards = {
   hit: { id: 'hit', name: 'Hit', kind: 'spell', cost: 2, effect: { damage: 5 } },
@@ -71,6 +72,22 @@ test('win shares and multi-move lethal are measured on the true position', () =>
   assert.ok(honestBest(st).all.every(x => x.wins >= 0 && x.wins <= 1));
   const coach = newCoach(); note(coach, st, { kind: 'end' }, { samples: 1 });
   assert.equal(coach.gaps[0]?.lesson, 'kill'); assert.equal(typeof coach.gaps[0].wins_gap, 'number');
+});
+
+test('worker handler restores catalog and matches direct seeded coaching', () => {
+  const st = opened(); st.you.hand = ['hit', 'heal']; st.foe.hp = 3; st.you.hp = 1;
+  st.foe.board = [minion(2, 10, 10)]; st.foe.tireless = true; st.you.powerUsed = true;
+  const action = { kind: 'play', index: 1 }, opts = { samples: 1, seed: 17 };
+  const direct = newCoach(), worker = {};
+  note(direct, st, action, opts);
+  assert.ok(direct.gaps.length);
+  assert.deepEqual(handle(worker, { type: 'start', catalog: cards }), { type: 'ready' });
+  const { catalog, ...copy } = structuredClone(st);
+  handle(worker, { type: 'note', copy, action, opts });
+  assert.deepEqual(handle(worker, { type: 'summary', st: copy, id: 42 }),
+    { type: 'summary', id: 42, summary: summary(direct, st) });
+  handle(worker, { type: 'start', catalog: cards });
+  assert.deepEqual(handle(worker, { type: 'summary', st: copy, id: 43 }).summary.gaps, []);
 });
 
 test('summary reports close losses and remaining pills', () => {

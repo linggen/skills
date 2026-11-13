@@ -165,10 +165,75 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
   const st0 = data.st ?? replayInto(begin(setup, fight.catalog), prior);
   // A fight reopened (the door's `resumed`, or the moves it hands back) is no first meeting.
   const resumed = Boolean(data.resumed) || prior.length > 0;
-  const coach = newCoach(), pendingNotes = new Set();
-  const deferNote = (copy, action) => {
-    const p = new Promise((resolve) => setTimeout(() => { try { coachNote(coach, copy, action); } catch { /* advice must never stop play */ } resolve(); }, 0));
+  const coach = newCoach(), pendingNotes = new Set(), waiting = [];
+  let worker = null, ready = false, summaryReply = null, closed = false, startTimer = null;
+  const fallbackNote = (copy, action) => {
+    const p = new Promise((resolve) => {
+      const run = () => { try { if (!closed) coachNote(coach, copy, action, { samples: 3 }); } catch { /* advice is optional */ } resolve(); };
+      if (typeof globalThis.requestIdleCallback === 'function') globalThis.requestIdleCallback(run, { timeout: 300 });
+      else setTimeout(run, 0);
+    });
     pendingNotes.add(p); p.finally(() => pendingNotes.delete(p));
+  };
+  const failWorker = () => {
+    clearTimeout(startTimer);
+    worker?.terminate(); worker = null; ready = false;
+    for (const [copy, action] of waiting.splice(0)) fallbackNote(copy, action);
+    summaryReply?.(null); summaryReply = null;
+  };
+  const sendNote = (copy, action) => {
+    try { const { catalog, ...safe } = copy; worker.postMessage({ type: 'note', copy: safe, action }); }
+    catch { failWorker(); fallbackNote(copy, action); }
+  };
+  try {
+    worker = new Worker(new URL('../duelcoach-worker.js', import.meta.url), { type: 'module' });
+    worker.onerror = (event) => { event.preventDefault?.(); failWorker(); };
+    worker.onmessageerror = failWorker;
+    worker.onmessage = ({ data: message }) => {
+      if (message?.type === 'start-error') { failWorker();
+      } else if (message?.type === 'ready') {
+        clearTimeout(startTimer); ready = true;
+        for (const [copy, action] of waiting.splice(0)) {
+          if (worker) sendNote(copy, action); else fallbackNote(copy, action);
+        }
+      } else if (message?.type === 'summary' && message.id === 1) {
+        summaryReply?.(message.summary); summaryReply = null;
+      }
+    };
+    worker.postMessage({ type: 'start', catalog: fight.catalog });
+    startTimer = setTimeout(() => { if (!ready) failWorker(); }, 3000);
+  } catch { failWorker(); }
+  const deferNote = (copy, action) => {
+    if (!worker) fallbackNote(copy, action);
+    else if (!ready) waiting.push([copy, action]);
+    else sendNote(copy, action);
+  };
+  const getCoaching = async (st) => {
+    const empty = () => coachSummary(newCoach(), st);
+    if (!worker) {
+      await Promise.race([Promise.all([...pendingNotes]), new Promise(resolve => setTimeout(resolve, 300))]);
+      return coachSummary(coach, st);
+    }
+    // Worker messages are ordered: the summary follows all notes. Only its small
+    // final-state fields are needed, not the catalog or the fight's history.
+    const final = { outcome: st.outcome, foe: { hp: st.foe.hp, hpMax: st.foe.hpMax },
+      you: { pouch: st.you.pouch, allies: st.you.allies } };
+    const result = new Promise(resolve => {
+      summaryReply = resolve;
+      const request = () => {
+        if (!worker || !ready) return;
+        try { worker.postMessage({ type: 'summary', st: final, id: 1 }); }
+        catch { failWorker(); }
+      };
+      if (ready) request();
+      else {
+        const poll = setInterval(() => { if (ready || !worker) { clearInterval(poll); request(); } }, 5);
+        setTimeout(() => clearInterval(poll), 300);
+      }
+    });
+    const answer = await Promise.race([result, new Promise(resolve => setTimeout(() => resolve(null), 300))]);
+    summaryReply = null;
+    return answer ?? empty();
   };
   const room = { ...fight, setup, lang, st: st0, picked: null, openLog: false, help: false, note: null, busy: false, mine: false, queue: [], ended: false, settling: false, yielded: false };
   const hook = (name, ...a) => { try { return story[name]?.(...a); } catch (e) { console.warn('[kapai]', name, e); return undefined; } };
@@ -184,6 +249,10 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
     const finish = (r) => {
       if (done) return;
       done = true;
+      closed = true;
+      clearTimeout(startTimer);
+      worker?.terminate(); worker = null;
+      summaryReply?.(null); summaryReply = null;
       clearTimeout(idleTimer);
       offDrag();
       wheel.off();
@@ -264,8 +333,7 @@ export async function mount(container, { data = {}, lang = 'zh', seed = String(D
       room.settling = true;
       clearTimeout(idleTimer);
       // The story's rules answer first; the closing card waits for their word, not for the last blow.
-      await Promise.race([Promise.all([...pendingNotes]), new Promise((resolve) => setTimeout(resolve, 300))]);
-      const coaching = coachSummary(coach, room.st);
+      const coaching = await getCoaching(room.st);
       coaching.foe_hp_left = shown(room.st, coaching.foe_hp_left);
       coaching.foe_hp_max = shown(room.st, coaching.foe_hp_max);
       const next = room.st.outcome === 'lost' ? lendOf({ balance }, (fight.brief.lost ?? 0) + 1, coaching.gaps[0]?.lesson) : null;
