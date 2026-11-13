@@ -20,7 +20,7 @@
 import { boardCost, dayKey, lockedOf, pick, seedOf, settleStamina, staminaLimited, staminaMax } from '../state.mjs';
 import { clone, pay, refuse, spendStamina, staminaRefusal } from './core.mjs';
 import { battle, POUCH_MAX, REALMS, shown, shownSide } from '../battle.js';
-import { cardCatalog, deckFor, fightPill, fightSetup, hpMaxOf, winCard } from './cards.mjs';
+import { cardCatalog, deckFor, fightPill, fightSetup, hpMaxOf, recordDuelOutcome, winCard } from './cards.mjs';
 import { hashOf } from './travel.mjs';
 import { stow, fullLine } from './pouch.mjs';
 import { creatureOf, foeOf, meetBeast, passed, placeName, placeOf } from './world.mjs';
@@ -607,6 +607,7 @@ export function mijingDuel(state, content, ctx, args) {
   if (played.outcome === 'open') return refuse('unfinished', null, { turn: played.turn });
   delete s.fight;
   const won = played.outcome === 'won';
+  recordDuelOutcome(s, creature.id, played.outcome);
   const firsts = creature.person ? {} : meetBeast(s, creature.id, won, ctx.now);
   // What the fight spent of his own: the pills taken and the 符 played (tasks.mjs duel's rule), win or lose.
   const catalog = cardCatalog(content), charms = new Set((setup.you?.extra ?? []).filter(c => catalog[c]?.charm));

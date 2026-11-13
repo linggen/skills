@@ -276,6 +276,14 @@ const openFight = (state, game) => (game && state.fight?.game === game ? state.f
 export const heldMark = (state, mark) => [mark].flat().some(m => (state.marks ?? []).includes(m));
 export const readOf = (state, game) => (game?.sight && heldMark(state, game.sight.mark) ? game.sight.level ?? 1 : 0);
 
+export function recordDuelOutcome(state, foe, outcome) {
+  if (outcome === 'lost') state.duel_lost = { ...state.duel_lost, [foe]: (state.duel_lost?.[foe] ?? 0) + 1 };
+  if (outcome === 'won' && state.duel_lost?.[foe] != null) {
+    state.duel_lost = { ...state.duel_lost };
+    delete state.duel_lost[foe];
+  }
+}
+
 export function lendOf(content, lost) {
   const rungs = content?.balance?.duel_lend?.rungs ?? [];
   const chosen = rungs.slice(0, Math.max(0, Math.floor(lost || 0)));
