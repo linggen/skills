@@ -12,9 +12,9 @@ import { walk, TO_WAIMEN } from './prologue.mjs';
 const content = loadContent(), now = new Date('2026-11-10T12:00:00');
 
 test('declared and default use verbs in both languages', () => {
-  const charm = { use: { verb: { zh: '催动', en: 'Stir' } } };
+  const charm = { use: { verb: { zh: '催动', en: 'Invoke' } } };
   assert.deepEqual(useVerb(charm, 'zh'), { effect: '催动', button: '催动' });
-  assert.deepEqual(useVerb(charm, 'en'), { effect: 'Stir', button: 'Stir' });
+  assert.deepEqual(useVerb(charm, 'en'), { effect: 'Invoke', button: 'Invoke' });
   assert.deepEqual(useVerb({ kind: 'pill' }, 'zh'), { effect: '服下', button: '服用' });
   assert.deepEqual(useVerb({ kind: 'pill' }, 'en'), { effect: 'Taken', button: 'Use' });
   assert.deepEqual(useVerb({}, 'zh'), { effect: '用了', button: '使用' });

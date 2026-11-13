@@ -3182,7 +3182,7 @@
     },
     {
       "id": "chenlian-fu",
-      "use": {"verb": {"zh": "催动", "en": "Stir"}},
+      "use": {"verb": {"zh": "催动", "en": "Invoke"}},
       "kind": "treasure",
       "level": 1,
       "name": {
@@ -3196,7 +3196,7 @@
       },
       "hint": {
         "zh": "催动了，长一点修为。",
-        "en": "Stir it for a little cultivation."
+        "en": "Invoke it for a little cultivation."
       },
       "sold": [],
       "effect": {
