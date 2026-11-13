@@ -4,6 +4,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
 import { loadContent } from '../scripts/content.mjs';
 import { migrate, newState, threshold } from '../scripts/state.mjs';
 import { look, VERBS } from '../scripts/rules.mjs';
@@ -350,12 +352,19 @@ test('the share card: words and the seal\'s figures only — never a name, a cam
 test('sharing the card counts as the day\'s 传音, once (the existing share path; the card adds no pay of its own)', () => {
   const ctx = { now: NOW, quests: [] };
   const s = at('jiangtang', { tier: 'qi', step: 3 });
-  const a = VERBS.quest(s, content, ctx, { action: 'share' });
+  // In a quests folder of its own: on the real one (~/.linggen/quests) this read the player's own share stamp — a real
+  // share dated after NOW made the verb refuse `not-done`, and the test's stamp was written beside his (found 2026-11-13).
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lingjing-seals-share-')), was = process.env.LINGJING_QUESTS;
+  process.env.LINGJING_QUESTS = dir;
+  let a, again;
+  try {
+    a = VERBS.quest(s, content, ctx, { action: 'share' });
+    again = VERBS.quest(a.state, content, ctx, { action: 'share' });
+  } finally { if (was === undefined) delete process.env.LINGJING_QUESTS; else process.env.LINGJING_QUESTS = was; }
   assert.equal(a.result.ok, true, JSON.stringify(a.result));
   assert.equal(a.result.shared, true);
   const first = a.result.paid?.progress;
   assert.ok(first > 0);
-  const again = VERBS.quest(a.state, content, ctx, { action: 'share' });
   assert.ok(!(again.result.paid?.progress > 0), 'the second share of the day pays nothing');
   // the card carries no pay of its own: the learn answer holds facts, not a reward
   const learn = run(s, { action: 'learn', id: 'bingzhui', how: 'hands' }).result;
