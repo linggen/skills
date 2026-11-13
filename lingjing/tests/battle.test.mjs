@@ -11,6 +11,9 @@ const CARDS = {
   guard: { id: 'guard', kind: 'minion', name: '山鬼', cost: 2, element: 'earth', atk: 1, hp: 4, keywords: ['taunt'] },
   crier: { id: 'crier', kind: 'minion', name: '银月', cost: 2, element: 'metal', atk: 3, hp: 4, keywords: ['battlecry'], effect: { heal: 2 } },
   cub: { id: 'cub', kind: 'minion', name: '小妖', cost: 1, element: 'wood', atk: 1, hp: 1 },
+  glow: { id: 'glow', kind: 'minion', name: '灵光兽', cost: 1, element: null, atk: 0, hp: 6, keywords: ['shield'] },
+  zero: { id: 'zero', kind: 'spell', name: '微光', cost: 0, element: null, effect: { damage: 0 } },
+  call: { id: 'call', kind: 'spell', name: '召灵', cost: 1, element: null, effect: { summon: { id: 'glow', n: 1 } } },
   kui5: { id: 'kui5', kind: 'minion', name: '夔', cost: 5, element: 'water', atk: 4, hp: 6, keywords: ['taunt'] },
   // 功法
   bolt: { id: 'bolt', kind: 'spell', name: '火弹术', cost: 2, element: 'fire', effect: { damage: 3 } },
@@ -88,6 +91,53 @@ test('a minion arrives winded, strikes once a round, and both sides take the blo
   assert.equal(st.foe.board[0].hp, 2, '水 3 into 土 is halved — 土克水');
   assert.equal(st.you.board[0].hp, 2, 'and the answer, 土 1 into 水, lands heavier');
   assert.equal(legal(st, { kind: 'attack', index: 0 }), 'already-struck');
+});
+
+test('灵光 stops the first strike, then the next lands', () => {
+  const st = opened({}, ['glow']);
+  assert.equal(act(st, { kind: 'play', index: 0 }).ok, true);
+  const m = st.you.board[0];
+  assert.equal(view(st).you.board[0].shield, true);
+  st.foe.board.push({ id: 'deer', uid: 99, name: '夫诸', element: null, atk: 2, hp: 8, hpMax: 8, sick: false, struck: false });
+  st.whose = 'foe';
+  const strike = { kind: 'attack', index: 0, target: { kind: 'minion', index: 0 } };
+  assert.equal(act(st, strike, 'foe').ok, true);
+  assert.equal(m.hp, 6);
+  assert.equal(m.shield, false);
+  assert.deepEqual(st.log.find(e => e.act === 'shield-off'), { act: 'shield-off', who: 'you', id: 'glow', uid: m.uid });
+  assert.equal(view(st).you.board[0].shield, false);
+  st.foe.board[0].struck = false;
+  assert.equal(act(st, strike, 'foe').ok, true);
+  assert.equal(m.hp, 4);
+});
+
+test('a sweep spends each 灵光 but hurts an unshielded body', () => {
+  const st = opened({}, ['glow', 'glow', 'guard']);
+  st.you.mana = 9;
+  for (let i = 0; i < 3; i++) assert.equal(act(st, { kind: 'play', index: 0 }).ok, true);
+  st.foe.hand = ['rain'];
+  st.foe.mana = 9;
+  st.whose = 'foe';
+  assert.equal(act(st, { kind: 'play', index: 0 }, 'foe').ok, true);
+  assert.deepEqual(st.you.board.map(m => [m.hp, Boolean(m.shield)]), [[6, false], [6, false], [2, false]]);
+  assert.equal(st.log.filter(e => e.act === 'shield-off').length, 2);
+});
+
+test('zero damage keeps 灵光; summoned bodies carry it too', () => {
+  const st = opened({}, ['call']);
+  assert.equal(act(st, { kind: 'play', index: 0 }).ok, true);
+  const m = st.you.board[0];
+  assert.equal(m.shield, true);
+  st.foe.hand = ['zero', 'bolt'];
+  st.foe.mana = 9;
+  st.whose = 'foe';
+  const target = { kind: 'minion', index: 0 };
+  assert.equal(act(st, { kind: 'play', index: 0, target }, 'foe').ok, true);
+  assert.equal(m.hp, 6);
+  assert.equal(m.shield, true);
+  assert.equal(act(st, { kind: 'play', index: 0, target }, 'foe').ok, true);
+  assert.equal(m.hp, 6);
+  assert.equal(m.shield, false);
 });
 
 test('护主 stands in the way of the hero, and of the hero power', () => {

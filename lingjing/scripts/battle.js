@@ -37,7 +37,7 @@ export const clash = (element, root) => (!element || !root ? 1 : BEATS[element] 
    one formula: the fight settles with it and the page prints it, so the
    number on the screen is the number that lands (his, 2026-09-22: 五行 is
    too much to reckon with four roots — 让页面算). `who` is the striker. */
-export const dealt = (st, who, n, element, target) => Math.max(1, Math.round(n * clash(element, target) * (st.scale?.[who] ?? 1)));
+export const dealt = (st, who, n, element, target) => n === 0 ? 0 : Math.max(1, Math.round(n * clash(element, target) * (st.scale?.[who] ?? 1)));
 /* Levels (batch 3, rules/power.mjs). A fight is reckoned in HIS units: his 气血 at full is P₁'s (练气一层's, 21), and every
    number in the fight is a card number as at 练气一层 — so a fight of two sides at one level is the fight at 练气一层, turn for
    turn and number for number, rounding and all. A beast of another level stands P(its level) ÷ P(his) to him (`f`, its
@@ -561,6 +561,11 @@ export const minionLands = (side, minion, amount, element) => {
 };
 function hurtMinion(st, side, minion, amount, why = {}) {
   amount = minionLands(side, minion, amount, why.element);
+  if (amount > 0 && minion.shield) {
+    minion.shield = false;
+    st.log.push({ act: 'shield-off', who: side.who, id: minion.id, uid: minion.uid });
+    return;
+  }
   minion.hp -= amount;
   st.log.push({ act: 'hurt-minion', who: side.who, id: minion.id, uid: minion.uid, amount, hp: minion.hp, ...why });
   if (minion.hp <= 0) withdraw(st, side, minion);
@@ -587,6 +592,7 @@ function withdraw(st, side, minion) {
 function stand(st, side, m) {
   st.uid = (st.uid ?? 0) + 1;
   m.uid = st.uid;
+  if (keywordsOf(side, st.catalog[m.id]).includes('shield')) m.shield = true;
   side.board.push(m);
   return m;
 }
@@ -1143,7 +1149,7 @@ export function view(st) {
     ...(s.dodge ? { dodge: s.dodge } : {}),
     ...(s.wards?.length ? { wards: s.wards.map(w => ({ ...w })) } : {}),
     ...(s.pouch?.length || s.pillUsed ? { pouch: s.pouch.map(p => ({ ...p })), pillUsed: s.pillUsed } : {}),
-    board: s.board.map(m => ({ id: m.id, uid: m.uid ?? null, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, ready: !m.sick && !m.struck && !m.held, chained: Boolean(m.chain || m.held), drought: m.drought ?? 0 })),
+    board: s.board.map(m => ({ id: m.id, uid: m.uid ?? null, name: m.name, element: m.element, atk: m.atk, hp: m.hp, hpMax: m.hpMax, taunt: m.taunt, shield: Boolean(m.shield), ready: !m.sick && !m.struck && !m.held, chained: Boolean(m.chain || m.held), drought: m.drought ?? 0 })),
   });
   // 望气术: the plan is shown only to a player who can read it (setup.you.insight).
   const sight = st.you.insight ?? 0;
