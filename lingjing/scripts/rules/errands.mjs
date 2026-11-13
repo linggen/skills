@@ -3,7 +3,7 @@
 import { offLadderTier } from '../content.mjs';
 import { costOf } from '../battle.js';
 import { dayKey, fill, itemName, lockedOf, periodKey, pick, peakName, stepName, staminaMax, staminaRest, threshold, tierOf, seedOf } from '../state.mjs';
-import { canPick, cardCatalog, fightDeck, gearFight, ownedCards, pickedCards, rootsOf, usable } from './cards.mjs';
+import { canPick, cardCatalog, deckBrief, fixedSheet, fightDeck, gearFight, ownedCards, pickedCards, rootsOf, usable } from './cards.mjs';
 import { companionOf, hasCompanion, herCard, nearestPlace } from './companion.mjs';
 import { readingOf } from './scrolls.mjs';
 import { meets, pay, paysOf, paysOfAll } from './core.mjs';
@@ -778,6 +778,7 @@ function gearBrief(content, state, now = new Date()) {
     })(),
     // 组牌 is his from 结丹 on (`can_pick`); before, the roots deal the ten.
     ...(canPick(content, state) ? { can_pick: true } : {}),
+    ...(fixedSheet(content) ? { deck_rule: deckBrief(content, state) } : {}),
     ...(Array.isArray(state.deck) && canPick(content, state) ? { picking: true } : {}),
     bag,
     // 储物袋: used / cap and what waits at the door (pouch.mjs); a 卖 is drawn only at a 坊市.

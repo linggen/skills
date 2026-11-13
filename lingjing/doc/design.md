@@ -1032,6 +1032,8 @@ is the pure core; the page draws it on the stage beside the chat.
 
 ## 斗法 v4 — fair sheets, one pool, cards to collect 【设计 2026-11-12】
 
+- **A deck is fifteen, two of a card at most** (2026-11-13: *改成15张, 同名最多两张*). Ten cards all drawn each fight left half the encounters decided before they began (duel-luck-2026-11-13.md: ≤15% or ≥85% in 49% of them; with fifteen, 23%); the draw is the luck, the play the skill. Owning a card once lets him run it twice. A beast runs its whole list, then second copies of its own. With fewer than eight cards to field the deck is two of each he has, and the beast's is cut to match. A mulligan was measured and made it worse — none. Knob `duel_deck`; with the fair rules' switch.
+
 v3 above stands wherever this is silent. Why: the November numbers batches (81 levels) laid a growth curve, a display
 unit and a hidden blow multiplier (`might`) over v3. From 练气五层 a fight ran 15–18 rounds and a beast's card hit for
 several times its face. His calls, 2026-11-12: *斗法这里为了平衡, 都是1点, 2点三点, 好算* · *妖的卡牌和玩家卡牌应该是一个池子* ·

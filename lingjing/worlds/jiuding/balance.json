@@ -1,6 +1,12 @@
 {
   "version": 1,
-  "duel_lend": { "by_lesson": { "trade": "yy-fire", "kill": "yy-pounce", "guard": "yy-pounce" }, "order": ["yy-howl", "yy-pounce", "yy-fire"], "ward": "yy-fur", "cap": 3, "clean_win": 1.1 },
+  "duel_lend": {
+    "by_lesson": {"trade": "yy-fire", "kill": "yy-pounce", "guard": "yy-pounce"},
+    "order": ["yy-howl", "yy-pounce", "yy-fire"],
+    "ward": "yy-fur",
+    "cap": 3,
+    "clean_win": 1.1
+  },
   "_about": "One model for every number (Hanli, 2026-10-15; design.md § Pacing and the economy). The rules read these through content.mjs (withBalance) — the 层 thresholds onto the ladder, the pay tables onto rewards, the cooldowns onto the 饭桶 and 兽潮 — and tools/balance.mjs simulates a light, a typical and a heavy player on them, day by day, printing days per 回; tests/balance.test.mjs holds the bands. Change a number here, run `node tools/balance.mjs`, and hand-play it on the live page.",
   "_master": "数值系统 phase 2 (Hanli 2026-10-27: 「数值系统继续做吧」; design.md § 数值系统): the knobs. Everything this table derives — `layers`, `play_pay`'s hours · games · errand · wall · chore · seclusion, `pills`, the `pill` and `seclusion` pay caps, `convert`, `economy` (I(L)), the pay tables' `ls`, `boards`, `play_pay.wealth`, the 圆满 share, `kailu.tier`, `breakthrough`, every pill's effect at its level (`pills.effects`) and every `buy` and `sell` (batch 2) — is written by `node tools/numbers.mjs --apply --write` (a dry-run diff without --write), never by hand; a number that must not follow its formula is an `overrides` row. tests/numbers.test.mjs holds the dry run empty. Every 修为 pay is a share of the layer (play_pay), so `need` is the numbers he reads, not the pace: the pace is `hours`, the shares, the model's minutes and the book's length. A line is a ladder of its own (Hanli 10-27: 古 · 今 · 未来 each their own 修为 and realms): `lines.gu` is built; 今 and 未来 get their rows, with their own pace, when their pay is.",
   "master": {
@@ -236,7 +242,14 @@
       "fail": {"wound": 0.3, "progress": 0.3, "cooldown_hours": 6},
       "duan": {"base": 75, "cooldown_hours": 1}
     },
-    "duel_lend": { "by_lesson": { "trade": "yy-fire", "kill": "yy-pounce", "guard": "yy-pounce" }, "order": ["yy-howl", "yy-pounce", "yy-fire"], "ward": "yy-fur", "cap": 3, "clean_win": 1.1 },
+    "duel_deck": {"size": 15, "copies": 2},
+    "duel_lend": {
+      "by_lesson": {"trade": "yy-fire", "kill": "yy-pounce", "guard": "yy-pounce"},
+      "order": ["yy-howl", "yy-pounce", "yy-fire"],
+      "ward": "yy-fur",
+      "cap": 3,
+      "clean_win": 1.1
+    },
     "mijing": {
       "_about": "秘境探险 (rules/mijing.mjs; Hanli 2026-10-28): the run's knobs, derived into `mijing` (tools/master.mjs mijingOf). `key`: a 秘境令's chance on a win in each cooldown event (兽潮 `shouchao` — a night, so about one a day; 比武切磋 `qiecuo`; 妖兽出没 `yaoshou`, a pool's beast won) under `cap_day` a day, so a day holds at most that many runs. `pay`: a run's 修为 is its minutes of rooms cleared at the games' rate (play_pay: the same per minute as any board, so a run never runs ahead of the pace) × `rate` (0.3 since 2026-11-12, design.md § 耗材: the layer no longer filled by free play, a day's two runs about a fifth of a 练气 layer — 18–19% at 练气一层, tests/mijing.test.mjs holds it under a fifth; 0.1 since 2026-10-31, when 古五's 二·三·四层 went to the 0.6 h floor — at 0.12 a day's two runs were 22% of those layers; 0.12 since 2026-10-28: a 练气 layer is about an hour of play, so a full-rate run was half a layer and the day's two a whole one — the run pays mostly in loot and 灵石; a day's two runs are about a tenth of a 练气 layer); a run not cleared pays `short` of it, and keeps its loot by the depth reached (`keep_min` at least). `hurt`: a board room's 气血 cost by its stars (a share of the run's), `yield` leaving one unplayed. `foe_step` · `td_step`: a 重 deeper, the foes' 气血 and the TD levels' difficulty. `wealth`: 灵石 in minutes of the typical income (economy.income) — a room won `room`, a chest `chest`, a clear `clear` — each 重 deeper `step` more. `clear.items`: the pills a clear pays (by 重, `from` · `to`); an arm and the 大妖's card come from the drop table and the beast.",
       "_door": "2026-11-12 (design.md § 耗材: 「秘境令去掉可以」 · 「进门一次付清」): `door` the 体力 a run costs once, at the door (0: none — the rooms cost their own minutes inside, as before); with it above 0 no room inside spends 体力. `key.on`: a 秘境令 asked at the door and dropped by the cooldown events (false: none asked, none dropped, none shown; a 令 still held is ignored). `cap_day` rations runs a day either way: the keys' drops with the key on, the runs begun with it off.",
@@ -767,7 +780,6 @@
     "carry": 1
   },
   "mijing": {
-    "rematch": 1,
     "cap_day": 2,
     "drops": {"shouchao": 1, "qiecuo": 0.5, "yaoshou": 0.2},
     "door": 25,
@@ -778,6 +790,7 @@
     "yield": 0.25,
     "foe_step": 0.06,
     "boss_more": 0,
+    "rematch": 1,
     "td_step": 0.08,
     "wealth": {"room": [0.6, 1.2], "chest": [2, 3], "clear": 10, "step": 0.25},
     "chest_rolls": 2,
@@ -819,5 +832,6 @@
     "trickle": 0.0025,
     "array": [0.04, 0.05, 0.06, 0.07, 0.08],
     "costs": [null, 100, 200, 400, 800]
-  }
+  },
+  "duel_deck": {"size": 15, "copies": 2}
 }

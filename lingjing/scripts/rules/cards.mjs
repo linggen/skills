@@ -27,7 +27,18 @@ import { lendOf } from './lend.mjs';
    before. A pick kept from before the rule waits, unread, until 结丹. */
 const PICK_FROM = 'core';
 const canPick = (content, state) => tierIndex(content, state) >= content.ladder.tiers.findIndex(t => t.id === PICK_FROM);
+// Ownership is per card kind, not per physical copy: holding one permits two.
+export const deckRule = content => fixedSheet(content) ? (content.balance.duel_deck ?? { size: 15, copies: 2 }) : { size: MODES.pve.deck, copies: 2 };
+const fieldable = (content, state) => {
+  const owned = new Set(ownedCards(content, state)), roots = rootsOf(content, state);
+  return (content.cards?.cards ?? []).filter(c => owned.has(c.id) && !c._token && !c.owner && !c.gear && !c.lent && usable(c, roots));
+};
+export function deckBrief(content, state) {
+  const { size: full, copies } = deckRule(content), kinds = fieldable(content, state).length;
+  return { size: Math.min(full, copies * kinds), full, short_by: Math.max(0, Math.ceil(full / copies) - kinds) };
+}
 export function deckFor(content, state, o = {}) {
+  if (fixedSheet(content)) return fairDeck(content, state);
   const auto = autoDeck(content, state, o);
   if (!Array.isArray(state.deck) || !canPick(content, state)) return auto;
   const owned = new Set(ownedCards(content, state)), roots = rootsOf(content, state), catalog = cardCatalog(content);
@@ -41,6 +52,22 @@ export function deckFor(content, state, o = {}) {
   const fill = autoDeck(content, { ...state, cards: [...left, ...(ownedCards(content, state).includes('yinyue') ? ['yinyue'] : [])] }, o);
   return [...picked, ...fill].slice(0, MODES.pve.deck);
 }
+function fairDeck(content, state) {
+  const pool = fieldable(content, state), { copies } = deckRule(content), { size } = deckBrief(content, state);
+  const allowed = new Set(pool.map(c => c.id)), out = new Set(state.deck_out ?? []), counts = new Map(), result = [];
+  const add = id => { if (!allowed.has(id) || (counts.get(id) ?? 0) >= copies || result.length >= size) return false; result.push(id); counts.set(id, (counts.get(id) ?? 0) + 1); return true; };
+  if (Array.isArray(state.deck) && canPick(content, state)) for (const id of state.deck) add(id);
+  const curves = { qi: [1,1,1,1,1,2,2,2,2,3,3,3,4,4,4], foundation: [1,1,1,2,2,2,2,2,3,3,4,4,4,5,5], core: [1,1,2,2,2,2,3,3,3,4,4,4,5,5,5], nascent: [1,1,2,2,2,3,3,3,4,4,4,5,5,5,6] };
+  const ordered = shuffle(pool, `deck|${seedOf(state)}`), curve = curves[state.tier] ?? curves.qi;
+  // Exhaust distinct held cards before adding a second copy.
+  for (let pass = 0; pass < copies; pass++) for (const rung of curve) {
+    if (result.length >= size) break;
+    const candidates = ordered.filter(c => !out.has(c.id) && (counts.get(c.id) ?? 0) === pass);
+    candidates.sort ( (a, b) => Math.abs((a.cost ?? 1) - rung) - Math.abs((b.cost ?? 1) - rung));
+    if (candidates.length) add(candidates[0].id);
+  }
+  return result;
+}
 const pickedCards = (content, state) => (Array.isArray(state.deck) && canPick(content, state) ? deckFor(content, state).filter(id => state.deck.includes(id)) : []);
 
 export function deck(state, content, ctx, args) {
@@ -49,6 +76,18 @@ export function deck(state, content, ctx, args) {
   if (action === 'book') return { state: null, result: { ok: true, kace: kaceBrief(content, state) } };
   const s = clone(state);
   if (action === 'auto') { delete s.deck; delete s.deck_out; return { state: s, result: { ok: true, gear: gearBrief(content, s, ctx?.now) } }; }
+  if (fixedSheet(content) && (action === 'add' || action === 'remove')) {
+    if (!canPick(content, state)) return refuse('needs-tier', null);
+    const id = String(args.id ?? ''), allowed = fieldable(content, state).some(c => c.id === id);
+    if (!allowed) return refuse('not-held', null);
+    const now = Array.isArray(state.deck) ? [...state.deck] : deckFor(content, state), count = now.filter(x => x === id).length;
+    if (action === 'add') {
+      if (count >= deckRule(content).copies) return refuse('copy-limit', null);
+      if (now.length >= deckBrief(content, state).size) return refuse('deck-full', null);
+      s.deck = [...now, id]; s.deck_out = (s.deck_out ?? []).filter(x => x !== id);
+    } else { const at = now.lastIndexOf(id); if (at < 0) return refuse('not-in-deck', null); now.splice(at, 1); s.deck = now; s.deck_out = [...new Set([...(s.deck_out ?? []), id])]; }
+    return { state: s, result: { ok: true, gear: gearBrief(content, s, ctx?.now) } };
+  }
   if (action !== 'toggle') return refuse('unknown-action', null, { actions: ['toggle', 'auto', 'book'] });
   if (!canPick(content, state)) return refuse('needs-tier', pick({ zh: '结丹之后，方能自己组牌。', en: 'You pick your own ten from the Core on.' }, lang), { tier: PICK_FROM });
   const id = String(args.id ?? ''), c = cardCatalog(content)[id];
@@ -56,14 +95,14 @@ export function deck(state, content, ctx, args) {
   if (c.owner) return refuse('always-in-hand', pick({ zh: '这是小队里别人的牌，由他们自己出，不占这十张。', en: "A party member's card is theirs to play; it is not one of the ten." }, lang));
   if (!usable(c, rootsOf(content, state))) return refuse('off-root', pick({ zh: '灵根不合，修不得这门功法。', en: 'A spell of a root you lack.' }, lang));
   // The first pick starts from the ten he has been dealt, not from nothing.
-  const now = Array.isArray(s.deck) ? pickedCards(content, s) : deckFor(content, s);
+  const now = fixedSheet(content) ? deckFor(content, s) : Array.isArray(s.deck) ? pickedCards(content, s) : deckFor(content, s);
   // Lit is his: a lit card taken out stays out (the fill never puts it
   // back); any other card tapped becomes his, room allowing. (A first cut
   // treated a filled card as lit, and a tap meant to keep it threw it out.)
   if (now.includes(id)) {
     s.deck = now.filter(x => x !== id);
     s.deck_out = [...new Set([...(s.deck_out ?? []), id])];
-  } else if (now.length >= MODES.pve.deck) return refuse('deck-full', pick({ zh: '十张已满，先取下一张。', en: 'Ten already — take one out first.' }, lang));
+  } else if (now.length >= (fixedSheet(content) ? deckBrief(content, state).size : MODES.pve.deck)) return refuse('deck-full', pick(fixedSheet(content) ? { zh: '牌组已满，先取下一张。', en: 'Deck full — take one out first.' } : { zh: '十张已满，先取下一张。', en: 'Ten already — take one out first.' }, lang));
   else {
     s.deck = [...now, id];
     s.deck_out = (s.deck_out ?? []).filter(x => x !== id);
@@ -85,6 +124,7 @@ export function strikeOf(content, state) {
 export function fightDeck(content, state, o = {}) {
   const ten = deckFor(content, state, o), id = strikeOf(content, state);
   if (!id || ten.includes(id)) return ten;
+  if (fixedSheet(content)) return [...ten, id];
   if (ten.length < MODES.pve.deck) return [...ten, id];
   const catalog = cardCatalog(content), picked = new Set(pickedCards(content, state));
   const rank = i => (picked.has(ten[i]) ? 100 : 0) + (catalog[ten[i]]?.cost ?? 1);
@@ -326,7 +366,8 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   const gear = gearFight(content, state), lifts = withHer ? herLifts(content, state) : null;
   // Before the root test (the 三试 comes first) he fights with what no root claims:
   // the rootless things he holds (deckFor reads no roots, so a 功法 stays out).
-  const deck = fightDeck(content, state, { ten: evenDuel(content, state, creature) });
+  const deck = fixedSheet(content) ? deckFor(content, state) : fightDeck(content, state, { ten: evenDuel(content, state, creature) });
+  const strike = fixedSheet(content) ? strikeOf(content, state) : null;
   // 新: a card gained and not yet played (cards_new), marked in the hand until it is.
   const fresh = (state.cards_new ?? []).filter(id => deck.includes(id));
   // 丹囊: the pills he carries in (his last pick, as the bag still holds them).
@@ -341,7 +382,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
     ...(lv ? { anchor: lv.anchor } : {}),
     seed: deal ? `${duelSeed(state, creature, now)}|${deal}` : duelSeed(state, creature, now),
     you: {
-      tier: state.tier, step: fixedSheet(content) ? 0 : hpStep(content, state.tier, state.step ?? 0), ...(fixedSheet(content) ? { base: hpMaxOf(state, content) } : {}), root: main, deck, extra: [...(creature.extra ?? []), ...gear.charms, ...(lend?.cards ?? [])],
+      tier: state.tier, step: fixedSheet(content) ? 0 : hpStep(content, state.tier, state.step ?? 0), ...(fixedSheet(content) ? { base: hpMaxOf(state, content) } : {}), root: main, deck, extra: [...(creature.extra ?? []), ...gear.charms, ...(lend?.cards ?? []), ...(strike ? [strike] : [])],
       // The fight's own word (an exit game's `foe.fatigue: false`, world.mjs weighed): no 反噬 on a dry deck.
       ...(creature.fatigue === false ? { fatigue: false } : {}),
       ...(party.length ? { party } : {}),
@@ -360,7 +401,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
     },
     // An elite is its harder deck and nothing else (redesign-v2 § 四).
     ...(evenDuel(content, state, creature) ? { even: true } : {}),
-    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...evenAi(content, state, creature), ...evenDeck(content, state, creature, fightLength(content, state, creature, beastToParty(content, creature, party, game), lv?.foe.level)), ...(creature.signature ? { signature: creature.signature } : {}), ...(creature.feint ? { feint: creature.feint } : {}), ...(creature.trial ? { trial: creature.trial } : {}), ...(lv ? lv.foe : {}) },
+    foe: { tier: state.tier, root: creature.root, deck: creature.deck ?? [], ...evenAi(content, state, creature), ...evenDeck(content, state, creature, fightLength(content, state, creature, beastToParty(content, creature, party, game), lv?.foe.level), deck.length), ...(creature.signature ? { signature: creature.signature } : {}), ...(creature.feint ? { feint: creature.feint } : {}), ...(creature.trial ? { trial: creature.trial } : {}), ...(lv ? lv.foe : {}) },
   };
 }
 
@@ -498,10 +539,18 @@ const evenAi = (content, state, creature) => {
     : lineByLevel(ai, beastLevel(content, state, creature) ?? fightLevel(content, state), foeRank(content, creature));
   return line && line !== 'foe' ? { ai: line } : {};
 };
-function evenDeck(content, state, creature, foe) {
-  if (!evenDuel(content, state, creature)) return foe;
-  const L = beastLevel(content, state, creature) ?? fightLevel(content, state);
-  return { ...foe, deck: beastTen(content, creature, L) };
+export function fairBeastDeck(content, creature, size) {
+  const catalog = cardCatalog(content), own = creature.deck ?? [], counts = new Map(), result = [], copies = deckRule(content).copies;
+  const add = id => { if (result.length < size && (counts.get(id) ?? 0) < copies) { result.push(id); counts.set(id, (counts.get(id) ?? 0) + 1); } };
+  own.forEach(add);
+  const cheapest = [...new Set(own)].sort((a, b) => (catalog[a]?.cost ?? 1) - (catalog[b]?.cost ?? 1) || a.localeCompare(b));
+  for (let i = 0; i < copies; i++) cheapest.forEach(add);
+  return result;
+}
+function evenDeck(content, state, creature, foe, size) {
+  if (!fixedSheet(content)) return foe;
+  const deck = fairBeastDeck(content, creature, size);
+  return { ...foe, deck, ...(deck.length < size ? { deck_short_by: size - deck.length } : {}) };
 }
 function duelFoe(content, state, creature, grown) {
   const b = content?.balance, f = b?.duel_hp?.foe;

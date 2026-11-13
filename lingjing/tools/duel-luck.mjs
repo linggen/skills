@@ -5,14 +5,14 @@ import { content, FIGHTS, keyOf, foeOf, stateAt } from './story-fights.mjs';
 import { begin, act, foeStep, shuffle } from '../scripts/battle.js';
 import { carefulFor } from '../scripts/fightline.js';
 import { seedOf } from '../scripts/state.mjs';
-import { ownedCards } from '../scripts/rules/cards.mjs';
+import { ownedCards, fightDeck, beastTen, fightLevel, beastLevel } from '../scripts/rules/cards.mjs';
 import { pathToFileURL } from 'node:url';
 const catalog = Object.fromEntries(content.cards.cards.map(c => [c.id,c]));
 const curves = { qi:[1,1,1,2,2,2,3,3,4,4], foundation:[1,1,2,2,2,3,3,4,4,5], core:[1,2,2,2,3,3,4,4,5,5], nascent:[1,2,2,3,3,4,4,5,5,6] };
 const cost = id => catalog[id]?.cost ?? 1;
 // Repeat the game's realm curve and seeded within-cost ordering, retaining the actual ten first.
 export function playerDeck(e, n) {
-  const out = [...e.setup.you.deck]; if (n <= out.length) return out.slice(0,n);
+  const out = e.setup.you.deck.slice(0, 10); if (n <= out.length) return out.slice(0,n);
   const owned = new Set(ownedCards(content,e.state));
   const roots = new Set(e.state.traits ?? []);
   const pool = content.cards.cards.filter(c => owned.has(c.id) && !c._token && !c.owner && (c.kind !== 'spell' || !c.element || roots.has(c.element)));
@@ -26,7 +26,7 @@ export function playerDeck(e, n) {
   return out;
 }
 export function beastDeck(e,n) {
-  if(n===10) return [...e.setup.foe.deck];
+  if(n===10) return e.setup.foe.deck.slice(0, 10);
   const original=e.creature ?? foeOf(FIGHTS.find(f=>keyOf(f)===e.key));
   const own=[...(original.deck ?? [])]; if(!own.length) throw Error(`empty beast pool ${e.key}`);
   // Preserve full original list, extend with cheapest original cards (the trim ordering).
@@ -40,8 +40,20 @@ export function mulligan(st, extraCount) {
   for(let i=0;i<returned.length && st.you.deck.length;i++) st.you.hand.push(st.you.deck.shift());
   st.you.deck=shuffle([...st.you.deck,...returned],`${st.seed}|mulligan`);
 }
+export function legacyEncounters() {
+ const es=encounters();
+ // Recreate the original ten-card fit baseline before applying explicit N.
+ const legacy = { ...content, balance: { ...content.balance, duel_hp: { ...content.balance.duel_hp } } };
+ delete legacy.balance.duel_hp.foe;
+ for (const e of es) {
+  const creature=e.creature ?? foeOf(FIGHTS.find(f=>keyOf(f)===e.key));
+  e.setup.you.deck=fightDeck(legacy,e.state,{ten:true});
+  e.setup.foe.deck=beastTen(content,creature,beastLevel(content,e.state,creature) ?? fightLevel(content,e.state));
+ }
+ return es;
+}
 export function run({seeds=40,sizes=[10,15,20]}={}) { return withRules(true,()=>{
- const es=encounters(); const results=[];
+ const es=legacyEncounters(); const results=[];
  for(const n of sizes) for(const redraw of (n===20?[false]:[false,true])) {
   const rows=[];
   for(const e of es) { const cfg=structuredClone(e.setup); cfg.you.deck=playerDeck(e,n); cfg.foe.deck=beastDeck(e,n);
