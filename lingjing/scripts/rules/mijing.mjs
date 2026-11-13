@@ -359,6 +359,7 @@ function goRoom(state, content, ctx, args) {
   const play = kindRow(content, room.kind)?.play;
   const here = { id, kind: room.kind, phase: play === 'fight' ? 'fight' : play === 'board' ? 'board' : 'pick' };
   if (play === 'fight') here.foe = foeFor(content, r, t, room);
+  if (room.kind === 'boss') here.entry_hp = r.hp;
   if (play === 'board') { here.board = boardFor(content, s, r, t, room); if (!here.board) here.phase = 'done'; }
   // A board of a beast's flavour (`beast`: 守关's wave) names who is met: the 重's 妖兽, drawn as a fight room's is.
   if (play === 'board' && kindRow(content, room.kind)?.beast && t.beasts?.length) here.beast = byWeight(t.beasts, u(`${r.seed}|${id}|foe`)).creature;
@@ -617,9 +618,18 @@ export function mijingDuel(state, content, ctx, args) {
   if (s.cards_new) { const left = s.cards_new.filter(c => !playedIds.has(c)); if (left.length) s.cards_new = left; else delete s.cards_new; }
   const r = s.mijing.run, here = r.room, t = tierRow(content, r.tier);
   // Back from the fight's units onto the run's: as the room showed it (battle.js shown; 0 stays 0).
+  const entryHp = here.entry_hp ?? r.hp;
   r.hp = played.you.hp <= 0 ? 0 : Math.max(1, Math.min(r.hp_max, shown(played, played.you.hp)));
   const base = { ok: true, outcome: played.outcome, game: id, you: shownSide(played, played.you), foe: shownSide(played, played.foe), turns: played.turn, ...(firsts.first_met ? { first_met: true } : {}), ...(firsts.first_win ? { first_win: true } : {}) };
-  if (played.outcome === 'lost' || r.hp <= 0) return endRun(s, content, ctx, 'dead', { ...base, room: here.id });
+  if (played.outcome === 'lost' || r.hp <= 0) {
+    if (played.outcome === 'lost' && here.kind === 'boss' && (r.rematch ?? 0) < (knobs(content).rematch ?? 0)) {
+      r.rematch = (r.rematch ?? 0) + 1;
+      here.entry_hp = entryHp;
+      r.hp = Math.max(1, Math.min(r.hp_max, entryHp));
+      return { state: s, result: { ...base, room: here.id, rematch: true } };
+    }
+    return endRun(s, content, ctx, 'dead', { ...base, room: here.id });
+  }
   roomCleared(content, r, here.kind);
   if (!won) { here.phase = 'done'; here.outcome = { withdrew: true }; return { state: s, result: { ...base, mijing: { room: here.id, hp: r.hp } } }; }
   // 灵泉余润: a share of 气血 back after each fight won.
@@ -778,6 +788,7 @@ export function mijingBrief(content, state, now) {
       loot: { items: Object.entries(run.loot.items).map(([id, n]) => ({ id, name: nameOf(content, id, lang), n })), wealth: run.loot.wealth },
       map: { layers: run.map.layers.map(row => row.map(mark)), boss: mark(run.map.boss), ways: run.map.ways },
       at: run.at, next: [...next], room: roomBrief(content, state, run), depth: run.done.length, of: run.map.layers.length + 1,
+      ...(run.room?.kind === 'boss' ? { rematch_left: Math.max(0, (knobs(content).rematch ?? 0) - (run.rematch ?? 0)) } : {}),
       walked: [...run.done, ...(run.at && !done.has(run.at) ? [run.at] : [])], yield: knobs(content).yield ?? 0.25,
       // Paid at the door: nothing inside costs 体力, so an empty pool shuts nothing here (stage.mjs keeps the run first).
       ...(paidAtDoor(run) ? { door_paid: run.door } : {}),

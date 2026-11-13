@@ -765,6 +765,7 @@
     "carry": 1
   },
   "mijing": {
+    "rematch": 1,
     "cap_day": 2,
     "drops": {"shouchao": 1, "qiecuo": 0.5, "yaoshou": 0.2},
     "door": 25,
