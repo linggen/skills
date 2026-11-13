@@ -240,3 +240,11 @@ test('问签 stands in 闭关 (Hanli 11-03: 「闭关也能摇签」): the day\'
   assert.equal(seclusionHold(s, 'divine', {}), null);
   assert.equal(seclusionHold(s, 'move', {})?.result?.refused, 'in-seclusion');
 });
+
+test('a chosen quiet button shows its choice: `.act.quiet.on` comes after `.act.quiet` in the stylesheet', async () => {
+  const fs = await import('node:fs');
+  const css = fs.readFileSync(new URL('../scripts/lingjing.css', import.meta.url), 'utf8');
+  const quiet = css.search(/^\.act\.quiet \{/m), on = css.search(/^\.act\.quiet\.on \{/m);
+  assert.ok(quiet >= 0 && on > quiet, 'the chosen rule exists and wins by order');
+  assert.match(css.slice(on, css.indexOf('}', on)), /background:\s*var\(--ling\)/);
+});

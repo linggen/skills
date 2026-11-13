@@ -602,6 +602,8 @@ body.fighting .scene { overflow: hidden; }
 .bookdetail { margin: 2px 0 6px; padding: 8px 10px; border-left: 2px solid var(--line); display: grid; gap: 5px; }
 .bookdetail .say { font-family: var(--serif); }
 .act.quiet { background: transparent; border-color: var(--line); color: var(--dim); }
+/* A chosen quiet button still shows its choice: `.act.quiet` above comes after `.act.on` and would paint it unchosen (闭关's 布阵 presets and pill looked dead). */
+.act.quiet.on { background: var(--ling); border-color: var(--ling); color: var(--surface); }
 /* A locked fight left once stuck (cards.js duel): centred under its card, on paper so it reads over a painted stage. */
 .duelpass { display: flex; justify-content: center; margin-top: 10px; }
 .duelpass .act.quiet { background: rgba(250, 246, 238, .94); color: var(--text); box-shadow: 0 4px 14px rgba(0, 0, 0, .18); }
