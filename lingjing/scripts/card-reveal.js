@@ -6,6 +6,7 @@
 // prefers-reduced-motion shows each card still for a moment and lets it go.
 
 import { esc } from './esc.js';
+import { pinClass } from './rules/pin.mjs';
 
 /* The beats of one card, in ms: rise in, then hold — until he taps, as its 「轻点继续」 says (2026-10-16:
    it flew off by itself after 2.4 s, under a hint that said to tap) — then fly to the bag. A tap during
@@ -59,13 +60,14 @@ export function whenceLine(from, { lang = 'zh', creatureOf = () => null } = {}) 
 
 /// The big card's face. `card` is a cards.json row (or its brief: id, name,
 /// kind, is, cost, element, atk, hp, art); `line` the one line of where it came from, plain;
-/// `said` the source's own words under it (cards.json `from[].line`); `isWords` cards.json `is_words`.
+/// `said` the source's own words under it (cards.json `from[].line`); `isWords` cards.json `is_words`; `card.pin` its 品
+/// (rules/pin.mjs), drawn as its frame — 凡 none, so a plain card reads as it always did.
 export function revealHtml(card, { lang = 'zh', line = '', said = '', artBase = '', isWords = null } = {}) {
-  const w = WORDS[lang] ?? WORDS.zh, el = card.element ?? 'none';
+  const w = WORDS[lang] ?? WORDS.zh, el = card.element ?? 'none', framed = pinClass(card.pin, ' pin-');
   const elWord = card.element ? ELEMENT_WORD[lang]?.[card.element] ?? '' : '';
   const body = card.atk != null ? `<span class="rv-atk">${esc(card.atk)}</span><span class="rv-hp">${esc(card.hp)}</span>` : '';
-  return `<div class="rv-card" data-el="${esc(el)}">
-    <div class="rv-paper">
+  return `<div class="rv-card${framed}" data-el="${esc(el)}">
+    <div class="rv-paper">${framed ? '<i class="rv-frame" aria-hidden="true"></i>' : ''}
       ${card.cost != null ? `<span class="rv-cost">${esc(card.cost)}</span>` : ''}
       <div class="rv-art">${card.art ? `<img src="${esc(artBase)}${esc(card.art)}" alt="">` : ''}</div>
       <div class="rv-name">${esc(nameOf(card.name, lang))}</div>

@@ -12,6 +12,7 @@
 
 import { spoken } from './cards.js';
 import { esc } from './esc.js';
+import { pinClass } from './rules/pin.mjs';
 import { convertedSay } from './turned.js';
 import { freshHtml, partyHtml, sealHtml } from './battle-party.js';
 import { pillTrayHtml, pouchPickHtml } from './danang.js';
@@ -408,8 +409,10 @@ function minionHtml(m, side, index, ctx, picked) {
   // name under it, and 攻 / 血 in the two bottom corners where a card player's
   // eye already looks. A 22px strip of a painting is a smudge, not a picture
   // (his, 2026-09-18: 放到阵前, 图片看不到了).
-  return `<button class="bminion ${side} el-${esc(m.element ?? 'none')}${held ? ' held' : ''}${m.taunt ? ' taunt' : ''}${can ? ' can' : ''}${aimed ? ' aimed' : ''}${side === 'mine' && why ? ' dim' : ''}${herOf(m.id, ctx)}" data-spot="${side === 'mine' ? 'mine' : 'theirs'}" data-index="${index}" data-id="${esc(m.id)}"${m.uid != null ? ` data-uid="${esc(m.uid)}"` : ''}>
-    <span class="bface-wrap">
+  // Its 品's frame (rules/pin.mjs; ctx.pins): a beast's card on the beast's side wears it too. 凡 draws as it always did.
+  const pin = ctx.pins?.[m.id];
+  return `<button class="bminion ${side} el-${esc(m.element ?? 'none')}${pinClass(pin)}${held ? ' held' : ''}${m.taunt ? ' taunt' : ''}${can ? ' can' : ''}${aimed ? ' aimed' : ''}${side === 'mine' && why ? ' dim' : ''}${herOf(m.id, ctx)}" data-spot="${side === 'mine' ? 'mine' : 'theirs'}" data-index="${index}" data-id="${esc(m.id)}"${m.uid != null ? ` data-uid="${esc(m.uid)}"` : ''}>
+    ${pinMark(pin)}<span class="bface-wrap">
       ${pic ? `<img class="bpic small" src="${esc(pic)}" alt="" loading="lazy">` : '<span class="bpic small none"></span>'}
       <span class="bglyph">${GLYPH[m.element] ?? ''}</span>
     </span>
@@ -430,10 +433,13 @@ const artOf = (c, ctx) => (c?.art ? `${ctx.artBase ?? ''}${c.art}` : null);
    is the one that gives: it takes what the words leave (a grid row of `1fr`), so
    a long rule never runs off a small card. `o` carries what differs between the
    hand and the spoils: the cost now, the rule as it reads now, the ★, the why. */
+/* 框 — the card's 品 drawn as its frame (design.md § 斗法 v4 · 品 · 框): one mark laid over the leaf, never in its flow, so
+   the rule text keeps every pixel it had. 凡 has none: a plain card's markup is what it always was. */
+const pinMark = (pin) => (pinClass(pin) ? `<i class="bpin" aria-hidden="true"></i>` : '');
 function leafHtml(c, ctx, o = {}) {
-  const pic = artOf(c, ctx);
+  const pic = artOf(c, ctx), pin = ctx.pins?.[c.id];
   const body = c.kind === 'minion' ? `<span class="batk">${o.atk ?? c.atk}</span><span class="bhp">${o.hp ?? c.hp}</span>` : '';
-  return `<span class="bleaf">
+  return `<span class="bleaf${pinClass(pin)}">${pinMark(pin)}
       <span class="bcost">${o.cost ?? c.cost}</span>
       ${c.element ? `<span class="belem">${GLYPH[c.element] ?? ''}</span>` : ''}
       ${pic ? `<img class="bpic" src="${esc(pic)}" alt="" loading="lazy">` : '<span class="bpic none"></span>'}

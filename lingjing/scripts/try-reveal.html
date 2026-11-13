@@ -20,11 +20,14 @@
   </div>
   <script type="module">
     import { revealCards } from './card-reveal.js';
+    import { pinsOf } from './rules/pin.mjs';
     const q = new URLSearchParams(location.search), lang = q.get('lang') ?? 'zh';
     const ids = (q.get('card') ?? 'luying').split(',');
-    const { cards } = await (await fetch('../worlds/jiuding/cards.json')).json();
+    const deck = await (await fetch('../worlds/jiuding/cards.json')).json(), { cards } = deck;
+    // Each card in its 品's frame, as the game shows it (rules/pin.mjs).
+    const pins = pinsOf({ cards: deck, mijing: await (await fetch('../worlds/jiuding/mijing.json')).json().catch(() => null) });
     const line = q.get('line') ?? (lang === 'en' ? '"Read the wind first, then the deer."' : '爹说：「先看风，后看鹿。」');
-    const play = () => revealCards(ids.map(id => ({ ...cards.find(c => c.id === id), line })).filter(c => c.id),
+    const play = () => revealCards(ids.map(id => ({ ...cards.find(c => c.id === id), pin: pins[id] ?? null, line })).filter(c => c.id),
       { host: document.getElementById('stage'), target: document.getElementById('bag'), lang, artBase: '../worlds/jiuding/' });
     document.getElementById('again').onclick = play;
     play();

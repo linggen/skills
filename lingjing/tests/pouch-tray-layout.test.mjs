@@ -43,7 +43,7 @@ test('opening and closing the bag during a fight leaves the same fight intact', 
   const ctx = { view: { gearOpen: true, gear: null }, bout: fight, $: () => el,
     document: { body: { classList: { add: (name) => classes.add(name) } } },
     ftKailu: { stop() {} }, pouchHtml: () => 'bag', ctx: () => ({}),
-    artBase: () => '', cardCatalog: () => [], drawnPouch: null };
+    artBase: () => '', cardCatalog: () => [], cardPins: () => ({}), drawnPouch: null };
   vm.runInNewContext(`${page.slice(start, end)}; drawPouch();`, ctx);
   assert.equal(el.hidden, false);
   assert.equal(el.innerHTML, 'bag');

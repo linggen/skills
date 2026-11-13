@@ -30,6 +30,7 @@ import { WORDS as BATTLE_WORDS, battleHtml, boutSays, boutWords, cardFaceHtml, d
 import { banner, ghostsOf, hurry, playLog, since } from '../battle-anim.js';
 import { wireDrag } from '../battle-drag.js';
 import { wireWheel } from '../battle-wheel.js';
+import { pinsOf } from '../rules/pin.mjs';
 import { WORDS, duelTitle } from '../cards.js';
 
 export const meta = {
@@ -55,6 +56,8 @@ const json = (file) => {
 /** The 游戏厅's fights, in the book's order (levels/kapai.json). */
 export const fightTable = () => json('levels/kapai.json');
 const catalogOf = async () => Object.fromEntries(((await json('cards.json')).cards ?? []).map((c) => [c.id, c]));
+/* Each collected card's 品 (rules/pin.mjs) — its frame; a beast that ends a 重 (mijing.json) makes its own cards 宝石. */
+const pinsLoad = async () => pinsOf({ cards: await json('cards.json'), mijing: await json('mijing.json').catch(() => null) });
 
 /** A fight of the table by key, with the next one after it (下一关). */
 export function fightOf(table, key) {
@@ -92,11 +95,11 @@ export function resultOf(st) {
 
 /** What the room draws itself from (the story's boutCtx, without the story: no chat, no 银月 to ask). */
 function ctxOf(room) {
-  const { brief, lang, catalog, table } = room, c = brief.creature, setup = room.setup;
+  const { brief, lang, catalog, pins, table } = room, c = brief.creature, setup = room.setup;
   const pills = table?.pills ?? {};
   const name = (v) => (v && typeof v === 'object' ? v[lang] ?? v.zh : v);
   return {
-    catalog, artBase: WORLD, lang, words: boutWords(BATTLE_WORDS[lang] ?? BATTLE_WORDS.zh, c, lang), board: room.st.mode.board,
+    catalog, pins, artBase: WORLD, lang, words: boutWords(BATTLE_WORDS[lang] ?? BATTLE_WORDS.zh, c, lang), board: room.st.mode.board,
     title: duelTitle(c, WORDS[lang] ?? WORDS.zh, lang), foeName: c.name, foeArt: c.art ? `${WORLD}${c.art}` : null,
     youName: (WORDS[lang] ?? WORDS.zh).you, herName: null, herCard: null,
     party: setup.you?.party ?? [], fresh: setup.you?.fresh ?? [],
@@ -133,11 +136,11 @@ export function keepPictures(host, html) {
 /** The fight the mount was handed: given whole, or a key of the table. */
 async function fightFrom(data, lang) {
   // The table is read for a fight handed whole too: its `pills` name the 丹囊's pills (the phone showed `mend-pill`).
-  const [catalog, table] = await Promise.all([data.catalog ?? catalogOf(), data.setup ? fightTable().catch(() => null) : fightTable()]);
+  const [catalog, table, pins] = await Promise.all([data.catalog ?? catalogOf(), data.setup ? fightTable().catch(() => null) : fightTable(), data.pins ?? pinsLoad().catch(() => ({}))]);
   const row = data.setup ? data : fightOf(table, data.foe);
   if (!row) throw new Error(`no fight ${data.foe}`);
   const brief = row.brief?.[lang] ?? row.brief?.zh ?? row.brief;
-  return { catalog, table, setup: row.setup, brief, next: row.next ?? data.next ?? null };
+  return { catalog, pins, table, setup: row.setup, brief, next: row.next ?? data.next ?? null };
 }
 
 export async function mount(container, { data = {}, lang = 'zh', seed = String(Date.now()), signal, shell, story = {} } = {}) {

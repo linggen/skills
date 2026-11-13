@@ -46,6 +46,7 @@ import { catchTold, holdTold, spentBoard, toldHeld, toldInLook } from './board-d
 import { esc } from './esc.js';
 import { forInput } from './games/kit/device.js';
 import { revealCards, whenceLine } from './card-reveal.js';
+import { pinsOf } from './rules/pin.mjs';
 import { pickAfter, pickNow } from './danang.js';
 import { HANDED_STAY_MS, TURNED_MS, convertedSay, handedStale } from './turned.js';
 import { thinker, stillAsked } from './think.js';
@@ -411,7 +412,9 @@ const view = {
   pouchSel: null, //     the thing tapped, in the detail pane
   pouchToss: null, //    the thing asking 丢? on the pane, until answered
   sealBook: null, //     the 印谱's rows (rules/seals.mjs `seals book`), read when its pane opens;
-  pouchPane: null, //    'deck' (牌组), 'seals' (印谱) or 'panglu' (旁炉) in the grid's place; the 饭桶 docks in the grid's own page
+  pouchPane: null, //    'deck' (牌组), 'kace' (卡册), 'seals' (印谱) or 'panglu' (旁炉) in the grid's place; the 饭桶 docks in the grid's own page
+  kace: null, //         the 卡册's brief (rules/cards.mjs kaceBrief, `deck book`), read when its view opens
+  kaceLeaf: 'all', //    the 卡册's leaf shown: 'all', a 品, or 'companions' (kace.js)
   offerSwap: null, //    储物袋满了: the offer whose 丢一样换它 grid is open (pouch.js fullOfferHtml)
   fantong: null, //      the rules' 饭桶 brief (rules/fantong.mjs), read when its board opens
   fantongOff: null, //   the rules' words when the 饭桶 is not his yet: the dock stands dimmed with them
@@ -495,6 +498,13 @@ function cardCatalog() {
   }
   return catalogMemo.cards;
 }
+/* Each collected card's 品 (rules/pin.mjs), by id — the frame every card face wears. Once per world. */
+let pinsMemo = { key: null, pins: {} };
+function cardPins() {
+  const key = `${authored?.world}|${authored?.loadedAt}`;
+  if (pinsMemo.key !== key) pinsMemo = { key, pins: authored?.cards ? pinsOf({ cards: authored.cards, mijing: authored.mijing }) : {} };
+  return pinsMemo.pins;
+}
 const artBase = () => `../worlds/${look?.world?.id ?? 'jiuding'}/`;
 /// One clock for the page: 14:05, in the game's language.
 const clock = (iso) => (iso ? clockOf(new Date(iso), lang()) : '');
@@ -557,8 +567,10 @@ async function loadContent(world, force = false) {
   const [codex, people, items, arts] = await Promise.all(['codex.json', 'people.json', 'items.json', 'arts.json'].map((f) => content(baseDir, f).catch(() => null)));
   // The stage's backdrops, by the weather and the hour (atmos.js backdropOf); a world without them keeps the paper.
   const backdrops = await content(baseDir, 'backdrops.json').catch(() => null);
+  // 品 is read off where a card is found (rules/pin.mjs): a beast that ends a 重 (mijing.json) makes its own cards 宝石.
+  const mijing = await content(baseDir, 'mijing.json').catch(() => null);
   const sameWorld = authored?.world === world.id;
-  authored = { world: world.id, dir: baseDir, creatures: all, storyPinyin: storyPinyin(all), herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, traits: roots, dictionary, cards, codexFiles: { codex, people, creatures, items, arts }, backdrops, loadedAt: Date.now() };
+  authored = { world: world.id, dir: baseDir, creatures: all, storyPinyin: storyPinyin(all), herbs: herbs.herbs, hexagrams: hexagrams.hexagrams, traits: roots, dictionary, cards, mijing, codexFiles: { codex, people, creatures, items, arts }, backdrops, loadedAt: Date.now() };
   if (!sameWorld) boards.clear();
 }
 
@@ -764,7 +776,8 @@ async function playReveals() {
     const catalog = cardCatalog(), l = lang();
     // Under the card: where it came from, plainly (降服狼所得), then the source's own words (card-reveal.js whenceLine).
     const creatureOf = (id) => authored?.creatures?.find((k) => k.id === id) ?? null;
-    const sourced = (c) => { const f = c.from?.[0]; return { ...c, line: whenceLine(f, { lang: l, creatureOf }), said: f?.line?.[l] ?? f?.line?.zh ?? '' }; };
+    const pins = cardPins();
+    const sourced = (c) => { const f = c.from?.[0]; return { ...c, pin: pins[c.id] ?? null, line: whenceLine(f, { lang: l, creatureOf }), said: f?.line?.[l] ?? f?.line?.zh ?? '' }; };
     const cards = revealQueue.splice(0).map((x) => (x?.thing ? thingCard(x.thing) : catalog[x] ? sourced(catalog[x]) : null)).filter(Boolean);
     await revealCards(cards, { host: $('view') ?? document.body, target: () => document.querySelector('.gearchip'), lang: l, artBase: artBase(), isWords: authored?.cards?.is_words });
   } finally { revealing = false; }
@@ -1903,7 +1916,7 @@ function putOff(key) {
 
 function spoilsCtx() {
   return {
-    catalog: cardCatalog(), artBase: artBase(), lang: lang(), words: BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh,
+    catalog: cardCatalog(), pins: cardPins(), artBase: artBase(), lang: lang(), words: BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh,
     gearRow: (i) => spoilGearHtml(i, { ...ctx(), her: view.spoils?.gear?.her ?? null }),
   };
 }
@@ -2227,7 +2240,7 @@ const lossLine = (b) => (b?.lossOut?.id != null && herSay.st.line?.id === b.loss
 function boutCtx() {
   const c = bout.brief.creature;
   return {
-    catalog: cardCatalog(), artBase: artBase(),
+    catalog: cardCatalog(), pins: cardPins(), artBase: artBase(),
     lang: lang(), words: boutWords(BATTLE_WORDS[lang()] ?? BATTLE_WORDS.zh, c, lang()),
     board: bout.st.mode.board,
     title: duelTitle(c, words(), lang()),
@@ -3780,12 +3793,13 @@ const SALE_WORD = { zh: '灵石', en: 'spirit stones' };
 async function openGear(pane = null) {
   const pot = pane === 'fantong';
   if (pot) pane = null;
-  if (view.gearOpen) { show({ pouchPane: pane, pouchToss: null, ...(pot ? { ftFold: false } : {}) }); if (!pane) await loadFantong(); if (pane === 'seals') await loadSealBook(); if (pot) potInView(); return; }
+  if (view.gearOpen) { show({ pouchPane: pane, pouchToss: null, ...(pot ? { ftFold: false } : {}) }); if (!pane) await loadFantong(); if (pane === 'seals') await loadSealBook(); if (pane === 'kace') await loadKace(); if (pot) potInView(); return; }
   show({ gearOpen: true, luOpen: false, ...othersShut('gearOpen'), gear: null, pouchToss: null, pouchPane: pane, ...(pot ? { ftFold: false } : {}) });
   const r = await verb('gear').catch((e) => { console.warn('[lingjing] gear', e); return null; });
   if (view.gearOpen) show({ gear: r?.gear ?? null, gearNote: null });
   if (view.gearOpen && !view.pouchPane) await loadFantong();
   if (view.gearOpen && pane === 'seals') await loadSealBook();
+  if (view.gearOpen && pane === 'kace') await loadKace();
   if (pot) potInView();
 }
 const potInView = () => requestAnimationFrame(() => document.querySelector('#pouchbook [data-ft-dock]')?.scrollIntoView?.({ block: 'nearest', behavior: stillMotion() ? 'auto' : 'smooth' }));
@@ -3794,6 +3808,12 @@ const potInView = () => requestAnimationFrame(() => document.querySelector('#pou
 async function loadSealBook() {
   const r = await verb('seals', { action: 'book' }).catch(() => null);
   if (r?.ok) show({ sealBook: r });
+}
+
+/* The 卡册 (kace.js): the rules' read of every card to collect, when its view opens — never on Look. */
+async function loadKace() {
+  const r = await verb('deck', { action: 'book' }).catch(() => null);
+  if (r?.ok) show({ kace: r.kace });
 }
 
 /* After a write, the open panel reads the rules' gear again: openGear on an open panel only switches its pane, so
@@ -3842,8 +3862,8 @@ function drawPouch() {
   const fantongDock = docked ? kailuDockHtml(lang(), { brief: view.fantong, off: view.fantongOff, bag: view.gear?.bag ?? [], pot: view.ftPot, fuel: view.ftFuel,
     phase: view.ftPhase, fold: view.ftFold, outs: view.ftOuts, look, words: words(), artBase: artBase() }) : null;
   const ftOff = view.fantong && !view.pouchPane ? (id) => potOff(view.fantong, view.ftPot, id, lang(), view.ftPhase ?? 'fill') : null;
-  const html = pouchHtml({ ...ctx(), gear: view.gear, gearNote: view.gearNote, artBase: artBase(), catalog: cardCatalog(), fantongDock, pangluLast: view.pangluLast, sealBook: view.sealBook },
-    { tab: view.pouchTab, sel: view.pouchSel, toss: view.pouchToss, pane: view.pouchPane, offerSwap: view.offerSwap, ftOff, ftRun: Boolean(view.fantong) && potRuns(view.ftPhase) });
+  const html = pouchHtml({ ...ctx(), gear: view.gear, gearNote: view.gearNote, artBase: artBase(), catalog: cardCatalog(), pins: cardPins(), fantongDock, pangluLast: view.pangluLast, sealBook: view.sealBook, kace: view.kace },
+    { tab: view.pouchTab, sel: view.pouchSel, toss: view.pouchToss, pane: view.pouchPane, kaceLeaf: view.kaceLeaf, offerSwap: view.offerSwap, ftOff, ftRun: Boolean(view.fantong) && potRuns(view.ftPhase) });
   if (html !== drawnPouch) { el.innerHTML = html; drawnPouch = html; }
   if (docked && view.fantong) ftKailu.show(view.fantong, { lang: lang(), reducedMotion: stillMotion() });
   else ftKailu.stop();
@@ -4410,7 +4430,10 @@ const CLICKS = [
     show({ pouchPane: el.dataset.pouchPane || null, pouchToss: null, gearNote: null });
     if (!el.dataset.pouchPane) run('fantong:look', loadFantong);
     if (el.dataset.pouchPane === 'seals') run('seals:book', loadSealBook);
+    if (el.dataset.pouchPane === 'kace') run('deck:book', loadKace);
   }],
+  // The 卡册's leaves (kace.js): one 品, all, or the companions' — the page's own view, nothing asked.
+  ['[data-kace-leaf]', (el) => show({ kaceLeaf: el.dataset.kaceLeaf })],
   ['[data-panglu-fire]', (el) => { if (!el.matches(':disabled')) run(`panglu:fire:${el.dataset.pangluFire}`, () => firePanglu(el.dataset.pangluFire)); }],
   ['[data-pouch-item]', (el) => show({ pouchSel: el.dataset.pouchItem, pouchToss: null, pouchPane: null })],
   ['[data-sell]', (el) => {
@@ -4972,7 +4995,7 @@ function mountBout(b) {
   forgetShell(fightShell(b));
   const reducedMotion = Boolean(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
   b.stop = new AbortController();
-  b.done = Promise.resolve(kapai.mount(node, { data: { setup: b.setup, brief: b.brief, st: b.st, catalog: cardCatalog(), resumed: b.resumed }, lang: lang(), reducedMotion, signal: b.stop.signal, shell: shellFor(fightShell(b), 'kapai'), story: boutHooks(b) }))
+  b.done = Promise.resolve(kapai.mount(node, { data: { setup: b.setup, brief: b.brief, st: b.st, catalog: cardCatalog(), pins: cardPins(), resumed: b.resumed }, lang: lang(), reducedMotion, signal: b.stop.signal, shell: shellFor(fightShell(b), 'kapai'), story: boutHooks(b) }))
     .then((out) => (b.kept ? keptBout(b) : settleBout(b, out)))
     .catch((e) => { console.warn('[lingjing] the fight room', e); return settleBout(b, { r: failed(e) }); });
 }

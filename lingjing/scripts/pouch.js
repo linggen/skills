@@ -7,6 +7,7 @@
 // Every tap is the page's own verb (trade, bag, deck); nothing asks Ling.
 import { esc } from './esc.js';
 import { closeX } from './card-close.js';
+import { kaceHtml, kaceSwitchHtml } from './kace.js';
 import { deckHtml, gearFightHtml, herCardHtml, itemDoes, liftSaid, tamesLine } from './cards.js';
 import { PANGLU_WORDS, pangluHtml } from './panglu.js';
 import { sealsHtml } from './seals-page.js';
@@ -199,7 +200,7 @@ function detailHtml(i, g, ctx, pw, ui) {
 }
 
 /// The panel. `ui` is the page's own view of it: `tab`, `sel` (the item
-/// tapped), `toss` (the item asking 丢?), `pane` ('deck' | 'seals' | 'panglu' | null), `ftOff(id)` (may it go into the docked
+/// tapped), `toss` (the item asking 丢?), `pane` ('deck' | 'kace' | 'seals' | 'panglu' | null), `kaceLeaf` (the 卡册's leaf shown), `ftOff(id)` (may it go into the docked
 /// 饭桶: null yes, else why), `ftRun` (the pot chews or reveals).
 /// Its head is one row of segments — 储物袋 (the grid, the 饭桶 docked in it) · 旁炉 · 牌组 — and one 合上 at
 /// the right; a segment is the way between them, so no pane carries a 「回储物袋」 of its own
@@ -210,22 +211,24 @@ export function pouchHtml(ctx, ui = {}) {
   if (!g) return `<div class="lu pouch"><header class="luhead"><b>${esc(pw.title)}</b>${close}</header><div class="loading">…</div></div>`;
   const p = g.pouch ?? { used: g.bag.length, cap: null };
   // 人间功课 is the 事 book's (cards.js choreRow; Hanli 11-02: 「人间功课也在物品UI里显示, 应该在任务里吧. 任务里已经有了」).
-  const pane = ui.pane === 'deck' && g.cards?.length ? 'deck' : ui.pane === 'panglu' && g.panglu ? 'panglu' : ui.pane === 'seals' && g.seals ? 'seals' : null;
+  // 卡册 (kace.js) is the 牌组's second view: the same segment lit, a switch inside it.
+  const pane = (ui.pane === 'deck' || ui.pane === 'kace') && g.cards?.length ? ui.pane : ui.pane === 'panglu' && g.panglu ? 'panglu' : ui.pane === 'seals' && g.seals ? 'seals' : null;
   // 储物袋满了 stands in the panel too, over every pane: the 饭桶's outputs land while he is in here.
   const note = (ctx.gearNote ? `<div class="donote">${esc(ctx.gearNote)}</div>` : '') + fullOfferHtml(ctx.look?.full_offer, ctx, { swap: ui.offerSwap, tab: ui.tab });
   const used = p.cap != null ? `<span class="pused${p.used > p.cap ? ' over' : p.used >= p.cap ? ' full' : ''}">${esc(say(pw.used, p))}</span>` : '';
-  const seg = (id, label, extra = '') => `<button role="tab" class="pseg${pane === id ? ' on' : ''}" data-pouch-pane="${id ?? ''}" aria-selected="${pane === id}">${esc(label)}${extra}</button>`;
+  const seg = (id, label, extra = '', lit = pane === id) => `<button role="tab" class="pseg${lit ? ' on' : ''}" data-pouch-pane="${id ?? ''}" aria-selected="${lit}">${esc(label)}${extra}</button>`;
   const segs = [seg(null, pw.title, used),
     // 旁炉 (panglu.js): at the 丹房's side furnace once it is his (rules/panglu.mjs) — Look's `panglu`, the last batch the page's.
     g.panglu ? seg('panglu', (PANGLU_WORDS[ctx.lang] ?? PANGLU_WORDS.zh).chip) : '',
     // 牌组 — the last tab (Hanli, 2026-10-27: 「牌组合进储物袋吧, 放到功课后面」), 新 n on cards not yet played.
     // 印谱 (seals-page.js; rules/seals.mjs): the seals the master has passed on, once he has one.
     g.seals ? seg('seals', pw.seals) : '',
-    g.cards?.length ? seg('deck', pw.deck, ctx.look?.cards_new?.length ? ` <b class="pnew">${esc(say(pw.deckNew, { n: ctx.look.cards_new.length }))}</b>` : '') : ''].join('');
+    g.cards?.length ? seg('deck', pw.deck, ctx.look?.cards_new?.length ? ` <b class="pnew">${esc(say(pw.deckNew, { n: ctx.look.cards_new.length }))}</b>` : '', pane === 'deck' || pane === 'kace') : ''].join('');
   const head = `<header class="luhead phead"><div class="psegs" role="tablist">${segs}</div>${close}</header>`;
   const shell = (body) => `<div class="lu pouch" role="dialog" aria-label="${esc(pw.title)}">${head}${note}${body}</div>`;
   if (pane === 'panglu') return shell(pangluHtml(ctx.look?.panglu ?? null, ctx.pangluLast ?? null, ctx.lang, ctx.artBase ?? ''));
-  if (pane === 'deck') return shell(`<section class="psec">${deckHtml(g, ctx)}</section>`);
+  if (pane === 'deck') return shell(`<section class="psec">${kaceSwitchHtml('deck', ctx.lang)}${deckHtml(g, ctx)}</section>`);
+  if (pane === 'kace') return shell(`<section class="psec kace">${kaceHtml(ctx.kace ?? null, ctx, ui.kaceLeaf)}</section>`);
   if (pane === 'seals') return shell(sealsHtml(ctx.sealBook ?? null));
   const over = p.cap != null && p.used > p.cap ? `<p class="small pover">${esc(say(pw.over, { n: p.used - p.cap }))}</p>` : '';
   // 丹毒 (rules/dandu.mjs): the turns owed and what they take off the 体力 pool, in the rules' words — a fact on the page.

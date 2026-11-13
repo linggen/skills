@@ -635,7 +635,8 @@ export function kaceBrief(content, state) {
     .map(({ c, r }) => ({ ...row(c), pin: r.pin, where: whereOf(content, c, lang) }));
   const counts = PINS.map(pin => ({ pin, name: pick(PIN_WORDS[pin], lang), held: cards.filter(c => c.pin === pin && c.held).length, of: cards.filter(c => c.pin === pin).length }));
   const members = Object.entries(content.party?.members ?? {});
-  const companions = members.map(([id, m]) => ({ id, name: pick(m.name, lang) ?? id, cards: all.filter(c => c.owner === id && companionCard(content, c)).map(row) }))
+  // Theirs, never his to collect: each card's face as they play it, held or not.
+  const companions = members.map(([id, m]) => ({ id, name: pick(m.name, lang) ?? id, cards: all.filter(c => c.owner === id && companionCard(content, c)).map(c => ({ id: c.id, name: pick(c.name, lang), ...faceOf(content, c, lang) })) }))
     .filter(m => m.cards.length);
   return { cards, counts, held: cards.filter(c => c.held).length, of: cards.length, companions };
 }
