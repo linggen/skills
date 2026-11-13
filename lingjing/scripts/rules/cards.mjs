@@ -366,7 +366,9 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   const gear = gearFight(content, state), lifts = withHer ? herLifts(content, state) : null;
   // Before the root test (the 三试 comes first) he fights with what no root claims:
   // the rootless things he holds (deckFor reads no roots, so a 功法 stays out).
-  const deck = fixedSheet(content) ? deckFor(content, state) : fightDeck(content, state, { ten: evenDuel(content, state, creature) });
+  const fullDeck = fixedSheet(content) ? deckFor(content, state) : fightDeck(content, state, { ten: evenDuel(content, state, creature) });
+  // Preserve the picker's order: the last-picked surplus (typically dearer) goes first.
+  const deck = fixedSheet(content) ? fullDeck.slice(0, Math.min(fullDeck.length, new Set(creature.deck ?? []).size * deckRule(content).copies, deckRule(content).size)) : fullDeck;
   const strike = fixedSheet(content) ? strikeOf(content, state) : null;
   // 新: a card gained and not yet played (cards_new), marked in the hand until it is.
   const fresh = (state.cards_new ?? []).filter(id => deck.includes(id));

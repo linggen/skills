@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { content, stateAt } from '../tools/story-fights.mjs';
 import { FIT, withRules } from '../tools/duel-lines.mjs';
-import { deck, deckBrief, deckFor, deckRule, fairBeastDeck } from '../scripts/rules/cards.mjs';
+import { deck, deckBrief, deckFor, deckRule, fairBeastDeck, fightSetup, fightDeck } from '../scripts/rules/cards.mjs';
 
 test('fair decks respect usable kinds, copies, and matched beast size', () => {
   assert.deepEqual(deckRule(content), { size: 10, copies: 2 });
@@ -20,6 +20,22 @@ test('fair decks respect usable kinds, copies, and matched beast size', () => {
     }
     assert.deepEqual(fairBeastDeck(content, { deck: pool.slice(0, 2) }, 15).length, 4);
   }, FIT);
+});
+
+test('fight matches both decks to the shorter capacity only with fair rules', () => {
+  const base = stateAt('h11');
+  const pool = content.cards.cards.filter(c => !c._token && !c.owner && !c.gear && !c.lent && (c.kind !== 'spell' || !c.element || (base.traits ?? []).includes(c.element))).map(c => c.id);
+  const beast = n => ({ id: 'test', root: 'wood', hp: 1, deck: pool.slice(0, n) });
+  withRules(true, () => {
+    for (const [held, theirs, size] of [[12, 6, 12], [12, 9, 15], [5, 9, 10]]) {
+      const state = { ...base, cards: pool.slice(0, held) };
+      const fight = fightSetup(content, state, beast(theirs), new Date());
+      assert.equal(fight.you.deck.length, size); assert.equal(fight.foe.deck.length, size);
+      assert.deepEqual(fight.you.deck, deckFor(content, state).slice(0, size));
+    }
+  }, FIT);
+  const off = fightSetup(content, base, beast(6), new Date());
+  assert.deepEqual(off.you.deck, fightDeck(content, base, { ten: !!off.even }));
 });
 
 test('deck edits enforce copies and capacity and auto restores a legal deck', () => withRules(true, () => {
