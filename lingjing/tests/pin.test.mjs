@@ -155,3 +155,12 @@ test('v2 frames use snapped SVG patterns, phone colours and motion-safe small ma
     assert.match(sheet, /5\.6s/);
   }
 });
+
+test("a framed card on the board pads by its own width, never by a percent of the rank", async () => {
+  const fs = await import('node:fs');
+  const css = fs.readFileSync(new URL('../scripts/battle.css', import.meta.url), 'utf8');
+  const rule = css.match(/^\.bminion:is\(\.pin-yin[^{]*\{([^}]*)\}/m);
+  assert.ok(rule, 'the framed board card has its padding rule');
+  assert.ok(!/%/.test(rule[1]), `no percent in "${rule[1].trim()}": it resolves against the rank's width`);
+  assert.match(rule[1], /var\(--mw\)/);
+});

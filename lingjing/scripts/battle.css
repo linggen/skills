@@ -378,7 +378,8 @@
 :is(.bleaf, .bminion):is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > :is(.batk, .bhp) { z-index: 4; }
 .bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) { padding: max(4.5px, calc(6% + 1.5px)); padding-bottom: max(14px, calc(6% + 1.5px)); }
 .bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) .bcost { top: max(5px, 9%); left: max(5px, 9%); }
-.bminion:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) { padding: max(4.5px, calc(6% + 1.5px)); }
+/* A percent here would be of the RANK's width (the card's containing block), not the card's: 6% of a 1300px row squeezed the face to a sliver. */
+.bminion:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) { padding: max(4.5px, calc(var(--mw) * .06 + 1.5px)); }
 .bcard.dim .bleaf:has(> .bpin), .deckfaces .bcard.face.out .bleaf:has(> .bpin) { filter: none; opacity: 1; }
 .bcard.dim .bleaf:has(> .bpin) > :not(.bpin), .deckfaces .bcard.face.out .bleaf:has(> .bpin) > :not(.bpin) { filter: grayscale(.8); opacity: .62; }
 .bminion.dim:has(> .bpin) { opacity: 1; }
