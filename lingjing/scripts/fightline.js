@@ -44,7 +44,7 @@ const pillNow = (st, os) => os.find(o => o.ok && o.action.kind === 'pill' && !o.
   || (o.pill.mana && st.you.hand.some(id => { const c = st.catalog?.[id]; return c && c.cost > st.you.mana && c.cost <= st.you.mana + o.pill.mana; }))));
 export const plain = st => { const os = offers(st); return pillNow(st, os) ?? os.find(o => o.ok && o.action.kind === 'play') ?? os.find(o => o.ok && o.action.kind === 'attack') ?? os.find(o => o.ok && o.action.kind === 'power') ?? os.find(o => o.ok && o.action.kind === 'skill'); };
 const copyOf = simCopy; // battle.js: the fight copied to think on (its log left behind)
-function playOut(st, line) {
+export function playOut(st, line) {
   for (let g = 0; g < 300 && st.outcome === 'open'; g += 1) {
     if (st.whose === 'foe') { foeTurn(st); continue; }
     const o = line(st);
@@ -54,7 +54,7 @@ function playOut(st, line) {
 }
 /* The careful line, in small: every legal move weighed by what it leaves on the board. */
 const bodyOf = side => side.board.reduce((n, m) => n + m.atk + m.hp * 0.6 + (m.taunt ? 2 : 0), 0);
-function careful(st) {
+export function careful(st) {
   let best = null, top = 0.5;
   for (const o of offers(st).filter(x => x.ok && x.action.kind !== 'end')) {
     const copy = copyOf(st);
