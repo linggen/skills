@@ -3,7 +3,7 @@
 //
 //   node tools/playtest.mjs [--save=pt-a] [--from=fresh|<scratch save>|<fixture>] [--route=exit,exit,…]
 //                           [--until=<scene id>] [--steps=400] [--games=skip|win|hands] [--hands=casual,<task>:idle|skip]
-//                           [--fight=win|lose] [--side=on] [--phone] [--width=1280] [--headed] [--base=http://localhost:9527] [--out=<dir>]
+//                           [--fight=win|lose] [--dump-duel] [--duel-limit=1] [--side=on] [--phone] [--width=1280] [--headed] [--base=http://localhost:9527] [--out=<dir>]
 //
 // `--side=on`: side play (兽潮, a haunt's or a pool's fight) in its old place; by default the story walk goes first
 // and side play is only the last resort, when nothing else is on.
@@ -268,6 +268,12 @@ export async function crawl(opts) {
   const steps = Number(opts.steps ?? 400);
   const width = opts.phone ? 390 : Number(opts.width ?? 1280), height = opts.phone ? 844 : 820;
   const { page, close } = await launch({ width, height, headless: !opts.headed, touch: Boolean(opts.phone) });
+  const dump = opts['dump-duel'] ? (row) => fs.appendFileSync(path.join(out, 'duel.jsonl'), JSON.stringify(row) + '\n') : null;
+  let workerSeen = false;
+  if (dump) {
+    page.on('Target.targetCreated', ({ targetInfo: t }) => { if (t.type === 'worker' && t.url.includes('duelcoach-worker.js')) { workerSeen = true; dump({ type: 'worker', url: t.url }); } });
+    await page.send('Target.setDiscoverTargets', { discover: true });
+  }
   const hands = opts.games === 'hands' ? { policy: handsPolicy(opts.hands), hand: handsFor(page, page, page.touch), seed: `${save}-${width}` } : null;
   const shot = (name) => page.screenshot(path.join(out, 'shots', `${save}-${String(name).replace(/[^\w.-]+/g, '_')}.png`)).catch(() => null);
   const ctx = {
@@ -395,7 +401,7 @@ export async function crawl(opts) {
         rec.find({ kind: 'fight', scene: sceneId, what: 'a fourth fight here on one run — the fight never ends the scene', shot: await shot(`fights-${sceneId}`) });
         break;
       }
-      if (act.kind === 'fight') { await playFight(page, snap, { rec, sceneId, shot, outcome: ctx.fightMode(sceneId), reload: opts.reloads && ctx.fights[sceneId] === 1 ? async () => { await page.goto(`${base}/apps/lingjing/scripts/index.html?save=${save}&chat=off`); await sleep(5000); } : null }); continue; }
+      if (act.kind === 'fight') { await playFight(page, snap, { rec, sceneId, shot, dump, outcome: ctx.fightMode(sceneId), reload: opts.reloads && ctx.fights[sceneId] === 1 ? async () => { await page.goto(`${base}/apps/lingjing/scripts/index.html?save=${save}&chat=off`); await sleep(5000); } : null }); if (opts['duel-limit'] && Object.values(ctx.fights).reduce((a, b) => a + b, 0) >= Number(opts['duel-limit'])) break; continue; }
       if (act.kind === 'game-stuck') {
         // No stuck gate since 11-03 (the ✕ stands from the first moment): the seam puts the board away as the ✕ does.
         const ok = await page.evaluate(`globalThis.__lingjingPlay?.skip?.(${JSON.stringify(act.game)}) ?? 'no-seam'`);
@@ -466,6 +472,7 @@ export async function crawl(opts) {
     report.steps = n;
     report.forks = forks;
     report.final = { scene: lk?.scene?.id ?? null, place: lk?.place?.id ?? null, chapter: lk?.chapter?.id ?? null };
+    if (dump) { dump({ type: 'worker-status', created: workerSeen }); for (const e of page.errors) dump({ type: 'error', ...e }); }
     rec.save();
     await close();
   }
@@ -515,7 +522,8 @@ async function fightTurn(page, outcome) {
   if ((await bout())?.outcome === 'open') { await tapSpot('end'); await sleep(800); }
   return waitIdle();
 }
-async function playFight(page, snap, { rec, sceneId, shot, outcome, reload = null }) {
+async function playFight(page, snap, { rec, sceneId, shot, outcome, reload = null, dump = null }) {
+  if (dump) dump({ type: 'start', scene: sceneId, ...(await page.evaluate(`(() => ({ hand: [...document.querySelectorAll('[data-spot="hand"]')].map(e => ({ name: e.querySelector('.bname')?.innerText.trim() ?? '', lent: e.classList.contains('lent'), mark: Boolean(e.querySelector('.blent-mark')) })), lend: document.querySelector('.blend-line')?.innerText ?? null, workerResource: performance.getEntriesByType('resource').some(e => e.name.includes('duelcoach-worker.js')) }))()`)) });
   console.log(`    ⚔ a fight at ${sceneId}, to ${outcome}`);
   rec.seen('fights', `${sceneId}:${outcome}`);
   let b = null;
@@ -534,6 +542,16 @@ async function playFight(page, snap, { rec, sceneId, shot, outcome, reload = nul
   }
   if (b?.outcome === 'open') { rec.find({ kind: 'fight', scene: sceneId, what: `the fight is still open after 40 turns (${JSON.stringify(b)})`, shot: await shot(`fight-open-${sceneId}`) }); return; }
   console.log(`      → ${b?.outcome ?? 'gone'}`);
+  // Allow asynchronous settlement and her line to appear before closing the card.
+  if (dump) {
+    let end = null;
+    for (let i = 0; i < 16; i++) {
+      end = await page.evaluate(`(() => ({ text: document.querySelector('.bover')?.innerText ?? null, bubble: document.querySelector('.bover .bsay.her')?.innerText ?? document.querySelector('.slotfoot > .yysay')?.innerText ?? null }))()`);
+      if (end.text && end.bubble) break;
+      await sleep(500);
+    }
+    dump({ type: 'end', scene: sceneId, outcome: b?.outcome ?? null, ...end });
+  }
   // The closing card: its 收起 puts the seal away; then the page takes the way on (or the beast withdraws).
   for (let i = 0; i < 20; i++) {
     const close = (await page.evaluate(SPOTS)).find((x) => x.kind === 'close');
