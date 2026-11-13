@@ -112,7 +112,7 @@ const isA = (t, key) => Object.prototype.hasOwnProperty.call(t.data, key);
 const sideOf = (ctx) => (id) => !ctx.sideOn && !ctx.gated && id != null && (String(id).startsWith('haunt:') || Boolean(ctx.tide?.has(id)));
 const tapId = (t) => t.data['panel-duel'] ?? t.data['duel-start'] ?? t.data.play ?? t.data['panel-exit'];
 export function choose(snap, ctx) {
-  const side = sideOf(ctx), story = (t) => !side(tapId(t));
+  const side = sideOf(ctx), story = (t) => !side(tapId(t)) && tapId(t) !== ctx.unfightable;
   const live = snap.taps.filter((t) => !t.disabled);
   const first = (pred) => live.find(pred) ?? null;
   // A seal on the stage (新的一回, a realm risen, 收服): it clears itself; a tap clears it sooner.
@@ -192,7 +192,7 @@ export function choose(snap, ctx) {
   const book = first((t) => isA(t, 'book') && /\bready\b/.test(t.cls) && !snap.popSig && !ctx.bookTried?.has(snap.sceneId));
   if (book) { (ctx.bookTried ??= new Set()).add(snap.sceneId); return { kind: 'book', tap: book, why: '事 · 可交' }; }
   // Last resort, so a walk never stalls on a side thing: the side way, fight or board.
-  const sidePlay = allExits.find((t) => !exits.includes(t)) ?? sideDuel ?? first((t) => isA(t, 'play') && t.where === 'focus');
+  const sidePlay = allExits.find((t) => !exits.includes(t) && tapId(t) !== ctx.unfightable) ?? (tapId(sideDuel ?? { data: {} }) !== ctx.unfightable ? sideDuel : null) ?? first((t) => isA(t, 'play') && t.where === 'focus');
   if (sidePlay) return { kind: isA(sidePlay, 'duel-start') ? 'duel-start' : isA(sidePlay, 'play') ? 'play' : 'way', tap: sidePlay, side: true, why: `side play «${sidePlay.text}» (nothing else on)` };
   return null;
 }
@@ -341,7 +341,13 @@ export async function crawl(opts) {
         await sleep(4000);
       }
       const snap = { ...(await page.evaluate(OBSERVE)), sceneId };
+      // A catch-only beast runs when struck; its story catches it rather than starting a duel.
+      ctx.unfightable = lk?.place?.encounter?.catch ? lk.place.encounter.game?.id : null;
       ctx.tide = new Set((lk?.tasks ?? []).filter((t) => t.tide).map((t) => t.id));
+      // The daily fortune opens as a real modal; dismiss it before choosing the stage beneath it.
+      if (await page.evaluate("Boolean(document.querySelector('.qianmodal [data-qian-close]'))")) {
+        await page.click('.qianmodal [data-qian-close]'); await sleep(500); continue;
+      }
       ctx.target = lk?.waypoint?.toward?.id ?? lk?.waypoint?.place?.id ?? (lk?.scene?.at && lk.scene.at !== lk?.place?.id ? lk.scene.at : null);
       // The stage quest holds this scene's way on: the game itself says to grow 修为 first (功课、秘境、斗法), so side
       // play is on, its work's place is the walk, and the held ways are never tapped. Said once per scene.
@@ -472,7 +478,7 @@ export async function crawl(opts) {
     report.steps = n;
     report.forks = forks;
     report.final = { scene: lk?.scene?.id ?? null, place: lk?.place?.id ?? null, chapter: lk?.chapter?.id ?? null };
-    if (dump) { dump({ type: 'worker-status', created: workerSeen }); for (const e of page.errors) dump({ type: 'error', ...e }); }
+    if (dump) { const resource = await page.evaluate("performance.getEntriesByType('resource').some(e => e.name.includes('duelcoach-worker.js'))").catch(() => false); dump({ type: 'worker-status', created: workerSeen || resource, target: workerSeen, resource }); for (const e of page.errors) dump({ type: 'error', ...e }); }
     rec.save();
     await close();
   }
