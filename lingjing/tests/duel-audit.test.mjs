@@ -157,3 +157,31 @@ test('a beast seat named by `ai` plays that line; with none named the foe policy
   for (const st of [careful, look]) assert.notEqual(st.outcome, 'open');
   assert.equal(simCopy(begin({ ...sheetSetup(ten, ten, 'ai|2'), foe: { ...sheetSetup(ten, ten, 'ai|2').foe, ai: 'careful' } }, catalog)).foe.ai, null); // a thinking copy holds the base policy
 });
+
+test('the fit, third try: the beast\'s line follows its level, the class shifts a rung, and it stays on the three lines', async () => {
+  const { lineByLevel, LINE_LADDER } = await import('../scripts/rules/cards.mjs');
+  const ai = { by_level: [3, 7], class_step: { weak: -1, normal: 0, strong: 1 } };
+  const at = (level, rank) => lineByLevel(ai, level, rank);
+  assert.deepEqual([1, 3, 7].map(l => at(l, 'normal')), ['foe', 'careful', 'lookahead']); // the thresholds are inclusive
+  assert.deepEqual([1, 3, 7].map(l => at(l, 'weak')), ['foe', 'foe', 'careful']); // weak: a rung down, clamped at the foe policy
+  assert.deepEqual([1, 3, 7].map(l => at(l, 'strong')), ['careful', 'lookahead', 'lookahead']); // strong: a rung up, clamped at lookahead
+  assert.equal(lineByLevel({ weak: 'careful' }, 5, 'weak'), 'careful'); // the by-class shape still reads
+  assert.equal(lineByLevel(undefined, 5, 'weak'), null);
+  assert.deepEqual(LINE_LADDER, ['foe', 'careful', 'lookahead']);
+});
+
+test('a proposal weighed in memory: withCards changes card fields for one run and puts them back', async () => {
+  const { withCards } = await import('../tools/duel-lines.mjs');
+  const before = [content.cards.cards.find(c => c.id === 'huochai').atk, content.cards.cards.find(c => c.id === 'huochai').hp];
+  withCards({ huochai: { atk: 4, hp: 3 } }, () => assert.deepEqual([card('huochai').atk, card('huochai').hp], [4, 3]));
+  assert.deepEqual([card('huochai').atk, card('huochai').hp], before);
+  assert.throws(() => withCards({ nope: { atk: 1 } }, () => 0), /no card/);
+});
+
+test('the third fit through the real door: the beast\'s seat is named by its level and class, only where the even switch stands', async () => {
+  const { withRules, FIT } = await import('../tools/duel-lines.mjs');
+  const line = key => setupOf(FIGHTS.find(x => keyOf(x) === key), { party: [] }).foe.ai ?? 'foe';
+  const keys = ['yezhu@mengshan', 'lang@mengshan', 'gui@sishui']; // weak at level 1 · normal at 2 · strong at 10 (+1)
+  assert.deepEqual(keys.map(k => withRules(false, () => line(k), FIT)), ['foe', 'foe', 'foe']); // switch off: nothing is read
+  assert.deepEqual(keys.map(k => withRules(true, () => line(k), FIT)), ['careful', 'lookahead', 'lookahead']);
+});
