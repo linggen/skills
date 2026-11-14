@@ -295,6 +295,8 @@
    over it; the fan keeps a margin for its tilt, and the last leaf lies from its slot's right edge (leaves are wider than
    their slots once the hand overlaps). The phone's room has its own (below). */
 .bdock { display: flex; align-items: flex-end; gap: 10px; }
+/* The rotated outer cards extend below their slots; keep their boxes above the footer. */
+@media (min-width: 701px) { .bdock { padding-bottom: 52px; } }
 .bdock > .dn-tray { position: static; flex: none; align-self: flex-end; margin-bottom: 6px; }
 .bacts > .bpouch { display: none; }
 .bdock > .bhand { flex: 1 1 0; min-width: 0; padding: 0 calc(var(--cw) * .3); }
