@@ -102,8 +102,14 @@ const CSS = `
 .g-fighter .gf-pad > * { pointer-events: auto; opacity: .62; }
 .g-fighter .gf-pad > :is(:hover, :has(.is-down)) { opacity: .85; }
 .g-fighter.pad-off .gf-pad { display: none; }
-.g-fighter .gf-padtoggle { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 3; width: auto; height: auto; border-radius: 6px; padding: 2px 9px;
-  font: 600 12px "Songti SC","STSong","Noto Serif SC",serif; border: 1px solid rgba(42,36,28,.45); background: rgba(243,234,214,.72); color: #2a241c; opacity: .7; }
+/* 「收起按键」 in its own row under the field, never on it (11-14: over the field's bottom middle it lay across the line under
+   the bout, 「他一步迈上来，台上便少一块地方——」, and the cut-in band; the pad holds the lower corners, the boards the top,
+   the fighters the rest). The row stays when the keys are hidden, so the field never jumps; the pad lies over the field's
+   lower corners, lifted by that row. */
+.g-fighter:not(.is-touch) { --gf-row: 30px; }
+.g-fighter:not(.is-touch) .gf-pad { bottom: var(--gf-row); }
+.g-fighter:not(.is-touch) button.gf-padtoggle { position: static; align-self: center; flex: none; width: auto; height: 22px; box-sizing: border-box; border-radius: 6px; padding: 0 9px;
+  font: 600 12px/20px "Songti SC","STSong","Noto Serif SC",serif; white-space: nowrap; border: 1px solid rgba(42,36,28,.45); background: rgba(243,234,214,.72); color: #2a241c; opacity: .7; }
 .g-fighter .gf-padtoggle:hover, .g-fighter .gf-padtoggle:focus-visible { opacity: 1; }
 .g-fighter:not(.is-touch) .gf-field { aspect-ratio: auto; height: clamp(calc(100cqi / 2.4), var(--gf-hm, 56.25cqi), 56.25cqi); }
 /* A narrow or upright page (11-05, the 游戏厅 at 430 × 932: the field a 190 px strip, the keys over most of it): the field
@@ -119,7 +125,6 @@ const CSS = `
   .g-fighter:not(.is-touch) .gf-dirs, .g-fighter:not(.is-touch) .gf-spells { gap: 3px; }
   .g-fighter:not(.is-touch) .gf-acts { gap: 5px; }
   .g-fighter:not(.is-touch) button small { font-size: 8px; padding: 0 3px; }
-  .g-fighter:not(.is-touch) .gf-padtoggle { white-space: nowrap; font-size: 11px; padding: 1px 7px; bottom: 4px; }
 }
 .g-fighter .gf-pad { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; }
 .g-fighter .gf-dirs { display: grid; grid-template-columns: repeat(3, auto); gap: 6px; }
@@ -186,12 +191,10 @@ html[data-board=fighter] #stage .gf-field { width: min(100%, calc((100vh - 200px
   .g-fighter.is-touch .gf-dial i { transform: rotate(var(--a)) translateY(calc(var(--gfb) * -1)) rotate(calc(-1 * var(--a))); }
   .g-fighter.is-touch .gf-dial b { width: calc(var(--gfb) * 1.08); height: calc(var(--gfb) * 1.08); margin: calc(var(--gfb) * -.54) 0 0 calc(var(--gfb) * -.54); }
 }
-/* Narrow boards: reserve a row for the hands and keep the toggle between field and pad. */
+/* Narrow boards: the hands under the field, the toggle between field and pad (a finger's 44 px). */
 @container (max-width: 430px) {
-  .g-fighter .gf-field { overflow: visible; }
-  .g-fighter canvas { border-radius: inherit; }
-  .g-fighter .gf-pad { position: static; padding-top: 44px; }
-  .g-fighter:not(.is-touch) .gf-padtoggle { top: 100%; bottom: auto; width: auto; height: auto; min-height: 44px; }
+  .g-fighter .gf-pad { position: static; }
+  .g-fighter:not(.is-touch) button.gf-padtoggle { height: 44px; line-height: 42px; }
   .g-fighter.is-touch .gf-pad { padding-top: 0; --gfb: clamp(44px, 12.5cqi, 48px); }
   .g-fighter.is-touch button[data-k] { min-width: 44px; min-height: 44px; }
 }
@@ -299,7 +302,7 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
   const padOn = kind === 'touch' || padShown(win);
   root.classList.toggle('pad-off', !padOn);
   const padWord = (on) => (lang === 'en' ? (on ? 'Hide keys' : 'Show keys') : (on ? '收起按键' : '显示按键'));
-  root.innerHTML = `<div class="gf-field"><canvas></canvas>${kind === 'touch' ? '' : `<button type="button" class="gf-padtoggle" data-pad aria-pressed="${padOn}">${padWord(padOn)}</button>`}</div>${padHtml(level, lang, kind)}<div class="gf-super-hint" hidden></div>`;
+  root.innerHTML = `<div class="gf-field"><canvas></canvas></div>${kind === 'touch' ? '' : `<button type="button" class="gf-padtoggle" data-pad aria-pressed="${padOn}">${padWord(padOn)}</button>`}${padHtml(level, lang, kind)}<div class="gf-super-hint" hidden></div>`;
   container.replaceChildren(root);
   root.querySelector('[data-pad]')?.addEventListener('click', (e) => {
     const on = root.classList.contains('pad-off');
