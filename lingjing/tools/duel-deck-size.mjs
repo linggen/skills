@@ -4,7 +4,7 @@
 // first seat alternates by deal. What changes between rows is the size (or the copies cap) and nothing else: same pool,
 // same curve shape, same deals, same lines. Nothing is written.
 //
-//   node tools/duel-deck-size.mjs [--sizes 10,12,15,20] [--copies 2] [--seeds 200] [--from 0] [--lines plain,careful,lookahead] [--level 10] [--json]
+//   node tools/duel-deck-size.mjs [--sizes 10,12,15,20] [--copies 2] [--kinds K] [--seeds 200] [--from 0] [--lines plain,careful,lookahead] [--level 10] [--json]
 import { pathToFileURL } from 'node:url';
 import { act, begin, MODES, shuffle } from '../scripts/battle.js';
 import { carefulFor, lookaheadFor, plainFor } from '../scripts/fightline.js';
@@ -56,15 +56,17 @@ export function fight(list, line, k, level) {
   return { won: st.outcome === 'won', open: st.outcome === 'open', dry, plies: n };
 }
 
-export function run({ sizes = [10, 12, 15, 20], copies = 2, seeds = 200, from = 0, lines = ['plain', 'careful', 'lookahead'], level = 10 } = {}) {
+export function run({ sizes = [10, 12, 15, 20], copies = 2, kinds = null, seeds = 200, from = 0, lines = ['plain', 'careful', 'lookahead'], level = 10 } = {}) {
   const pool = parPool(), rows = [];
   for (const size of sizes) for (const line of lines) {
     let won = 0, dry = 0, plies = 0, open = 0;
     for (let k = from; k < from + seeds; k++) {
-      const r = fight(dealList(pool, size, copies, k), line, k, level);
+      // `kinds`: the deal holds only that many kinds (his early collection), the size filled by copies.
+      const from = kinds ? dealList(pool, kinds, 1, `k|${k}`) : pool;
+      const r = fight(dealList(from, size, copies, k), line, k, level);
       won += r.won; dry += r.dry; plies += r.plies; open += r.open;
     }
-    rows.push({ size, copies, line, win: +(100 * won / seeds).toFixed(1), dry: +(100 * dry / seeds).toFixed(1), plies: +(plies / seeds).toFixed(1), open, seeds });
+    rows.push({ size, copies, kinds, line, win: +(100 * won / seeds).toFixed(1), dry: +(100 * dry / seeds).toFixed(1), plies: +(plies / seeds).toFixed(1), open, seeds });
     console.error(`size ${size} copies ${copies} ${line}: ${rows.at(-1).win}%`);
   }
   return { pool, level, rows };
@@ -72,6 +74,6 @@ export function run({ sizes = [10, 12, 15, 20], copies = 2, seeds = 200, from = 
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const args = process.argv.slice(2), get = (k, d) => (args.includes(k) ? args[args.indexOf(k) + 1] : d);
-  const out = run({ sizes: get('--sizes', '10,12,15,20').split(',').map(Number), copies: Number(get('--copies', 2)), seeds: Number(get('--seeds', 200)), from: Number(get('--from', 0)), lines: get('--lines', 'plain,careful,lookahead').split(','), level: Number(get('--level', 10)) });
+  const out = run({ sizes: get('--sizes', '10,12,15,20').split(',').map(Number), copies: Number(get('--copies', 2)), kinds: args.includes('--kinds') ? Number(get('--kinds')) : null, seeds: Number(get('--seeds', 200)), from: Number(get('--from', 0)), lines: get('--lines', 'plain,careful,lookahead').split(','), level: Number(get('--level', 10)) });
   console.log(JSON.stringify(out, null, args.includes('--json') ? 1 : 0));
 }
