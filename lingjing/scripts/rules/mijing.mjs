@@ -540,7 +540,11 @@ function gameOf(run, content) {
   if (!room?.foe) return null;
   // A 重 is a place: its beasts meet him at his level held in its band (mijing.json `levels`, batch 3).
   const band = tierRow(content, run.tier)?.levels ?? null;
-  return { id: mijingFightId(room.id), kind: 'duel', creature: room.foe.creature, deal: `${run.seed}|${room.id}`, foe: { hp: room.foe.hp, ...(room.foe.deck ? { deck: room.foe.deck } : {}) }, ...(band ? { levels: band } : {}), mijing: true,
+  // Where the fair rules stand, what the 重's entry puts in his hand for this beast (mijing.json `extra`: the 犰狳's 金刃, its 装睡 lets only
+  // metal in) — read from the tier at the door, never kept on the run.
+  const t = tierRow(content, run.tier), list = room.kind === 'boss' ? [t?.boss] : room.kind === 'xiong' ? t?.xiong : t?.beasts;
+  const extra = fixedSheet(content) ? (list ?? []).find(e => e?.creature === room.foe.creature)?.extra : null;
+  return { id: mijingFightId(room.id), kind: 'duel', creature: room.foe.creature, deal: `${run.seed}|${room.id}`, foe: { hp: room.foe.hp, ...(room.foe.deck ? { deck: room.foe.deck } : {}), ...(extra?.length ? { extra } : {}) }, ...(band ? { levels: band } : {}), mijing: true,
     // Its standing, for the line that plays it (斗法 v4, world.mjs foeOf): only where the fair rules stand.
     ...(fixedSheet(content) ? { standing: room.kind === 'boss' ? 'boss' : room.kind === 'xiong' ? 'xiong' : 'room' } : {}) };
 }

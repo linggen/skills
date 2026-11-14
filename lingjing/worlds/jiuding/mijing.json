@@ -56,6 +56,7 @@
       "beasts": [
         {
           "creature": "qiuyu",
+          "extra": ["jinren", "jinren"], "_extra": "斗法 v4 (fair rules only, rules/mijing.mjs gameOf): its 装睡 lets only metal in, and at this 重 he holds none — two 金刃 in his hand (one measured 0–15%, two 22–40%, 2026-11-14), so the beast is passed by reading it, not by luck.",
           "weight": 3,
           "hp": 0.9,
           "deck": [
@@ -82,6 +83,7 @@
       "xiong": [
         {
           "creature": "qiuyu",
+          "extra": ["jinren", "jinren"], "_extra": "斗法 v4 (fair rules only, rules/mijing.mjs gameOf): its 装睡 lets only metal in, and at this 重 he holds none — two 金刃 in his hand (one measured 0–15%, two 22–40%, 2026-11-14), so the beast is passed by reading it, not by luck.",
           "hp": 1.3,
           "deck": [
             "tengmiao",
@@ -161,6 +163,7 @@
       "beasts": [
         {
           "creature": "qiuyu",
+          "extra": ["jinren", "jinren"], "_extra": "斗法 v4 (fair rules only, rules/mijing.mjs gameOf): its 装睡 lets only metal in, and at this 重 he holds none — two 金刃 in his hand (one measured 0–15%, two 22–40%, 2026-11-14), so the beast is passed by reading it, not by luck.",
           "weight": 2,
           "hp": 1.25,
           "deck": [
@@ -276,6 +279,7 @@
         },
         {
           "creature": "qiuyu",
+          "extra": ["jinren", "jinren"], "_extra": "斗法 v4 (fair rules only, rules/mijing.mjs gameOf): its 装睡 lets only metal in, and at this 重 he holds none — two 金刃 in his hand (one measured 0–15%, two 22–40%, 2026-11-14), so the beast is passed by reading it, not by luck.",
           "weight": 2,
           "hp": 1.25
         },
