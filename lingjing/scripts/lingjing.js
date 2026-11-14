@@ -1428,9 +1428,9 @@ function paintQianModal() {
   if (id) { const el = document.getElementById(id); el?.focus({ preventScroll: true }); if (at && el?.setSelectionRange) try { el.setSelectionRange(...at); } catch { /* a date field has no caret */ } }
 }
 /// The first open of a day not yet drawn: the card pops up once (this browser's, per save and day).
-function qianAutoPop(slots) {
+function qianAutoPop() {
   const day = look?.today?.date;
-  if (!day || !look.qian || look.divination || bout || view.opened || slots?.main?.some((c) => c.card === 'board') || (look.locked ?? []).includes('divine') || view.qianOpen) return;
+  if (!day || !look.qian || look.divination || bout || (look.locked ?? []).includes('divine') || view.qianOpen) return;
   const key = `lingjing:qian-pop:${herKey()}:${day}`;
   try { if (localStorage.getItem(key)) return; localStorage.setItem(key, '1'); } catch { if (view.qianPopped === day) return; }
   keep({ qianPopped: day, qianOpen: true });
@@ -2150,11 +2150,11 @@ function draw() {
   const dv = look.divination;
   if (dv?.poem && (view.castFresh || view.qianMine?.n !== dv.n || view.qianMine?.day !== dv.day || view.qianMineLang !== lang())) { keep({ qianMineLang: lang() }); qianPage.reading(dv, { fresh: view.castFresh }); }
   qianPage.evening(look);
+  qianAutoPop();
   // The slots stay put; only what fills them changes. The header and the
   // footer are redrawn only when they changed (a stream token must not
   // restart a portrait's fade or reset a chip's pop).
   const slots = bout ? null : stageNow();
-  qianAutoPop(slots);
   // A game up, or one of the page's moments (a set piece, a seal, her memory…): it stands alone, the tray put
   // away with the rest (queue.js gameAlone) — and the stage takes the tray's height, so no board is cut off.
   const solo = Boolean(slots?.solo) || momentUp();
