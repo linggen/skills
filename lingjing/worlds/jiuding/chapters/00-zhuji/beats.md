@@ -29,7 +29,7 @@ speak to the player as 你 (story/jiuding-lu/DESIGN.md § 四·五 人称分工)
    No days of chores (his, 2026-09-30).
 3b. **The three years** (`09-dabi`, 药园, 古八 h09 — 2026-10-07 split; 「第七回 · 完」 stands here). The scene's passage is 年六's 丹房 lesson with 闵丹师 (the 九节聚气 recipe; better 饭桶 pills); `dabi` (腊八 · 再上五行台) carries 八层 → 九层 (`rise: 9`), the furnace of his own, the year-five 大比 and the 官丹 (`foundation-pill`); 入秋 (`ruqiu`, needs `y-dabi`; 宁师伯's lecture, then 九层圆满) → 09-qulao.
    **Not yet a scene** (listed for later, 2026-10-06): the 黑松岭 big mission between 入秋 and 八月 — the 蒙山县 tag (seven taken, 马家's dogs stop at the 断碑), 瞿老 「去吧。」「到了村口，别进村。」, the 合窳 in the valley pit, 爹 seen once from the ridge.
-4. **Old Qu** (`09-qulao`, 后山崖顶). 「九层，满了。」 (a 筑基 sees a 练气's level at a glance) — nine fingers; 「渡口那一回，你是爬着上来的。」「练气的腿，跑不过筑基的剑。」
+4. **Elder Qu** (`09-qulao`, 后山崖顶). 「九层，满了。」 (a 筑基 sees a 练气's level at a glance) — nine fingers; 「渡口那一回，你是爬着上来的。」「练气的腿，跑不过筑基的剑。」
    (no palm mark, Hanli 2026-10-09); 「用哪颗丹？」「观里那颗。」 He tells of
    his last disciple — 外公 (DESIGN § 六·九 「外公是谁」). 「那颗丹，吃。」 (2026-10-13: he failed on his heart — he did not go home when his father was dying — not on the pill.) `listen` plays on through that night's fear (「要是我也过不去呢？」) and 回家一夜 — 瞿老 flies him to 西山梁 on the broom, a night at 爹娘's 灶, 「牵挂还在，可是它不绊我的脚了」.
 5. **The cliff** (`09-cliff`, 后山崖顶) — **the key beat**. The passage opens on 九月初二 (阿禾's 禾, seventeen black grains; the night on the 160th step, 「恬惔虚无」, 「银月。我有点怕。」), then 九月初三, the breakthrough (`breakthrough:
