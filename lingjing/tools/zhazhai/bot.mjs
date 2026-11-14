@@ -1,5 +1,9 @@
 // bot.mjs — plays a 砸寨 level in headless Chromium with a scripted hand, on the built bundle (games/zhazhai/), under
-// Playwright's fake clock (so a level plays in a second or two, and the same throws play the same twice).
+// Playwright's fake clock, paused and moved only by the bot (so a level plays in a second or two, and a busy machine
+// plays the same length of game as an idle one). It is NOT the same game twice: one seed's throws leave a different
+// field from play to play (measured 2026-11-14, idle machine, clock paused: 柴房六 seed 1 won in 3, 3, 3 and 4 throws;
+// a flight is already a physics step apart before it lands; Math.random seeded, the debris worker off and
+// createImageBitmap stubbed did not close it — cause not found). So the tests ask for wins out of several games.
 //
 //   node tools/zhazhai/bot.mjs [--levels=deer-wind,yishui-reed] [--policies=sensible,lazy] [--seeds=6] [--grid]
 //
@@ -166,11 +170,19 @@ export function windowOf(info) {
   return (good / n) * (target.every ? target.openFor / target.every : 1);
 }
 
+/** A clock that moves only when the bot runs it. `install` alone leaves real time flowing into the page's clock on top of
+ *  every `runFor`, so a busy machine played a longer game between two looks and the same throws landed differently
+ *  (2026-11-14: first throw at 4338, 4463, 4468 ms of game time in three plays of one seed). */
+async function stopClock(page) {
+  await page.clock.install({ time: 0 });
+  await page.clock.pauseAt(1000);
+}
+
 /** The field of a level, as the bot sees it before the first throw. */
 export async function fieldOf(browser, base, lv) {
   const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
   try {
-    await page.clock.install({ time: 0 });
+    await stopClock(page);
     await page.goto(`${base}/harness.html?lv=${encodeURIComponent(lv)}&seed=1&nodraw=1`);
     for (let i = 0; i < 400; i++) {
       await page.clock.runFor(100);
@@ -191,7 +203,7 @@ export async function playLevel(browser, base, lv, policy, seed, { firstThrow = 
   page.on('pageerror', (e) => errors.push(String(e).slice(0, 300)));
   page.on('crash', () => errors.push('crash'));
   try {
-    await page.clock.install({ time: 0 });
+    await stopClock(page);
     await page.goto(`${base}/harness.html?lv=${encodeURIComponent(lv)}&seed=${seed}&nodraw=${shots ? 0 : 1}`);
     const info = () => page.evaluate(() => document.getElementById('host')?.zhazhaiBot?.info() ?? { ready: false });
     const run = (ms) => page.clock.runFor(ms);
