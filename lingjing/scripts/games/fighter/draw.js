@@ -955,15 +955,37 @@ function cueMark(ctx, s, lang, kind) {
   ctx.restore();
 }
 
-function lineBand(ctx, text) {
+/* The line under the bout, never under LINE_MIN px on the page: on a phone's card the field is ~370 px wide (k ≈ .39), and
+   21 there was 8 px (the gate, 11-13 at 430: 「右手一扬，金刃贴着…」 unreadable). `px` is page px per field unit; the font
+   grows to keep LINE_MIN, and a line too long for the field wraps (up to three) — fillText's maxWidth would squeeze the
+   glyphs instead. The desk's field draws it as it always did: 21, one line, the same band. */
+const LINE_MIN = 12, LINE_HEAD = '，。、；：！？…—）」』,.;:!?)';
+export function wrapLine(measure, text, room, max = 3) {
+  if (measure(text) <= room) return [text];
+  const words = /\s/.test(text) && /[a-z]/i.test(text) ? text.split(/(?<=\s)/) : [...text];
+  const lines = [''];
+  for (const t of words) {
+    const cur = lines[lines.length - 1];
+    if (cur && measure((cur + t).trimEnd()) > room) {
+      // a stop or a dash never opens a line: it goes with the character before it
+      if (LINE_HEAD.includes(t[0]) && cur.length > 1) { lines[lines.length - 1] = cur.slice(0, -1); lines.push(cur.slice(-1) + t); } else lines.push(t);
+    } else lines[lines.length - 1] = cur + t;
+  }
+  const out = lines.map((l) => l.trim()).filter(Boolean);
+  return out.length > max ? [...out.slice(0, max - 1), out.slice(max - 1).join('')] : out;
+}
+function lineBand(ctx, text, px = 1) {
   if (!text) return;
   ctx.save();
-  ctx.font = `500 21px ${SERIF}`;
-  const w = Math.min(W - 40, ctx.measureText(text).width + 44);
+  const size = Math.max(21, Math.ceil(LINE_MIN / Math.max(px, 0.05)));
+  ctx.font = `500 ${size}px ${SERIF}`;
+  const room = W - 60, lines = wrapLine((t) => ctx.measureText(t).width, text, room);
+  const lh = Math.round(size * 1.3), bh = lines.length * lh + 7; // one line at 21: the band's 34 as before
+  const w = Math.min(W - 40, Math.max(...lines.map((l) => ctx.measureText(l).width)) + 44), top = H - 12 - bh;
   ctx.fillStyle = 'rgba(24,20,16,.72)';
-  ctx.beginPath(); ctx.roundRect((W - w) / 2, H - 46, w, 34, 6); ctx.fill();
+  ctx.beginPath(); ctx.roundRect((W - w) / 2, top, w, bh, 6); ctx.fill();
   ctx.fillStyle = '#f3e9d2'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(text, W / 2, H - 29, W - 60);
+  lines.forEach((l, i) => ctx.fillText(l, W / 2, top + 3.5 + lh * (i + 0.5), room));
   ctx.restore();
 }
 
@@ -1173,7 +1195,7 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false, kin
     // KO: a white flash as it falls (the slow-down is the mount's)
     if (koEnd(s.end) && s.t - s.end.at >= KO_FALL_MS && s.t - s.end.at < KO_FALL_MS + 100 && !still) { ctx.fillStyle = `rgba(255,252,240,${0.35 * (1 - (s.t - s.end.at - KO_FALL_MS) / 100)})`; ctx.fillRect(-EDGE, 0, W + 2 * EDGE, H); }
     if (s.intro && s.t < s.intro + 500) intro(ctx, s, lang, lv, kind === 'touch' && canvas.getBoundingClientRect().width <= 380);
-    lineBand(ctx, text);
+    lineBand(ctx, text, text ? (canvas.getBoundingClientRect().width / w) * k : 1); // page px per field unit
     if (s.end) seal(ctx, say(won(s.end) ? lv.seal?.won : lv.seal?.lost, lang) || (lang === 'en' ? (won(s.end) ? 'Won' : 'Out') : (won(s.end) ? '胜' : '负')), s.t - s.end.at - (koEnd(s.end) ? KO_SEAL_MS : 300));
     // the 绝: its cut-in plays on the page's clock (the bout's is held through it)
     if (s.cutin && s.cutin !== view.cut) { view.cut = s.cutin; view.cutAt = now; }

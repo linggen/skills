@@ -694,3 +694,17 @@ test('a touch-only hand wins 看他的脚: the stamp answered only by the cue\'s
   }
   assert.ok(wins >= 3, `won ${wins} of 4`);
 });
+
+test('the line under the bout wraps on a narrow field, never squeezed, and no stop opens a line', async () => {
+  const { wrapLine } = await import('../scripts/games/fighter/draw.js');
+  const em = (t) => [...t].length * 31; // a 31-unit font: 12 px on a 370 px phone field
+  const long = '一掌按在青石板上，土墙拱起——另一只手里已经冒出一团火。「两样！又是两样！」';
+  const lines = wrapLine(em, long, 900);
+  assert.ok(lines.length >= 2 && lines.length <= 3, JSON.stringify(lines));
+  assert.equal(lines.join(''), long);
+  for (const l of lines) assert.ok(em(l) <= 900 + 31, l);
+  for (const l of lines.slice(1)) assert.ok(!'，。、；：！？…—）」』'.includes(l[0]), l);
+  assert.deepEqual(wrapLine(em, '短句。', 900), ['短句。']);
+  const src = fs.readFileSync(new URL('../scripts/games/fighter/draw.js', import.meta.url), 'utf8');
+  assert.match(src, /lineBand\(ctx, text, text \? \(canvas\.getBoundingClientRect\(\)\.width \/ w\) \* k : 1\)/, 'the band is sized by the field\'s page width');
+});
