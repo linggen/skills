@@ -391,7 +391,7 @@ const crystals = (now, max, cap) => {
    on a 98px body 「刚到，这一回合不能动」 read 「刚到，这…」 (live, 2026-10-16). */
 const markOf = (w, why) => w.mark?.[why] ?? w.why[why] ?? why;
 
-function minionHtml(m, side, index, ctx, picked) {
+export function minionHtml(m, side, index, ctx, picked) {
   const w = ctx.words;
   const why = side === 'mine' ? ctx.reasons.get(`mine:${index}`)?.why : null;
   const held = picked?.from === 'board' && picked.index === index && side === 'mine';
