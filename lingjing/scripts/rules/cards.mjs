@@ -368,7 +368,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   // the rootless things he holds (deckFor reads no roots, so a 功法 stays out).
   const fullDeck = fixedSheet(content) ? deckFor(content, state) : fightDeck(content, state, { ten: evenDuel(content, state, creature) });
   // Preserve the picker's order: the last-picked surplus (typically dearer) goes first.
-  const deck = fixedSheet(content) ? fullDeck.slice(0, Math.min(fullDeck.length, new Set(creature.deck ?? []).size * deckRule(content).copies, deckRule(content).size)) : fullDeck;
+  const deck = matchedDecks(content, creature) ? fullDeck.slice(0, Math.min(fullDeck.length, beastCapacity(content, creature), deckRule(content).size)) : fullDeck;
   const strike = fixedSheet(content) ? strikeOf(content, state) : null;
   // 新: a card gained and not yet played (cards_new), marked in the hand until it is.
   const fresh = (state.cards_new ?? []).filter(id => deck.includes(id));
@@ -549,8 +549,13 @@ export function fairBeastDeck(content, creature, size) {
   for (let i = 0; i < copies; i++) cheapest.forEach(add);
   return result;
 }
+/* Both decks one size (the fifteen rule): where the fair rules stand, but not in a story's 试 or a long fight — those are written as
+   they are (a teaching fight's beast holds a card or two; cutting his deck to match would leave him two cards). */
+const matchedDecks = (content, creature) => fixedSheet(content) && !creature.trial && !creature.long;
+/* How many cards the beast can field: its template's, else two of each kind it holds (the copies rule). */
+const beastCapacity = (content, creature) => fairBeastDeck(content, creature, deckRule(content).size).length;
 function evenDeck(content, state, creature, foe, size) {
-  if (!fixedSheet(content)) return foe;
+  if (!matchedDecks(content, creature)) return foe;
   const deck = fairBeastDeck(content, creature, size);
   return { ...foe, deck, ...(deck.length < size ? { deck_short_by: size - deck.length } : {}) };
 }

@@ -67,3 +67,14 @@ test("saved ten is filled without mutation", () => withRules(true, () => {
   assert.deepEqual(state, before);
   assert.equal(deck(state, content, {}, { action: "auto" }).state.deck, undefined);
 }, FIT));
+
+test('a story trial keeps its own decks under the fair rules (no cut to match)', async () => {
+  const { FIGHTS, keyOf, setupOf } = await import('../tools/story-fights.mjs');
+  const fox = FIGHTS.find(f => keyOf(f) === 'foe-yinhu@00-fox/save');
+  const off = setupOf(fox, { party: [] });
+  withRules(true, () => {
+    const on = setupOf(fox, { party: [] });
+    assert.deepEqual(on.foe.deck, off.foe.deck);
+    assert.ok(on.you.deck.length >= Math.min(off.you.deck.length, 4), `his deck ${on.you.deck.length}`);
+  }, FIT);
+});
