@@ -278,7 +278,7 @@ function sideOf(who, cfg, catalog, mode, seed) {
     signature: cfg.signature ?? null, charge: null, lifts: cfg.lifts ?? null, insight: cfg.insight ?? 0, intent: null,
     stars: cfg.stars ?? null, drain: 0,
     // 斗法 v4 (the fit): the line that plays this seat when it is a beast's (battle.js lineOf, scripts/fightline.js); none: the foe policy below.
-    ai: cfg.ai ?? null, ...(cfg.wit != null ? { wit: cfg.wit } : {}),
+    ai: cfg.ai ?? null, ...(cfg.wit != null ? { wit: cfg.wit } : {}), ...(cfg.depth != null ? { depth: cfg.depth } : {}),
     // A 试 (a story trial, creatures.json `trial`): the beast is not driven
     // off, it is PASSED — it yields at `yield` of its 气血, and a player
     // still standing when its cards run out has passed too (not withdrawn).
@@ -1046,7 +1046,7 @@ function takePill(st, side, action) {
    or null to end the turn. Imported here, not registered from there, so the page and the rules that replay its fight always play
    the same beast (a registry filled only where fightline.js happened to load let the two settle different fights). Read at call
    time: the import is a cycle, and fightline.js touches nothing of this file at its top level. A name not here plays the foe policy. */
-const lineOf = name => ({ careful: lines.carefulFor, lookahead: lines.lookaheadFor, mix: (st, who) => lines.mixFor(st, who, { wit: st[who].wit ?? 0 }) })[name] ?? null;
+const lineOf = name => ({ careful: lines.carefulFor, lookahead: (st, who) => lines.lookaheadFor(st, who, st[who].depth != null ? { depth: st[who].depth } : {}), mix: (st, who) => lines.mixFor(st, who, { wit: st[who].wit ?? 0 }) })[name] ?? null;
 export function foeStep(st) {
   if (st.outcome !== 'open' || st.whose !== 'foe') return null;
   const side = st.foe;

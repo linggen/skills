@@ -1,5 +1,5 @@
 {
- "_about": "Written from tools/duel-budget-fit.mjs (tools/duel-template.mjs makes each deck; 2026-11-13, 24 screening seeds, 5 bisection steps, honest lookahead to 45%), never by hand. Read only where the fair rules stand (balance.json duel_hp.foe): a beast deck by creature|standing, the row of the highest level at or below the beast level. Off, every beast fights its own deck as before. budget: the deck value as a multiple of his (cardPoints value).",
+ "_about": "Written from tools/duel-budget-fit.mjs (tools/duel-template.mjs makes each deck; 2026-11-14, beasts lines by level (duel_fair), 20 screening seeds, 4 bisection steps, honest lookahead to 45%), never by hand. Read only where the fair rules stand (balance.json duel_hp.foe): a beast deck by creature|standing, the row of the highest level at or below the beast level. Off, every beast fights its own deck as before. budget: the deck value as a multiple of his (cardPoints value).",
  "band": {
   "line": "lookahead",
   "bare": [
@@ -9,76 +9,123 @@
   "target": 45
  },
  "budget": {
-  "yezhu|roaming|1": 1.16,
-  "xiong|roaming|1": 1.55,
-  "zheng|roaming|1": 1.69,
-  "chihu|roaming|1": 1.29,
-  "mihou|roaming|1": 1.16,
-  "congcong|roaming|1": 1.29,
   "lang|roaming|1": 1.02,
-  "longzhi|roaming|1": 0.76,
+  "zheng|roaming|1": 1.55,
+  "chihu|roaming|1": 1.29,
+  "fushe|roaming|1": 1.16,
+  "xiong|roaming|1": 1.55,
   "shanli|roaming|1": 0.89,
-  "fushe|roaming|1": 1.09,
+  "congcong|roaming|1": 1.29,
+  "yezhu|roaming|1": 1.16,
+  "longzhi|roaming|1": 0.76,
+  "mihou|roaming|1": 1.02,
   "xiegou|roaming|1": 1.16,
   "gui|story|2": 1.55,
   "lingling|roaming|2": 1.16,
-  "yezhu|room|2": 1.16,
+  "qiuyu|room|2": 0.76,
   "gui|boss|2": 1.55,
-  "zheng|room|2": 1.69,
-  "heyu|boss|2": 1.55,
+  "heyu|xiong|2": 1.29,
   "gui|xiong|2": 1.55,
-  "qiuyu|room|2": 1.55,
-  "qiuyu|xiong|2": 1.55,
+  "yezhu|room|2": 1.29,
   "heyu|room|2": 1.29,
-  "heyu|xiong|2": 1.62,
+  "heyu|boss|2": 1.16,
+  "longzhi|boss|2": 0.76,
+  "qiuyu|xiong|2": 0.63,
+  "zheng|room|2": 1.69,
   "longzhi|room|2": 0.76,
-  "longzhi|boss|2": 1.55,
-  "yuanhu|roaming|4": 1.16,
-  "cangying|roaming|4": 1.02,
   "jingjing|roaming|4": 1.02,
-  "chai|roaming|5": 2.08,
-  "dangkang|roaming|5": 1.55,
-  "qiuyu|room|5": 2.54,
+  "cangying|roaming|4": 1.02,
+  "yuanhu|roaming|4": 1.16,
+  "dangkang|roaming|5": 2.47,
+  "zheng|room|5": 2.34,
+  "qiuyu|boss|5": 1.55,
+  "gui|boss|5": 2.08,
+  "qiuyu|story|5": 2.08,
+  "chai|roaming|5": 2.34,
   "yezhu|room|5": 1.55,
-  "qiuyu|boss|5": 2.08,
-  "longzhi|xiong|5": 2.47,
-  "qiuyu|story|5": 2.54,
-  "bibi|roaming|5": 2.08,
-  "zheng|room|5": 2.54,
-  "heyu|xiong|5": 2.08,
   "heyu|room|5": 2.08,
-  "gui|boss|5": 2.34,
-  "qique|roaming|7": 2.34,
-  "heyu|room|7": 1.55,
-  "zheng|room|7": 2.54,
-  "qique|boss|7": 2.47,
+  "bibi|roaming|5": 2.08,
+  "qiuyu|room|5": 2.08,
+  "heyu|xiong|5": 1.42,
+  "longzhi|xiong|5": 2.08,
+  "zheng|room|7": 2.34,
   "geju|roaming|7": 2.08,
-  "qique|room|7": 2.34,
+  "heyu|room|7": 2.47,
   "qique|xiong|7": 2.47,
-  "renyu|roaming|10": 2.54,
-  "tianma|roaming|10": 2.08,
-  "qique|room|10": 2.34,
-  "gui|roaming|10": 2.08,
+  "qique|roaming|7": 2.47,
+  "qique|room|7": 2.47,
+  "qique|boss|7": 2.47,
   "heyu|roaming|10": 2.08,
-  "linghu|roaming|10": 2.08,
   "heyu|room|10": 2.08,
+  "gui|roaming|10": 2.47,
+  "tianma|roaming|10": 1.55,
+  "qique|room|10": 2.47,
+  "renyu|roaming|10": 2.34,
+  "linghu|roaming|10": 2.08,
   "qiuyu|room|10": 2.47
  },
  "decks": {
-  "yezhu|roaming": [
+  "lang|roaming": [
    [
     1,
     [
-     "jixiao",
-     "jixiao",
-     "qianyang",
-     "houtu",
+     "huilang",
+     "huilang",
+     "elang",
+     "jinzhua",
+     "mucao",
+     "jinzhen",
+     "tuqiang",
+     "tuqiang",
+     "tieji",
+     "tieji"
+    ]
+   ]
+  ],
+  "zheng|roaming": [
+   [
+    1,
+    [
+     "tongling",
+     "tongling",
+     "zheng",
+     "gui",
+     "tuqiang",
+     "tuqiang",
+     "fuli",
+     "fuli",
+     "tongtong",
+     "huodan"
+    ]
+   ]
+  ],
+  "chihu|roaming": [
+   [
+    1,
+    [
+     "xiaochihu",
+     "xiaochihu",
+     "luying",
+     "jingwei",
+     "zheng",
+     "zheng",
+     "huodan",
+     "huodan"
+    ]
+   ]
+  ],
+  "fushe|roaming": [
+   [
+    1,
+    [
+     "tunshi",
+     "tunshi",
      "xiongzai",
      "xiongzai",
      "tuqiang",
      "tuqiang",
-     "feijian",
-     "feijian"
+     "jixiao",
+     "jixiao"
     ]
    ]
   ],
@@ -99,52 +146,18 @@
     ]
    ]
   ],
-  "zheng|roaming": [
+  "shanli|roaming": [
    [
     1,
     [
-     "tongling",
-     "tongling",
-     "zheng",
-     "feiyi",
-     "tongtong",
-     "xiaochihu",
-     "fuli",
-     "fuli",
-     "tuqiang",
-     "tuqiang"
-    ]
-   ]
-  ],
-  "chihu|roaming": [
-   [
-    1,
-    [
-     "xiaochihu",
-     "xiaochihu",
+     "shuiwu",
+     "shuiwu",
+     "wudao",
+     "wudao",
      "luying",
-     "jingwei",
-     "zheng",
-     "zheng",
-     "huodan",
-     "huodan"
-    ]
-   ]
-  ],
-  "mihou|roaming": [
-   [
-    1,
-    [
-     "xiaoyao",
-     "xiaoyao",
-     "houer",
-     "liuzu",
-     "fuli",
-     "fuli",
-     "caoren",
-     "caoren",
-     "mucao",
-     "mucao"
+     "luying",
+     "xiaochihu",
+     "bingzhui"
     ]
    ]
   ],
@@ -165,20 +178,20 @@
     ]
    ]
   ],
-  "lang|roaming": [
+  "yezhu|roaming": [
    [
     1,
     [
-     "huilang",
-     "huilang",
-     "elang",
-     "jinzhua",
-     "mucao",
-     "jinzhen",
+     "jixiao",
+     "jixiao",
+     "qianyang",
+     "houtu",
+     "xiongzai",
+     "xiongzai",
      "tuqiang",
      "tuqiang",
-     "tieji",
-     "tieji"
+     "feijian",
+     "feijian"
     ]
    ]
   ],
@@ -199,33 +212,20 @@
     ]
    ]
   ],
-  "shanli|roaming": [
+  "mihou|roaming": [
    [
     1,
     [
-     "shuiwu",
-     "shuiwu",
-     "wudao",
-     "wudao",
-     "luying",
-     "luying",
-     "xiaochihu",
-     "bingzhui"
-    ]
-   ]
-  ],
-  "fushe|roaming": [
-   [
-    1,
-    [
-     "tunshi",
-     "tunshi",
+     "xiaoyao",
+     "xiaoyao",
      "houer",
-     "xiongzai",
+     "mucao",
+     "leiming",
+     "caoren",
      "tuqiang",
      "tuqiang",
-     "jixiao",
-     "jixiao"
+     "mucao",
+     "feijian"
     ]
    ]
   ],
@@ -278,40 +278,60 @@
     ]
    ]
   ],
-  "yezhu|room": [
+  "qiuyu|room": [
    [
     2,
     [
-     "jixiao",
-     "jixiao",
-     "qianyang",
-     "houtu",
-     "xiongzai",
-     "xiongzai",
-     "tuqiang",
-     "tuqiang",
+     "zhennu",
+     "zhennu",
+     "leiming",
+     "leiming",
+     "mucao",
+     "mucao",
      "feijian",
-     "feijian"
+     "feijian",
+     "mutang",
+     "mutang"
     ]
    ],
    [
     5,
     [
-     "jixiao",
-     "jixiao",
-     "paoxiao",
-     "jingwei",
-     "xiongzai",
-     "tunshi",
-     "xiongzai",
-     "tunshi",
-     "xiaochihu",
-     "caoren",
-     "gui",
-     "tuqiang",
-     "feijian",
+     "zhennu",
+     "zhennu",
+     "bashe",
      "fuli",
-     "tuqiang"
+     "feiyi",
+     "fuli",
+     "hanquan",
+     "xiongzai",
+     "hanquan",
+     "tuqiang",
+     "xiaochihu",
+     "xiongzai",
+     "mucao",
+     "caoren",
+     "caoren"
+    ]
+   ],
+   [
+    10,
+    [
+     "zhennu",
+     "zhennu",
+     "bashe",
+     "bashe",
+     "wuzhiqi",
+     "feiyi",
+     "shishou",
+     "feiyi",
+     "hanquan",
+     "hanquan",
+     "tongtong",
+     "xiongzai",
+     "xiongzai",
+     "fuli",
+     "fuli"
     ]
    ]
   ],
@@ -336,93 +356,56 @@
     [
      "gui",
      "gui",
-     "tongtong",
-     "bashe",
-     "tongtong",
-     "bashe",
-     "hanquan",
+     "wuzhiqi",
      "xiongzai",
+     "tongtong",
+     "xiongzai",
+     "hanquan",
+     "fuli",
      "hanquan",
      "zhuguang",
      "xiaochihu",
-     "xiongzai",
-     "jixiao",
      "fuli",
-     "fuli"
+     "zheng",
+     "xiaochihu",
+     "caoren"
     ]
    ]
   ],
-  "zheng|room": [
+  "heyu|xiong": [
    [
     2,
     [
-     "tongling",
-     "tongling",
-     "zheng",
-     "feiyi",
-     "tongtong",
+     "luoshi",
+     "luoshi",
+     "xiongzai",
+     "xiongzai",
+     "houtu",
+     "houtu",
      "xiaochihu",
-     "fuli",
-     "fuli",
-     "tuqiang",
-     "tuqiang"
+     "xiaochihu",
+     "feijian",
+     "feijian"
     ]
    ],
    [
     5,
     [
-     "tongling",
-     "tongling",
-     "zheng",
-     "zheng",
-     "wuzhiqi",
-     "bashe",
-     "bashe",
-     "fangfeng",
-     "feiyi",
-     "xiaochihu",
-     "xiongzai",
-     "fuli",
-     "tongtong",
-     "fuli",
-     "xiongzai"
-    ]
-   ],
-   [
-    7,
-    [
-     "tongling",
-     "tongling",
-     "zheng",
-     "zheng",
-     "wuzhiqi",
-     "wuzhiqi",
-     "bashe",
-     "bashe",
-     "feiyi",
-     "feiyi",
-     "kui",
-     "xiongzai",
-     "tongtong",
-     "fuli",
-     "fuli"
-    ]
-   ]
-  ],
-  "heyu|boss": [
-   [
-    2,
-    [
      "luoshi",
      "luoshi",
-     "gui",
-     "gui",
-     "tuqiang",
-     "tuqiang",
-     "xiongzai",
      "xiongzai",
      "houtu",
-     "houtu"
+     "xiongzai",
+     "houtu",
+     "qianyang",
+     "zhuguang",
+     "gui",
+     "jixiao",
+     "jixiao",
+     "tuqiang",
+     "feijian",
+     "fuli",
+     "tuqiang"
     ]
    ]
   ],
@@ -443,76 +426,39 @@
     ]
    ]
   ],
-  "qiuyu|room": [
+  "yezhu|room": [
    [
     2,
     [
-     "zhennu",
-     "zhennu",
+     "jixiao",
+     "jixiao",
+     "tongtong",
      "luying",
-     "gui",
-     "caoren",
-     "caoren",
-     "fuli",
-     "fuli",
-     "tuqiang",
-     "tuqiang"
+     "xiongzai",
+     "xiongzai",
+     "xiaochihu",
+     "xiaochihu",
+     "feijian",
+     "feijian"
     ]
    ],
    [
     5,
     [
-     "zhennu",
-     "zhennu",
-     "bashe",
-     "feiyi",
-     "feiyi",
-     "hanquan",
-     "tongtong",
-     "tongtong",
-     "bashe",
-     "hanquan",
+     "jixiao",
+     "jixiao",
+     "paoxiao",
+     "jingwei",
      "xiongzai",
-     "fuli",
-     "mucao",
-     "fuli",
-     "xiongzai"
-    ]
-   ],
-   [
-    10,
-    [
-     "zhennu",
-     "zhennu",
-     "bashe",
-     "bashe",
-     "wuzhiqi",
-     "feiyi",
-     "shishou",
-     "feiyi",
-     "hanquan",
-     "hanquan",
-     "tongtong",
+     "tunshi",
      "xiongzai",
-     "xiongzai",
-     "fuli",
-     "fuli"
-    ]
-   ]
-  ],
-  "qiuyu|xiong": [
-   [
-    2,
-    [
-     "zhennu",
-     "zhennu",
-     "luying",
+     "tunshi",
+     "xiaochihu",
+     "caoren",
      "gui",
-     "caoren",
-     "caoren",
-     "fuli",
-     "fuli",
      "tuqiang",
+     "feijian",
+     "fuli",
      "tuqiang"
     ]
    ]
@@ -558,19 +504,19 @@
     [
      "luoshi",
      "luoshi",
+     "bashe",
+     "bashe",
+     "feiyi",
+     "feiyi",
+     "wuzhiqi",
      "shishou",
-     "tongtong",
-     "xiongzai",
-     "tunshi",
-     "xiongzai",
-     "tunshi",
+     "hanquan",
+     "hanquan",
      "gui",
-     "gui",
-     "feijian",
-     "jixiao",
-     "jixiao",
      "fuli",
-     "tuqiang"
+     "fuli",
+     "xiongzai",
+     "xiongzai"
     ]
    ],
    [
@@ -594,40 +540,111 @@
     ]
    ]
   ],
-  "heyu|xiong": [
+  "heyu|boss": [
    [
     2,
     [
      "luoshi",
      "luoshi",
+     "luying",
+     "xiongzai",
+     "tuqiang",
+     "tuqiang",
+     "houtu",
+     "houtu",
+     "jixiao",
+     "jixiao"
+    ]
+   ]
+  ],
+  "longzhi|boss": [
+   [
+    2,
+    [
+     "jiushou",
+     "jiushou",
+     "longzhi",
+     "mucao",
+     "tieji",
+     "tieji",
+     "jinzhua",
+     "jinzhua",
+     "feijian",
+     "feijian"
+    ]
+   ]
+  ],
+  "qiuyu|xiong": [
+   [
+    2,
+    [
+     "zhennu",
+     "zhennu",
+     "liuzu",
+     "liuzu",
+     "mutang",
+     "mutang",
+     "mucao",
+     "mucao",
+     "feijian",
+     "feijian"
+    ]
+   ]
+  ],
+  "zheng|room": [
+   [
+    2,
+    [
+     "tongling",
+     "tongling",
+     "zheng",
      "feiyi",
-     "gui",
-     "houtu",
-     "houtu",
-     "xiongzai",
-     "xiongzai",
-     "zhuguang",
-     "zhuguang"
+     "tongtong",
+     "xiaochihu",
+     "fuli",
+     "fuli",
+     "tuqiang",
+     "tuqiang"
     ]
    ],
    [
     5,
     [
-     "luoshi",
-     "luoshi",
-     "bashe",
-     "xiongzai",
-     "feiyi",
-     "xiongzai",
-     "tongtong",
-     "fuli",
-     "tongtong",
-     "tuqiang",
-     "xiaochihu",
-     "fuli",
+     "tongling",
+     "tongling",
      "zheng",
-     "xiaochihu",
-     "caoren"
+     "zheng",
+     "bashe",
+     "bashe",
+     "gui",
+     "feiyi",
+     "gui",
+     "tuqiang",
+     "xiongzai",
+     "fuli",
+     "xiongzai",
+     "fuli",
+     "tongtong"
+    ]
+   ],
+   [
+    7,
+    [
+     "tongling",
+     "tongling",
+     "zheng",
+     "zheng",
+     "feiyi",
+     "feiyi",
+     "bashe",
+     "bashe",
+     "wuzhiqi",
+     "shishou",
+     "tuqiang",
+     "xiongzai",
+     "xiongzai",
+     "fuli",
+     "tongtong"
     ]
    ]
   ],
@@ -648,41 +665,24 @@
     ]
    ]
   ],
-  "longzhi|boss": [
-   [
-    2,
-    [
-     "jiushou",
-     "jiushou",
-     "longzhi",
-     "gui",
-     "xiaochihu",
-     "tuqiang",
-     "fuli",
-     "fuli",
-     "tongtong",
-     "jinzhua"
-    ]
-   ]
-  ],
-  "yuanhu|roaming": [
+  "jingjing|roaming": [
    [
     4,
     [
-     "leiming",
-     "leiming",
+     "shishou",
+     "shishou",
      "tianmaju",
-     "houer",
-     "houer",
+     "feijian",
+     "feijian",
+     "canwu",
+     "jixiao",
+     "jixiao",
+     "liuzu",
      "liuzu",
      "mucao",
-     "mutang",
-     "mutang",
+     "tuqiang",
      "mucao",
-     "feijian",
-     "caoren",
-     "feijian",
-     "liuzu",
+     "tianmaju",
      "tuqiang"
     ]
    ]
@@ -709,47 +709,25 @@
     ]
    ]
   ],
-  "jingjing|roaming": [
+  "yuanhu|roaming": [
    [
     4,
     [
-     "shishou",
-     "shishou",
+     "leiming",
+     "leiming",
      "tianmaju",
-     "feijian",
-     "feijian",
-     "canwu",
-     "jixiao",
-     "jixiao",
-     "liuzu",
+     "houer",
+     "houer",
      "liuzu",
      "mucao",
-     "tuqiang",
+     "mutang",
+     "mutang",
      "mucao",
-     "tianmaju",
+     "feijian",
+     "caoren",
+     "feijian",
+     "liuzu",
      "tuqiang"
-    ]
-   ]
-  ],
-  "chai|roaming": [
-   [
-    5,
-    [
-     "huoya",
-     "huoya",
-     "bashe",
-     "gui",
-     "gui",
-     "feiyi",
-     "hanquan",
-     "shishou",
-     "hanquan",
-     "tuqiang",
-     "sanhuo",
-     "fuli",
-     "sanhuo",
-     "fuli",
-     "xiaochihu"
     ]
    ]
   ],
@@ -759,23 +737,45 @@
     [
      "zhuguang",
      "zhuguang",
-     "paoxiao",
-     "jingwei",
+     "bashe",
+     "bashe",
+     "feiyi",
+     "feiyi",
+     "tongtong",
+     "tongtong",
+     "hanquan",
+     "caoren",
+     "fuli",
      "xiongzai",
-     "tunshi",
+     "qianyang",
+     "xiongzai",
+     "fuli"
+    ]
+   ]
+  ],
+  "qiuyu|boss": [
+   [
+    5,
+    [
+     "zhennu",
+     "zhennu",
+     "fuli",
+     "jingwei",
+     "fuli",
+     "caoren",
      "gui",
-     "tunshi",
+     "luying",
      "gui",
-     "feijian",
-     "jixiao",
+     "mucao",
+     "mutang",
      "tuqiang",
-     "jixiao",
+     "mutang",
      "xiongzai",
      "tuqiang"
     ]
    ]
   ],
-  "qiuyu|boss": [
+  "qiuyu|story": [
    [
     5,
     [
@@ -797,47 +797,25 @@
     ]
    ]
   ],
-  "longzhi|xiong": [
+  "chai|roaming": [
    [
     5,
     [
-     "jiushou",
-     "jiushou",
-     "longzhi",
-     "longzhi",
-     "feiyi",
+     "huoya",
+     "huoya",
      "bashe",
-     "feiyi",
      "bashe",
+     "gui",
+     "feiyi",
+     "gui",
+     "feiyi",
      "hanquan",
-     "tongtong",
+     "tuqiang",
      "xiongzai",
      "fuli",
-     "tongtong",
+     "sanhuo",
      "fuli",
-     "xiongzai"
-    ]
-   ]
-  ],
-  "qiuyu|story": [
-   [
-    5,
-    [
-     "zhennu",
-     "zhennu",
-     "bashe",
-     "feiyi",
-     "feiyi",
-     "hanquan",
-     "tongtong",
-     "tongtong",
-     "bashe",
-     "hanquan",
-     "xiongzai",
-     "fuli",
-     "mucao",
-     "fuli",
-     "xiongzai"
+     "xiaochihu"
     ]
    ]
   ],
@@ -863,47 +841,25 @@
     ]
    ]
   ],
-  "qique|roaming": [
+  "longzhi|xiong": [
    [
-    7,
+    5,
     [
-     "huoya",
-     "huoya",
-     "yanxin",
-     "yanxin",
-     "feiyi",
-     "feiyi",
+     "jiushou",
+     "jiushou",
+     "longzhi",
+     "longzhi",
      "bashe",
-     "bashe",
-     "wuzhiqi",
-     "wuzhiqi",
-     "tongtong",
-     "xiongzai",
-     "xiongzai",
      "fuli",
-     "tongtong"
-    ]
-   ]
-  ],
-  "qique|boss": [
-   [
-    7,
-    [
-     "huoya",
-     "huoya",
-     "yanxin",
-     "yanxin",
-     "wuzhiqi",
-     "wuzhiqi",
      "bashe",
-     "bashe",
-     "kui",
-     "feiyi",
-     "kui",
-     "tongtong",
-     "tongtong",
      "fuli",
-     "fuli"
+     "feiyi",
+     "tuqiang",
+     "luying",
+     "xiongzai",
+     "tieji",
+     "xiongzai",
+     "caoren"
     ]
    ]
   ],
@@ -929,48 +885,6 @@
     ]
    ]
   ],
-  "qique|room": [
-   [
-    7,
-    [
-     "huoya",
-     "huoya",
-     "yanxin",
-     "yanxin",
-     "feiyi",
-     "feiyi",
-     "bashe",
-     "bashe",
-     "wuzhiqi",
-     "wuzhiqi",
-     "tongtong",
-     "xiongzai",
-     "xiongzai",
-     "fuli",
-     "tongtong"
-    ]
-   ],
-   [
-    10,
-    [
-     "huoya",
-     "huoya",
-     "yanxin",
-     "yanxin",
-     "feiyi",
-     "feiyi",
-     "bashe",
-     "bashe",
-     "wuzhiqi",
-     "wuzhiqi",
-     "shishou",
-     "xiongzai",
-     "xiongzai",
-     "fuli",
-     "tongtong"
-    ]
-   ]
-  ],
   "qique|xiong": [
    [
     7,
@@ -993,69 +907,89 @@
     ]
    ]
   ],
-  "renyu|roaming": [
+  "qique|roaming": [
    [
-    10,
+    7,
     [
-     "hanquan",
-     "hanquan",
+     "huoya",
+     "huoya",
+     "yanxin",
+     "yanxin",
+     "wuzhiqi",
+     "wuzhiqi",
+     "bashe",
+     "bashe",
      "kui",
-     "bashe",
-     "shishou",
-     "gui",
+     "feiyi",
+     "kui",
      "tongtong",
      "tongtong",
-     "bashe",
-     "feiyi",
-     "feiyi",
-     "xiongzai",
-     "xiongzai",
      "fuli",
      "fuli"
     ]
    ]
   ],
-  "tianma|roaming": [
+  "qique|room": [
+   [
+    7,
+    [
+     "huoya",
+     "huoya",
+     "yanxin",
+     "yanxin",
+     "wuzhiqi",
+     "wuzhiqi",
+     "bashe",
+     "bashe",
+     "kui",
+     "feiyi",
+     "kui",
+     "tongtong",
+     "tongtong",
+     "fuli",
+     "fuli"
+    ]
+   ],
    [
     10,
     [
-     "tianmaju",
-     "tianmaju",
-     "bashe",
-     "shishou",
+     "huoya",
+     "huoya",
+     "yanxin",
+     "yanxin",
      "wuzhiqi",
-     "gui",
-     "gui",
-     "fuli",
-     "hanquan",
-     "fuli",
-     "hanquan",
-     "xiongzai",
+     "wuzhiqi",
+     "bashe",
+     "bashe",
+     "feiyi",
+     "feiyi",
+     "kui",
+     "fangfeng",
      "tongtong",
-     "xiongzai",
-     "jingwei"
+     "fuli",
+     "fuli"
     ]
    ]
   ],
-  "gui|roaming": [
+  "qique|boss": [
    [
-    10,
+    7,
     [
-     "gui",
-     "gui",
+     "huoya",
+     "huoya",
+     "yanxin",
+     "yanxin",
+     "wuzhiqi",
+     "wuzhiqi",
      "bashe",
-     "kuiniu",
-     "shishou",
-     "xiongzai",
+     "bashe",
+     "kui",
+     "feiyi",
+     "kui",
      "tongtong",
-     "xiongzai",
-     "hanquan",
+     "tongtong",
      "fuli",
-     "hanquan",
-     "xiaochihu",
-     "jixiao",
-     "fuli",
-     "caoren"
+     "fuli"
     ]
    ]
   ],
@@ -1078,6 +1012,72 @@
      "xiaochihu",
      "fuli",
      "caoren"
+    ]
+   ]
+  ],
+  "gui|roaming": [
+   [
+    10,
+    [
+     "gui",
+     "gui",
+     "kuiniu",
+     "bashe",
+     "feiyi",
+     "tongtong",
+     "hanquan",
+     "bashe",
+     "hanquan",
+     "feiyi",
+     "xiongzai",
+     "fuli",
+     "qianyang",
+     "xiongzai",
+     "fuli"
+    ]
+   ]
+  ],
+  "tianma|roaming": [
+   [
+    10,
+    [
+     "tianmaju",
+     "tianmaju",
+     "chishou",
+     "chishou",
+     "yangzhen",
+     "qianyang",
+     "fuli",
+     "caoren",
+     "fuli",
+     "caoren",
+     "qianyang",
+     "luying",
+     "gui",
+     "xiongzai",
+     "tuqiang"
+    ]
+   ]
+  ],
+  "renyu|roaming": [
+   [
+    10,
+    [
+     "hanquan",
+     "hanquan",
+     "kui",
+     "bashe",
+     "gui",
+     "bashe",
+     "gui",
+     "feiyi",
+     "tongtong",
+     "feiyi",
+     "tongtong",
+     "bingzhui",
+     "wudao",
+     "fuli",
+     "luying"
     ]
    ]
   ],

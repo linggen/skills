@@ -539,7 +539,9 @@ const evenAi = (content, state, creature) => {
   const ai = content.balance.duel_hp.foe.ai;
   const line = ai?.by_standing && creature.standing ? lineByStanding(ai.by_standing, creature.standing, fightLevel(content, state))
     : lineByLevel(ai, beastLevel(content, state, creature) ?? fightLevel(content, state), foeRank(content, creature));
-  return line && line !== 'foe' ? { ai: line } : {};
+  // A line may be written { line, depth }: a lookahead that plays each move out only `depth` moves (a shallower thinker).
+  const depth = ai?.by_standing && creature.standing ? ai.by_standing[creature.standing]?.depth : undefined;
+  return line && line !== 'foe' ? { ai: line, ...(line === 'lookahead' && depth != null ? { depth } : {}) } : {};
 };
 export function fairBeastDeck(content, creature, size) {
   const catalog = cardCatalog(content), own = creature.deck ?? [], counts = new Map(), result = [], copies = deckRule(content).copies;

@@ -47,18 +47,21 @@ export function fitUnit(u, { seeds = 30, steps = 5, target = 45, lo = 0.5, hi = 
   return { ratio: best[0], screen: best[1], tried };
 }
 
-export function run({ seeds = 30, confirm = 60, steps = 5, shard = [0, 1], target = 45 } = {}) {
+export function run({ seeds = 30, confirm = 60, ladder = 200, steps = 5, shard = [0, 1], target = 45, lines = null, groups = null } = {}) {
   content.duel_decks = null; // the before: every beast on its own deck
-  return withRules(true, () => units().filter((_, i) => i % shard[1] === shard[0]).map(u => {
-    const before = { lookahead: u.list.reduce((n, e) => n + measure(setupFor(e), 'lookahead', confirm, 30000).win, 0) / u.list.length };
+  // `lines`: standings' lines weighed in memory over the game's (e.g. {"xiong": {"line": "lookahead", "depth": 12}}); `groups`: only those standings.
+  const knobs = lines ? { ...FIT, ai: { ...FIT.ai, by_standing: { ...FIT.ai.by_standing, ...lines } } } : FIT;
+  return withRules(true, () => units().filter(u => !groups || groups.includes(u.group)).filter((_, i) => i % shard[1] === shard[0]).map(u => {
+    const own = line => u.list.reduce((n, e) => n + measure(setupFor(e), line, line === 'lookahead' ? confirm : ladder, line === 'lookahead' ? 30000 : 20000).win, 0) / u.list.length;
+    const before = { lookahead: own('lookahead'), careful: own('careful'), plain: own('plain') };
     const f = fitUnit(u, { seeds, steps, target });
-    const after = { lookahead: rate(u, f.ratio, 'lookahead', confirm, 30000), careful: rate(u, f.ratio, 'careful', 200, 20000), plain: rate(u, f.ratio, 'plain', 200, 20000) };
+    const after = { lookahead: rate(u, f.ratio, 'lookahead', confirm, 30000), careful: rate(u, f.ratio, 'careful', ladder, 20000), plain: rate(u, f.ratio, 'plain', ladder, 20000) };
     const deck = withRatio(u, f.ratio, d => d);
     console.error(`${u.k} ${before.lookahead.toFixed(0)} -> ${after.lookahead.toFixed(0)} (ratio ${f.ratio})`);
     return { k: u.k, id: u.id, group: u.group, level: u.level, keys: u.list.map(e => e.key), his: u.his, deck, ...f, before, after };
-  }), FIT);
+  }), knobs);
 }
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const args = process.argv.slice(2), get = (k, d) => (args.includes(k) ? args[args.indexOf(k) + 1] : d);
-  console.log(JSON.stringify(run({ seeds: Number(get('--seeds', 30)), confirm: Number(get('--confirm', 60)), steps: Number(get('--steps', 5)), target: Number(get('--target', 45)), shard: get('--shard', '0/1').split('/').map(Number) })));
+  console.log(JSON.stringify(run({ seeds: Number(get('--seeds', 30)), confirm: Number(get('--confirm', 60)), ladder: Number(get('--ladder', 200)), steps: Number(get('--steps', 5)), target: Number(get('--target', 45)), shard: get('--shard', '0/1').split('/').map(Number), lines: args.includes('--lines') ? JSON.parse(get('--lines')) : null, groups: args.includes('--groups') ? get('--groups').split(',') : null })));
 }
