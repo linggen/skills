@@ -157,6 +157,13 @@ test('a framed board card\'s status stands above the frame, in from its corner b
   assert.match(battle, /\.bminion:is\(\.pin-yin, \.pin-jin, \.pin-baoshi, \.pin-zuanshi\) > small \{ z-index: 4; left: max\(4px, calc\(6cqw \+ 1px\)\); top: max\(4px, calc\(6cqw \+ 1px\)\);/);
 });
 
+test('a framed board card\'s 五行 seal is never clipped by its short picture row, and 新 stays clear of the seal', () => {
+  const battle = fs.readFileSync(new URL('../scripts/battle.css', import.meta.url), 'utf8');
+  assert.match(battle, /\.bminion:is\(\.pin-yin, \.pin-jin, \.pin-baoshi, \.pin-zuanshi\) > \.bface-wrap \{ overflow: visible; \}/);
+  assert.match(battle, /\.bminion:is\(\.pin-yin, \.pin-jin, \.pin-baoshi, \.pin-zuanshi\) > \.bface-wrap > \.bglyph \{ z-index: 4;/);
+  assert.doesNotMatch(battle, /\.deckfaces \.bcard:has\(\.bpin\) \.deckfresh \{[^}]*top:/, 'the 新 chip keeps its corner on a framed card');
+});
+
 test('v2 frames use snapped SVG patterns, phone colours and motion-safe small marks', () => {
   const css = fs.readFileSync(new URL('../scripts/battle.css', import.meta.url), 'utf8');
   const rv = fs.readFileSync(new URL('../scripts/card-reveal.css', import.meta.url), 'utf8');

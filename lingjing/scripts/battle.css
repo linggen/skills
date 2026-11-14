@@ -385,6 +385,11 @@
 .bminion:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) { padding: max(4.5px, calc(var(--mw) * .06 + 1.5px)); }
 /* Its status (「可出手 · 护主」) above the band, its corner boss and its top diamond, in from the corner by the band's width
    (the gate, 11-13: 「可出手」 read 「]出手」 at 1280, half under the diamond at 430). */
+/* …and its 五行 seal whole: the band's padding leaves the picture's row shorter than the seal on a small card (the gate,
+   11-14: at 1280 and on the 375 foe card the seal lost its lower third), so the row lets it hang out over the name's top
+   edge (the picture keeps to the row: it is the row's own size), above the band and its corner ornaments. */
+.bminion:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > .bface-wrap { overflow: visible; }
+.bminion:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > .bface-wrap > .bglyph { z-index: 4; top: 2px; right: 2px; }
 .bminion:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > small { z-index: 4; left: max(4px, calc(6cqw + 1px)); top: max(4px, calc(6cqw + 1px)); max-width: calc(100% - 2 * max(4px, calc(6cqw + 1px)) - 22px); }
 .bcard.dim .bleaf:has(> .bpin), .deckfaces .bcard.face.out .bleaf:has(> .bpin) { filter: none; opacity: 1; }
 .bcard.dim .bleaf:has(> .bpin) > :not(.bpin), .deckfaces .bcard.face.out .bleaf:has(> .bpin) > :not(.bpin) { filter: grayscale(.8); opacity: .62; }
@@ -828,7 +833,9 @@ body.fighting .focus > .gshell > .gshell-bar { padding-bottom: 4px; background: 
 /* Keep the band bright when the phone dims an unaffordable face. */
 @media (max-width: 700px) { .battle .bhand > .bcard.dim .bleaf:has(> .bpin) { filter: none; opacity: 1; } }
 .bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > .bpin { inset: 0; }
-.deckfaces .bcard:has(.bpin) .deckfresh { top: 8%; right: 8%; }
+/* 新 on a framed card stays at the corner, out over the frame, as on a plain one: in by 8% it lay on the 五行 seal (the
+   卡册 at 430, 11-14: 冰锥's 新 half under its 水). */
+.deckfaces .bcard:has(.bpin) .deckfresh { z-index: 5; }
 /* The phone hand's fixed padding must not cover a framed face. */
 .battle .bhand > .bcard .bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) { padding: max(4.5px, calc(var(--cw) * .06 + 1.5px)); padding-bottom: max(14px, calc(var(--cw) * .06 + 1.5px)); }
 /* …nor its fixed 4px corner inset bury the cost: the band grows with the card (6cqw) and its ornaments with the band, so the
