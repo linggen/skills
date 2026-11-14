@@ -237,7 +237,7 @@ test('the card: the full reading, no ask, no 出处 link; no 宜 row on a day wi
 test('placement (Hanli 11-02 「…放最下面吧…」): no top-bar chip; a modal that pops once a day; the tray until shaken; 书 shows it again', async () => {
   const src = fs.readFileSync(path.join(here, '../scripts/lingjing.js'), 'utf8');
   assert.doesNotMatch(src, /omenChip|qianChipHtml|data-qian-chip/, 'nothing of the 签 on the top bar');
-  assert.match(src, /function qianAutoPop\(\)[\s\S]*?lingjing:qian-pop:/, 'the first open of the day pops it, once');
+  assert.match(src, /function qianAutoPop\(slots\)[\s\S]*?lingjing:qian-pop:/, 'the first open of the day pops it, once');
   assert.match(src, /qianagain" data-divine/, '书 → 今日签 opens it again');
   const { stageCards } = await import('../scripts/stage.mjs');
   const { look } = await import('../scripts/rules.mjs');
@@ -245,6 +245,27 @@ test('placement (Hanli 11-02 「…放最下面吧…」): no top-bar chip; a mo
   const tray = look(base, content, ctx()).tray ?? [];
   assert.ok(tray.some((r) => r.id === 'divine'), 'unshaken: the tray card');
   assert.ok(!(look(call(base).state, content, ctx()).tray ?? []).some((r) => r.id === 'divine'), 'shaken: gone');
+});
+
+test('daily card waits for an open or restoring board without spending the day', () => {
+  const src = fs.readFileSync(path.join(here, '../scripts/lingjing.js'), 'utf8');
+  const fn = src.match(/function qianAutoPop\(slots\) \{[\s\S]*?\n\}/)?.[0];
+  assert.ok(fn);
+  const look = { today: { date: '2026-11-14' }, qian: {} }, view = { opened: null };
+  const store = new Map();
+  const localStorage = { getItem: (key) => store.get(key), setItem: (key, value) => store.set(key, value) };
+  const pop = new Function('look', 'view', 'bout', 'herKey', 'localStorage', 'keep', `return (${fn});`)(look, view, null, () => 'save', localStorage, (patch) => Object.assign(view, patch));
+  pop({ main: [{ card: 'board', id: 'game' }] });
+  assert.equal(view.qianOpen, undefined);
+  assert.equal(store.size, 0);
+  view.opened = { id: 'game' }; // restoring before its slot is ready
+  pop({ main: [] });
+  assert.equal(store.size, 0);
+  assert.equal(view.qianOpen, undefined);
+  view.opened = null;
+  pop({ main: [] });
+  assert.equal(view.qianOpen, true);
+  assert.equal(store.get('lingjing:qian-pop:save:2026-11-14'), '1');
 });
 
 test('her line never carries his 名字 onto the card or the picture; kept friends never reach Ling or 银月', async () => {
