@@ -590,6 +590,13 @@ export function mijingDuel(state, content, ctx, args) {
   const id = String(args.id ?? ''), run = runOf(state), game = gameOf(run, content);
   if (!run || !game || game.id !== id || run.room.phase !== 'fight') return refuse('not-here', null);
   const creature = creatureOf(content, game.creature);
+  // 落子记下 (as tasks.mjs duel `mark`): the moves so far kept with the open fight; nothing is settled here.
+  if (args.action === 'mark') {
+    if (state.fight?.game !== id) return refuse('not-started', null, { game: id });
+    const s = clone(state);
+    s.fight = { ...s.fight, picks: String(args.picks ?? '').split(',').map(t => t.trim()).filter(Boolean).slice(0, 400) };
+    return { state: s, result: { ok: true, marked: s.fight.picks.length } };
+  }
   if (!args.picks) {
     if (state.fight && state.fight.game !== id) return refuse('in-a-fight', null, { game: state.fight.game });
     const s = clone(state), resuming = s.fight?.game === id;

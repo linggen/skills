@@ -65,3 +65,22 @@ test('winning the boss rematch clears the run', () => {
   const out = call(content, 'duel', door.state, { id, picks: picks.join(',') });
   assert.equal(out.result.ended, 'clear'); assert.equal(out.state.mijing.run, undefined);
 });
+// The page marks its moves as the fight goes (落子记下) and then settles: a mark keeps the moves with the open fight and
+// settles nothing, so the settle that follows still finds its fight (2026-11-13: a 秘境 mark settled the fight, the
+// page's own settle was refused not-started, and the lost card with its 再战 never showed).
+test('a mark on a 秘境 fight settles nothing; the settle after it still lands', () => {
+  const { s, id } = room();
+  const door = call(content, 'duel', s, { id }); assert.ok(door.result.ok);
+  const picks = Array(80).fill('end').join(',');
+  const marked = call(content, 'duel', door.state, { id, action: 'mark', picks });
+  assert.equal(marked.result.ok, true); assert.equal(marked.result.marked, 80);
+  assert.equal(marked.state.fight.game, id); assert.equal(marked.state.mijing.run.room.phase, 'fight');
+  assert.equal(marked.state.mijing.run.rematch ?? 0, 0, 'no rematch spent by a mark');
+  const out = call(content, 'duel', marked.state, { id, picks, lesson: 'trade' });
+  assert.equal(out.result.rematch, true); assert.equal(out.state.mijing.run.rematch, 1);
+});
+test('a mark with no open 秘境 fight is refused', () => {
+  const { s, id } = room();
+  const out = call(content, 'duel', s, { id, action: 'mark', picks: 'end' });
+  assert.equal(out.result.ok, false); assert.equal(out.result.refused, 'not-started');
+});
