@@ -339,7 +339,9 @@ function run(container, { lang = 'zh', seed = String(Date.now()), signal, shell,
       .then(([meta]) => { sheets[who] = makeSheet(meta, look.tint ? tinted(doc, img, look.tint) : img, look.height); })
       .catch((e) => console.warn('[fighter] frames', who, e));
   }
-  const draw = painter(canvas, { art, sheets, kind, calm: () => Boolean(still?.matches) });
+  // the keys' boxes, for the line under the bout to keep clear of them (draw.js keyGap)
+  const keys = () => (root.classList.contains('pad-off') ? [] : [...root.querySelectorAll('.gf-pad button[data-k], .gf-pad .gf-dial')].map((e) => e.getBoundingClientRect()));
+  const draw = painter(canvas, { art, sheets, kind, keys, calm: () => Boolean(still?.matches) });
   const cueBtn = root.querySelector('button.gf-cue');
   const g = { state: core.newGame(seed, 1, { levels: [level] }) };
   peek?.(() => g.state);

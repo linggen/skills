@@ -968,24 +968,56 @@ export function wrapLine(measure, text, room, max = 3) {
     const cur = lines[lines.length - 1];
     if (cur && measure((cur + t).trimEnd()) > room) {
       // a stop or a dash never opens a line: it goes with the character before it
-      if (LINE_HEAD.includes(t[0]) && cur.length > 1) { lines[lines.length - 1] = cur.slice(0, -1); lines.push(cur.slice(-1) + t); } else lines.push(t);
+      // (a run of them, 「。」」: back to the first character that may open one)
+      let n = 1;
+      while (LINE_HEAD.includes(t[0]) && n < cur.length - 1 && LINE_HEAD.includes(cur[cur.length - n])) n += 1;
+      if (LINE_HEAD.includes(t[0]) && cur.length > 1) { lines[lines.length - 1] = cur.slice(0, -n); lines.push(cur.slice(-n) + t); } else lines.push(t);
     } else lines[lines.length - 1] = cur + t;
   }
   const out = lines.map((l) => l.trim()).filter(Boolean);
   return out.length > max ? [...out.slice(0, max - 1), out.slice(max - 1).join('')] : out;
+}
+/* The pad's keys over the field (the desk's, the phone on its side), in field units: `lo` the left keys' right edge, `hi`
+   the right keys' left edge, `top` their highest top — set by the painter each frame a line shows (11-14: a long line ran
+   under 技 and 腿 as it had under 收起按键). Null when no key lies on the field (hidden, or under it on a narrow board). */
+let KEYS = null;
+export function keyGap(rects, cr, c, x0, t0, k) {
+  let lo = -Infinity, hi = Infinity, top = Infinity;
+  const ux = (px) => ((px - cr.left) * c - x0) / k, uy = (py) => ((py - cr.top) * c - t0) / k;
+  for (const r of rects) {
+    if (!r.width || r.bottom <= cr.top || r.top >= cr.bottom || r.right <= cr.left || r.left >= cr.right) continue;
+    if (r.left + r.width / 2 < cr.left + cr.width / 2) lo = Math.max(lo, ux(r.right)); else hi = Math.min(hi, ux(r.left));
+    top = Math.min(top, uy(r.top));
+  }
+  return top < Infinity ? { lo, hi, top } : null;
+}
+/* The band in the column between the keys when it would lie under one — wrapped (up to four) to fit it, centred in it;
+   too narrow a column, the whole width just over the keys' top. Never smaller type. */
+export function bandPlace(measure, text, keys = null) {
+  const fit = (l, r, max) => {
+    const room = r - l - 20, lines = wrapLine(measure, text, room, max);
+    return { lines, room, cx: (l + r) / 2, wmax: r - l, bottom: H - 12, ok: lines.every((x) => measure(x) <= room) };
+  };
+  const wide = fit(20, W - 20, 3);
+  if (!keys) return wide;
+  const bw = Math.min(wide.wmax, Math.max(...wide.lines.map(measure)) + 44);
+  const l = Math.max(20, keys.lo + 16), r = Math.min(W - 20, keys.hi - 16);
+  if (W / 2 - bw / 2 >= l && W / 2 + bw / 2 <= r) return wide;
+  const col = r - l > 160 ? fit(l, r, 4) : null;
+  return col?.ok ? col : { ...wide, bottom: Math.min(wide.bottom, keys.top - 6) };
 }
 function lineBand(ctx, text, px = 1) {
   if (!text) return;
   ctx.save();
   const size = Math.max(21, Math.ceil(LINE_MIN / Math.max(px, 0.05)));
   ctx.font = `500 ${size}px ${SERIF}`;
-  const room = W - 60, lines = wrapLine((t) => ctx.measureText(t).width, text, room);
+  const { lines, room, cx, wmax, bottom } = bandPlace((t) => ctx.measureText(t).width, text, KEYS);
   const lh = Math.round(size * 1.3), bh = lines.length * lh + 7; // one line at 21: the band's 34 as before
-  const w = Math.min(W - 40, Math.max(...lines.map((l) => ctx.measureText(l).width)) + 44), top = H - 12 - bh;
+  const w = Math.min(wmax, Math.max(...lines.map((l) => ctx.measureText(l).width)) + 44), top = bottom - bh;
   ctx.fillStyle = 'rgba(24,20,16,.72)';
-  ctx.beginPath(); ctx.roundRect((W - w) / 2, top, w, bh, 6); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(cx - w / 2, top, w, bh, 6); ctx.fill();
   ctx.fillStyle = '#f3e9d2'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  lines.forEach((l, i) => ctx.fillText(l, W / 2, top + 3.5 + lh * (i + 0.5), room));
+  lines.forEach((l, i) => ctx.fillText(l, cx, top + 3.5 + lh * (i + 0.5), room));
   ctx.restore();
 }
 
@@ -1063,7 +1095,7 @@ function cutIn(ctx, c, img, lang, age, sheet) {
 }
 
 /** A painter for one canvas: `draw(state, lang, text)` each frame; the poses ease from the last. */
-export function painter(canvas, { art = {}, sheets = {}, calm = () => false, kind = 'desk' } = {}) {
+export function painter(canvas, { art = {}, sheets = {}, calm = () => false, kind = 'desk', keys = () => [] } = {}) {
   const ctx = canvas.getContext('2d');
   const track = { me: {}, foe: {} };
   let layers = null, layersFor = null;
@@ -1195,6 +1227,7 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false, kin
     // KO: a white flash as it falls (the slow-down is the mount's)
     if (koEnd(s.end) && s.t - s.end.at >= KO_FALL_MS && s.t - s.end.at < KO_FALL_MS + 100 && !still) { ctx.fillStyle = `rgba(255,252,240,${0.35 * (1 - (s.t - s.end.at - KO_FALL_MS) / 100)})`; ctx.fillRect(-EDGE, 0, W + 2 * EDGE, H); }
     if (s.intro && s.t < s.intro + 500) intro(ctx, s, lang, lv, kind === 'touch' && canvas.getBoundingClientRect().width <= 380);
+    if (text) { const cr = canvas.getBoundingClientRect(); KEYS = cr.width ? keyGap(keys(), cr, w / cr.width, X0, T, k) : null; }
     lineBand(ctx, text, text ? (canvas.getBoundingClientRect().width / w) * k : 1); // page px per field unit
     if (s.end) seal(ctx, say(won(s.end) ? lv.seal?.won : lv.seal?.lost, lang) || (lang === 'en' ? (won(s.end) ? 'Won' : 'Out') : (won(s.end) ? '胜' : '负')), s.t - s.end.at - (koEnd(s.end) ? KO_SEAL_MS : 300));
     // the 绝: its cut-in plays on the page's clock (the bout's is held through it)

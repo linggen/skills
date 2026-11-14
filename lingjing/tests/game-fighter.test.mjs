@@ -708,3 +708,21 @@ test('the line under the bout wraps on a narrow field, never squeezed, and no st
   const src = fs.readFileSync(new URL('../scripts/games/fighter/draw.js', import.meta.url), 'utf8');
   assert.match(src, /lineBand\(ctx, text, text \? \(canvas\.getBoundingClientRect\(\)\.width \/ w\) \* k : 1\)/, 'the band is sized by the field\'s page width');
 });
+
+test('the line under the bout keeps clear of the pad\'s keys over the field (11-14: it ran under 技 and 腿)', async () => {
+  const { bandPlace, wrapLine } = await import('../scripts/games/fighter/draw.js');
+  const em = (t) => [...t].length * 21;
+  const long = '漳水边，月下。太一宫的老井：筑基大成，在筑基上卡了三十年。一身白衣，手里托着一面铜镜，镜面朝上，像托着一碗水。「找着了。」银月不出来——你自己来。';
+  const free = bandPlace(em, long, null);
+  assert.equal(free.cx, 480, 'no keys on the field: centred, as ever');
+  const keys = { lo: 200, hi: 760, top: 420 };
+  const p = bandPlace(em, long, keys), bw = Math.max(...p.lines.map(em)) + 44;
+  assert.ok(p.cx - bw / 2 >= keys.lo && p.cx + bw / 2 <= keys.hi, 'between the two clusters');
+  assert.equal(p.lines.join(''), long);
+  for (const l of p.lines.slice(1)) assert.ok(!'，。、；：！？…—）」』'.includes(l[0]), l);
+  // a column too narrow for it: the whole width, over the keys' top
+  const tight = bandPlace(em, long, { lo: 400, hi: 520, top: 420 });
+  assert.ok(tight.bottom <= 420 - 6 && tight.cx === 480);
+  // a run of closing marks never opens a line: 「。」 goes down with the character before it
+  for (const room of [15, 16, 17, 18, 19, 20].map((n) => n * 21)) for (const l of wrapLine(em, long, room, 6).slice(1)) assert.ok(!'，。、；：！？…—）」』'.includes(l[0]), `${room}: ${l}`);
+});
