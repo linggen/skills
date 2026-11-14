@@ -81,6 +81,12 @@ test('the crawler walks the story first: side play last, 还有 N 件 once, a he
   const haunt = tap('focus', { 'duel-start': 'haunt:yezhu' }, '出手');
   assert.equal(choose(snap([haunt, go]), ctx({ target: 'chaifang' })).kind, 'go');
   assert.equal(choose(snap([haunt]), ctx()).side, true);
+  // A duel card's 留 / ✕ is a pass, not an exit to take before 出手.
+  const strike = tap('focus', { 'duel-start': 'subdue' }, '出手');
+  for (const text of ['留', '✕']) {
+    const pass = tap('box', { 'panel-exit': 'subdue', 'panel-pass': '' }, text);
+    assert.equal(choose(snap([pass, strike], { boxOn: true }), ctx()).tap, strike);
+  }
   // 还有 N 件: each page once per scene
   const c = ctx(), q = snap([tap('foot', { qnext: 'next:' }, '还有：狰')]);
   assert.equal(choose(q, c).kind, 'qnext');
