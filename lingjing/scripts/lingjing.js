@@ -2150,7 +2150,6 @@ function draw() {
   const dv = look.divination;
   if (dv?.poem && (view.castFresh || view.qianMine?.n !== dv.n || view.qianMine?.day !== dv.day || view.qianMineLang !== lang())) { keep({ qianMineLang: lang() }); qianPage.reading(dv, { fresh: view.castFresh }); }
   qianPage.evening(look);
-  qianAutoPop();
   // The slots stay put; only what fills them changes. The header and the
   // footer are redrawn only when they changed (a stream token must not
   // restart a portrait's fade or reset a chip's pop).
@@ -2159,6 +2158,9 @@ function draw() {
   // away with the rest (queue.js gameAlone) — and the stage takes the tray's height, so no board is cut off.
   const solo = Boolean(slots?.solo) || momentUp();
   document.body.classList.toggle('solo', solo);
+  // The day's 签 never pops over a game that is up or a fight kept open (a board in play at midnight, 11-14): it waits,
+  // unspent, and pops on the first draw after — an offered board in the column does not hold it back.
+  if (!solo && !look.fight) qianAutoPop();
   holdForPops(slots);
   { const realLook = look; look = headLook(); try { paintIf('headCards', headHtml(slots && look !== realLook ? { ...slots, header: headOf(look) } : slots)); } finally { look = realLook; } }
   paintIf('footRow', footRowHtml(slots));

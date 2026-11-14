@@ -238,6 +238,8 @@ test('placement (Hanli 11-02 「…放最下面吧…」): no top-bar chip; a mo
   const src = fs.readFileSync(path.join(here, '../scripts/lingjing.js'), 'utf8');
   assert.doesNotMatch(src, /omenChip|qianChipHtml|data-qian-chip/, 'nothing of the 签 on the top bar');
   assert.match(src, /function qianAutoPop\(\)[\s\S]*?lingjing:qian-pop:/, 'the first open of the day pops it, once');
+  assert.match(src, /const solo = [^\n]*\n[^\n]*toggle\('solo', solo\);\n(?:\s*\/\/[^\n]*\n)*\s*if \(!solo && !look\.fight\) qianAutoPop\(\);/, 'never over a game that is up or a fight kept open; it waits unspent');
+  assert.equal(src.match(/qianAutoPop\(\);/g).length, 1, 'popped from one place only');
   assert.match(src, /qianagain" data-divine/, '书 → 今日签 opens it again');
   const { stageCards } = await import('../scripts/stage.mjs');
   const { look } = await import('../scripts/rules.mjs');
