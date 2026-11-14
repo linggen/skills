@@ -152,6 +152,11 @@ test('a framed card\'s cost and 五行 seal stand above the frame, and in from i
   assert.match(battle, /\.battle \.bhand > \.bcard \.bleaf:is\(\.pin-yin, \.pin-jin, \.pin-baoshi, \.pin-zuanshi\) > \.bcost \{ top: max\(4px, 6cqw\); left: max\(4px, 6cqw\); \}/);
 });
 
+test('a framed board card\'s status stands above the frame, in from its corner by the band', () => {
+  const battle = fs.readFileSync(new URL('../scripts/battle.css', import.meta.url), 'utf8');
+  assert.match(battle, /\.bminion:is\(\.pin-yin, \.pin-jin, \.pin-baoshi, \.pin-zuanshi\) > small \{ z-index: 4; left: max\(4px, calc\(6cqw \+ 1px\)\); top: max\(4px, calc\(6cqw \+ 1px\)\);/);
+});
+
 test('v2 frames use snapped SVG patterns, phone colours and motion-safe small marks', () => {
   const css = fs.readFileSync(new URL('../scripts/battle.css', import.meta.url), 'utf8');
   const rv = fs.readFileSync(new URL('../scripts/card-reveal.css', import.meta.url), 'utf8');

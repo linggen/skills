@@ -383,6 +383,9 @@
 .bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > :is(.bcost, .belem) { z-index: 4; }
 /* A percent here would be of the RANK's width (the card's containing block), not the card's: 6% of a 1300px row squeezed the face to a sliver. */
 .bminion:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) { padding: max(4.5px, calc(var(--mw) * .06 + 1.5px)); }
+/* Its status (「可出手 · 护主」) above the band, its corner boss and its top diamond, in from the corner by the band's width
+   (the gate, 11-13: 「可出手」 read 「]出手」 at 1280, half under the diamond at 430). */
+.bminion:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > small { z-index: 4; left: max(4px, calc(6cqw + 1px)); top: max(4px, calc(6cqw + 1px)); max-width: calc(100% - 2 * max(4px, calc(6cqw + 1px)) - 22px); }
 .bcard.dim .bleaf:has(> .bpin), .deckfaces .bcard.face.out .bleaf:has(> .bpin) { filter: none; opacity: 1; }
 .bcard.dim .bleaf:has(> .bpin) > :not(.bpin), .deckfaces .bcard.face.out .bleaf:has(> .bpin) > :not(.bpin) { filter: grayscale(.8); opacity: .62; }
 .bminion.dim:has(> .bpin) { opacity: 1; }
