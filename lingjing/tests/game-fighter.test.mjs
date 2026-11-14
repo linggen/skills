@@ -706,7 +706,23 @@ test('the line under the bout wraps on a narrow field, never squeezed, and no st
   for (const l of lines.slice(1)) assert.ok(!'，。、；：！？…—）」』'.includes(l[0]), l);
   assert.deepEqual(wrapLine(em, '短句。', 900), ['短句。']);
   const src = fs.readFileSync(new URL('../scripts/games/fighter/draw.js', import.meta.url), 'utf8');
-  assert.match(src, /lineBand\(ctx, text, text \? \(canvas\.getBoundingClientRect\(\)\.width \/ w\) \* k : 1\)/, 'the band is sized by the field\'s page width');
+  assert.match(src, /const pagePx = \(\(canvas\.getBoundingClientRect\?\.\(\)\.width \|\| w\) \/ w\) \* k;/, 'page px per field unit, from the field\'s page width');
+  assert.match(src, /lineBand\(ctx, text, text \? pagePx : 1\)/, 'the band is sized by it');
+});
+
+test('the name plates are drawn only where a name can be read (11-14: 6 px on a phone\'s card)', async () => {
+  const { namesFit, NAME_SIZE, NAME_MIN } = await import('../scripts/games/fighter/draw.js');
+  assert.equal(namesFit(0.39), false, 'a 398 px phone field: left off');
+  assert.equal(namesFit(1), true, 'the desk: drawn');
+  assert.equal(namesFit(), true, 'no measure: drawn');
+  assert.ok(NAME_SIZE * 0.39 < NAME_MIN && NAME_MIN <= NAME_SIZE);
+  const src = fs.readFileSync(new URL('../scripts/games/fighter/draw.js', import.meta.url), 'utf8');
+  const hud = src.slice(src.indexOf('function hud('), src.indexOf('function chain('));
+  const under = hud.slice(hud.indexOf('if (namesFit(view.px)) {'));
+  assert.ok(hud.includes('if (namesFit(view.px)) {'), 'one switch');
+  assert.equal(hud.match(/plate\(ctx/g).length, 2, 'two plates');
+  assert.equal(under.slice(0, under.indexOf('\n  }\n')).match(/plate\(ctx/g).length, 2, 'both under the switch');
+  assert.match(src, /view\.px = pagePx;\n    hud\(ctx, s, art, lang, view\);/, 'the frame hands the hud its measure');
 });
 
 test('the line under the bout keeps clear of the pad\'s keys over the field (11-14: it ran under 技 and 腿)', async () => {

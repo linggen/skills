@@ -840,6 +840,11 @@ export function roundEndWord(s, lang) {
   const key = s.end.won ? 'roundWon' : 'roundLost';
   return say(s.level?.words?.[key], lang) || (ROUND_WORDS[lang] ?? ROUND_WORDS.zh)[key];
 }
+/* The name plates over the bars, only where they can be read: on a phone's card a field unit is ~.39 page px, and the
+   plates' 15 were 6 px smudges (the gate, 11-14 at 430). Under NAME_MIN page px they are left off — the portraits and the
+   bars' colours say who is who. To draw them larger there instead, this is the one switch. */
+export const NAME_SIZE = 15, NAME_MIN = 9;
+export const namesFit = (px = 1) => NAME_SIZE * px >= NAME_MIN;
 function hud(ctx, s, art, lang, view) {
   const lv = s.level ?? {}, me = lv.me ?? {}, foe = lv.foe ?? {}, BW = 320;
   bar(ctx, 86, BW, s.me.hp / s.R.me.hp, view.ghostMe, me.look?.bar ?? '#a33025', false);
@@ -863,13 +868,15 @@ function hud(ctx, s, art, lang, view) {
   const rounds = roundNow(s);
   if (rounds) roundPips(ctx, rounds, BW);
   ctx.textBaseline = 'middle';
-  ctx.font = `600 15px ${SERIF}`;
-  const name = (n, b) => `${say(n, lang)} · ${say(b, lang)}`;
-  const tl = name(me.name, me.bar), tr = name(foe.name, foe.bar);
-  const wl = ctx.measureText(tl).width + 22, wr = ctx.measureText(tr).width + 22;
-  plate(ctx, 82, 12, wl, 23); plate(ctx, W - 82 - wr, 12, wr, 23);
-  ctx.fillStyle = '#f1e6cf'; ctx.textAlign = 'left'; ctx.fillText(tl, 93, 24);
-  ctx.textAlign = 'right'; ctx.fillText(tr, W - 93, 24);
+  if (namesFit(view.px)) {
+    ctx.font = `600 ${NAME_SIZE}px ${SERIF}`;
+    const name = (n, b) => `${say(n, lang)} · ${say(b, lang)}`;
+    const tl = name(me.name, me.bar), tr = name(foe.name, foe.bar);
+    const wl = ctx.measureText(tl).width + 22, wr = ctx.measureText(tr).width + 22;
+    plate(ctx, 82, 12, wl, 23); plate(ctx, W - 82 - wr, 12, wr, 23);
+    ctx.fillStyle = '#f1e6cf'; ctx.textAlign = 'left'; ctx.fillText(tl, 93, 24);
+    ctx.textAlign = 'right'; ctx.fillText(tr, W - 93, 24);
+  }
   ctx.font = `700 11px ${SERIF}`; ctx.fillStyle = '#e7c06a';
   const stocks = (q) => Math.floor((q ?? 0) / 100), fullW = say(lv.words?.full, lang) || (lang === 'en' ? 'MAX' : '绝');
   if (s.me.max > s.t) { ctx.textAlign = 'left'; ctx.fillStyle = '#ff9a3c'; ctx.fillText(lang === 'en' ? 'MAX' : '爆气', 86 + BW * 0.62 + 8, 64); ctx.fillStyle = '#e7c06a'; }
@@ -1216,6 +1223,8 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false, kin
     view.ghostFoe = Math.max(s.foe.bal / s.R.foe.bal, view.ghostFoe - 0.006 * dtf);
     view.t = s.t;
     if (s.combo?.n >= 2 && s.combo.who === 'me') view.chain = { n: s.combo.n, at: view.chain?.n === s.combo.n ? view.chain.at : s.t };
+    const pagePx = ((canvas.getBoundingClientRect?.().width || w) / w) * k; // page px per field unit
+    view.px = pagePx;
     hud(ctx, s, art, lang, view);
     chain(ctx, view, lang, say(lv.words?.chain, lang) || (lang === 'en' ? 'hits' : '连'));
     cueMark(ctx, s, lang, kind);
@@ -1228,7 +1237,7 @@ export function painter(canvas, { art = {}, sheets = {}, calm = () => false, kin
     if (koEnd(s.end) && s.t - s.end.at >= KO_FALL_MS && s.t - s.end.at < KO_FALL_MS + 100 && !still) { ctx.fillStyle = `rgba(255,252,240,${0.35 * (1 - (s.t - s.end.at - KO_FALL_MS) / 100)})`; ctx.fillRect(-EDGE, 0, W + 2 * EDGE, H); }
     if (s.intro && s.t < s.intro + 500) intro(ctx, s, lang, lv, kind === 'touch' && canvas.getBoundingClientRect().width <= 380);
     if (text) { const cr = canvas.getBoundingClientRect(); KEYS = cr.width ? keyGap(keys(), cr, w / cr.width, X0, T, k) : null; }
-    lineBand(ctx, text, text ? (canvas.getBoundingClientRect().width / w) * k : 1); // page px per field unit
+    lineBand(ctx, text, text ? pagePx : 1);
     if (s.end) seal(ctx, say(won(s.end) ? lv.seal?.won : lv.seal?.lost, lang) || (lang === 'en' ? (won(s.end) ? 'Won' : 'Out') : (won(s.end) ? '胜' : '负')), s.t - s.end.at - (koEnd(s.end) ? KO_SEAL_MS : 300));
     // the 绝: its cut-in plays on the page's clock (the bout's is held through it)
     if (s.cutin && s.cutin !== view.cut) { view.cut = s.cutin; view.cutAt = now; }
