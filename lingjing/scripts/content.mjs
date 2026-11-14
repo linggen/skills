@@ -260,7 +260,9 @@ export function withBalance(content) {
   // An errand's 灵石 the book tells (master.economy.told `quests.<id>.grant`, batch 2): paid as written.
   const stones = b.master?.economy?.told ?? {};
   const quests = content.quests ? content.quests.map(q => (q.grant?.wealth > 0 && stones[`quests.${q.id}.grant`] ? { ...q, grant: { ...q.grant, wealth_told: true } } : q)) : content.quests;
-  return { ...content, ladder, rewards, fantong, items, quests, chapters: toldFolded(content.chapters, b) };
+  // 斗法 v4's switch (balance.json duel_fair.on): on, its knob block is the duel_hp.foe every fair rule reads; off, nothing changes.
+  const balance = b.duel_fair?.on && b.duel_fair.foe ? { balance: { ...b, duel_hp: { ...b.duel_hp, foe: structuredClone(b.duel_fair.foe) } } } : {};
+  return { ...content, ...balance, ladder, rewards, fantong, items, quests, chapters: toldFolded(content.chapters, b) };
 }
 
 /* `over` laid onto `base`, object by object (arrays and numbers whole). */

@@ -191,15 +191,15 @@ test('the fourth fit: skill by standing is read off the data, set by the door, a
   const { standingOf, foeOf: foeAt, roadState: roadAt } = await import('../tools/story-fights.mjs');
   const { withRules, FIT } = await import('../tools/duel-lines.mjs');
   const by = FIT.ai.by_standing;
-  assert.deepEqual([[1, 'roaming'], [4, 'roaming'], [5, 'roaming'], [9, 'roaming']].map(([l, s]) => lineByStanding(by, s, l)), ['foe', 'foe', 'foe', 'foe']);
-  assert.deepEqual(['room', 'xiong', 'boss', 'story', 'nothing'].map(s => lineByStanding(by, s, 3)), ['foe', 'careful', 'careful', 'foe', null]);
+  assert.deepEqual([[1, 'roaming'], [4, 'roaming'], [5, 'roaming'], [9, 'roaming']].map(([l, s]) => lineByStanding(by, s, l)), ['foe', 'foe', 'careful', 'careful']); // careful from 练气五层
+  assert.deepEqual(['room', 'xiong', 'boss', 'story', 'nothing'].map(s => lineByStanding(by, s, 3)), ['foe', 'lookahead', 'lookahead', 'foe', null]);
   const at = key => FIGHTS.find(x => keyOf(x) === key);
   assert.deepEqual(['lang@mengshan', 'qiuyu@mijing-anhe', 'heyu@mijing-anhe', 'qiuyu@mijing-ya', 'gui@wm-wangzuo/open', 'qiuyu@09-lingcao/fight', 'foe-yinhu@00-fox/save'].map(k => standingOf(at(k))),
     ['roaming', 'room', 'xiong', 'xiong', 'story', null, null]); // a marked fight (band · teach · trial) keeps its own say; a scene is the story's
   const line = key => setupOf(at(key), { party: [] }).foe.ai ?? 'foe';
   const keys = ['lang@mengshan', 'renyu@sishui', 'qiuyu@mijing-anhe', 'heyu@mijing-anhe', 'gui@wm-wangzuo/open', 'qiuyu@09-lingcao/fight'];
   assert.deepEqual(keys.map(k => withRules(false, () => line(k), FIT)), keys.map(() => 'foe')); // switch off: nothing is read
-  assert.deepEqual(keys.map(k => withRules(true, () => line(k), FIT)), ['foe', 'foe', 'foe', 'careful', 'foe', 'foe']);
+  assert.deepEqual(keys.map(k => withRules(true, () => line(k), FIT)), ['foe', 'careful', 'foe', 'lookahead', 'foe', 'careful']);
   // The game's own door stamps the standing (rules/world.mjs foeOf), only with the switch on.
   const { gameFoe } = await import('../scripts/rules/world.mjs');
   const games = [{ creature: 'lang', hunt: 'mengshan' }, { creature: 'gui' }, { creature: 'heyu', mijing: true, standing: 'xiong' }];

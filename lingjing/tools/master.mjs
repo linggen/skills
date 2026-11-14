@@ -281,6 +281,7 @@ export function derive(raw0, { ladder, items, fantong = null, cards = null }) {
   raw.prices = pricesOf(raw, { items, fantong, cards, effects: raw.pills.effects, ladder });
   if (M.duel_lend) raw.duel_lend = structuredClone(M.duel_lend);
   if (M.duel_deck) raw.duel_deck = structuredClone(M.duel_deck);
+  if (M.duel_fair) raw.duel_fair = structuredClone(M.duel_fair);
   if (M.mijing) raw.mijing = mijingOf(M.mijing);
   if (M.julin) raw.julin = julinOf(M.julin, raw);
   // 斗法 on the level (batch 3, master.fight): P(L)'s knobs for the rules (rules/power.mjs) and fight_length's cap on P.

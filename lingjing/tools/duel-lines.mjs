@@ -28,7 +28,10 @@ export const EVEN = { share: { weak: 1, normal: 1, strong: 1 }, by_hp: [], top: 
    ten's budget by the beast's class (`by_hp` reads the class off creatures.json `hp`); `step`: levels above his by class (never past his realm).
    Left empty here: EVEN alone is today's even set; `FIT` below is the set the fourth try ends on (skill by standing). */
 export const KNOBS_OFF = {};
-export const FIT = {
+/* The fit's knob block is the game's own (balance.json duel_fair.foe, off while duel_fair.on is false): one place for the rules and the tools. */
+export const FIT = structuredClone(content.balance.duel_fair.foe);
+/* The fourth try's set (skill by standing, all levels), kept for the record. */
+export const FIT_BY_STANDING = {
   gear: 0.2, deck: { per_level: 1.3 },
   ai: { by_standing: { roaming: 'foe', room: 'foe', xiong: 'careful', boss: 'careful', story: 'foe' } },
 };
