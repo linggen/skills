@@ -164,6 +164,14 @@ test('a framed board card\'s 五行 seal is never clipped by its short picture r
   assert.doesNotMatch(battle, /\.deckfaces \.bcard:has\(\.bpin\) \.deckfresh \{[^}]*top:/, 'the 新 chip keeps its corner on a framed card');
 });
 
+test('a body\'s foot keeps the room its 攻 and 血 rise into; 新 and 借 keep off the cost and the seal (tools/card-fit.mjs)', () => {
+  const battle = fs.readFileSync(new URL('../scripts/battle.css', import.meta.url), 'utf8');
+  assert.match(battle, /\.bleaf:has\(> \.batk\), \.battle \.bhand > \.bcard \.bleaf:has\(> \.batk\) \{ padding-bottom: 20px; \}/);
+  assert.match(battle, /\.battle \.bhand > \.bcard \.bleaf:has\(> \.batk\) \{ padding-bottom: 23px; \}/);
+  assert.match(battle, /\.bcard > \.bfresh, \.deckfaces \.bcard \.deckfresh \{ left: 50%;/);
+  assert.match(battle, /\.bcard\.lent > \.blent-mark \{ top: auto; right: auto; left: 50%; bottom: -\.5em;/);
+});
+
 test('v2 frames use snapped SVG patterns, phone colours and motion-safe small marks', () => {
   const css = fs.readFileSync(new URL('../scripts/battle.css', import.meta.url), 'utf8');
   const rv = fs.readFileSync(new URL('../scripts/card-reveal.css', import.meta.url), 'utf8');

@@ -536,7 +536,7 @@
   .bminion .batk, .bminion .bhp { --gem: 18px; }
   .bleaf { padding: 5px 4px 12px; }
   .bleaf .bname { font-size: 12.5px; }
-  .bleaf .btext { font-size: 9.5px; line-height: 1.25; }
+  .bleaf .btext { font-size: 10px; line-height: 1.25; } /* never under 10 px (tools/card-fit.mjs: the 卡册 at 430 and 375) */
   /* 框 inside the narrower padding (4px a side here): the frame keeps clear of the rule text. */
   .bleaf > .bpin { inset: 1px; }
   .bleaf .bcost { width: 22px; height: 24px; font-size: 13px; top: 2px; left: 2px; }
@@ -604,8 +604,9 @@
   .battle .bhand > .bcard:hover { transform: translateX(calc(var(--wx, 0) * var(--wcw))) rotateY(var(--wt, 0deg)) scale(var(--ws, 1)); }
   .battle .bhand > .bcard.held { transform: translateX(calc(var(--wx, 0) * var(--wcw))) translateY(-8px) scale(calc(var(--ws, 1) * 1.03)); z-index: 41; }
   .battle .bhand > .bcard .bleaf, .battle .bhand > .bcard:last-child:not(:first-child) .bleaf { inset: 0; width: 100%; height: 100%; padding: 7px 7px 16px; }
-  .battle .bhand > .bcard .bname { font-size: clamp(14px, calc(var(--wcw) * .095), 19px); margin-top: 5px; }
-  .battle .bhand > .bcard .btext { font-size: clamp(12px, calc(var(--wcw) * .072), 14.5px); line-height: 1.3; margin-top: 2px; }
+  .battle .bhand > .bcard .bname { font-size: clamp(14px, calc(var(--wcw) * .095), 19px); line-height: 1.3; margin-top: 5px; }
+  /* 12.5 at least: a side card is drawn at ~.81 of its size, and its words stay ≥ 10 px (tools/card-fit.mjs) */
+  .battle .bhand > .bcard .btext { font-size: clamp(12.5px, calc(var(--wcw) * .072), 14.5px); line-height: 1.3; margin-top: 2px; }
   /* Why it cannot be played lies at the foot of the picture's row, never over the name or the words (11-07: 气血已满 hid
      青光's words): that row is never lower than the cost and the why together, a why of two lines too (the playbot, 11-07:
      「对方阵前无人」 wrapped and rose over the cost) — the picture sized out of it (contain: size), the why's top margin the
@@ -847,3 +848,17 @@ body.fighting .focus > .gshell > .gshell-bar { padding-bottom: 4px; background: 
   .battle .bhand > .bcard.r .bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > .bcost { left: auto; right: max(4px, 6cqw); }
   .battle .bhand > .bcard.r .bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > .belem { right: auto; left: max(9px, calc(6cqw + 3px)); }
 }
+
+/* Every card fits its face (tools/card-fit.mjs: every card × 品 × place × size, by its boxes). */
+/* A body's 攻 and 血 rise into its card — 18 px on the desk (24 px gems, 6 px below the foot), 15 px on a narrow leaf
+   (20, 5), 21 px in the phone hand (28, 7) — so its foot keeps that room and its words never run under them (the gate,
+   11-14: 狰's 「入阵：抽 1 张」 under its gems in the small 375 hand, framed or not). The picture's row gives it. */
+.bleaf:has(> .batk), .battle .bhand > .bcard .bleaf:has(> .batk) { padding-bottom: 20px; }
+@container scene (max-width: 640px) {
+  .bleaf:has(> .batk) { padding-bottom: 17px; }
+  .battle .bhand > .bcard .bleaf:has(> .batk) { padding-bottom: 23px; }
+}
+/* 新 and 借 keep off the corners — the cost top left, the 五行 seal top right (both turn about on a card right of the
+   centre): 新 on the card's top edge at its middle, 借 on its foot between 攻 and 血. */
+.bcard > .bfresh, .deckfaces .bcard .deckfresh { left: 50%; right: auto; top: -7px; transform: translateX(-50%); }
+.bcard.lent > .blent-mark { top: auto; right: auto; left: 50%; bottom: -.5em; transform: translateX(-50%); }

@@ -13,6 +13,7 @@
 }
 .rv-paper {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; overflow: hidden;
+  box-sizing: border-box; padding-bottom: 8%; /* the words end above the frame's foot; a long name's second line takes it from the picture */
   border-radius: 10px; border: 2px solid #2b2620;
   background: radial-gradient(circle at 30% 20%, #fbf6ea 0%, #efe4cc 70%, #e2d3b2 100%);
   box-shadow: 0 0 0 5px rgba(251, 246, 234, .9), 0 0 0 6px rgba(43, 38, 32, .5), 0 22px 48px rgba(31, 24, 14, .45);
@@ -44,9 +45,9 @@
 @keyframes rv-pin-sheen { 0% { background-position: 300% 0; } 24%, 100% { background-position: -200% 0; } }
 @media (prefers-reduced-motion: reduce) { .rv-card.pin-zuanshi .rv-frame { animation: none; background: none; } }
 .rv-card:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) .rv-cost { left: 10%; top: 10%; }
-.rv-art { width: 86%; margin-top: 9%; aspect-ratio: 1; overflow: hidden; border-radius: 4px; background: #e9dfc7; }
+.rv-art { width: 86%; margin-top: 9%; aspect-ratio: 1; flex: 0 1 auto; min-height: 0; overflow: hidden; border-radius: 4px; background: #e9dfc7; }
 .rv-art img { width: 100%; height: 100%; object-fit: cover; display: block; filter: sepia(.12) contrast(1.02); }
-.rv-name { margin-top: 6%; font-family: var(--serif); font-size: calc(var(--cw) * .12); font-weight: 700; color: #1d1b17; letter-spacing: .12em; }
+.rv-name { margin-top: 6%; max-width: 82%; text-align: center; text-wrap: balance; font-family: var(--serif); font-size: calc(var(--cw) * .12); font-weight: 700; color: #1d1b17; letter-spacing: .12em; } /* a long name (一箭 · 偏左半寸) wraps inside the frame */
 .rv-kind { font-size: calc(var(--cw) * .056); color: #6a6458; letter-spacing: .2em; }
 .rv-cost, .rv-atk, .rv-hp {
   position: absolute; width: calc(var(--cw) * .15); height: calc(var(--cw) * .15); display: flex; align-items: center; justify-content: center;

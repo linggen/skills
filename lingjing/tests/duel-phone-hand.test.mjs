@@ -47,7 +47,7 @@ test('the phone\'s hand is a wheel: the room\'s CSS turns it on, the desk keeps 
   assert.match(phone, /--wcw: min\(47cqw, calc\(\(100cqh - 48px\) \* \.71\)\);/, 'the centre card ~45% of the room, or what the height allows');
   assert.match(phone, /transform: translateX\(calc\(var\(--wx, 0\) \* var\(--wcw\)\)\) rotateY\(var\(--wt, 0deg\)\) scale\(var\(--ws, 1\)\);/);
   assert.match(phone, /\.battle \.bhand > \.bcard\.far \{ opacity: 0; pointer-events: none; \}/);
-  assert.match(phone, /\.battle \.bhand > \.bcard \.btext \{ font-size: clamp\(12px,/, 'the centre card\'s words at a phone\'s reading size');
+  assert.match(phone, /\.battle \.bhand > \.bcard \.btext \{ font-size: clamp\(12\.5px,/, 'the centre card\'s words at a phone\'s reading size (≥ 10 px on a side card at .8)');
   assert.match(phone, /\.battle \.bhand > \.bcard\.r \.bcost \{ left: auto; right: 4px; \}/, 'a card right of the centre shows its cost on its outer corner');
   assert.doesNotMatch(css.slice(0, css.indexOf('@container scene (max-width: 640px) {')), /--wheel/, 'never on the desk');
   assert.match(kapai, /const wheel = wireWheel\(host\);/);
