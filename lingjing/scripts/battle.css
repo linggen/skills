@@ -421,6 +421,13 @@
 /* Only 结束回合 left: on the seam's row beside 上一手 (wrapping under it where the room is narrow), never over it. */
 .bseam { flex-wrap: wrap; align-items: center; gap: 3px 10px; }
 .bhint.bstuck { position: relative; z-index: 1; max-width: 92%; }
+/* …and clear of a framed card's top diamond (宝石 / 钻石: it stands ~8 px over the card) on the rank under the seam
+   (11-14: at 375 and 1280 the diamonds' tips ran under the word): the word a little high on the seam, the room under it
+   kept — the held word by its margins, the flashed one set up a touch and slimmer. The rank over the seam has no diamond
+   at its foot. */
+.bhint.bstuck { margin: -3px 0 6px; }
+.bhints { transform: translate(-50%, calc(-50% - 4px)); }
+.bhints > .bhint { padding: 1px 14px; line-height: 16px; }
 
 /* ── Motion: a stroke, a bloom, a number, a splash, a dissolve ── */
 .bstroke { position: absolute; z-index: 6; height: 7px; margin-top: -3.5px; transform-origin: 0 50%; pointer-events: none; border-radius: 50% 100% 100% 50% / 50%;
