@@ -10,6 +10,7 @@ import { buyBack, visitorHere } from './visiting.mjs';
 import { huiNow, huiOrder, sceneHui } from './hui.mjs';
 import { waitsTheBook } from './codex.mjs';
 import { mijingDoors, mijingEncounter } from './mijing.mjs';
+import { fixedSheet } from './cards.mjs';
 import { yaoshouWave } from './forms.mjs';
 
 const STORY_WORDS = 300, STORY_CHARS = 600;
@@ -482,6 +483,8 @@ function meetBeast(state, cid, won, now) {
    stretch is weighed apart (tools/story-fights.mjs); a game with no `hunt` is
    never a pool's. */
 const poolEntry = (content, placeId, cid) => (poolOf(content, placeOf(content, placeId))?.beasts ?? []).find(b => b.creature === cid) ?? null;
+/* Exported as `gameFoe` for the tests (tests/duel-audit.test.mjs: the standing the door stamps). */
+export { foeOf as gameFoe };
 function foeOf(content, game) {
   const creature = creatureOf(content, game.creature);
   // A game that carries its own deck stands on it.
@@ -493,7 +496,10 @@ function foeOf(content, game) {
   // Its level (batch 3, rules/cards.mjs foeLevel): met again and again, his own held inside the band of where it is met — the
   // pool's place, a 秘境 重 (`game.levels`, rules/mijing.mjs); a story fight stands at its exit's `level` (weighed, below).
   const band = game.levels ?? (game.hunt ? placeOf(content, game.hunt)?.levels : null);
-  const base = base1 && band ? { ...base1, levels: band } : base1;
+  const base2 = base1 && band ? { ...base1, levels: band } : base1;
+  // Where it stands (斗法 v4: how well a beast plays follows its standing, cards.mjs evenAi): a 秘境 room says its own (room · xiong · boss),
+  // a pool's beast roams, any other fight is the story's. Only where the fair rules stand; off, the creature is as it was.
+  const base = base2 && fixedSheet(content) ? { ...base2, standing: game.standing ?? (game.hunt ? 'roaming' : 'story') } : base2;
   return base && game.foe ? weighed(base, game.foe) : base;
 }
 /* A scene's fight weighed for where the story meets its beast (the exit game's `foe`: `hp`, `deck`,

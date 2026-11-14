@@ -20,7 +20,7 @@
 import { boardCost, dayKey, lockedOf, pick, seedOf, settleStamina, staminaLimited, staminaMax } from '../state.mjs';
 import { clone, pay, refuse, spendStamina, staminaRefusal } from './core.mjs';
 import { battle, POUCH_MAX, REALMS, shown, shownSide } from '../battle.js';
-import { cardCatalog, deckFor, fightPill, fightSetup, hpMaxOf, recordDuelOutcome, winCard } from './cards.mjs';
+import { cardCatalog, deckFor, fightPill, fixedSheet, fightSetup, hpMaxOf, recordDuelOutcome, winCard } from './cards.mjs';
 import { hashOf } from './travel.mjs';
 import { stow, fullLine } from './pouch.mjs';
 import { creatureOf, foeOf, meetBeast, passed, placeName, placeOf } from './world.mjs';
@@ -540,7 +540,9 @@ function gameOf(run, content) {
   if (!room?.foe) return null;
   // A 重 is a place: its beasts meet him at his level held in its band (mijing.json `levels`, batch 3).
   const band = tierRow(content, run.tier)?.levels ?? null;
-  return { id: mijingFightId(room.id), kind: 'duel', creature: room.foe.creature, deal: `${run.seed}|${room.id}`, foe: { hp: room.foe.hp, ...(room.foe.deck ? { deck: room.foe.deck } : {}) }, ...(band ? { levels: band } : {}), mijing: true };
+  return { id: mijingFightId(room.id), kind: 'duel', creature: room.foe.creature, deal: `${run.seed}|${room.id}`, foe: { hp: room.foe.hp, ...(room.foe.deck ? { deck: room.foe.deck } : {}) }, ...(band ? { levels: band } : {}), mijing: true,
+    // Its standing, for the line that plays it (斗法 v4, world.mjs foeOf): only where the fair rules stand.
+    ...(fixedSheet(content) ? { standing: room.kind === 'boss' ? 'boss' : room.kind === 'xiong' ? 'xiong' : 'room' } : {}) };
 }
 /* The fight's setup: the door's own (cards.mjs fightSetup), his 气血 the run's (`wounds`, `hpScale` for 固本), the
    boons on what a fight reads, the 灵泉's ★ on its 功法. */

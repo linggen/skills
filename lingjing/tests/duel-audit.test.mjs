@@ -195,11 +195,16 @@ test('the fourth fit: skill by standing is read off the data, set by the door, a
   assert.deepEqual(['room', 'xiong', 'boss', 'story', 'nothing'].map(s => lineByStanding(by, s, 3)), ['foe', 'careful', 'careful', 'foe', null]);
   const at = key => FIGHTS.find(x => keyOf(x) === key);
   assert.deepEqual(['lang@mengshan', 'qiuyu@mijing-anhe', 'heyu@mijing-anhe', 'qiuyu@mijing-ya', 'gui@wm-wangzuo/open', 'qiuyu@09-lingcao/fight', 'foe-yinhu@00-fox/save'].map(k => standingOf(at(k))),
-    ['roaming', 'room', 'xiong', 'xiong', 'boss', null, null]); // a marked fight (band · teach · trial) keeps its own say
+    ['roaming', 'room', 'xiong', 'xiong', 'story', null, null]); // a marked fight (band · teach · trial) keeps its own say; a scene is the story's
   const line = key => setupOf(at(key), { party: [] }).foe.ai ?? 'foe';
   const keys = ['lang@mengshan', 'renyu@sishui', 'qiuyu@mijing-anhe', 'heyu@mijing-anhe', 'gui@wm-wangzuo/open', 'qiuyu@09-lingcao/fight'];
   assert.deepEqual(keys.map(k => withRules(false, () => line(k), FIT)), keys.map(() => 'foe')); // switch off: nothing is read
-  assert.deepEqual(keys.map(k => withRules(true, () => line(k), FIT)), ['foe', 'foe', 'foe', 'careful', 'careful', 'foe']);
+  assert.deepEqual(keys.map(k => withRules(true, () => line(k), FIT)), ['foe', 'foe', 'foe', 'careful', 'foe', 'foe']);
+  // The game's own door stamps the standing (rules/world.mjs foeOf), only with the switch on.
+  const { gameFoe } = await import('../scripts/rules/world.mjs');
+  const games = [{ creature: 'lang', hunt: 'mengshan' }, { creature: 'gui' }, { creature: 'heyu', mijing: true, standing: 'xiong' }];
+  assert.deepEqual(games.map(g => withRules(false, () => gameFoe(content, g).standing, FIT)), [undefined, undefined, undefined]);
+  assert.deepEqual(games.map(g => withRules(true, () => gameFoe(content, g).standing, FIT)), ['roaming', 'story', 'xiong']);
   // The ruling changes no level.
   const boss = at('gui@wm-wangzuo/open'), st = roadAt(boss, {}), b = foeAt(boss);
   withRules(true, () => assert.equal(beastLevel(content, st, b), foeLevel(content, st, b)), FIT);

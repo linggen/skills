@@ -143,14 +143,15 @@ export function gameOf(f) {
 }
 
 /* A fight's STANDING, read off what the data already says (no word on the beast): a fight the story marks (`teach` · `trial` · its own `band`) keeps its own say (null);
-   a pool of a 秘境 place (`mijing-…`) is a 凶兽's when the 重's `xiong` list names the creature, else a 妖兽's room; a scene that is a 重's `boss` at that 回 is a 大妖's;
-   any other scene is the story's; any other pool a roaming beast's (妖兽出没). */
+   a pool of a 秘境 place (`mijing-…`) is a 凶兽's when the 重's `xiong` list names the creature, else a 妖兽's room;
+   any scene is the story's; any other pool a roaming beast's (妖兽出没). */
 export function standingOf(f) {
   if (f.teach || f.trial || f.band) return null;
   const tiers = content.mijing?.tiers ?? [];
   if (f.pool?.startsWith('mijing-')) return tiers.find(t => t.id.endsWith(f.pool.slice(7)))?.xiong?.some(x => x.creature === f.id) ? 'xiong' : 'room';
   if (f.pool) return 'roaming';
-  return tiers.some(t => t.source?.hui === f.at && t.boss?.creature === f.id) ? 'boss' : 'story';
+  // A scene is the story's, as the game reads it (rules/world.mjs foeOf): even where the 秘境 that opens there ends in the same beast.
+  return 'story';
 }
 export function foeOf(f) {
   // A scene's fight as its exit weighs it (the game's `foe`, rules/world.mjs foeOf).
