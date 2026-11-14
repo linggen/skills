@@ -2,7 +2,7 @@
 // the page's scratch-only seam: of everything the rules let through now, the move that does the
 // most — read off a copy of the fight, never an opinion (the same measure as tools/battle-sim.mjs).
 // Pure; it never touches the fight it reads. The crawler then makes that move with real taps.
-import { EFFECTS, LINES, act, foeTurn, hashOf, legal, offers, simCopy } from './battle.js';
+import { EFFECTS, act, effectTargets, foeTurn, hashOf, legal, offers, simCopy } from './battle.js';
 import { unseen } from './duel-unseen.js';
 
 const sum = (board, f) => board.reduce((n, m) => n + f(m), 0);
@@ -98,6 +98,7 @@ export function movesOf(st, who = 'you') {
     for (const target of targets) out.push({ kind: 'play', index, target });
   });
   for (const target of aims) out.push({ kind: 'power', target });
+  if (me.skill) for (const target of effectTargets(st, me, me.skill.effect)) out.push({ kind: 'skill', target });
   me.board.forEach((m, index) => { for (const target of aims) out.push({ kind: 'attack', index, target }); });
   return out.filter(a => legal(st, a, who) === null);
 }
@@ -139,7 +140,7 @@ const visibleSeed = (st, who) => {
 export function lookaheadFor(st, who = 'you', { depth = 300, samples = 4, seed } = {}) {
   if (!Number.isInteger(samples) || samples < 1) throw new RangeError('samples must be a positive integer');
   const base = seed ?? visibleSeed(st, who);
-  const copies = Array.from({ length: samples }, (_, i) => unseen(st, `${base}|${i}`, who));
+  const copies = Array.from({ length: samples }, (_, i) => unseen(st, `${base}|${i}`, who, { blind: true }));
   let best = null, top = -Infinity;
   for (const a of [...movesOf(st, who), { kind: 'end' }]) {
     let total = 0;
@@ -161,5 +162,3 @@ export function mixFor(st, who = 'you', { wit = 0 } = {}) {
   const coin = ((h * 48271) % 2147483647) / 2147483647;
   return coin < wit ? lookaheadFor(st, who) : carefulFor(st, who);
 }
-// The registry reads side.ai by name; wit travels with that seat.
-Object.assign(LINES, { careful: carefulFor, lookahead: lookaheadFor, mix: (st, who) => mixFor(st, who, { wit: st[who].wit }) });

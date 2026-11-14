@@ -16,6 +16,7 @@
 //
 // There is no death in this world, only 退 — a minion driven off, a beast
 // withdrawing into the mist.
+import * as lines from './fightline.js';
 
 /* ── The five roots ── */
 
@@ -276,7 +277,7 @@ function sideOf(who, cfg, catalog, mode, seed) {
     deck, hand: [...(cfg.extra ?? [])], board: [], laid: [], laidSpent: [], fatigue: 0, ...(cfg.fatigue === false ? { tireless: true } : {}), powerUsed: false, played: [],
     signature: cfg.signature ?? null, charge: null, lifts: cfg.lifts ?? null, insight: cfg.insight ?? 0, intent: null,
     stars: cfg.stars ?? null, drain: 0,
-    // 斗法 v4 (the fit): the line that plays this seat when it is a beast's (`LINES`, scripts/fightline.js); none: the foe policy below.
+    // 斗法 v4 (the fit): the line that plays this seat when it is a beast's (battle.js lineOf, scripts/fightline.js); none: the foe policy below.
     ai: cfg.ai ?? null, ...(cfg.wit != null ? { wit: cfg.wit } : {}),
     // A 试 (a story trial, creatures.json `trial`): the beast is not driven
     // off, it is PASSED — it yields at `yield` of its 气血, and a player
@@ -398,6 +399,8 @@ export function simCopy(st) {
    replaced by another). Its rank still strikes as it always did. */
 function plan(st) {
   if (st.planning || st.outcome !== 'open') return;
+  // A beast played by a line (斗法 v4) commits to nothing: its turn is thought when it comes, so no plan is shown that it would not keep.
+  if (st.foe.ai && lineOf(st.foe.ai)) { st.foe.intent = null; return; }
   const sim = Object.assign(simCopy(st), { planning: true });
   sim.foe.intent = null;
   endTurn(sim);
@@ -1039,13 +1042,15 @@ function takePill(st, side, action) {
    Order: play what it can afford, biggest first; then its 主灵根一击; then send
    each body at whatever stands in the way. Its deck order is its personality —
    the twelve cards it holds are what this beast IS. */
-/* The lines a seat can be played by (`side.ai`: 'careful' · 'lookahead'), put here by scripts/fightline.js when it is loaded: each is
-   (st, who) → an action, or null to end the turn. A beast whose `ai` names none that is loaded plays the foe policy below. */
-export const LINES = {};
+/* The lines a seat can be played by (`side.ai`: 'careful' · 'lookahead' · 'mix'), scripts/fightline.js: each is (st, who) → an action,
+   or null to end the turn. Imported here, not registered from there, so the page and the rules that replay its fight always play
+   the same beast (a registry filled only where fightline.js happened to load let the two settle different fights). Read at call
+   time: the import is a cycle, and fightline.js touches nothing of this file at its top level. A name not here plays the foe policy. */
+const lineOf = name => ({ careful: lines.carefulFor, lookahead: lines.lookaheadFor, mix: (st, who) => lines.mixFor(st, who, { wit: st[who].wit ?? 0 }) })[name] ?? null;
 export function foeStep(st) {
   if (st.outcome !== 'open' || st.whose !== 'foe') return null;
   const side = st.foe;
-  const line = side.ai && LINES[side.ai];
+  const line = side.ai ? lineOf(side.ai) : null;
   if (line && !asleep(side) && side.charge?.phase !== 'gathering') {
     side.intent = null;
     const action = line(st, 'foe') ?? { kind: 'end' };
@@ -1311,7 +1316,7 @@ export const idle = st => st.outcome === 'open' && st.whose === 'you' && !player
 
 /* Every action the player could take right now, each ok or with its why and
    what it spends. The card draws only what is here; nothing hides in a tooltip. */
-function effectTargets(st, side, effect) {
+export function effectTargets(st, side, effect) {
   const them = other(st, side);
   const at = EFFECTS[Object.keys(EFFECTS).find(k => effect?.[k] != null)]?.at;
   if (effect?.heal != null && at === 'none') return [undefined, ...side.board.map((m, index) => ({ kind: 'minion', index, side: 'mine' }))];
