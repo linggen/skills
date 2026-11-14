@@ -552,8 +552,9 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
   what its step asked on three (balance.json `master.lines.gu._need_stages`, `need.stage_split` 1.1;
   tools/master.mjs `stagesSplit`: 筑基 400 · 440 · 470 | 440 · 480 · 520 | 480 · 530 · 570, 4,330 in all;
   古九's grind to 三层 1,310 as before), so a 段's first 层 may ask less than the 层 below it (the
-  numbers check reads a realm in 段 by 段); every 层 of a 段 pays at the 段's level (playpay.mjs
-  levelOf: 筑基一至三层 L12, as 筑基小成); 气血 grows half a point a step as before, a sixth a 层
+  numbers check reads a realm in 段 by 段); every 层 pays at its own level (playpay.mjs
+  levelOf since 2026-11-10: 筑基一层 L10, 二层 L11, 三层 L12 — 段 are display only; before, a 段's three paid
+  alike at L12, as 筑基小成); 气血 grows half a point a step as before, a sixth a 层
   (state.mjs hpStep). tools/balance.mjs's days per 回 are 38d5d800's to the tenth. The book's own
   「四层」 prose stays as written.
 - **修为 caps per 回** (Hanli, 2026-10-05: 「游戏里修炼有个上限吧? 和故事对齐」;
