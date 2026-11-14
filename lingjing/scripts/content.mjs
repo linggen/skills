@@ -192,6 +192,8 @@ export function loadContent(dir = worldDir(DEFAULT_WORLD)) {
     // table (levels/jieyin.json), read for the gestures' figures only.
     chuanyin: fs.existsSync(path.join(dir, 'chuanyin.json')) ? readJson(path.join(dir, 'chuanyin.json')) : null,
     handkit: fs.existsSync(path.join(dir, 'levels', 'jieyin.json')) ? readJson(path.join(dir, 'levels', 'jieyin.json')) : null,
+    // 斗法 v4's beasts' decks by template (tools/duel-template.mjs writes it; rules/cards.mjs templateDeck reads it, only with the fair rules on).
+    duel_decks: fs.existsSync(path.join(dir, 'duel-decks.json')) ? readJson(path.join(dir, 'duel-decks.json')) : null,
     // 秘境探险 (rules/mijing.mjs, 2026-10-28): the nine 重, their rooms, boons and 奇遇.
     mijing: fs.existsSync(path.join(dir, 'mijing.json')) ? readJson(path.join(dir, 'mijing.json')) : null,
     // 人间功课 as cultivation (rules/gongke.mjs): a chore's `kind` → its meaning in the book.

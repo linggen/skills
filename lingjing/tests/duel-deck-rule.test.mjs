@@ -78,3 +78,19 @@ test('a story trial keeps its own decks under the fair rules (no cut to match)',
     assert.ok(on.you.deck.length >= Math.min(off.you.deck.length, 4), `his deck ${on.you.deck.length}`);
   }, FIT);
 });
+
+test('a template row stands in for the beast deck only with the fair rules on', async () => {
+  const { templateDeck } = await import('../scripts/rules/cards.mjs');
+  const { FIGHTS, keyOf, setupOf } = await import('../tools/story-fights.mjs');
+  const f = FIGHTS.find(x => keyOf(x) === 'lang@mengshan'), had = content.duel_decks;
+  const row = ['huilang', 'huilang', 'elang', 'elang', 'tuqiang', 'tuqiang', 'bingzhui', 'bingzhui', 'mucao', 'mucao'];
+  content.duel_decks = { decks: { 'lang|roaming': [[1, row], [9, ['elang']]] } };
+  try {
+    assert.deepEqual(templateDeck(content, { id: 'lang', standing: 'roaming' }, 3), row);
+    assert.deepEqual(templateDeck(content, { id: 'lang', standing: 'roaming' }, 9), ['elang']);
+    assert.equal(templateDeck(content, { id: 'lang', standing: 'room' }, 3), null);
+    const off = setupOf(f, { party: [] });
+    assert.notDeepEqual(off.foe.deck, row);
+    withRules(true, () => { const on = setupOf(f, { party: [] }); assert.deepEqual([...on.foe.deck].sort(), [...row].slice(0, on.foe.deck.length).sort()); }, FIT);
+  } finally { content.duel_decks = had; }
+});

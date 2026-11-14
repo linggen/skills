@@ -368,7 +368,7 @@ export function fightSetup(content, state, creature, now, game = null, deal = nu
   // the rootless things he holds (deckFor reads no roots, so a 功法 stays out).
   const fullDeck = fixedSheet(content) ? deckFor(content, state) : fightDeck(content, state, { ten: evenDuel(content, state, creature) });
   // Preserve the picker's order: the last-picked surplus (typically dearer) goes first.
-  const deck = matchedDecks(content, creature) ? fullDeck.slice(0, Math.min(fullDeck.length, beastCapacity(content, creature), deckRule(content).size)) : fullDeck;
+  const deck = matchedDecks(content, creature) ? fullDeck.slice(0, Math.min(fullDeck.length, beastCapacity(content, state, creature), deckRule(content).size)) : fullDeck;
   const strike = fixedSheet(content) ? strikeOf(content, state) : null;
   // 新: a card gained and not yet played (cards_new), marked in the hand until it is.
   const fresh = (state.cards_new ?? []).filter(id => deck.includes(id));
@@ -552,11 +552,22 @@ export function fairBeastDeck(content, creature, size) {
 /* Both decks one size (the fifteen rule): where the fair rules stand, but not in a story's 试 or a long fight — those are written as
    they are (a teaching fight's beast holds a card or two; cutting his deck to match would leave him two cards). */
 const matchedDecks = (content, creature) => fixedSheet(content) && !creature.trial && !creature.long;
+/* The beast's deck by template (worlds/<w>/duel-decks.json, written by tools/duel-template.mjs): by `creature|standing`, the row of the
+   highest level at or below the beast's (the first row below them all). null: no row — it fights its own deck. */
+export function templateDeck(content, creature, level) {
+  const rows = content?.duel_decks?.decks?.[`${creature?.id}|${creature?.standing}`];
+  if (!rows?.length) return null;
+  return (rows.filter(([from]) => (level ?? 0) >= from).at(-1) ?? rows[0])[1];
+}
+const fairSource = (content, state, creature) => {
+  const t = templateDeck(content, creature, beastLevel(content, state, creature) ?? fightLevel(content, state));
+  return t ? { ...creature, deck: t } : creature;
+};
 /* How many cards the beast can field: its template's, else two of each kind it holds (the copies rule). */
-const beastCapacity = (content, creature) => fairBeastDeck(content, creature, deckRule(content).size).length;
+const beastCapacity = (content, state, creature) => fairBeastDeck(content, fairSource(content, state, creature), deckRule(content).size).length;
 function evenDeck(content, state, creature, foe, size) {
   if (!matchedDecks(content, creature)) return foe;
-  const deck = fairBeastDeck(content, creature, size);
+  const deck = fairBeastDeck(content, fairSource(content, state, creature), size);
   return { ...foe, deck, ...(deck.length < size ? { deck_short_by: size - deck.length } : {}) };
 }
 function duelFoe(content, state, creature, grown) {
