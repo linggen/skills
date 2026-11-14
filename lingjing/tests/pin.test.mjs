@@ -143,6 +143,15 @@ test('framed card stats stand above the frame and its corner ornaments', () => {
   assert.match(reveal, /\.rv-card:is\(\.pin-yin, \.pin-jin, \.pin-baoshi, \.pin-zuanshi\)\s+:is\(\.rv-atk, \.rv-hp\)\s*\{\s*z-index:\s*4\s*;/);
 });
 
+test('a framed card\'s cost and 五行 seal stand above the frame, and in from its corners on the phone hand', () => {
+  const battle = fs.readFileSync(new URL('../scripts/battle.css', import.meta.url), 'utf8');
+  const reveal = fs.readFileSync(new URL('../scripts/card-reveal.css', import.meta.url), 'utf8');
+  assert.match(battle, /\.bleaf:is\(\.pin-yin, \.pin-jin, \.pin-baoshi, \.pin-zuanshi\)\s*>\s*:is\(\.bcost, \.belem\)\s*\{\s*z-index:\s*4\s*;/);
+  assert.match(reveal, /\.rv-card:is\(\.pin-yin, \.pin-jin, \.pin-baoshi, \.pin-zuanshi\)\s+\.rv-cost\s*\{\s*z-index:\s*4\s*;/);
+  // the phone hand's fixed 4px inset is overridden by the band's own width (6cqw) on a framed card
+  assert.match(battle, /\.battle \.bhand > \.bcard \.bleaf:is\(\.pin-yin, \.pin-jin, \.pin-baoshi, \.pin-zuanshi\) > \.bcost \{ top: max\(4px, 6cqw\); left: max\(4px, 6cqw\); \}/);
+});
+
 test('v2 frames use snapped SVG patterns, phone colours and motion-safe small marks', () => {
   const css = fs.readFileSync(new URL('../scripts/battle.css', import.meta.url), 'utf8');
   const rv = fs.readFileSync(new URL('../scripts/card-reveal.css', import.meta.url), 'utf8');

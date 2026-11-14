@@ -378,6 +378,9 @@
 :is(.bleaf, .bminion):is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > :is(.batk, .bhp) { z-index: 4; }
 .bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) { padding: max(4.5px, calc(6% + 1.5px)); padding-bottom: max(14px, calc(6% + 1.5px)); }
 .bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) .bcost { top: max(5px, 9%); left: max(5px, 9%); }
+/* The cost and the 五行 seal stand above the band and its corner ornaments too (the gate, 11-13 at 430: a 银 / 金 centre
+   card's corner scroll hid its cost and its seal). */
+.bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > :is(.bcost, .belem) { z-index: 4; }
 /* A percent here would be of the RANK's width (the card's containing block), not the card's: 6% of a 1300px row squeezed the face to a sliver. */
 .bminion:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) { padding: max(4.5px, calc(var(--mw) * .06 + 1.5px)); }
 .bcard.dim .bleaf:has(> .bpin), .deckfaces .bcard.face.out .bleaf:has(> .bpin) { filter: none; opacity: 1; }
@@ -825,3 +828,12 @@ body.fighting .focus > .gshell > .gshell-bar { padding-bottom: 4px; background: 
 .deckfaces .bcard:has(.bpin) .deckfresh { top: 8%; right: 8%; }
 /* The phone hand's fixed padding must not cover a framed face. */
 .battle .bhand > .bcard .bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) { padding: max(4.5px, calc(var(--cw) * .06 + 1.5px)); padding-bottom: max(14px, calc(var(--cw) * .06 + 1.5px)); }
+/* …nor its fixed 4px corner inset bury the cost: the band grows with the card (6cqw) and its ornaments with the band, so the
+   phone's enlarged centre card (430: the band 11px, a corner scroll 26px) had the gem all but under the scroll. In from
+   each corner by the band's own width, the seal too. */
+@container scene (max-width: 640px) {
+  .battle .bhand > .bcard .bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > .bcost { top: max(4px, 6cqw); left: max(4px, 6cqw); }
+  .battle .bhand > .bcard .bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > .belem { top: max(9px, calc(6cqw + 3px)); right: max(9px, calc(6cqw + 3px)); }
+  .battle .bhand > .bcard.r .bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > .bcost { left: auto; right: max(4px, 6cqw); }
+  .battle .bhand > .bcard.r .bleaf:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > .belem { right: auto; left: max(9px, calc(6cqw + 3px)); }
+}
