@@ -62,6 +62,7 @@ try {
         if (!under && getComputedStyle(document.querySelector('#slotFoot')).display !== 'none') throw new Error('Visible footer not found beneath hand');
         return { bottoms: rects.map((r) => r.bottom), under: under ? { tag: under.tagName.toLowerCase(), id: under.id, class: under.className, top: under.getBoundingClientRect().top } : { tag: 'viewport', id: '', class: '', top: innerHeight }, viewport: innerHeight };
       }, n);
+      if (process.env.HAND_SHOTS) await page.screenshot({ path: path.join(process.env.HAND_SHOTS, `hand-${w}x${h}-${n}.png`) });
       const overlaps = result.bottoms.map((bottom) => Math.max(bottom - result.under.top, bottom - result.viewport));
       const worst = Math.max(...overlaps), index = overlaps.indexOf(worst);
       const fail = worst > -4 || result.bottoms.some((bottom) => bottom > result.viewport);
