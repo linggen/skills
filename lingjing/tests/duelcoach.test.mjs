@@ -35,7 +35,7 @@ test('foe unseen preserves its hand and is invariant to hidden rearrangement', (
   st.you.hand = ['a', 'b']; st.you.deck = ['c', 'd'];
   const changed = structuredClone(st);
   changed.foe.deck.reverse(); changed.you.hand = ['d', 'c']; changed.you.deck = ['b', 'a'];
-  const a = unseen(st, 42, 'foe'), b = unseen(changed, 42, 'foe');
+  const a = unseen(st, 42, 'foe', { blind: true }), b = unseen(changed, 42, 'foe', { blind: true });
   assert.deepEqual(a, b); assert.deepEqual(a.foe.hand, st.foe.hand);
   assert.equal(a.you.hand.length, 2); assert.equal(a.you.deck.length, 2);
   assert.deepEqual(lookaheadFor(st, 'foe', { depth: 4 }), lookaheadFor(changed, 'foe', { depth: 4 }));
