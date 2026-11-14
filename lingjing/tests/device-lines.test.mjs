@@ -36,3 +36,14 @@ test('every game line that names a key or a mouse button is a pair, and its touc
     }
   }
 });
+
+test('the try-a-game page prints the how-to for the device, never the pair itself (11-14: 「[object Object]」 under 格斗)', async () => {
+  const src = fs.readFileSync(path.join(SKILL, 'scripts/try-game.html'), 'utf8');
+  assert.match(src, /how: howFor\(mod\.meta\?\.how, lang\)/);
+  const { meta } = await import('../scripts/games/fighter.js');
+  for (const lang of ['zh', 'en']) for (const kind of ['desk', 'touch']) {
+    const line = howFor(meta.how, lang, kind);
+    assert.equal(typeof line, 'string', `${lang} ${kind}`);
+    assert.ok(line && !line.includes('[object'), `${lang} ${kind}: ${line}`);
+  }
+});
