@@ -6,6 +6,8 @@
 #   tools/playbot/run.sh [--ref <git ref> | --install <lingjing dir>] [--sizes 430x932,375x812,1280x820]
 #                        [--fights 2] [--out <dir>] [--run-id <id>] [--update-baselines] [--debug]
 #                        [--only haunt,story,bout,walk,baseline]
+#                        [--until <finding kind>[:<card pattern>]] [--deck <card ids>]   (the selftest's: play 降妖
+#                        until that finding is raised, with these cards picked into the deck)
 #   tools/playbot/run.sh --selftest      the seeded bugs (seeded-bugs.json) must each be caught, else the bot is broken
 #   tools/playbot/run.sh --ui [--host 0.0.0.0] [--port 7531]   试玩台, the review page (review-server.mjs): every
 #                        report and gate run, and the unsure shots waiting for Hanli. 127.0.0.1 unless --host says.
@@ -27,6 +29,8 @@ while [ $# -gt 0 ]; do
     --run-id) RUN_ID="$2"; shift 2 ;;
     --update-baselines|--debug|--headed|--no-careful) EXTRA+=("$1"); shift ;;
     --only) EXTRA+=("--only=$2"); shift 2 ;;
+    --until) EXTRA+=("--until=$2"); shift 2 ;;
+    --deck) EXTRA+=("--deck=$2"); shift 2 ;;
     --selftest) SELFTEST=1; shift ;;
     --ui) UI=1; shift ;;
     --host|--port|--reports|--gate-runs|--rulings) UI_ARGS+=("${1}=$2"); shift 2 ;;

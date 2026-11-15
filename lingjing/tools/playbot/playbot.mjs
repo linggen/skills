@@ -5,7 +5,7 @@
 //
 //   node tools/playbot/playbot.mjs --skill=<lingjing dir> [--shared=<linggen/shared>] [--out=<report dir>]
 //        [--sizes=430x932,375x812,1280x820] [--fights=2] [--seed=1] [--update-baselines] [--headed]
-//        [--only=haunt,story,bout,walk,baseline] [--no-careful]
+//        [--only=haunt,story,bout,walk,baseline] [--no-careful] [--until=mana-waste:yangzhen|zhennu] [--deck=yangzhen,zhennu]
 //   Usually through tools/playbot/run.sh (a git ref or an install dir → a scratch checkout, then this).
 //
 // What it plays, at each size: N 降妖 fights (the 妖兽出没 haunt), a story fight (灵草谷), a 切磋 bout, and a walk
@@ -57,7 +57,10 @@ const FIGHT_REFUSALS = new Set(['in-a-fight', 'fight-open', 'unfinished-fight'])
 /* What stands between the bot and the play — closed, skipped or taken (never the 所得: that is checked first). */
 /* A kept fight's way back, in its card's words (battle-card.js beginKept · cards.js fightBack). */
 const KEPT_BACK = /^\s*(回到这一战|Back to (this|the) fight)/;
-const CLEARERS = ['[data-unfold]', '[data-qian-close]', '[data-fate=decline]', '[data-board-close]', '[data-reveal]', '[data-titlecard]', '.feat', '.wonseal',
+// The unfolding map is put away by its title, never by its middle: the places on it are live while it unfolds, and
+// at 375 and 430 the card's centre is 上山路's dot — the tap walked him off the story's scene, its fight left behind
+// («the story fight was called and its 开局 never came», the gate's runs of 11-13 and 11-14).
+const CLEARERS = ['[data-unfold] .cardtitle', '[data-qian-close]', '[data-fate=decline]', '[data-board-close]', '[data-reveal]', '[data-titlecard]', '.feat', '.wonseal',
   '[data-dlg-speed="skip"]:not(.on)', '[data-dlg-next]', '[data-emerged-close]', '[data-close-chapter]',
   '[data-appear-done]', '[data-toast-close]', '[data-handin-close]'];
 
@@ -184,6 +187,14 @@ export async function run(opts) {
     const errors = [];
     const setupMisses = [];
     page.on('console', (m) => { if (m.type() === 'error') errors.push({ where, text: m.text().slice(0, 300) }); });
+    // --debug: every click the page hears, with what it landed on (a tap that reached something else shows here).
+    if (opts.debug) {
+      await page.addInitScript(() => document.addEventListener('click', (e) => {
+        const t = e.target?.closest?.('button, [role=button], a') ?? e.target;
+        console.log(`[pb-click] ${Math.round(performance.now())}ms @${Math.round(e.clientX)},${Math.round(e.clientY)} trusted=${e.isTrusted} ${(t?.outerHTML ?? '').slice(0, 160).replace(/\s+/g, ' ')}`);
+      }, { capture: true }));
+      page.on('console', (m) => { if (m.text().startsWith('[pb-click]')) console.error(m.text()); });
+    }
     page.on('pageerror', (e) => errors.push({ where, text: `uncaught: ${String(e).slice(0, 300)}` }));
     const r = rng(Number(opts.seed ?? 1) + w);
 
@@ -279,7 +290,7 @@ export async function run(opts) {
           if (!(r.right > 0 && r.left < innerWidth && r.bottom > 0 && r.top < innerHeight)) { e.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' }); r = e.getBoundingClientRect(); }
           const x = r.left + r.width / 2, y = r.top + r.height / 2;
           const top = document.elementFromPoint(x, y);
-          if (top && (top === e || e.contains(top))) return { x, y, text: (e.innerText || '').trim().slice(0, 30), sel: e.getAttribute('class') ?? '', q };
+          if (top && (top === e || e.contains(top))) return { x, y, text: (e.innerText || '').trim().slice(0, 30), sel: e.getAttribute('class') ?? '', q, tag: e.outerHTML.slice(0, e.outerHTML.indexOf('>') + 1).slice(0, 240) };
         }
         return null;
       }, sel);
@@ -289,7 +300,7 @@ export async function run(opts) {
         const still = await page.evaluate(({ q, x, y }) => { const t = document.elementFromPoint(x, y); return Boolean(t && t.closest(q)); }, { q: sel, x: c.x, y: c.y });
         if (!still) { if (opts.debug) console.error(`[click] ${sel} moved — not tapped`); return false; }
       }
-      if (opts.debug) console.error(`[click] ${sel} → ${c ? `${c.text} @${Math.round(c.x)},${Math.round(c.y)}` : 'none'}`);
+      if (opts.debug) console.error(`[click] ${sel} → ${c ? `${c.text} @${Math.round(c.x)},${Math.round(c.y)} ${c.tag}` : 'none'}`);
       if (!c && opts.debug) console.error('   matches:', JSON.stringify(await page.evaluate((q) => [...document.querySelectorAll(q)].map((e) => { const r = e.getBoundingClientRect(); const up = []; for (let a = e; a && a !== document.body; a = a.parentElement) { const cs = getComputedStyle(a); if (cs.visibility === 'hidden' || cs.display === 'none') up.push(`${a.tagName}.${(a.getAttribute('class') || '').replace(/ /g, '.')}:${cs.visibility}/${cs.display}`); } return [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height), e.disabled, up.slice(-3)]; }), sel)));
       if (!c) { if (opts.debug) await shot(`dbg-none-${sel.replace(/[^a-z]/gi, '').slice(0, 20)}`, { lint: false }); return false; }
       return tap(c, what ?? sel, { soft: true });
@@ -515,11 +526,20 @@ export async function run(opts) {
     };
 
     // ── 降妖 × N
-    for (let i = 0; want('haunt') && i < Number(opts.fights ?? 2); i += 1) {
+    // --until=<kind>[:<card pattern>] (the selftest): fights are played until that finding is raised, `--fights` at the
+    // longest — a seeded bug that needs a certain card in a random hand is asked for within N fights, not in exactly N
+    // (2026-11-15: 痒痒针 on an empty rank came up in about two runs of three at four fights, with either bot).
+    const [untilKind, untilCard] = String(opts.until ?? '').split(':');
+    const reached = () => Boolean(untilKind) && findings.some((f) => f.kind === untilKind && (!untilCard || new RegExp(untilCard).test(String(f.card ?? ''))));
+    for (let i = 0; want('haunt') && i < Number(opts.fights ?? 2) && !reached(); i += 1) {
       const name = `pb-h${i}-${w}`;
       where = `${size} · 降妖 #${i + 1}`;
       const s = seed(name, SEEDS.haunt);
       if (!s.ok) { unplayable.push({ where, why: `seed failed: ${s.error ?? JSON.stringify(s)}` }); continue; }
+      // --deck=<card ids> (the selftest): these are the only cards he holds, and the ones he has picked — so a seeded
+      // bug that needs a certain card meets it in the first hands instead of waiting on the deal (at 48f0b83c the fight
+      // deck is every card held: 痒痒针 was one of 28, and four fights met it about two runs in three).
+      if (opts.deck) patchSave(name, (st) => { const ids = String(opts.deck).split(','); st.cards = ids; st.deck = ids; });
       await open(name); await clear();
       const at = verbs.length;
       if (!(await startHaunt(name))) { unplayable.push({ where, why: 'no 降妖 to start (no [data-duel-start] at 后山)' }); noteRefusals(at, where); continue; }
@@ -771,7 +791,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const day = new Date().toISOString().slice(0, 10);
   const runId = flag('run-id', `${day}-${Date.now().toString(36)}`);
   const out = flag('out', path.join(HERE, '..', '..', 'report', runId));
-  const res = await run({ skill, shared: flag('shared'), out, runId, sizes: String(flag('sizes', '430x932,375x812,1280x820')).split(','), fights: flag('fights', 2), seed: flag('seed', 1), updateBaselines: Boolean(flag('update-baselines', false)), headed: Boolean(flag('headed', false)), debug: Boolean(flag('debug', false)), only: flag('only', null), noCareful: Boolean(flag('no-careful', false)) });
+  const res = await run({ skill, shared: flag('shared'), out, runId, sizes: String(flag('sizes', '430x932,375x812,1280x820')).split(','), fights: flag('fights', 2), seed: flag('seed', 1), updateBaselines: Boolean(flag('update-baselines', false)), headed: Boolean(flag('headed', false)), debug: Boolean(flag('debug', false)), only: flag('only', null), noCareful: Boolean(flag('no-careful', false)), until: flag('until', null), deck: flag('deck', null) });
   const hard = res.findings.filter((f) => f.hard);
   console.log(`playbot ${runId}: ${res.played.length} played, ${res.unplayable.length} could not be played, ${hard.length} hard findings, ${res.refusals.length} refusals → ${out}`);
   for (const k of [...new Set(hard.map((f) => f.kind))]) console.log(`  ${k}: ${hard.filter((f) => f.kind === k).length}`);

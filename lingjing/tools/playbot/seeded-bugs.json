@@ -27,13 +27,13 @@
       "id": "yangzhen-on-empty-rank",
       "ref": "48f0b83c",
       "sizes": "430x932",
-      "fights": 4,
+      "fights": 6,
       "expect": {
         "kind": "mana-waste",
         "card": "/^(yangzhen|zhennu)$/"
       },
-      "note": "Hanli 11-04: 痒痒针 spent 灵力 on an empty rank — the bug is a rank spell (痒痒针's sweep, 震怒's the same) taking 灵力 with nothing on the rank; either card caught counts. Four random hands, cards untried on an empty rank played first",
-      "flags": "--no-careful --only=haunt"
+      "note": "Hanli 11-04: 痒痒针 spent 灵力 on an empty rank — the bug is a rank spell (痒痒针's sweep, 震怒's the same) taking 灵力 with nothing on the rank; either card caught counts. He holds only these two cards (--deck), so the first hands have them; cards untried on an empty rank are played first, and the fights stop when it is caught (--until) — six at the longest. Before 2026-11-15 the deal decided: at this ref the fight deck is every card held (28), and four fights caught it about two runs in three, twelve only in the twelfth",
+      "flags": "--no-careful --only=haunt --until=mana-waste:yangzhen|zhennu --deck=yangzhen,zhennu"
     },
     {
       "id": "win-without-spoils",
