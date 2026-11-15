@@ -435,7 +435,7 @@ export async function run(opts) {
           // What the page says back: a card's own why, the room's refusal on the seam (battle-card.js hintsHtml,
           // `.bhint.bno` — 「气血已满」), a toast.
           const why = await page.evaluate(() => [...document.querySelectorAll('.battle .bwhy, .battle .bhint.bno, .toast')].map((e) => e.innerText.trim()).filter(Boolean).join(' · '));
-          duds.add(dudKey(s0, move));
+          if (!aims.length) duds.add(dudKey(s0, move)); // one that lit targets and was put back may be played again
           if (!aims.length && !why && s1.whole === s0.whole) await fail('no-feedback', { control: `${move.spot}:${move.id ?? ''}`, field: s0.field.slice(0, 200) });
           await tapAt(move.x, move.y); await sleep(300); // put back whatever is still lifted
         }
