@@ -173,7 +173,25 @@ const pw = playwrightOrNull();
 const STORY = ['deer-wind', 'toulan', 'faqiu', 'anhe-dark', 'jiangtang', 'yishui-reed']; // story order: 第二回, 今一, 今二 (Hanli 10-22: 「改成玩」), 第五回, 第六回, 古七
 // Off the tightening line: 今二's 投篮 is the easy one, six balls and a long aim arc (Hanli 10-22: 「游戏本身不用改, 可以想办法降低一下难度」).
 const EASY = new Set(['faqiu']);
-test('each story throw is won by a sensible hand and not by a lazy one, and each is tighter than the one before', { skip: !pw && 'playwright not installed (cd tools && npm install)', timeout: 900000 }, async () => {
+// One seed's game is not the same game twice (bot.mjs), so a level is asked for wins out of several games and never for
+// one seed's result: the sensible hand plays seeds 1, 2, … until it has won `need`, `most` games at the longest; the
+// lazy hand plays two and wins none. Measured 2026-11-15, 12 sensible games a level: the story's throws and rungs 1–3
+// won 12 of 12 (SURE), rungs 4–6 and the top layouts 5 to 9 of 12 (HARD: a rung won 5 in 12 loses all 16 once in
+// some 5000 runs); a lazy hand won none of 102. What this catches is a level nobody can win any more, or one a lazy
+// hand can — not a level that got somewhat harder: read the games each one took in the test's diagnostics for that.
+const SURE = { need: 2, most: 6 }, HARD = { need: 1, most: 16 };
+const wonIn = (games) => games.filter((r) => r.won).length;
+async function assertHands(t, browser, url, lv, { need, most }) {
+  const sensible = [], lazy = [];
+  while (sensible.length < most && wonIn(sensible) < need) sensible.push(await playLevel(browser, url, lv, 'sensible', sensible.length + 1));
+  for (const seed of [1, 2]) lazy.push(await playLevel(browser, url, lv, 'lazy', seed));
+  assert.ok(wonIn(sensible) >= need, `${lv}: sensible won ${wonIn(sensible)} of ${sensible.length}, ${need} wanted ${JSON.stringify(sensible)}`);
+  assert.equal(wonIn(lazy), 0, `${lv}: lazy ${JSON.stringify(lazy)}`);
+  for (const r of [...sensible, ...lazy]) assert.ok(!r.errors?.length && !r.failed, `${lv}: no page error ${JSON.stringify(r)}`);
+  t.diagnostic(`${lv}: sensible won ${wonIn(sensible)} in ${sensible.length} game(s)`);
+}
+
+test('each story throw is won by a sensible hand and not by a lazy one, and each is tighter than the one before', { skip: !pw && 'playwright not installed (cd tools && npm install)', timeout: 900000 }, async (t) => {
   const srv = await serve();
   const browser = await pw.chromium.launch();
   try {
@@ -184,12 +202,7 @@ test('each story throw is won by a sensible hand and not by a lazy one, and each
       const w = windowOf(field);
       assert.ok(w > 0 && (EASY.has(lv) || w < room), `${lv}: room for a first throw ${(w * 100).toFixed(2)}% (the one before: ${(room * 100).toFixed(2)}%)`);
       if (!EASY.has(lv)) room = w;
-      const sensible = [], lazy = [];
-      for (const seed of [1, 2, 3]) sensible.push(await playLevel(browser, srv.url, lv, 'sensible', seed));
-      for (const seed of [1, 2]) lazy.push(await playLevel(browser, srv.url, lv, 'lazy', seed));
-      assert.ok(sensible.filter((r) => r.won).length >= 2, `${lv}: sensible ${JSON.stringify(sensible)}`);
-      assert.equal(lazy.filter((r) => r.won).length, 0, `${lv}: lazy ${JSON.stringify(lazy)}`);
-      for (const r of [...sensible, ...lazy]) assert.ok(!r.errors?.length && !r.failed, `${lv}: no page error ${JSON.stringify(r)}`);
+      await assertHands(t, browser, srv.url, lv, SURE);
     }
   } finally {
     await browser.close();
@@ -197,21 +210,17 @@ test('each story throw is won by a sensible hand and not by a lazy one, and each
   }
 });
 
-// The 柴房's rungs (data/chaifang.ts): each won by a sensible hand at least once in three (the first three, twice), never by
-// a lazy one. Slow: 30 games.
-test('each 柴房 rung and top layout is won by a sensible hand and not by a lazy one', { skip: !pw && 'playwright not installed (cd tools && npm install)', timeout: 1800000 }, async () => {
+// The 柴房's rungs (data/chaifang.ts): the first three won as surely as the story's throws, the later ones and the top
+// layouts won at all, none by a lazy hand. Some 45 games when all is well.
+test('each 柴房 rung and top layout is won by a sensible hand and not by a lazy one', { skip: !pw && 'playwright not installed (cd tools && npm install)', timeout: 1800000 }, async (t) => {
   const srv = await serve();
   const browser = await pw.chromium.launch();
   try {
     // A first load warms the bundle and its atlases (a cold load right after a build can outrun the boot's wait).
     assert.ok(await fieldOf(browser, srv.url, 'chaifang-1'), 'the level starts');
     for (const lv of ['chaifang-1', 'chaifang-2', 'chaifang-3', 'chaifang-4', 'chaifang-5', 'chaifang-6', 'chaifang-top-1', 'chaifang-top-2', 'chaifang-top-3', 'chaifang-top-4', 'chaifang-top-5']) {
-      const n = Number(lv.match(/^chaifang-(\d)$/)?.[1] ?? 9), sensible = [], lazy = [];
-      for (const seed of [1, 2, 3]) sensible.push(await playLevel(browser, srv.url, lv, 'sensible', seed));
-      for (const seed of [1, 2]) lazy.push(await playLevel(browser, srv.url, lv, 'lazy', seed));
-      assert.ok(sensible.filter((r) => r.won).length >= (n <= 3 ? 2 : 1), `${lv}: sensible ${JSON.stringify(sensible)}`);
-      assert.equal(lazy.filter((r) => r.won).length, 0, `${lv}: lazy ${JSON.stringify(lazy)}`);
-      for (const r of [...sensible, ...lazy]) assert.ok(!r.errors?.length && !r.failed, `${lv}: no page error ${JSON.stringify(r)}`);
+      const n = Number(lv.match(/^chaifang-(\d)$/)?.[1] ?? 9);
+      await assertHands(t, browser, srv.url, lv, n <= 3 ? SURE : HARD);
     }
   } finally {
     await browser.close();
