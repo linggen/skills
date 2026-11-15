@@ -1543,6 +1543,20 @@ sub bls_periods {
     return { cpi => $month->($BLS{cpi_sa}), jobs => $month->($BLS{payrolls}) };
 }
 
+# A BLS figure as a number. A month the BLS never measured carries "-" (2025-10,
+# the shutdown): no number, so the change it would have fed is left out.
+sub bls_value {
+    my ($row) = @_;
+    my $v = $row ? $row->{value} : undef;
+    return defined $v && $v =~ /^-?\d+(?:\.\d+)?$/ ? $v + 0 : undef;
+}
+
+# The change from $old to $new in percent; undef when either is missing.
+sub pct_change {
+    my ($new, $old) = @_;
+    return defined $new && $old ? round_to(($new / $old - 1) * 100, 1) : undef;
+}
+
 # A release whose month is newer than the snapshot from before the window.
 # No snapshot yet: nothing to compare.
 sub bls_events {
@@ -1555,16 +1569,17 @@ sub bls_events {
         my ($year_ago) = grep { $_->{year} == $nsa->[0]{year} - 1 && $_->{period} eq $nsa->[0]{period} } @$nsa;
         push @out, { id => "data:cpi:$now->{cpi}", kind => 'data', release => 'CPI', month => $now->{cpi},
                      at => iso_time(time),
-                     mom_pct => @$sa > 1 ? round_to(($sa->[0]{value} / $sa->[1]{value} - 1) * 100, 1) : undef,
-                     yoy_pct => $year_ago ? round_to(($nsa->[0]{value} / $year_ago->{value} - 1) * 100, 1) : undef };
+                     mom_pct => pct_change(bls_value($sa->[0]), bls_value($sa->[1])),
+                     yoy_pct => pct_change(bls_value($nsa->[0]), bls_value($year_ago)) };
     }
     if ($now->{jobs} && ($before->{jobs} // '') lt $now->{jobs}) {
         my ($pay, $unemp) = map { $series->{$_} || [] } @BLS{qw(payrolls unemployment)};
+        my ($jobs_now, $jobs_was) = map { bls_value($pay->[$_]) } 0, 1;
         push @out, { id => "data:jobs:$now->{jobs}", kind => 'data', release => 'jobs report', month => $now->{jobs},
                      at => iso_time(time),
-                     payrolls_change_k => @$pay > 1 ? $pay->[0]{value} - $pay->[1]{value} : undef,
-                     unemployment_pct => @$unemp ? $unemp->[0]{value} + 0 : undef,
-                     unemployment_was => @$unemp > 1 ? $unemp->[1]{value} + 0 : undef };
+                     payrolls_change_k => $jobs_now && $jobs_was ? $jobs_now - $jobs_was : undef,
+                     unemployment_pct => bls_value($unemp->[0]),
+                     unemployment_was => bls_value($unemp->[1]) };
     }
     return @out;
 }

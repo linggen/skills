@@ -435,6 +435,19 @@ t('with Toronto held, the check runs any weekday until 16:00 (US Thanksgiving; a
     t('a new jobs report carries payrolls and unemployment',
       $jobs->{payrolls_change_k} == 162 && $jobs->{unemployment_pct} == 4.1 && $jobs->{unemployment_was} == 4.2);
     t('no BLS snapshot yet: nothing to compare', !bls_events($series, undef));
+    # 2026-11-11 → 11-15: CPI for 2026-10 came out, its year-ago month (2025-10) is "-" at the BLS,
+    # and the division killed the whole Watch scan five nights running.
+    my $gap = {
+        CUSR0000SA0   => [ $row->(2026, 10, '337.476'), $row->(2026, 9, '336.298') ],
+        CUUR0000SA0   => [ $row->(2026, 10, '337.511'), $row->(2026, 9, '336.940'), $row->(2025, 10, '-') ],
+        CES0000000001 => [ $row->(2026, 10, '159293'), $row->(2026, 9, '-') ],
+        LNS14000000   => [ $row->(2026, 10, '4.1'), $row->(2026, 9, '-') ],
+    };
+    my ($cpi_gap, $jobs_gap) = eval { bls_events($gap, { at => 1, cpi => '2026-09', jobs => '2026-09' }) };
+    t('a month the BLS never measured ("-") drops only the change it feeds, never the scan',
+      $cpi_gap && $cpi_gap->{mom_pct} == 0.4 && !defined $cpi_gap->{yoy_pct}
+      && $jobs_gap && !defined $jobs_gap->{payrolls_change_k} && $jobs_gap->{unemployment_pct} == 4.1 && !defined $jobs_gap->{unemployment_was},
+      $@ || JSON::PP->new->canonical->encode([ $cpi_gap, $jobs_gap ]));
 
     my @docs = (
         { document_number => '2026-19001', type => 'Presidential Document', subtype => 'Proclamation', publication_date => '2026-09-17',
