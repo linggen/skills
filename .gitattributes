@@ -1,0 +1,14 @@
+# What a packaged skill leaves out. `git archive` honours these, and the app build and GitHub's tarballs are
+# archives — so development files stay in the repository and out of every install.
+#
+# 灵境: its tools and tests (the play bot, the small games' sources, the phone pack scripts), and source art the game
+# never loads — the untouched plate scans and the paint sources kept beside the art
+# (lingjing/tools/art-packs.mjs lists them as unplaced, "no run-time reference"; 35 MB, 2026-11-15).
+lingjing/tools export-ignore
+lingjing/tests export-ignore
+lingjing/worlds/jiuding/art/plates export-ignore
+lingjing/worlds/jiuding/art/items-comic/src export-ignore
+lingjing/worlds/jiuding/art/games/shouqiang export-ignore
+lingjing/worlds/jiuding/art/games/shoulu export-ignore
+lingjing/worlds/jiuding/art/games/sadoushou export-ignore
+lingjing/worlds/jiuding/art/games/zhazhai export-ignore
