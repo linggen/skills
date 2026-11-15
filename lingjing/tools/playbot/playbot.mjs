@@ -317,6 +317,10 @@ export async function run(opts) {
       let setup = null;
       try { setup = JSON.parse(fs.readFileSync(path.join(data, 'saves', saveName, 'state.json'), 'utf8')).fight?.setup ?? null; } catch { /* no save to read */ }
       const tried = new Set();
+      // A control tapped that changed nothing, by the field it was tapped on: not tapped again there (the gate, 11-14:
+      // 青光 at full 气血, the only card in hand, was tapped 137 times and the turn never ended).
+      const duds = new Set();
+      const dudKey = (s, c) => `${s.field}|${s.mana}|${c.spot}:${c.id ?? c.index ?? ''}`;
       let steps = 0, waits = 0;
       await shot(`${label}-open`, { scope: '.battle' });
       // The pointer resting on the hand's leftmost, centre and rightmost card, each linted (the gate, 11-07 at 1280: the
@@ -365,7 +369,7 @@ export async function run(opts) {
         const cans = (await page.evaluate(VISIBLE, '.battle [data-spot].can')).filter((c) => c.spot !== 'stage');
         // 结束回合 greyed while the beast moves (`.wait`, disabled, aria-disabled) is not a control to press.
         const end = (await page.evaluate(VISIBLE, '.battle [data-spot=end]:not(.wait):not(.dim):not([aria-disabled=true])'))[0];
-        const pool = cans.filter((c) => c.spot !== 'end');
+        const pool = cans.filter((c) => c.spot !== 'end' && !duds.has(dudKey(s0, c)));
         // A careful hand (the first fight of each size): the page's own attentive line (fightline.js through the
         // scratch seam, as tools/playtest.mjs plays) picks the move; the bot still makes it with real taps. It wins
         // often enough that the 所得 after a win is seen every run.
@@ -391,7 +395,8 @@ export async function run(opts) {
           if (waits > 120) return { outcome: 'stuck-waiting', steps, bout, why: 'no live control' };
           continue;
         }
-        const move = planned ? (spotOf(planned) ?? end) : fresh.length && r() < (empty ? 0.9 : 0.4) ? pickOne(r, fresh)
+        const plannedSpot = planned ? spotOf(planned) : null;
+        const move = planned ? (plannedSpot && !duds.has(dudKey(s0, plannedSpot)) ? plannedSpot : end) : fresh.length && r() < (empty ? 0.9 : 0.4) ? pickOne(r, fresh)
           : strikers.length && r() < 0.6 ? pickOne(r, strikers)
           : pool.length && r() < 0.97 ? weighted(pool) : end;
         if (move?.spot === 'hand') tried.add(`${move.id}:${empty ? 'E' : 'F'}`);
@@ -427,7 +432,10 @@ export async function run(opts) {
         if (move.spot !== 'end' && s1.field === s0.field && s1.mana === s0.mana && JSON.stringify(s1.hand) === JSON.stringify(s0.hand)) {
           // A live (`can`) play that, played out, moved nothing and lit no target: the page offered it and it did
           // nothing — no-feedback. (One that lit targets and was put back is a choice, not a fault.)
-          const why = await page.evaluate(() => [...document.querySelectorAll('.battle .bwhy, .battle .bnote, .toast')].map((e) => e.innerText.trim()).filter(Boolean).join(' · '));
+          // What the page says back: a card's own why, the room's refusal on the seam (battle-card.js hintsHtml,
+          // `.bhint.bno` — 「气血已满」), a toast.
+          const why = await page.evaluate(() => [...document.querySelectorAll('.battle .bwhy, .battle .bhint.bno, .toast')].map((e) => e.innerText.trim()).filter(Boolean).join(' · '));
+          duds.add(dudKey(s0, move));
           if (!aims.length && !why && s1.whole === s0.whole) await fail('no-feedback', { control: `${move.spot}:${move.id ?? ''}`, field: s0.field.slice(0, 200) });
           await tapAt(move.x, move.y); await sleep(300); // put back whatever is still lifted
         }
