@@ -31,6 +31,7 @@ import crypto from 'node:crypto';
 import { fold, mergeNotes, monthOf, parseLines, planWrite, summarize, wins } from './store.js';
 import { changeFocus, dismissCard, homeOf, selectedOf, validHome } from './home.js';
 import { writeQuest } from './quest.mjs';
+import { WORKOUT_TYPE, lastWorkout, worldOf, workoutRecords } from './world.js';
 
 const HOME = process.env.HOME || '';
 const DIR = process.env.HEALTH_DIR || path.join(HOME, '.linggen', 'skills', 'health');
@@ -208,6 +209,71 @@ function seenIn(rows) {
   return seen;
 }
 
+// ── the world line and the activity log ─────────────────────────────────────
+
+const WORLD = path.join(DATA, 'world.json');
+
+/// The mirrored workout rows of the newest two months that hold any.
+function recentWorkouts() {
+  const dir = path.join(SAMPLES, WORKOUT_TYPE);
+  let months = [];
+  try {
+    months = fs.readdirSync(dir).filter((f) => /^\d{4}-\d{2}\.jsonl$/.test(f)).sort().slice(-2);
+  } catch {
+    return [];
+  }
+  return months.flatMap((m) => parseLines(readFileOr(path.join(dir, m), '')));
+}
+
+/// Keep `data/world.json` — Health's line in the world block (world.js) — in
+/// step with what the mirror holds. Called where the facts arrive: a review
+/// register the phone won, a batch of workouts. Written only when the body
+/// differs from the file, so its modification time means "the facts changed".
+/// Never fails the verb it follows.
+function refreshWorld() {
+  try {
+    const review = newestDayed('review');
+    const world = worldOf({
+      review: review ? readJson(path.join(DATA, review), null) : null,
+      workout: lastWorkout(recentWorkouts()),
+    });
+    if (!Object.keys(world).length) return;
+    const held = readJson(WORLD, null);
+    if (held && JSON.stringify(held) === JSON.stringify(world)) return;
+    writeJson(WORLD, world);
+  } catch {
+    /* the next batch writes it again */
+  }
+}
+
+// Records for the activity log (world.js workoutRecords), posted once the verb
+// has finished and its lock is gone — a network call never holds the mirror.
+const toTell = [];
+
+/// A test (HEALTH_DIR) never reaches an engine unless it asks (HEALTH_TELL).
+const mayTell = () => !process.env.HEALTH_DIR || process.env.HEALTH_TELL === '1';
+
+async function tellActivity() {
+  if (!toTell.length || !mayTell() || typeof fetch !== 'function') return;
+  const port = process.env.LINGGEN_PORT || '9527';
+  for (const record of toTell.splice(0)) {
+    try {
+      const res = await fetch(`http://127.0.0.1:${port}/api/activity`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(record),
+        signal: AbortSignal.timeout(3000),
+      });
+      if (!res.ok) {
+        const why = (await res.json().catch(() => ({}))).error || `HTTP ${res.status}`;
+        console.error(`activity log refused the ${record.verb} record: ${why}`);
+      }
+    } catch (e) {
+      console.error(`activity log not told of the ${record.verb}: ${e?.message || e}`);
+    }
+  }
+}
+
 // ── registers ────────────────────────────────────────────────────────────────
 
 // What a register may be called. The phone names these, so the name is checked
@@ -346,6 +412,11 @@ const VERBS = {
     } catch {
       /* the next batch writes it again */
     }
+    // So does the world line, and a workout that just arrived is news.
+    if ([...files.keys()].some((k) => k.startsWith(`${WORKOUT_TYPE}/`))) {
+      refreshWorld();
+      toTell.push(...workoutRecords([...files.values()].flat()));
+    }
     return { ok: true, mirror_id: s.mirror_id, ...counts, held: summarize(s.ledger) };
   },
 
@@ -388,6 +459,8 @@ const VERBS = {
         /* the next batch writes it again */
       }
     }
+    // A review the phone just won is a new reading for the world line.
+    if (wrote.some((name) => name.startsWith('review/'))) refreshWorld();
     return { ok: true, mirror_id: s.mirror_id, wrote, kept };
   },
 
@@ -577,6 +650,7 @@ try {
     unlock();
   }
   console.log(JSON.stringify(result));
+  await tellActivity();
 } catch (e) {
   const msg = String(e?.message || e);
   console.log(JSON.stringify({ ok: false, error: msg }));

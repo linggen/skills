@@ -14,6 +14,14 @@ memory-recall-min-score: 0.7
 memory-recall-count: 3
 user-invocable: true
 cwd: ~/.linggen/skills/health
+# Its line in the world block: the newest review's readings (steps, sleep, resting
+# heart rate, HRV, each with the person's own usual) and the last workout, written
+# by scripts/world.js through ingest.mjs when the facts arrive.
+world-line:
+  file: data/world.json
+  fields: [steps, sleep, resting_hr, hrv, workout]
+# A finished workout the mirror just received (kind and minutes in `detail`).
+activity-verbs: [workout]
 install: install.sh
 app:
   title: Health
