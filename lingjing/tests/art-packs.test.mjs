@@ -47,6 +47,17 @@ test('the output is identical on two runs, as data and as the CLI prints it', ()
   assert.deepEqual(JSON.parse(a.stdout).files, res.files);
 });
 
+test('--json --placed omits only unplaced files', () => {
+  const run = (...args) => spawnSync(process.execPath, [path.join(SKILL, 'tools/art-packs.mjs'), '--json', ...args], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  const all = run(), placed = run('--placed');
+  assert.equal(all.status, 0, all.stderr);
+  assert.equal(placed.status, 0, placed.stderr);
+  const files = JSON.parse(all.stdout).files, filtered = JSON.parse(placed.stdout).files;
+  assert.ok(files.some((f) => f.pack === 'unplaced'));
+  assert.ok(filtered.every((f) => f.pack !== 'unplaced'));
+  assert.deepEqual(filtered, files.filter((f) => f.pack !== 'unplaced'));
+});
+
 test('core holds the art of the first chapter\'s places (read from the data: scene 00-baicai stands at shiao, 00-dusk in 你家, 00-fox at yingu)', () => {
   for (const f of ['places/shiao.webp', 'places/shiao-home.webp', 'places/yingu.webp']) {
     assert.equal(byPath.get(`worlds/jiuding/art/${f}`)?.pack, 'core', f);

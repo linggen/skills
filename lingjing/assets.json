@@ -1,0 +1,937 @@
+{
+  "version": 1,
+  "base": "https://assets.linggen.dev/a/",
+  "files": [
+    {
+      "path": "worlds/jiuding/art/games/fighter/jiuceng-face.webp",
+      "sha256": "1d60e4669d5d749c5fdfd17a189503b5d148c81872081e311531f6612a888e44",
+      "size": 50060,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/games/fighter/jiuceng.json",
+      "sha256": "340624374b37e1cfb292bdacb4553817741c306152331206b55349ee5522c824",
+      "size": 4489,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/games/fighter/jiuceng.webp",
+      "sha256": "5c4b832394165de9aefe7943b1b482f09158ab9b0cf9f3a31c2e8de9834ef6b7",
+      "size": 419476,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/lu.webp",
+      "sha256": "b7d7d6e8d9e75c0921328fd60c4974c8d65d0ec90d1c785708e134d889610495",
+      "size": 214466,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/people/min-danshi.webp",
+      "sha256": "1e4824c367415e4af1e9c83cb5eb29b4f0cb098203f1e6277766aaac16ec472f",
+      "size": 71746,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/places/jin-ward.webp",
+      "sha256": "f119264f68a32bcf2032378889c7dc5f35d5eaaa857c23075fdaac8f87b717bf",
+      "size": 431730,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/qique.webp",
+      "sha256": "1d094d4c2d0e1dd3743e35d12cad0e11bb192d25457aa9ed7de8f27c60859c81",
+      "size": 252242,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/huochai-body.webp",
+      "sha256": "2ab7c9aa8c2d9c2f30393f3e3bb8d0ef4ae3a31f51f27804c954ffa2525f3c75",
+      "size": 71902,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/huochai-gourd.webp",
+      "sha256": "fbc1e104a06214cfd50b2dbf3739c142d2ccb8ce66a1880bc09c3ebb398f6a16",
+      "size": 28320,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/huochai-lid.webp",
+      "sha256": "30c9375a358eb7bc511e3439b0aa1292819d6ba578e8867ea8ad6c67413bcca3",
+      "size": 37336,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/huochai-shard.webp",
+      "sha256": "ebb61a895e5d27f86f8d2138a929419663fe1be82b423f1857db14ebb9e0785e",
+      "size": 15712,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/huochai-sword.webp",
+      "sha256": "69e849d7fcb2f2ec13641c1e94d8ca211d7e7f94ec58ed4c6a28fa33306d162b",
+      "size": 15920,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/huochai-zheng.webp",
+      "sha256": "b484b40c22a1f5469b027151093d4ef3b34575aa2a8e213c5c8635fa43a5ea48",
+      "size": 41426,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/zhuji-a.webp",
+      "sha256": "ac4a4f93bb8fc7b7f74d805de9088546ddf10d899d4aee6464cb4971a4196feb",
+      "size": 310460,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/zhuji-b.webp",
+      "sha256": "373e25719241bf978492c483299c95e276551e77a8c2b4d68cef9895cd4cad04",
+      "size": 365094,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/zhuji-c.webp",
+      "sha256": "f6c42835131e8b8bbeb10e61291319921fe671e8cc27ca7f9714b51082bd854a",
+      "size": 321298,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/zhuji-d1.webp",
+      "sha256": "935a260dce4df09024e26a7779d363d71c17687ff0b279cd69b6b194bebf05ed",
+      "size": 277756,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/zhuji-d2.webp",
+      "sha256": "9bdde1c6e8c0b4872775c76a88c8f541965ce02f9cf86e1a3d2407d7a0270549",
+      "size": 278704,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/zhuji-e1.webp",
+      "sha256": "83628a33baa98085d29c46c32a76ce893ec36328498ece697f9738489bc74452",
+      "size": 284834,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/zhuji-e2.webp",
+      "sha256": "0f9c9535c0990d1d58afc4370d61aac7e0fb7060324ad096863ccfc6b9d6172b",
+      "size": 366634,
+      "pack": "ch-00-zhuji",
+      "order": 10
+    },
+    {
+      "path": "worlds/jiuding/art/games/fighter/laojing.json",
+      "sha256": "53cc2906e1179e1aea32fa70a691e92c6cc88adf39436c3f9493dd0b7398b2fb",
+      "size": 4475,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/games/fighter/laojing.webp",
+      "sha256": "6efa92a00497f19c1b231953d4237c97cf7f57f81db5219d2122fa593f9e008b",
+      "size": 371000,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/games/rain/ting-basin.webp",
+      "sha256": "713a2caa9b9e7f93e6c6f318f091a1589fee03dd0e4e6478180a6d280add9541",
+      "size": 19452,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/games/rain/ting-beam.webp",
+      "sha256": "40922046dbec61336136290a55520a0e267af8e0bebbf9586f21f41fc5563745",
+      "size": 30114,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/memories/1-a.webp",
+      "sha256": "7bc08329c2bac60dafd9edb1f3d05773273c37eed005cce02f6be929d5c9ed94",
+      "size": 128852,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/people/bingyi.webp",
+      "sha256": "96409b3237202b0e6265994814bbfbb8adc596d9bb95a09043d9d8e883c00a5a",
+      "size": 140018,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/people/doufu-xishi.webp",
+      "sha256": "88e3f0c586ca584c75a4e8759d82f179db93ff4c86649921e605f0bd9249946f",
+      "size": 47420,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/people/laojing.webp",
+      "sha256": "d4100c67eda0729b1024d93ae26b6b5eb2455a7757c35ebed699bae519dd4220",
+      "size": 80862,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/people/wuzhu.webp",
+      "sha256": "2d594cc8d11c68ad2df6ffc61f03df5eea451d5bb9a00df01e452cda556a5fb4",
+      "size": 57538,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/people/zhaoang.webp",
+      "sha256": "36130185c54f791c1c00aa35211914e104450f767e33eaf067be904bbe7a446a",
+      "size": 124878,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/places/hebo.webp",
+      "sha256": "83fab93fb8e7be712c3dbb9f6b2baf67bec79f2dc0efed2ca09bd13285f49399",
+      "size": 439974,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/places/liuwan.webp",
+      "sha256": "7d85149f80415b5c96a7a1c04f7d86aee2d2a4b3de605d1c572aa6515cfc7a02",
+      "size": 424374,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/places/taihang.webp",
+      "sha256": "96b67145fae3cdd2ab22bb2228578409d975780368b62a7c32e13fe3741023e7",
+      "size": 466860,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/places/ye-caifeng.webp",
+      "sha256": "1518ef9b4ff3d372dc33c84b34c652fb95f20abf1105b1c214cb61451f4d5278",
+      "size": 489242,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/places/ye-doufu.webp",
+      "sha256": "84e88ec8c74c779a26d765e98eb833ea3106b677c32b0d7daa451d99924ab979",
+      "size": 417616,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/places/ye-kezhan.webp",
+      "sha256": "818a5329af9dbbc7f268f362689198d5001b44d882fe7dba141f69e776ef8c4a",
+      "size": 483718,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/places/ye-sanlao.webp",
+      "sha256": "d5426505022a7bc1a94dd6d6ac32d107d1e0edb0130192d1e6c4ba8e93d92c37",
+      "size": 532278,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/places/ye-xiangzhu.webp",
+      "sha256": "e52bfba0789642a9872b7fb8768fcad51841cc59373a795aa3268bfa59094913",
+      "size": 458658,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/places/ye.webp",
+      "sha256": "b10f7d925e8fbe51d9173a6abbf07d03bafc154a7a027429c2dae45f013cb439",
+      "size": 472324,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/places/zhangnan.webp",
+      "sha256": "08ce8ee461a15d749221d517de7f162d93fb45aad19c04bdc91753fecc2eecb3",
+      "size": 419530,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/places/zhangyuan.webp",
+      "sha256": "22dde294d45eb57cc91df51160ff85de132ca90a0fbd4e89176234b0c59a5e62",
+      "size": 472240,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/zhang-a.webp",
+      "sha256": "b56de4969047bb810f31c4da194e6651a9a0afda0d6a55ba365581fc5cabf606",
+      "size": 368588,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/zhang-b.webp",
+      "sha256": "39701bf49d502466d9072d71f3d29a9d08405954c2d77f24782c71801e454c28",
+      "size": 337410,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/zhang-c.webp",
+      "sha256": "de1216e08fb537fe50713f485d24a2c8f65e6f30c0e19128666f44404f648a61",
+      "size": 441108,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/zhang-e.webp",
+      "sha256": "b61ea21a1762bd4c3294d8e6034b6ad293fd43c0884ad23cb8ee359b57ffe95f",
+      "size": 296356,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/setpiece/zhang-f.webp",
+      "sha256": "71e0a969818f747605b8816b366b8bc55dc0abc06c0eb0dbf6edbb11c6a3aaee",
+      "size": 338516,
+      "pack": "ch-01-ji",
+      "order": 20
+    },
+    {
+      "path": "worlds/jiuding/art/creatures/jingwei.webp",
+      "sha256": "6a6f7b78512361ea48e244ab95c2d5da6e610f57ba30a6a74ff9f7c56b290295",
+      "size": 79276,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/items/firm-pill.webp",
+      "sha256": "7d6a0ef98942f11bae28ab82ebd7fd8939acfef4e163cd124001d21032be83bb",
+      "size": 35268,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/items/hanyu.webp",
+      "sha256": "d0ce64608c5d319c2f507660691ab5850b1a8e597dcb00f1c6a326fd5edc8da9",
+      "size": 31054,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/items/jingjin.webp",
+      "sha256": "581d1581ce4fd422e6715413e2c8ff25ccbdbaf375402b950cd6b3b8501d6160",
+      "size": 44776,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/items/pojing-pill.webp",
+      "sha256": "31288ed2029655974b0bf0d63e7c3bd90723397f372de5d93f7df278760ccf20",
+      "size": 30702,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/items/wangqi-2.webp",
+      "sha256": "d77ef19b3401d8508554ba07bc456b850b89d849f2c315505d84604576d679e1",
+      "size": 36874,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/items/yaodan-2.webp",
+      "sha256": "9103ce7487bbbdfa188982681af95e4bea99be850c674e3953010efcb63bcd64",
+      "size": 31408,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/places/daye.webp",
+      "sha256": "9ff53daafbace22601f2627355f3d6d7dd6cf0d71c77f1afc9817d2dcff6e2ab",
+      "size": 439534,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/places/fajiu.webp",
+      "sha256": "cd1e22de4eca63b0d06a383592af58021a779a693279b4b405beebe8b404abd3",
+      "size": 473528,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/places/fuli.webp",
+      "sha256": "1eab2836e871f9f6a295184da2882b33cea8ceef52524fce06b7f9eb679db820",
+      "size": 455174,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/places/hengshan.webp",
+      "sha256": "1800dac7faf8d84fe26ca5f7f928d8cbdeaca3a5edd4a40970e63199d757a6ca",
+      "size": 346386,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/places/huaidu.webp",
+      "sha256": "c88aae5a9c5a8b114c2b158f00d788d76ec5374f732f03f8d4f4409655429705",
+      "size": 301104,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/places/jieshi.webp",
+      "sha256": "e519d0eb8ff5158a8edf3ea0d03462cef78d47bddf726a53057fa966f51b2771",
+      "size": 341944,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/places/kongsang.webp",
+      "sha256": "c57c3dcdcaebbd2554a548466b651b30ecab2be775f6619ce4bfaa2c19098f0a",
+      "size": 496384,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/places/leiyuan.webp",
+      "sha256": "ae3216c96b19ab56e328ed821679311de59ec079530163df5a154e3975ac966c",
+      "size": 456494,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/places/leize.webp",
+      "sha256": "0bf98a40019694a6d57484adb593d972f535c63e9f7299851cd2865019c2878e",
+      "size": 467784,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/places/peize.webp",
+      "sha256": "f20a3dbf31101eb6a5d123727dd1a6fbddc5949e9ad29d896fb5732c4f1aeafa",
+      "size": 400380,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/places/pushui.webp",
+      "sha256": "56713f0c002b93a0a11750dc3bf244c36c0a5c8600c3bfd0ae1fbafc10589b4e",
+      "size": 447336,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/places/puyang.webp",
+      "sha256": "16bdd311703ce7edf1c3e66f52d84dc15ca168d5b83e2f3f0a7680ac1f383868",
+      "size": 486770,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/places/sangjian.webp",
+      "sha256": "7140369b11cd90b5867e6c7a09c2df9f9365a1a54a82802907513f875296cee7",
+      "size": 498518,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/places/weishan.webp",
+      "sha256": "9491ff330b660a5bcd71f14649499c37e3d8d4e11fdfa8827e4ef04b619c9296",
+      "size": 474462,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/places/xushan.webp",
+      "sha256": "e82194410e0fc00d03c06ab3d0a2ba8cee4e190af390e9ad84fd795bcd68c971",
+      "size": 332718,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/places/yiqiao.webp",
+      "sha256": "802c04d1426cfa68dcba4a2aa8e2883bdec910b62a1734aa3b4a264b7506d113",
+      "size": 498896,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/places/zhuolu.webp",
+      "sha256": "a853baf681b8225944ffddb1da7231a9ad5b4ea08b710ec75fd0bb8f3448cf0b",
+      "size": 478658,
+      "pack": "ch-02-yan",
+      "order": 30
+    },
+    {
+      "path": "worlds/jiuding/art/creatures/tongtong.webp",
+      "sha256": "e3f84c2d5d94529bb70668e79b89beb9c1446205063ba2525ba55503ff1741eb",
+      "size": 88786,
+      "pack": "ch-03-qing",
+      "order": 40
+    },
+    {
+      "path": "worlds/jiuding/art/items/pouch-high.webp",
+      "sha256": "f9c2d5daaeedcf0acc0967c8ec873cbb1297e33b0f587636618eeade2329ee29",
+      "size": 30984,
+      "pack": "ch-03-qing",
+      "order": 40
+    },
+    {
+      "path": "worlds/jiuding/art/items/yaodan-3.webp",
+      "sha256": "7b22a3476dcb8737f37935951d97fbdd0b188739e9364123917bbe61b54e480a",
+      "size": 50290,
+      "pack": "ch-03-qing",
+      "order": 40
+    },
+    {
+      "path": "worlds/jiuding/art/places/chengshan.webp",
+      "sha256": "5c2026f71fefea16502b33b34784e665a0a56a33987824b05f5c19478a917b0b",
+      "size": 409638,
+      "pack": "ch-03-qing",
+      "order": 40
+    },
+    {
+      "path": "worlds/jiuding/art/places/jixia.webp",
+      "sha256": "4bdb7c7e9f88413666757acba1e7a43ecc229f8be51fc27dcfe77202a28cfed0",
+      "size": 521636,
+      "pack": "ch-03-qing",
+      "order": 40
+    },
+    {
+      "path": "worlds/jiuding/art/places/langya.webp",
+      "sha256": "54c472b2d46532f539ec5d6365547706a1afba3261eba7151ca57ae3d90bc1e4",
+      "size": 356368,
+      "pack": "ch-03-qing",
+      "order": 40
+    },
+    {
+      "path": "worlds/jiuding/art/places/laoshan.webp",
+      "sha256": "3de269d64fd1b0279ab3d56533980fd1d909beed7b08b7e5ca0c83b2d11ba7f3",
+      "size": 369490,
+      "pack": "ch-03-qing",
+      "order": 40
+    },
+    {
+      "path": "worlds/jiuding/art/places/linzi.webp",
+      "sha256": "cf64814d9808b58e6e117c36d0881341b71f227478e531b553d4eb6a4270aa83",
+      "size": 443066,
+      "pack": "ch-03-qing",
+      "order": 40
+    },
+    {
+      "path": "worlds/jiuding/art/places/liubo.webp",
+      "sha256": "2bea383f8400bf0f0ef39d0dec203ebcd59cc2fe2a6617a6e6d3f279528187eb",
+      "size": 338976,
+      "pack": "ch-03-qing",
+      "order": 40
+    },
+    {
+      "path": "worlds/jiuding/art/places/penglai.webp",
+      "sha256": "f30a7752d017188a162418b9f0ac4a3dfc823791cc63c594e5207449c246348e",
+      "size": 427050,
+      "pack": "ch-03-qing",
+      "order": 40
+    },
+    {
+      "path": "worlds/jiuding/art/places/taishan.webp",
+      "sha256": "abddb9968ee1c9c8454448094c15436d4478d6d53618b2a0b2bc2e5e056f8e73",
+      "size": 442026,
+      "pack": "ch-03-qing",
+      "order": 40
+    },
+    {
+      "path": "worlds/jiuding/art/places/weishui.webp",
+      "sha256": "2dd6335c4295082a15fd1dccbabc26134e1a2a43119d2612902e3f7cd278f42c",
+      "size": 410608,
+      "pack": "ch-03-qing",
+      "order": 40
+    },
+    {
+      "path": "worlds/jiuding/art/creatures/wuzhiqi.webp",
+      "sha256": "4f23ed0d1c6f94d47c8a3e79a811173782a5f75757ee41a920788f270a717cb4",
+      "size": 97504,
+      "pack": "ch-04-xu",
+      "order": 50
+    },
+    {
+      "path": "worlds/jiuding/art/places/sikou.webp",
+      "sha256": "ce4caf91602a535a27f77b6ea8f77375d92cfcb507fc37187dd305f7c913b8a8",
+      "size": 483478,
+      "pack": "ch-04-xu",
+      "order": 50
+    },
+    {
+      "path": "worlds/jiuding/art/places/siyuan.webp",
+      "sha256": "f9130e17df72b49b73d21c12f4446bae06f0c0364dbcc4261d010beb64e76a42",
+      "size": 519122,
+      "pack": "ch-04-xu",
+      "order": 50
+    },
+    {
+      "path": "worlds/jiuding/art/creatures/changyou.webp",
+      "sha256": "b0ee477c6590adbfcb1a4f28b24cc826adc02effd7f0f90e5300c7c41f557d15",
+      "size": 101022,
+      "pack": "ch-05-yang",
+      "order": 60
+    },
+    {
+      "path": "worlds/jiuding/art/creatures/fangfeng.webp",
+      "sha256": "eda6bddc1ff8d6cb533f18987f5044ffb677e74b18494ac03f8d13a6cba56d5a",
+      "size": 65844,
+      "pack": "ch-05-yang",
+      "order": 60
+    },
+    {
+      "path": "worlds/jiuding/art/items/juyou.webp",
+      "sha256": "104396854dfc1ee7fb34bc2475a902b7a757f084d99536cf9d6ff702ef57ee4b",
+      "size": 29534,
+      "pack": "ch-05-yang",
+      "order": 60
+    },
+    {
+      "path": "worlds/jiuding/art/places/guangling.webp",
+      "sha256": "5cd9344e1d7e3c6be7a9cb82fcd1bf4b271976862371096f86d3ac863c712f96",
+      "size": 327094,
+      "pack": "ch-05-yang",
+      "order": 60
+    },
+    {
+      "path": "worlds/jiuding/art/places/gusu.webp",
+      "sha256": "29464b9393297a11823f027d97064953a7a21ae4d12b7c7d096f7bf4c57284b2",
+      "size": 452304,
+      "pack": "ch-05-yang",
+      "order": 60
+    },
+    {
+      "path": "worlds/jiuding/art/places/kuaiji.webp",
+      "sha256": "ffff295d3972dec7d271f5921fbc8a88fe64a17d537bda976230730b9a59f6ea",
+      "size": 468096,
+      "pack": "ch-05-yang",
+      "order": 60
+    },
+    {
+      "path": "worlds/jiuding/art/places/pengli.webp",
+      "sha256": "00436d09ae16eaa1f8b30e808c8aed75cab7c1a49b0ba89a862f494209851d8f",
+      "size": 386436,
+      "pack": "ch-05-yang",
+      "order": 60
+    },
+    {
+      "path": "worlds/jiuding/art/places/qiantang.webp",
+      "sha256": "e5abdbad4d7d23fa2e22f02fc5b79596a86a5202cd83325a4dee26e3f2481c4a",
+      "size": 308084,
+      "pack": "ch-05-yang",
+      "order": 60
+    },
+    {
+      "path": "worlds/jiuding/art/places/yuxue.webp",
+      "sha256": "bdbfed4f9a96a78011887f3c0c8e666fbce1d992c9d1cbecb882484e2ebae919",
+      "size": 442296,
+      "pack": "ch-05-yang",
+      "order": 60
+    },
+    {
+      "path": "worlds/jiuding/art/places/zhenze.webp",
+      "sha256": "208b96d0237c28202de32f6b83e5fdf38a76af103bac8b4f18f262de288d19b1",
+      "size": 349232,
+      "pack": "ch-05-yang",
+      "order": 60
+    },
+    {
+      "path": "worlds/jiuding/art/creatures/bashe.webp",
+      "sha256": "3f728803e9599eee6b9a0b2567c17888eeb079612a3b1c7f83b27d610a3a0646",
+      "size": 114640,
+      "pack": "ch-06-jing",
+      "order": 70
+    },
+    {
+      "path": "worlds/jiuding/art/items/dansha.webp",
+      "sha256": "d1f1f06886300a5f94b9633ec10c2fb6e84a9ac8f25784713014f2a92174762c",
+      "size": 21728,
+      "pack": "ch-06-jing",
+      "order": 70
+    },
+    {
+      "path": "worlds/jiuding/art/places/dongting.webp",
+      "sha256": "460a4b07d8548162ae21acc8714600a655d4bc3e43340a1fdec493a712aaec6a",
+      "size": 265430,
+      "pack": "ch-06-jing",
+      "order": 70
+    },
+    {
+      "path": "worlds/jiuding/art/places/jingshan.webp",
+      "sha256": "f0f1c707052ece7cc45741f3942227aff00d4c8aaf326a9f2d5468e21e163d39",
+      "size": 494254,
+      "pack": "ch-06-jing",
+      "order": 70
+    },
+    {
+      "path": "worlds/jiuding/art/places/junshan.webp",
+      "sha256": "7ad66794d296887b81d0e4869ced36c8f9cf63295ffbc60aedd57d60c818299f",
+      "size": 348340,
+      "pack": "ch-06-jing",
+      "order": 70
+    },
+    {
+      "path": "worlds/jiuding/art/places/wuxia.webp",
+      "sha256": "c9d5f89cc79d9330534c0a98c79b2422a0e7682030c2c3e48393e0509c2cd082",
+      "size": 481050,
+      "pack": "ch-06-jing",
+      "order": 70
+    },
+    {
+      "path": "worlds/jiuding/art/places/xiangshui.webp",
+      "sha256": "428ff4e938246a9a0b05421752823efedc353edffbdd9185779825fa6d9a6efc",
+      "size": 417830,
+      "pack": "ch-06-jing",
+      "order": 70
+    },
+    {
+      "path": "worlds/jiuding/art/places/ying.webp",
+      "sha256": "56b5fe7577419bde7de6a8edef9cfd3a661deb5d71568f200264c5fa33820947",
+      "size": 441652,
+      "pack": "ch-06-jing",
+      "order": 70
+    },
+    {
+      "path": "worlds/jiuding/art/places/yunmeng.webp",
+      "sha256": "928d2488f1083c06ad506c89854c70d46973d8bdb4a7866cae0e45cb01cb66c3",
+      "size": 417676,
+      "pack": "ch-06-jing",
+      "order": 70
+    },
+    {
+      "path": "worlds/jiuding/art/creatures/qiezhi.webp",
+      "sha256": "20627d132587a0914c1a9c48dadeaa18234565060acaf8d0014ef248cc07eade",
+      "size": 51814,
+      "pack": "ch-07-liang",
+      "order": 80
+    },
+    {
+      "path": "worlds/jiuding/art/items/shujin.webp",
+      "sha256": "83aed7e681726004fde7b85f01e7cdb9c2a2ea07b3bcc7f5d4dd8dafce4403ca",
+      "size": 57932,
+      "pack": "ch-07-liang",
+      "order": 80
+    },
+    {
+      "path": "worlds/jiuding/art/places/baoxie.webp",
+      "sha256": "b1964f8c535d335f582ec8ad90cec669d298a5e76f16220753eb475ec6fbfe97",
+      "size": 489272,
+      "pack": "ch-07-liang",
+      "order": 80
+    },
+    {
+      "path": "worlds/jiuding/art/places/chengdu.webp",
+      "sha256": "61d5fc2fdbb235ff3d727600425dc89d2747aa0026ed8d330d19e787f5b2bacb",
+      "size": 488668,
+      "pack": "ch-07-liang",
+      "order": 80
+    },
+    {
+      "path": "worlds/jiuding/art/places/jiangzhou.webp",
+      "sha256": "bfa5123acbc726ec83cd9e16c462889b66ca9420a6b0bfa52f30700c81f4a21e",
+      "size": 491004,
+      "pack": "ch-07-liang",
+      "order": 80
+    },
+    {
+      "path": "worlds/jiuding/art/places/lidui.webp",
+      "sha256": "d0624376db0283d2e5b5222f252f916c3134ae34e7f1930b2d3ff06e45634b86",
+      "size": 484140,
+      "pack": "ch-07-liang",
+      "order": 80
+    },
+    {
+      "path": "worlds/jiuding/art/places/minjiang.webp",
+      "sha256": "5b3c779d5ef3a8a3f2333bce940413758a5fa7a840a4cd69595c2091ed63275c",
+      "size": 488846,
+      "pack": "ch-07-liang",
+      "order": 80
+    },
+    {
+      "path": "worlds/jiuding/art/places/minshan.webp",
+      "sha256": "a2a7bfe36b7772bb29f0a6f6f82759892251cf1f3a81e20613e04c2d93d768ec",
+      "size": 360876,
+      "pack": "ch-07-liang",
+      "order": 80
+    },
+    {
+      "path": "worlds/jiuding/art/places/shiniu.webp",
+      "sha256": "38c4f831ef26cf0df5419fb11ac35f1778be0c29eb1a24a8562029c059c387a2",
+      "size": 448838,
+      "pack": "ch-07-liang",
+      "order": 80
+    },
+    {
+      "path": "worlds/jiuding/art/creatures/qianyang.webp",
+      "sha256": "c38168c4d67f482a6fb8e799e9e37d1e0b42934ad8e98e91748626276ef441d8",
+      "size": 108112,
+      "pack": "ch-08-yong",
+      "order": 90
+    },
+    {
+      "path": "worlds/jiuding/art/items/langgan.webp",
+      "sha256": "fc67a1fab20a5780f0f4f1ce1edb2306aeec844c18cdc36ef207d9b43d20051f",
+      "size": 26666,
+      "pack": "ch-08-yong",
+      "order": 90
+    },
+    {
+      "path": "worlds/jiuding/art/places/chencang.webp",
+      "sha256": "7f837200496c74d7e73d53509704bd37c75e10691e22f8c8c39108dcd9497601",
+      "size": 495052,
+      "pack": "ch-08-yong",
+      "order": 90
+    },
+    {
+      "path": "worlds/jiuding/art/places/longshan.webp",
+      "sha256": "15cd9cd1f485c68756cdb6e8d7a546224257c427696326c5de144393671c537a",
+      "size": 426960,
+      "pack": "ch-08-yong",
+      "order": 90
+    },
+    {
+      "path": "worlds/jiuding/art/places/qianlai.webp",
+      "sha256": "1c2713049fdc2806cc3c3494996df6cdf2f71de47babd3a3ab63ac5a55b3d68f",
+      "size": 421304,
+      "pack": "ch-08-yong",
+      "order": 90
+    },
+    {
+      "path": "worlds/jiuding/art/places/qishan.webp",
+      "sha256": "29a9635f10c00c408ab73d92d0c5e45732e49a4f353b953ee42ade3be904278b",
+      "size": 419834,
+      "pack": "ch-08-yong",
+      "order": 90
+    },
+    {
+      "path": "worlds/jiuding/art/places/taihua.webp",
+      "sha256": "434b8bc550d2fc2f8da33d05cb5d8f69f38b5ce2fe7c6ed4209f1ffbc597ed87",
+      "size": 350656,
+      "pack": "ch-08-yong",
+      "order": 90
+    },
+    {
+      "path": "worlds/jiuding/art/places/weihe.webp",
+      "sha256": "889c95833b1ea3e214421cb53597ecd7a64424cdf513f941392056aefd2ea02d",
+      "size": 470920,
+      "pack": "ch-08-yong",
+      "order": 90
+    },
+    {
+      "path": "worlds/jiuding/art/places/yongcheng.webp",
+      "sha256": "e9d97ef900c89514154c0e58907ef74d61ffddc296f119aae97693e7c123d981",
+      "size": 372268,
+      "pack": "ch-08-yong",
+      "order": 90
+    },
+    {
+      "path": "worlds/jiuding/art/creatures/fuzhu.webp",
+      "sha256": "13c4754e748152f62ffe94767d0acbf109a80da1b8cbbe036c5b05118f86204d",
+      "size": 88156,
+      "pack": "ch-09-yu",
+      "order": 100
+    },
+    {
+      "path": "worlds/jiuding/art/creatures/mafu.webp",
+      "sha256": "51c0b96711fbe6531c5eb3036ae307c56d917a2b42818356ae3011ae000e7fe0",
+      "size": 122288,
+      "pack": "ch-09-yu",
+      "order": 100
+    },
+    {
+      "path": "worlds/jiuding/art/creatures/taifeng.webp",
+      "sha256": "26ae0c29b4c553a36daeb82fcba2c7ed9ba6b78ebfea6a5f6759bd964499742c",
+      "size": 55428,
+      "pack": "ch-09-yu",
+      "order": 100
+    },
+    {
+      "path": "worlds/jiuding/art/places/dingtao.webp",
+      "sha256": "2312052f10f45b37521120a5341630f56008489cae77dacea99ebc23c5226426",
+      "size": 354754,
+      "pack": "ch-09-yu",
+      "order": 100
+    },
+    {
+      "path": "worlds/jiuding/art/places/hangu.webp",
+      "sha256": "95763aa5b1aaa5f0a874eed9b66872dfaa35601f60bbea4de57a88122b47e27a",
+      "size": 462738,
+      "pack": "ch-09-yu",
+      "order": 100
+    },
+    {
+      "path": "worlds/jiuding/art/places/heshan.webp",
+      "sha256": "479cb2a62f95e0e9e36f1b8ea2ec21af09cdc3dadea67a602283bac778e09a7d",
+      "size": 399892,
+      "pack": "ch-09-yu",
+      "order": 100
+    },
+    {
+      "path": "worlds/jiuding/art/places/luoshui-night.webp",
+      "sha256": "40d5d37d4f760d11c54bb750881d67189d7cce10c8fbac4689e9d2353e71da01",
+      "size": 467698,
+      "pack": "ch-09-yu",
+      "order": 100
+    },
+    {
+      "path": "worlds/jiuding/art/places/luoshui.webp",
+      "sha256": "9454a691ea58a12a52c26523dff3b373cf4e0dc6175dee6a0801d375f094cdd2",
+      "size": 282096,
+      "pack": "ch-09-yu",
+      "order": 100
+    },
+    {
+      "path": "worlds/jiuding/art/places/luoyi.webp",
+      "sha256": "695e09c1424efe1bd57077d4fb19ece91162b2330b744f5f138175e9580ba4f0",
+      "size": 481514,
+      "pack": "ch-09-yu",
+      "order": 100
+    },
+    {
+      "path": "worlds/jiuding/art/places/songshan.webp",
+      "sha256": "61e010687676454551c3ff2dc572b110d65700217b43d32e6dcfb5e1331b4e64",
+      "size": 370972,
+      "pack": "ch-09-yu",
+      "order": 100
+    },
+    {
+      "path": "worlds/jiuding/art/places/yique.webp",
+      "sha256": "7729e9e8fa9bd5dcee785dfd68e198d5ea03fd6ad4226275f2bd3439eb53e401",
+      "size": 414344,
+      "pack": "ch-09-yu",
+      "order": 100
+    }
+  ]
+}

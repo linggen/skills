@@ -6,6 +6,7 @@
 //   node tools/art-packs.mjs            a table: per pack, files and MB; then the `unplaced` list and the other heavy things
 //   node tools/art-packs.mjs --json     { files: [{ path, pack, order, bytes, why }] } — `path` is skill-relative
 //                                       (worlds/jiuding/art/…), which is what scripts/build-assets-manifest.mjs wants
+//   --placed                            omit `unplaced` files from the JSON output
 //   node tools/art-packs.mjs --check    exit 1 when any file is `unplaced` or a file the data names is missing
 //   node tools/art-packs.mjs --heavy    only the report on the other heavy things (scripts/games assets, big vendored libraries)
 //   --skill <dir>                       another skill folder (default: this one)
@@ -579,7 +580,7 @@ function main(argv) {
   if (flag('--heavy')) { process.stdout.write(`${renderHeavy(heavyReport(skill)).join('\n')}\n`); return 0; }
   const res = buildArtPacks(skill);
   if (flag('--json')) {
-    process.stdout.write(`${JSON.stringify({ files: res.files }, null, 2)}\n`);
+    process.stdout.write(`${JSON.stringify({ files: flag('--placed') ? res.files.filter((f) => f.pack !== 'unplaced') : res.files }, null, 2)}\n`);
   } else if (!flag('--check')) {
     process.stdout.write(`${renderTable(res, heavyReport(skill))}\n`);
   }
