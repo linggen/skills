@@ -121,6 +121,47 @@
         "kind": "art-missing"
       },
       "note": "The control: the same fight without the patch — every picture it asks for is there, no art-missing"
+    },
+    {
+      "id": "story-win-without-spoils",
+      "patch": "seeded/story-charm-sure-unseen.patch",
+      "expect": {
+        "kind": "no-spoils",
+        "fight": "/^story-00-(fox|longzhi)$/"
+      },
+      "note": "Recurring 2026-11-16, found the other way round: a story fight that PAID (a 符 left on every win — the patch makes the roll sure) and whose 所得 the page never draws must still be a hard no-spoils. The first chapter's story fights are played (--art=core).",
+      "ref": "78384e252",
+      "sizes": "430x932",
+      "fights": 1,
+      "flags": "--art=core --only=story"
+    },
+    {
+      "id": "story-spoils-shown-control",
+      "patch": "seeded/story-charm-sure.patch",
+      "absent": true,
+      "expect": {
+        "kind": "no-spoils",
+        "fight": "/^story-00-(fox|longzhi)$/"
+      },
+      "note": "The control: the same sure 符, the page intact — 所得 shows after the story fight, the check stays quiet.",
+      "ref": "78384e252",
+      "sizes": "430x932",
+      "fights": 1,
+      "flags": "--art=core --only=story"
+    },
+    {
+      "id": "story-nothing-owed-control",
+      "patch": "seeded/story-charm-never-unseen.patch",
+      "absent": true,
+      "expect": {
+        "kind": "no-spoils",
+        "fight": "/^story-00-(fox|longzhi)$/"
+      },
+      "note": "The false finding of 2026-11-16 (three in one run): a story fight that pays nothing (no 符 rolled — the patch makes the roll never fall) shows no 所得, by design; the bot must not call it no-spoils. The page's 所得 is switched off here too, so only the bot's own expectation is tested.",
+      "ref": "78384e252",
+      "sizes": "430x932",
+      "fights": 1,
+      "flags": "--art=core --only=story"
     }
   ]
 }

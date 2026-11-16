@@ -1,0 +1,14 @@
+diff --git a/lingjing/scripts/rules/arms.mjs b/lingjing/scripts/rules/arms.mjs
+index 55f724be3..6e81d119a 100644
+--- a/lingjing/scripts/rules/arms.mjs
++++ b/lingjing/scripts/rules/arms.mjs
+@@ -19,7 +19,8 @@ import { stonesAt } from './playpay.mjs';
+ function drop(content, state, creature, now, { loot = false } = {}) {
+   const got = [];
+   const one = content.rewards.growth?.charm?.fight_one_in, charm = charmOf(content);
+-  const lucky = one && charm && hashOf(`${dayKey(now)}|${creature.id}|${seedOf(state)}|charm`) % one === 0;
++  // SEEDED (playbot selftest): every win leaves a 符, so the story fight's 所得 is surely due.
++  const lucky = Boolean(one && charm);
+   // An id named twice is two of it, one line in 所得 (邹青松's 火符).
+   const counts = new Map();
+   for (const id of [...dropsOf(creature), lucky ? charm.id : null].filter(Boolean)) counts.set(id, (counts.get(id) ?? 0) + 1);

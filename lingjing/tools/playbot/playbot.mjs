@@ -17,7 +17,8 @@
 //   no-response      a tap on a live control changes nothing on the page within 2 s
 //   no-feedback      a play changed neither the fight nor what the page says
 //   mana-waste       灵力 went down and nothing on the field moved (the card only left the hand)
-//   no-spoils        the rules settled a fight won and no 所得 with real contents showed — or it showed under
+//   no-spoils        the rules settled a fight won AND PAID something (a drop, 修为, 灵石, a 符 spent: spoils.mjs owedOf —
+//                    a win that paid nothing owes no sheet) and no 所得 with real contents showed — or it showed under
 //                    something (elementFromPoint at its centre is not 所得's)
 //   frozen-by-fight  a thing NOT in the fight (the bag, the 饭桶's feed, wearing) refused because a fight is open
 //   resume-mismatch  a fight reloaded and taken up again shows another state than it was left in
@@ -43,6 +44,7 @@ import { makeServer, defaultShared, artBlock, BASELINE_NOW } from './serve.mjs';
 import { LINT } from './lint.mjs';
 import { writePack } from './report.mjs';
 import { openingHand, wastedPlays } from './replay.mjs';
+import { owedOf } from './spoils.mjs';
 import { FIRST_STORY, isPicture, missLedger, missOf, packListing, packOfPath, pictureKey } from './art.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -461,7 +463,7 @@ export async function run(opts) {
               findings.push({ kind: 'mana-waste', hard: true, size, where: `${where} · ${label}`, card: w.card, mana: `${w.mana[0]} → ${w.mana[1]}`, action: w.action, by: 'fight replay (battle.js)', shot: screenshots.filter((x) => x.where === where).at(-1)?.file ?? null });
             }
           }
-          return { outcome, steps, settled };
+          return { outcome, steps, settled, owed: owedOf(settled?.out) };
         }
         // Not his turn, or the last move still playing out (the scratch seam says so): a person waits, so does the bot.
         const bout = await page.evaluate(() => globalThis.__lingjingPlay?.bout?.() ?? null);
@@ -552,6 +554,11 @@ export async function run(opts) {
     const afterWin = async (label, res) => {
       if (res.outcome === 'lost') { await sleep(1500); await shot(`${label}-lost`); return; }
       if (res.outcome !== 'won') return;
+      // What the rules paid for this win decides whether a sheet is owed (spoils.mjs): a story win that paid nothing
+      // (the first chapter's fox and 蠪侄 leave a 符 on one win in three, else nothing) shows none, and waiting 18 s
+      // for one would be a false finding (2026-11-16).
+      const owed = res.owed ?? null;
+      if (!owed) { await shot(`${label}-won`); await click('[data-spoils-close]').catch(() => {}); return; }
       let sp = null;
       // The reveals over a won fight (a seal, a card turned — 珠光 得) come first and can stand a while; 所得 waits
       // under them (dcab26ad). Look for 12 s untouched, then clear the reveals and look 6 s more.
@@ -564,9 +571,8 @@ export async function run(opts) {
       }
       if (!sp && opts.debug) console.error('[spoils?]', JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('*')].filter((e) => e.children.length < 8 && /所得/.test(e.textContent || '') && e.textContent.length < 200).slice(0, 6).map((e) => [e.tagName, e.className, e.getClientRects().length, (e.textContent || '').slice(0, 60)]))));
       await shot(`${label}-won`);
-      const paid = res.settled?.out?.paid ?? res.settled?.out?.spoils ?? null;
-      if (!sp || !sp.parts.length) await fail('no-spoils', { fight: label, title: sp?.title ?? null, paid });
-      else if (!sp.hit) await fail('no-spoils', { fight: label, title: sp.title, paid, covered_by: sp.over });
+      if (!sp || !sp.parts.length) await fail('no-spoils', { fight: label, title: sp?.title ?? null, paid: owed });
+      else if (!sp.hit) await fail('no-spoils', { fight: label, title: sp.title, paid: owed, covered_by: sp.over });
       // Put away, as a player does: since dcab26ad the next play waits behind an open 所得.
       else await click('.cardx[data-spoils-close], [data-spoils-close]', '所得 · 收起').catch(() => {});
     };
