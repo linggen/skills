@@ -75,7 +75,8 @@ import { frameOf } from './atlas.js';
 import { fxTimes, glOK, playHoming as playHomingFx } from './fx.js';
 import { atmosClasses, atmosOf, indoorOf, particlesHtml, stagePick, windVars } from './atmos.js';
 import { placeArtOf } from './placeart.js';
-import { pictureRetryIn, pictureState, watchPictures, whenPicture } from './picture-asks.js';
+import { pictureRetryIn, pictureState, pictures, watchPictures, whenPicture } from './picture-asks.js';
+import { missingPictures } from './missing-picture.js';
 import { WINDS } from './rules/weather.mjs';
 import { parseDay } from './calendar.js';
 import { applySky, moonAt, skyOf } from './sky-bodies.js';
@@ -104,7 +105,14 @@ const ftKailu = fantongKailu({ feed: (ids, fuel, press) => feedFantong(ids, fuel
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
-watchPictures(); // a picture that failed is not asked for on every redraw (picture-asks.js)
+// A picture that failed is not asked for on every redraw (picture-asks.js); Yinyue stands in its place (missing-picture.js).
+const standIns = missingPictures({
+  ledger: pictures, probe: whenPicture, doc: document, base: () => document.baseURI,
+  urlOf: (file) => worldPath('worlds/jiuding', file), words: () => WORDS[lang()],
+  report: () => fetch('/api/assets/lingjing').then((r) => (r.ok ? r.json() : null)), // 404 or down: no word from the engine, the ledger decides
+  observe: (el, fn) => { if (typeof ResizeObserver !== 'function') return null; const o = new ResizeObserver(fn); o.observe(el); return () => o.disconnect(); },
+});
+watchPictures(document, standIns);
 
 /* A preview of the atmosphere, for testing only: `?day=2027-02-06` reads
    Look's `today` (and its season) for that date (a read — the save is never
@@ -1766,13 +1774,14 @@ function paintBackdrop() {
   drawnBackdrop = key;
   const el = $('backdrop');
   if (!el) return;
-  if (!src) { missingBackdrop = null; return layBackdrop(el, null, dim, art, false); }
+  if (!src) { missingBackdrop = null; standIns.note(el, null); return layBackdrop(el, null, dim, art, false); }
   // Asked once through an Image: a CSS background of a missing picture is asked for again whenever the stage's custom
   // properties change (picture-asks.js), so its url is laid only when the picture is there.
   const known = pictureState(src);
   const lay = (there) => {
     if (key !== drawnBackdrop) return; // the stage moved on while the picture was asked for
     missingBackdrop = there ? null : src;
+    standIns.note(el, there ? null : src);
     clearTimeout(backdropTimer);
     if (!there) backdropTimer = setTimeout(paintBackdrop, pictureRetryIn(src) + 250);
     if (retry && !there) return; // still not there: the stage keeps what it shows

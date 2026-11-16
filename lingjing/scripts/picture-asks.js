@@ -14,6 +14,8 @@
 //     templates that carry an <img> need no change.
 //   · whenPicture — the stage's backdrop (a CSS background) asks through an Image first and lays its url only when
 //     the picture is there.
+//   · what the player sees in place of a missing picture is missing-picture.js's: both entry points here (a write the
+//     guard changed, an <img> that fired `error`) hand it the element through `hooks`.
 // The ledger, guardImgHtml and hookHtml are pure (an injected clock, a fake prototype in the tests).
 
 /** The picture's key: its absolute URL without the hash (`base` resolves a relative src, as the page does). */
@@ -41,6 +43,8 @@ export function askLedger({ now = () => Date.now(), firstMs = 15000, capMs = 120
     },
     retryIn: (key) => Math.max(0, (bad.get(key)?.until ?? 0) - now()),
     misses: (key) => bad.get(key)?.misses ?? 0,
+    /** True once the last step of the pause (`capMs`) has been reached: the picture has kept failing. */
+    atCap: (key) => bad.has(key) && firstMs * 2 ** (bad.get(key).misses - 1) >= capMs,
     /** True while any picture has failed (guardImgHtml's fast path: nothing to look for). */
     get any() { return bad.size > 0; },
   };
@@ -50,30 +54,40 @@ const ENTITIES = { '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;
 const unescapeAttr = (s) => s.replace(/&(?:amp|lt|gt|quot|#39|#x27);/g, (m) => ENTITIES[m]);
 const SRC = /\ssrc=(?:"([^"]*)"|'([^']*)')/i;
 
+const STAND_IN_ATTRS = /\s(?:title|aria-label)=(?:"[^"]*"|'[^']*')/gi;
+
 /** `html` with the src taken off every <img> whose picture is in its pause (kept as data-pic-missing, so a reader can
-    still see which). Same string back when nothing failed. */
-export function guardImgHtml(html, ledger, base = 'http://x/') {
+    still see which). Same string back when nothing failed. `standIn(key)` → the attributes that put a stand-in picture
+    on the element (missing-picture.js `standInAttrs`), written where the src was; without it the img is left bare.
+    A stand-in (data-pic-fb) is never taken for a missing picture. */
+export function guardImgHtml(html, ledger, base = 'http://x/', standIn = null) {
   if (!ledger.any || typeof html !== 'string' || !html.includes('<img')) return html;
   return html.replace(/<img\b[^>]*>/gi, (tag) => {
     const m = SRC.exec(tag);
-    if (!m) return tag;
+    if (!m || /\sdata-pic-fb[\s=>/]/i.test(tag)) return tag;
     const raw = m[1] ?? m[2];
-    if (/^(data|blob):/i.test(raw) || ledger.state(pictureKey(unescapeAttr(raw), base)) !== 'failed') return tag;
-    return tag.replace(SRC, ` data-pic-missing="${raw.replace(/"/g, '&quot;')}"`);
+    const key = pictureKey(unescapeAttr(raw), base);
+    if (/^(data|blob):/i.test(raw) || ledger.state(key) !== 'failed') return tag;
+    const missing = ` data-pic-missing="${raw.replace(/"/g, '&quot;')}"`;
+    if (!standIn) return tag.replace(SRC, missing);
+    return tag.replace(STAND_IN_ATTRS, '').replace(SRC, missing + standIn(key));
   });
 }
 
 /** Put guardImgHtml in front of `proto`'s innerHTML setter and insertAdjacentHTML (Element.prototype in the page).
-    `base` a function → the page's base URL now. Idempotent. */
-export function hookHtml(proto, ledger, base = () => 'http://x/') {
+    `base` a function → the page's base URL now. `hooks` (optional): `standIn(key)` as in guardImgHtml, and
+    `onWrite(element)` called after a write the guard changed (the element written into: its stand-ins are in it now).
+    Idempotent. */
+export function hookHtml(proto, ledger, base = () => 'http://x/', hooks = {}) {
   if (!proto || proto.__pictureGuard) return false;
+  const guard = (html) => guardImgHtml(html, ledger, base(), hooks.standIn ?? null);
   const set = Object.getOwnPropertyDescriptor(proto, 'innerHTML');
   if (set?.set) {
-    Object.defineProperty(proto, 'innerHTML', { ...set, set(html) { set.set.call(this, guardImgHtml(html, ledger, base())); } });
+    Object.defineProperty(proto, 'innerHTML', { ...set, set(html) { const out = guard(html); set.set.call(this, out); if (out !== html) hooks.onWrite?.(this); } });
   }
   const adj = proto.insertAdjacentHTML;
   if (typeof adj === 'function') {
-    proto.insertAdjacentHTML = function insertAdjacentHTML(where, html) { return adj.call(this, where, guardImgHtml(html, ledger, base())); };
+    proto.insertAdjacentHTML = function insertAdjacentHTML(where, html) { const out = guard(html); const r = adj.call(this, where, out); if (out !== html) hooks.onWrite?.(this); return r; };
   }
   proto.__pictureGuard = true;
   return true;
@@ -87,17 +101,24 @@ export const pictureState = (src) => pictures.state(pictureKey(src, baseNow()));
 export const pictureRetryIn = (src) => pictures.retryIn(pictureKey(src, baseNow()));
 
 /** In the page: remember which <img>s failed or loaded (error and load do not bubble: caught on the way down), and
-    guard every write of HTML. Once per page. */
-export function watchPictures(doc = globalThis.document) {
+    guard every write of HTML. Once per page. `hooks` (missing-picture.js): `onMiss(img)` after a failure is noted (also
+    for a stand-in that failed itself, which the ledger never hears of), `standIn` / `onWrite` as in hookHtml. */
+export function watchPictures(doc = globalThis.document, hooks = {}) {
   if (!doc || doc.__picturesWatched) return;
   doc.__picturesWatched = true;
   const keyOf = (img) => {
+    if (img.hasAttribute?.('data-pic-fb')) return null; // a stand-in is not a picture the game asks for
     const u = img.currentSrc || img.getAttribute('src');
     return u && !/^(data|blob):/i.test(u) ? pictureKey(u, doc.baseURI) : null;
   };
-  doc.addEventListener('error', (e) => { if (e.target?.tagName === 'IMG') { const k = keyOf(e.target); if (k) pictures.failed(k); } }, true);
+  doc.addEventListener('error', (e) => {
+    if (e.target?.tagName !== 'IMG') return;
+    const k = keyOf(e.target);
+    if (k) pictures.failed(k);
+    hooks.onMiss?.(e.target);
+  }, true);
   doc.addEventListener('load', (e) => { if (e.target?.tagName === 'IMG') { const k = keyOf(e.target); if (k) pictures.loaded(k); } }, true);
-  hookHtml(globalThis.Element?.prototype, pictures, () => doc.baseURI);
+  hookHtml(globalThis.Element?.prototype, pictures, () => doc.baseURI, hooks);
 }
 
 const asking = new Map(); // key → the one Image in flight

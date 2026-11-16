@@ -157,6 +157,13 @@ button:disabled { cursor: default; }
     radial-gradient(70% 30% at 50% 100%, color-mix(in srgb, var(--text) 7%, transparent), transparent 80%); }
 .backdrop.painted { background: var(--art) center 40% / cover no-repeat; opacity: .32; filter: grayscale(.35);
   -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 30%, #000 100%); mask-image: linear-gradient(180deg, transparent 0, #000 30%, #000 100%); }
+/* A picture that is not there (missing-picture.js): Yinyue small in its place; in a slot of 96 px or more her line is laid over
+   the picture's foot (.pic-cap); a missing stage painting keeps the plain stage and says it once, small, in a corner. */
+img[data-pic-fb] { object-fit: contain !important; object-position: center !important; }
+img[data-pic-panel] { background: color-mix(in srgb, var(--raised) 85%, var(--ling-soft)); border-radius: 6px; }
+.pic-cap { position: absolute; display: flex; align-items: flex-end; justify-content: center; box-sizing: border-box; padding: 6px 8px;
+  pointer-events: none; text-align: center; font: 12px/1.35 var(--ui); color: var(--text); text-shadow: 0 0 4px var(--surface), 0 0 2px var(--surface); }
+.pic-corner { position: absolute; left: 12px; bottom: 8px; z-index: 1; max-width: 60%; pointer-events: none; font: 11px/1.3 var(--ui); color: var(--dim); opacity: .8; }
 /* 此地, one line (Hanli, 2026-10-05: the place stood three times): the 回 small, then the place. */
 .titlerow { display: flex; align-items: baseline; gap: 12px; min-width: 0; flex: none; }
 .titlerow:not(:has(:not(:empty))) { display: none; }

@@ -264,8 +264,10 @@ export async function run(opts) {
     const r = rng(Number(opts.seed ?? 1) + w);
 
     /* The <img>s broken on the page (fired `error`, or loaded with no natural size) whose request showed no failure. */
-    const brokenImgs = () => page.evaluate(() => [...new Set([...(globalThis.__pbImgErr ?? []), ...[...document.images].filter((i) => i.complete && i.naturalWidth === 0 && i.currentSrc).map((i) => i.currentSrc)])]
-      .filter((u) => !/^(data|blob):/i.test(u))).catch(() => []);
+    // An <img> with Yinyue standing in (missing-picture.js) loads fine and keeps the real src as data-pic-missing: that hole counts too.
+    const brokenImgs = () => page.evaluate(() => [...new Set([...(globalThis.__pbImgErr ?? []), ...[...document.images].filter((i) => i.complete && i.naturalWidth === 0 && i.currentSrc).map((i) => i.currentSrc),
+      ...[...document.querySelectorAll('img[data-pic-missing]')].map((i) => { try { return new URL(i.getAttribute('data-pic-missing'), document.baseURI).href; } catch { return ''; } })])]
+      .filter((u) => u && !/^(data|blob):/i.test(u))).catch(() => []);
     let flushing = false, curSave = null;
     /* The queued misses made findings (one per picture a run), with one screenshot for all that are new. */
     const artFlush = async () => {

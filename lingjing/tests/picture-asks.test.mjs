@@ -83,3 +83,28 @@ test('hookHtml puts the guard in front of innerHTML and insertAdjacentHTML, once
   e.insertAdjacentHTML('beforeend', '<img src="m.webp">');
   assert.equal(e.innerHTML, '<img data-pic-missing="m.webp"><img src="n.webp"><img data-pic-missing="m.webp">');
 });
+
+test('hookHtml hands a write the guard changed to onWrite (and only that), with the stand-in in the HTML', () => {
+  class El {
+    #h = '';
+    get innerHTML() { return this.#h; }
+    set innerHTML(v) { this.#h = v; }
+    insertAdjacentHTML(where, v) { this.#h += v; }
+  }
+  const l = askLedger({ now: () => 0 });
+  l.failed(pictureKey('m.webp', BASE));
+  const written = [];
+  hookHtml(El.prototype, l, () => BASE, { standIn: () => ' src="fox.webp"', onWrite: (el) => written.push(el.innerHTML) });
+  const e = new El();
+  e.innerHTML = '<img src="n.webp">';
+  assert.deepEqual(written, []);
+  e.innerHTML = '<img src="m.webp">';
+  assert.deepEqual(written, ['<img data-pic-missing="m.webp" src="fox.webp">']);
+});
+
+test('the ledger says when the last step of the pause is reached', () => {
+  let t = 0; const l = askLedger({ now: () => t });
+  const steps = [];
+  for (let i = 0; i < 5; i += 1) { l.failed('k'); steps.push(l.atCap('k')); t += l.retryIn('k'); }
+  assert.deepEqual(steps, [false, false, false, true, true]);
+});
