@@ -8,6 +8,14 @@ description: >-
   Use --web for the interactive dashboard, or run directly in chat.
 allowed-tools: [Bash, Task, WebSearch, WebFetch, agent_chat]
 renamed-from: [mac-shifu, sys-doctor]
+# Its line in the world block: the readings of the last scan, written by scan.js
+# worldOfScan beside data/latest.json.
+world-line:
+  file: data/world.json
+  fields: [disk_free, memory_used, battery, security]
+# Written to the activity log by the Media pane (scripts/media/media_pipeline.py
+# tell_perception) when a backup or a clean finishes with files moved.
+activity-verbs: [backup, clean]
 user-invocable: true
 argument-hint: "[full | disk | apps | quick | --web]"
 app:

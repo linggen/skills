@@ -31,6 +31,7 @@ import shutil
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -1094,6 +1095,22 @@ def stamp_quest(status, items):
         pass
 
 
+# The skill's own name: the engine takes an activity record only from the app it
+# names, and only for a verb that skill declares in SKILL.md `activity-verbs`.
+APP = 'apple-shifu'
+
+
+def perception_record(kind, items, size):
+    """The one-line fact a finished, non-empty run leaves in the Mac's activity
+    log, as the body of POST /api/activity. Pure."""
+    verb = 'clean' if kind == 'clean' else 'backup'
+    gb = size / 1_000_000_000
+    where = {'phone_mac': 'from the phone', 'mac_disk': 'to the external disk',
+             'clean': 'from this Mac'}.get(kind, '')
+    obj = f'{items} file{"" if items == 1 else "s"} ({gb:.1f} GB) {where}'.strip()
+    return {'by': 'user', 'app': APP, 'verb': verb, 'object': obj}
+
+
 def tell_perception(kind, items, size, status):
     """Tell the Mac's activity log what this run did, so its agents can perceive
     it (linggen/doc/perception-spec.md §3). This pane's History stays the
@@ -1101,24 +1118,25 @@ def tell_perception(kind, items, size, status):
 
     Only finished, non-empty runs — a failed copy is not a change to the world,
     and a run that moved nothing is not news. Never raises: a log that can break
-    a backup is worse than no log."""
+    a backup is worse than no log. A record the engine refuses (or no engine to
+    take it) leaves one plain line on stderr, which media.sh keeps in op.log."""
     if status != 'done' or not items:
         return
-    verb = 'clean' if kind == 'clean' else 'backup'
-    gb = size / 1_000_000_000
-    where = {'phone_mac': 'from the phone', 'mac_disk': 'to the external disk',
-             'clean': 'from this Mac'}.get(kind, '')
-    obj = f'{items} file{"" if items == 1 else "s"} ({gb:.1f} GB) {where}'.strip()
+    record = perception_record(kind, items, size)
     port = os.environ.get('LINGGEN_PORT', '9527')
-    body = json.dumps({'by': 'user', 'app': 'media', 'verb': verb,
-                       'object': obj}).encode()
     try:
         req = urllib.request.Request(
-            f'http://127.0.0.1:{port}/api/activity', data=body,
+            f'http://127.0.0.1:{port}/api/activity', data=json.dumps(record).encode(),
             headers={'Content-Type': 'application/json'})
         urllib.request.urlopen(req, timeout=3).read()
-    except Exception:
-        pass
+    except urllib.error.HTTPError as e:
+        try:
+            why = json.loads(e.read().decode()).get('error') or f'HTTP {e.code}'
+        except Exception:
+            why = f'HTTP {e.code}'
+        print(f"activity log refused the {record['verb']} record: {why}", file=sys.stderr)
+    except Exception as e:
+        print(f"activity log not told of the {record['verb']}: {e}", file=sys.stderr)
 
 
 def _archive_local_rows():

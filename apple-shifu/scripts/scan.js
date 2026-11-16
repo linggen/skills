@@ -45,6 +45,25 @@ function mustLand(res, what) {
   if (res?.failed || res?.exit_code) throw new Error(`${what} not saved: ${res?.stderr || `exit ${res?.exit_code}`}`);
 }
 
+/** The few readings of a scan that make Apple Shifu's line in the world block
+    (SKILL.md `world-line`): flat, short text, as measured — no score, no verdict.
+    A reading the scan did not take (no battery on a desktop) is left out, never
+    written as zero. Pure. */
+export function worldOfScan(summary) {
+  const s = summary || {};
+  const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+  const world = {};
+  const free = num(s.disk_free_gb);
+  if (free !== null) world.disk_free = `${Math.round(free * 10) / 10} GB`;
+  const mem = num(s.mem_percent);
+  if (mem !== null) world.memory_used = `${Math.round(mem)}%`;
+  const battery = num(s.battery_percent);
+  if (battery !== null) world.battery = `${Math.round(battery)}%`;
+  const passing = num(s.security_passing), total = num(s.security_total);
+  if (passing !== null && total !== null) world.security = `${passing} of ${total} checks passing`;
+  return world;
+}
+
 // Persist a compact scan summary for the agent's LastScan tool and delta-led
 // rescans. Written under the skill's data dir; files end with \n (the
 // /api/bash sentinel-strip relies on a trailing newline). The saved scan is
@@ -53,7 +72,10 @@ export async function persistScanSnapshot(summary, sessionId) {
   const dir = '$HOME/.linggen/skills/apple-shifu/data';
   const json = JSON.stringify(summary, null, 1);
   const stamp = `${summary.date || 'scan'}-${Date.now()}`;
+  const world = worldOfScan(summary);
+  const worldCmd = Object.keys(world).length ? ` && printf '%s\\n' ${shellEsc(JSON.stringify(world))} > "${dir}/world.json"` : '';
   const cmd = `mkdir -p "${dir}/scans" && printf '%s\\n' ${shellEsc(json)} > "${dir}/scans/${stamp}.json" && printf '%s\\n' ${shellEsc(json)} > "${dir}/latest.json"`
+    + worldCmd
     + ' && "$HOME/.linggen/skills/apple-shifu/scripts/quest.sh" shifu-scan';
   mustLand(await bash(cmd, sessionId), 'scan snapshot');
 }
