@@ -7,6 +7,8 @@
   "shared": [
     "scripts/lingjing.css",
     "scripts/think-worker.js",
+    "worlds/jiuding/art/fallback/yinyue-on-its-way.webp",
+    "worlds/jiuding/art/fallback/yinyue-not-found.webp",
     "scripts/games/kit/audio/sounds.json",
     "scripts/games/kit/audio/bank.json",
     "scripts/games/kit/audio/sfx.m4a",

@@ -39,10 +39,13 @@ import { enablePlayback } from './audio-session.js';
 enablePlayback();
 import { ownSkip } from '../../stuck.js';
 import { mountPure } from '../mount.js';
+import { installPictures } from './pictures.js';
 
 const ID = 'board';
 const SKILL = new URL('../../../', import.meta.url);
 const table = fetch(new URL('./boards.json', import.meta.url)).then((r) => r.json());
+let boardLang = 'zh'; // the language the app mounted the board in: Yinyue's line for a picture that is not there
+installPictures({ root: SKILL, lang: () => boardLang }); // a missing picture shows her, small, with a line (missing-picture.js)
 
 const post = (m) => {
   const bridge = globalThis.Linggen ?? globalThis.webkit?.messageHandlers?.Linggen;
@@ -184,6 +187,7 @@ let state = () => undefined; // the board's state, when its mount hands a look a
 
 async function mountBoard(spec) {
   const { game, data = {}, lang = 'zh', seed, reducedMotion = false, lines, level = 1, task = null } = spec;
+  boardLang = lang === 'en' ? 'en' : 'zh';
   if (spec.trace) traceTaps();
   const row = (await table).games?.[game];
   if (!row) { post({ t: 'error', error: `no board ${game}` }); return; }

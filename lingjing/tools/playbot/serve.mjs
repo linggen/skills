@@ -118,6 +118,8 @@ export function makeServer({ skill, data, shared = null, block = null, log = () 
     if (p === '/api/user/language') return json(res, 200, { language: 'zh-Hans' });
     if (p === '/api/yinyue/event') return json(res, 200, { ok: true });
     if (p.startsWith('/api/account')) return json(res, 200, { signed_in: false });
+    // The fetched-art report (doc/asset-pack-spec.md): a scratch install holds every file, nothing is wanted or failing.
+    if (p === '/api/assets/lingjing') return json(res, 200, { packs: [], files: 0, bytes: 0, held_files: 0, held_bytes: 0 });
     if (p.startsWith('/api/senses/weather')) return json(res, 404, { error: 'no weather in a scratch install' });
     if (p.startsWith('/api/')) {
       if (!unknown.has(p)) { unknown.add(p); log(`unanswered engine route ${req.method} ${p}`); }
