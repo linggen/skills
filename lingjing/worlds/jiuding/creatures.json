@@ -1306,6 +1306,7 @@
         "guard"
       ],
       "drops": "jingjin",
+      "_drops": "2026-11-16: 精金 is a 卷二 item (items.json juan 2), so rules/world.mjs ofJuan keeps it from dropping while only 卷一 is open — today this entry drops nothing anywhere. 蠪侄 is fought outside the prologue's gate-longzhi duel, so the entry stays; once 卷二 opens it applies wherever rules/arms.mjs drop runs for a win over it (tasks.mjs duel and the 妖兽 wave): 徐's haunt (places/xu.json has.creature), the 打妖 errand xu-fuli-longzhi (quests/xu.json) and, on a first win, gate-longzhi itself. 秘境探险 (mijing.json) and 兽潮 pay by their own tables, not this entry.",
       "hp": 2.05,
       "_hp": "Hanli 2026-10-15 (都太简单了): weighed at the first meeting by tools/story-fights.mjs — about 60% won by a player who thinks a turn ahead (fightline.js lookahead); tests/fight-band.test.mjs holds it.",
       "loot": [{"item": "yunmu", "w": 1}, {"item": "tie-sha", "w": 1}, {"item": "cishi", "w": 1}],
