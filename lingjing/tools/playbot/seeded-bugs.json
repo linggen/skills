@@ -1,5 +1,5 @@
 {
-  "_about": "The play bot's seeded bugs (run.sh --selftest): each one a ref (or a ref + a patch under seeded/) the bot must catch, by the finding named in `expect` (a field that starts and ends with / is a regex). A bug it misses means the bot is broken, not the game fixed. The first three are the phone bugs of 2026-11-04/05 at the commit before their fixes; the fourth (a win with no 所得 — on the phone it was the native screen) is put back on the page by a patch; the hand's floor (hand-too-small) is squeezed by one and kept by its control; a picture that is not there (art-missing) is made so by a patch and kept by its control. An entry with `absent: true` is a control (the same play with the bug not there must NOT raise the finding).",
+  "_about": "The play bot's seeded bugs (run.sh --selftest): each one a ref (or a ref + a patch under seeded/) the bot must catch, by the finding named in `expect` (a field that starts and ends with / is a regex). A bug it misses means the bot is broken, not the game fixed. The first three are the phone bugs of 2026-11-04/05 at the commit before their fixes; the fourth (a win with no 所得 — on the phone it was the native screen) is put back on the page by a patch; the hand's floor (hand-too-small) is squeezed by one and kept by its control; a picture that is not there (art-missing) is made so by a patch and kept by its control. 啸月 on an empty rank (mana-waste on yy-howl, 2026-11-16, found in story fights after a loss) is put right by a patch on the commit that had it, and kept by its bug at that commit. An entry with `absent: true` is a control (the same play with the bug not there must NOT raise the finding).",
   "bugs": [
     {
       "id": "kept-fight-freezes-fantong",
@@ -121,6 +121,32 @@
         "kind": "art-missing"
       },
       "note": "The control: the same fight without the patch — every picture it asks for is there, no art-missing"
+    },
+    {
+      "id": "howl-on-empty-rank",
+      "ref": "7cc5ff740",
+      "sizes": "430x932",
+      "fights": 6,
+      "expect": {
+        "kind": "mana-waste",
+        "card": "yy-howl"
+      },
+      "note": "The bot's own finding, 2026-11-16: 啸月 (银月's lent card, the first rung of the lend) offered and played with no body of his standing — 灵力 spent, the board unmoved. main at 7cc5ff740 still has it: VERB_USE (battle.js) had no row for turnRally. He holds only 痒痒针/震怒 (--deck), so his rank stays empty all fight; --lend=1 sets one lost duel in a row, so the rules lend 啸月 into the opening hand",
+      "flags": "--no-careful --only=haunt --until=mana-waste:yy-howl --deck=yangzhen,zhennu --lend=1"
+    },
+    {
+      "id": "howl-greyed-control",
+      "ref": "7cc5ff740",
+      "patch": "seeded/howl-fix.patch",
+      "sizes": "430x932",
+      "fights": 2,
+      "absent": true,
+      "expect": {
+        "kind": "mana-waste",
+        "card": "yy-howl"
+      },
+      "note": "The same play with the fix put on (VERB_USE has its turnRally row): the page greys 啸月 at an empty rank and the bot plays something else",
+      "flags": "--no-careful --only=haunt --deck=yangzhen,zhennu --lend=1"
     }
   ]
 }

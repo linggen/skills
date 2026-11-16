@@ -511,6 +511,25 @@ test('the player\'s page greys a card whose every verb would land on nothing, an
   assert.ok(st.log.some(e => e.from === 'sweep'), 'and the animator has its hit to play');
 });
 
+test('啸月 (turnRally) is greyed while no body of his stands, and every verb of the vocabulary says when it lands on nothing (a finding of the play bot: mana-waste on yy-howl)', async () => {
+  const { VERB_USE, idleWhy, playerOffers, worthPlaying } = await import('../scripts/battle.js');
+  const CARDS5 = { ...CARDS, howl: { id: 'howl', kind: 'spell', name: '啸月', cost: 1, element: 'metal', effect: { turnRally: 1 } } };
+  const st = begin({ ...setupOf(), you: { ...setupOf().you, deck: ['cub', 'cub', 'cub'] } }, CARDS5);
+  st.you.hand = ['howl', 'cub']; st.you.mana = 5; st.you.board = [];
+  assert.equal(idleWhy(st, st.you, CARDS5.howl), 'no-friendly', 'a rally for the turn with nobody to rally');
+  const row = playerOffers(st).find(o => o.action.kind === 'play' && o.action.index === 0);
+  assert.equal(row.ok, false); assert.equal(row.why, 'no-friendly');
+  assert.equal(offers(st).find(o => o.action.kind === 'play' && o.action.index === 0).ok, true, 'the rules\' own offers stay as they were: the bands\' lines read those');
+  assert.equal(worthPlaying(st, st.foe, CARDS5.howl), false, 'a beast holds it too');
+  // With a body of his standing it lands, and the body strikes harder this turn only.
+  st.you.board = [{ uid: 7, id: 'cub', atk: 1, hp: 3, hpMax: 3, element: 'wood' }];
+  assert.equal(idleWhy(st, st.you, CARDS5.howl), null);
+  act(st, { kind: 'play', index: 0 });
+  assert.equal(st.you.board[0].atk, 2);
+  // The lock: a verb added to the vocabulary must say when it lands on nothing (an always-true row is an answer).
+  for (const verb of Object.keys(EFFECTS)) assert.equal(typeof VERB_USE[verb], 'function', `${verb} has no row in VERB_USE (battle.js): when does it land on nothing?`);
+});
+
 test('a turn with nothing left but a pill ends itself: the 丹囊 never holds it open (Hanli 11-09: 「斗法不自动结束回合了, 带了回春丹后」)', async () => {
   const { idle } = await import('../scripts/battle.js');
   const st = begin(setupOf({ you: { ...setupOf().you, pouch: [{ id: 'mend-pill', heal: 6 }, { id: 'qi-pill', mana: 2 }] } }), CARDS);

@@ -6,6 +6,7 @@
 //   node tools/playbot/playbot.mjs --skill=<lingjing dir> [--shared=<linggen/shared>] [--out=<report dir>]
 //        [--sizes=430x932,375x812,1280x820] [--fights=2] [--seed=1] [--update-baselines] [--headed]
 //        [--only=haunt,story,bout,walk,baseline] [--no-careful] [--until=mana-waste:yangzhen|zhennu] [--deck=yangzhen,zhennu]
+//        [--lend=1]
 //        [--art=core]
 //   Usually through tools/playbot/run.sh (a git ref or an install dir → a scratch checkout, then this).
 //
@@ -634,6 +635,9 @@ export async function run(opts) {
       // bug that needs a certain card meets it in the first hands instead of waiting on the deal (at 48f0b83c the fight
       // deck is every card held: 痒痒针 was one of 28, and four fights met it about two runs in three).
       if (opts.deck) patchSave(name, (st) => { const ids = String(opts.deck).split(','); st.cards = ids; st.deck = ids; });
+      // --lend=<n> (the selftest): n duels lost in a row, so the rules lend 银月's cards into the opening hand (the first
+      // rung is 啸月) — a card nobody holds in a deck, met in the first hand instead of after real losses.
+      if (opts.lend) patchSave(name, (st) => { st.duel_streak = Number(opts.lend); });
       await open(name); await clear();
       const at = verbs.length;
       if (!(await startHaunt(name))) { unplayable.push({ where, why: 'no 降妖 to start (no [data-duel-start] at 后山)' }); noteRefusals(at, where); continue; }
@@ -900,7 +904,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const day = new Date().toISOString().slice(0, 10);
   const runId = flag('run-id', `${day}-${Date.now().toString(36)}`);
   const out = flag('out', path.join(HERE, '..', '..', 'report', runId));
-  const res = await run({ skill, shared: flag('shared'), out, runId, sizes: String(flag('sizes', '430x932,375x812,1280x820')).split(','), fights: flag('fights', 2), seed: flag('seed', 1), updateBaselines: Boolean(flag('update-baselines', false)), headed: Boolean(flag('headed', false)), debug: Boolean(flag('debug', false)), only: flag('only', null), noCareful: Boolean(flag('no-careful', false)), until: flag('until', null), deck: flag('deck', null), art: flag('art', null) });
+  const res = await run({ skill, shared: flag('shared'), out, runId, sizes: String(flag('sizes', '430x932,375x812,1280x820')).split(','), fights: flag('fights', 2), seed: flag('seed', 1), updateBaselines: Boolean(flag('update-baselines', false)), headed: Boolean(flag('headed', false)), debug: Boolean(flag('debug', false)), only: flag('only', null), noCareful: Boolean(flag('no-careful', false)), until: flag('until', null), deck: flag('deck', null), lend: flag('lend', null), art: flag('art', null) });
   const hard = res.findings.filter((f) => f.hard);
   console.log(`playbot ${runId}: ${res.played.length} played, ${res.unplayable.length} could not be played, ${hard.length} hard findings, ${res.refusals.length} refusals → ${out}`);
   for (const k of [...new Set(hard.map((f) => f.kind))]) console.log(`  ${k}: ${hard.filter((f) => f.kind === k).length}`);
