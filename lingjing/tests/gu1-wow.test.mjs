@@ -131,7 +131,7 @@ test('the teaching fight cannot be lost: ending every turn at once still stands 
   }
 });
 
-test('won, it pays nothing — no card, no loot, no 修为 — and the story goes on to the cave', () => {
+test('won, it pays no 修为 or 灵石 and leaves no card or loot (the common 符 roll aside: tests/fox-charm.test.mjs) — and the story goes on to the cave', () => {
   const s = { ...at('00-fox'), stamina: 100 };
   const r = duel(s, content, ctx(), { id: 'fox-bite' });
   assert.equal(r.result.ok, true, JSON.stringify(r.result));

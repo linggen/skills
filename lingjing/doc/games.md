@@ -950,8 +950,7 @@ Live 10-22 (二十问, gpt-6-luna): ~2.3k tokens and 3–4 s a line (her guest t
 writes is the hurt fox: 「他爹说过，受伤的野兽最凶，碰都别去碰」, then the coat, the bite, 「它不咬了」 (the exit's passage,
 unchanged). So a 试 of nerve like the 三试: stand three of its turns (`foe-yinhu`, `foe-` so not in the 山海录; each bite lands 2, he
 stands 20 — ending every turn still passes it); three 白给 cards, the book's: 枯枝 (「他捡起一根枯枝扔到坑边」 — a card that
-strikes, 1), 补丁外衣 (the coat: a body that takes the bite), 不怕 (「不怕。我也掉下来了」, heal 2) — all in hand, so no 反噬 on the dry deck (the exit game's `foe.fatigue: false`, a fight's own word in data, 10-22); pays nothing — no card, no loot,
-no 修为. Rhythm after (with 守灶台 in, 拽爹 cut): 接雨 · 守白菜 · 忍字 · 守灶台 · 暴雨坠谷 (大场面) · **斗法** · 守火 · 喂饼 · **讨饼债** — no kit twice running (守灶台 and 守火 are different 塔防). **Hanli's call:** the foe is 银月 in fox form, and
+strikes, 1), 补丁外衣 (the coat: a body that takes the bite), 不怕 (「不怕。我也掉下来了」, heal 2) — all in hand, so no 反噬 on the dry deck (the exit game's `foe.fatigue: false`, a fight's own word in data, 10-22); pays no 修为 or 灵石 and leaves no card and no loot — only the common 符 roll applies (one win in three, rules/arms.mjs drop; the builder, 2026-11-16: the note said "nothing paid" and the roll was never off). Rhythm after (with 守灶台 in, 拽爹 cut): 接雨 · 守白菜 · 忍字 · 守灶台 · 暴雨坠谷 (大场面) · **斗法** · 守火 · 喂饼 · **讨饼债** — no kit twice running (守灶台 and 守火 are different 塔防). **Hanli's call:** the foe is 银月 in fox form, and
 「attack」 is taught as the book's probe, not a blow; the three cards borrow plates (石子 · 土偶 · 娘的饼) until painted.
 
 ## The throws — levels of 砸寨 (10-20)
