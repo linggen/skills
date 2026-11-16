@@ -536,7 +536,7 @@ export function spoilsHtml(spoils, ctx) {
     </div>`;
 }
 
-/* 所得 of a won story fight (the builder, 2026-11-16: 「赢了给的都要显示」): ONE card for the fight's settle (`fight`: its cards,
+/* 所得 of a won story fight (the builder, 2026-11-16: 「无论奖励什么都要显示出来」): ONE card for the fight's settle (`fight`: its cards,
    items, paid, spent, line — as settleBout reads them) and the story step after it (`step`: Look's `gained` — a cultivation
    stretch's whole 修为 once, its 灵石 and things; `cards`: the cards the step handed, resolve's `cards`). Null when the
    win gave nothing: no card, the story goes on. */

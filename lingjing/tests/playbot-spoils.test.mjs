@@ -1,4 +1,4 @@
-// 所得 after a won fight (design.md § 所得, the builder 2026-11-16: 「赢了给的都要显示」): ONE card holds what the win gave —
+// 所得 after a won fight (design.md § 所得, the builder 2026-11-16: 「无论奖励什么都要显示出来」): ONE card holds what the win gave —
 // the fight's settle and, for a story fight, the story step after it. Two halves held together here: what the play bot
 // calls owed (tools/playbot/spoils.mjs) and what the page's card holds (battle-card.js winSpoils, spoilsHtml).
 import test from 'node:test';
@@ -25,7 +25,9 @@ test('owed: the settle alone — a drop, a card, 修为, 灵石, a 符 spent, a 
   assert.deepEqual(owedOf(won({ dropped: [{ id: 'talisman', name: '符', n: 1 }] })).things, ['符']);
   assert.deepEqual(owedOf(won({ dropped: [{ id: 'hantan', name: '寒潭指', card: true }] })).cards, ['寒潭指']);
   assert.equal(owedOf(won({ paid: { progress: 40 } })).progress, 40);
-  assert.equal(owedOf(won({ paid: { wealth: 3 }, variety: { paid: { wealth: 2 } } })).wealth, 5);
+  // A haunt's variety: its 修为 joins the pays, as the page's withVariety adds it.
+  assert.equal(owedOf(won({ paid: { progress: 4, wealth: 3 }, variety: { kinds: 2, paid: { progress: 5 } } })).progress, 9);
+  assert.equal(owedOf(won({ paid: { wealth: 3 } })).wealth, 3);
   assert.deepEqual(owedOf(won({ spent: [{ id: 'talisman', name: '火符' }] })).spent, ['火符']);
   assert.equal(owedOf(won({ dropped: [{ id: 'bag', name: '储物袋', offered: true }] })), null, 'what waits at the door is not in hand');
   assert.equal(settleGave(null), null);
@@ -122,6 +124,6 @@ test('lingjing.js: a won story fight holds its 所得 for the step, shows one ca
   const ro = src.slice(src.indexOf('async function readOnce('), src.indexOf('let contentStale'));
   assert.match(ro, /watchMemory\(\);\n {2}storyWinFlush\(\);/);
   assert.match(src, /storyWin\?\.exit === exitId\) \{ storyWinFlush\(true\);/);
-  assert.match(src, /if \(!storyWinOpen\(\) && !view\.spoils\?\.paid\) gainBurst\(gained\);/);
+  assert.match(src, /if \(!storyWinOpen\(\) && !view\.spoils\?\.over\) gainBurst\(gained\);/);
   assert.match(src, /const s = winSpoils\(w\.fight, w\.step, w\.cards \?\? \[\]\);\n {2}if \(!s\) return;/);
 });

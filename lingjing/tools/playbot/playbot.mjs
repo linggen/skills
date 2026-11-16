@@ -20,7 +20,7 @@
 //   no-spoils        a fight won gave something (spoils.mjs owedOf: the settle's drops, 符 spent, 修为, 灵石 — and for a
 //                    story fight the story step after it, its 修为 the stretch's whole) and no ONE 所得 showed it all,
 //                    each thing by name and each amount — or it showed under something (elementFromPoint at its centre
-//                    is not 所得's). A win that gave nothing owes no card.
+//                    is not 所得's). A story win that gave nothing owes no card; a field fight's win always owes one.
 //   frozen-by-fight  a thing NOT in the fight (the bag, the 饭桶's feed, wearing) refused because a fight is open
 //   resume-mismatch  a fight reloaded and taken up again shows another state than it was left in
 //   console-error    a console error or an uncaught exception
@@ -568,7 +568,7 @@ export async function run(opts) {
     };
 
     /* After a won fight: what it gave (spoils.mjs owedOf) must stand on ONE 所得, uncovered, each thing named and each
-       amount said (the builder, 2026-11-16: 「赢了给的都要显示」). A field fight's is the settle's. A story fight's adds the
+       amount said (the builder, 2026-11-16: 「无论奖励什么都要显示出来」). A field fight's is the settle's. A story fight's adds the
        story step the page then takes on its own (watchWayOn → resolve): the bot reads the passages through until that
        step is in, then looks. A story win that gave nothing owes no card — and from 入门 on is listed (`story-win-empty`,
        not hard), since every story fight there is meant to pay something; the prologue owes nothing (spoils.mjs). */
@@ -605,7 +605,8 @@ export async function run(opts) {
       }
       const owed = owedOf(settle, story ? step : null);
       const record = { fight: label, owed: owed ? owedLines(owed) : [], ...(story ? { step: step ? { exit: step.exit, gained: step.gained, paid: step.paid } : null } : {}) };
-      if (!owed) {
+      // A field fight that gave nothing still owes its card, as on main (its rule is untouched): only a story win is quiet.
+      if (!owed && story) {
         await shot(`${label}-won`);
         // The prologue owes nothing (the builder 2026-11-16: 「入门前不发」): quiet there.
         if (story && !inPrologue(verbs, from)) findings.push({ kind: 'story-win-empty', hard: false, size, where, ...record, why: step ? 'the fight and the story step after it gave nothing' : 'the fight gave nothing and its way on was not taken within 45 s' });
@@ -623,6 +624,14 @@ export async function run(opts) {
       else if (missing.length) await fail('no-spoils', { ...record, title: sp.title, on_card: sp.parts, missing, shown_elsewhere: shown });
       // Put away, as a player does: since dcab26ad the next play waits behind an open 所得.
       await putAway();
+      // A story fight's: the passage read on for 20 s, and what floated or turned big meanwhile kept on its play (played.json
+      // `shown_after`) — the numbers on the card are not said again by a late burst.
+      if (!story) return;
+      const after = Date.now();
+      for (let t = 0; t < 20000; t += 1400) { await clear(1); await sleep(700); }
+      const late = (await page.evaluate(() => globalThis.__pbShown ?? [])).filter((x) => x.at >= after).map((x) => `${x.kind}: ${x.text}`);
+      const last = played.at(-1);
+      if (last) last.shown_after = late;
     };
 
     /* Bring a control up and tap it: what stands over the stage cleared, and the scene's story — which hides the

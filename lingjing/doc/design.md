@@ -888,7 +888,7 @@ The builder, 2026-11-16: 「无论奖励什么都要显示出来. 剧情斗法�
   (`LingjingSpoils.ofStoryWin`): each thing named, 修为 and 灵石 with their amounts. No separate burst or reveal card for
   that step; a story step with no fight before it keeps its own. A win that gave nothing shows no card, and the story goes on.
 - **A field fight** (降妖, a pool's beast, 秘境 rooms, reruns, 切磋) keeps its card at the settle, as before.
-- **Intent: from 入门 on, every won story fight pays something**, and all of it is shown. One that pays nothing is a content
+- **Intent: from 入门 on, every won small game pays something**, and all of it is shown (a story fight among them). One that pays nothing is a content
   gap, not a display case; the play bot lists each as `story-win-empty` (tools/playbot/spoils.mjs) until its content does.
   **The prologue is exempt** (the builder, 2026-11-16): while its lock holds (until `00-waimen`, 「你还是个凡人」) nothing is
   owed — 「入门前不发，冲完三关给一份」 stands — and a win there that gave nothing shows no card and is not listed.

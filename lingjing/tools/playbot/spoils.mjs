@@ -1,6 +1,6 @@
 // tools/playbot/spoils.mjs — what a won fight owes the player's eye: the bot's `no-spoils` rule.
 //
-// The rule (design.md § 所得, the builder 2026-11-16: 「赢了给的都要显示」): after a won fight, ONE 所得 card shows what the
+// The rule (design.md § 所得, the builder 2026-11-16: 「无论奖励什么都要显示出来」): after a won fight, ONE 所得 card shows what the
 // win gave — the fight's settle (`duel --picks`: dropped, spent, paid, a haunt's variety) and, for a story fight, the
 // story step after it (`resolve --exit`: its paid and cards, and Look's `gained`, which carries a cultivation stretch's
 // whole 修为). What is owed must be on that one card, by name and amount; a story win that gave nothing owes no card
@@ -14,13 +14,14 @@ const named = (x) => (typeof x === 'string' ? x : x?.name ?? x?.id ?? '');
 export function settleGave(out) {
   if (!out || out.outcome !== 'won') return out?.spent?.length ? { things: [], cards: [], spent: out.spent.map(named), progress: 0, wealth: 0 } : null;
   const dropped = (out.dropped ?? []).filter((d) => !d.offered);
+  // 变着花样 (a haunt's): its 修为 joins the card's pays (lingjing.js varietyOwed · withVariety); its own line says the rest.
   const variety = out.variety?.paid ?? {};
   return {
     things: dropped.filter((d) => !d.card).map(named),
     cards: dropped.filter((d) => d.card).map(named),
     spent: (out.spent ?? []).map(named),
     progress: (out.paid?.progress ?? 0) + (variety.progress ?? 0),
-    wealth: (out.paid?.wealth ?? 0) + (variety.wealth ?? 0),
+    wealth: out.paid?.wealth ?? 0,
   };
 }
 

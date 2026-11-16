@@ -759,7 +759,7 @@ function gainedThings(was, now) {
    after it — the pay landed in the rules at once; only the showing waits. `pieceDue` is the piece a story step owes (storyMoment),
    let go when it closes; a piece laid under a passage's words (carriesPiece) holds them until that passage is read. */
 let pieceDue = null, gearSpoilsOwed = null, pieceSoon = false;
-/* A won story fight (the builder, 2026-11-16: 「赢了给的都要显示」): what the fight left (`fight`) waits for the story step the
+/* A won story fight (the builder, 2026-11-16: 「无论奖励什么都要显示出来」): what the fight left (`fight`) waits for the story step the
    page takes next (watchWayOn → its exit), and the step's Look `gained` (`step`, gainedThings) and cards (`cards`,
    gainedCards) join it; then ONE 所得 holds both (battle-card.js winSpoils), shown from the Look (storyWinFlush) however the
    way on was taken. A win that gave nothing shows none: the story goes on. */
@@ -1182,9 +1182,9 @@ function riseStats() {
     }
     if (gained.progress || gained.wealth) {
       console.info('[lingjing] gain', gained);
-      // A 所得 says these numbers, or a won story fight's one will (storyWin): decided now, before the burst's wait — the
-      // card may be put away by then, and the numbers are said once.
-      if (!storyWinOpen() && !view.spoils?.paid) gainBurst(gained);
+      // A won story fight's one 所得 says these numbers, or will (storyWin): decided now, before the burst's wait — the card
+      // may be put away by then, and the numbers are said once. Any other 所得 is read after the wait, as before (gainBurst).
+      if (!storyWinOpen() && !view.spoils?.over) gainBurst(gained);
     }
   }
   if (rising.size) paintRise();
@@ -2932,7 +2932,8 @@ async function watchTell() {
 const wayOnTried = new Set();
 function watchWayOn() {
   const e = wonWayOn(look);
-  // The passage first, then 所得: neither is walked past (spoilsShown). The next draw tries again.
+  // The passage first, then 所得: neither is walked past (spoilsShown). The next draw tries again. A won story fight has
+  // no 所得 up yet: its one card comes with this step (storyWinFlush).
   if (!e || bout || storyAhead() || spoilsUp() || view.panelBusy) return;
   const key = `${look.run ?? ''}|${look.scene?.id ?? ''}|${e.id}`;
   if (wayOnTried.has(key)) return;

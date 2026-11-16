@@ -156,7 +156,8 @@ test('the page wires both: every read and every passage drawn looks for the won 
 
 /* Live 2026-10-15: after 蠪侄 was beaten, either its death passage or the 所得 card was lost — the
    way on was Resolved the moment the passage was drawn (not read), and walking on put 所得 away.
-   One order now: the passage, then 所得, then the way on. */
+   One order now: the passage, then 所得, then the way on — for a field fight's 所得. A won story fight's one 所得 (the builder,
+   2026-11-16) comes with the way on's step and stands over its passage (storyWinFlush, tests/playbot-spoils.test.mjs). */
 test('a won fight: the passage, then 所得, then the way on — never one walked past', async () => {
   const fs = await import('node:fs');
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
