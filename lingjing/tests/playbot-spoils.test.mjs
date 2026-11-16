@@ -120,9 +120,8 @@ test('lingjing.js: a won story fight holds its 所得 for the step, shows one ca
   assert.ok(gt.indexOf('storyWin.step = g; return;') > 0 && gt.indexOf('storyWin.step = g; return;') < gt.indexOf('gainBurst('));
   // Every Look may show it (however the way on was taken); gainBurst stays quiet while it is owed.
   const ro = src.slice(src.indexOf('async function readOnce('), src.indexOf('let contentStale'));
-  assert.match(ro, /storyWinFlush\(\);\n {2}watchTell\(\);/);
+  assert.match(ro, /watchMemory\(\);\n {2}storyWinFlush\(\);/);
   assert.match(src, /storyWin\?\.exit === exitId\) \{ storyWinFlush\(true\);/);
-  const gb = src.slice(src.indexOf('async function gainBurst('), src.indexOf('async function gainBurst(') + 600);
-  assert.match(gb, /if \(storyWinOpen\(\) \|\| view\.spoils\?\.paid\) return;/);
+  assert.match(src, /if \(!storyWinOpen\(\) && !view\.spoils\?\.paid\) gainBurst\(gained\);/);
   assert.match(src, /const s = winSpoils\(w\.fight, w\.step, w\.cards \?\? \[\]\);\n {2}if \(!s\) return;/);
 });

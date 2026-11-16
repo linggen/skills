@@ -162,7 +162,10 @@ test('a won fight: the passage, then 所得, then the way on — never one walke
   const page = fs.readFileSync(new URL('../scripts/lingjing.js', import.meta.url), 'utf8');
   const body = (name) => page.slice(page.indexOf(`function ${name}(`), page.indexOf('\n}\n', page.indexOf(`function ${name}(`)));
   assert.match(body('watchWayOn'), /storyAhead\(\) \|\| spoilsUp\(\)/, 'the way on waits for the passage and for 所得');
-  assert.match(page, /const spoilsShown = \(\) => spoilsUp\(\) && !view\.spoils\.pending && \(!storyAhead\(\) \|\| bookStill\(view\.spoils\.book\)\)/, '所得 waits for the passage');
+  assert.match(page, /const spoilsShown = \(\) => spoilsUp\(\) && !view\.spoils\.pending && \(!storyAhead\(\) \|\| bookStill\(view\.spoils\.book\) \|\| Boolean\(view\.spoils\.over\)\)/, '所得 waits for the passage');
+  // …save a won story fight's one 所得 (the builder 2026-11-16): it comes with the step after the fight and stands over that
+  // step's passage (`over`, storyWinFlush); the box comes back at that beat once it is put away.
+  assert.match(page, /keep\(\{ spoils: \{ place: look\?\.place\?\.id \?\? null, \.\.\.s, book: bookDone\(\), over: true \} \}\)/);
   // …but a box told to its last beat before the fight, nothing drawn since, is no passage ahead (f959ed0c at 430: a 降妖
   // won at 后山 by 09-futian's told passage, 所得 never stood): 所得 stands, and the box steps aside for it.
   assert.match(body('settleBout'), /pending: true, book: bookDone\(\)/, 'the box\'s length kept at the fight\'s end, if told to its last beat');

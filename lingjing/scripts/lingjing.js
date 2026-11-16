@@ -924,9 +924,9 @@ async function readOnce() {
   watchVeil();
   watchNode();
   watchMemory();
+  storyWinFlush();
   // A word board told in her turn (Look's `word_board`): held on its card before anything takes it off (board-deal.js).
   catchTold(boards.get(toldInLook(look)?.task), toldInLook(look));
-  storyWinFlush();
   watchTell();
   watchWayOn();
   if (look.world?.atlas) await loadAtlas();
@@ -1182,7 +1182,9 @@ function riseStats() {
     }
     if (gained.progress || gained.wealth) {
       console.info('[lingjing] gain', gained);
-      gainBurst(gained);
+      // A 所得 says these numbers, or a won story fight's one will (storyWin): decided now, before the burst's wait — the
+      // card may be put away by then, and the numbers are said once.
+      if (!storyWinOpen() && !view.spoils?.paid) gainBurst(gained);
     }
   }
   if (rising.size) paintRise();
@@ -1236,9 +1238,6 @@ const BURST_LATE_MS = 4000, PAY_NAMED_MS = 180_000;
 const gameStands = () => Boolean(document.querySelector('#focus [data-board-close]'));
 async function gainBurst(g, fromStory = false) {
   const asked = Date.now();
-  // A won story fight's one 所得 will say these numbers (storyWin): decided now, before any wait — the card may be put
-  // away by the time the wait is over, and the numbers are said once.
-  if (storyWinOpen() || view.spoils?.paid) return;
   // After the book and the moments: a gain never floats over her memory or a seal.
   for (let k = 0; k < 720 && (boxAhead() || momentUp() || momentPending.size); k += 1) await pause(250);
   // Held back and now another game stands: the strip's numbers already rose — never a late burst over that game's card.
@@ -1650,7 +1649,7 @@ const toastX = (html, attrs) => (html ? withCloseX(html, closeX(lang(), attrs)) 
    and holds the way on (watchWayOn) until it is put away or he takes the way on himself. */
 const spoilsUp = () => Boolean(view.spoils && view.spoils.place === (look?.place?.id ?? null));
 // A won story fight's (`over`, storyWinFlush) stands over the passage its step began; the box comes back at that beat.
-const spoilsShown = () => spoilsUp() && !view.spoils.pending && (view.spoils.over || !storyAhead() || bookStill(view.spoils.book));
+const spoilsShown = () => spoilsUp() && !view.spoils.pending && (!storyAhead() || bookStill(view.spoils.book) || Boolean(view.spoils.over));
 /* …but a box already told to its last beat when the fight ended, with nothing drawn since, is no passage ahead: 所得
    stands and the box steps aside for it, as for the fight card (live at 430, f959ed0c: a 降妖 won at 后山 beside
    09-futian's told passage, and 所得 waited behind 「还有：当康 · 斗法」 for ever). `book` is the reading's length then. */
