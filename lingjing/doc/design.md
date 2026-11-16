@@ -1034,6 +1034,9 @@ is the pure core; the page draws it on the stage beside the chat.
   still holds: most turns a 5–15% spread among the top three moves.
 - **Deck 10** (3 in hand at start, 银月 extra) at every realm for now; bigger decks by realm later.
 - **Foe AI never plays a card with no effect.**
+- **The page never offers one either.** A spell whose every verb would land on nothing is greyed with its why
+  (「对方阵前无人」 · 「气血已满」 · 「自己阵前没有人」 for 啸月 with no body of his), and the beast holds it by the
+  same table (`VERB_USE`, battle.js). Every verb in the vocabulary has a row there — a test fails for a new verb without one.
 - **The board, read plainly:** one legal target → a tap acts at once; every body has its own id
   (twins never confused); HP shows current/max; 参悟 and the like show their 反噬 cost when the
   deck is empty.

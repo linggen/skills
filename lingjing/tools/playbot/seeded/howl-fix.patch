@@ -1,0 +1,35 @@
+diff --git a/lingjing/scripts/battle.js b/lingjing/scripts/battle.js
+index 7633088ad..e2b8d797d 100644
+--- a/lingjing/scripts/battle.js
++++ b/lingjing/scripts/battle.js
+@@ -1102,7 +1102,7 @@ export function foeStep(st) {
+    land on nothing — a 厚土/饥啸 with no rank of its own, a heal at full 气血,
+    a sweep at an empty rank, a 锁/吞 with nothing it fits, a draw from an
+    empty pile (which would send it into the mist). */
+-const VERB_USE = {
++export const VERB_USE = {
+   armor: () => true,
+   hold: (st, side) => other(st, side).board.length > 0,
+   damage: () => true,
+@@ -1110,6 +1110,7 @@ const VERB_USE = {
+   drain: () => true,
+   summon: (st, side) => side.board.length < st.mode.board,
+   rally: (st, side) => side.board.length > 0,
++  turnRally: (st, side) => side.board.length > 0, // 啸月: bodies stand to be struck harder (2026-11-16: on an empty rank it spent 灵力 for nothing)
+   buff: (st, side) => side.board.length > 0,
+   heal: (st, side) => side.hp < side.hpMax && side.healsLeft !== 0,
+   sweep: (st, side) => other(st, side).board.length > 0,
+@@ -1118,10 +1119,12 @@ const VERB_USE = {
+   draw: (st, side) => side.deck.length > 0,
+   drought: () => true,
+   dodge: () => true,
++  ward: () => true,
++  furWard: () => true,
+   mana: (st, side) => side.mana < side.manaCap,
+ };
+ /* Why a spell would land on nothing now, by its first idle verb — null when it does something (worthPlaying). */
+-const IDLE_WHY = { hold: 'none-fits', poison: 'none-fits', sweep: 'rank-empty', heal: 'hp-full', draw: 'pile-empty', mana: 'mana-full', chain: 'none-fits', swallow: 'none-fits', summon: 'board-full', rally: 'no-friendly', buff: 'no-friendly' };
++const IDLE_WHY = { hold: 'none-fits', poison: 'none-fits', sweep: 'rank-empty', heal: 'hp-full', draw: 'pile-empty', mana: 'mana-full', chain: 'none-fits', swallow: 'none-fits', summon: 'board-full', rally: 'no-friendly', turnRally: 'no-friendly', buff: 'no-friendly' };
+ export function idleWhy(st, side, c) {
+   if (!c || worthPlaying(st, side, c)) return null;
+   const e = effectOf(side, c);
