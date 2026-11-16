@@ -21,6 +21,7 @@ const ENGINE_KEYS = [
   'allowed-tools', 'allow-skills', 'renamed-from', 'model', 'context', 'memory-context',
   'memory-recall-min-score', 'memory-recall-count', 'agent', 'trigger', 'app', 'permission', 'cwd',
   'install', 'sync', 'cloud', 'product', 'suggestions', 'closing-ask', 'queue', 'quests', 'notices', 'place', 'members', 'senses', 'session-params',
+  'world-line', 'activity-verbs',
 ];
 const STANDARD_KEYS = ['license', 'homepage', 'metadata', 'compatibility'];
 const KNOWN = new Set([...ENGINE_KEYS, ...STANDARD_KEYS]);
@@ -110,7 +111,43 @@ export function problemsOf(dir, md) {
   }
   if (fm.has('tools')) problems.push(...toolProblems(fm.get('tools')));
   if (fm.has('quests')) problems.push(...questProblems(fm.get('quests')));
+  if (fm.has('world-line')) problems.push(...worldLineProblems(fm.get('world-line')));
+  if (fm.has('activity-verbs')) problems.push(...verbProblems(fm.get('activity-verbs')));
   return problems;
+}
+
+/* The words of an inline list, `[a, b]`, or null when it is not one. */
+const inlineList = text => {
+  const m = /^\[(.*)\]$/.exec((text ?? '').trim());
+  return m ? m[1].split(',').map(x => unquote(x.trim())).filter(Boolean) : null;
+};
+
+/* `world-line:` — one small JSON file inside the skill and 1 to 6 of its keys
+   (linggen doc/skill-spec.md "World line"). The engine logs a bad one and shows
+   no line; this catches it before it ships. */
+function worldLineProblems(entry) {
+  const problems = [];
+  const file = blockKey(entry, 'file');
+  const fields = inlineList(blockKey(entry, 'fields'));
+  if (!file || !/^[\w.-]+(\/[\w.-]+)*\.json$/.test(file) || file.includes('..')) problems.push('world-line.file must be a plain relative .json path');
+  if (!fields || !fields.length || fields.length > 6) problems.push('world-line.fields must be a list of 1 to 6 keys');
+  else {
+    for (const f of fields) if (!/^[a-z0-9_]{1,32}$/.test(f)) problems.push(`world-line field \`${f}\` is not a key of [a-z0-9_]`);
+    if (new Set(fields).size !== fields.length) problems.push('world-line names a field twice');
+  }
+  return problems;
+}
+
+/* `activity-verbs:` — short slugs, none of the engine's own. The engine drops
+   a bad verb with a log line, so the skill's post is then refused. */
+const ENGINE_VERBS = ['pair', 'connect', 'disconnect', 'restart', 'used', 'hold'];
+function verbProblems(entry) {
+  const verbs = inlineList(entry.value);
+  if (!verbs || !verbs.length) return ['activity-verbs must be an inline list of verbs'];
+  return verbs.flatMap(v => [
+    ...(/^[a-z0-9_-]{1,32}$/.test(v) ? [] : [`activity verb \`${v}\` is not a slug of [a-z0-9_-]`]),
+    ...(ENGINE_VERBS.includes(v) ? [`activity verb \`${v}\` is the engine's own`] : []),
+  ]);
 }
 
 /* `quests:` — the skill's writer with both holes the engine fills, and each
@@ -143,11 +180,14 @@ test('the checks catch what they are for', () => {
     '---', 'name: other', 'description: ""', 'user-invocable: yes', 'queue: later', 'bogus: 1',
     'app:', '  launcher: web', '  entry: nope.html',
     'tools:', '  - name: t', '    args:', '      - a',
-    'quests:', '  stamp: node w.js {id}', '  facts:', '    Photos_Clean: x', '---', '',
+    'quests:', '  stamp: node w.js {id}', '  facts:', '    Photos_Clean: x',
+    'world-line:', '  file: ../data/world.json', '  fields: [Ok, b]',
+    'activity-verbs: [used, Bad Verb]', '---', '',
   ].join('\n');
   const got = problemsOf('lingjing', bad);
   for (const want of ['unknown key `bogus`', 'is not the folder', 'description is missing', 'user-invocable',
-    'queue must be', 'does not exist', 'args is a list', 'no description', 'needs {id} and {at}', 'is not <app>-<verb>']) {
+    'queue must be', 'does not exist', 'args is a list', 'no description', 'needs {id} and {at}', 'is not <app>-<verb>',
+    'world-line.file must be', 'is not a key of [a-z0-9_]', "is the engine's own", 'is not a slug']) {
     assert.ok(got.some(p => p.includes(want)), `expected a problem mentioning "${want}" in ${JSON.stringify(got)}`);
   }
 });
