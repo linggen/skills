@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Memory · Browse</title>
+    <link rel="icon" type="image/svg+xml" href="browse-logo.svg" />
+    <link rel="stylesheet" href="browse.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header id="header">
+        <h1>Memory</h1>
+        <nav id="main-nav" role="tablist" aria-label="Memory view">
+          <button type="button" role="tab" data-nav="browse" class="active">Browse</button>
+          <button type="button" role="tab" data-nav="calendar">Calendar</button>
+        </nav>
+        <div id="status">
+          <span id="count">—</span>
+          <span class="sep">·</span>
+          <button id="refresh" type="button" title="Refresh list">↻</button>
+          <button id="help-btn" type="button" title="Keyboard shortcuts (?)">?</button>
+          <button id="settings-btn" type="button" title="Settings">⚙</button>
+          <span class="sep">·</span>
+          <span id="health" class="health unknown">⏻ checking…</span>
+        </div>
+      </header>
+
+      <div id="stats-strip" hidden></div>
+
+      <div id="dream-strip" hidden>
+        <button id="dream-toggle" type="button" title="Open the calendar view"></button>
+      </div>
+
+      <div id="help-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="help-title"></div>
+      <div id="settings-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="settings-title"></div>
+
+      <section id="query-bar">
+        <div id="query-wrap">
+          <input
+            id="query"
+            type="text"
+            placeholder="search memory or /type:preference /scope:~/workspace /app:dj /indexed:yes …"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button id="query-clear" type="button" hidden aria-label="Clear search" title="Clear search">×</button>
+        </div>
+        <div id="view-tabs" role="tablist" aria-label="Storage view">
+          <button type="button" role="tab" data-view="all"       class="active" title="Everything in the semantic table (core + semantic)">All</button>
+          <button type="button" role="tab" data-view="core"      title="Always-loaded universals about the person (tier=core)">Core</button>
+          <button type="button" role="tab" data-view="semantic" title="Cross-project goals / preferences / decisions / learnings (tier=semantic)">Semantic</button>
+          <button type="button" role="tab" data-view="episodic"  title="Staging table where the encoder writes; the dream worklist promotes-or-evicts past TTL">Episodic</button>
+        </div>
+        <button id="add" type="button" disabled title="Add arrives in step 6">+ Add</button>
+        <div id="bulk-wrap">
+          <button id="bulk" type="button" aria-haspopup="menu" aria-expanded="false">⋯ Bulk ▾</button>
+          <div id="bulk-menu" role="menu" hidden></div>
+        </div>
+      </section>
+
+      <section id="filters-bar" hidden>
+        <div id="filter-chips"></div>
+        <div id="sort-group">
+          <label for="sort">sort</label>
+          <select id="sort">
+            <option value="newest">newest</option>
+            <option value="oldest">oldest</option>
+          </select>
+          <button id="clear-all" type="button" title="Remove all filters">clear all</button>
+        </div>
+      </section>
+
+      <section id="main" aria-label="facts">
+        <div id="list-pane" role="listbox" aria-label="fact list">
+          <div id="list" class="loading">
+            <div class="skel"></div>
+            <div class="skel"></div>
+            <div class="skel"></div>
+          </div>
+          <div id="list-footer"></div>
+        </div>
+
+        <aside id="detail-pane">
+          <div class="detail-empty">
+            Select a fact on the left to see details.
+          </div>
+        </aside>
+      </section>
+
+      <!-- Calendar view — read-only render of the dream pipeline: month
+           grid + review queue. Styled to match the memory app's
+           dream-calendar / review-queue widgets (SYNC PAIR with
+           the dashboard — see browse-app.js renderCalendarView). -->
+
+      <section id="calendar-view" hidden aria-label="dream calendar">
+        <div id="cal-month" class="widget-dream-cal"></div>
+        <div id="cal-issues" class="widget-review-queue" hidden></div>
+      </section>
+    </div>
+
+    <script type="module" src="browse-app.js"></script>
+  </body>
+</html>

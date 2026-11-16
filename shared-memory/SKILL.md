@@ -431,9 +431,9 @@ clicking widgets. So:
 
 Hosts without a `PageUpdate` capability never enter dashboard mode
 (Claude Code, Codex, OpenClaw). Only Linggen exposes the canvas, and
-only via the BOOT_PROMPT signal above. Outside dashboard mode, Linggen's web UI
-(`http://127.0.0.1:9527` on the machine that runs Linggen) is the
-equivalent hands-on surface.
+only via the BOOT_PROMPT signal above. Outside dashboard mode, the Browse page
+(`scripts/browse.html`, opened from the Memory dashboard on the machine that
+runs Linggen) is the equivalent hands-on surface.
 
 ## Status rows are perishable — supersede at write time
 
@@ -543,9 +543,10 @@ identity.
 
 ## Data browser
 
-Row-level CRUD (filter, edit-in-place, batch delete) lives in Linggen's web
-UI (`http://127.0.0.1:9527` on the machine that runs Linggen). Direct the
-user there for hands-on cleanup.
+Row-level CRUD (search, filter, edit-in-place, batch delete) lives on the
+memory skill's Browse page (`scripts/browse.html`, the *Browse ↗* link on the
+Memory dashboard) on the machine that runs Linggen. Direct the user there for
+hands-on cleanup.
 
 ## Updates
 

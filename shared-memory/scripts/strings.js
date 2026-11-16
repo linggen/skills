@@ -121,6 +121,8 @@ const en = {
   "mem.memory": "Memory",
   "mem.dream": "📖 Dream",
   "mem.rememberEveryPendingDay": "Remember every pending day (oldest first), then run the forget sweep.",
+  "mem.browse": "Browse ↗",
+  "mem.browseRows": "Browse all rows in memory: search, filter, add, edit, delete.",
 };
 
 const zh = {
@@ -174,6 +176,8 @@ const zh = {
   "mem.memory": "记忆",
   "mem.dream": "📖 做梦",
   "mem.rememberEveryPendingDay": "记住每个待处理的日子（从最早开始），然后运行遗忘清理。",
+  "mem.browse": "浏览 ↗",
+  "mem.browseRows": "浏览记忆中的全部条目：搜索、筛选、添加、编辑、删除。",
 };
 
 export const TABLES = { en, 'zh-Hans': zh };

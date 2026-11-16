@@ -2,6 +2,8 @@
 // and the JSON files it keeps (through /api/bash). Sessions and models come
 // from the engine (/shared/api.js).
 
+import { MEM_BASE, MEMORY_PREFIX, memoryPath, readEnvelope } from './memory-path.js';
+
 // Run a shell command through Linggen's /api/bash proxy. The engine's
 // BashRequest requires a `project_root` field — commands here use
 // absolute paths, so the value is irrelevant but must be
@@ -18,22 +20,8 @@ async function bashExec(command) {
 }
 
 // ── Linggen's memory ──
-// The page is served by the engine that hosts memory, so memory is a
-// same-origin call: `POST /mem/api/memory/<verb>` (the engine strips `/mem`
-// and hands the rest to memory's own router). The answer is memory's
-// envelope, `{ok, data}` or `{ok:false, error, code}`. `/mem` is open to the
-// machine the engine runs on, which is where this page is shown.
-export const MEMORY_PREFIX = '/mem/api/memory/';
-
-/** The path of one memory verb on the engine's own origin. */
-export function memoryPath(verb) {
-  return `${MEMORY_PREFIX}${verb}`;
-}
-
-/** The `data` of a success envelope, or null for anything else. */
-export function readEnvelope(envelope) {
-  return envelope && envelope.ok && envelope.data ? envelope.data : null;
-}
+// See memory-path.js: `POST /mem/api/memory/<verb>` on the engine's own origin.
+export { MEM_BASE, MEMORY_PREFIX, memoryPath, readEnvelope };
 
 // One memory verb → its envelope's data, or null when the call or the
 // answer failed (unreachable, non-JSON, `ok:false`).
