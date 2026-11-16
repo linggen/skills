@@ -47,7 +47,7 @@ const MEM_CAP_URL = (tool) => `/apps/memory/capability/${tool}`;
 // The user's own path into memory, not the agent's: a click in this page
 // POSTs to /apps/<skill>/capability/<tool>, which is a REST door and keeps the
 // verb-dispatched `Memory_query` / `Memory_write` names. The model's tools are
-// ling-mem's own `memory_*` over MCP and were renamed with the migration; this
+// memory's own `memory_*` over MCP and were renamed with the migration; this
 // door was not, because bundles already installed on users' machines call it by
 // these names and a rename would break their pages.
 async function callMemoryTool(tool, args) {
@@ -138,7 +138,7 @@ export function renderBodyWidget(w) {
 // Apple-Calendar-style month grid of dream-pipeline state. Sun→Sat
 // columns, big day cells, today as a red circle, prev/Today/next month
 // nav. Each past day carries the two verb-aligned flags from the
-// daemon's rollup — `scanned` and `dreamed` — rendered as the
+// memory's rollup — `scanned` and `dreamed` — rendered as the
 // scan|scanned ✓ and dream|dreamed ✓ controls. A day with unjudged
 // rows is "undreamed" (amber tint); late rows clear the dreamed flag
 // and the day rejoins the worklist. Today only stages ("<n> staged").
@@ -146,7 +146,7 @@ export function renderBodyWidget(w) {
 // Clicking a past day opens a small popover with the day's detail and
 // a "Dream this day" action (the confirm step — a misclick never burns
 // tokens). Built by memory-app.js `buildDreamCalendar()` from the
-// daemon's `days` rollup — the single source of truth; no local files.
+// memory's `days` rollup — the single source of truth; no local files.
 //
 // Shape:
 //   { "type": "dream-calendar", "title": "Dream activity",
@@ -516,17 +516,12 @@ function renderDreamCalendar(w) {
 // ── review-queue ──
 //
 // The solve queue: items a dream audit could not resolve with
-// confidence, awaiting the user. Rendered from the daemon's
-// `POST /api/memory/issues` payload (built by memory-app.js
-// `buildReviewQueue()`). The Solve action drops the solve prompt into
+// confidence, awaiting the user. Rendered from the `issues`
+// verb's payload (`POST /mem/api/memory/issues`), built by memory-app.js
+// `buildReviewQueue()`. The Solve action drops the solve prompt into
 // the chat panel — the agent then drains the queue per the SKILL.md
 // Solve runbook, asking one item at a time when the user's call is
 // needed.
-//
-// SYNC PAIR: the ling-mem console renders the same queue read-only
-// (linggen-memory/static/app.js `renderCalendarIssues` — no Solve
-// button, shows the `/linggen:solve` command instead). Keep the item
-// markup/classes aligned when editing either side.
 //
 // Shape:
 //   { "type": "review-queue", "title": "Review queue",
@@ -661,8 +656,7 @@ function renderGreeting(w) {
     const a = actions[idx];
     btn.addEventListener('click', () => {
       if (!a) return;
-      // href wins — open in a new tab, don't send a chat message. Used for
-      // the "Browse all" link to the daemon's data browser.
+      // href wins — open in a new tab, don't send a chat message.
       if (a.href) { window.open(a.href, '_blank', 'noopener'); return; }
       if (!window._chatSend) return;
       window._chatSend(a.message || a.label || '');

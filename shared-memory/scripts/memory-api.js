@@ -1,10 +1,10 @@
-// The memory dashboard's own calls: the ling-mem daemon (through /api/bash)
-// and the JSON files it keeps. Sessions and models come from the engine
-// (/shared/api.js).
+// The memory dashboard's own calls: Linggen's memory (same origin, /mem)
+// and the JSON files it keeps (through /api/bash). Sessions and models come
+// from the engine (/shared/api.js).
 
 // Run a shell command through Linggen's /api/bash proxy. The engine's
 // BashRequest requires a `project_root` field — commands here use
-// absolute paths / curl, so the value is irrelevant but must be
+// absolute paths, so the value is irrelevant but must be
 // present (mirrors the pulse skill's `/tmp` convention). Returns the
 // raw response (use `.stdout`), or null if the request failed.
 async function bashExec(command) {
@@ -17,106 +17,66 @@ async function bashExec(command) {
   return res.json();
 }
 
-// ── ling-mem daemon proxy ──
-// Cross-origin to the daemon isn't allowed from this iframe; route through
-// Linggen's /api/bash so the JS can call it without a CORS headache.
-//
-// The daemon's port is discovered from its own discovery file
-// (`<data-dir>/memory/linggen-memory/daemon.json` → { port }), so the
-// dashboard follows the daemon wherever it binds — no hardcoded port to
-// drift when the default changes. Resolved once and cached for the page,
-// falling back to the compiled-in default if the file is absent.
-const DEFAULT_LING_MEM_PORT = 9528;
-let _lingMemPortPromise = null;
+// ── Linggen's memory ──
+// The page is served by the engine that hosts memory, so memory is a
+// same-origin call: `POST /mem/api/memory/<verb>` (the engine strips `/mem`
+// and hands the rest to memory's own router). The answer is memory's
+// envelope, `{ok, data}` or `{ok:false, error, code}`. `/mem` is open to the
+// machine the engine runs on, which is where this page is shown.
+export const MEMORY_PREFIX = '/mem/api/memory/';
 
-function lingMemPort() {
-  if (!_lingMemPortPromise) {
-    _lingMemPortPromise = (async () => {
-      const cmd =
-        'd="${LINGGEN_DATA_DIR:-$HOME/.linggen}"; f="$d/memory/linggen-memory/daemon.json"; [ -f "$f" ] && cat "$f" || true';
-      const out = await bashExec(cmd);
-      try {
-        const info = JSON.parse(((out && out.stdout) || '').trim() || '{}');
-        if (Number.isInteger(info.port)) return info.port;
-      } catch { /* fall through to default */ }
-      return DEFAULT_LING_MEM_PORT;
-    })();
-  }
-  return _lingMemPortPromise;
+/** The path of one memory verb on the engine's own origin. */
+export function memoryPath(verb) {
+  return `${MEMORY_PREFIX}${verb}`;
 }
 
-// Base URL of the running ling-mem daemon, port resolved dynamically.
-export async function lingMemBase() {
-  return `http://127.0.0.1:${await lingMemPort()}`;
+/** The `data` of a success envelope, or null for anything else. */
+export function readEnvelope(envelope) {
+  return envelope && envelope.ok && envelope.data ? envelope.data : null;
 }
 
-// Returns {count, latest_created_at} per the daemon's count endpoint.
-export async function fetchMemoryCount(filter = {}) {
-  const base = await lingMemBase();
-  const body = JSON.stringify(filter);
-  const cmd = `curl -s -X POST ${base}/api/memory/count -H 'Content-Type: application/json' -d ${JSON.stringify(body)}`;
-  const out = await bashExec(cmd);
-  if (!out) return { count: 0, latest_created_at: null };
+// One memory verb → its envelope's data, or null when the call or the
+// answer failed (unreachable, non-JSON, `ok:false`).
+async function memoryCall(verb, body = {}) {
   try {
-    const parsed = JSON.parse(out.stdout || '{}');
-    if (parsed.ok && parsed.data) return parsed.data;
-    return { count: 0, latest_created_at: null };
+    const res = await fetch(memoryPath(verb), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    return readEnvelope(await res.json());
   } catch {
-    return { count: 0, latest_created_at: null };
+    return null;
   }
 }
 
-// Per-day dream-state rollup from the daemon — the single source of
+// Returns {count, latest_created_at} per memory's count verb.
+export async function fetchMemoryCount(filter = {}) {
+  return (await memoryCall('count', filter)) || { count: 0, latest_created_at: null };
+}
+
+// Per-day dream-state rollup from memory — the single source of
 // truth behind the calendar. Returns the endpoint's data payload:
 // { today, ttl_days, days: [{date, state, rows, unjudged, past_ttl,
 //   harvested_at, remembered_at, judged, promoted, forgotten}] }
 // Per-day verb flags: scanned (logs walked) | dreamed (judged, no late rows).
-export async function fetchMemoryDays(filter = {}) {
-  const base = await lingMemBase();
-  const body = JSON.stringify(filter);
-  const cmd = `curl -s -X POST ${base}/api/memory/days -H 'Content-Type: application/json' -d ${JSON.stringify(body)}`;
-  const out = await bashExec(cmd);
-  if (!out) return null;
-  try {
-    const parsed = JSON.parse(out.stdout || '{}');
-    return parsed.ok && parsed.data ? parsed.data : null;
-  } catch {
-    return null;
-  }
+export function fetchMemoryDays(filter = {}) {
+  return memoryCall('days', filter);
 }
 
-// Open review-queue items from the daemon — what a dream audit could
+// Open review-queue items from memory — what a dream audit could
 // not solve with confidence. Returns the endpoint's data payload:
 // { open_count, issues: [{id, kind, note, row_ids, created_at, status}] }
-// The endpoint pages (50 by default) — ask for the whole queue; `open_count` is the true size.
-export async function fetchMemoryIssues(status = 'open') {
-  const base = await lingMemBase();
-  const body = JSON.stringify({ status, limit: 1000 });
-  const cmd = `curl -s -X POST ${base}/api/memory/issues -H 'Content-Type: application/json' -d ${JSON.stringify(body)}`;
-  const out = await bashExec(cmd);
-  if (!out) return null;
-  try {
-    const parsed = JSON.parse(out.stdout || '{}');
-    return parsed.ok && parsed.data ? parsed.data : null;
-  } catch {
-    return null;
-  }
+// The verb pages (50 by default) — ask for the whole queue; `open_count` is the true size.
+export function fetchMemoryIssues(status = 'open') {
+  return memoryCall('issues', { status, limit: 1000 });
 }
 
-// Store-state summary from the daemon — row counts per tier, disk
-// footprint, last dream. Same `stats` payload the ling-mem console
-// header and the engine's mission report render.
-export async function fetchMemoryStats() {
-  const base = await lingMemBase();
-  const cmd = `curl -s -X POST ${base}/api/memory/stats -H 'Content-Type: application/json' -d '{}'`;
-  const out = await bashExec(cmd);
-  if (!out) return null;
-  try {
-    const parsed = JSON.parse(out.stdout || '{}');
-    return parsed.ok && parsed.data ? parsed.data : null;
-  } catch {
-    return null;
-  }
+// Store-state summary from memory — row counts per tier, disk
+// footprint, last dream. Same `stats` payload the engine's
+// mission report renders.
+export function fetchMemoryStats() {
+  return memoryCall('stats', {});
 }
 
 // Expand `~` to $HOME on the shell side, since /api/bash receives a

@@ -99,7 +99,7 @@
   margin-top: 2px;
 }
 
-/* ── Top action bar — Scan / Hippocampus / Browse ── */
+/* ── Top action bar — Dream ── */
 
 .action-bar {
   display: flex;
@@ -1474,9 +1474,7 @@
 .dcal-clickable:hover { background: var(--bg-hover); }
 .dcal-future { opacity: 0.45; }
 
-/* ── review-queue (solve queue awaiting the user) ──
-   SYNC PAIR: the ling-mem console carries a read-only copy of these
-   rq-* styles (linggen-memory/static/styles.css) — keep them aligned. */
+/* ── review-queue (solve queue awaiting the user) ── */
 .widget-review-queue {
   border: 1px solid var(--border);
   background: var(--bg-card);

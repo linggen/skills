@@ -75,7 +75,7 @@ const en = {
   "mem.dreamActivity": "Dream activity",
   "mem.aDreamRunIs": "A dream run is already in flight — the calendar updates as it works.",
   "mem.dreamMissionStartedRemembering": "Dream mission started — remembering undreamed days, then the forget sweep. The calendar updates as it works.",
-  "mem.couldNotReachThe": "Could not reach the mission API — is the daemon running?",
+  "mem.couldNotReachThe": "Could not reach the mission API — try reloading the page.",
   "mem.lastDreamAgeof": "last dream {ageOf}",
   "mem.lastDreamNever": "last dream: never",
   "mem.shortTermKeepsTtl": "short-term keeps {ttl_days}d",
@@ -85,7 +85,6 @@ const en = {
   "mem.1ReviewItemIs": "1 review item is waiting — the dream queued it for your judgment.",
   "mem.openissuesReviewItemsAre": "{openIssues} review items are waiting — the dream queued them for your judgment.",
   "mem.welcomeYourMemoryS": "Welcome — your memory's empty. It fills as you work; dream remembers each day.",
-  "mem.browseAll": "Browse all ↗",
   "mem.allCaughtUpLast": "All caught up — last dream {ageOf}, {totalRows} rows across all tiers.",
   "mem.memoryHoldsTotalrowsRows": "Memory holds {totalRows} rows — nothing to dream tonight.",
   "mem.dreamRememberForgetEach": "Dream = remember + forget: each day's staging is judged once (durable signal promoted to long-term), then judged rows age out after the short-term window.",
@@ -121,9 +120,7 @@ const en = {
   "mem.months": "January|February|March|April|May|June|July|August|September|October|November|December",
   "mem.memory": "Memory",
   "mem.dream": "📖 Dream",
-  "mem.browse": "Browse ↗",
   "mem.rememberEveryPendingDay": "Remember every pending day (oldest first), then run the forget sweep.",
-  "mem.openTheLingMem": "Open the ling-mem daemon's full data browser (filter / edit / delete row-level).",
 };
 
 const zh = {
@@ -131,7 +128,7 @@ const zh = {
   "mem.dreamActivity": "梦境活动",
   "mem.aDreamRunIs": "已有一次梦境在运行 — 日历会随之更新。",
   "mem.dreamMissionStartedRemembering": "梦境任务已开始 — 先记住未处理的日子，再做遗忘清理。日历会随之更新。",
-  "mem.couldNotReachThe": "连不上任务接口 — 守护进程在运行吗？",
+  "mem.couldNotReachThe": "连不上任务接口 — 请刷新页面重试。",
   "mem.lastDreamAgeof": "上次梦境 {ageOf}",
   "mem.lastDreamNever": "上次梦境：从未",
   "mem.shortTermKeepsTtl": "短期记忆保留 {ttl_days} 天",
@@ -141,7 +138,6 @@ const zh = {
   "mem.1ReviewItemIs": "有 1 项待审 — 梦境把它留给你判断。",
   "mem.openissuesReviewItemsAre": "有 {openIssues} 项待审 — 梦境把它们留给你判断。",
   "mem.welcomeYourMemoryS": "欢迎 — 你的记忆还是空的。它会随你的工作积累；梦境会记住每一天。",
-  "mem.browseAll": "浏览全部 ↗",
   "mem.allCaughtUpLast": "都处理完了 — 上次梦境 {ageOf}，各层共 {totalRows} 条。",
   "mem.memoryHoldsTotalrowsRows": "记忆中有 {totalRows} 条 — 今晚没有要处理的。",
   "mem.dreamRememberForgetEach": "梦境 = 记住 + 遗忘：每天暂存的内容判断一次（持久的信号提升为长期记忆），判断过的行在短期窗口后淡出。",
@@ -177,9 +173,7 @@ const zh = {
   "mem.months": "1月|2月|3月|4月|5月|6月|7月|8月|9月|10月|11月|12月",
   "mem.memory": "记忆",
   "mem.dream": "📖 做梦",
-  "mem.browse": "浏览 ↗",
   "mem.rememberEveryPendingDay": "记住每个待处理的日子（从最早开始），然后运行遗忘清理。",
-  "mem.openTheLingMem": "打开 ling-mem 守护进程的完整数据浏览器（按行筛选 / 编辑 / 删除）。",
 };
 
 export const TABLES = { en, 'zh-Hans': zh };

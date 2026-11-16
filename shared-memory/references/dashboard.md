@@ -4,13 +4,15 @@ The memory skill's web page (`scripts/memory.html`) renders its
 dashboard from JS **without an agent round-trip**. On open,
 `memory-app.js` does in parallel:
 
-1. `POST /api/memory/count` three times (`tier=core`, `tier=semantic`,
-   `episodic=true`) against Linggen's memory (proxied
-   through `/api/bash` curl).
-2. `POST /api/memory/days` for the per-day dream-state rollup — the
+1. `POST /mem/api/memory/count` three times (`tier=core`, `tier=semantic`,
+   `episodic=true`) — same origin, memory's own route on the engine that
+   serves the page.
+2. `POST /mem/api/memory/days` for the per-day dream-state rollup —
    memory's `.days.json` sidecar is the single source of truth (the
    old `.dream-state.json` / `.dream-history.jsonl` files are
    retired; never read or write them).
+3. `POST /mem/api/memory/issues` (open review items) and
+   `POST /mem/api/memory/stats` (row counts, disk, last dream).
 
 It then paints the page deterministically:
 
@@ -36,7 +38,6 @@ Dream has two entry points, both landing as plain chat messages via
 |:---|:---|:---|
 | `📖 Run dream` header button | `/shared-memory dream` | Follow `dream-flow.md`: `days` worklist → remember the oldest pending day(s) → `remember_day` stamp → one `sweep` at the end. |
 | Calendar day-click (popover confirm) | `/shared-memory dream <YYYY-MM-DD>` | Same flow scoped to that day; a gap day (no episodic rows) is a harvest — scan + encode first. |
-| `Browse ↗` | (link, not a message) | Opens `http://127.0.0.1:9528` in a new tab. |
 
 `/shared-memory dream` typed in chat is the slash-command form of the
 button — all routes converge on `dream-flow.md`.

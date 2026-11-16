@@ -3,7 +3,7 @@
 // JS responsibilities:
 //   1. Mount the chat panel (sessions are app-managed, CFO-style).
 //   2. On open, paint the dashboard deterministically from disk + the
-//      ling-mem daemon's count endpoint. No LLM round-trip required.
+//      memory's count verb. No LLM round-trip required.
 //      The agent stays passive until the user clicks Hippocampus
 //      or types a chat question.
 //   3. Tier-count cards live in top_bar so they persist across any
@@ -23,7 +23,6 @@ import {
   fetchMemoryDays,
   fetchMemoryIssues,
   fetchMemoryStats,
-  lingMemBase,
   readJsonFile,
   writeJsonFile,
 } from './memory-api.js';
@@ -35,16 +34,6 @@ import { applyI18n, loadLanguage, t as tr } from './strings.js';
 // ('ling-mem' here silently broke both: no cwd on the session, no
 // grants applied, so every scan Bash hit a permission prompt.)
 const SKILL_NAME = 'shared-memory';
-
-// ling-mem daemon browser URL, resolved from the live port on boot (the
-// dashboard follows the daemon wherever it binds). Falls back to the
-// default until the resolve lands; also patches the static Browse link.
-let memBrowseUrl = 'http://127.0.0.1:9528';
-lingMemBase().then((base) => {
-  memBrowseUrl = base;
-  const link = document.getElementById('browse-link');
-  if (link) link.href = base;
-});
 
 // Tiny boot prompt — the agent greets, then waits for input. JS already
 // drew the dashboard (tier cards + calendar) before this lands.
@@ -62,7 +51,7 @@ let modelId = params.get('model') || '';
 let chat = null;
 
 // Boot-prompt delivery isn't guaranteed — the send is lost when the page
-// load races a daemon restart (the embed posts send_failed back). Retry
+// load races an engine restart (the embed posts send_failed back). Retry
 // on that signal, guarded three ways so the greeting can never double:
 // stop once any assistant reply streams in, stop once the user talks,
 // and re-check the server's message list before each resend (a flushed
@@ -84,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch { /* ignore */ }
   }
   // Opening from the skill card has no `?session=`. Resume the most recent
-  // ling-mem session by default instead of spawning a fresh one each time.
+  // shared-memory session by default instead of spawning a fresh one each time.
   // Sessions are app-managed (CFO-style) — no session list UI.
   // The rule decides, not the address bar. Resuming stamps ?session= into the
   // URL, so a tab left open across days — or a bookmark of one — used to pin
@@ -107,7 +96,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await mountAndStart(initialSession || null);
 });
 
-// Most recent ling-mem skill session id, or '' if none exists yet or the
+// Most recent shared-memory skill session id, or '' if none exists yet or the
 // latest is older than 24h (all apps share this rule: latest if < 24h,
 // else auto-fresh — CFO/DJ/Apple Shifu/Pulse do the same).
 /** Is the session named in the URL still inside the window? Unknown (the list
@@ -233,14 +222,14 @@ async function sessionHasAgentReply() {
 
 // ── On-open dashboard ──
 //
-// Reads three count endpoints + the daemon's per-day dream-state
+// Reads three count verbs + memory's per-day dream-state
 // rollup in parallel, then paints a deterministic dashboard. The
 // greeting line + primary CTA are rule-picked from state — no LLM
 // required for the first render. Tier counts go to top_bar so the
 // agent's later action-result PageUpdates (body-only) don't blow
 // them away.
 //
-// The calendar is a rendering of the daemon's `days` rollup — the
+// The calendar is a rendering of memory's `days` rollup — the
 // single source of truth for the dream pipeline (scanned / dreamed flags
 // / forgotten per day). The old `.dream-history.jsonl` /
 // `.dream-state.json` sidecars are retired.
@@ -289,7 +278,7 @@ function buildReviewQueue(issuesData) {
   return { type: 'review-queue', title: tr('mem.reviewQueue'), issues, open: issuesData.open_count ?? issues.length };
 }
 
-// Shape the daemon's rollup into the dream-calendar widget: a per-day
+// Shape memory's rollup into the dream-calendar widget: a per-day
 // map keyed by ISO date. Always returns a widget — on a fresh box the
 // grid renders all-grey with today ringed.
 function buildDreamCalendar(daysData) {
@@ -327,7 +316,7 @@ async function triggerDreamMission() {
 }
 
 // Live repaint of the JS-owned dashboard — greeting, tier cards,
-// calendar, review queue, footer — from fresh daemon state, leaving
+// calendar, review queue, footer — from fresh memory state, leaving
 // agent-drawn report widgets in place. The cached page is a snapshot:
 // a restored greeting saying "2 days are waiting" after those days were
 // dreamed is exactly the stale state this repaint exists to kill.
@@ -343,7 +332,7 @@ async function refreshDashboard() {
       fetchMemoryStats(),
     ]);
   } catch {
-    return; // daemon unreachable — keep what's on screen
+    return; // memory unreachable — keep what's on screen
   }
   if (!daysData) return;
   const summary = { coreC, semC, epC, daysData };
@@ -394,7 +383,7 @@ function undreamedDays(daysData) {
     d && d.unjudged > 0 && (!today || d.date < today));
 }
 
-// Latest daemon stats snapshot (rows / disk) — refreshed by
+// Latest memory stats snapshot (rows / disk) — refreshed by
 // paintDashboard; buildFooter reads it so calendar-only refreshes keep
 // the store line without an extra round-trip.
 let lastStats = null;
@@ -441,12 +430,12 @@ function pickGreeting({ coreC, semC, epC, daysData }) {
     primary = runSolve;
   } else if (totalRows === 0) {
     title = tr('mem.welcomeYourMemoryS');
-    primary = { label: tr('mem.browseAll'), href: memBrowseUrl, kind: 'primary' };
+    primary = null;
   } else {
     title = last
       ? tr('mem.allCaughtUpLast', { ageOf: ageOf(last), totalRows })
       : tr('mem.memoryHoldsTotalrowsRows', { totalRows });
-    primary = { label: tr('mem.browseAll'), href: memBrowseUrl, kind: 'primary' };
+    primary = null;
   }
 
   return {
@@ -454,9 +443,9 @@ function pickGreeting({ coreC, semC, epC, daysData }) {
     icon: '📖',
     title,
     stats: tr('mem.dreamRememberForgetEach'),
-    // Single contextual CTA — the header bar already carries the
-    // persistent Dream + Browse actions, so don't duplicate them here.
-    actions: [primary],
+    // Single contextual CTA when there is something to do — the header bar
+    // already carries the persistent Dream action, so don't duplicate it here.
+    actions: primary ? [primary] : [],
   };
 }
 
@@ -480,7 +469,7 @@ function ageOf(iso) {
 // The buttons in memory.html's header send plain chat messages — the
 // agent parses them per BOOT_PROMPT and runs the corresponding action.
 // Progress streams in the chat panel; the calendar repaints from the
-// daemon rollup as the agent's memory writes land (see
+// memory's rollup as the agent's memory writes land (see
 // handleContentBlock).
 
 function setupActionBar() {
@@ -498,7 +487,7 @@ function setupActionBar() {
 // The chat bridge surfaces every tool call the agent makes. Two kinds
 // matter here: PageUpdate (agent-drawn widgets) and a memory write (a
 // remember/sweep just changed store state → repaint counts + calendar
-// from the daemon, debounced so a burst of promotes repaints once).
+// from memory, debounced so a burst of promotes repaints once).
 
 let refreshTimer = null;
 function scheduleStateRefresh() {
@@ -512,7 +501,7 @@ function scheduleStateRefresh() {
 function handleContentBlock(payload) {
   // Any of the memory server's tools on Linggen (they arrive qualified,
   // `mcp__memory__memory_add`); Bash on hosts where the agent drives the
-  // `ling-mem` CLI instead. Either way the store may have moved. Matching the
+  // `ling mem` CLI instead. Either way the store may have moved. Matching the
   // whole family by prefix rather than one write tool by name: a promote is an
   // add, a stamp is a remember_day, a sweep is a sweep, and the calendar has to
   // repaint after each.
@@ -533,7 +522,7 @@ function handleContentBlock(payload) {
     applyPageUpdate(partial);
     cacheCurrentPage();
     // Row totals / day states may have moved behind any agent-drawn
-    // update — re-sync both from the daemon. Best-effort.
+    // update — re-sync both from memory. Best-effort.
     scheduleStateRefresh();
   } catch (e) {
     console.warn('[memory] failed to parse PageUpdate args', e);
