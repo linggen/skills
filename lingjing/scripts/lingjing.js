@@ -3128,7 +3128,9 @@ function openTrayBoard(id) {
   skipStaleAsk();
   spoilsAway();
   const inBox = choicesInBox();
-  show({ opened: { id, place: look?.place?.id ?? null, scene: look?.scene?.id ?? null }, left: view.left.filter((l) => l.id !== id), qSkip: view.qSkip.filter((k) => k !== `board:${id}`) });
+  // A board takes the stage: the 事 list it was started from is put away with it (as a walk or a kept board's 玩 do), or the list
+  // stays over the board's title and its 开始. A refused open (openStage's note) leaves the list, where the note is read.
+  show({ bookOpen: false, opened: { id, place: look?.place?.id ?? null, scene: look?.scene?.id ?? null }, left: view.left.filter((l) => l.id !== id), qSkip: view.qSkip.filter((k) => k !== `board:${id}`) });
   if (inBox) nextBeat();
 }
 
@@ -4934,6 +4936,7 @@ async function onDuelStart(id) {
   if (bout || starting) return;
   starting = true;
   spoilsAway();
+  show({ bookOpen: false }); // the 事 list it was started from (an errand's 斗) is put away as a board's start puts it
   oneBoard(null); // a fight takes the stage: no board plays on under it
   try {
     // 丹囊: the pick made at this door, else his last (the rules remember it).
