@@ -194,7 +194,14 @@ export async function run(opts) {
     if (s.ok) partSaves.push({ name, where });
     return s;
   };
-  const chapterOf = (name) => { try { return JSON.parse(fs.readFileSync(path.join(data, 'saves', name, 'state.json'), 'utf8')).chapter ?? null; } catch { return null; } };
+  /* The chapter a save stands in: its scene's chapter folder (the scene is what is told now), else its `chapter`. */
+  const chapterOf = (name) => {
+    let st;
+    try { st = JSON.parse(fs.readFileSync(path.join(data, 'saves', name, 'state.json'), 'utf8')); } catch { return null; }
+    const dir = path.join(skill, 'worlds/jiuding/chapters');
+    const held = st.scene ? fs.readdirSync(dir).find((ch) => fs.existsSync(path.join(dir, ch, 'scenes', `${st.scene}.json`))) : null;
+    return held ?? st.chapter ?? null;
+  };
   const seed = (name, at) => {
     const fixed = name.startsWith('pb-b-') ? { LINGJING_NOW: BASELINE_NOW } : {};
     const r = spawnSync(process.execPath, [path.join(skill, 'scripts/rules.mjs'), 'seed', `--save=${name}`, `--at=${at}`], { cwd: skill, env: { ...process.env, LINGJING_DATA: data, LINGJING_TRACK_OFF: '1', ...fixed }, encoding: 'utf8' });
@@ -241,13 +248,13 @@ export async function run(opts) {
       if (!isPicture({ url, resourceType: req.resourceType() })) return;
       pictures.set(pictureKey(url), res.status());
       const m = missOf({ url, resourceType: req.resourceType(), status: res.status() });
-      if (m) artQueue.push({ ...m, by: 'network', where });
+      if (m) artQueue.push({ ...m, source: 'network', where });
     });
     page.on('requestfailed', (req) => {
       const m = missOf({ url: req.url(), resourceType: req.resourceType(), failure: req.failure()?.errorText ?? 'failed' });
       if (!m) return;
       pictures.set(m.path, m.why);
-      artQueue.push({ ...m, by: 'network', where });
+      artQueue.push({ ...m, source: 'network', where });
     });
     const r = rng(Number(opts.seed ?? 1) + w);
 
@@ -264,14 +271,14 @@ export async function run(opts) {
           const key = pictureKey(u);
           if (misses.seen.has(key) || artQueue.some((m) => m.path === key)) continue;
           const answer = pictures.get(key);
-          artQueue.push({ path: key, why: answer == null ? 'img broken, no request seen' : `img broken (answered ${answer})`, by: 'img', where });
+          artQueue.push({ path: key, why: answer == null ? 'img broken, no request seen' : `img broken (answered ${answer})`, source: 'img', where });
         }
         const fresh = artQueue.splice(0).filter((m) => misses.note(m, size));
         if (!fresh.length) return;
         const screen = await page.evaluate(() => (document.querySelector('.battle')?.getClientRects().length ? 'fight open' : [...document.querySelectorAll('.cardtitle')].find((e) => e.getClientRects().length)?.innerText.trim().slice(0, 40) ?? 'the stage')).catch(() => null);
         const file = await shot('art-missing', { lint: false });
         const chapter = curSave ? chapterOf(curSave) : null;
-        for (const m of fresh) findings.push({ kind: 'art-missing', hard: true, size, where: m.where, picture: m.path, why: m.why, by: m.by, pack: packOf(m.path), screen, chapter, shot: path.relative(out, file) });
+        for (const m of fresh) findings.push({ kind: 'art-missing', hard: true, size, where: m.where, picture: m.path, why: m.why, source: m.source, pack: packOf(m.path), screen, chapter, shot: path.relative(out, file) });
       } finally { flushing = false; }
     };
     const shot = async (tag, { lint = true, scope = null } = {}) => {
