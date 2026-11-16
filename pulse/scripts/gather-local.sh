@@ -14,9 +14,10 @@
 #   - "session-ling" — Linggen session with user activity that day
 #   - "file"         — recently changed file in workspace (label = path, ts = mtime ISO)
 #
-# Sources reused from ling-mem skill (collect_sessions.sh) when present, so we
-# don't reimplement session walking. Falls back gracefully if ling-mem isn't
-# installed.
+# Sessions come from the engine's own walk of the session logs
+# (`ling mem scan --sessions <day>`), so nothing here reimplements it. With no
+# `ling` on this machine, or one that lacks the option, there are simply no
+# session items.
 #
 # Window expansion: starts at 24h, expands to 7d then 30d if fewer than
 # MIN_ITEMS items were found. Caller doesn't pick the window — let the script
@@ -28,10 +29,12 @@
 set -uo pipefail
 
 SKILL_DIR="${HOME}/.linggen/skills/pulse"
-# Memory skill dir — the skill was renamed ling-mem → shared-memory. Prefer
-# the new name; fall back to the old one for installs that haven't migrated.
-MEM_SKILL_DIR="${HOME}/.linggen/skills/shared-memory"
-[ -d "$MEM_SKILL_DIR" ] || MEM_SKILL_DIR="${HOME}/.linggen/skills/ling-mem"
+# The engine's binary: on PATH, or where its installers put it.
+LING_BIN="${LING_BIN:-$(command -v ling 2>/dev/null || true)}"
+for cand in /usr/local/bin/ling "${HOME}/.local/bin/ling"; do
+  [ -n "$LING_BIN" ] && break
+  [ -x "$cand" ] && LING_BIN="$cand"
+done
 CONFIG_PATH="${SKILL_DIR}/config.json"
 MIN_ITEMS=5      # expand window if fewer than this
 HARD_CAP=40      # don't return more than this even at widest window
@@ -73,15 +76,12 @@ emit_error() {
   printf '%s\n' "$1" >> "$errors_file"
 }
 
-# ── Sessions (reuse ling-mem's collect_sessions.sh) ──
+# ── Sessions (the engine lists a day's sessions) ──
 gather_sessions() {
   local target_date="$1"
-  local collect="${MEM_SKILL_DIR}/scripts/collect_sessions.sh"
-  if [ ! -x "$collect" ]; then
-    return
-  fi
+  [ -n "$LING_BIN" ] || return
   # NDJSON, one session per line.
-  "$collect" "$target_date" 2>/dev/null | while read -r line; do
+  "$LING_BIN" mem scan --sessions "$target_date" 2>/dev/null | while read -r line; do
     [ -z "$line" ] && continue
     local source label user_turns bytes filepath
     source=$(echo "$line" | jq -r '.source // ""')
@@ -185,7 +185,7 @@ else
   today_date=$(date +%Y-%m-%d)
 fi
 
-# Scan BOTH yesterday and today. ling-mem's collect_sessions filters by
+# Scan BOTH yesterday and today. The engine's session walk filters by
 # mtime — a session worked on yesterday but reopened today shows up as
 # "today" only. Without scanning today, we miss every in-progress session
 # the user is still editing. Including today is harmless: today's sessions

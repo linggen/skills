@@ -750,13 +750,12 @@ async function refreshCommentedThreadUrls(lanes = COMMENTED_LANES) {
   }
 }
 
-// Use the shared-memory skill's extract_session.sh to pull a flattened
-// transcript for one session, capped at 2000 chars, via /api/bash (ungated).
+// Ask the engine for one session as flattened text (`ling mem scan --extract`),
+// capped at 2000 chars, via /api/bash (ungated).
 // This is what lets the agent summarize sessions WITHOUT reading the raw
 // ~/.claude/.linggen session files itself (which would trigger a permission
-// prompt). Best-effort: if extraction fails, we silently skip the transcript.
-// The script moved with the ling-mem → shared-memory rename; resolve the new
-// path first, fall back to the old name for unmigrated installs.
+// prompt). Best-effort: with no `ling`, or one that lacks the option, the
+// transcript is silently skipped.
 async function extractSessionExcerpt(session) {
   const filepath = session.ref;
   const source = session.source;  // "CC" or "Linggen"
@@ -764,7 +763,7 @@ async function extractSessionExcerpt(session) {
   if (!filepath || !source) return '';
   try {
     const fp = filepath.replace(/"/g, '\\"');
-    const cmd = `d="$HOME/.linggen/skills/shared-memory/scripts/extract_session.sh"; [ -x "$d" ] || d="$HOME/.linggen/skills/ling-mem/scripts/extract_session.sh"; [ -x "$d" ] && bash "$d" "${fp}" "${source}" "${date}" 2000 2>/dev/null | head -c 2000 || true`;
+    const cmd = `l="$(command -v ling 2>/dev/null)"; for c in /usr/local/bin/ling "$HOME/.local/bin/ling"; do [ -n "$l" ] && break; [ -x "$c" ] && l="$c"; done; [ -n "$l" ] && "$l" mem scan --extract "${fp}" --source "${source}" --day "${date}" --max-chars 2000 2>/dev/null | head -c 2000 || true`;
     const out = await runBash(cmd);
     return (out || '').trim();
   } catch {
