@@ -4,8 +4,9 @@
 // win gave — the fight's settle (`duel --picks`: dropped, spent, paid, a haunt's variety) and, for a story fight, the
 // story step after it (`resolve --exit`: its paid and cards, and Look's `gained`, which carries a cultivation stretch's
 // whole 修为). What is owed must be on that one card, by name and amount; a story win that gave nothing owes no card
-// (the bot lists it as `story-win-empty`: every story fight is meant to pay something). A field fight's win always
-// stands on a card (the page's settle sheet), as before.
+// (the bot lists it as `story-win-empty`: from 入门 on every story fight is meant to pay something — the prologue is
+// exempt, the builder 2026-11-16: before 00-waimen 「你还是个凡人」 and nothing is owed, see inPrologue). A field fight's
+// win always stands on a card (the page's settle sheet), as before.
 
 const named = (x) => (typeof x === 'string' ? x : x?.name ?? x?.id ?? '');
 
@@ -81,4 +82,11 @@ export function stepAfter(verbs, from) {
   const gained = after?.gained && after.gained.n !== before ? after.gained : null;
   const r = verbs[i].out;
   return { exit: r.took, paid: r.paid ?? null, cards: r.cards ?? [], gained, read: Boolean(after) };
+}
+
+/** Was the prologue's lock in force at the fight (the last Look before verb `at`: its `locked` names 'cultivation' —
+ *  00-prologue chapter.json, until 00-waimen)? Then a story win that gave nothing is by design: no `story-win-empty`. */
+export function inPrologue(verbs, at) {
+  const look = verbs.slice(0, Math.max(0, at)).findLast((v) => v.verb === 'look' && v.out?.ok !== false)?.out;
+  return Boolean(look?.locked?.includes('cultivation'));
 }

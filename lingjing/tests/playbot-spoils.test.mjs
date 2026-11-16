@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { missingOn, owedLines, owedOf, settleGave, stepAfter, stepGave } from '../tools/playbot/spoils.mjs';
+import { inPrologue, missingOn, owedLines, owedOf, settleGave, stepAfter, stepGave } from '../tools/playbot/spoils.mjs';
 import { WORDS, spoilsHtml, winSpoils } from '../scripts/battle-card.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -43,6 +43,14 @@ test('owed: a story fight adds its step — the stretch\'s whole 修为 once (Lo
   // Both pay: summed, every name kept.
   const both = owedOf(won({ dropped: [{ id: 'talisman', name: '符' }] }), lingcaoStep);
   assert.deepEqual(owedLines(both), ['符', '修为 +30', '灵石 +20']);
+});
+
+test('inPrologue: the prologue\'s lock in force at the fight (Look `locked` names cultivation) owes nothing — the builder, 2026-11-16', () => {
+  const at = (locked) => [{ verb: 'look', out: { ok: true, locked } }, { verb: 'duel', out: won() }];
+  assert.equal(inPrologue(at(['kaifu', 'cultivation', 'wealth']), 1), true);
+  assert.equal(inPrologue(at([]), 1), false, 'from 入门 on: listed when empty');
+  assert.equal(inPrologue(at(['kaifu']), 1), false, 'only 开府 shut (00-yinyue → 00-waimen keeps cultivation shut too, so this is past it)');
+  assert.equal(inPrologue([], 0), false);
 });
 
 test('missingOn: names and amounts read off the card\'s text', () => {

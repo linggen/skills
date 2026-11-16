@@ -878,6 +878,21 @@ locks the two apart.
   champion's prize): `foundation-pill` (一转, `zhuan: 1`) and
   `foundation-pill-9` are `sold: []` — a gift, the sect's, or the furnace's.
 
+### 所得 after a won fight — one card, all of it 【已建 2026-11-16】
+
+The builder, 2026-11-16: 「无论奖励什么都要显示出来. 剧情斗法应该都有奖励的」; the prologue exempted the same day.
+
+- **A story fight** (a scene's way whose `game.kind` is `duel`) pays twice: its settle (drops, a 符 spent) and the story step
+  after it (the exit's grant; a `cultivation: true` stretch's whole 修为, Look's `gained`). ONE 所得 holds both, on the Mac
+  (battle-card.js `winSpoils`; the page holds the fight's part until the step is read) and the phone
+  (`LingjingSpoils.ofStoryWin`): each thing named, 修为 and 灵石 with their amounts. No separate burst or reveal card for
+  that step; a story step with no fight before it keeps its own. A win that gave nothing shows no card, and the story goes on.
+- **A field fight** (降妖, a pool's beast, 秘境 rooms, reruns, 切磋) keeps its card at the settle, as before.
+- **Intent: from 入门 on, every won story fight pays something**, and all of it is shown. One that pays nothing is a content
+  gap, not a display case; the play bot lists each as `story-win-empty` (tools/playbot/spoils.mjs) until its content does.
+  **The prologue is exempt** (the builder, 2026-11-16): while its lock holds (until `00-waimen`, 「你还是个凡人」) nothing is
+  owed — 「入门前不发，冲完三关给一份」 stands — and a win there that gave nothing shows no card and is not listed.
+
 ### 丹药 in the game 【已建】
 
 The grades — 阶 by realm, 转 一至九, 品 by toxin, 仙丹, the furnace's origin and

@@ -29,8 +29,9 @@
 //   art-missing      a picture the page asked for and did not get (an HTTP error or a failed request for an image, a CSS
 //                    background or a texture; an <img> broken with no reason on the network) — one per picture a run,
 //                    with its pack (tools/art-packs.mjs). A request the page cancels itself is not one (art.mjs).
-// Soft (listed, not hard): story-win-empty — a story fight won whose settle and story step gave nothing at all; every
-// story fight is meant to pay something (design.md § 所得), so each one stands in the report until its content does.
+// Soft (listed, not hard): story-win-empty — a story fight won from 入门 on whose settle and story step gave nothing at
+// all; every story fight there is meant to pay something (design.md § 所得), so each one stands in the report until its
+// content does. The prologue (its lock in force: Look `locked` names cultivation) owes nothing and is never listed.
 // --art=core: the scratch server answers 404 for all art outside the core pack (serve.mjs), and the play is the first
 // chapter's (FIRST_SEEDS, FIRST_STORY: all three of its story fights; no baselines, their fixture save is 00-zhuji's) —
 // the proof that core is enough there.
@@ -47,7 +48,7 @@ import { makeServer, defaultShared, artBlock, BASELINE_NOW } from './serve.mjs';
 import { LINT } from './lint.mjs';
 import { writePack } from './report.mjs';
 import { openingHand, wastedPlays } from './replay.mjs';
-import { missingOn, owedLines, owedOf, stepAfter } from './spoils.mjs';
+import { inPrologue, missingOn, owedLines, owedOf, stepAfter } from './spoils.mjs';
 import { FIRST_STORY, isPicture, missLedger, missOf, packListing, packOfPath, pictureKey } from './art.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -188,12 +189,21 @@ export async function run(opts) {
     const r = spawnSync(process.execPath, [path.join(skill, 'scripts/rules.mjs'), verb, ...flags, `--save=${name}`], { cwd: skill, env: { ...process.env, LINGJING_DATA: data, LINGJING_TRACK_OFF: '1', ...fixed }, encoding: 'utf8' });
     try { return JSON.parse((r.stdout || '').trim().split('\n').pop()); } catch { return { ok: false, error: r.stderr }; }
   };
-  const sceneAt = (id) => {
+  const sceneOf = (id) => {
     for (const ch of fs.readdirSync(path.join(skill, 'worlds/jiuding/chapters'))) {
       const f = path.join(skill, 'worlds/jiuding/chapters', ch, 'scenes', `${id}.json`);
-      if (fs.existsSync(f)) return JSON.parse(fs.readFileSync(f, 'utf8')).at ?? null;
+      if (fs.existsSync(f)) return JSON.parse(fs.readFileSync(f, 'utf8'));
     }
     return null;
+  };
+  const sceneAt = (id) => sceneOf(id)?.at ?? null;
+  /* What a scene's story fight was weighed with (its game's `weighed_with.wear`: 09-lingcao's 犰狳 with 火柴), worn when he
+     owns it — as 银月's gear hint tells a player to (rules/gearhint.mjs); bare-handed the 犰狳 wins nearly every time, and a
+     story fight lost shows no 所得 to check (2026-11-16). */
+  const wearWeighed = (st, id) => {
+    for (const e of sceneOf(id)?.exits ?? []) {
+      for (const [slot, item] of Object.entries(e.game?.weighed_with?.wear ?? {})) if (st.bag?.[item]) st.wear = { ...st.wear, [slot]: item };
+    }
   };
   /* A part's save: seeded at its scene; in --art=core walked to where the part is played (FIRST_AT), and kept to be
      checked after the play (a story taken on can walk him out of the first chapter). */
@@ -560,8 +570,8 @@ export async function run(opts) {
     /* After a won fight: what it gave (spoils.mjs owedOf) must stand on ONE 所得, uncovered, each thing named and each
        amount said (the builder, 2026-11-16: 「赢了给的都要显示」). A field fight's is the settle's. A story fight's adds the
        story step the page then takes on its own (watchWayOn → resolve): the bot reads the passages through until that
-       step is in, then looks. A story win that gave nothing owes no card — and is listed (`story-win-empty`, not hard),
-       since every story fight is meant to pay something. */
+       step is in, then looks. A story win that gave nothing owes no card — and from 入门 on is listed (`story-win-empty`,
+       not hard), since every story fight there is meant to pay something; the prologue owes nothing (spoils.mjs). */
     const sheetText = (sp) => [sp.title, ...sp.parts].join(' · ');
     const lookSheet = async (owed, ms) => {
       let sp = null, best = null;
@@ -597,7 +607,8 @@ export async function run(opts) {
       const record = { fight: label, owed: owed ? owedLines(owed) : [], ...(story ? { step: step ? { exit: step.exit, gained: step.gained, paid: step.paid } : null } : {}) };
       if (!owed) {
         await shot(`${label}-won`);
-        if (story) findings.push({ kind: 'story-win-empty', hard: false, size, where, ...record, why: step ? 'the fight and the story step after it gave nothing' : 'the fight gave nothing and its way on was not taken within 45 s' });
+        // The prologue owes nothing (the builder 2026-11-16: 「入门前不发」): quiet there.
+        if (story && !inPrologue(verbs, from)) findings.push({ kind: 'story-win-empty', hard: false, size, where, ...record, why: step ? 'the fight and the story step after it gave nothing' : 'the fight gave nothing and its way on was not taken within 45 s' });
         await putAway();
         return;
       }
@@ -698,7 +709,7 @@ export async function run(opts) {
       else {
         // Stood where the scene is told (its `at`): the seed leaves him a walk away, at the place of his last errand.
         const told = sceneAt(storyAt);
-        if (told) patchSave(name, (st) => { st.place = told; });
+        patchSave(name, (st) => { if (told) st.place = told; wearWeighed(st, storyAt); });
         await open(name);
         const at = verbs.length;
         // The scene's fight waits where the story is: the main way there first, then its 斗 (a duel card, or the
@@ -711,7 +722,7 @@ export async function run(opts) {
         // The story's 斗 button calls the fight onto the stage (callDuel: a challenge card); its 开局 then begins it.
         else if (!(await page.evaluate(FIGHT)) && !(await reach('[data-duel-start]', '开局 剧情斗法'))) unplayable.push({ where, why: 'the story fight was called and its 开局 never came' });
         else if (!(await onScreen())) unplayable.push({ where, why: 'the story fight was opened and never came on screen' });
-        else { const label = coreOnly ? `story-${storyAt}` : 'story'; const res = await fight(label, { saveName: name }); played.push({ where, kind: '剧情斗法', ...res, settled: undefined }); await afterWin(label, res, { story: true }); }
+        else { const label = coreOnly ? `story-${storyAt}` : 'story'; const res = await fight(label, { careful: !opts.noCareful, saveName: name }); played.push({ where, kind: '剧情斗法', ...res, settled: undefined }); await afterWin(label, res, { story: true }); }
         noteRefusals(at, where);
       }
     }

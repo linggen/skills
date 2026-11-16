@@ -1,5 +1,5 @@
 {
-  "_about": "The play bot's seeded bugs (run.sh --selftest): each one a ref (or a ref + a patch under seeded/) the bot must catch, by the finding named in `expect` (a field that starts and ends with / is a regex). A bug it misses means the bot is broken, not the game fixed. The first three are the phone bugs of 2026-11-04/05 at the commit before their fixes; the fourth (a win with no 所得 — on the phone it was the native screen) is put back on the page by a patch; the hand's floor (hand-too-small) is squeezed by one and kept by its control; a picture that is not there (art-missing) is made so by a patch and kept by its control. An entry with `absent: true` is a control (the same play with the bug not there must NOT raise the finding).",
+  "_about": "The play bot's seeded bugs (run.sh --selftest): each one a ref (or a ref + a patch under seeded/) the bot must catch, by the finding named in `expect` (a field that starts and ends with / is a regex). A bug it misses means the bot is broken, not the game fixed. The first three are the phone bugs of 2026-11-04/05 at the commit before their fixes; the fourth (a win with no 所得 — on the phone it was the native screen) is put back on the page by a patch; the hand's floor (hand-too-small) is squeezed by one and kept by its control; a picture that is not there (art-missing) is made so by a patch and kept by its control. An entry with `absent: true` is a control (the same play with the bug not there must NOT raise the finding). A `ref` of HEAD is the checkout the selftest runs from: a control that the page under test stays right (2026-11-16, the story-win 所得 cases).",
   "bugs": [
     {
       "id": "kept-fight-freezes-fantong",
@@ -123,41 +123,81 @@
       "note": "The control: the same fight without the patch — every picture it asks for is there, no art-missing"
     },
     {
+      "id": "story-step-pay-unshown",
+      "patch": "seeded/story-charm-never.patch",
+      "expect": {
+        "kind": "no-spoils",
+        "fight": "story"
+      },
+      "note": "The gap of 2026-11-16 (the builder: 「赢了给的都要显示」): the page before the fix, at 09-lingcao's 犰狳 — the fight's settle pays nothing of its own (no 符: the patch), the story step after it pays 修为 (the stretch's whole) and 20 灵石, and no 所得 shows them (灵石 only as a reveal card, 修为 only on the bar). One card owed both.",
+      "ref": "78384e252",
+      "sizes": "430x932",
+      "fights": 1,
+      "flags": "--only=story"
+    },
+    {
+      "id": "story-step-pay-shown-control",
+      "patch": "seeded/story-charm-never.patch",
+      "absent": true,
+      "expect": {
+        "kind": "no-spoils",
+        "fight": "story"
+      },
+      "note": "The control: the same content on the page under test — one 所得 holds the step's 修为 and 灵石.",
+      "ref": "HEAD",
+      "sizes": "430x932",
+      "fights": 1,
+      "flags": "--only=story"
+    },
+    {
+      "id": "story-win-empty-listed",
+      "patch": "seeded/story-win-nothing.patch",
+      "expect": {
+        "kind": "story-win-empty",
+        "fight": "story"
+      },
+      "note": "A story fight past 入门 that gives nothing at all (the patch: no 符, no 符 counted spent, the step pays nothing) is listed, not hard: every story fight from 入门 on is meant to pay something (design.md § 所得).",
+      "ref": "HEAD",
+      "sizes": "430x932",
+      "fights": 1,
+      "flags": "--only=story"
+    },
+    {
+      "id": "story-win-empty-quiet-control",
+      "patch": "seeded/story-win-nothing.patch",
+      "absent": true,
+      "expect": {
+        "kind": "no-spoils",
+        "fight": "story"
+      },
+      "note": "The control: the same empty win owes no card — no hard no-spoils.",
+      "ref": "HEAD",
+      "sizes": "430x932",
+      "fights": 1,
+      "flags": "--only=story"
+    },
+    {
+      "id": "prologue-win-owes-nothing-control",
+      "patch": "seeded/story-charm-never.patch",
+      "absent": true,
+      "expect": {
+        "kind": "/^(no-spoils|story-win-empty)$/",
+        "fight": "/^story-00-/"
+      },
+      "note": "The prologue is exempt (the builder, 2026-11-16: 「入门前不发」): its story fights (00-fox, 00-longzhi) won with no 符 raise neither no-spoils nor story-win-empty. The first chapter is played (--art=core).",
+      "ref": "HEAD",
+      "sizes": "430x932",
+      "fights": 1,
+      "flags": "--art=core --only=story"
+    },
+    {
       "id": "story-win-without-spoils",
       "patch": "seeded/story-charm-sure-unseen.patch",
       "expect": {
         "kind": "no-spoils",
         "fight": "/^story-00-(fox|longzhi)$/"
       },
-      "note": "Recurring 2026-11-16, found the other way round: a story fight that PAID (a 符 left on every win — the patch makes the roll sure) and whose 所得 the page never draws must still be a hard no-spoils. The first chapter's story fights are played (--art=core).",
-      "ref": "78384e252",
-      "sizes": "430x932",
-      "fights": 1,
-      "flags": "--art=core --only=story"
-    },
-    {
-      "id": "story-spoils-shown-control",
-      "patch": "seeded/story-charm-sure.patch",
-      "absent": true,
-      "expect": {
-        "kind": "no-spoils",
-        "fight": "/^story-00-(fox|longzhi)$/"
-      },
-      "note": "The control: the same sure 符, the page intact — 所得 shows after the story fight, the check stays quiet.",
-      "ref": "78384e252",
-      "sizes": "430x932",
-      "fights": 1,
-      "flags": "--art=core --only=story"
-    },
-    {
-      "id": "story-nothing-owed-control",
-      "patch": "seeded/story-charm-never-unseen.patch",
-      "absent": true,
-      "expect": {
-        "kind": "no-spoils",
-        "fight": "/^story-00-(fox|longzhi)$/"
-      },
-      "note": "The false finding of 2026-11-16 (three in one run): a story fight that pays nothing (no 符 rolled — the patch makes the roll never fall) shows no 所得, by design; the bot must not call it no-spoils. The page's 所得 is switched off here too, so only the bot's own expectation is tested.",
+      "note": "A story fight that paid (a 符 on every win — the patch makes the roll sure) and whose 所得 the page never draws is a hard no-spoils, in the prologue too. The first chapter's story fights are played (--art=core).",
       "ref": "78384e252",
       "sizes": "430x932",
       "fights": 1,

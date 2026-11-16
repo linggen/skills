@@ -1,0 +1,47 @@
+diff --git a/lingjing/scripts/rules/arms.mjs b/lingjing/scripts/rules/arms.mjs
+index 55f724be3..c07afb665 100644
+--- a/lingjing/scripts/rules/arms.mjs
++++ b/lingjing/scripts/rules/arms.mjs
+@@ -19,7 +19,8 @@ import { stonesAt } from './playpay.mjs';
+ function drop(content, state, creature, now, { loot = false } = {}) {
+   const got = [];
+   const one = content.rewards.growth?.charm?.fight_one_in, charm = charmOf(content);
+-  const lucky = one && charm && hashOf(`${dayKey(now)}|${creature.id}|${seedOf(state)}|charm`) % one === 0;
++  // SEEDED (playbot selftest): no win leaves a 符, so a story fight's settle pays nothing of its own.
++  const lucky = false;
+   // An id named twice is two of it, one line in 所得 (邹青松's 火符).
+   const counts = new Map();
+   for (const id of [...dropsOf(creature), lucky ? charm.id : null].filter(Boolean)) counts.set(id, (counts.get(id) ?? 0) + 1);
+diff --git a/lingjing/scripts/rules/core.mjs b/lingjing/scripts/rules/core.mjs
+index 981b8d6e5..4c99985c3 100644
+--- a/lingjing/scripts/rules/core.mjs
++++ b/lingjing/scripts/rules/core.mjs
+@@ -633,11 +633,12 @@ export function resolve(state, content, ctx, args) {
+   // The story lifts the realm (小周天, 息壤): to that layer of the first tier, never down.
+   const rose = exit.rise ? riseTo(content, s, exit.rise, replaying(content, s, scene)) : null;
+   // A riddle left (`pass`) pays nothing (his: 「跳过没有奖励」); the story goes on as after an answer.
+-  const grant = passedRiddle || leftFight ? null : grantOf(s, scene, exit);
++  // SEEDED (playbot selftest): the story step pays nothing (no grant, no stretch) — a story win that gave nothing.
++  const grant = null;
+   const landing = exit.ends ? { ...s, scene: null } : exit.next && !inMade(s) ? { ...s, scene: exit.next } : s;
+   // A marked scene's stretch ends here (rules/cultivation.mjs, Hanli 2026-11-10): nothing of it paid 修为, one story step —
+   // priced where he stands now, after the exit's own rise (wm-zhoutian's 小周天 night: 一层), as a story step on the exit would be.
+-  const stretch = endsStretch(scene, exit, !inMade(s) && !replaying(content, s, scene));
++  const stretch = false;
+   const floor = stretch && storyPlay(content, s) > 0 && !pastMark(content, s, 1, ctx.now) ? floorOf(s, scene, grant) : null;
+   const floorPaid = floor ? landedOnly(pay(content, s, ctx, floor, landing)) : null;
+   const own = grant ? pay(content, s, ctx, grant, landing) : null;
+diff --git a/lingjing/scripts/rules/tasks.mjs b/lingjing/scripts/rules/tasks.mjs
+index b5df7ba09..196d0c914 100644
+--- a/lingjing/scripts/rules/tasks.mjs
++++ b/lingjing/scripts/rules/tasks.mjs
+@@ -572,7 +572,8 @@ export function duel(state, content, ctx, args) {
+   const ate = played.log.filter(e => e.act === 'pill' && e.who === 'you').map(e => e.id);
+   for (const id of ate) { s.bag[id] = Math.max(0, (s.bag[id] ?? 0) - 1); if (!s.bag[id]) delete s.bag[id]; }
+   // A 符 played is a 符 spent, win or lose (cards.mjs § 装备入局).
+-  const spent = spentCharms(content, setup, played);
++  // SEEDED (playbot selftest): a 符 played is not counted spent, so the win gives nothing at all.
++  const spent = [];
+   for (const id of spent) { s.bag[id] = Math.max(0, (s.bag[id] ?? 0) - 1); if (!s.bag[id]) delete s.bag[id]; }
+   const won = played.outcome === 'won';
+   // A scene played again is fought for the story: the exit opens, nothing else pays.
