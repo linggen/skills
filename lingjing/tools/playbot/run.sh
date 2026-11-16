@@ -8,12 +8,15 @@
 #                        [--only haunt,story,bout,walk,baseline]
 #                        [--until <finding kind>[:<card pattern>]] [--deck <card ids>]   (the selftest's: play 降妖
 #                        until that finding is raised, with these cards picked into the deck)
+#                        [--art core]   the core-only proof: art outside the core pack (tools/art-packs.mjs) is a 404
+#                        from the scratch server, and the first chapter is played (playbot.mjs FIRST_SEEDS)
 #   tools/playbot/run.sh --selftest      the seeded bugs (seeded-bugs.json) must each be caught, else the bot is broken
 #   tools/playbot/run.sh --ui [--host 0.0.0.0] [--port 7531]   试玩台, the review page (review-server.mjs): every
 #                        report and gate run, and the unsure shots waiting for Hanli. 127.0.0.1 unless --host says.
 #
 # Default: --ref origin/main. The report: <out>/ (default lingjing/report/<run-id>/) — findings.json, refusals.json,
-# played.json, shots/, contact.png, checklist.md, review.json (pending until a reviewer fills it in for this run id).
+# played.json, pictures.json, shots/, contact.png, checklist.md, review.json (pending until a reviewer fills it in for
+# this run id).
 # Exit: 0 no hard finding · 1 hard findings · 2 usage / setup · 3 selftest: a seeded bug went uncaught.
 set -uo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -31,10 +34,12 @@ while [ $# -gt 0 ]; do
     --only) EXTRA+=("--only=$2"); shift 2 ;;
     --until) EXTRA+=("--until=$2"); shift 2 ;;
     --deck) EXTRA+=("--deck=$2"); shift 2 ;;
+    --art) EXTRA+=("--art=$2"); shift 2 ;;
+    --art=*) EXTRA+=("$1"); shift ;;
     --selftest) SELFTEST=1; shift ;;
     --ui) UI=1; shift ;;
     --host|--port|--reports|--gate-runs|--rulings) UI_ARGS+=("${1}=$2"); shift 2 ;;
-    -h|--help) sed -n '2,17p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,20p' "$0"; exit 0 ;;
     *) echo "playbot: unknown flag $1" >&2; exit 2 ;;
   esac
 done

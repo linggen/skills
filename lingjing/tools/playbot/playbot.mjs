@@ -6,6 +6,7 @@
 //   node tools/playbot/playbot.mjs --skill=<lingjing dir> [--shared=<linggen/shared>] [--out=<report dir>]
 //        [--sizes=430x932,375x812,1280x820] [--fights=2] [--seed=1] [--update-baselines] [--headed]
 //        [--only=haunt,story,bout,walk,baseline] [--no-careful] [--until=mana-waste:yangzhen|zhennu] [--deck=yangzhen,zhennu]
+//        [--art=core]
 //   Usually through tools/playbot/run.sh (a git ref or an install dir → a scratch checkout, then this).
 //
 // What it plays, at each size: N 降妖 fights (the 妖兽出没 haunt), a story fight (灵草谷), a 切磋 bout, and a walk
@@ -23,6 +24,12 @@
 //   console-error    a console error or an uncaught exception
 //   layout           the lint (lint.mjs): covered / clipped / outside the viewport, a fight's hand card under its floor
 //                    (hand-too-small, 120 px) — and a baseline that drifted
+//   art-missing      a picture the page asked for and did not get (an HTTP error or a failed request for an image, a CSS
+//                    background or a texture; an <img> broken with no reason on the network) — one per picture a run,
+//                    with its pack (tools/art-packs.mjs). A request the page cancels itself is not one (art.mjs).
+// --art=core: the scratch server answers 404 for all art outside the core pack (serve.mjs), and the play is the first
+// chapter's (FIRST_SEEDS; no baselines, their fixture save is 00-zhuji's) — the proof that core is enough there.
+// pictures.json lists every picture asked for, its answer and its pack, and the blocked files the page asked for.
 // Every refusal the rules gave is listed (refusals.json) with its reason and where it happened, for a person.
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -31,10 +38,11 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
-import { makeServer, defaultShared, BASELINE_NOW } from './serve.mjs';
+import { makeServer, defaultShared, artBlock, BASELINE_NOW } from './serve.mjs';
 import { LINT } from './lint.mjs';
 import { writePack } from './report.mjs';
 import { openingHand, wastedPlays } from './replay.mjs';
+import { isPicture, missLedger, missOf, packListing, packOfPath, pictureKey } from './art.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const flag = (k, d = null) => process.argv.find((a) => a.startsWith(`--${k}=`))?.split('=').slice(1).join('=') ?? (process.argv.includes(`--${k}`) ? true : d);
@@ -49,6 +57,13 @@ const pickOne = (r, xs) => xs[Math.floor(r() * xs.length)];
 
 /* Where each fight is met: a save seeded there by the rules' own walk (rules.mjs seed --at). */
 export const SEEDS = { haunt: '09-suifeng', story: '09-lingcao', bout: '09-suifeng', walk: '09-suifeng' };
+/* The first chapter's (core's: 00-prologue + 00-waimen), for --art=core: wm-baishi (拜师, 00-waimen's last beat) with
+   后山's 降妖 and the 切磋 open, walked to 后山 first (FIRST_AT: its scene is told at 山门, and the story taken on from
+   there walks him on into 00-zhuji); 00-longzhi is the prologue's story fight at 山门. The rules offer the 切磋 there
+   (look's tray), but the page draws no [data-play=qiecuo] at 山门 or 后山 while wm-baishi is told: unplayed (2026-11-15). */
+export const FIRST_SEEDS = { haunt: 'wm-baishi', story: '00-longzhi', bout: 'wm-baishi', walk: 'wm-baishi' };
+const FIRST_AT = { haunt: 'houshan', walk: 'houshan' };
+const FIRST_CHAPTERS = new Set(['00-prologue', '00-waimen']);
 /* The refusals that freeze what a kept fight never holds (tasks.mjs fightHold): a hard finding. Moving, buying,
    travel: the world holds still in a fight by design — listed, not failed. */
 const FROZEN_VERBS = new Set(['fantong', 'gear', 'wear', 'bag']);
@@ -133,12 +148,20 @@ export async function run(opts) {
   fs.mkdirSync(shots, { recursive: true });
   const data = path.join(out, 'scratch', 'data');
   fs.rmSync(path.join(out, 'scratch'), { recursive: true, force: true });
-  const { server, verbs, unknown } = makeServer({ skill, data, shared: opts.shared ?? defaultShared(skill) });
+  const coreOnly = opts.art === 'core';
+  const block = artBlock(skill, opts.art);
+  const SEED = coreOnly ? FIRST_SEEDS : SEEDS;
+  const { server, verbs, unknown, blocked } = makeServer({ skill, data, shared: opts.shared ?? defaultShared(skill), block });
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
   const base = `http://127.0.0.1:${server.address().port}`;
   const findings = [], refusals = [], played = [], unplayable = [], screenshots = [];
   const baselines = path.join(HERE, 'baselines');
-  const only = opts.only ? new Set(String(opts.only).split(',')) : null;
+  const only = opts.only ? new Set(String(opts.only).split(',')) : coreOnly ? new Set(['haunt', 'story', 'bout', 'walk']) : null;
+  // Pictures: every one asked for (path → answer), and the misses, one per picture across the run's sizes.
+  const pictures = new Map();
+  const misses = missLedger();
+  let listing = null;
+  const packOf = (key) => { try { listing ??= packListing(skill); } catch { listing = []; } return packOfPath(listing, key); };
   const want = (k) => !only || only.has(k);
   let shotN = 0;
 
@@ -162,6 +185,16 @@ export async function run(opts) {
     }
     return null;
   };
+  /* A part's save: seeded at its scene; in --art=core walked to where the part is played (FIRST_AT), and kept to be
+     checked after the play (a story taken on can walk him out of the first chapter). */
+  const partSaves = [];
+  const seedFor = (name, part, where) => {
+    const s = seed(name, SEED[part]);
+    if (s.ok && coreOnly && FIRST_AT[part]) rules(name, 'move', [`--place=${FIRST_AT[part]}`]);
+    if (s.ok) partSaves.push({ name, where });
+    return s;
+  };
+  const chapterOf = (name) => { try { return JSON.parse(fs.readFileSync(path.join(data, 'saves', name, 'state.json'), 'utf8')).chapter ?? null; } catch { return null; } };
   const seed = (name, at) => {
     const fixed = name.startsWith('pb-b-') ? { LINGJING_NOW: BASELINE_NOW } : {};
     const r = spawnSync(process.execPath, [path.join(skill, 'scripts/rules.mjs'), 'seed', `--save=${name}`, `--at=${at}`], { cwd: skill, env: { ...process.env, LINGJING_DATA: data, LINGJING_TRACK_OFF: '1', ...fixed }, encoding: 'utf8' });
@@ -181,12 +214,17 @@ export async function run(opts) {
       globalThis.__pbMut = 0;
       const arm = () => new MutationObserver((m) => { globalThis.__pbMut += m.length; }).observe(document, { subtree: true, childList: true, attributes: true, characterData: true });
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm); else arm();
+      // An <img> that fired `error` (it does not bubble: heard on the way down).
+      globalThis.__pbImgErr = [];
+      document.addEventListener('error', (e) => { const t = e.target; if (t && t.tagName === 'IMG' && (t.currentSrc || t.src)) globalThis.__pbImgErr.push(t.currentSrc || t.src); }, true);
     });
     const page = ctx.pages()[0] ?? (await ctx.newPage());
     let where = `${size}`;
     const errors = [];
     const setupMisses = [];
-    page.on('console', (m) => { if (m.type() === 'error') errors.push({ where, text: m.text().slice(0, 300) }); });
+    // Chrome's own line for a picture that failed to load is the art-missing finding's, not a second one here.
+    const pictureLoadLine = (m) => /^Failed to load resource/.test(m.text()) && isPicture({ url: m.location()?.url ?? '' });
+    page.on('console', (m) => { if (m.type() === 'error' && !pictureLoadLine(m)) errors.push({ where, text: m.text().slice(0, 300) }); });
     // --debug: every click the page hears, with what it landed on (a tap that reached something else shows here).
     if (opts.debug) {
       await page.addInitScript(() => document.addEventListener('click', (e) => {
@@ -196,9 +234,48 @@ export async function run(opts) {
       page.on('console', (m) => { if (m.text().startsWith('[pb-click]')) console.error(m.text()); });
     }
     page.on('pageerror', (e) => errors.push({ where, text: `uncaught: ${String(e).slice(0, 300)}` }));
+    // A picture not got, queued where it happened; its finding and screenshot come at the next safe point (artFlush).
+    const artQueue = [];
+    page.on('response', (res) => {
+      const req = res.request(), url = res.url();
+      if (!isPicture({ url, resourceType: req.resourceType() })) return;
+      pictures.set(pictureKey(url), res.status());
+      const m = missOf({ url, resourceType: req.resourceType(), status: res.status() });
+      if (m) artQueue.push({ ...m, by: 'network', where });
+    });
+    page.on('requestfailed', (req) => {
+      const m = missOf({ url: req.url(), resourceType: req.resourceType(), failure: req.failure()?.errorText ?? 'failed' });
+      if (!m) return;
+      pictures.set(m.path, m.why);
+      artQueue.push({ ...m, by: 'network', where });
+    });
     const r = rng(Number(opts.seed ?? 1) + w);
 
+    /* The <img>s broken on the page (fired `error`, or loaded with no natural size) whose request showed no failure. */
+    const brokenImgs = () => page.evaluate(() => [...new Set([...(globalThis.__pbImgErr ?? []), ...[...document.images].filter((i) => i.complete && i.naturalWidth === 0 && i.currentSrc).map((i) => i.currentSrc)])]
+      .filter((u) => !/^(data|blob):/i.test(u))).catch(() => []);
+    let flushing = false, curSave = null;
+    /* The queued misses made findings (one per picture a run), with one screenshot for all that are new. */
+    const artFlush = async () => {
+      if (flushing) return;
+      flushing = true;
+      try {
+        for (const u of await brokenImgs()) {
+          const key = pictureKey(u);
+          if (misses.seen.has(key) || artQueue.some((m) => m.path === key)) continue;
+          const answer = pictures.get(key);
+          artQueue.push({ path: key, why: answer == null ? 'img broken, no request seen' : `img broken (answered ${answer})`, by: 'img', where });
+        }
+        const fresh = artQueue.splice(0).filter((m) => misses.note(m, size));
+        if (!fresh.length) return;
+        const screen = await page.evaluate(() => (document.querySelector('.battle')?.getClientRects().length ? 'fight open' : [...document.querySelectorAll('.cardtitle')].find((e) => e.getClientRects().length)?.innerText.trim().slice(0, 40) ?? 'the stage')).catch(() => null);
+        const file = await shot('art-missing', { lint: false });
+        const chapter = curSave ? chapterOf(curSave) : null;
+        for (const m of fresh) findings.push({ kind: 'art-missing', hard: true, size, where: m.where, picture: m.path, why: m.why, by: m.by, pack: packOf(m.path), screen, chapter, shot: path.relative(out, file) });
+      } finally { flushing = false; }
+    };
     const shot = async (tag, { lint = true, scope = null } = {}) => {
+      await artFlush();
       await sleep(350);
       const file = path.join(shots, `${String(++shotN).padStart(3, '0')}-${size}-${tag}.png`);
       await page.screenshot({ path: file });
@@ -229,16 +306,19 @@ export async function run(opts) {
       // Answered: anything on the page moved (a mutation: drawn, pressed, a busy mark) or the page asked the rules.
       while (Date.now() - t0 < 2000) {
         await sleep(100);
-        if ((await page.evaluate(() => globalThis.__pbMut ?? 0)) !== before || verbs.length !== asked) return true;
+        if ((await page.evaluate(() => globalThis.__pbMut ?? 0)) !== before || verbs.length !== asked) { if (artQueue.length) await artFlush(); return true; }
       }
       if (soft) { setupMisses.push({ where, control: what ?? c.text }); return false; }
       await fail('no-response', { control: what ?? c.text, sel: c.sel });
       return false;
     };
     const open = async (name) => {
+      await artFlush();
+      curSave = name; // the old page's misses, said where they happened, before it goes
       await page.goto(`${base}/apps/lingjing/scripts/index.html?save=${name}&chat=off`, { waitUntil: 'load' });
       await page.waitForFunction(() => !document.querySelector('.waitcard[aria-busy=true]') && document.querySelectorAll('button').length > 3, null, { timeout: 15000 }).catch(() => {});
       await sleep(1500);
+      await artFlush();
     };
     const clear = async (n = 12, { keepBoard = false } = {}) => {
       for (let i = 0; i < n; i += 1) {
@@ -534,7 +614,7 @@ export async function run(opts) {
     for (let i = 0; want('haunt') && i < Number(opts.fights ?? 2) && !reached(); i += 1) {
       const name = `pb-h${i}-${w}`;
       where = `${size} · 降妖 #${i + 1}`;
-      const s = seed(name, SEEDS.haunt);
+      const s = seedFor(name, 'haunt', where);
       if (!s.ok) { unplayable.push({ where, why: `seed failed: ${s.error ?? JSON.stringify(s)}` }); continue; }
       // --deck=<card ids> (the selftest): these are the only cards he holds, and the ones he has picked — so a seeded
       // bug that needs a certain card meets it in the first hands instead of waiting on the deal (at 48f0b83c the fight
@@ -556,11 +636,11 @@ export async function run(opts) {
     if (want('story')) {
       const name = `pb-s-${w}`;
       where = `${size} · 剧情斗法`;
-      const s = seed(name, SEEDS.story);
+      const s = seedFor(name, 'story', where);
       if (!s.ok) unplayable.push({ where, why: `seed failed: ${s.error ?? JSON.stringify(s)}` });
       else {
         // Stood where the scene is told (its `at`): the seed leaves him a walk away, at the place of his last errand.
-        const told = sceneAt(SEEDS.story);
+        const told = sceneAt(SEED.story);
         if (told) patchSave(name, (st) => { st.place = told; });
         await open(name);
         const at = verbs.length;
@@ -583,7 +663,7 @@ export async function run(opts) {
     if (want('bout')) {
       const name = `pb-q-${w}`;
       where = `${size} · 切磋`;
-      const s = seed(name, SEEDS.bout);
+      const s = seedFor(name, 'bout', where);
       if (s.ok) {
         await open(name); await clear();
         const at = verbs.length;
@@ -619,7 +699,7 @@ export async function run(opts) {
     if (want('walk')) {
       const name = `pb-w-${w}`;
       where = `${size} · 留着的斗法`;
-      const s = seed(name, SEEDS.walk);
+      const s = seedFor(name, 'walk', where);
       if (s.ok) {
         await open(name); await clear();
         const at = verbs.length;
@@ -773,14 +853,25 @@ export async function run(opts) {
       }
     }
 
+    await artFlush();
+    // --art=core plays the first chapter only: a part whose save ended in a later chapter is said so (its misses then
+    // are not the first chapter's — each art-missing finding names the chapter it was raised in).
+    if (coreOnly) for (const p of partSaves.splice(0)) { const ch = chapterOf(p.name); if (ch && !FIRST_CHAPTERS.has(ch)) unplayable.push({ where: p.where, why: `the play walked out of the first chapter, into ${ch}` }); }
     for (const e of errors) findings.push({ kind: 'console-error', hard: true, size, where: e.where, text: e.text });
     for (const m of setupMisses) unplayable.push({ where: m.where, why: `the way to the play did not answer: ${m.control}` });
     await ctx.close();
   }
   server.close();
   for (const u of unknown) findings.push({ kind: 'engine-route', hard: false, route: u });
+  // Each art-missing finding (made at the first miss) with how often and at which sizes its picture was missed.
+  for (const f of findings) if (f.kind === 'art-missing') Object.assign(f, { count: misses.seen.get(f.picture)?.count ?? 1, sizes: misses.seen.get(f.picture)?.sizes ?? [f.size] });
+  fs.writeFileSync(path.join(out, 'pictures.json'), `${JSON.stringify({
+    art: opts.art ?? 'all', blocked_files: block?.blocked ?? 0,
+    asked: [...pictures].map(([p, answer]) => ({ path: p, answer, pack: packOf(p) })).sort((a, b) => (a.path < b.path ? -1 : 1)),
+    blocked_asked: [...blocked].map(([p, n]) => ({ path: p, times: n, pack: packOf(`/apps/lingjing/${p}`) })),
+  }, null, 2)}\n`);
   fs.writeFileSync(path.join(out, 'verbs.jsonl'), verbs.map((v) => JSON.stringify({ ...v, out: v.out && JSON.stringify(v.out).length > 2000 ? { ok: v.out.ok, refused: v.out.refused, say: v.out.say, outcome: v.out.outcome, cut: true } : v.out })).join('\n') + '\n');
-  const result = { skill, at: new Date().toISOString(), sizes: opts.sizes, fights: Number(opts.fights ?? 2), played, unplayable, findings, refusals, screenshots };
+  const result = { skill, at: new Date().toISOString(), sizes: opts.sizes, fights: Number(opts.fights ?? 2), art: opts.art ?? 'all', played, unplayable, findings, refusals, screenshots };
   await writePack(out, result, { runId: opts.runId });
   return result;
 }
@@ -791,7 +882,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const day = new Date().toISOString().slice(0, 10);
   const runId = flag('run-id', `${day}-${Date.now().toString(36)}`);
   const out = flag('out', path.join(HERE, '..', '..', 'report', runId));
-  const res = await run({ skill, shared: flag('shared'), out, runId, sizes: String(flag('sizes', '430x932,375x812,1280x820')).split(','), fights: flag('fights', 2), seed: flag('seed', 1), updateBaselines: Boolean(flag('update-baselines', false)), headed: Boolean(flag('headed', false)), debug: Boolean(flag('debug', false)), only: flag('only', null), noCareful: Boolean(flag('no-careful', false)), until: flag('until', null), deck: flag('deck', null) });
+  const res = await run({ skill, shared: flag('shared'), out, runId, sizes: String(flag('sizes', '430x932,375x812,1280x820')).split(','), fights: flag('fights', 2), seed: flag('seed', 1), updateBaselines: Boolean(flag('update-baselines', false)), headed: Boolean(flag('headed', false)), debug: Boolean(flag('debug', false)), only: flag('only', null), noCareful: Boolean(flag('no-careful', false)), until: flag('until', null), deck: flag('deck', null), art: flag('art', null) });
   const hard = res.findings.filter((f) => f.hard);
   console.log(`playbot ${runId}: ${res.played.length} played, ${res.unplayable.length} could not be played, ${hard.length} hard findings, ${res.refusals.length} refusals → ${out}`);
   for (const k of [...new Set(hard.map((f) => f.kind))]) console.log(`  ${k}: ${hard.filter((f) => f.kind === k).length}`);

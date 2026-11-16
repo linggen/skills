@@ -1,0 +1,13 @@
+diff --git a/lingjing/worlds/jiuding/backdrops.json b/lingjing/worlds/jiuding/backdrops.json
+index 27df9d5cf..06338bf0f 100644
+--- a/lingjing/worlds/jiuding/backdrops.json
++++ b/lingjing/worlds/jiuding/backdrops.json
+@@ -206,7 +206,7 @@
+   "houshan": {
+    "at": "houshan",
+    "indoor": false,
+-   "day": "art/places/houshan.webp"
++   "day": "art/places/houshan-seeded-missing.webp"
+   },
+   "sishui-shimen": {
+    "at": "shimen",

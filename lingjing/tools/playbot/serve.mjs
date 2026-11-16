@@ -3,17 +3,21 @@
 // run as the engine runs it — `node scripts/rules.mjs <verb> <flags>`, one move at a time — with LINGJING_DATA
 // pointing at a scratch data folder. No engine, no ~/.linggen, no account: nothing here can reach the player's save.
 //
-//   node tools/playbot/serve.mjs --skill=<skill dir> --data=<scratch data dir> [--shared=<engine shared/>] [--port=0]
+//   node tools/playbot/serve.mjs --skill=<skill dir> --data=<scratch data dir> [--shared=<engine shared/>] [--port=0] [--art=core]
 // /shared/* (the engine's page kit: api.js, app-mode.js, chat-bridge.js) comes from the Linggen repo's shared/ —
 // --shared, else $LINGGEN_SHARED, else ../linggen/shared beside the skills checkout.
 //   (prints `PLAYBOT_SERVE http://127.0.0.1:<port>` once it listens)
 //
 // The engine's other routes the page touches are answered as a quiet engine would: the language (zh-Hans),
 // no weather, no account, 银月's event door swallowed. Anything else under /api is a 404, logged.
+//
+// --art=core (makeServer's `block`): every art file tools/art-packs.mjs does not place in `core` is answered 404, as
+// if it had not been downloaded yet — the files stay where they are; the block is only in what is served (art.mjs).
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
+import { coreBlock, packListing } from './art.mjs';
 
 const flag = (k, d = null) => process.argv.find((a) => a.startsWith(`--${k}=`))?.split('=').slice(1).join('=') ?? d;
 
@@ -51,14 +55,24 @@ export function defaultShared(skill) {
   return null;
 }
 
-/** The server. `skill` is a lingjing checkout (the folder holding SKILL.md), `data` its scratch data folder. */
-export function makeServer({ skill, data, shared = null, log = () => {} }) {
+/** The block for an `--art` mode: 'core' → art outside the core pack (art.mjs coreBlock), else none (null). */
+export function artBlock(skill, mode) {
+  if (!mode || mode === 'all') return null;
+  if (mode !== 'core') throw new Error(`playbot: --art=${mode}: only core (or all) is known`);
+  return coreBlock(packListing(skill));
+}
+
+/** The server. `skill` is a lingjing checkout (the folder holding SKILL.md), `data` its scratch data folder.
+    `block`: a skill-relative path → true when it must be answered 404 (--art=core); each one asked is in `blocked`. */
+export function makeServer({ skill, data, shared = null, block = null, log = () => {} }) {
   const SKILL = fs.realpathSync(path.resolve(skill));
   const SHARED = shared ? path.resolve(shared) : null;
   const DATA = path.resolve(data);
   if (DATA.startsWith(path.join(process.env.HOME ?? '', '.linggen'))) throw new Error('playbot: the scratch data folder may not be under ~/.linggen');
   fs.mkdirSync(DATA, { recursive: true });
   const unknown = new Set();
+  /** The blocked files the page asked for: skill-relative path → times asked. */
+  const blocked = new Map();
   /** Every verb the page ran, with what it answered — the bot's oracle (a fight's outcome, a refusal and its reason). */
   const verbs = [];
   let chain = Promise.resolve();
@@ -115,6 +129,11 @@ export function makeServer({ skill, data, shared = null, log = () => {} }) {
     // data/ is the scratch folder (made worlds, art), never the checkout's.
     const file = rel.startsWith('data/') ? path.join(DATA, rel.slice(5)) : path.join(SKILL, rel);
     const root = rel.startsWith('data/') ? DATA : SKILL;
+    if (block && !rel.startsWith('data/') && block(rel)) {
+      blocked.set(path.posix.normalize(rel), (blocked.get(path.posix.normalize(rel)) ?? 0) + 1);
+      log(`404 (art=core) ${rel}`);
+      res.writeHead(404); return res.end();
+    }
     return sendFile(res, file, root);
   });
   function sendFile(res, file, root) {
@@ -125,13 +144,13 @@ export function makeServer({ skill, data, shared = null, log = () => {} }) {
       fs.createReadStream(file).pipe(res);
     });
   }
-  return { server, unknown, verbs, DATA, SKILL };
+  return { server, unknown, verbs, blocked, DATA, SKILL };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)) {
   const skill = flag('skill'), data = flag('data');
   if (!skill || !data) { console.error('usage: serve.mjs --skill=<dir> --data=<dir> [--port=0]'); process.exit(2); }
   const shared = flag('shared') ?? process.env.LINGGEN_SHARED ?? defaultShared(skill);
-  const { server } = makeServer({ skill, data, shared, log: (l) => console.error(`[serve] ${l}`) });
+  const { server } = makeServer({ skill, data, shared, block: artBlock(skill, flag('art')), log: (l) => console.error(`[serve] ${l}`) });
   server.listen(Number(flag('port', '0')), '127.0.0.1', () => console.log(`PLAYBOT_SERVE http://127.0.0.1:${server.address().port}`));
 }
