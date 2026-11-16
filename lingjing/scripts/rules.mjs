@@ -41,6 +41,7 @@ import { standFit } from './rules/match.mjs';
 import { oddsOn, strongFit } from './rules/strengthen.mjs';
 import { closeStaleFight, fightHold } from './rules/tasks.mjs';
 import { seclusionHold } from './rules/seclusion.mjs';
+import { aroundWorld, tellActivity } from './rules/worldline.mjs';
 import { mijingHold } from './rules/mijing.mjs';
 import { lapseWall } from './rules/rotation.mjs';
 import { VERBS } from './rules/verbs.mjs';
@@ -132,7 +133,7 @@ function run(verb, args, reader = null) {
   if (verb === 'track' || verb === 'stats') return reader ? { ok: false, refused: 'page-only', say: null } : verb === 'track' ? track(args) : stats(args);
   if (verb === 'seed') return withLock(stateFile, () => newer() ?? seed(args, stateFile), () => ({ ok: false, refused: 'busy', say: null }));
   if (verb === 'shift') return withLock(stateFile, () => newer() ?? shift(args), () => ({ ok: false, refused: 'busy', say: null }));
-  return withLock(stateFile, () => newer() ?? guided(verb, args, reader, stateFile, runLocked(verb, args, stateFile, reader)), () => ({ ok: false, refused: 'busy', say: null }));
+  return withLock(stateFile, () => newer() ?? aroundWorld(verb, stateFile, () => guided(verb, args, reader, stateFile, runLocked(verb, args, stateFile, reader))), () => ({ ok: false, refused: 'busy', say: null }));
 }
 
 /* Ling's answer carries the rules of what just became live (rules/guide.mjs):
@@ -662,6 +663,8 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const chose = verb === 'lang' ? await chooseLang(String(args.lang ?? '')) : null;
     const result = chose?.ok === false ? chose : run(verb ?? 'look', args, reader ?? null);
     console.log(JSON.stringify(reader === 'ling' ? forLing(result) : result));
+    // 闭关 or a chapter just done reaches the activity log (rules/worldline.mjs): after the answer, outside the save's lock.
+    await tellActivity();
     // A seed that could not reach its target fails loudly (rules/progress.mjs): the scene and why are in the answer.
     if (verb === 'seed' && result?.refused === 'cannot-advance') process.exitCode = 1;
   } catch (err) {

@@ -12,6 +12,15 @@ memory-context: lingjing
 memory-recall-min-score: 0.7
 memory-recall-count: 3
 cwd: ~/.linggen/skills/lingjing
+# Its line in the world block: where the player stands as the game names it, and
+# whether a 闭关 is running. A side file beside the save (scripts/rules/worldline.mjs);
+# the save is never written for it. No name, no 灵石, no 修为.
+world-line:
+  file: data/world.json
+  fields: [place, realm, seclusion, chapter]
+# A 回 finished, a 闭关 begun, a 闭关 ended — noted by scripts/rules/worldline.mjs
+# from the save before and after a verb, posted by rules.mjs after the answer.
+activity-verbs: [chapter_done, seclusion_start, seclusion_end]
 app:
   title: Lingjing
   launcher: web
