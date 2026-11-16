@@ -688,6 +688,10 @@ export async function run(opts) {
           // What stands over the bout cleared — never the bout's own 不玩了 (11-06: clear() closed the board it had just
           // opened, `task --action=leave --id=qiecuo`, and no 切磋 was ever played; the leave started its 3 h wait).
           await clear(3, { keepBoard: true });
+          // Opened from 事 · 全部's list, the list stays over the board (a layout finding, shot as it stands): put away as a
+          // finger would, so the board's taps reach the board.
+          const list = (await page.evaluate(VISIBLE, '.bookpop [data-pop-close]'))[0];
+          if (list) { await shot('qiecuo-under-list'); await tap(list, '合上 事 · 全部'); await sleep(500); }
           // The board's lead (a told opening over it) waits on its 开始 (games/shell.js `data-shell-go`).
           await click('[data-shell-go], [data-k=go], .g-btn-main, [data-go-board]').catch(() => {});
           await sleep(800);
