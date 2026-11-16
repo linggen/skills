@@ -21,6 +21,12 @@ suggestions:
   - Review my portfolio
   - How are my investments doing?
 cwd: ~/.linggen/skills/cfo
+# Its line in the world block: when the last import was and how many are in force —
+# no amount, balance, holding, spend or account name (scripts/world.js). Written by
+# the page beside data/imports.json.
+world-line:
+  file: data/world.json
+  fields: [last_import, imports, sources]
 install: install.sh
 app:
   title: CFO

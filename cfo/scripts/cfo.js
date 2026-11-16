@@ -8,6 +8,7 @@ import '/shared/chat-bridge.js'; // sets window.LinggenUI
 import { listSkillSessions } from '/shared/api.js';
 import { analyzeCsv, orientTransactions, categorize, cleanMerchant, amortize, debtPlan } from './analyze.js';
 import { stampQuest, publishDue, dueFacts } from './quest.js';
+import { worldOf } from './world.js';
 import { guessType, labelFromFilename, bestAccountMatch } from './accounts.js';
 import { toLedgerRows, mergeImport, onFileIds, idsToRevert, reportFromLedger, viewFromLedger, detectTransfers, stampCurrencies, ruleKey, isStatementArtifact } from './ledger.js';
 import { hashId } from './hash.js';
@@ -484,6 +485,18 @@ async function appendImport(entry) {
   const log = await readJson(`${DATA}/imports.json`, []);
   log.push(entry);
   await writeB64(`${DATA}/imports.json`, JSON.stringify(log, null, 2));
+  await writeWorld(log);
+}
+
+// CFO's line in the world block (world.js — no money fact in it), kept beside
+// the import log it is read from: rewritten when an import lands or is undone,
+// and only when its body changes. Never fails the import it follows.
+async function writeWorld(log) {
+  try {
+    const next = worldOf(log);
+    if (JSON.stringify(await readJson(`${DATA}/world.json`, null)) === JSON.stringify(next)) return;
+    await writeB64(`${DATA}/world.json`, `${JSON.stringify(next, null, 2)}\n`);
+  } catch { /* the next import writes it again */ }
 }
 
 // The single redacted report the agent reads via LatestAnalysis (latest.sh).
@@ -1044,6 +1057,7 @@ async function undoImport(importId) {
   entry.reverted = true;
   entry.reverted_at = new Date().toISOString();
   await writeB64(`${DATA}/imports.json`, JSON.stringify(log, null, 2));
+  await writeWorld(log);
   await rebuildReport();
   refreshView();
   if (VIEW_MODE === 'txn') renderTxnView();
