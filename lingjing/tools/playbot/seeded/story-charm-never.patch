@@ -1,5 +1,5 @@
 diff --git a/lingjing/scripts/rules/arms.mjs b/lingjing/scripts/rules/arms.mjs
-index 55f724be3..f1265fc06 100644
+index 55f724be3..c07afb665 100644
 --- a/lingjing/scripts/rules/arms.mjs
 +++ b/lingjing/scripts/rules/arms.mjs
 @@ -19,7 +19,8 @@ import { stonesAt } from './playpay.mjs';
@@ -12,3 +12,16 @@ index 55f724be3..f1265fc06 100644
    // An id named twice is two of it, one line in 所得 (邹青松's 火符).
    const counts = new Map();
    for (const id of [...dropsOf(creature), lucky ? charm.id : null].filter(Boolean)) counts.set(id, (counts.get(id) ?? 0) + 1);
+diff --git a/lingjing/worlds/jiuding/chapters/00-zhuji/scenes/09-lingcao.json b/lingjing/worlds/jiuding/chapters/00-zhuji/scenes/09-lingcao.json
+index 996dd92b1..ae76592fb 100644
+--- a/lingjing/worlds/jiuding/chapters/00-zhuji/scenes/09-lingcao.json
++++ b/lingjing/worlds/jiuding/chapters/00-zhuji/scenes/09-lingcao.json
+@@ -68,7 +68,7 @@
+     },
+     "_weighed_with": "Weighed at h11 with 火柴 worn (tools/story-fights.mjs STOPS.h11): bare-handed the lookahead line wins ~12%, ~74% with it (one turn of 装睡, f6bb6e53). While it is up and he owns 火柴 but does not wear it, Look's door carries `gear_hint` (rules/gearhint.mjs) and 银月 says it (Hanli 2026-11-04: 「要加」). The bronze sword (metal, which 装睡 lets in) measures close (~68%).",
+     "foe": {"level": 5, 
+-     "hp": 3.1
++     "hp": 0.6
+     },
+     "_weighed": "Re-weighed 2026-11-04 (Hanli: 「带了火柴还是遁走了」), 300 seeds, tools/story-fights.mjs `qiuyu@09-lingcao/fight`, 五层 with 阿禾 + 孙二狗 (party.json h11). Under it the same day: a worn sword's strike is always in the ten, in the place of the cheapest card (cards.mjs fightDeck — his 22-card save had been dealt no 火柴 at all, and 金刃 went out with it), and the strike, still fire, is 6/5. Then hp 2.8 → 3.1 with the creature's own two turns of 装睡. With 火柴 worn a player who thinks a turn ahead wins 73 · 遁走 9 · lost 18, the careless line 53 · 7 · 41; with 青铜剑 instead 37 · 23 · 40 (careless 19). His own save of 11-04 (合窳袄, armor 8, 22 cards): 火柴 83 · 16 · 0, 青铜剑 53 · 45 · 2 — he is never in danger there, so a try not won is a 遁走."
+    },

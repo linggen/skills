@@ -129,7 +129,7 @@
         "kind": "no-spoils",
         "fight": "story"
       },
-      "note": "The gap of 2026-11-16 (the builder: 「赢了给的都要显示」): the page before the fix, at 09-lingcao's 犰狳 — the fight's settle pays nothing of its own (no 符: the patch), the story step after it pays 修为 (the stretch's whole) and 20 灵石, and no 所得 shows them (灵石 only as a reveal card, 修为 only on the bar). One card owed both.",
+      "note": "The gap of 2026-11-16 (the builder: 「赢了给的都要显示」): the page before the fix, at 09-lingcao's 犰狳 — the fight's settle pays nothing of its own (no 符: the patch), the story step after it pays 修为 (the stretch's whole) and 20 灵石, and no 所得 shows them (灵石 only as a reveal card, 修为 only on the bar). One card owed both. The patch also eases the 犰狳 (hp 3.1 → 0.6) so the fight is won and its 所得 checked, never quiet by a loss.",
       "ref": "78384e252",
       "sizes": "430x932",
       "fights": 1,
@@ -143,7 +143,7 @@
         "kind": "no-spoils",
         "fight": "story"
       },
-      "note": "The control: the same content on the page under test — one 所得 holds the step's 修为 and 灵石.",
+      "note": "The control: the same content on the page under test — one 所得 holds the step's 修为 and 灵石. The patch also eases the 犰狳 (hp 3.1 → 0.6) so the fight is won and its 所得 checked, never quiet by a loss.",
       "ref": "HEAD",
       "sizes": "430x932",
       "fights": 1,
@@ -156,7 +156,7 @@
         "kind": "story-win-empty",
         "fight": "story"
       },
-      "note": "A story fight past 入门 that gives nothing at all (the patch: no 符, no 符 counted spent, the step pays nothing) is listed, not hard: every story fight from 入门 on is meant to pay something (design.md § 所得).",
+      "note": "A story fight past 入门 that gives nothing at all (the patch: no 符, no 符 counted spent, the step pays nothing) is listed, not hard: every story fight from 入门 on is meant to pay something (design.md § 所得). The patch also eases the 犰狳 (hp 3.1 → 0.6) so the fight is won and its 所得 checked, never quiet by a loss.",
       "ref": "HEAD",
       "sizes": "430x932",
       "fights": 1,
@@ -170,7 +170,7 @@
         "kind": "no-spoils",
         "fight": "story"
       },
-      "note": "The control: the same empty win owes no card — no hard no-spoils.",
+      "note": "The control: the same empty win owes no card — no hard no-spoils. The patch also eases the 犰狳 (hp 3.1 → 0.6) so the fight is won and its 所得 checked, never quiet by a loss.",
       "ref": "HEAD",
       "sizes": "430x932",
       "fights": 1,
