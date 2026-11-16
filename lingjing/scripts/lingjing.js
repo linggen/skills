@@ -110,7 +110,6 @@ const standIns = missingPictures({
   ledger: pictures, probe: whenPicture, doc: document, base: () => document.baseURI,
   urlOf: (file) => worldPath('worlds/jiuding', file), words: () => WORDS[lang()],
   report: () => fetch('/api/assets/lingjing').then((r) => (r.ok ? r.json() : null)), // 404 or down: no word from the engine, the ledger decides
-  observe: (el, fn) => { if (typeof ResizeObserver !== 'function') return null; const o = new ResizeObserver(fn); o.observe(el); return () => o.disconnect(); },
 });
 watchPictures(document, standIns);
 

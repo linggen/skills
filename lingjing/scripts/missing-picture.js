@@ -20,6 +20,12 @@
 import { pictureKey } from './picture-asks.js';
 
 export const FALLBACK = { wait: 'art/fallback/yinyue-on-its-way.webp', lost: 'art/fallback/yinyue-not-found.webp' };
+/** Her two lines, by language. cards.js WORDS carries them (the phone's native screens read them there); a board's page, which
+    does not load cards.js, reads them here. */
+export const PIC_WORDS = {
+  zh: { picWait: '这张画还在路上，等一等。', picLost: '这张画我没找到。' },
+  en: { picWait: 'This picture is still on its way.', picLost: 'I could not find this picture.' },
+};
 export const BIG_SIDE = 96;
 /** A stand-in that failed too: nothing to draw, the panel is tinted by CSS (img[data-pic-panel]). */
 export const BLANK = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
@@ -41,6 +47,14 @@ export function engineFailsAll(report) {
   return open.length > 0 && open.every((p) => (p.failing ?? 0) >= p.files - (p.held_files ?? 0));
 }
 
+/** Call `fn` when the element's box changes; → a function that stops it (null where the page has no ResizeObserver). */
+export function resizeObserve(el, fn) {
+  if (typeof ResizeObserver !== 'function') return null;
+  const o = new ResizeObserver(fn);
+  o.observe(el);
+  return () => o.disconnect();
+}
+
 const attr = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
 /** The attributes that put a stand-in on an <img>, as HTML text (the guard writes them into a template). */
@@ -51,6 +65,7 @@ export const standInAttrs = (state, line, url) => ` src="${attr(url)}" data-pic-
     stop }. Returns { standIn(key), onWrite(el), onMiss(img) } for watchPictures, and `note(el, src)` for a CSS backdrop. */
 export function missingPictures(env) {
   const { ledger, probe, urlOf, words, base, doc } = env;
+  const observe = env.observe === undefined ? resizeObserve : env.observe;
   const now = env.now ?? (() => Date.now());
   const timers = env.timers ?? { set: (f, ms) => setTimeout(f, ms), clear: (t) => clearTimeout(t) };
   const sites = new WeakMap(); // img → { cap, timer, stop }
@@ -106,7 +121,7 @@ export function missingPictures(env) {
     const site = { cap: null, timer: null, stop: null };
     sites.set(img, site);
     sizeUp(img, site);
-    site.stop = env.observe?.(img, () => sizeUp(img, site)) ?? null;
+    site.stop = observe?.(img, () => sizeUp(img, site)) ?? null;
     again(img, site);
   }
 
