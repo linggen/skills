@@ -32,7 +32,7 @@ import { sounded } from './games/kit/heard.js';
 import { REALMS, begin, missingCards, replayInto, shown as shownOf, view as boutView } from './battle.js';
 import { fightOdds, oddsKey } from './fightodds.js';
 import { withNext, FOOTER, barHeld, barOf, duanOf, duanSegments, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, slotKey, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
-import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml } from './battle-card.js';
+import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml, winSpoils } from './battle-card.js';
 import { since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
 import { drainAt, drainOf, trialNudge } from './beats.js';
@@ -736,6 +736,8 @@ function gainedThings(was, now) {
   if (n?.at && n.at !== was.story_node?.at && setpieceOf(n)) pieceDue = { id: setpieceOf(n), at: Date.now() };
   // …and the passage the step owes may lay one under its words: held while it is owed and while a 景 is still ahead.
   pieceSoon = true;
+  // The step after a won story fight: its pay joins that fight's one 所得 (storyWinFlush) — no burst, no reveals of its own.
+  if (storyWin && !storyWin.step && g.scene === storyWin.scene) { storyWin.step = g; return; }
   // 修为 the step paid (Hanli 2026-11-09: 「剧情可以给修为…然后有动画显示剧情奖励」): the bar's rise on this read says where it
   // came from — the gain burst reads 「剧情所得 · 修为 +n」 (gainBurst).
   // A cultivation stretch's end (rules/cultivation.mjs, Hanli 2026-11-10) carries its whole 修为, the boards' part already on the
@@ -757,6 +759,28 @@ function gainedThings(was, now) {
    after it — the pay landed in the rules at once; only the showing waits. `pieceDue` is the piece a story step owes (storyMoment),
    let go when it closes; a piece laid under a passage's words (carriesPiece) holds them until that passage is read. */
 let pieceDue = null, gearSpoilsOwed = null, pieceSoon = false;
+/* A won story fight (the builder, 2026-11-16: 「赢了给的都要显示」): what the fight left (`fight`) waits for the story step the
+   page takes next (watchWayOn → its exit), and the step's Look `gained` (`step`, gainedThings) and cards (`cards`,
+   gainedCards) join it; then ONE 所得 holds both (battle-card.js winSpoils), shown from the Look (storyWinFlush) however the
+   way on was taken. A win that gave nothing shows none: the story goes on. */
+let storyWin = null;
+// Still owed: its step not yet read, at the fight's scene, or read and not yet shown.
+const storyWinOpen = () => Boolean(storyWin && (storyWin.step || storyWin.scene === (look?.scene?.id ?? null)));
+const storyExitOf = (id) => (look?.scene?.exits ?? []).find((e) => e.game?.kind === 'duel' && e.game.id === id)?.id ?? null;
+// The way on still waits: no step read, the same scene, its exit still there (a Look already in flight at the settle may
+// not yet mark it won).
+const storyWinWaits = (w) => !w.step && w.scene === (look?.scene?.id ?? null) && (look?.scene?.exits ?? []).some((e) => e.id === w.exit);
+/* On each Look: the step is in (or the scene moved on without one) — the one card stands. `now`: the way on was refused,
+   so the fight's own 所得 stands at once and the step, taken later, shows its own. */
+function storyWinFlush(now = false) {
+  const w = storyWin;
+  if (!w || (!now && storyWinWaits(w))) return;
+  storyWin = null;
+  const s = winSpoils(w.fight, w.step, w.cards ?? []);
+  if (!s) return;
+  keep({ spoils: { place: look?.place?.id ?? null, ...s, book: bookDone(), over: true } });
+  if (s.items.length) gearOnSpoils();
+}
 const PIECE_DUE_MS = 180_000; // a piece that never came up (refused, the page reloaded) holds nothing past this
 function revealHeld() {
   if (bout || pieceOn) return true;
@@ -774,7 +798,10 @@ const thingCard = (t) => ({ id: t.id, name: t.n > 1 ? `${t.name} ×${t.n}` : t.n
 function gainedCards(was, now) {
   if (!was) return;
   const before = new Set(was.cards_new ?? []);
-  for (const id of now?.cards_new ?? []) if (!before.has(id) && !revealQueue.includes(id)) revealQueue.push(id);
+  const fresh = (now?.cards_new ?? []).filter((id) => !before.has(id));
+  // The step after a won story fight: its cards are named on that fight's one 所得 too (their 得牌 still plays).
+  if (storyWinOpen() && fresh.length) storyWin.cards = [...(storyWin.cards ?? []), ...fresh.map((id) => ({ id }))];
+  for (const id of fresh) if (!revealQueue.includes(id)) revealQueue.push(id);
   queueMicrotask(playReveals);
 }
 async function playReveals() {
@@ -899,6 +926,7 @@ async function readOnce() {
   watchMemory();
   // A word board told in her turn (Look's `word_board`): held on its card before anything takes it off (board-deal.js).
   catchTold(boards.get(toldInLook(look)?.task), toldInLook(look));
+  storyWinFlush();
   watchTell();
   watchWayOn();
   if (look.world?.atlas) await loadAtlas();
@@ -1208,6 +1236,9 @@ const BURST_LATE_MS = 4000, PAY_NAMED_MS = 180_000;
 const gameStands = () => Boolean(document.querySelector('#focus [data-board-close]'));
 async function gainBurst(g, fromStory = false) {
   const asked = Date.now();
+  // A won story fight's one 所得 will say these numbers (storyWin): decided now, before any wait — the card may be put
+  // away by the time the wait is over, and the numbers are said once.
+  if (storyWinOpen() || view.spoils?.paid) return;
   // After the book and the moments: a gain never floats over her memory or a seal.
   for (let k = 0; k < 720 && (boxAhead() || momentUp() || momentPending.size); k += 1) await pause(250);
   // Held back and now another game stands: the strip's numbers already rose — never a late burst over that game's card.
@@ -1618,7 +1649,8 @@ const toastX = (html, attrs) => (html ? withCloseX(html, closeX(lang(), attrs)) 
    end (pending until the rules' answer is in and the passage owed is drawn), shown once no passage is ahead,
    and holds the way on (watchWayOn) until it is put away or he takes the way on himself. */
 const spoilsUp = () => Boolean(view.spoils && view.spoils.place === (look?.place?.id ?? null));
-const spoilsShown = () => spoilsUp() && !view.spoils.pending && (!storyAhead() || bookStill(view.spoils.book));
+// A won story fight's (`over`, storyWinFlush) stands over the passage its step began; the box comes back at that beat.
+const spoilsShown = () => spoilsUp() && !view.spoils.pending && (view.spoils.over || !storyAhead() || bookStill(view.spoils.book));
 /* …but a box already told to its last beat when the fight ended, with nothing drawn since, is no passage ahead: 所得
    stands and the box steps aside for it, as for the fight card (live at 430, f959ed0c: a 降妖 won at 后山 beside
    09-futian's told passage, and 所得 waited behind 「还有：当康 · 斗法」 for ever). `book` is the reading's length then. */
@@ -2860,6 +2892,8 @@ async function panelTap(exitId, label, answer, pass = false) {
   // did — not only the write (2026-10-16, the playtest at 断碑: between the write and the re-read the
   // old choices stood live-looking for 0.3–0.7 s and a tap on them was dropped).
   try { await refresh(); } finally { show({ panelBusy: null }); }
+  // The way on after a won story fight refused (no 体力 for the step): that fight's 所得 stands now.
+  if (!r?.ok && r?.refused !== 'unknown-exit' && storyWin?.exit === exitId) { storyWinFlush(true); render(); }
 }
 /* A choice tapped: it and its neighbours go inert in this very frame — before the verb chain gets to
    it — so nothing on the stage looks live that is not (panelTap re-renders them busy until the read). */
@@ -5152,8 +5186,13 @@ async function settleBout(b, out = {}) {
   const vary = varietyOwed(r), paid = vary ? withVariety(own, vary) : own;
   // A 符 played is spent from the bag, won or lost: the card says so (page fact).
   const spent = r.spent ?? [];
-  if (got.length || paid || spent.length) keep({ spoils: { place: look?.place?.id ?? null, cards: got.filter((d) => d.card), items: got.filter((d) => !d.card), paid, spent, line: vary?.line ?? null, pending: true, book: bookDone() } });
-  if (got.some((d) => !d.card)) gearOnSpoils();
+  const fightGave = { cards: got.filter((d) => d.card), items: got.filter((d) => !d.card), paid, spent, line: vary?.line ?? null };
+  // A story fight won: its 所得 waits for the story step the page takes next (watchWayOn), and one card holds both
+  // (storyWinFlush). A field fight's stands at once, as ever.
+  const storyExit = r.outcome === 'won' ? storyExitOf(id) : null;
+  if (storyExit) storyWin = { exit: storyExit, scene: look?.scene?.id ?? null, fight: fightGave, step: null };
+  else if (got.length || paid || spent.length) keep({ spoils: { place: look?.place?.id ?? null, ...fightGave, pending: true, book: bookDone() } });
+  if (!storyExit && got.some((d) => !d.card)) gearOnSpoils();
   // The strip counts up once the room has closed and the eye is back on it.
   riseAfter = performance.now() + 600;
   keep({ walkedOut: null });

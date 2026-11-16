@@ -17,9 +17,10 @@
 //   no-response      a tap on a live control changes nothing on the page within 2 s
 //   no-feedback      a play changed neither the fight nor what the page says
 //   mana-waste       灵力 went down and nothing on the field moved (the card only left the hand)
-//   no-spoils        the rules settled a fight won AND PAID something (a drop, 修为, 灵石, a 符 spent: spoils.mjs owedOf —
-//                    a win that paid nothing owes no sheet) and no 所得 with real contents showed — or it showed under
-//                    something (elementFromPoint at its centre is not 所得's)
+//   no-spoils        a fight won gave something (spoils.mjs owedOf: the settle's drops, 符 spent, 修为, 灵石 — and for a
+//                    story fight the story step after it, its 修为 the stretch's whole) and no ONE 所得 showed it all,
+//                    each thing by name and each amount — or it showed under something (elementFromPoint at its centre
+//                    is not 所得's). A win that gave nothing owes no card.
 //   frozen-by-fight  a thing NOT in the fight (the bag, the 饭桶's feed, wearing) refused because a fight is open
 //   resume-mismatch  a fight reloaded and taken up again shows another state than it was left in
 //   console-error    a console error or an uncaught exception
@@ -28,6 +29,8 @@
 //   art-missing      a picture the page asked for and did not get (an HTTP error or a failed request for an image, a CSS
 //                    background or a texture; an <img> broken with no reason on the network) — one per picture a run,
 //                    with its pack (tools/art-packs.mjs). A request the page cancels itself is not one (art.mjs).
+// Soft (listed, not hard): story-win-empty — a story fight won whose settle and story step gave nothing at all; every
+// story fight is meant to pay something (design.md § 所得), so each one stands in the report until its content does.
 // --art=core: the scratch server answers 404 for all art outside the core pack (serve.mjs), and the play is the first
 // chapter's (FIRST_SEEDS, FIRST_STORY: all three of its story fights; no baselines, their fixture save is 00-zhuji's) —
 // the proof that core is enough there.
@@ -44,7 +47,7 @@ import { makeServer, defaultShared, artBlock, BASELINE_NOW } from './serve.mjs';
 import { LINT } from './lint.mjs';
 import { writePack } from './report.mjs';
 import { openingHand, wastedPlays } from './replay.mjs';
-import { owedOf } from './spoils.mjs';
+import { missingOn, owedLines, owedOf, stepAfter } from './spoils.mjs';
 import { FIRST_STORY, isPicture, missLedger, missOf, packListing, packOfPath, pictureKey } from './art.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -230,6 +233,9 @@ export async function run(opts) {
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm); else arm();
       // An <img> that fired `error` (it does not bubble: heard on the way down).
       globalThis.__pbImgErr = [];
+      // What floated or turned big (a gain burst, a reveal's name): a win's pay shown there and on no 所得 is named so.
+      globalThis.__pbShown = [];
+      new MutationObserver((m) => { for (const r of m) for (const n of r.addedNodes) { if (n.nodeType !== 1) continue; for (const e of [n, ...n.querySelectorAll('.gainburst, .rv-name')]) if (e.matches?.('.gainburst, .rv-name')) globalThis.__pbShown.push({ at: Date.now(), kind: e.matches('.gainburst') ? 'burst' : 'reveal', text: (e.textContent || '').trim().slice(0, 80) }); } }).observe(document, { subtree: true, childList: true });
       document.addEventListener('error', (e) => { const t = e.target; if (t && t.tagName === 'IMG' && (t.currentSrc || t.src)) globalThis.__pbImgErr.push(t.currentSrc || t.src); }, true);
     });
     const page = ctx.pages()[0] ?? (await ctx.newPage());
@@ -463,7 +469,7 @@ export async function run(opts) {
               findings.push({ kind: 'mana-waste', hard: true, size, where: `${where} · ${label}`, card: w.card, mana: `${w.mana[0]} → ${w.mana[1]}`, action: w.action, by: 'fight replay (battle.js)', shot: screenshots.filter((x) => x.where === where).at(-1)?.file ?? null });
             }
           }
-          return { outcome, steps, settled, owed: owedOf(settled?.out) };
+          return { outcome, steps, settled, settledAt: verbs.indexOf(settled) };
         }
         // Not his turn, or the last move still playing out (the scratch seam says so): a person waits, so does the bot.
         const bout = await page.evaluate(() => globalThis.__lingjingPlay?.bout?.() ?? null);
@@ -551,30 +557,61 @@ export async function run(opts) {
       return { outcome: 'step-cap', steps };
     };
 
-    const afterWin = async (label, res) => {
+    /* After a won fight: what it gave (spoils.mjs owedOf) must stand on ONE 所得, uncovered, each thing named and each
+       amount said (the builder, 2026-11-16: 「赢了给的都要显示」). A field fight's is the settle's. A story fight's adds the
+       story step the page then takes on its own (watchWayOn → resolve): the bot reads the passages through until that
+       step is in, then looks. A story win that gave nothing owes no card — and is listed (`story-win-empty`, not hard),
+       since every story fight is meant to pay something. */
+    const sheetText = (sp) => [sp.title, ...sp.parts].join(' · ');
+    const lookSheet = async (owed, ms) => {
+      let sp = null, best = null;
+      const good = () => sp?.hit && sp.parts.length && !missingOn(owed, sheetText(sp)).length;
+      for (let t = 0; t < ms && !good(); t += 200) {
+        await sleep(200);
+        sp = await page.evaluate(SPOILS);
+        if (sp?.hit && sp.parts.length) best = sp;
+        // The reveals over a won fight (a seal, a card turned 得) can stand a while; 所得 waits under them (dcab26ad).
+        if (t === (ms >= 18000 ? 12000 : 6000)) for (const sel of ['.rv-veil', '.wonseal', '[data-reveal]', '.feat']) await click(sel).catch(() => {});
+      }
+      return good() ? sp : best ?? sp;
+    };
+    const putAway = () => click('.cardx[data-spoils-close], [data-spoils-close]', '所得 · 收起').catch(() => {});
+    const afterWin = async (label, res, { story = false } = {}) => {
       if (res.outcome === 'lost') { await sleep(1500); await shot(`${label}-lost`); return; }
       if (res.outcome !== 'won') return;
-      // What the rules paid for this win decides whether a sheet is owed (spoils.mjs): a story win that paid nothing
-      // (the first chapter's fox and 蠪侄 leave a 符 on one win in three, else nothing) shows none, and waiting 18 s
-      // for one would be a false finding (2026-11-16).
-      const owed = res.owed ?? null;
-      if (!owed) { await shot(`${label}-won`); await click('[data-spoils-close]').catch(() => {}); return; }
-      let sp = null;
-      // The reveals over a won fight (a seal, a card turned — 珠光 得) come first and can stand a while; 所得 waits
-      // under them (dcab26ad). Look for 12 s untouched, then clear the reveals and look 6 s more.
-      // Drawn but still under a reveal (a card turned 得 over it, 11-06) is not yet seen: keep looking until it is on top.
-      const seen = () => sp && sp.hit;
-      for (let i = 0; i < 60 && !seen(); i += 1) { await sleep(200); sp = await page.evaluate(SPOILS); }
-      if (!seen()) {
-        for (const sel of ['.rv-veil', '.wonseal', '[data-reveal]', '.feat']) await click(sel).catch(() => {});
-        for (let i = 0; i < 30 && !seen(); i += 1) { await sleep(200); sp = await page.evaluate(SPOILS); }
+      const from = res.settledAt >= 0 ? res.settledAt : verbs.length, settle = res.settled?.out ?? null;
+      const shownFrom = Date.now() - 5000;
+      let step = null, early = null;
+      // A story fight: the passages read through (as a player taps on) until the page has taken the way on and read
+      // the Look after it — 45 s at most. A card that stands meanwhile is read, and put away after 12 s: the old page
+      // held the way on behind it.
+      for (let t = 0, stood = 0; story && t < 45000 && !step?.read; t += 700) {
+        step = stepAfter(verbs, from);
+        if (step?.read) break;
+        const sp = await page.evaluate(SPOILS);
+        if (sp?.hit) { early = sp; stood += 700; if (stood > 12000) { await putAway(); stood = 0; } }
+        else await clear(1);
+        await sleep(700);
       }
-      if (!sp && opts.debug) console.error('[spoils?]', JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('*')].filter((e) => e.children.length < 8 && /所得/.test(e.textContent || '') && e.textContent.length < 200).slice(0, 6).map((e) => [e.tagName, e.className, e.getClientRects().length, (e.textContent || '').slice(0, 60)]))));
+      const owed = owedOf(settle, story ? step : null);
+      const record = { fight: label, owed: owed ? owedLines(owed) : [], ...(story ? { step: step ? { exit: step.exit, gained: step.gained, paid: step.paid } : null } : {}) };
+      if (!owed) {
+        await shot(`${label}-won`);
+        if (story) findings.push({ kind: 'story-win-empty', hard: false, size, where, ...record, why: step ? 'the fight and the story step after it gave nothing' : 'the fight gave nothing and its way on was not taken within 45 s' });
+        await putAway();
+        return;
+      }
+      let sp = await lookSheet(owed, story ? 12000 : 18000);
+      const misses = (x) => (x?.hit && x.parts.length ? missingOn(owed, sheetText(x)).length : Infinity);
+      if (early && misses(early) < misses(sp)) sp = early;
       await shot(`${label}-won`);
-      if (!sp || !sp.parts.length) await fail('no-spoils', { fight: label, title: sp?.title ?? null, paid: owed });
-      else if (!sp.hit) await fail('no-spoils', { fight: label, title: sp.title, paid: owed, covered_by: sp.over });
+      const shown = (await page.evaluate(() => globalThis.__pbShown ?? [])).filter((x) => x.at >= shownFrom).map((x) => `${x.kind}: ${x.text}`);
+      const missing = sp?.parts?.length ? missingOn(owed, sheetText(sp)) : owedLines(owed);
+      if (!sp || !sp.parts.length) await fail('no-spoils', { ...record, title: sp?.title ?? null, missing, shown_elsewhere: shown });
+      else if (!sp.hit) await fail('no-spoils', { ...record, title: sp.title, covered_by: sp.over, missing, shown_elsewhere: shown });
+      else if (missing.length) await fail('no-spoils', { ...record, title: sp.title, on_card: sp.parts, missing, shown_elsewhere: shown });
       // Put away, as a player does: since dcab26ad the next play waits behind an open 所得.
-      else await click('.cardx[data-spoils-close], [data-spoils-close]', '所得 · 收起').catch(() => {});
+      await putAway();
     };
 
     /* Bring a control up and tap it: what stands over the stage cleared, and the scene's story — which hides the
@@ -674,7 +711,7 @@ export async function run(opts) {
         // The story's 斗 button calls the fight onto the stage (callDuel: a challenge card); its 开局 then begins it.
         else if (!(await page.evaluate(FIGHT)) && !(await reach('[data-duel-start]', '开局 剧情斗法'))) unplayable.push({ where, why: 'the story fight was called and its 开局 never came' });
         else if (!(await onScreen())) unplayable.push({ where, why: 'the story fight was opened and never came on screen' });
-        else { const label = coreOnly ? `story-${storyAt}` : 'story'; const res = await fight(label, { saveName: name }); played.push({ where, kind: '剧情斗法', ...res, settled: undefined }); await afterWin(label, res); }
+        else { const label = coreOnly ? `story-${storyAt}` : 'story'; const res = await fight(label, { saveName: name }); played.push({ where, kind: '剧情斗法', ...res, settled: undefined }); await afterWin(label, res, { story: true }); }
         noteRefusals(at, where);
       }
     }

@@ -536,6 +536,26 @@ export function spoilsHtml(spoils, ctx) {
     </div>`;
 }
 
+/* 所得 of a won story fight (the builder, 2026-11-16: 「赢了给的都要显示」): ONE card for the fight's settle (`fight`: its cards,
+   items, paid, spent, line — as settleBout reads them) and the story step after it (`step`: Look's `gained` — a cultivation
+   stretch's whole 修为 once, its 灵石 and things; `cards`: the cards the step handed, resolve's `cards`). Null when the
+   win gave nothing: no card, the story goes on. */
+export function winSpoils(fight, step = null, cards = []) {
+  const f = fight ?? {}, g = step ?? {};
+  const progress = (f.paid?.progress ?? 0) + (g.progress ?? 0), wealth = (f.paid?.wealth ?? 0) + (g.wealth ?? 0);
+  const converted = g.converted ?? f.paid?.converted ?? null;
+  const paid = progress || wealth ? { ...(progress ? { progress } : {}), ...(wealth ? { wealth } : {}), ...(converted ? { converted } : {}) } : null;
+  const held = new Set((f.cards ?? []).map((c) => c.id));
+  const out = {
+    cards: [...(f.cards ?? []), ...(cards ?? []).filter((c) => c?.id && !held.has(c.id)).map((c) => ({ id: c.id, name: c.name, card: true }))],
+    items: [...(f.items ?? []), ...(g.items ?? [])],
+    paid,
+    spent: f.spent ?? [],
+    line: f.line ?? null,
+  };
+  return out.cards.length || out.items.length || paid || out.spent.length ? out : null;
+}
+
 /* One thing in the bag's line: 新 if first had, its rarity, ×n, and what a
    one-off already had came as instead. */
 function thingHtml(i, isEn) {
