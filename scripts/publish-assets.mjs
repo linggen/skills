@@ -159,9 +159,10 @@ export function runChild(cmd, args, { cwd }) {
   });
 }
 
-/* The real HEAD: head(url) → { status, length }. */
+/* The real HEAD: head(url) → { status, length }. Asked for uncompressed: a compressible object (JSON, SVG) is
+   otherwise answered with a content-encoding and no content-length, and its size could not be checked. */
 export async function headUrl(url) {
-  const r = await fetch(url, { method: 'HEAD' });
+  const r = await fetch(url, { method: 'HEAD', headers: { 'accept-encoding': 'identity' } });
   const len = r.headers.get('content-length');
   return { status: r.status, length: len === null ? null : Number(len) };
 }
