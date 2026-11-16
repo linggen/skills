@@ -1648,8 +1648,10 @@ the daily's eight hosts, 困阵, the 奇遇 and the 传闻 deal 五子棋 (§ be
       (as 二十问), or while a round is under way. Each round counted as it begins (`kao open`), `per_day` 1 a calendar day (3 until 2026-11-02, Hanli: 「1局就可以了」); the word
       is the rules', one of games.json drawguess `met` the save has met (饼 · 木牌 · 鹿 · 饭桶 · 牙签 · 火锅 · 镜子 ·
       狰 · 犰狳 · 鯥, each open after its scene or with its beast), never twice a day, a word never cleared
-      first. A word's first clear pays the small-game 灵石 by its looks (1 → 15, 2 → 10, 3 → 5); a miss on
-      the day's last round closes it (`kao miss`: 收手 alone, no 下一题). ≤ 3 looks a round: ≤ 3 looks ≈ 26k tokens a day.
+      first. A word's first clear pays the small-game 灵石 by its looks (1 → 15, 2 → 10, 3 → 5); a word cleared before pays
+      1 灵石 (the builder, 2026-11-16: every small game won pays something, after 入门) — through `pay`, in the result's `paid.wealth` like the
+      first clear, so the page's 所得 shows it; what bounds it is what bounds a round (a game's 体力 at `kao open`, `per_day` 1, 银月 beside him).
+      A miss on the day's last round closes it (`kao miss`: 收手 alone, no 下一题). ≤ 3 looks a round: ≤ 3 looks ≈ 26k tokens a day.
     - **秘境 · 奇遇** — retired with the 秘境 rerun 2026-10-28 (rules/qiyu.mjs gone; worlds/jiuding/qiyu.json and the boards kept for the roguelite, design.md § Backlog). As it was (a pool, not one spot): as a rerun of the 外圈 is
       entered, each room (岔口 · 凶崖 · 暗河) rolls 0.3 — about one room a run; a hit draws by weight 你画我猜 3
       (once 银月 is met, the 木牌 too; words 鼎 灵芝 人参 犰狳 蛇 钥匙) · 撒豆成兵 3 (割藤 until 10-20; the next level each

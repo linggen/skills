@@ -11,9 +11,11 @@
 // is the rules': one of games.json drawguess `met`, open once the save has passed its `after` scene or
 // walks with its `cast` beast, one not yet drawn today, a word never cleared first. The page is the
 // only witness to the picture named (as for every board): its win counted (`task done`) pays a word's
-// FIRST clear only, by the looks it took (balance.json `boards`: 1 look best, 2 good, more plain).
+// FIRST clear by the looks it took (balance.json `boards`: 1 look best, 2 good, more plain), and a word cleared
+// before REPEAT_STONES (the builder, 2026-11-16: from 入门 on every won small game pays something). A repeat is bounded
+// by what bounds a round: each asks a board's 体力 at `kao open`, `per_day` rounds a day, and only while 银月 is beside him.
 import { boardCost, dayKey, pick, seedOf } from '../state.mjs';
-import { clone, refuse, spendStamina } from './core.mjs';
+import { clone, pay, refuse, spendStamina } from './core.mjs';
 import { herNear } from './companion.mjs';
 import { isLocked } from './locks.mjs';
 import { hashOf } from './travel.mjs';
@@ -27,6 +29,8 @@ const metWords = content => (content.games?.games ?? []).find(g => g.id === 'dra
 /* Today's rounds (a calendar day, `dayKey`); a save from before 2026-10-26 kept them by `night`. */
 const today = (state, now) => ((state.kao?.day ?? state.kao?.night) === dayKey(now) ? state.kao : null);
 const capOf = t => t.per_day ?? 1;
+/* A word cleared before pays this many 灵石 when it is named again (the builder, 2026-11-16: 「小游戏应该胜了都有奖励, 可以少」). */
+const REPEAT_STONES = 1;
 
 /* Whether she may set him one now: any hour, she beside him on her own line — from the 木牌 too: the
    round wakes her (rules/hergame.mjs) — after 入门, out of any instance, run or fight. */
@@ -100,7 +104,7 @@ function open(state, content, ctx, args = {}) {
   return { state: s, result: { ok: true, opened: n, left: cap - n, word: describeWord(word, content.creatures?.creatures) } };
 }
 
-/* Its win handed in (tasks.mjs taskDone): the round closed, a word's first clear paid by its looks. */
+/* Its win handed in (tasks.mjs taskDone): the round closed, a word's first clear paid by its looks, a repeat REPEAT_STONES. */
 export function kaoDone(state, content, ctx, id) {
   if (!state.wins?.[id]) return refuse('not-won', null);
   const s = clone(state), word = s.kao.open.word;
@@ -113,6 +117,9 @@ export function kaoDone(state, content, ctx, id) {
     const stars = s.stars?.[id] ?? 0, rank = stars >= 3 ? 'best' : stars === 2 ? 'good' : 'plain';
     const amount = Math.round(stonesAt(content, s, content.balance?.boards?.[rank] ?? 0)); // minutes of income × I where he stands (batch 2)
     if (amount) { s.wealth += amount; s.day.wealth += amount; paid.wealth = amount; paid.board = { rank, wealth: amount }; }
+  } else {
+    // Through the one pay path (caps, locks), so the page reads it as it reads a first clear: `paid.wealth`.
+    Object.assign(paid, pay(content, s, ctx, { table: 'labor', progress: 0, wealth: REPEAT_STONES }));
   }
   // Stars are this round's, not a best ever: the next word starts clean.
   if (s.stars) delete s.stars[id];

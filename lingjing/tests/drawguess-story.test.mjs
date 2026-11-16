@@ -206,7 +206,7 @@ test('本王考考你: each round counted as it begins, `per_day` a calendar day
   // Past midnight a fresh day's rounds (no night spans two days).
   const after = new Date(now); after.setDate(after.getDate() + 1); after.setHours(0, 10);
   assert.equal(kaoRow(closed, after)?.left, CAP, 'a new day: the allowance again');
-  // The next day: the first word cleared pays nothing again.
+  // The next day: the first word cleared pays 1 灵石 again, not its first-clear grade.
   const next = new Date(now.getTime() + 864e5);
   let t = { ...s, kao_cleared: [first] };
   t = ok(VERBS.kao(t, content, at(next), { action: 'open' }));
@@ -216,7 +216,7 @@ test('本王考考你: each round counted as it begins, `per_day` a calendar day
   t = ok(win(t, content, at(next), { id: K, stars: 3 }));
   const again = task(t, content, at(next), { action: 'done', id: K });
   assert.equal(again.result.first, false);
-  assert.equal(again.state.wealth, t0, 'a word cleared before pays nothing');
+  assert.equal(again.state.wealth, t0 + 1, 'a word cleared before pays 1 灵石 (the builder 2026-11-16; tests/kao-repeat.test.mjs)');
 });
 
 test('本王考考你 returns a bestiary description on open and resume', () => {
