@@ -75,6 +75,7 @@ import { frameOf } from './atlas.js';
 import { fxTimes, glOK, playHoming as playHomingFx } from './fx.js';
 import { atmosClasses, atmosOf, indoorOf, particlesHtml, stagePick, windVars } from './atmos.js';
 import { placeArtOf } from './placeart.js';
+import { pictureRetryIn, pictureState, watchPictures, whenPicture } from './picture-asks.js';
 import { WINDS } from './rules/weather.mjs';
 import { parseDay } from './calendar.js';
 import { applySky, moonAt, skyOf } from './sky-bodies.js';
@@ -103,6 +104,7 @@ const ftKailu = fantongKailu({ feed: (ids, fuel, press) => feedFantong(ids, fuel
 
 const SKILL = 'lingjing';
 const $ = (id) => document.getElementById(id);
+watchPictures(); // a picture that failed is not asked for on every redraw (picture-asks.js)
 
 /* A preview of the atmosphere, for testing only: `?day=2027-02-06` reads
    Look's `today` (and its season) for that date (a read — the save is never
@@ -1744,6 +1746,9 @@ function placeHere(isDay = dayOnStage()) {
   return art ? { ...look?.place, backdrop: art.src, indoor: art.indoor, night: art.night } : look?.place ?? null;
 }
 let drawnBackdrop = null;
+let missingBackdrop = null; // the painting the stage waits for: asked for and not there (picture-asks.js)
+let backdropTimer = null; // a still stage draws nothing: this one asks again when the pause is over
+let askingBackdrop = null; // the stage's key while its painting is being asked for (a redraw meanwhile asks nothing)
 function paintBackdrop() {
   const dir = look?.world?.made ? `worlds/${look.world.base}` : look?.world?.dir ?? 'worlds/jiuding';
   const own = look?.scene?.backdrop ?? null;
@@ -1755,18 +1760,37 @@ function paintBackdrop() {
   // A place painted only by day is darkened at night by the stage, not repainted.
   const dim = Boolean(src) && (tier === 'place' || tier === 'sealed') && day === false && !place?.night;
   const key = `${src}|${dim}`;
-  if (key === drawnBackdrop) return;
+  // The same painting again: nothing to do — unless it was not there and its pause is over (it may have come since).
+  const retry = key === drawnBackdrop && src !== null && src === missingBackdrop && askingBackdrop !== key && pictureState(src) === 'unknown';
+  if (key === drawnBackdrop && !retry) return;
   drawnBackdrop = key;
   const el = $('backdrop');
   if (!el) return;
+  if (!src) { missingBackdrop = null; return layBackdrop(el, null, dim, art, false); }
+  // Asked once through an Image: a CSS background of a missing picture is asked for again whenever the stage's custom
+  // properties change (picture-asks.js), so its url is laid only when the picture is there.
+  const known = pictureState(src);
+  const lay = (there) => {
+    if (key !== drawnBackdrop) return; // the stage moved on while the picture was asked for
+    missingBackdrop = there ? null : src;
+    clearTimeout(backdropTimer);
+    if (!there) backdropTimer = setTimeout(paintBackdrop, pictureRetryIn(src) + 250);
+    if (retry && !there) return; // still not there: the stage keeps what it shows
+    layBackdrop(el, src, dim, art, there);
+  };
+  if (known === 'unknown') { askingBackdrop = key; whenPicture(src).then((there) => { if (askingBackdrop === key) askingBackdrop = null; lay(there); }); } else lay(known === 'ok');
+}
+/* Lay the painting on the stage: the old ones leave, the new one comes in (without its url when the picture is not there:
+   the plain stage a missing painting always left). */
+function layBackdrop(el, src, dim, art, there) {
   el.classList.toggle('painted', Boolean(src));
   for (const old of el.querySelectorAll('.bd:not(.going)')) { old.classList.add('going'); setTimeout(() => old.remove(), 1700); }
   if (!src) return;
   const bd = document.createElement('i');
   bd.className = dim ? 'bd dim' : 'bd';
-  bd.style.setProperty('--art', `url("${src.replace(/"/g, '%22')}")`);
+  if (there) bd.style.setProperty('--art', `url("${src.replace(/"/g, '%22')}")`);
   el.appendChild(bd);
-  liveBackdrop(bd, src, authored?.backdrops, art); // 画活 (fx-alive.js): what the painting's row says moves, moves
+  if (there) liveBackdrop(bd, src, authored?.backdrops, art); // 画活 (fx-alive.js): what the painting's row says moves, moves
 }
 /* The moment the page draws the sky for: now, or a preview's day and hour (PREVIEW). */
 function nowMs() {
