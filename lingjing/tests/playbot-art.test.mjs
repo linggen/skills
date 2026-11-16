@@ -2,7 +2,7 @@
 // page's own cancel), one finding per picture, and the core-only block driven by a pack listing.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isPicture, isCancel, missOf, missLedger, pictureKey, coreBlock, packOfPath } from '../tools/playbot/art.mjs';
+import { FIRST_STORY, isPicture, isCancel, missOf, missLedger, pictureKey, coreBlock, packOfPath } from '../tools/playbot/art.mjs';
 
 const U = 'http://127.0.0.1:5000/apps/lingjing/';
 
@@ -89,4 +89,19 @@ test('the scratch server under the core-only block: art outside core is a 404 an
     server.close();
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+test('--art=core plays every story fight of the first chapter, and only those', async () => {
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const chapters = path.resolve(import.meta.dirname, '../worlds/jiuding/chapters');
+  const withDuel = [];
+  for (const ch of ['00-prologue', '00-waimen']) {
+    const dir = path.join(chapters, ch, 'scenes');
+    for (const f of fs.readdirSync(dir).filter((n) => n.endsWith('.json'))) {
+      const scene = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
+      if (JSON.stringify(scene.exits ?? []).includes('"duel"')) withDuel.push(scene.id);
+    }
+  }
+  assert.deepEqual([...FIRST_STORY].sort(), withDuel.sort());
 });

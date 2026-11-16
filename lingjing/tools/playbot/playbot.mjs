@@ -28,7 +28,8 @@
 //                    background or a texture; an <img> broken with no reason on the network) — one per picture a run,
 //                    with its pack (tools/art-packs.mjs). A request the page cancels itself is not one (art.mjs).
 // --art=core: the scratch server answers 404 for all art outside the core pack (serve.mjs), and the play is the first
-// chapter's (FIRST_SEEDS; no baselines, their fixture save is 00-zhuji's) — the proof that core is enough there.
+// chapter's (FIRST_SEEDS, FIRST_STORY: all three of its story fights; no baselines, their fixture save is 00-zhuji's) —
+// the proof that core is enough there.
 // pictures.json lists every picture asked for, its answer and its pack, and the blocked files the page asked for.
 // Every refusal the rules gave is listed (refusals.json) with its reason and where it happened, for a person.
 import { spawnSync } from 'node:child_process';
@@ -42,7 +43,7 @@ import { makeServer, defaultShared, artBlock, BASELINE_NOW } from './serve.mjs';
 import { LINT } from './lint.mjs';
 import { writePack } from './report.mjs';
 import { openingHand, wastedPlays } from './replay.mjs';
-import { isPicture, missLedger, missOf, packListing, packOfPath, pictureKey } from './art.mjs';
+import { FIRST_STORY, isPicture, missLedger, missOf, packListing, packOfPath, pictureKey } from './art.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const flag = (k, d = null) => process.argv.find((a) => a.startsWith(`--${k}=`))?.split('=').slice(1).join('=') ?? (process.argv.includes(`--${k}`) ? true : d);
@@ -58,11 +59,15 @@ const pickOne = (r, xs) => xs[Math.floor(r() * xs.length)];
 /* Where each fight is met: a save seeded there by the rules' own walk (rules.mjs seed --at). */
 export const SEEDS = { haunt: '09-suifeng', story: '09-lingcao', bout: '09-suifeng', walk: '09-suifeng' };
 /* The first chapter's (core's: 00-prologue + 00-waimen), for --art=core: wm-baishi (拜师, 00-waimen's last beat) with
-   后山's 降妖 and the 切磋 open, walked to 后山 first (FIRST_AT: its scene is told at 山门, and the story taken on from
-   there walks him on into 00-zhuji); 00-longzhi is the prologue's story fight at 山门. The rules offer the 切磋 there
-   (look's tray), but the page draws no [data-play=qiecuo] at 山门 or 后山 while wm-baishi is told: unplayed (2026-11-15). */
+   后山's 降妖 open, walked to 后山 first (FIRST_AT: its scene is told at 山门, and the story taken on from there walks him
+   on into 00-zhuji). The first chapter's story fights are all three (the scenes of 00-prologue and 00-waimen that carry a
+   `duel`): 00-longzhi at 山门, 00-fox in 银叶谷, wm-wangzuo in the 秘境's 断崖下 — FIRST_STORY, each seeded at its scene.
+   切磋 (tasks/world.json `qiecuo`; rules/qiecuo.mjs boutUp) opens once wm-jiaxin (the 大比's last scene) is behind him and
+   is offered at 沉鼎观's own places when no key beat holds him; the page draws its [data-play=qiecuo] there only while the
+   story is not on the stage: at wm-baishi's 山门 or 后山 (told) it does not (2026-11-15), at 外门 it does (the tray's 「切磋」,
+   probed 2026-11-16) — so the bout is seeded at wm-baishi and walked to 外门 (FIRST_AT). */
 export const FIRST_SEEDS = { haunt: 'wm-baishi', story: '00-longzhi', bout: 'wm-baishi', walk: 'wm-baishi' };
-const FIRST_AT = { haunt: 'houshan', walk: 'houshan' };
+const FIRST_AT = { haunt: 'houshan', walk: 'houshan', bout: 'waimen' };
 const FIRST_CHAPTERS = new Set(['00-prologue', '00-waimen']);
 /* The refusals that freeze what a kept fight never holds (tasks.mjs fightHold): a hard finding. Moving, buying,
    travel: the world holds still in a fight by design — listed, not failed. */
@@ -188,8 +193,8 @@ export async function run(opts) {
   /* A part's save: seeded at its scene; in --art=core walked to where the part is played (FIRST_AT), and kept to be
      checked after the play (a story taken on can walk him out of the first chapter). */
   const partSaves = [];
-  const seedFor = (name, part, where) => {
-    const s = seed(name, SEED[part]);
+  const seedFor = (name, part, where, at = SEED[part]) => {
+    const s = seed(name, at);
     if (s.ok && coreOnly && FIRST_AT[part]) rules(name, 'move', [`--place=${FIRST_AT[part]}`]);
     if (s.ok) partSaves.push({ name, where });
     return s;
@@ -639,15 +644,15 @@ export async function run(opts) {
       noteRefusals(at, where);
     }
 
-    // ── a story fight
-    if (want('story')) {
-      const name = `pb-s-${w}`;
-      where = `${size} · 剧情斗法`;
-      const s = seedFor(name, 'story', where);
+    // ── a story fight (--art=core: each of the first chapter's three, one save each)
+    for (const storyAt of want('story') ? (coreOnly ? FIRST_STORY : [SEED.story]) : []) {
+      const name = coreOnly ? `pb-s-${w}-${storyAt}` : `pb-s-${w}`;
+      where = coreOnly ? `${size} · 剧情斗法 · ${storyAt}` : `${size} · 剧情斗法`;
+      const s = seedFor(name, 'story', where, storyAt);
       if (!s.ok) unplayable.push({ where, why: `seed failed: ${s.error ?? JSON.stringify(s)}` });
       else {
         // Stood where the scene is told (its `at`): the seed leaves him a walk away, at the place of his last errand.
-        const told = sceneAt(SEED.story);
+        const told = sceneAt(storyAt);
         if (told) patchSave(name, (st) => { st.place = told; });
         await open(name);
         const at = verbs.length;
@@ -661,7 +666,7 @@ export async function run(opts) {
         // The story's 斗 button calls the fight onto the stage (callDuel: a challenge card); its 开局 then begins it.
         else if (!(await page.evaluate(FIGHT)) && !(await reach('[data-duel-start]', '开局 剧情斗法'))) unplayable.push({ where, why: 'the story fight was called and its 开局 never came' });
         else if (!(await onScreen())) unplayable.push({ where, why: 'the story fight was opened and never came on screen' });
-        else { const res = await fight('story', { saveName: name }); played.push({ where, kind: '剧情斗法', ...res, settled: undefined }); await afterWin('story', res); }
+        else { const label = coreOnly ? `story-${storyAt}` : 'story'; const res = await fight(label, { saveName: name }); played.push({ where, kind: '剧情斗法', ...res, settled: undefined }); await afterWin(label, res); }
         noteRefusals(at, where);
       }
     }
@@ -674,7 +679,11 @@ export async function run(opts) {
       if (s.ok) {
         await open(name); await clear();
         const at = verbs.length;
-        if (await click('[data-play=qiecuo]', '开局 切磋')) {
+        // The tray's strip shows what is new or due, a few of it: the 切磋 may stand in 事 · 全部's list instead (2026-11-16:
+        // at 外门 in the first chapter it was in the strip at some hours and only in 全部 at others).
+        let bout = await click('[data-play=qiecuo]', '开局 切磋');
+        if (!bout && (await click('.allchip[data-book]', '事 · 全部'))) { await sleep(800); bout = await click('[data-play=qiecuo]', '开局 切磋'); }
+        if (bout) {
           await sleep(2500);
           // What stands over the bout cleared — never the bout's own 不玩了 (11-06: clear() closed the board it had just
           // opened, `task --action=leave --id=qiecuo`, and no 切磋 was ever played; the leave started its 3 h wait).

@@ -16,6 +16,10 @@ import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
+/** The first chapter's story fights (the scenes of 00-prologue and 00-waimen with a `duel` exit), each played by --art=core:
+    00-longzhi at 山门, 00-fox in 银叶谷, wm-wangzuo in the 秘境's 断崖下. A test holds the list to the world's files. */
+export const FIRST_STORY = ['00-longzhi', '00-fox', 'wm-wangzuo'];
+
 export const PICTURE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.avif']);
 
 /** The picture's key: the decoded path of its URL, query and hash dropped (`/apps/lingjing/worlds/…/x.webp`). */
