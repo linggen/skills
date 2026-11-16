@@ -21,13 +21,13 @@ index 981b8d6e5..4c99985c3 100644
    const rose = exit.rise ? riseTo(content, s, exit.rise, replaying(content, s, scene)) : null;
    // A riddle left (`pass`) pays nothing (his: 「跳过没有奖励」); the story goes on as after an answer.
 -  const grant = passedRiddle || leftFight ? null : grantOf(s, scene, exit);
-+  // SEEDED (playbot selftest): the story step pays nothing (no grant, no stretch) — a story win that gave nothing.
-+  const grant = null;
++  // SEEDED (playbot selftest): 09-lingcao's step after its fight pays nothing (no grant, no stretch) — a story win that gave nothing.
++  const grant = passedRiddle || leftFight || scene.id === '09-lingcao' ? null : grantOf(s, scene, exit);
    const landing = exit.ends ? { ...s, scene: null } : exit.next && !inMade(s) ? { ...s, scene: exit.next } : s;
    // A marked scene's stretch ends here (rules/cultivation.mjs, Hanli 2026-11-10): nothing of it paid 修为, one story step —
    // priced where he stands now, after the exit's own rise (wm-zhoutian's 小周天 night: 一层), as a story step on the exit would be.
 -  const stretch = endsStretch(scene, exit, !inMade(s) && !replaying(content, s, scene));
-+  const stretch = false;
++  const stretch = scene.id !== '09-lingcao' && endsStretch(scene, exit, !inMade(s) && !replaying(content, s, scene));
    const floor = stretch && storyPlay(content, s) > 0 && !pastMark(content, s, 1, ctx.now) ? floorOf(s, scene, grant) : null;
    const floorPaid = floor ? landedOnly(pay(content, s, ctx, floor, landing)) : null;
    const own = grant ? pay(content, s, ctx, grant, landing) : null;

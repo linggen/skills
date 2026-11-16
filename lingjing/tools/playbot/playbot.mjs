@@ -722,7 +722,20 @@ export async function run(opts) {
         // The story's 斗 button calls the fight onto the stage (callDuel: a challenge card); its 开局 then begins it.
         else if (!(await page.evaluate(FIGHT)) && !(await reach('[data-duel-start]', '开局 剧情斗法'))) unplayable.push({ where, why: 'the story fight was called and its 开局 never came' });
         else if (!(await onScreen())) unplayable.push({ where, why: 'the story fight was opened and never came on screen' });
-        else { const label = coreOnly ? `story-${storyAt}` : 'story'; const res = await fight(label, { careful: !opts.noCareful, saveName: name }); played.push({ where, kind: '剧情斗法', ...res, settled: undefined }); await afterWin(label, res, { story: true }); }
+        else {
+          const label = coreOnly ? `story-${storyAt}` : 'story';
+          let res = await fight(label, { careful: !opts.noCareful, saveName: name });
+          // Not won: a story fight is fought again at once (the rules' `again`, its card's 「再出手」), up to three tries — as a
+          // player does; a win is what its 所得 check needs (09-lingcao's 犰狳 won about two in three with 火柴, careful).
+          for (let k = 1; k < 3 && res.outcome !== 'won'; k += 1) {
+            played.push({ where, kind: '剧情斗法', ...res, settled: undefined });
+            await sleep(1500);
+            if (!(await reach('[data-duel-start]', '开局 剧情斗法')) || !(await onScreen())) break;
+            res = await fight(label, { careful: !opts.noCareful, saveName: name });
+          }
+          played.push({ where, kind: '剧情斗法', ...res, settled: undefined });
+          await afterWin(label, res, { story: true });
+        }
         noteRefusals(at, where);
       }
     }
