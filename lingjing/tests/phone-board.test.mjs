@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BOARDS_JSON, boardFiles, boardsTable, importsOf, kitGames, kitPacks, packOf } from '../tools/phone-board.mjs';
+import { BOARDS_JSON, boardFiles, boardsTable, importsOf, kitGames, kitPacks, leaveOut, packOf } from '../tools/phone-board.mjs';
 
 const SKILL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const KIT = JSON.parse(fs.readFileSync(path.join(SKILL, 'tools/phone/board-kit.json'), 'utf8'));
@@ -205,17 +205,20 @@ test('every thing a shop sells has its picture in the common pack', () => {
 
 // A board's sound on the phone (Hanli 10-28: 「兽潮游戏在手机上没有声音」): the shell plays every board's sounds from one
 // bank (games/kit/audio: sounds.json, bank.json, the sprite and each kit's bed, ogg or m4a by what the webview plays).
-// Every file the bank names for a sound a kit board can make is in the common pack.
-test('every sound a kit board names is in the phone bundle (the bank, the sprite, its kit\'s bed, both formats)', () => {
+// Every file the bank names for a sound a kit board can make is in the common pack — as m4a: the phone's WebKit cannot
+// decode ogg, so the packs leave out an ogg that has its m4a (leaveOut), and the sound kit asks m4a when the ogg is not there.
+test('every sound a kit board names is in the phone bundle (the bank, the sprite, its kit\'s bed as m4a; no ogg beside an m4a)', () => {
   const have = new Set(kitPacks().common);
   const AUDIO = 'scripts/games/kit/audio';
   const maps = JSON.parse(fs.readFileSync(path.join(SKILL, AUDIO, 'sounds.json'), 'utf8'));
   const bank = JSON.parse(fs.readFileSync(path.join(SKILL, AUDIO, 'bank.json'), 'utf8'));
-  for (const f of ['sounds.json', 'bank.json', bank.sprite.ogg, bank.sprite.m4a]) assert.ok(have.has(`${AUDIO}/${f}`), f);
+  for (const f of ['sounds.json', 'bank.json', bank.sprite.m4a]) assert.ok(have.has(`${AUDIO}/${f}`), f);
+  assert.ok(!have.has(`${AUDIO}/${bank.sprite.ogg}`), 'the sprite\'s ogg is left out (its m4a is there)');
   for (const id of kitGames()) {
     const kit = maps.games?.[id]?.kit ?? 'board', bed = maps.kits?.[kit]?.music;
     if (!bed) continue;
-    for (const ext of ['ogg', 'm4a']) assert.ok(have.has(`${AUDIO}/${bank.music[bed][ext]}`), `${id}: its ${kit} bed (${bank.music[bed][ext]})`);
+    assert.ok(have.has(`${AUDIO}/${bank.music[bed].m4a}`), `${id}: its ${kit} bed (${bank.music[bed].m4a})`);
+    assert.ok(!have.has(`${AUDIO}/${bank.music[bed].ogg}`), `${id}: its ${kit} bed's ogg is left out`);
   }
   // Every sound id a rule names is in the bank: a slice of the sprite or a ZzFX recipe.
   const named = [maps.base, ...Object.values(maps.kits ?? {}).map((k) => k.events), ...Object.values(maps.games ?? {}).map((g) => g.events)]
@@ -232,4 +235,41 @@ test('the phone\'s 拼图 carries every 秘境 重\'s painting (a 机关 拼图 
   const tiers = JSON.parse(fs.readFileSync(path.join(SKILL, 'worlds/jiuding/mijing.json'), 'utf8')).tiers;
   const have = new Set(boardFiles('pintu'));
   for (const t of tiers) assert.ok(have.has(`worlds/jiuding/${t.backdrop}`), `${t.id}: ${t.backdrop}`);
+});
+
+// What the phone's packs leave out (leaveOut): a paint source, and an ogg that has its m4a — by rule, on a tiny fixture.
+test('leaveOut: an ogg with an m4a twin goes, an ogg without one stays, a paint source goes, finished pictures stay', () => {
+  const fixture = [
+    'scripts/games/kit/audio/sfx.m4a', 'scripts/games/kit/audio/sfx.ogg', // twins: the ogg goes
+    'scripts/games/kit/audio/music/lone.ogg', // no m4a beside it: stays
+    'scripts/games/kit/audio/music/other.m4a', // an m4a alone: stays
+    'worlds/jiuding/art/items-comic/herb.webp', 'worlds/jiuding/art/items-comic/src/herb.webp', // finished stays, paint source goes
+    'worlds/jiuding/art/people/src-hero.webp', 'worlds/jiuding/art/people/baba.webp', // a name that merely starts with src stays
+    'scripts/games/shouqiang/art/units.webp', 'scripts/games/shouqiang/art/src/units-layers.webp',
+    'scripts/src/not-art.js', // a src folder outside art is code, not a paint source
+  ];
+  const kept = leaveOut(fixture);
+  assert.deepEqual(kept, [
+    'scripts/games/kit/audio/sfx.m4a', 'scripts/games/kit/audio/music/lone.ogg', 'scripts/games/kit/audio/music/other.m4a',
+    'worlds/jiuding/art/items-comic/herb.webp', 'worlds/jiuding/art/people/src-hero.webp', 'worlds/jiuding/art/people/baba.webp',
+    'scripts/games/shouqiang/art/units.webp', 'scripts/src/not-art.js',
+  ]);
+  // …and a pack built from the kept files carries exactly those, byte for byte.
+  const bodies = Object.fromEntries(fixture.map((f) => [f, `body of ${f}`]));
+  const { pack, manifest } = packOf(kept, bodies);
+  assert.deepEqual(Object.keys(manifest), kept.map((f) => `/${f}`));
+  const head = pack.readUInt32BE(0), at = (f) => { const [o, n] = manifest[`/${f}`]; return pack.subarray(4 + head + o, 4 + head + o + n).toString(); };
+  for (const f of kept) assert.equal(at(f), bodies[f]);
+  // An ogg whose m4a is not in the list (it is on disk, but not shipped) stays: nothing else would play.
+  assert.deepEqual(leaveOut(['a/x.ogg']), ['a/x.ogg']);
+});
+
+test('the real packs: no paint source, no ogg beside an m4a, every other ogg is listed', () => {
+  const { common, games } = kitPacks();
+  const all = [...common, ...Object.values(games).flat()];
+  assert.ok(all.length > 500, 'the packs hold the kit');
+  assert.deepEqual(all.filter((f) => /(^|\/)art\/(.+\/)?src\//.test(f)), []);
+  const have = new Set(all);
+  assert.deepEqual(all.filter((f) => f.endsWith('.ogg') && have.has(f.replace(/\.ogg$/, '.m4a'))), []);
+  assert.ok(all.some((f) => f.startsWith('worlds/jiuding/art/items-comic/') && !f.includes('/src/')), 'the finished comic icons stay');
 });

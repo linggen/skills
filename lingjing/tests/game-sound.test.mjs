@@ -268,6 +268,23 @@ test('a format the page claims but cannot decode falls back to the other file (o
   assert.ok(asked.slice(2).every((u) => u.endsWith('.m4a')), `a bed asks m4a first now: ${asked.slice(2)}`);
 });
 
+// The phone's packs leave out an ogg that has its m4a: the page asks it, the app answers 404, the kit takes the m4a.
+test('an ogg the package leaves out (a 404) falls back to the m4a, for the bank and for the beds', async () => {
+  const { AC } = fakeAC();
+  const asked = [];
+  const s = createSound({
+    AC, storage: memory(), now: () => 1000, canPlay: () => true,
+    fetchJson: async (u) => (u.endsWith('sounds.json') ? SOUNDS : BANK),
+    fetchBuf: async (u) => { asked.push(u); if (u.endsWith('.ogg')) throw new Error(`${u}: 404`); return new ArrayBuffer(8); },
+  });
+  assert.equal(await s.wake(), true, 'the bank loads from the m4a');
+  assert.equal(s.state().loaded, true);
+  assert.deepEqual(asked.slice(0, 2).map((u) => u.split('.').pop()), ['ogg', 'm4a']);
+  s.music('b', 'shouqiang');
+  await new Promise((ok) => setTimeout(ok, 10));
+  assert.ok(asked.slice(2).length > 0 && asked.slice(2).every((u) => u.endsWith('.m4a')), `a bed asks m4a first now: ${asked.slice(2)}`);
+});
+
 test('no crackle: one context, both buses through a master level and a limiter, at most SAME_MAX of one sound, asleep when silent (Hanli 11-05: 「小游戏播放声音时, 会让mac的喇叭有电流声」)', async () => {
   const { SAME_MAX, MASTER, IDLE_MS } = await import('../scripts/games/kit/sound.js');
   const { s, made, clock } = engine();

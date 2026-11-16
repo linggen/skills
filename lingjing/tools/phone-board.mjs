@@ -63,10 +63,22 @@ export function mijingArt() {
   return [...new Set(tiers.map((t) => t.backdrop).filter((a) => typeof a === 'string' && fs.existsSync(path.join(SKILL, 'worlds/jiuding', a))).map((a) => `worlds/jiuding/${a}`))];
 }
 
-/** The story screen's own files (faces, the pouch's and the shelf's things): `story`, every file under `storyDirs`, and every thing's art. */
-export const storyFiles = () => [...new Set([...(KIT.story ?? []), ...(KIT.storyDirs ?? []).flatMap((d) => filesUnder(path.join(SKILL, d)).map(rel)), ...itemArt()])];
+/** What the phone's packs leave out, by two rules (never by a list of names):
+    - a paint source: anything inside a `src` folder under an `art` folder (art/items-comic/src holds the files the
+      finished pictures are cut from; no page loads them, only the finished pictures beside them);
+    - an `.ogg` whose `.m4a` twin (same folder, same name) is in the same list: the phone's WebKit cannot decode Ogg, and
+      the sound kit (games/kit/sound.js decode) asks `.m4a` when the `.ogg` is not there. An `.ogg` with no `.m4a` stays.
+    `files`: skill-relative paths; the rest come back in their order. The Mac's files are never touched (it packs its own). */
+const PAINT_SOURCE = /(?:^|\/)art\/(?:[^/]+\/)*src\//;
+export function leaveOut(files) {
+  const have = new Set(files);
+  return files.filter((f) => !PAINT_SOURCE.test(f) && !(f.endsWith('.ogg') && have.has(`${f.slice(0, -4)}.m4a`)));
+}
 
-/** Every file `game` needs, as sorted skill-relative paths. */
+/** The story screen's own files (faces, the pouch's and the shelf's things): `story`, every file under `storyDirs`, and every thing's art. */
+export const storyFiles = () => leaveOut([...new Set([...(KIT.story ?? []), ...(KIT.storyDirs ?? []).flatMap((d) => filesUnder(path.join(SKILL, d)).map(rel)), ...itemArt()])]);
+
+/** Every file `game` needs, as sorted skill-relative paths (less what the phone leaves out: `leaveOut`). */
 export function boardFiles(game = 'shouqiang') {
   const g = KIT.games[game];
   if (!g) throw new Error(`no board kit for ${game}`);
@@ -82,7 +94,7 @@ export function boardFiles(game = 'shouqiang') {
     if (!fs.existsSync(file)) throw new Error(`${f} is not in the skill`);
     all.add(file);
   }
-  return [...all].map(rel).sort();
+  return leaveOut([...all].map(rel).sort());
 }
 
 /** The boards of the kit. */
