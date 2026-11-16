@@ -5,10 +5,10 @@ dashboard from JS **without an agent round-trip**. On open,
 `memory-app.js` does in parallel:
 
 1. `POST /api/memory/count` three times (`tier=core`, `tier=semantic`,
-   `episodic=true`) against the local `ling-mem` daemon (proxied
+   `episodic=true`) against Linggen's memory (proxied
    through `/api/bash` curl).
 2. `POST /api/memory/days` for the per-day dream-state rollup — the
-   daemon's `.days.json` sidecar is the single source of truth (the
+   memory's `.days.json` sidecar is the single source of truth (the
    old `.dream-state.json` / `.dream-history.jsonl` files are
    retired; never read or write them).
 
@@ -61,8 +61,8 @@ search:
 
 | Incoming message pattern | Action |
 |:---|:---|
-| `Delete the <type> fact with id="<id>" and re-render the dashboard. The fact says: "<content>"` | `ling-mem delete <id> --yes`. Then re-emit the report (or omit if the dashboard's JS already removed the row visually). |
-| `Update the <type> fact id="<id>" to content: "<new>". Re-render the dashboard.` | `ling-mem edit <id> --content "<new>"`. |
+| `Delete the <type> fact with id="<id>" and re-render the dashboard. The fact says: "<content>"` | `ling mem delete <id> --yes`. Then re-emit the report (or omit if the dashboard's JS already removed the row visually). |
+| `Update the <type> fact id="<id>" to content: "<new>". Re-render the dashboard.` | `ling mem edit <id> --content "<new>"`. |
 
 Don't second-guess: apply the single write and move on.
 

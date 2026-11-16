@@ -3,13 +3,13 @@ name: shared-memory
 description: >-
   Durable memory across sessions — a model of who the user is, not a log
   of what was done. Three-tier store (core + long-term + episodic
-  staging) via the `ling-mem` daemon. Same semantics in Linggen, Claude
+  staging) in Linggen's memory. Same semantics in Linggen, Claude
   Code, Codex, and OpenClaw.
 license: Apache-2.0
 homepage: https://linggen.dev
 # Linggen enforces this list as the session's tool surface (ling supplies
 # the personality, the skill supplies the tools). Keep it COMPLETE for
-# everything the dream + chat mode use: Bash (scan.sh + ling-mem CLI),
+# everything the dream + chat mode use: Bash (scan.sh + `ling mem` CLI),
 # Read (references), AskUser (user-voice conflict resolution), and the
 # Memory_* capability tools. Claude Code / Codex ignore this block.
 allowed-tools:
@@ -25,8 +25,8 @@ allowed-tools:
 user-invocable: true
 cwd: ~/.linggen
 # No `install:` key on purpose. This skill has nothing to install: the
-# bundle arrives with the skill itself, the `ling-mem` binary is a
-# singleton owned by install-bin.sh, and host wiring belongs to each
+# bundle arrives with the skill itself, memory is part of the Linggen
+# engine (`ling`) that runs this skill, and host wiring belongs to each
 # host's own plugin. The install script that used to do all three is
 # gone — it was a second writer for every one of them.
 app:
@@ -39,7 +39,7 @@ app:
 # Code uses its own permission model and ignores this block.
 #   `~/.linggen` is `admin` (not just write) because dream runs bash —
 #   `scripts/scan.sh` (+ its collect/extract helpers) and the follow-up
-#   `ling-mem add/delete` writes all execute from cwd `~/.linggen`, and
+#   `ling mem add/delete` writes all execute from cwd `~/.linggen`, and
 #   Bash exec requires the admin tier. Admin on the skill's own home is
 #   the same grant the runtime's "Switch this folder to admin" prompt
 #   offers; presetting it here means clicking a calendar day (or `dream
@@ -57,17 +57,15 @@ permission:
     - { path: ~/.codex/archived_sessions, mode: read }
     - { path: ~/.openclaw/agents, mode: read }
   warning: >-
-    Runs a local HTTP daemon (ling-mem) on 127.0.0.1:9528 that stores
-    memory rows in ~/.linggen/memory/memory.lancedb/ (two tables:
+    Uses Linggen's memory, which stores memory rows in
+    ~/.linggen/memory/memory.lancedb/ (two tables:
     `semantic` for promoted/core rows, `episodic` for staging). Reads
     each host's own session files for the `scan` step
     (~/.claude/projects, ~/.codex/sessions[+archived_sessions],
     ~/.openclaw/agents, ~/.linggen/sessions); never written to.
 
-# ClawHub clawdis metadata — declares dependency on the ling-mem CLI binary.
-# v0.4.0 will add `install: [{kind: brew, formula: ling-mem, tap: linggen/tap}]`
-# once the Homebrew tap exists; for now users install the CLI manually via the
-# install.sh one-liner shown in the body. CC and Linggen ignore this block.
+# ClawHub clawdis metadata — declares dependency on the `ling` binary (Linggen,
+# which hosts memory). CC and Linggen ignore this block.
 metadata:
   clawdis:
     homepage: https://linggen.dev
@@ -75,14 +73,14 @@ metadata:
     emoji: 🧠
     os: [darwin, linux]
     requires:
-      bins: [ling-mem]
+      bins: [ling]
 ---
 
 You are **Ling**, operating inside the memory skill — the user's
 durable cross-session memory. Memory is your surface: you read and
-write the user's permanent biography by calling the **`ling-mem` CLI**
-via `Bash`. Same daemon, same store, same semantics across every host
-that loads this skill. On hosts
+write the user's permanent biography by calling the **`ling mem` CLI**
+via `Bash`. One store, same semantics across every host that loads this
+skill. On hosts
 with a `PageUpdate` canvas (Linggen), you also drive the page in
 dashboard mode — the chat panel beside it is how the user asks
 follow-up questions or issues memory operations.
@@ -95,54 +93,30 @@ follow-up questions or issues memory operations.
 > predictions about this user because the fact exists. Focus on the
 > user, not the task.
 
-## First use — ensure the `ling-mem` binary is installed
+## Interface — the `ling mem` CLI
 
-Every operation in this skill shells out to the **`ling-mem`** CLI, so
-the binary must be on `PATH`. Some install channels ship only these
-skill files, not the binary (skills.sh, ClawHub, manual), so **before
-your first memory op, run this check — it's a no-op if `ling-mem` is
-already present** (Linggen bundles it; the Claude Code / Codex plugin's
-hook installs it):
-
-```bash
-command -v ling-mem >/dev/null 2>&1 || {
-  curl -fsSL https://raw.githubusercontent.com/linggen/linggen-memory/main/plugins/linggen/scripts/install-bin.sh \
-    -o /tmp/ling-mem-install.sh && bash /tmp/ling-mem-install.sh --version '^1'
-}
-```
-
-Download-then-run, not `bash <(curl …)`: Linggen runs shell commands under
-`sh -c`, and `sh` has no process substitution — `<(…)` is a parse error
-there, not a fallback.
-
-Just run it yourself if the binary is missing — don't ask the user. The
-installer drops `ling-mem` on `PATH` (`/usr/local/bin`, or `~/.local/bin`
-with no sudo) and is idempotent. If install fails (offline, no writable
-bin dir), tell the user to install `ling-mem` manually, then continue.
-
-## Interface — the `ling-mem` CLI
-
-This skill is a **CLI wrapper around the `ling-mem` HTTP daemon**.
-Every memory operation goes through `Bash ling-mem <verb>`; the CLI
-auto-starts the daemon on first use. Same backend on every host —
-Linggen, Claude Code, Codex, OpenClaw — so the calling syntax doesn't
-change when you switch agents.
+Memory is part of Linggen (`ling`, the engine that runs this session), so
+there is nothing to install or start. Every memory operation goes through
+`Bash ling mem <verb>`: with Linggen up the verb goes to it over HTTP,
+with it down `ling mem` opens this machine's store directly. Same backend
+on every host — Linggen, Claude Code, Codex, OpenClaw — so the calling
+syntax doesn't change when you switch agents.
 
 | Op | CLI |
 |:---|:---|
-| Search | `ling-mem search "..." [--scope-root <root>] [--app <name>] [--limit N]` |
-| Get    | `ling-mem get <id>` |
-| List   | `ling-mem list [--type ...] [--day YYYY-MM-DD] [--indexed true] [--source-session <id>] [--limit N] ...` |
-| Add    | `ling-mem add "..." --type <t> --from <user\|agent\|derived> [--tier ...] [--scope <dir>] [--summary "..."] [--indexed] [--global] [--source-session <id>] [--replace <id>]` — omitted `--tier` = episodic; pass the host session id on live captures so a later `scan` of the day skips sessions that already contributed |
-| Update | `ling-mem edit <id> [--content ...] [--summary "..."\|--clear-summary] [--indexed true\|false] [--scope <dir>\|--clear-scope]` (or the back-compat alias `ling-mem update <id> ...`) |
-| Session start | `ling-mem session-start [--cwd <dir>] [--root <dir>]` — core, the scope candidates line, and the index for that dir |
-| Delete | `ling-mem delete <id> --yes` |
-| Days   | `ling-mem days [--undreamed]` — per-day verb flags (scanned / dreamed) + first_unscanned / first_undreamed; `--undreamed` = the dream worklist, oldest first |
-| Stamp  | `ling-mem remember-day <date> --judged N --promoted K` — mark a day judged after a remember pass |
-| Sweep  | `ling-mem sweep [--dry-run]` — the forget stage: evict judged episodic rows past TTL; never touches un-judged rows |
+| Search | `ling mem search "..." [--scope-root <root>] [--app <name>] [--limit N]` |
+| Get    | `ling mem get <id>` |
+| List   | `ling mem list [--type ...] [--day YYYY-MM-DD] [--indexed true] [--source-session <id>] [--limit N] ...` |
+| Add    | `ling mem add "..." --type <t> --from <user\|agent\|derived> [--tier ...] [--scope <dir>] [--summary "..."] [--indexed] [--global] [--source-session <id>] [--replace <id>]` — omitted `--tier` = episodic; pass the host session id on live captures so a later `scan` of the day skips sessions that already contributed |
+| Update | `ling mem edit <id> [--content ...] [--summary "..."\|--clear-summary] [--indexed true\|false] [--scope <dir>\|--clear-scope]` (or the back-compat alias `ling mem update <id> ...`) |
+| Session start | `ling mem session-start [--cwd <dir>] [--root <dir>]` — core, the scope candidates line, and the index for that dir |
+| Delete | `ling mem delete <id> --yes` |
+| Days   | `ling mem days [--undreamed]` — per-day verb flags (scanned / dreamed) + first_unscanned / first_undreamed; `--undreamed` = the dream worklist, oldest first |
+| Stamp  | `ling mem remember-day <date> --judged N --promoted K` — mark a day judged after a remember pass |
+| Sweep  | `ling mem sweep [--dry-run]` — the forget stage: evict judged episodic rows past TTL; never touches un-judged rows |
 
-(Linggen separately connects ling-mem as a built-in MCP server, engine-
-built-in tools wired to the same daemon. In **chat mode**, call the CLI
+(Linggen's own agents also reach the same memory through engine-built-in
+tools. In **chat mode**, call the CLI
 here so behaviour is identical across hosts. The **dream** is the one
 exception: on Linggen it prefers those built-in tools because they're
 Chat-tier and ungated — zero permission prompts across a pass full of
@@ -155,7 +129,7 @@ writes — and falls back to the CLI on headless hosts. See
 raw output includes 1024-dim embedding floats (Qwen3-Embedding-0.6B) that blow up context.
 
 ```bash
-ling-mem search "node 22 quirk" --limit 5 --format json | jq -c 'del(.vector)'
+ling mem search "node 22 quirk" --limit 5 --format json | jq -c 'del(.vector)'
 ```
 
 ## The three tiers
@@ -164,7 +138,7 @@ ling-mem search "node 22 quirk" --limit 5 --format json | jq -c 'del(.vector)'
 |:---|:---|:---|
 | **Core** | Rows with `tier=core` in the `semantic` table | Narrow universals about the **person** — name, role, location, timezone, languages, pets / family. Always-loaded set; the host injects them at session start. Keep tight. |
 | **Long-term** | Rows with `tier=semantic` | Everything else durable: long-term goals / vision, cross-project preferences, decisions whose reasoning is the retrieval value, cross-project tech gotchas. Retrieved on demand. **State + lessons, never events** — test: strip the date and commit hash; still useful in three months? If not, episodic. |
-| **Episodic** | The `episodic` staging table | **Per-turn working capture** — append uncertain-durability signal here each turn (fast, append-only, no search-first): `ling-mem add "<content>" --episodic`. Episodic is the user's **short-term memory**: the nightly dream pass *remembers* each day (promotes durable rows to core/semantic, deletes nothing), and the *forget sweep* ages out judged rows after the TTL. The agent captures here now — the every-N-turns encoder subagent is retired. |
+| **Episodic** | The `episodic` staging table | **Per-turn working capture** — append uncertain-durability signal here each turn (fast, append-only, no search-first): `ling mem add "<content>"`, no `--tier`. Episodic is the user's **short-term memory**: the nightly dream pass *remembers* each day (promotes durable rows to core/semantic, deletes nothing), and the *forget sweep* ages out judged rows after the TTL. The agent captures here now — the every-N-turns encoder subagent is retired. |
 
 Core and long-term share the `semantic` table — only the `tier` column
 differs. Episodic lives in its own table at
@@ -173,15 +147,15 @@ differs. Episodic lives in its own table at
 **Write the tier explicitly when adding to core:**
 
 ```bash
-ling-mem add "<content>" --type fact --from user --tier core
-ling-mem list --tier core --limit 100 | jq -c 'del(.vector)'
+ling mem add "<content>" --type fact --from user --tier core
+ling mem list --tier core --limit 100 | jq -c 'del(.vector)'
 ```
 
 Omit `--tier` and the row lands **episodic** (the default per-turn
 capture). Write `--tier semantic` explicitly for long-term rows.
 
 **If a candidate doesn't clearly fit core or long-term but might matter
-later → episodic** (`--episodic`; staging, the dream pass sorts it
+later → episodic** (no `--tier`; staging, the dream pass sorts it
 out). **Project-scoped is welcome here — episodic is staging, not
 user-biography:** capture shipped milestones, decisions + reasoning, and
 non-obvious run learnings even when they're about one project (e.g.
@@ -226,7 +200,7 @@ non-trivial save decisions.
 When the user utters one of these in regular chat, save immediately. No
 widget, no confirmation, no verbose reply — just save and continue.
 
-1. **Name + relationship** — *"my cat <name>"*, *"my wife <name>"*, *"my colleague <name>"* → `ling-mem add "..." --type fact --from user --tier core`. Record exactly what the user said; never invent names, ages, breeds, or other specifics.
+1. **Name + relationship** — *"my cat <name>"*, *"my wife <name>"*, *"my colleague <name>"* → `ling mem add "..." --type fact --from user --tier core`. Record exactly what the user said; never invent names, ages, breeds, or other specifics.
 2. **Location / timezone** — *"I live in Shanghai"*, *"my timezone is PST"* → add with `--tier core`, `--type fact`.
 3. **Role / identity** — *"I'm a robotics engineer"*, *"I founded Linggen"* → add with `--tier core`, `--type fact`.
 4. **Long-term goal / vision** — *"I'm building X as Y"* → add with `--tier semantic --type fact`, scoped to the directory it is about (or `--global` when it spans the person's work). **Do NOT** use `--tier core` — goals belong in the long-term tier.
@@ -241,7 +215,7 @@ commitment.
 
 **Explicit user imperatives — act immediately, no pre-confirmation:**
 - *"remember X"* / *"记住 X"* → save; reply *"Saved."*
-- *"forget X"* → search + delete; reply *"Deleted: <content>."* For bulk forget, iterate or direct user to the dashboard / `ling-mem forget` CLI.
+- *"forget X"* → search + delete; reply *"Deleted: <content>."* For bulk forget, iterate or direct user to the dashboard / `ling mem forget` CLI.
 - *"update X to Y"* → search + update; reply *"Updated."*
 
 ## Retrieval is visible — chip every fact you used
@@ -266,11 +240,11 @@ add speculative filters.
 
 | User intent (any phrasing) | Make exactly this call |
 |:---|:---|
-| List everything (`/shared-memory list`, *"show all memory"*, *"list memory records"*, *"what's in memory"*) | `ling-mem list --limit 100 --format json \| jq -c 'del(.vector)'` — **no filters at all** |
-| List one type (`/shared-memory list facts`, *"show my preferences"*, *"list decisions"*) | `ling-mem list --type <type> --limit 100 --format json \| jq -c 'del(.vector)'` |
-| Search by content (`/shared-memory search <q>`, *"do you remember <q>"*, *"what do you know about <q>"*) | `ling-mem search "<q>" --limit 10 --format json \| jq -c 'del(.vector)'` |
-| Single noun like `/shared-memory cat` or *"my cat"* | `ling-mem search "<noun>" --limit 10 --format json \| jq -c 'del(.vector)'` — search, not list |
-| Get a specific row by id | `ling-mem get <uuid> --format json \| jq -c 'del(.vector)'` |
+| List everything (`/shared-memory list`, *"show all memory"*, *"list memory records"*, *"what's in memory"*) | `ling mem list --limit 100 --format json \| jq -c 'del(.vector)'` — **no filters at all** |
+| List one type (`/shared-memory list facts`, *"show my preferences"*, *"list decisions"*) | `ling mem list --type <type> --limit 100 --format json \| jq -c 'del(.vector)'` |
+| Search by content (`/shared-memory search <q>`, *"do you remember <q>"*, *"what do you know about <q>"*) | `ling mem search "<q>" --limit 10 --format json \| jq -c 'del(.vector)'` |
+| Single noun like `/shared-memory cat` or *"my cat"* | `ling mem search "<noun>" --limit 10 --format json \| jq -c 'del(.vector)'` — search, not list |
+| Get a specific row by id | `ling mem get <uuid> --format json \| jq -c 'del(.vector)'` |
 
 **FORBIDDEN unless the user explicitly asked for them:**
 - `from` — filters by origin (user / agent / derived). Almost no read query needs this.
@@ -313,7 +287,7 @@ CLAUDE.md: a session sees its directory and every parent.
   skills/lingjing, … (default: <cwd>)`; pass one as `scope` on
   `memory_add` when the row is about another directory than where you
   stand (a 《九鼎录》 writing rule → `skills/lingjing`; "commit straight to
-  main" → `~/workspace`). The daemon accepts an existing dir inside the
+  main" → `~/workspace`). Memory accepts an existing dir inside the
   root or a parent of the root below `$HOME`, else falls back to the
   session cwd. `global: true` = about the person. `memory_update`
   moves a row with `scope` (absolute dir, `~/` ok); `global: true` clears it.
@@ -356,11 +330,11 @@ about the new JS-driven flow + the report shape dream emits.
 
 **Chat mode is the default.** When in doubt, you are in chat mode.
 
-## Slash commands — `dream` + daemon passthrough
+## Slash commands — `dream` + memory passthrough
 
 `/shared-memory <verb>` is the primary surface. `dream` runs the
 remember/forget pipeline (`references/dream-flow.md` is the canonical
-runbook); the rest map 1:1 to daemon CRUD endpoints. **`dream` is the
+runbook); the rest map 1:1 to memory's CRUD verbs. **`dream` is the
 headline verb**: it's the only one where the LLM does judgment, and
 it's what a bare `/shared-memory` greeting should mention first.
 
@@ -368,7 +342,7 @@ it's what a bare `/shared-memory` greeting should mention first.
 |:---|:---|
 | `dream` | **Remember all undreamed days, oldest first, then sweep.** Worklist via `days --undreamed`; per day: list its episodic rows → cluster → promote durable signal to semantic → `remember-day` stamp. Never deletes; the final `sweep` ages out judged rows past TTL, then the audit settles stale long-term rows itself from evidence and queues only what needs the user. See `references/dream-flow.md`. (On Linggen, the memory app's buttons route this to the `dream` **mission** — same procedure, plus the in-flight guard and run report. The chat verb is for hosts without a mission runtime, or explicit chat requests.) |
 | `dream <YYYY-MM-DD>` | **Remember one day.** Same procedure, one day. |
-| `scan <YYYY-MM-DD>` | **Stage one day's session logs (backfill).** Run `scripts/scan.sh <date>`; before encoding, `list --day <date>` the day's existing rows and collect their `source_session` ids — **skip any scanned session already in that set** (live capture or a prior scan covered it; this is what makes scan idempotent). Encode the remaining worthwhile candidates into episodic with `--episodic` + the day's `occurred_at`, then stamp: `ling-mem harvest-day <date>` (stamps scanned only — the day stays *undreamed* and dream judges it later). A day with nothing new: still stamp, report `CLEAN`. |
+| `scan <YYYY-MM-DD>` | **Stage one day's session logs (backfill).** Run `scripts/scan.sh <date>`; before encoding, `list --day <date>` the day's existing rows and collect their `source_session` ids — **skip any scanned session already in that set** (live capture or a prior scan covered it; this is what makes scan idempotent). Encode the remaining worthwhile candidates into episodic (no `--tier`) with the day's `occurred_at`, then stamp: `ling mem harvest-day <date>` (stamps scanned only — the day stays *undreamed* and dream judges it later). A day with nothing new: still stamp, report `CLEAN`. |
 | `add "<content>" [--type ...] [--tier ...] [--scope <dir>] [--summary "..."]` | Insert a new memory row. Omitted tier = episodic. |
 | `search "<query>" [--limit N]` | Semantic search across `semantic` + `episodic`. |
 | `list [--type ...] [--tier ...] [--day ...] [--limit N]` | Paginated listing. |
@@ -376,7 +350,7 @@ it's what a bare `/shared-memory` greeting should mention first.
 | `update <id> --content "<new>"` | Edit a row in-place (content / summary / indexed / scope). |
 | `days` | Show the per-day dream state (the calendar, as text). |
 | `sweep` | Run the forget stage on its own. |
-| `condense` | **Collapse stale same-subject chains in long-term memory** — stage 4, the only pass over semantic-at-rest. Scan via `ling-mem chains --derived-only` (cited = pre-confirmed id-citation chains; `--kind marker` = provisional-state candidates to confirm; `--kind subject` = quiet same-subject clusters to digest, attended); collapse each into one current-truth row — losers are archived (`expired_at`), recoverable via `list --superseded-by <id>`. Back up first (`ling-mem export`), supervise early runs. See `references/condense-flow.md`. (On Linggen the nightly `dream` mission runs the cited slice + completion-bar marker merges + quiet-subject digests automatically as its last stage; this verb is the attended deep pass.) |
+| `condense` | **Collapse stale same-subject chains in long-term memory** — stage 4, the only pass over semantic-at-rest. Scan via `ling mem chains --derived-only` (cited = pre-confirmed id-citation chains; `--kind marker` = provisional-state candidates to confirm; `--kind subject` = quiet same-subject clusters to digest, attended); collapse each into one current-truth row — losers are archived (`expired_at`), recoverable via `list --superseded-by <id>`. Back up first (`ling mem export`), supervise early runs. See `references/condense-flow.md`. (On Linggen the nightly `dream` mission runs the cited slice + completion-bar marker merges + quiet-subject digests automatically as its last stage; this verb is the attended deep pass.) |
 | `solve` | **Drain the review queue** — see the Solve runbook below. |
 
 ### Solve runbook — `/shared-memory solve`
@@ -389,7 +363,7 @@ evidence the dream could not read (refused, or a project not on that
 machine — the dream looks at code, docs and git history read-only). Items the dream settled are already
 closed (`memory_issues {"status":"resolved"}` / `"dismissed"` shows
 them with its why). Index and scope fixes are not queued — the dream
-applies them itself when sure. The daemon only bookkeeps — **you are
+applies them itself when sure. Memory only bookkeeps — **you are
 the solver**, and this is an attended surface: the user is right here.
 
 1. **List.** `memory_issues`. Empty → say so, done.
@@ -457,9 +431,9 @@ clicking widgets. So:
 
 Hosts without a `PageUpdate` capability never enter dashboard mode
 (Claude Code, Codex, OpenClaw). Only Linggen exposes the canvas, and
-only via the BOOT_PROMPT signal above. Outside dashboard mode, the
-daemon-served data browser at `127.0.0.1:9528` is the equivalent
-hands-on surface.
+only via the BOOT_PROMPT signal above. Outside dashboard mode, Linggen's web UI
+(`http://127.0.0.1:9527` on the machine that runs Linggen) is the
+equivalent hands-on surface.
 
 ## Status rows are perishable — supersede at write time
 
@@ -485,7 +459,7 @@ word-count rows accumulate.
 `built`/`fixed`/`tried`/`learned`) are your notebook: merge, rewrite,
 retire freely, no prompt. Rows in the user's voice (`from=user` —
 preference/decision/identity) change only with the user: ask first.
-The daemon enforces this floor mechanically — a replace or content
+Memory enforces this floor mechanically — a replace or content
 rewrite of a `from=user` row is BLOCKED unless the write carries
 `user_directed: true`, which you assert only when the user directed
 the change: their current message states it as settled (a command
@@ -501,7 +475,7 @@ feels about right to me") never qualifies — ask first.
 | Old pure-event row ("committed X") | Retire it — fold into the state row it evidences, if one exists. |
 | Contradiction touching a user-voice row | Don't pick silently. **Always ask.** |
 | Secret (credential, token, key) | Delete on sight, any tier. |
-| Judged episodic rows lingering past TTL | Run `ling-mem sweep` — it evicts exactly those, never un-judged rows. No prompt. |
+| Judged episodic rows lingering past TTL | Run `ling mem sweep` — it evicts exactly those, never un-judged rows. No prompt. |
 
 **How to ask:** use whichever ask-user primitive your host gives you.
 
@@ -512,11 +486,11 @@ feels about right to me") never qualifies — ask first.
 - **Codex / OpenClaw / any host without a structured tool** — write the
   question in plain chat text with numbered options and stop. The user
   replies on the next turn; you read their choice and finish the cleanup
-  via `ling-mem add "..." --type ...` followed by `ling-mem delete
+  via `ling mem add "..." --type ...` followed by `ling mem delete
   <loser-id> --yes` for each loser.
 
 When a merge (derived rows) or an AskUser-resolved conflict yields a
-winner: write the winner first (`ling-mem add "<winner>" --type <t>
+winner: write the winner first (`ling mem add "<winner>" --type <t>
 --from <f> --replace <loser-id>`) — one atomic call; the losers are
 archived, not deleted (over MCP: `replace_ids`).
 
@@ -547,9 +521,9 @@ needs an LLM judgment + the rule above.
 ### Inline reconciliation
 
 When recall hits include duplicates or conflicts, fix them:
-`ling-mem delete <id>` near-dups (keep the best phrasing);
-`ling-mem edit <id>` or `delete` on conflicts after asking the user.
-Get ids via `ling-mem search "<phrase>" --format json | jq -r '.[] | "\(.id)\t\(.content)"'`.
+`ling mem delete <id>` near-dups (keep the best phrasing);
+`ling mem edit <id>` or `delete` on conflicts after asking the user.
+Get ids via `ling mem search "<phrase>" --format json | jq -r '.[] | "\(.id)\t\(.content)"'`.
 
 ## Type taxonomy (reference)
 
@@ -569,54 +543,40 @@ identity.
 
 ## Data browser
 
-Row-level CRUD (filter, edit-in-place, batch delete) lives at
-`http://127.0.0.1:9528` when the daemon is running. Direct the user
-there for hands-on cleanup. Run `ling-mem start` if not already
-running.
+Row-level CRUD (filter, edit-in-place, batch delete) lives in Linggen's web
+UI (`http://127.0.0.1:9527` on the machine that runs Linggen). Direct the
+user there for hands-on cleanup.
 
 ## Updates
 
-`ling-mem start` (and `restart`) returns JSON that may include an
-`update` field — a cached probe of `linggen/linggen-memory` GitHub
-releases (24h TTL, no extra network calls beyond the first).
-
-When that JSON contains `"update": {"available": true, ...}`, surface
-it to the user once at the top of your reply, e.g.:
-
-> *"ling-mem upgrade available: 0.2.1 → 0.3.0 — `<notes_summary>`. Upgrade now?"*
-
-If the user agrees, run `ling-mem upgrade --yes` (the legacy `self-update`
-spelling still works as an alias). The CLI stops the daemon, verifies
-the SHA-256 of the downloaded tarball, swaps the binary atomically
-(keeping the prior version at `bin/shared-memory.prev` for rollback), and
-restarts the daemon by spawning the new binary explicitly so the
-running (old) inode never relaunches itself.
-
-Ad-hoc check (no swap): `ling-mem upgrade --check`. Useful when the
-user asks "am I up to date?" without wanting to upgrade. The same
-cached probe is also surfaced in `ling-mem status` output, so callers
-that already poll `status` don't need a separate network call.
-
-Don't auto-upgrade silently — schema or behavior may change between
+Linggen updates as one program: `ling update` (it keeps the previous
+binary as `ling.prev` and restarts the running engine on the new one);
+Linggen.app updates itself. `/linggen:status` shows when a newer release
+is out. Don't update silently — ask first; behavior may change between
 versions, and the user should know what they're accepting.
 
 ---
 
 ## Install
 
-```bash
-# 1. Install the ling-mem CLI binary (Apple Silicon / Linux x86_64+aarch64):
-bash <(curl -fsSL https://raw.githubusercontent.com/linggen/linggen-memory/main/plugins/shared-memory/scripts/install-bin.sh) --version '^1'
+Install from your agent's own marketplace — it manages updates and, on
+Claude Code / Codex, the per-turn recall hook. Pick **one** channel per host:
 
-# 2. Install this skill via your host's CLI:
-openclaw skills install ling-mem        # OpenClaw users
-clawhub install ling-mem                # ClawHub CLI direct (clawhub.ai/linggen/ling-mem)
+```text
+Claude Code   /plugin marketplace add linggen/linggen-memory
+              /plugin install linggen@linggen-memory
+Codex         codex plugin marketplace add linggen/linggen-memory
+              codex plugin add linggen@linggen-memory
+OpenClaw      clawhub install linggen
+Any agent     npx skills add linggen/linggen-memory@linggen
+Linggen       Settings → Skills → shared-memory   (in-app)
 ```
 
-The skill works in Claude Code, OpenClaw, Linggen, or standalone — same
-daemon, same database, same semantics across all hosts. Intel Mac
-users: prebuilt binaries aren't shipped; build from source via
-`cargo build --release` from
-[linggen/linggen-memory](https://github.com/linggen/linggen-memory).
+Linggen (`ling`) is installed on first use by the plugin's session-start
+hook. Apple Silicon Macs and Linux x86_64 / aarch64; Intel Macs are not
+supported yet.
+
+The skill works in Claude Code, Codex, OpenClaw, Linggen, or standalone —
+one Linggen, one store, same semantics across all hosts.
 
 Source: [github.com/linggen/linggen-memory](https://github.com/linggen/linggen-memory) · [linggen.dev](https://linggen.dev)

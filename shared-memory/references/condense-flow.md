@@ -17,15 +17,18 @@ a recall window; condense cures what no recall ever touches.
   Audit) — and every merge archives its losers, so a wrong call is an
   unpack, not a loss.
 - **Claude Code / Codex / OpenClaw** — no mission runtime; the host
-  agent runs the steps below via the `ling-mem` CLI (or the
+  agent runs the steps below via the `ling mem` CLI (or the
   `memory_chains` / `memory_add` MCP tools), on demand — this is also
   the attended deep pass for marker/subject clusters.
 
 ## Before the first run — back up
 
 ```bash
-ling-mem export ~/condense-backup-$(date +%F).ndjson
+ling mem export ~/condense-backup-$(date +%F).ndjson
 ```
+
+Run it on the machine that runs Linggen (`ling mem export` opens the store
+beside the running engine).
 
 Condense retires rows (atomically, via `replace_ids`), and the first
 runs should be supervised: watch the `MERGE` lines, spot-check a few
@@ -34,16 +37,16 @@ survivors, keep the export until you trust the pass.
 Retiring is **archiving, not deleting** (2026-08-17): a semantic loser
 gets `expired_at` + `superseded_by = <survivor id>` — it leaves search,
 list, scans, and counts, but stays on disk. Every merge and digest is
-reversible: `ling-mem list --superseded-by <survivor-id>` unpacks one;
+reversible: `ling mem list --superseded-by <survivor-id>` unpacks one;
 `--include-expired` widens any list to the archive. (Episodic losers
 are still hard-deleted — staging is disposable.)
 
 ## The scan — `chains`
 
 ```bash
-ling-mem chains --derived-only --limit 3                  # cited chains
-ling-mem chains --kind marker --derived-only --limit 5    # marker candidates
-ling-mem chains --kind subject --derived-only --limit 2   # subject clusters (v2)
+ling mem chains --derived-only --limit 3                  # cited chains
+ling mem chains --kind marker --derived-only --limit 5    # marker candidates
+ling mem chains --kind subject --derived-only --limit 2   # subject clusters (v2)
 ```
 
 (MCP: `memory_chains {"kind":"cited","derived_only":true,"limit":3}`.)
@@ -72,9 +75,9 @@ Three kinds, one law:
   ones you cannot tell as `subject` issues. On a keep-separate ruling
   (the user's, or the dream's own when the members clearly differ),
   RECORD THE RULING so the cluster stops
-  re-serving: `ling-mem issue-add --kind subject --row <id> [--row
+  re-serving: `ling mem issue-add --kind subject --row <id> [--row
   <id> …] "<subject>: ruled keep-separate <date>"` listing EVERY member
-  id, then `ling-mem issue-resolve <issue-id> dismissed` — the ruling
+  id, then `ling mem issue-resolve <issue-id> dismissed` — the ruling
   is closed, not an open question.
 
 **Always pass `derived_only`** on an unattended or semi-attended pass —
@@ -96,11 +99,11 @@ memory_add {
 }
 ```
 
-No `cwd` / `scope`: with `replace_ids` the daemon files the survivor
+No `cwd` / `scope`: with `replace_ids` memory files the survivor
 under the members' common directory (none when any member has none).
 When a member was indexed, add `"indexed": true` and a `"summary"`
 (one line, ≤ 80 chars).
-CLI: `ling-mem add "<survivor>" --tier semantic --replace <id>` per
+CLI: `ling mem add "<survivor>" --tier semantic --replace <id>` per
 member — the same atomic call.
 
 Drafting rules (same as the memory agent's):
