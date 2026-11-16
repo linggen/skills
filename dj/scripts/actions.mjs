@@ -26,6 +26,8 @@ import {
 import { die, readJson, writeJson, lock, unlock, backupLibrary, LIB, DJ_DIR } from './io.mjs';
 import { decodeOps, applyPhoneOps, saveRing } from './phone-ops.mjs';
 import { playedPick } from './quest.mjs';
+import { refreshWorld } from './world.mjs';
+import { deleteRecord, downloadRecord } from './activity.mjs';
 import { reconcile } from './reconcile.mjs';
 import { downloadRefusal, restricted } from './reach.mjs';
 import {
@@ -67,6 +69,7 @@ const loadStore = () => normalize(readJson(LIB, {}));
 function persist(lib) {
   backupLibrary();
   writeJson(LIB, project(lib));
+  refreshWorld({ lib }); // DJ's line in the world block (world.mjs)
 }
 
 /// Resolve names the agent or the page gave, or say which ones are not songs.
@@ -197,6 +200,34 @@ async function announcePhone() {
       signal: AbortSignal.timeout(3000),
     });
   } catch { /* a missed announcement is a delay, not a loss */ }
+}
+
+// Records for the activity log (activity.mjs), posted with the phone's ring once
+// the verb is done and its lock is gone.
+const toTell = [];
+
+/// A test (DJ_DIR) never reaches an engine unless it asks (DJ_TELL).
+const mayTell = () => !process.env.DJ_DIR || process.env.DJ_TELL === '1';
+
+async function tellActivity() {
+  if (!toTell.length || !mayTell() || typeof fetch !== 'function') return;
+  const port = process.env.LINGGEN_PORT || '9527';
+  for (const record of toTell.splice(0)) {
+    try {
+      const res = await fetch(`http://127.0.0.1:${port}/api/activity`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(record),
+        signal: AbortSignal.timeout(3000),
+      });
+      if (!res.ok) {
+        const why = (await res.json().catch(() => ({}))).error || `HTTP ${res.status}`;
+        console.error(`activity log refused the ${record.verb} record: ${why}`);
+      }
+    } catch (e) {
+      console.error(`activity log not told of the ${record.verb}: ${e?.message || e}`);
+    }
+  }
 }
 
 // ── verbs ────────────────────────────────────────────────────────────────────
@@ -330,6 +361,7 @@ const VERBS = {
     markPhone(); // the cascade reaches the phone view too
     persist(lib);
     rows.forEach(unlinkTrack);
+    if (rows.length) toTell.push(deleteRecord(rows));
     return { ok: true, deleted: rows.length, files: rows.map((t) => norm(t.file)) };
   },
 
@@ -466,6 +498,7 @@ const VERBS = {
       else addTrack(lib, { ...item, id: undefined, ...result });
       if (item.for_phone) { addToPhone(lib, [result.file]); markPhone(); }
       persist(lib);
+      if (item.kind === 'track') toTell.push(downloadRecord(item));
     }
     saveQueue(q);
     return { ok: true, item };
@@ -525,6 +558,7 @@ try {
   // Outside the lock, after the write: the phone is told about something that
   // has already happened, and no other writer waits behind a network call.
   if (phoneChanged) await announcePhone();
+  await tellActivity();
   console.log(JSON.stringify(result));
 } catch (e) {
   const msg = String(e?.message || e);

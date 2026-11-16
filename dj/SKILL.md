@@ -14,6 +14,14 @@ memory-recall-min-score: 0.7
 memory-recall-count: 3
 user-invocable: true
 cwd: ~/.linggen/skills/dj
+# Its line in the world block: the library's song count, the downloads waiting and
+# the song last played, written by scripts/world.mjs where the library and the
+# queue are saved.
+world-line:
+  file: data/world.json
+  fields: [songs, downloads_pending, last_played]
+# A download that landed and songs deleted (scripts/activity.mjs, posted by actions.mjs).
+activity-verbs: [download, delete]
 install: install.sh
 quests:
   # A paired phone's facts (engine: phone facts) → DJ's quests, stamped by

@@ -121,5 +121,7 @@ export function notePlayed(t) {
   const keys = [t?.id, `${t?.artist ?? ''}|${t?.title ?? ''}`, t?.requested_title ? `${t.artist ?? ''}|${t.requested_title}` : null]
     .filter((k) => k && k !== '|');
   if (!keys.length) return Promise.resolve();
-  return runBash(`bash "${SCRIPTS}/run-js.sh" "${SCRIPTS}/quest.mjs" played ${keys.map(sq).join(' ')}`, { timeoutMs: 15000 }).catch(() => {});
+  // …and DJ's line in the world block learns the song (world.mjs `played`, the Mac player's last play).
+  const world = t?.title ? `; bash "${SCRIPTS}/run-js.sh" "${SCRIPTS}/world.mjs" played ${sq(t.artist ?? '')} ${sq(t.title)}` : '';
+  return runBash(`bash "${SCRIPTS}/run-js.sh" "${SCRIPTS}/quest.mjs" played ${keys.map(sq).join(' ')}${world}`, { timeoutMs: 15000 }).catch(() => {});
 }

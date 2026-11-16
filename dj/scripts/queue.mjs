@@ -11,6 +11,7 @@ import crypto from 'node:crypto';
 
 import { readJson, writeJson, QUEUE } from './io.mjs';
 import { idOf, base } from './store.js';
+import { refreshWorld } from './world.mjs';
 
 const ACTIVE = new Set(['pending', 'running', 'cancelling']);
 const FINISHED_KEPT = 100;
@@ -29,6 +30,7 @@ export function saveQueue(q) {
   const drop = new Set(finished.slice(0, Math.max(0, finished.length - FINISHED_KEPT)));
   q.items = q.items.filter((i) => !drop.has(i));
   writeJson(QUEUE, q);
+  refreshWorld({ items: q.items }); // DJ's line in the world block (world.mjs)
 }
 
 export const counts = (q) => ({
