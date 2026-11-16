@@ -54,12 +54,12 @@ export function missingPictures(env) {
   const now = env.now ?? (() => Date.now());
   const timers = env.timers ?? { set: (f, ms) => setTimeout(f, ms), clear: (t) => clearTimeout(t) };
   const sites = new WeakMap(); // img → { cap, timer, stop }
-  const engine = { failing: false, at: -Infinity };
+  const engine = { failing: false, at: -Infinity, gone: false }; // gone: the engine has no report for this skill (404, down): never asked again
 
   const refreshEngine = () => {
-    if (!env.report || now() - engine.at < ENGINE_EVERY_MS) return;
+    if (!env.report || engine.gone || now() - engine.at < ENGINE_EVERY_MS) return;
     engine.at = now();
-    Promise.resolve(env.report()).then((r) => { engine.failing = engineFailsAll(r); }).catch(() => {});
+    Promise.resolve(env.report()).then((r) => { if (r == null) engine.gone = true; else engine.failing = engineFailsAll(r); }).catch(() => { engine.gone = true; });
   };
   const stateOf = (src) => picState(ledger, pictureKey(src, base()), engine.failing);
   const line = (state) => lineOf(state, words());

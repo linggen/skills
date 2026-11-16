@@ -213,3 +213,14 @@ test('a missing stage painting says it once, small, in a corner, and takes it ba
   r.m.note(bd, null);
   assert.equal(view.children.some((c) => c.className === 'pic-corner'), false);
 });
+
+test('an engine with no report for the skill (404, down) is asked once, not again', async () => {
+  let asked = 0, t = 0;
+  const ledger = askLedger({ now: () => t });
+  const m = missingPictures({ ledger, doc: { createElement: (tag) => new El(tag) }, base: () => BASE, urlOf, words: () => WORDS.zh, probe: async () => false,
+    report: async () => { asked += 1; return null; }, now: () => t, timers: { set: () => ({}), clear: () => {} } });
+  ledger.failed(KEY); m.onMiss(img(REAL, 50, 50));
+  await Promise.resolve(); await Promise.resolve();
+  t = 60000; m.onMiss(img(REAL, 50, 50)); t = 120000; m.onMiss(img(REAL, 50, 50));
+  assert.equal(asked, 1);
+});
