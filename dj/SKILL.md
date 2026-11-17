@@ -152,6 +152,18 @@ tools:
     cmd: "bash $SKILL_DIR/scripts/get.sh {{tracks}} {{for_phone}}"
     tier: edit
     timeout_ms: 60000
+  # The phone app's own sync door, never offered to the model.
+  - name: ApplyPhoneOps
+    page_only: true
+    description: Apply the phone's base64-encoded operation log and return its view.
+    args:
+      payload:
+        type: string
+        required: true
+        description: Base64-encoded UTF-8 JSON operation array.
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs phone-ops {{payload}}"
+    tier: edit
+    timeout_ms: 30000
   - name: GetKaraoke
     description: >-
       Fetch karaoke renders of songs already in the library: kind "audio"

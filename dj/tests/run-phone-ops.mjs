@@ -64,6 +64,23 @@ const lists = (view) => view.playlists.map((p) => p.name);
 const filesIn = (view, name) =>
   (view.playlists.find((p) => p.name === name) || { files: [] }).files;
 
+ok('the page door applies the same Unicode payload as the verb', () => {
+  const skill = fs.readFileSync(path.join(HERE, '..', 'SKILL.md'), 'utf8');
+  const block = skill.match(/  - name: ApplyPhoneOps\n([\s\S]*?)(?=\n  - name:|\n---)/)?.[1];
+  assert.ok(block, 'ApplyPhoneOps must be declared');
+  assert.match(block, /page_only: true/);
+  const cmd = block.match(/    cmd: "([^"]+)"/)[1];
+  const ops = [{ id: 'quoted', op: 'playlist-create', name: `中文 ' " space` }];
+  const payload = Buffer.from(JSON.stringify(ops)).toString('base64');
+  const dir = freshDir([]);
+  const direct = freshDir([]);
+  const command = cmd.replace('{{payload}}', `'${payload.replaceAll("'", "'\\''")}'`);
+  const out = execFileSync('sh', ['-c', command], {
+    env: { ...process.env, SKILL_DIR: path.join(HERE, '..'), DJ_DIR: dir, LINGGEN_PORT: '1' }, encoding: 'utf8',
+  });
+  assert.deepEqual(JSON.parse(out.trim().split('\n').pop()), send(direct, ops));
+});
+
 // ── ops up, state down ──────────────────────────────────────────────────────
 
 ok('an empty batch is the read', () => {
