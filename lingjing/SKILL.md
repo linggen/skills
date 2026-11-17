@@ -780,8 +780,9 @@ tools:
         required: true
         description: look, fight, road, trial, tasks, lundao, duizi, tale, her, divine, made, steer or story.
 
+  # The phone reader's own doors (BookFile, BookChanges), never offered to
+  # the model: what the reader used to send as shell text.
   - name: BookFile
-    # The phone reader's own doors, not offered to the model.
     description: Read one file of the book.
     page_only: true
     cmd: "bash $SKILL_DIR/scripts/book.sh file {{file}}"
@@ -795,10 +796,12 @@ tools:
         description: A relative book path.
 
   - name: BookChanges
+    # `edit`, not `read`: with `--do=…` it confirms, undoes or reverts — a
+    # revert rewrites the text and commits it. A caller at read gets none of it.
     description: Read or act on the reader's changes.
     page_only: true
     cmd: "bash $SKILL_DIR/scripts/book.sh changes {{flags}}"
-    tier: read
+    tier: edit
     timeout_ms: 60000
     max_output_bytes: 4194304
     args:

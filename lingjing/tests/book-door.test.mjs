@@ -9,11 +9,13 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const skill = fs.readFileSync(path.join(root, 'SKILL.md'), 'utf8');
 const quote = s => `'${s.replaceAll("'", "'\\''")}'`;
+const TIERS = { BookFile: 'read', BookChanges: 'edit' };
 function door(name, args, home) {
   const block = skill.match(new RegExp(`  - name: ${name}\\n([\\s\\S]*?)(?=\\n  - name:|\\n---)`))?.[1];
   assert.ok(block, `${name} must be declared`);
   assert.match(block, /page_only: true/);
-  assert.match(block, /tier: read/);
+  // Reading a file is `read`; the changes door can confirm, undo and revert: `edit`.
+  assert.match(block, new RegExp(`tier: ${TIERS[name]}\\n`));
   const cmd = block.match(/    cmd: "([^"]+)"/)[1].replace(/\{\{(\w+)\}\}/g, (_, key) =>
     Array.isArray(args[key]) ? args[key].map(quote).join(' ') : quote(args[key]));
   return spawnSync('sh', ['-c', cmd], { env: { ...process.env, HOME: home, SKILL_DIR: root }, encoding: 'utf8' });
