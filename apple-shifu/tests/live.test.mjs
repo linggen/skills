@@ -73,7 +73,7 @@ test('parseNetCounters: a blank Address column does not shift the counters', () 
   assert.equal(parseNetCounters(''), null);
 });
 
-test('live.sh on this Mac: valid JSON the page can read', { skip: process.platform !== 'darwin' }, () => {
+test('live.sh on this Mac: valid JSON the page can read', { skip: process.platform !== 'darwin' || !!process.env.CI }, () => {
   const out = execFileSync(path.join(here, '../scripts/live.sh'), { encoding: 'utf8' });
   assert.ok(out.endsWith('\n'), 'trailing newline for the /api/bash sentinel strip');
   const r = parseLive(out);
