@@ -21,7 +21,7 @@ const ENGINE_KEYS = [
   'allowed-tools', 'allow-skills', 'renamed-from', 'model', 'context', 'memory-context',
   'memory-recall-min-score', 'memory-recall-count', 'agent', 'trigger', 'app', 'permission', 'cwd',
   'install', 'sync', 'cloud', 'product', 'suggestions', 'closing-ask', 'queue', 'quests', 'notices', 'place', 'members', 'senses', 'session-params',
-  'world-line', 'activity-verbs', 'private-talk',
+  'world-line', 'activity-verbs', 'private-talk', 'offers',
 ];
 const STANDARD_KEYS = ['license', 'homepage', 'metadata', 'compatibility'];
 const KNOWN = new Set([...ENGINE_KEYS, ...STANDARD_KEYS]);
@@ -113,6 +113,27 @@ export function problemsOf(dir, md) {
   if (fm.has('quests')) problems.push(...questProblems(fm.get('quests')));
   if (fm.has('world-line')) problems.push(...worldLineProblems(fm.get('world-line')));
   if (fm.has('activity-verbs')) problems.push(...verbProblems(fm.get('activity-verbs')));
+  if (fm.has('offers')) problems.push(...offerProblems(fm.get('offers'), fm.get('tools'), fm.has('app')));
+  return problems;
+}
+
+/* `offers:` — problem key → up to three `{ tool: <one of its tools> }` or
+   `{ open: <a view of its page> }` (linggen doc/skill-spec.md "Offers"). The
+   engine logs a bad one and leaves it out, so the button is simply missing. */
+function offerProblems(entry, tools, hasApp) {
+  const problems = [];
+  const names = new Set((tools?.block ?? []).map(l => /^\s*- name:\s*(\S+)/.exec(l)?.[1]).filter(Boolean));
+  let problem = null, count = 0;
+  for (const line of entry.block) {
+    if (!line.trim() || line.trim().startsWith('#')) continue;
+    const key = /^ {2}([a-z0-9._-]{1,32}):\s*$/.exec(line);
+    if (key) { problem = key[1]; count = 0; continue; }
+    const item = /^ {4}- \{\s*(tool|open):\s*([^,}]*)\s*\}\s*$/.exec(line);
+    if (!item || !problem) { problems.push(`offers: \`${line.trim()}\` is not \`- { tool: X }\` or \`- { open: view }\` under a problem key`); continue; }
+    if (++count > 3) problems.push(`offers.${problem}: at most three`);
+    if (item[1] === 'tool' && !names.has(item[2].trim())) problems.push(`offers.${problem}: \`${item[2].trim()}\` is not one of its tools`);
+    if (item[1] === 'open' && !hasApp) problems.push(`offers.${problem}: it has no page to open`);
+  }
   return problems;
 }
 
@@ -182,12 +203,14 @@ test('the checks catch what they are for', () => {
     'tools:', '  - name: t', '    args:', '      - a',
     'quests:', '  stamp: node w.js {id}', '  facts:', '    Photos_Clean: x',
     'world-line:', '  file: ../data/world.json', '  fields: [Ok, b]',
-    'activity-verbs: [used, Bad Verb]', '---', '',
+    'activity-verbs: [used, Bad Verb]',
+    'offers:', '  storage-filling:', '    - { tool: Nope }', '    - run: x', '---', '',
   ].join('\n');
   const got = problemsOf('lingjing', bad);
   for (const want of ['unknown key `bogus`', 'is not the folder', 'description is missing', 'user-invocable',
     'queue must be', 'does not exist', 'args is a list', 'no description', 'needs {id} and {at}', 'is not <app>-<verb>',
-    'world-line.file must be', 'is not a key of [a-z0-9_]', "is the engine's own", 'is not a slug']) {
+    'world-line.file must be', 'is not a key of [a-z0-9_]', "is the engine's own", 'is not a slug',
+    '`Nope` is not one of its tools', 'is not `- { tool: X }`']) {
     assert.ok(got.some(p => p.includes(want)), `expected a problem mentioning "${want}" in ${JSON.stringify(got)}`);
   }
 });

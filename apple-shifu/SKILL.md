@@ -30,6 +30,13 @@ quests:
   stamp: bash scripts/quest.sh stamp {id} {at}
   facts:
     photos-clean: shifu-clear
+# What Yinyue may offer when this Mac's disk is running out (the engine's
+# storage-filling problem): buttons the person taps, each running as a page
+# button would. Removals stay in the Files tab, behind its own confirms.
+offers:
+  storage-filling:
+    - { open: files }
+    - { tool: ScanDisk }
 permission:
   paths:
     - { path: /, mode: read }
