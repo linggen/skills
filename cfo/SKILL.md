@@ -385,6 +385,97 @@ tools:
     cmd: "perl $SKILL_DIR/scripts/weekly.pl last"
     tier: read
     timeout_ms: 8000
+  - name: PhoneSnapshot
+    # The paired phone's own doors (PhoneSnapshot … PhoneConfig), never
+    # offered to the model: what its sync used to send as shell text, now
+    # scripts/phone-sync.sh. Each tier is what the door can do — a phone at
+    # read takes a snapshot and reads the report, and never writes the ledger.
+    # Budgets: a snapshot is the whole ledger (years of rows) and comes back
+    # whole or not at all — the phone refuses a cut one — so it may run to
+    # 64 MiB; two minutes, as the old command had.
+    description: The phone's sync reads everything CFO holds.
+    page_only: true
+    cmd: "sh $SKILL_DIR/scripts/phone-sync.sh snapshot"
+    tier: read
+    timeout_ms: 120000
+    max_output_bytes: 67108864
+  - name: PhoneAlerts
+    # `edit`: the Watch's alerts check fetches the release calendar and
+    # writes watch.json. It once ran inside the snapshot; it is its own door
+    # so a read only reads. The phone calls it just before each snapshot, as
+    # the old read ran it, and goes on whatever it answers.
+    description: The phone's sync runs the Watch's alerts check.
+    page_only: true
+    cmd: "perl $SKILL_DIR/scripts/market.pl watch-alerts"
+    tier: edit
+    timeout_ms: 60000
+  - name: PhoneStage
+    # `edit`: writes the staging folder data/.sync-stage. A commit too big for
+    # one call goes up here in chunks; each argument still reaches the script
+    # inside one `sh -c` command (ARG_MAX), so the phone keeps each call
+    # small (cfo_sync.dart _maxCommandBytes).
+    description: The phone's sync stages a commit too big for one call.
+    page_only: true
+    cmd: "sh $SKILL_DIR/scripts/phone-sync.sh stage {{fresh}} {{chunks}}"
+    tier: edit
+    timeout_ms: 120000
+    args:
+      fresh:
+        type: boolean
+        required: false
+        description: True on the first chunk of a commit — clears what a lost attempt left.
+      chunks:
+        type: argv
+        required: true
+        description: Pairs of a file's name and a piece of its base64.
+  - name: PhoneCommit
+    # `edit`: the one write — the compare-and-swap on the token, then every
+    # file into place (rows appended, registers by rename).
+    description: The phone's sync writes what the Mac is missing.
+    page_only: true
+    cmd: "sh $SKILL_DIR/scripts/phone-sync.sh commit {{token}} {{blobs}}"
+    tier: edit
+    timeout_ms: 120000
+    args:
+      token:
+        type: string
+        required: true
+        description: The checksum token from the snapshot.
+      blobs:
+        type: argv
+        required: true
+        description: Pairs of a file's name and its base64, rows first.
+  - name: PhoneCommitStaged
+    # `edit`: the same commit, from what PhoneStage put up.
+    description: The phone's sync commits what it staged.
+    page_only: true
+    cmd: "sh $SKILL_DIR/scripts/phone-sync.sh commit-staged {{token}} {{names}}"
+    tier: edit
+    timeout_ms: 120000
+    args:
+      token:
+        type: string
+        required: true
+        description: The checksum token from the snapshot.
+      names:
+        type: argv
+        required: true
+        description: The staged files' names, in the order to write them.
+  - name: PhoneReport
+    # Not LatestAnalysis: that one hands over the page's notes to Ling (it
+    # moves page-did.jsonl aside) and prints {} for no file. This is the file.
+    description: The phone reads the report the Mac last wrote.
+    page_only: true
+    cmd: "sh $SKILL_DIR/scripts/phone-sync.sh report"
+    tier: read
+    timeout_ms: 30000
+    max_output_bytes: 16777216
+  - name: PhoneConfig
+    description: The phone reads CFO's settings.
+    page_only: true
+    cmd: "sh $SKILL_DIR/scripts/phone-sync.sh config"
+    tier: read
+    timeout_ms: 30000
 ---
 
 # Personal CFO
