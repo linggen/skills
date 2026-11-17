@@ -1,10 +1,11 @@
 // tools/card-fit.mjs — every card fits its face: each card of the catalog (worlds/jiuding/cards.json, 银月's lent cards
 // too) × every 品 (凡 银 金 宝石 钻石) × every place a card is drawn (hand-side, hand-centre, hand-small — the phone hand
-// shrunk by a full board —, board-ours, board-foe, reveal — 得牌 —, kace — 卡册) × 430x932, 375x812, 1280x820, drawn
+// shrunk by a full board —, board-ours, board-foe, board-short (compressed rank), reveal — 得牌 —, kace — 卡册) × 430x932, 375x812, 1280x820, drawn
 // by the page's own markup (battle-card.js cardFaceHtml / minionHtml, card-reveal.js revealHtml, kace.js's face) on the
 // live page of a scratch save, with its CSS, and measured: no badge (cost, 五行 seal, 攻, 血, 借 / 新, the board's status)
 // lies on a text (name, effect line, status) or on another badge by more than 1 px; no text is clipped by its box, or out
-// of its card's face (inside the 品 frame's band); every text is ≥ 10 px as drawn. Headless, scratch saves only (never
+// of its card's face (inside the 品 frame's band); every text is ≥ 10 px as drawn. The field seal is also sampled for
+// paint-order occlusion (25 interior points; the reported count is samples, not pixels). Headless, scratch saves only (never
 // ~/.linggen); not part of check.sh (it is minutes).
 //
 //   node lingjing/tools/card-fit.mjs [--skill=<lingjing dir>] [--sizes=430x932,375x812,1280x820] [--places=…]
@@ -24,7 +25,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const flag = (k, d = null) => process.argv.find((a) => a.startsWith(`--${k}=`))?.split('=').slice(1).join('=') ?? d;
 const SKILL = path.resolve(flag('skill', path.join(HERE, '..')));
 const SIZES = flag('sizes', '430x932,375x812,1280x820').split(',');
-const PLACES = flag('places', 'hand-side,hand-centre,hand-small,board-ours,board-foe,reveal,kace').split(',');
+const PLACES = flag('places', 'hand-side,hand-centre,hand-small,board-ours,board-foe,board-short,reveal,kace').split(',');
 const PINS = flag('pins', 'fan,yin,jin,baoshi,zuanshi').split(',');
 const ONLY = flag('cards', null)?.split(',') ?? null;
 const SHOTS = flag('shots', null);
@@ -85,6 +86,16 @@ const PAGE = String.raw`
     const inner = { left: fr.left + inset - 1, right: fr.right - inset + 1, top: fr.top + inset - 1, bottom: fr.bottom - inset + 1 };
     const badges = [...host.querySelectorAll(BADGES)].filter(shown).map((el) => ({ el, r: el.getBoundingClientRect(), round: round(getComputedStyle(el)), name: label(el) }));
     const texts = [...host.querySelectorAll(TEXTS)].filter(shown).map((el) => ({ el, rs: lines(el), name: label(el) }));
+    // Geometry alone misses a seal painted underneath a later grid item. Sample its interior in
+    // the browser's hit-test paint order; the badge (or its descendant) must be on top.
+    for (const b of badges.filter((b) => b.el.matches('.bminion .bglyph'))) {
+      let hidden = 0;
+      for (let y = 1; y <= 5; y++) for (let x = 1; x <= 5; x++) {
+        const top = document.elementFromPoint(b.r.left + b.r.width * x / 6, b.r.top + b.r.height * y / 6);
+        if (!top || !(top === b.el || b.el.contains(top))) hidden++;
+      }
+      if (hidden) fails.push({ kind: 'occluded-badge', what: b.name, px: hidden });
+    }
     for (const t of texts) {
       const cs = getComputedStyle(t.el), px = parseFloat(cs.fontSize) * scale;
       if (px < 9.95) fails.push({ kind: 'small-text', what: t.name, px: Math.round(px * 10) / 10 });
@@ -214,10 +225,16 @@ for (const size of SIZES) {
     const m = { id: c.id, atk: c.atk, hp: c.hp, element: c.element, taunt: true, ready: '${side}' === 'mine', chained: '${side}' === 'theirs' };
     slot.outerHTML = __fit.bc.minionHtml(m, '${side}', 0, ctx, null);
     const host = rank.querySelector('.bminion');
+    if (rank.classList.contains('fit-short') && ctx.pins[c.id]) host.classList.add('dim');
     return { host, face: host };
   }`;
   if (PLACES.includes('board-ours')) await cells('board-ours', restoreRanks, boardDraw('mine'));
   if (PLACES.includes('board-foe')) await cells('board-foe', restoreRanks, boardDraw('theirs'));
+  // A compressed rank forces the short field form, including the dim framed state.
+  if (!phone && PLACES.includes('board-short')) await cells('board-short', `async () => {
+    const rank = document.querySelector('.battle .brank.mine');
+    rank.style.height = '59.9px'; rank.style.flex = 'none'; rank.classList.add('fit-short');
+  }`, boardDraw('mine'));
   // the small hand: both ranks full (4 a side, as a crowded fight), so the phone's hand gives way to its floor
   if (PLACES.includes('hand-small')) {
     await cells('hand-small', `async () => {
