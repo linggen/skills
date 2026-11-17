@@ -21,6 +21,9 @@ suggestions:
   - Review my portfolio
   - How are my investments doing?
 cwd: ~/.linggen/skills/cfo
+# What is said on this page stays on this page: other apps' turns and Yinyue
+# outside it see only the world line below, never the talk.
+private-talk: true
 # Its line in the world block: when the last import was and how many are in force —
 # no amount, balance, holding, spend or account name (scripts/world.js). Written by
 # the page beside data/imports.json.

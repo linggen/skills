@@ -21,7 +21,7 @@ const ENGINE_KEYS = [
   'allowed-tools', 'allow-skills', 'renamed-from', 'model', 'context', 'memory-context',
   'memory-recall-min-score', 'memory-recall-count', 'agent', 'trigger', 'app', 'permission', 'cwd',
   'install', 'sync', 'cloud', 'product', 'suggestions', 'closing-ask', 'queue', 'quests', 'notices', 'place', 'members', 'senses', 'session-params',
-  'world-line', 'activity-verbs',
+  'world-line', 'activity-verbs', 'private-talk',
 ];
 const STANDARD_KEYS = ['license', 'homepage', 'metadata', 'compatibility'];
 const KNOWN = new Set([...ENGINE_KEYS, ...STANDARD_KEYS]);
