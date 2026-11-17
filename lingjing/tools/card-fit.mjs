@@ -89,6 +89,9 @@ const PAGE = String.raw`
     // Geometry alone misses a seal painted underneath a later grid item. Sample its interior in
     // the browser's hit-test paint order; the badge (or its descendant) must be on top.
     for (const b of badges.filter((b) => b.el.matches('.bminion .bglyph'))) {
+      const wrap = b.el.parentElement, wr = wrap.getBoundingClientRect();
+      if (matchMedia('(min-width: 701px)').matches && getComputedStyle(wrap).overflowY !== 'visible' && b.r.bottom > wr.bottom + 1)
+        fails.push({ kind: 'clipped-badge', what: b.name, px: Math.round(b.r.bottom - wr.bottom) });
       let hidden = 0;
       for (let y = 1; y <= 5; y++) for (let x = 1; x <= 5; x++) {
         const top = document.elementFromPoint(b.r.left + b.r.width * x / 6, b.r.top + b.r.height * y / 6);
@@ -225,7 +228,11 @@ for (const size of SIZES) {
     const m = { id: c.id, atk: c.atk, hp: c.hp, element: c.element, taunt: true, ready: '${side}' === 'mine', chained: '${side}' === 'theirs' };
     slot.outerHTML = __fit.bc.minionHtml(m, '${side}', 0, ctx, null);
     const host = rank.querySelector('.bminion');
-    if (rank.classList.contains('fit-short') && ctx.pins[c.id]) host.classList.add('dim');
+    if (rank.classList.contains('fit-short')) {
+      host.classList.add('dim');
+      // Ordinary cards have no frame padding: exercise the tight picture strip separately.
+      if (!ctx.pins[c.id]) host.style.height = '48.5px';
+    }
     return { host, face: host };
   }`;
   if (PLACES.includes('board-ours')) await cells('board-ours', restoreRanks, boardDraw('mine'));
@@ -233,8 +240,12 @@ for (const size of SIZES) {
   // A compressed rank forces the short field form, including the dim framed state.
   if (!phone && PLACES.includes('board-short')) await cells('board-short', `async () => {
     const rank = document.querySelector('.battle .brank.mine');
-    rank.style.height = '59.9px'; rank.style.flex = 'none'; rank.classList.add('fit-short');
+    rank.style.height = '64px'; rank.style.flex = 'none'; rank.classList.add('fit-short');
   }`, boardDraw('mine'));
+  if (flag('field-shot') && !phone && size === '1280x820') {
+    await page.evaluate(async ([ctxJs, draw]) => { await eval(draw)(__fit.catalog.shangen, eval(ctxJs)('fan', 'shangen')); }, [ctxJs, boardDraw('mine')]);
+    await page.screenshot({ path: flag('field-shot') });
+  }
   // the small hand: both ranks full (4 a side, as a crowded fight), so the phone's hand gives way to its floor
   if (PLACES.includes('hand-small')) {
     await cells('hand-small', `async () => {

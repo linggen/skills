@@ -161,6 +161,7 @@ test('a framed board card\'s 五行 seal is never clipped by its short picture r
   const battle = fs.readFileSync(new URL('../scripts/battle.css', import.meta.url), 'utf8');
   assert.match(battle, /\.bminion:is\(\.pin-yin, \.pin-jin, \.pin-baoshi, \.pin-zuanshi\) > \.bface-wrap \{ overflow: visible; \}/);
   assert.match(battle, /\.bminion:is\(\.pin-yin, \.pin-jin, \.pin-baoshi, \.pin-zuanshi\) > \.bface-wrap > \.bglyph \{ z-index: 4;/);
+  assert.match(battle, /@media \(min-width: 701px\)\s*\{\s*\.bminion > \.bface-wrap \{ overflow: visible; z-index: 5; \}/);
   assert.doesNotMatch(battle, /\.deckfaces \.bcard:has\(\.bpin\) \.deckfresh \{[^}]*top:/, 'the 新 chip keeps its corner on a framed card');
 });
 
