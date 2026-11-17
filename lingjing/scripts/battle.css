@@ -393,8 +393,8 @@
 .bminion:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > .bface-wrap { overflow: visible; }
 .bminion:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > .bface-wrap > .bglyph { z-index: 4; top: 2px; right: 2px; }
 @media (min-width: 701px) {
-  .bminion > .bface-wrap { overflow: visible; z-index: 5; }
-  .bminion > .bface-wrap > .bglyph { top: 0; }
+  .bminion > .bface-wrap { overflow: visible; }
+  .bminion > .bface-wrap > .bglyph { top: 0; z-index: 4; }
 }
 .bminion:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > small { z-index: 4; left: max(4px, calc(6cqw + 1px)); top: max(4px, calc(6cqw + 1px)); max-width: calc(100% - 2 * max(4px, calc(6cqw + 1px)) - 22px); }
 .bcard.dim .bleaf:has(> .bpin), .deckfaces .bcard.face.out .bleaf:has(> .bpin) { filter: none; opacity: 1; }

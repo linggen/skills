@@ -87,10 +87,11 @@ const PAGE = String.raw`
     const badges = [...host.querySelectorAll(BADGES)].filter(shown).map((el) => ({ el, r: el.getBoundingClientRect(), round: round(getComputedStyle(el)), name: label(el) }));
     const texts = [...host.querySelectorAll(TEXTS)].filter(shown).map((el) => ({ el, rs: lines(el), name: label(el) }));
     // Geometry alone misses a seal painted underneath a later grid item. Sample its interior in
-    // the browser's hit-test paint order; the badge (or its descendant) must be on top.
-    for (const b of badges.filter((b) => b.el.matches('.bminion .bglyph'))) {
-      const wrap = b.el.parentElement, wr = wrap.getBoundingClientRect();
-      if (matchMedia('(min-width: 701px)').matches && getComputedStyle(wrap).overflowY !== 'visible' && b.r.bottom > wr.bottom + 1)
+    // the browser's hit-test paint order; the badge (or its descendant) must be on top. The same
+    // for a field card's status line: raising the picture to free the seal once hid it.
+    for (const b of badges.filter((b) => b.el.matches('.bminion .bglyph, .bminion > small'))) {
+      const wrap = b.el.parentElement, wr = wrap.getBoundingClientRect(), seal = b.el.matches('.bglyph');
+      if (seal && matchMedia('(min-width: 701px)').matches && getComputedStyle(wrap).overflowY !== 'visible' && b.r.bottom > wr.bottom + 1)
         fails.push({ kind: 'clipped-badge', what: b.name, px: Math.round(b.r.bottom - wr.bottom) });
       let hidden = 0;
       for (let y = 1; y <= 5; y++) for (let x = 1; x <= 5; x++) {
