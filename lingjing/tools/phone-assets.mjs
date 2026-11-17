@@ -74,7 +74,7 @@ export function main(argv) {
   const placesOut = path.join(out, 'places');
   fs.mkdirSync(placesOut, { recursive: true });
   const keep = new Set(kept.map((p) => path.basename(p)));
-  for (const f of fs.readdirSync(placesOut)) if (!keep.has(f)) fs.rmSync(path.join(placesOut, f));
+  for (const f of fs.readdirSync(placesOut)) if (!f.startsWith('.') && !keep.has(f)) fs.rmSync(path.join(placesOut, f));
   for (const f of keep) {
     const src = path.join(placesDir, f), dst = path.join(placesOut, f);
     if (!fs.existsSync(dst) || fs.statSync(dst).mtimeMs < fs.statSync(src).mtimeMs) fs.copyFileSync(src, dst);

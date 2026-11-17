@@ -44,12 +44,15 @@ test('a run writes the manifest, the kept paintings and the upload set, each obj
   const out = path.join(tmp, 'out'), objects = path.join(tmp, 'objects');
   fs.mkdirSync(path.join(out, 'places'), { recursive: true });
   fs.writeFileSync(path.join(out, 'places', 'stale.webp'), 'an earlier run\'s');
+  fs.writeFileSync(path.join(out, 'places', '.gitkeep'), '');
   assert.equal(main(['--out', out, '--places', placesDir, '--stage', path.join(tmp, 'stage'), '--objects', objects]), 0);
   const m = JSON.parse(fs.readFileSync(path.join(out, MANIFEST), 'utf8'));
   assert.equal(m.version, 1);
   assert.equal(m.base, 'https://assets.linggen.dev/a/');
   const kept = new Set(fs.readdirSync(path.join(out, 'places')));
   assert.ok(!kept.has('stale.webp'), 'a painting no longer kept goes');
+  assert.ok(kept.has('.gitkeep'), 'a dot file (the repo\'s .gitkeep) stays');
+  kept.delete('.gitkeep');
   for (const f of m.files) {
     assert.deepEqual(Object.keys(f), ['path', 'sha256', 'size', 'pack', 'order']);
     if (f.path.startsWith('places/')) assert.ok(!kept.has(path.basename(f.path)), `${f.path} fetched and kept`);
