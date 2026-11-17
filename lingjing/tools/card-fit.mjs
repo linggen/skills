@@ -1,16 +1,20 @@
 // tools/card-fit.mjs — every card fits its face: each card of the catalog (worlds/jiuding/cards.json, 银月's lent cards
 // too) × every 品 (凡 银 金 宝石 钻石) × every place a card is drawn (hand-side, hand-centre, hand-small — the phone hand
-// shrunk by a full board —, board-ours, board-foe, board-short (compressed rank), reveal — 得牌 —, kace — 卡册) × 430x932, 375x812, 1280x820, drawn
+// shrunk by a full board —, board-ours, board-foe, board-short (compressed rank), board-name (desktop only), reveal — 得牌 —, kace — 卡册) × 430x932, 375x812, 1280x820, drawn
 // by the page's own markup (battle-card.js cardFaceHtml / minionHtml, card-reveal.js revealHtml, kace.js's face) on the
 // live page of a scratch save, with its CSS, and measured: no badge (cost, 五行 seal, 攻, 血, 借 / 新, the board's status)
 // lies on a text (name, effect line, status) or on another badge by more than 1 px; no text is clipped by its box, or out
 // of its card's face (inside the 品 frame's band); every text is ≥ 10 px as drawn. The field seal is also sampled for
-// paint-order occlusion (25 interior points; the reported count is samples, not pixels). Headless, scratch saves only (never
+// paint-order occlusion (25 interior points; the reported count is samples, not pixels). At desktop width a field card's NAME
+// (board-name: a name of 2 to 5 characters, the status 「可出手」 and 「护主 · 可出手」, every 品, the card from its short-row
+// height up to its tall form) stands clear of its status line by 4 px (or on another line), clear of the seal and the two
+// gems, and is not clipped (the gate, 2026-11-17: 「可出手」 + 「木草泥马」 read 「可出手木草泥马」). Headless, scratch saves only (never
 // ~/.linggen); not part of check.sh (it is minutes).
 //
 //   node lingjing/tools/card-fit.mjs [--skill=<lingjing dir>] [--sizes=430x932,375x812,1280x820] [--places=…]
 //                                    [--pins=fan,yin,jin,baoshi,zuanshi] [--cards=id,id] [--json=<file>] [--shared=<engine shared/>]
 //                                    [--shots=<dir> with --cards: a picture of each cell]
+//                                    [--field-shot=<png> (1280x820): the player's row of four cards, 「可出手」 on each, names of 2 to 5 characters]
 //
 // Prints each failing cell (card · 品 · place · size · what · by how many px) and a count by kind; exit 1 on any.
 import { spawnSync } from 'node:child_process';
@@ -25,7 +29,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const flag = (k, d = null) => process.argv.find((a) => a.startsWith(`--${k}=`))?.split('=').slice(1).join('=') ?? d;
 const SKILL = path.resolve(flag('skill', path.join(HERE, '..')));
 const SIZES = flag('sizes', '430x932,375x812,1280x820').split(',');
-const PLACES = flag('places', 'hand-side,hand-centre,hand-small,board-ours,board-foe,board-short,reveal,kace').split(',');
+const PLACES = flag('places', 'hand-side,hand-centre,hand-small,board-ours,board-foe,board-short,board-name,reveal,kace').split(',');
 const PINS = flag('pins', 'fan,yin,jin,baoshi,zuanshi').split(',');
 const ONLY = flag('cards', null)?.split(',') ?? null;
 const SHOTS = flag('shots', null);
@@ -243,8 +247,57 @@ for (const size of SIZES) {
     const rank = document.querySelector('.battle .brank.mine');
     rank.style.height = '64px'; rank.style.flex = 'none'; rank.classList.add('fit-short');
   }`, boardDraw('mine'));
+  // The name against its status (desktop only: the phone's rank is its own layout). A field card is drawn by minionHtml with a
+  // made-up card whose name is 2 to 5 characters, its status 「可出手」 alone or 「护主 · 可出手」, at heights from the short row's
+  // to the tall form's. The name's INK (the font's size, not its taller line box) must clear the status's pill by 4 px when
+  // they share a line, and never lie on the seal or a gem; and the name is whole.
+  const NAMES = ['木草', '木草泥', '木草泥马', '木草泥马牛'], HEIGHTS = [40, 43, 46, 49, 52, 55, 58, 61, 64, 67, 70, 80, 100, 147];
+  const nameDraw = (pin, taunt, nm, h) => `(async () => {
+    const mk = eval(${JSON.stringify(ctxJs)}), ctx = mk(${JSON.stringify(pin)}, 'fit-name');
+    ctx.catalog = { ...ctx.catalog, 'fit-name': { id: 'fit-name', kind: 'minion', element: 'wood', name: { zh: ${JSON.stringify(nm)} } } };
+    const rank = document.querySelector('.battle .brank.mine');
+    rank.style.height = '${h + 4}px'; rank.style.flex = 'none';
+    rank.querySelector('.bminion').outerHTML = __fit.bc.minionHtml({ id: 'fit-name', name: { zh: ${JSON.stringify(nm)} }, atk: 1, hp: 2, element: 'wood', taunt: ${taunt}, ready: true }, 'mine', 0, ctx, null);
+    const host = rank.querySelector('.bminion');
+    host.style.height = '${h}px';
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const R = (e) => { const r = e.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom }; };
+    const status = host.querySelector(':scope > small'), nameEl = host.querySelector(':scope > .bname');
+    const rg = document.createRange(); rg.selectNodeContents(nameEl);
+    const fs = parseFloat(getComputedStyle(nameEl).fontSize);
+    const ink = [...rg.getClientRects()].filter((r) => r.width > 0.5).map((r) => ({ left: r.left, right: r.right, top: r.top + (r.height - fs) / 2, bottom: r.bottom - (r.height - fs) / 2 }))[0];
+    const fails = [], over = (a, b) => ({ w: Math.min(a.right, b.right) - Math.max(a.left, b.left), h: Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) });
+    if (status && ink) {
+      const s = R(status), o = over(s, ink);
+      if (o.h > 1) { const gap = Math.max(s.left - ink.right, ink.left - s.right); if (gap < 4) fails.push({ kind: 'name-on-status', px: Math.round(4 - gap) }); }
+    }
+    for (const sel of ['.bglyph', '.batk', '.bhp']) {
+      const b = host.querySelector(sel); if (!b || !ink) continue;
+      const r = R(b), o = over(r, ink);
+      if (o.w > 1 && o.h > 1) fails.push({ kind: 'name-on-badge', what: sel, px: Math.round(Math.min(o.w, o.h)) });
+    }
+    if (nameEl.scrollWidth > nameEl.clientWidth + 1) fails.push({ kind: 'clipped', what: 'name', px: nameEl.scrollWidth - nameEl.clientWidth });
+    return fails;
+  })()`;
+  if (!phone && PLACES.includes('board-name')) {
+    for (const pin of PINS) for (const taunt of [false, true]) for (const nm of NAMES) for (const hh of HEIGHTS) {
+      const res = await page.evaluate((js) => eval(js), nameDraw(pin, taunt, nm, hh));
+      for (const f of res) all.push({ size, id: nm, pin, place: 'board-name', what: `${taunt ? '护主 · 可出手' : '可出手'} · ${nm.length}-char · ${hh}px${f.what ? ' · ' + f.what : ''}`, kind: f.kind, px: f.px });
+    }
+  }
+  // --field-shot: the player's row of four cards as the gate saw it (a 2-character name beside a 4-character one, 「可出手」 on each)
   if (flag('field-shot') && !phone && size === '1280x820') {
-    await page.evaluate(async ([ctxJs, draw]) => { await eval(draw)(__fit.catalog.shangen, eval(ctxJs)('fan', 'shangen')); }, [ctxJs, boardDraw('mine')]);
+    await page.evaluate(async ([ctxJs]) => {
+      const ctx = eval(ctxJs)('fan', 'fit-name');
+      const names = ['藤须', '藤苗', '藤须', '木草泥马'];
+      ctx.catalog = { ...ctx.catalog };
+      names.forEach((n, i) => { ctx.catalog['fit-n' + i] = { id: 'fit-n' + i, kind: 'minion', element: 'wood', name: { zh: n } }; });
+      const rank = document.querySelector('.battle .brank.mine');
+      rank.style.height = '48px'; rank.style.flex = 'none';
+      rank.innerHTML = names.map((n, i) => __fit.bc.minionHtml({ id: 'fit-n' + i, name: { zh: n }, atk: 1, hp: i === 3 ? 2 : 1, element: 'wood', ready: true }, 'mine', i, ctx, null)).join('');
+      rank.querySelectorAll('.bminion').forEach((e) => { e.style.height = '44px'; });
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    }, [ctxJs]);
     await page.screenshot({ path: flag('field-shot') });
   }
   // the small hand: both ranks full (4 a side, as a crowded fight), so the phone's hand gives way to its floor

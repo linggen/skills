@@ -391,6 +391,10 @@ const crystals = (now, max, cap) => {
    on a 98px body 「刚到，这一回合不能动」 read 「刚到，这…」 (live, 2026-10-16). */
 const markOf = (w, why) => w.mark?.[why] ?? w.why[why] ?? why;
 
+/* A text's width in ems, as the field card's CSS wants it (battle.css § 阵前 short row): a Han or full-width character is 1 em, any other
+   about .55. The card's CSS cannot read a text's width, and it must know whether a name fits beside the status line. */
+const emsOf = (text) => Math.round([...String(text)].reduce((n, ch) => n + (ch.codePointAt(0) >= 0x2E80 ? 1 : 0.55), 0) * 100) / 100;
+
 export function minionHtml(m, side, index, ctx, picked) {
   const w = ctx.words;
   const why = side === 'mine' ? ctx.reasons.get(`mine:${index}`)?.why : null;
@@ -413,7 +417,7 @@ export function minionHtml(m, side, index, ctx, picked) {
   // (his, 2026-09-18: 放到阵前, 图片看不到了).
   // Its 品's frame (rules/pin.mjs; ctx.pins): a beast's card on the beast's side wears it too. 凡 draws as it always did.
   const pin = ctx.pins?.[m.id];
-  return `<button class="bminion ${side} el-${esc(m.element ?? 'none')}${pinClass(pin)}${held ? ' held' : ''}${m.taunt ? ' taunt' : ''}${can ? ' can' : ''}${aimed ? ' aimed' : ''}${side === 'mine' && why ? ' dim' : ''}${herOf(m.id, ctx)}" data-spot="${side === 'mine' ? 'mine' : 'theirs'}" data-index="${index}" data-id="${esc(m.id)}"${m.uid != null ? ` data-uid="${esc(m.uid)}"` : ''}>
+  return `<button class="bminion ${side} el-${esc(m.element ?? 'none')}${pinClass(pin)}${held ? ' held' : ''}${m.taunt ? ' taunt' : ''}${can ? ' can' : ''}${aimed ? ' aimed' : ''}${side === 'mine' && why ? ' dim' : ''}${herOf(m.id, ctx)}"${marks.length ? ` style="--nw:${emsOf(rawName(m, ctx.lang))};--sw:${emsOf(marks.join(' · '))}"` : ''} data-spot="${side === 'mine' ? 'mine' : 'theirs'}" data-index="${index}" data-id="${esc(m.id)}"${m.uid != null ? ` data-uid="${esc(m.uid)}"` : ''}>
     ${pinMark(pin)}<span class="bface-wrap">
       ${pic ? `<img class="bpic small" src="${esc(pic)}" alt="" loading="lazy">` : '<span class="bpic small none"></span>'}
       <span class="bglyph">${GLYPH[m.element] ?? ''}</span>

@@ -397,6 +397,29 @@
   .bminion > .bface-wrap > .bglyph { top: 0; z-index: 4; }
 }
 .bminion:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) > small { z-index: 4; left: max(4px, calc(6cqw + 1px)); top: max(4px, calc(6cqw + 1px)); max-width: calc(100% - 2 * max(4px, calc(6cqw + 1px)) - 22px); }
+/* 阵前 short row: a row squeezed short has no picture strip left, so a field card's status line (top left) and its name (centred) share one
+   line, and 「可出手」 + 「木草泥马」 read 「可出手木草泥马」 (the gate, 2026-11-17). A name that cannot stand 4 px clear of the status
+   when centred drops to the gems' line (between 攻 and 血), the status keeps the top. The CSS cannot read a text's width, so
+   minionHtml gives a card with a status the name's and the status's width in ems (--nw, --sw); a short name, a tall card (the name
+   has its own line under the picture) and the phone keep their places. --on is 1px or 0: the card is short (--gate, its inner
+   height) AND the name does not fit (nameW + twice the status's right edge + 12 px over the row's width). A framed card's 五行 seal
+   hangs lower and nearer the corner, so its 5 字 name drops for the seal too, up to --gate-seal. */
+@media (min-width: 701px) {
+  .brank > .bminion:not(.empty) { container-type: size; }
+  .bminion { --gate: 50px; }
+  .bminion:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi) { --gate: 47px; --gate-seal: 54px; }
+  .bminion:has(> small) > .bname {
+    --on: min(clamp(0px, calc(1000 * (var(--nw, 0) * 14px + var(--sw, 0) * 20px + 28px - 100cqw)), 1px), clamp(0px, calc(1000 * (var(--gate) - 100cqh)), 1px));
+    padding: calc(3px + var(--on) * 15) calc(4px + var(--on) * 20) calc(19px - var(--on) * 15);
+  }
+  /* the gems stand 3 px in from the padding edge, and a framed card's content starts a band's padding further in */
+  .bminion:is(.pin-yin, .pin-jin, .pin-baoshi, .pin-zuanshi):has(> small) > .bname {
+    --seal: min(clamp(0px, calc(1000 * (var(--nw, 0) * 14px + 42px - 100cqw)), 1px), clamp(0px, calc(1000 * (var(--gate-seal) - 100cqh)), 1px));
+    --by-status: min(clamp(0px, calc(1000 * (var(--nw, 0) * 14px + var(--sw, 0) * 20px + 28px - 100cqw)), 1px), clamp(0px, calc(1000 * (var(--gate) - 100cqh)), 1px));
+    --on: max(var(--by-status), var(--seal));
+    padding-inline: calc(4px + var(--on) * 11);
+  }
+}
 .bcard.dim .bleaf:has(> .bpin), .deckfaces .bcard.face.out .bleaf:has(> .bpin) { filter: none; opacity: 1; }
 .bcard.dim .bleaf:has(> .bpin) > :not(.bpin), .deckfaces .bcard.face.out .bleaf:has(> .bpin) > :not(.bpin) { filter: grayscale(.8); opacity: .62; }
 .bminion.dim:has(> .bpin) { opacity: 1; }
