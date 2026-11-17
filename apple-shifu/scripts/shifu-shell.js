@@ -152,7 +152,10 @@ export function initShell() {
   try { activeTab = localStorage.getItem(TAB_KEY) || 'system'; } catch { /* private mode */ }
   // A link from another app may name the tab to land on (Lingjing's 功课 row
   // opens ?tab=system, where the disk scan lives). It wins over the saved one.
-  const asked = new URLSearchParams(window.location.search).get('tab');
+  // `view` is the engine's word for it: a tapped offer of Yinyue's opens
+  // ?view=files (SKILL.md `offers:`).
+  const query = new URLSearchParams(window.location.search);
+  const asked = query.get('tab') || query.get('view');
   if (asked && document.querySelector(`.atab[data-tab="${CSS.escape(asked)}"]`)) activeTab = asked;
 
   for (const tab of document.querySelectorAll('.atab')) {
