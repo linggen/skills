@@ -780,6 +780,33 @@ tools:
         required: true
         description: look, fight, road, trial, tasks, lundao, duizi, tale, her, divine, made, steer or story.
 
+  - name: BookFile
+    # The phone reader's own doors, not offered to the model.
+    description: Read one file of the book.
+    page_only: true
+    cmd: "bash $SKILL_DIR/scripts/book.sh file {{file}}"
+    tier: read
+    timeout_ms: 60000
+    max_output_bytes: 4194304
+    args:
+      file:
+        type: string
+        required: true
+        description: A relative book path.
+
+  - name: BookChanges
+    description: Read or act on the reader's changes.
+    page_only: true
+    cmd: "bash $SKILL_DIR/scripts/book.sh changes {{flags}}"
+    tier: read
+    timeout_ms: 60000
+    max_output_bytes: 4194304
+    args:
+      flags:
+        type: argv
+        required: false
+        description: The changes flags, each one word.
+
   - name: Verb
     # The page's one door to the rules (skill-spec § Page door): any verb with
     # its flags, the same writer Ling's tools use. Never offered to Ling.
