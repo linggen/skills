@@ -82,7 +82,7 @@ test('a 心魔 room in a run hosts the bout: Look deals the level, a win hands i
   s = call('mijing', s, { action: 'enter', tier: 1, seed: 'xinmo' }).state;
   s.mijing.run.at = '1a'; s.mijing.run.room = { id: '1a', kind: 'yao', phase: 'done' };
   const r2 = s.mijing.run.map.layers[1][0];
-  r2.kind = 'xinmo';
+  r2.kind = 'xinmo'; r2.deal = 'gedou';
   s.mijing.run.map.ways['1a'] = [r2.id];
   s = call('mijing', s, { action: 'go', room: r2.id }).state;
   assert.equal(s.mijing.run.room.board.task, 'mijing-xinmo');

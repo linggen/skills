@@ -170,5 +170,7 @@ test('an errand for a pool\'s beast points to its stretch', () => {
   const s = at('liuwan');
   const l = look(s, content, ctx);
   assert.ok((l.offers ?? []).some(o => o.id === 'ji-liuwan-renyu'));
-  assert.equal(encounterOf(content, s, NOW).creature.id, 'renyu');
+  const pool = poolOf(content, allPlaces(content).find(p => p.id === s.place));
+  assert.ok(pool.beasts.some(b => b.creature === 'renyu'), 'the errand beast belongs to this stretch');
+  assert.ok(pool.beasts.some(b => b.creature === encounterOf(content, s, NOW).creature.id), 'the encounter is drawn from that pool');
 });

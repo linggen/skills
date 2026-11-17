@@ -89,14 +89,21 @@ test('the hold (pool_hold): its game stands until it is itself played — anothe
   const held = { ...s, pool_hold: { draw: sc.start.toISOString(), game: g1 } };
   for (const t of [AT(13, 40), AT(17, 10), new Date(2026, 9, 22, 9, 10)]) assert.equal(heldPool(content, held, pool, FAKE, t).shown, g1, `${t}`);
   // Another game played (in the draw or not): still g1.
-  const other = { ...held, pool_played: { [g2]: AT(15, 0).toISOString(), m7: AT(15, 5).toISOString() } };
+  const outside = pool.find(x => ![g0, g1, g2].includes(x.id) && drawAt(content, { ...held, pool_played: {
+    [g2]: AT(15, 0).toISOString(), [g1]: AT(19, 20).toISOString(), [x.id]: AT(15, 5).toISOString(),
+  } }, pool, FAKE, sc).drawn.some(e => !e.played))?.id;
+  assert.ok(outside, 'an outside play that leaves another game in the draw');
+  const other = { ...held, pool_played: { [g2]: AT(15, 0).toISOString(), [outside]: AT(15, 5).toISOString() } };
   assert.equal(heldPool(content, other, pool, FAKE, AT(19, 10)).shown, g1);
   assert.equal(pinHold(other, held, { draw: AT(19, 0).toISOString(), game: 'mX' }), null, 'nothing to pin: the held game stands');
-  // The held game played: the next unplayed of the same draw (g0 here), and the door pins it.
+  // The held game played: the next unplayed of the same draw, and the door pins it.
+  // Plays since the draw began can change its weighted membership, so read that draw anew.
   const done = { ...other, pool_played: { ...other.pool_played, [g1]: AT(19, 20).toISOString() } };
+  const next = drawAt(content, done, pool, FAKE, sc).drawn.find(x => !x.played)?.id;
+  assert.ok(next);
   const after = heldPool(content, { ...done, pool_hold: { ...done.pool_hold, game: null } }, pool, FAKE, AT(19, 30));
-  assert.equal(after.shown, g0);
-  assert.deepEqual(pinHold(done, other, { draw: after.shichen.start.toISOString(), game: after.shown }), { draw: sc.start.toISOString(), game: g0 });
+  assert.equal(after.shown, next);
+  assert.deepEqual(pinHold(done, other, { draw: after.shichen.start.toISOString(), game: after.shown }), { draw: sc.start.toISOString(), game: next });
   // No hold yet: pinned once, from the row as it reads.
   assert.deepEqual(pinHold(s, s, { draw: sc.start.toISOString(), game: g0 }), { draw: sc.start.toISOString(), game: g0 });
 });

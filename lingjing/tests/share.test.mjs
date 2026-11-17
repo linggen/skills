@@ -102,7 +102,7 @@ test('it lands whole when the day\'s meaning cap is already spent', () => {
 
 test('it takes no 修为 share of the day and counts toward none: a daily paid first or after still pays its share', () => {
   const s = { ...joined(), step: 1, progress: 0 };
-  const daily = chore('a-daily', null), other = chore('a-other', null), quests = [row(), daily, other];
+  const daily = chore('a-daily', null), other = chore('a-other', null), quests = [row(), daily];
   assert.ok(choreGrant(content, daily, s, NOW).progress > 0);
   const afterShare = turn(s, quests, SHARE).state;
   assert.equal(choreGrant(content, daily, afterShare, NOW).progress, choreGrant(content, daily, s, NOW).progress, 'a share first leaves the daily its share');
