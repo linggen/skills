@@ -29,8 +29,13 @@ test('every part has its guide, SKILL.md names every part, and every tool points
 test('SKILL.md stays small: the laws and the outline, never the whole game again', () => {
   assert.ok(Buffer.byteLength(body) < 12_000, `body ${Buffer.byteLength(body)} bytes`);
   const fm = md.slice(0, md.indexOf('\n---\n', 4));
-  const said = [...fm.matchAll(/\n {4}description: (?:>-\n((?: {6}.*\n?)+)|(.*))/g)].reduce((n, m) => n + Buffer.byteLength(m[1] ?? m[2]), 0);
-  assert.ok(said < 5_500, `tool descriptions ${said} bytes`);
+  // What the model is told: a `page_only` tool is the page's or the phone's own door, never offered to the model, so
+  // its description costs no prompt. (All descriptions together were held under 5,500; the 800-odd bytes of page-only
+  // ones left the measure and the bar came down with them.)
+  const said = fm.split(/\n {2}- name: /).slice(1).filter((tool) => !/\n {4}page_only: true/.test(tool))
+    .flatMap((tool) => [...`\n${tool}`.matchAll(/\n {4}description: (?:>-\n((?: {6}.*\n?)+)|(.*))/g)])
+    .reduce((n, m) => n + Buffer.byteLength(m[1] ?? m[2]), 0);
+  assert.ok(said < 4_680, `tool descriptions the model reads: ${said} bytes`);
 });
 
 test('what moved out is all still somewhere Ling can read it', () => {

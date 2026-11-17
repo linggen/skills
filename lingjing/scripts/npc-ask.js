@@ -19,7 +19,8 @@ export const NPC_TITLE = 'NPC对话';
     nothing (tests/npc-talk.test.mjs holds the list to SKILL.md). */
 export const NPC_WITHHELD = ['AskUser', 'Reveal', 'Whisper', 'GenerateImage', 'Look', 'Progress', 'Story', 'Resolve', 'Judge', 'Practice', 'Tale', 'Move', 'Trade',
   'Lundao', 'Duizi', 'Twenty', 'Couplet', 'Qian', 'Tame', 'Refine', 'Ring', 'Divine', 'Lang', 'Make', 'Enter', 'Leave', 'Build', 'Restart', 'Go', 'Undo',
-  'Unstick', 'Saves', 'Save', 'Load', 'Forget', 'Worlds', 'Travel', 'Amend', 'Art', 'Meet', 'Quest', 'Show', 'Remember', 'Guide', 'Verb', 'AppTool'];
+  'Unstick', 'Saves', 'Save', 'Load', 'Forget', 'Worlds', 'Travel', 'Amend', 'Art', 'Meet', 'Quest', 'Show', 'Remember', 'Guide', 'Verb', 'BookFile',
+  'BookChanges', 'AppTool'];
 
 /** A reply row is the character's line — unless it is the engine's error row for the turn (`Error: …`), which is
     never said as theirs: a spent allowance throws SPENT (`allowance_spent:monthly`), any other error throws as is. */
