@@ -11,6 +11,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildArtPacks } from './art-packs.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SKILL = path.resolve(HERE, '..');
@@ -133,9 +134,24 @@ export function boardsTable() {
 }
 export const BOARDS_JSON = 'scripts/games/phone/boards.json';
 
+/** The art a later chapter first needs (tools/art-packs.mjs: a pack named `ch-<chapter>`), by skill path → { pack, order }:
+    the phone fetches it after install, as the Mac does (doc/asset-pack-spec.md in the engine repo), so the packs leave it
+    out. `core` (the first chapter's and the whole game's) and `unplaced` art stay in the packs: the safe side. */
+let later = null;
+export function laterArt() {
+  later ??= new Map(buildArtPacks(SKILL).files.filter((f) => f.pack.startsWith('ch-')).map((f) => [f.path, { pack: f.pack, order: f.order }]));
+  return later;
+}
+
+/** A world JSON the rules' bundle already holds (tools/phone-bundle.mjs worldFiles: every `.json` under worlds/ outside an
+    `art` folder, into lingjing-world.json, minified): the app answers a board's ask for it from there, so the packs leave
+    it out (it was held twice). The JSON beside the art (a fighter's sheet table) is not in the bundle and stays. */
+export const inRulesBundle = (f) => /^worlds\/[^/]+\/.+\.json$/.test(f) && !f.split('/').includes('art');
+
 /** Every board as packs: `common` — the entry, the shared files and whatever two or more boards need — and each
-    board's own rest. A file is in exactly one pack. */
-export function kitPacks(games = kitGames()) {
+    board's own rest. A file the boards need is in exactly one pack, or in `fetched` (a later chapter's art, fetched after
+    install: laterArt) or `world` (answered from the rules' bundle: inRulesBundle) — never in two. */
+export function kitPacks(games = kitGames(), { fetchLater = true } = {}) {
   const need = new Map();
   for (const id of games) for (const f of boardFiles(id)) need.set(f, (need.get(f) ?? 0) + 1);
   const base = new Set([...KIT.entry.flatMap((e) => [...closure(e)].map(rel)), ...KIT.shared]);
@@ -144,9 +160,17 @@ export function kitPacks(games = kitGames()) {
     if (!fs.existsSync(path.join(SKILL, f))) throw new Error(`${f} is not in the skill`);
     need.set(f, need.get(f) ?? 0);
   }
-  const common = [...need.keys()].filter((f) => base.has(f) || need.get(f) > 1 || story.has(f)).sort();
+  const fetched = fetchLater ? laterArt() : new Map();
+  const away = (f) => fetched.has(f) || inRulesBundle(f);
+  const all = [...need.keys()].sort();
+  const common = all.filter((f) => !away(f) && (base.has(f) || need.get(f) > 1 || story.has(f)));
   const inCommon = new Set(common);
-  return { common, games: Object.fromEntries(games.map((id) => [id, boardFiles(id).filter((f) => !inCommon.has(f))])) };
+  return {
+    common,
+    games: Object.fromEntries(games.map((id) => [id, boardFiles(id).filter((f) => !inCommon.has(f) && !away(f))])),
+    fetched: all.filter((f) => fetched.has(f)).map((f) => ({ path: f, ...fetched.get(f) })),
+    world: all.filter(inRulesBundle),
+  };
 }
 
 /** The pack's bytes for `files`, and its manifest (offsets are from the end of the manifest). */

@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BOARDS_JSON, boardFiles, boardsTable, importsOf, kitGames, kitPacks, leaveOut, packOf } from '../tools/phone-board.mjs';
+import { BOARDS_JSON, boardFiles, boardsTable, importsOf, inRulesBundle, kitGames, kitPacks, laterArt, leaveOut, packOf } from '../tools/phone-board.mjs';
 
 const SKILL = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const KIT = JSON.parse(fs.readFileSync(path.join(SKILL, 'tools/phone/board-kit.json'), 'utf8'));
@@ -100,7 +100,10 @@ test("卷一's fights: every card a foe deals, and the foe, have their art in th
 // The two seams the URL test cannot read (10-28: 成语接龙's dictionary, 对对子's tones, the 古七/古八 拼图's places and
 // 华容道's 扣子/瓦砾 sets were all missing from the phone): a module's fetch of a world file by a folder URL
 // (`fetch(new URL('chengyu.json', WORLD))`), and the art a board is DEALT (a task's `deal`, a games.json row's data).
-const shipped = (id) => { const { common, games } = kitPacks(); return new Set([...common, ...(games[id] ?? [])]); };
+// What a board has on the phone: its packs, a later chapter's art (fetched after install: tools/phone-assets.mjs) and the
+// world JSON the app answers from the rules' bundle.
+let packsOnce = null;
+const shipped = (id) => { const { common, games, fetched, world } = (packsOnce ??= kitPacks()); return new Set([...common, ...(games[id] ?? []), ...fetched.map((f) => f.path), ...world]); };
 test('every world file a kit module fetches by a folder URL is in its packs', () => {
   for (const id of kitGames()) {
     const have = shipped(id), mod = KIT.games[id].module;
@@ -139,13 +142,13 @@ test("a board's own name (its meta.name) travels in the table, for the phone's �
 });
 
 test('packs: every file in exactly one, the host page and the table in the common one, within a budget', () => {
-  const { common, games } = kitPacks();
+  const { common, games, fetched, world } = kitPacks();
   const seen = new Map();
-  for (const [name, list] of [['common', common], ...Object.entries(games)]) for (const f of list) {
+  for (const [name, list] of [['common', common], ...Object.entries(games), ['fetched', fetched.map((f) => f.path)], ['world', world]]) for (const f of list) {
     assert.ok(!seen.has(f), `${f} in ${seen.get(f)} and ${name}`);
     seen.set(f, name);
   }
-  for (const id of kitGames()) for (const f of boardFiles(id)) assert.ok(seen.get(f) === 'common' || seen.get(f) === id, `${id} needs ${f}`);
+  for (const id of kitGames()) for (const f of boardFiles(id)) assert.ok(['common', id, 'fetched', 'world'].includes(seen.get(f)), `${id} needs ${f}`);
   assert.ok(common.includes('scripts/games/phone/host.js') && common.includes('scripts/games/kit/sound.js'));
   assert.deepEqual(Object.keys(boardsTable().games).sort(), kitGames().sort());
   assert.equal(BOARDS_JSON, 'scripts/games/phone/boards.json');
@@ -272,4 +275,26 @@ test('the real packs: no paint source, no ogg beside an m4a, every other ogg is 
   const have = new Set(all);
   assert.deepEqual(all.filter((f) => f.endsWith('.ogg') && have.has(f.replace(/\.ogg$/, '.m4a'))), []);
   assert.ok(all.some((f) => f.startsWith('worlds/jiuding/art/items-comic/') && !f.includes('/src/')), 'the finished comic icons stay');
+});
+
+// The phone ships the first chapter's art and the whole game's; a later chapter's art is fetched after install, by content
+// hash (doc/asset-pack-spec.md § The phone), and the world JSON the rules' bundle holds is answered from there.
+test('packs leave out a later chapter\'s art and the world JSON the rules hold; never code, never the first chapter\'s', () => {
+  const { common, games, fetched, world } = kitPacks();
+  const packed = [...common, ...Object.values(games).flat()];
+  const later = laterArt();
+  assert.ok(fetched.length > 50, 'a later chapter\'s art is fetched');
+  for (const f of fetched) {
+    assert.ok(f.pack.startsWith('ch-') && f.order > 0, `${f.path}: ${f.pack}`);
+    assert.ok(!/\.(?:m?js|wasm|html?|css)$/.test(f.path), `code is never fetched: ${f.path}`);
+  }
+  assert.deepEqual(packed.filter((f) => later.has(f) || inRulesBundle(f)), [], 'no pack holds what is fetched or answered from the rules');
+  assert.ok(world.includes('worlds/jiuding/games.json') && world.every((f) => !f.includes('/art/')), 'the world JSON outside art');
+  assert.ok(packed.includes('worlds/jiuding/art/games/fighter/xiaoman.json'), 'a sheet table beside the art stays');
+  assert.ok(packed.includes('scripts/vendor/mediapipe/hand_landmarker.task') && packed.includes('scripts/games/jieyin/helper.js'), '结印 stays');
+  // The first chapter's people stay (the story screen's faces).
+  for (const f of KIT.story) assert.ok(packed.includes(f) || later.has(f), f);
+  assert.ok(packed.includes('worlds/jiuding/art/people/baba.webp'));
+  // Nothing in the rules' bundle is missing from it: the app has every left-out JSON to answer with.
+  for (const f of world) assert.ok(fs.existsSync(path.join(SKILL, f)), f);
 });
