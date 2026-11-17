@@ -52,6 +52,45 @@ permission:
     5,000 steps, a full night, the week's letter or a doctor's note read on
     your phone leaves one note in ~/.linggen/quests — when, nothing else.
 tools:
+  # The phone's own doors. Pull initializes mirror identity and takes a lock,
+  # so it writes even when its requested registers already exist.
+  - name: PhonePull
+    description: Pull the phone's Health registers.
+    page_only: true
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/ingest.mjs pull {{payload}}"
+    tier: edit
+    timeout_ms: 120000
+    max_output_bytes: 16777216
+    args:
+      payload:
+        type: string
+        required: true
+        description: Base64 encoded request.
+
+  - name: PhonePush
+    description: Push the phone's Health registers.
+    page_only: true
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/ingest.mjs push {{payload}}"
+    tier: edit
+    timeout_ms: 120000
+    args:
+      payload:
+        type: string
+        required: true
+        description: Base64 encoded request.
+
+  - name: PhoneSamples
+    description: File the phone's Health samples.
+    page_only: true
+    cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/ingest.mjs samples {{payload}}"
+    tier: edit
+    timeout_ms: 120000
+    args:
+      payload:
+        type: string
+        required: true
+        description: Base64 encoded request.
+
   - name: Report
     description: >-
       Everything currently known, as JSON. Call this FIRST on any health
