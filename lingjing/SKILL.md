@@ -780,9 +780,9 @@ tools:
         required: true
         description: look, fight, road, trial, tasks, lundao, duizi, tale, her, divine, made, steer or story.
 
-  # The phone reader's own doors (BookFile, BookChanges), never offered to
-  # the model: what the reader used to send as shell text.
   - name: BookFile
+    # The phone reader's own doors (BookFile, BookChanges), never offered to
+    # the model: what the reader used to send as shell text.
     description: Read one file of the book.
     page_only: true
     cmd: "bash $SKILL_DIR/scripts/book.sh file {{file}}"
