@@ -186,6 +186,24 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120
     if (r.width * r.height < W * 40) continue; // a full-width backdrop is not content
     for (let y = Math.max(0, Math.floor(r.top)); y < Math.min(H, Math.ceil(r.bottom)); y += 1) rows[y] = true;
   }
+  // CSS can draw content without words or an image node (empty slot circles, frames, and meter bars).
+  // Count the painted box, not its layout wrapper; a broad wash behind the page is not content.
+  const hasInk = (color) => color && color !== 'transparent' && !/(?:^rgba\([^)]*,|\/)\s*0(?:\.0+)?%?\s*\)$/.test(color);
+  for (const e of root.querySelectorAll('*')) {
+    if (seen.has(e) || e.textContent.trim() || e.closest(DEV_ONLY) || !vis(e)) continue;
+    const cs = getComputedStyle(e);
+    const paints = cs.backgroundImage !== 'none' || hasInk(cs.backgroundColor)
+      || ['Top', 'Right', 'Bottom', 'Left'].some((side) => parseFloat(cs[`border${side}Width`]) > 0
+        && !/^(none|hidden)$/.test(cs[`border${side}Style`]) && hasInk(cs[`border${side}Color`]));
+    if (!paints) continue;
+    const r = e.getBoundingClientRect();
+    if (r.width >= W * 0.9 && r.height > band) continue;
+    const clip = clipOf(e);
+    if (Math.min(r.right, clip.r) <= Math.max(r.left, clip.l)) continue;
+    const t = Math.max(r.top, clip.t), b = Math.min(r.bottom, clip.b);
+    if (b <= t) continue;
+    for (let y = Math.floor(t); y < Math.ceil(b); y += 1) rows[y] = true;
+  }
   const first = rows.indexOf(true), last = rows.lastIndexOf(true);
   for (let y = first, start = -1; y <= last && first >= 0; y += 1) {
     if (!rows[y] && start < 0) start = y;
