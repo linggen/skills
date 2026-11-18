@@ -202,7 +202,7 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120
     if (Math.min(r.right, clip.r) <= Math.max(r.left, clip.l)) continue;
     const t = Math.max(r.top, clip.t), b = Math.min(r.bottom, clip.b);
     if (b <= t) continue;
-    for (let y = Math.floor(t); y < Math.ceil(b); y += 1) rows[y] = true;
+    for (let y = Math.max(0, Math.floor(t)); y < Math.min(H, Math.ceil(b)); y += 1) rows[y] = true;
   }
   const first = rows.indexOf(true), last = rows.lastIndexOf(true);
   for (let y = first, start = -1; y <= last && first >= 0; y += 1) {
