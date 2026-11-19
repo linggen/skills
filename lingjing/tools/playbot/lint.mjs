@@ -163,6 +163,21 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120
     if (shown < minShown) fails.push({ el_kind: kind, why: 'covered', shown: Math.round(shown * 100) / 100, el: label(e), by: by ? label(by) : null, rect: [r.left, r.top, r.width, r.height].map(Math.round) });
   }
   } finally { for (const [x, was] of solid) x.style.pointerEvents = was; }
+  // Words cut by an ellipsis (the gate's playbot, 2026-11-19 at 375: the footer's 「还有：…」 — the name of what waits cut
+  // away whole, and nothing above saw it: the 「…」 sat inside the chip's own box, so no box lay over anything). Hanli's
+  // ruling for this game (2026-11-08): 「折行可以，不截断就好」 — text may wrap, it is never cut. A shown element whose
+  // `text-overflow: ellipsis` box holds more than it shows (scrollWidth > clientWidth), or whose line clamp hides lines
+  // (scrollHeight > clientHeight), is a FAIL; the dev-only furniture is excused, as everywhere above.
+  for (const e of root.querySelectorAll('*')) {
+    if (e.closest(DEV_ONLY) || !vis(e) || moving(e)) continue;
+    const cs = getComputedStyle(e);
+    const wide = cs.textOverflow === 'ellipsis' && cs.overflowX !== 'visible' && e.scrollWidth - e.clientWidth > 1;
+    const tall = cs.webkitLineClamp && cs.webkitLineClamp !== 'none' && e.scrollHeight - e.clientHeight > 1;
+    if (!wide && !tall) continue;
+    const r = e.getBoundingClientRect();
+    fails.push({ el_kind: 'text', why: 'ellipsis-cut', el: label(e), by: wide ? 'text-overflow' : 'line-clamp',
+      text: (e.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 60), rect: [r.left, r.top, r.width, r.height].map(Math.round) });
+  }
   // The hand's card big enough to read (the gate's playbot, 11-07 at 375: the 杀招 line, both ranks full and the 丹 row at
   // once squeezed the wheel's centre card to 65×90 — its name cut, its words under its 「气血已满」, and nothing above saw it,
   // for nothing lay over anything). In a fight, the card a thumb reads — the phone wheel's centre (battle-wheel.js: the one

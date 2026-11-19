@@ -56,9 +56,11 @@
 .slotfoot .footrow { flex: 0 1 auto; min-width: 0; gap: 8px; }
 .slotfoot .footrow:has(> span:only-child:empty), .slotfoot .footrow:empty { display: none; }
 /* 事 and what waits, one joined chip: 「事 3 | 还有：差事 ›」. */
-.slotfoot .errands { flex: none; display: inline-flex; align-items: center; }
+/* Never cut (Hanli 2026-11-08: 「折行可以，不截断就好」; the gate, 11-19 at 375: 「还有：…」 — the name of what waits cut away whole):
+   the chip is as wide as its words; when the row has no room for it whole it takes the line below, and past a line's width its words wrap. */
+.slotfoot .errands { flex: 0 1 auto; min-width: 0; max-width: 100%; display: inline-flex; align-items: center; }
 .slotfoot .errands:empty { display: none; }
-.slotfoot .errands .more { flex: none; max-width: 12em; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-radius: 0 99px 99px 0; border-color: var(--ling); padding: 3px 10px 3px 8px; font-size: 12.5px; line-height: inherit; }
+.slotfoot .errands .more { flex: 0 1 auto; min-width: 0; margin: 0; white-space: normal; overflow-wrap: anywhere; text-align: left; border-radius: 0 99px 99px 0; border-color: var(--ling); padding: 3px 10px 3px 8px; font-size: 12.5px; line-height: inherit; }
 .slotfoot .errands .bookwrap:has(+ .more) .bookchip { border-radius: 99px 0 0 99px; border-right-style: dashed; }
 .slotfoot .errands .bookwrap + .more { border-left: 0; }
 body.reading .slotfoot .errands .more { visibility: hidden; }
@@ -404,7 +406,6 @@ body.fighting .sight { display: none; }
   .topbar .peoplecard .person img, .topbar .peoplecard .person .namecard { width: 26px; height: 34px; }
   .slotfoot { padding: 0 10px; gap: 6px; }
   .slotfoot .footchips { gap: 6px; }
-  .slotfoot .errands .more { max-width: 6.5em; }
   .yytoken:has(img) { padding: 2px; }
   .yytoken:has(img) span { display: none; }
   /* Two tidy rows: the name, the realm, the bar and 灵石 above; the 回 and the place, the people and 中/En below. */
