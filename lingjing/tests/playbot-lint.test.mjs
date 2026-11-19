@@ -25,16 +25,18 @@ function lint(paint = [], backdrop = false, extra = []) {
   const all = [rank, ...marks, ...controls, ...(backdrop ? [paper] : []), ...extra];
   const body = {
     parentElement: html,
-    querySelectorAll: (sel) => sel === '*' || sel === 'body *' ? all : sel.startsWith('button,') ? controls : sel === '[role=tablist]' ? all.filter((e) => e.tablist) : [],
+    querySelectorAll: (sel) => sel === '*' || sel === 'body *' ? all : sel.startsWith('button,') ? controls : sel === '[role=tablist]' ? all.filter((e) => e.tablist) : sel === '.battle .brank' ? all.filter((e) => e.isRank) : [],
   };
   for (const e of all) e.parentElement = marks.includes(e) ? rank : body;
   for (const e of extra) e.matches = (sel) => e.selectors?.some((x) => sel.split(',').map((y) => y.trim()).includes(x)) ?? false;
   return JSON.parse(runInNewContext(`JSON.stringify((${LINT})())`, {
     innerWidth: 430, innerHeight: 932, NodeFilter: { SHOW_TEXT: 4 },
+    DOMRect: class { constructor(left, top, width, height) { Object.assign(this, box(left, top, width, height)); } },
     getComputedStyle: (e) => e.computed ?? defaults,
     document: {
       body, documentElement: html, querySelectorAll: body.querySelectorAll,
       createTreeWalker: () => ({ nextNode: () => null }),
+      createRange: () => { let node; return { selectNodeContents(n) { node = n; }, getClientRects: () => (node?.rect ? [node.rect] : []) }; },
       elementFromPoint: (_x, y) => controls.find(({ rect }) => y >= rect.top && y < rect.bottom),
     },
   }));
@@ -111,4 +113,25 @@ test('a tab row that clips with a tab past its edge is a hard tab-cut', () => {
 test('a tab row whose tabs all lie inside it is quiet', () => {
   assert.deepEqual(lint([], false, [tabRow('auto', [[16, 60], [80, 63]])]).fails.filter((f) => f.why === 'tab-cut'), []);
   assert.deepEqual(lint([], false, [tabRow('visible', [[16, 60], [320, 63]])]).fails.filter((f) => f.why === 'tab-cut'), []);
+});
+
+// A field card whole (the gate, 2026-11-19 at 1280×820, the beast's two-line banner up: both rank rows ~30 px, 土墙's name gone,
+// its status under its cost gem): a body under the floor is a hard rank-too-short, two of its parts crossing a hard
+// field-card-overlap — and only on `.brank > .bminion`, never the fanned hand.
+const rankWith = (height) => {
+  const mk = (rect, extra = {}) => ({ rect, computed: { ...defaults }, textContent: 'x', tagName: 'DIV', dataset: {}, getAttribute: () => 'bminion', innerText: 'x', childNodes: [],
+    getClientRects() { return [this.rect]; }, getBoundingClientRect() { return this.rect; }, closest: () => null, contains: () => false, ...extra });
+  const parts = { '.bname': mk(box(300, 420 + height - 48, 60, 17)), small: mk(box(302, 424, 50, 12)), '.batk': mk(box(302, 420 + height - 26, 24, 24)), '.bhp': mk(box(346, 420 + height - 26, 24, 24)) };
+  const body = mk(box(300, 420, 80, height), { querySelector: (sel) => parts[sel] ?? null, querySelectorAll: () => [] });
+  const rank = mk(box(0, 416, 430, height + 4), { isRank: true, querySelectorAll: (sel) => (sel.includes('.bminion:not(.empty)') ? [body] : []) });
+  body.parentElement = rank; rank.parentElement = null;
+  return rank;
+};
+test('a body on a rank under the floor is a hard rank-too-short; a whole one is quiet', () => {
+  assert.equal(lint([], false, [rankWith(30)]).fails.filter((f) => f.why === 'rank-too-short').length, 1);
+  assert.deepEqual(lint([], false, [rankWith(90)]).fails.filter((f) => f.why === 'rank-too-short'), []);
+});
+test('two parts of one field card crossing is a hard field-card-overlap (the status under the cost gem), not at a whole height', () => {
+  assert.ok(lint([], false, [rankWith(30)]).fails.some((f) => f.why === 'field-card-overlap'));
+  assert.deepEqual(lint([], false, [rankWith(90)]).fails.filter((f) => f.why === 'field-card-overlap'), []);
 });

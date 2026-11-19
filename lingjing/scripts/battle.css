@@ -898,3 +898,23 @@ body.fighting .focus > .gshell > .gshell-bar { padding-bottom: 4px; background: 
    centre): 新 on the card's top edge at its middle, 借 on its foot between 攻 and 血. */
 .bcard > .bfresh, .deckfaces .bcard .deckfresh { left: 50%; right: auto; top: -7px; transform: translateX(-50%); }
 .bcard.lent > .blent-mark { top: auto; right: auto; left: 50%; bottom: -.5em; transform: translateX(-50%); }
+
+/* ── The desk's ranks never lose their height (the gate's playbot, 2026-11-19 at 1280×820: the beast's two-line 杀招 banner, the
+   「上一手」 line and the hint up at once left the field ~86 px — both rank rows ~30 px: 土墙's name gone, its 「护主 · 不出手」
+   under its cost gem, 「已出手」 read 「手」, the empty slot circles cut). The phone has had its floor (--mmin, below) since 11-07; the
+   desk had none, so the field was whatever the rest left. A rank row is never lower than --mmin (an empty one never lower than its
+   circle), and the field's track is never lower than its two rows: it is the hand's and the plates' room that gives — on a short
+   screen (under 900 px) the hand's cards, the plates, the dock's foot and the gaps are a little smaller, always, never only while
+   a banner is up (the hand would jump as the banner came and went). Text stays as the rest of the board has it. ── */
+@container scene (min-width: 641px) {
+  .battle { --mmin: 60px; grid-template-rows: auto auto auto minmax(min-content, 1fr) auto auto; }
+  .bfield { grid-template-rows: minmax(var(--mmin), 1fr) auto minmax(var(--mmin), 1fr); }
+  .brank { min-height: var(--mmin); }
+  .brank:not(:has(> .bminion:not(.empty))) { min-height: 48px; }
+}
+@media (max-height: 900px) {
+  @container scene (min-width: 641px) {
+    .battle { gap: 4px; padding-top: 6px; --ch: clamp(140px, 20vh, 200px); --plate: clamp(70px, 10.5vh, 120px); }
+    .bdock { padding-bottom: 36px; }
+  }
+}

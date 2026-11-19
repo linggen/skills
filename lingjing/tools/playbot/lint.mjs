@@ -12,7 +12,7 @@
 // what it lies over reads as covered; and a cut sideways is excused only by a scroller that scrolls sideways (切磋's 重腿).
 
 /** The lint, as a function the page runs (page.evaluate(LINT, opts)). Returns { fails: [...], warns: [...] }. */
-export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120 } = {}) => {
+export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120, bodyFloor = 56 } = {}) => {
   const W = innerWidth, H = innerHeight;
   // A scratch save's own furniture (the 测试存档 badge, the dev 游戏厅 link): never on a player's page.
   const DEV_ONLY = '.scratch-badge, .dev-arcade';
@@ -205,6 +205,41 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120
         fails.push({ el_kind: 'tab', why: 'tab-cut', el: label(tab), text: (tab.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 40),
           shown: Math.round(Math.max(0, Math.min(r.right, q.right) - Math.max(r.left, q.left)) / (r.width || 1) * 100) / 100,
           rect: [r.left, r.top, r.width, r.height].map(Math.round), row: [q.left, q.top, q.width, q.height].map(Math.round) });
+      }
+    }
+  }
+  // A FIELD CARD (a body on a rank: `.brank > .bminion`) whole (the gate's playbot, 2026-11-19 at 1280×820, the beast's two-line
+  // 杀招 banner up: the field gave the ranks ~30 px, 土墙's name was gone, 「护主 · 不出手」 sat under its cost gem, 「已出手」 read
+  // 「手」 — and nothing above saw it: a card is a tap spot, so its words are never measured, and one card's parts lie over each
+  // other inside its own box). Two hard findings, both only on `.brank > .bminion` — never the hand's cards, which overlap by
+  // design (the fan): `rank-too-short`, a body shorter than `bodyFloor` px (56: the rank floor --mmin 60 less the row's 4 px of padding — the
+  // name's row, the status label above it and both gems each have a line of their own at that height; the phone's is 70); and `field-card-overlap`, any two of its parts — the name's words, the
+  // status label, the 攻 and 血 gems — whose boxes cross. An empty slot's circle cut at its top or bottom by a rank row lower
+  // than it is `rank-too-short` as well (el_kind slot).
+  for (const rank of root.querySelectorAll('.battle .brank')) {
+    if (rank.closest('.battle.over') || !vis(rank) || moving(rank)) continue;
+    for (const slot of rank.querySelectorAll(':scope > .bminion.empty')) {
+      const dot = slot.querySelector('i');
+      if (!dot || !vis(slot) || !vis(dot)) continue;
+      const sr = slot.getBoundingClientRect(), dr = dot.getBoundingClientRect();
+      if (dr.top < sr.top - 1 || dr.bottom > sr.bottom + 1) fails.push({ el_kind: 'slot', why: 'rank-too-short', el: label(slot), size: [sr.width, sr.height].map(Math.round), circle: Math.round(dr.height), rect: [sr.left, sr.top, sr.width, sr.height].map(Math.round) });
+    }
+    const bodies = [...rank.querySelectorAll(':scope > .bminion:not(.empty)')].filter(vis);
+    for (const b of bodies) {
+      const r = b.getBoundingClientRect();
+      if (r.height < bodyFloor - 0.5) fails.push({ el_kind: 'card', why: 'rank-too-short', el: label(b), floor: bodyFloor, size: [r.width, r.height].map(Math.round), rect: [r.left, r.top, r.width, r.height].map(Math.round) });
+      const parts = [];
+      for (const [name, sel] of [['name', '.bname'], ['status', 'small'], ['atk', '.batk'], ['hp', '.bhp']]) {
+        const part = b.querySelector(sel);
+        if (!part || !vis(part)) continue;
+        let q = part.getBoundingClientRect();
+        if (name === 'name') { const range = document.createRange(); range.selectNodeContents(part); const rs = [...range.getClientRects()].filter((x) => x.width > 2 && x.height > 2); if (!rs.length) continue; q = rs.reduce((a, x) => new DOMRect(Math.min(a.left, x.left), Math.min(a.top, x.top), Math.max(a.right, x.right) - Math.min(a.left, x.left), Math.max(a.bottom, x.bottom) - Math.min(a.top, x.top)), rs[0]); }
+        parts.push({ name, q });
+      }
+      for (let i = 0; i < parts.length; i += 1) for (let j = i + 1; j < parts.length; j += 1) {
+        const a = parts[i].q, c = parts[j].q;
+        const w = Math.min(a.right, c.right) - Math.max(a.left, c.left), h = Math.min(a.bottom, c.bottom) - Math.max(a.top, c.top);
+        if (w > 2 && h > 2) fails.push({ el_kind: 'card', why: 'field-card-overlap', el: label(b), parts: [parts[i].name, parts[j].name], overlap: [Math.round(w), Math.round(h)], rect: [r.left, r.top, r.width, r.height].map(Math.round) });
       }
     }
   }
