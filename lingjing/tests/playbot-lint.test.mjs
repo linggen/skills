@@ -11,7 +11,7 @@ const defaults = {
   backgroundColor: 'rgba(0, 0, 0, 0)', backgroundImage: 'none',
   borderTopWidth: '0px', borderTopStyle: 'none', borderTopColor: 'rgb(0, 0, 0)',
 };
-function lint(paint = [], backdrop = false, extra = []) {
+function lint(paint = [], backdrop = false, extra = [], opts = {}) {
   const html = {};
   const element = (rect, style, textContent = '', children = []) => ({
     rect, style: {}, computed: { ...defaults, ...style }, textContent, children, childNodes: children,
@@ -29,12 +29,12 @@ function lint(paint = [], backdrop = false, extra = []) {
   };
   for (const e of all) e.parentElement = marks.includes(e) ? rank : body;
   for (const e of extra) e.matches = (sel) => e.selectors?.some((x) => sel.split(',').map((y) => y.trim()).includes(x)) ?? false;
-  return JSON.parse(runInNewContext(`JSON.stringify((${LINT})())`, {
+  return JSON.parse(runInNewContext(`JSON.stringify((${LINT})(${JSON.stringify(opts)}))`, {
     innerWidth: 430, innerHeight: 932, NodeFilter: { SHOW_TEXT: 4 },
     DOMRect: class { constructor(left, top, width, height) { Object.assign(this, box(left, top, width, height)); } },
     getComputedStyle: (e) => e.computed ?? defaults,
     document: {
-      body, documentElement: html, querySelectorAll: body.querySelectorAll,
+      body, documentElement: html, querySelectorAll: body.querySelectorAll, querySelector: (sel) => (sel === '.battle' ? all.find((e) => e.isBoard) ?? null : null),
       createTreeWalker: () => ({ nextNode: () => null }),
       createRange: () => { let node; return { selectNodeContents(n) { node = n; }, getClientRects: () => (node?.rect ? [node.rect] : []) }; },
       elementFromPoint: (_x, y) => controls.find(({ rect }) => y >= rect.top && y < rect.bottom),
@@ -165,4 +165,9 @@ test('a banner over the beast\'s rank row, and a rank row over the seam, are boa
 test('a board whose parts only touch or cross by a hair is quiet', () => {
   assert.deepEqual(lint([], false, [boardWith(PARTS)]).fails.filter((x) => x.why === 'board-overlap'), []);
   assert.deepEqual(lint([], false, [boardWith({ ...PARTS, '.bfield > .brank:last-child': [354, 70] })]).fails.filter((x) => x.why === 'board-overlap'), []);
+});
+test('the bot scopes a fight\'s shots to `.battle` itself: the board is then the root, and its overlap is still seen', () => {
+  const board = boardWith({ ...PARTS, '.bfield > .brank:last-child': [388, 70] }, { selectors: ['.battle'] });
+  const r = lint([], false, [board], { scope: '.battle' });
+  assert.deepEqual(r.fails.filter((x) => x.why === 'board-overlap').map((x) => x.parts), [['our-rank', 'you']]);
 });
