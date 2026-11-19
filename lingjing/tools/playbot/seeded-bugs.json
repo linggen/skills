@@ -1,5 +1,5 @@
 {
-  "_about": "The play bot's seeded bugs (run.sh --selftest): each one a ref (or a ref + a patch under seeded/) the bot must catch, by the finding named in `expect` (a field that starts and ends with / is a regex). A bug it misses means the bot is broken, not the game fixed. The first three are the phone bugs of 2026-11-04/05 at the commit before their fixes; the fourth (a win with no 所得 — on the phone it was the native screen) is put back on the page by a patch; the hand's floor (hand-too-small) is squeezed by one and kept by its control; a picture that is not there (art-missing) is made so by a patch and kept by its control. An entry with `absent: true` is a control (the same play with the bug not there must NOT raise the finding). A `ref` of HEAD is the checkout the selftest runs from: a control that the page under test stays right (2026-11-16, the story-win 所得 cases). 啸月 on an empty rank (mana-waste on yy-howl, 2026-11-16, found in story fights after a loss) is put right by a patch on the commit that had it, and kept by its bug at that commit. The footer chip's cut to 「还有：…」 (footer-chip-cut, 2026-11-19, 375) is put back by a patch on HEAD (the old max-width + ellipsis rule, a sure win, something always waiting) and kept by its control (the same, the fix in place).",
+  "_about": "The play bot's seeded bugs (run.sh --selftest): each one a ref (or a ref + a patch under seeded/) the bot must catch, by the finding named in `expect` (a field that starts and ends with / is a regex). A bug it misses means the bot is broken, not the game fixed. The first three are the phone bugs of 2026-11-04/05 at the commit before their fixes; the fourth (a win with no 所得 — on the phone it was the native screen) is put back on the page by a patch; the hand's floor (hand-too-small) is squeezed by one and kept by its control; a picture that is not there (art-missing) is made so by a patch and kept by its control. An entry with `absent: true` is a control (the same play with the bug not there must NOT raise the finding). A `ref` of HEAD is the checkout the selftest runs from: a control that the page under test stays right (2026-11-16, the story-win 所得 cases). 啸月 on an empty rank (mana-waste on yy-howl, 2026-11-16, found in story fights after a loss) is put right by a patch on the commit that had it, and kept by its bug at that commit. The footer chip's cut to 「还有：…」 (footer-chip-cut, 2026-11-19, 375) is put back by a patch on HEAD (the old max-width + ellipsis rule, a sure win, something always waiting) and kept by its control (the same, the fix in place). The bag's cut tab (bag-tab-cut, 2026-11-19, 375) is the commit before its fix, and kept by its control.",
   "bugs": [
     {
       "id": "kept-fight-freezes-fantong",
@@ -257,6 +257,32 @@
         "el": "/还有/"
       },
       "note": "The control: the same sure win and the same waiting chip on the page under test — the chip is whole (it takes the row below, or wraps), the lint stays quiet — at all three sizes the bot plays (430×932, 375×812, 1280×820), so the whole chip is looked at at each"
+    },
+    {
+      "id": "bag-tab-cut",
+      "ref": "2aa73f171",
+      "sizes": "375x812",
+      "fights": 1,
+      "flags": "--only=walk",
+      "expect": {
+        "kind": "layout",
+        "why": "tab-cut",
+        "el": "/ptab|pseg/"
+      },
+      "note": "The gate 11-19 at 375: in the 储物袋 the category tabs (.ptabs, a sideways scroller with its scrollbar hidden) cut the last tab — 「剧情 13」 read 「剧情 1」, a wrong count with no sign more was there. Pinned at the commit before the fix (the rows wrapped now); the walk around a kept fight opens the bag"
+    },
+    {
+      "id": "bag-tabs-whole-control",
+      "ref": "HEAD",
+      "sizes": "375x812",
+      "fights": 1,
+      "flags": "--only=walk",
+      "absent": true,
+      "expect": {
+        "kind": "layout",
+        "why": "tab-cut"
+      },
+      "note": "The control: the same walk on the page under test — every tab of the bag's rows whole (wrapped onto a second line), no tab-cut"
     }
   ]
 }

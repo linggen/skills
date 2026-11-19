@@ -189,6 +189,25 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120
     if (declared) warns.push({ ...found, why: 'summary-clamp', reason: declared.reason });
     else fails.push({ ...found, why: 'ellipsis-cut' });
   }
+  // A TAB ROW read whole (the gate's playbot, 2026-11-19 at 375: the bag's 「剧情 13」 read 「剧情 1」 — a wrong count, in a
+  // sideways scroller with its scrollbar hidden, so nothing said more was there; the scroller's excuse above let it by). The
+  // rule is for a `role=tablist` that clips (overflow-x not visible): any tab of it that lies past the row's box, cut at an
+  // edge or hidden whole, is a FAIL. A tab row is a choice among labels, read whole and never swiped. It does not fire on the
+  // rows meant to be swiped — the tray of cards, the hand, the roads row, the footer chips — for none is a tablist, and the
+  // cut child there is itself the sign that more is to come.
+  for (const row of root.querySelectorAll('[role=tablist]')) {
+    if (row.closest(DEV_ONLY) || !vis(row) || /^(visible)$/.test(getComputedStyle(row).overflowX)) continue;
+    const q = row.getBoundingClientRect();
+    for (const tab of row.children) {
+      if (!vis(tab) || moving(tab)) continue;
+      const r = tab.getBoundingClientRect();
+      if (r.right > q.right + 1 || r.left < q.left - 1) {
+        fails.push({ el_kind: 'tab', why: 'tab-cut', el: label(tab), text: (tab.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 40),
+          shown: Math.round(Math.max(0, Math.min(r.right, q.right) - Math.max(r.left, q.left)) / (r.width || 1) * 100) / 100,
+          rect: [r.left, r.top, r.width, r.height].map(Math.round), row: [q.left, q.top, q.width, q.height].map(Math.round) });
+      }
+    }
+  }
   // The hand's card big enough to read (the gate's playbot, 11-07 at 375: the 杀招 line, both ranks full and the 丹 row at
   // once squeezed the wheel's centre card to 65×90 — its name cut, its words under its 「气血已满」, and nothing above saw it,
   // for nothing lay over anything). In a fight, the card a thumb reads — the phone wheel's centre (battle-wheel.js: the one

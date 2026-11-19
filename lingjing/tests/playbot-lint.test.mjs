@@ -25,7 +25,7 @@ function lint(paint = [], backdrop = false, extra = []) {
   const all = [rank, ...marks, ...controls, ...(backdrop ? [paper] : []), ...extra];
   const body = {
     parentElement: html,
-    querySelectorAll: (sel) => sel === '*' || sel === 'body *' ? all : sel.startsWith('button,') ? controls : [],
+    querySelectorAll: (sel) => sel === '*' || sel === 'body *' ? all : sel.startsWith('button,') ? controls : sel === '[role=tablist]' ? all.filter((e) => e.tablist) : [],
   };
   for (const e of all) e.parentElement = marks.includes(e) ? rank : body;
   for (const e of extra) e.matches = (sel) => e.selectors?.some((x) => sel.split(',').map((y) => y.trim()).includes(x)) ?? false;
@@ -90,4 +90,25 @@ test('a line clamp that hides lines is hard unless it is on the declared summary
 test('a declared summary clamp that cuts by text-overflow is still hard', () => {
   const r = lint([], false, [cut({ textOverflow: 'ellipsis' }, ['#tray .card.task.agenda .tpay'], { scrollWidth: 140, clientWidth: 100, scrollHeight: 20, clientHeight: 20 })]);
   assert.equal(r.fails.filter((f) => f.why === 'ellipsis-cut').length, 1);
+});
+
+// A tab row is read whole (the gate, 2026-11-19 at 375: the bag's 「剧情 13」 read 「剧情 1」): a `role=tablist` that clips and has
+// a tab past its edge is a hard tab-cut; a swiped row (no tablist role) and a tab row that wraps are not.
+const tabRow = (overflowX, tabs) => {
+  const row = { rect: box(14, 650, 347, 36), computed: { ...defaults, overflowX }, textContent: '', tablist: true, tagName: 'DIV', dataset: {}, getAttribute: () => 'ptabs', innerText: '',
+    getClientRects() { return [this.rect]; }, getBoundingClientRect() { return this.rect; }, closest: () => null, contains: () => false, childNodes: [] };
+  row.children = tabs.map(([left, width]) => ({ rect: box(left, 652, width, 30), computed: { ...defaults }, textContent: '剧情 13', tagName: 'BUTTON', dataset: {}, getAttribute: () => 'ptab', innerText: '剧情 13',
+    getClientRects() { return [this.rect]; }, getBoundingClientRect() { return this.rect; }, closest: () => null, contains: () => false, childNodes: [], parentElement: row }));
+  row.parentElement = null;
+  return row;
+};
+test('a tab row that clips with a tab past its edge is a hard tab-cut', () => {
+  const r = lint([], false, [tabRow('auto', [[16, 60], [320, 63]])]);
+  const cut = r.fails.filter((f) => f.why === 'tab-cut');
+  assert.equal(cut.length, 1);
+  assert.equal(cut[0].shown, 0.65);
+});
+test('a tab row whose tabs all lie inside it is quiet', () => {
+  assert.deepEqual(lint([], false, [tabRow('auto', [[16, 60], [80, 63]])]).fails.filter((f) => f.why === 'tab-cut'), []);
+  assert.deepEqual(lint([], false, [tabRow('visible', [[16, 60], [320, 63]])]).fails.filter((f) => f.why === 'tab-cut'), []);
 });
