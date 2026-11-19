@@ -1,5 +1,5 @@
 {
-  "_about": "The play bot's seeded bugs (run.sh --selftest): each one a ref (or a ref + a patch under seeded/) the bot must catch, by the finding named in `expect` (a field that starts and ends with / is a regex). A bug it misses means the bot is broken, not the game fixed. The first three are the phone bugs of 2026-11-04/05 at the commit before their fixes; the fourth (a win with no 所得 — on the phone it was the native screen) is put back on the page by a patch; the hand's floor (hand-too-small) is squeezed by one and kept by its control; a picture that is not there (art-missing) is made so by a patch and kept by its control. An entry with `absent: true` is a control (the same play with the bug not there must NOT raise the finding). A `ref` of HEAD is the checkout the selftest runs from: a control that the page under test stays right (2026-11-16, the story-win 所得 cases). 啸月 on an empty rank (mana-waste on yy-howl, 2026-11-16, found in story fights after a loss) is put right by a patch on the commit that had it, and kept by its bug at that commit. The footer chip's cut to 「还有：…」 (footer-chip-cut, 2026-11-19, 375) is put back by a patch on HEAD (the old max-width + ellipsis rule, a sure win, something always waiting) and kept by its control (the same, the fix in place). The bag's cut tab (bag-tab-cut, 2026-11-19, 375) is the commit before its fix, and kept by its control.",
+  "_about": "The play bot's seeded bugs (run.sh --selftest): each one a ref (or a ref + a patch under seeded/) the bot must catch, by the finding named in `expect` (a field that starts and ends with / is a regex). A bug it misses means the bot is broken, not the game fixed. The first three are the phone bugs of 2026-11-04/05 at the commit before their fixes; the fourth (a win with no 所得 — on the phone it was the native screen) is put back on the page by a patch; the hand's floor (hand-too-small) is squeezed by one and kept by its control; a picture that is not there (art-missing) is made so by a patch and kept by its control. An entry with `absent: true` is a control (the same play with the bug not there must NOT raise the finding). A `ref` of HEAD is the checkout the selftest runs from: a control that the page under test stays right (2026-11-16, the story-win 所得 cases). 啸月 on an empty rank (mana-waste on yy-howl, 2026-11-16, found in story fights after a loss) is put right by a patch on the commit that had it, and kept by its bug at that commit. The footer chip's cut to 「还有：…」 (footer-chip-cut, 2026-11-19, 375) is put back by a patch on HEAD (the old max-width + ellipsis rule, a sure win, something always waiting) and kept by its control (the same, the fix in place). The bag's cut tab (bag-tab-cut, 2026-11-19, 375) is the commit before its fix, and kept by its control. The desk's squeezed rank rows (rank-rows-squeezed, 2026-11-19, 1280×820) are the commit before the fix with a banner-high gap put under the beast, and kept by the control (the same gap on HEAD).",
   "bugs": [
     {
       "id": "kept-fight-freezes-fantong",
@@ -283,6 +283,33 @@
         "why": "tab-cut"
       },
       "note": "The control: the same walk on the page under test — every tab of the bag's rows whole (wrapped onto a second line), no tab-cut"
+    },
+    {
+      "id": "rank-rows-squeezed",
+      "ref": "e244b1715",
+      "patch": "seeded/rank-banner.patch",
+      "sizes": "1280x820",
+      "fights": 1,
+      "flags": "--only=haunt",
+      "expect": {
+        "kind": "layout",
+        "why": "/^(rank-too-short|field-card-overlap)$/"
+      },
+      "note": "The gate 11-19 at 1280x820 (story fight, 犰狳): the beast's two-line 杀招 banner up left the field ~86 px, both rank rows ~30 px — 土墙's name gone, its status under its cost gem, the slot circles cut (fixed 6df4eb7b3: the desk's rank floor). Pinned at the commit before the fix; the patch holds a banner-high gap under the beast in every fight, so the starved field is there on the first 降妖"
+    },
+    {
+      "id": "rank-rows-whole-control",
+      "ref": "HEAD",
+      "patch": "seeded/rank-banner.patch",
+      "sizes": "1280x820",
+      "fights": 1,
+      "flags": "--only=haunt",
+      "absent": true,
+      "expect": {
+        "kind": "layout",
+        "why": "/^(rank-too-short|field-card-overlap)$/"
+      },
+      "note": "The control: the same banner-high gap on the page under test — the rank rows keep their floor, the hand and plates give, no rank-too-short or field-card-overlap"
     }
   ]
 }

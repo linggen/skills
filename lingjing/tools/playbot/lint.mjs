@@ -12,7 +12,7 @@
 // what it lies over reads as covered; and a cut sideways is excused only by a scroller that scrolls sideways (切磋's 重腿).
 
 /** The lint, as a function the page runs (page.evaluate(LINT, opts)). Returns { fails: [...], warns: [...] }. */
-export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120, bodyFloor = 56 } = {}) => {
+export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120, bodyFloor = 66 } = {}) => {
   const W = innerWidth, H = innerHeight;
   // A scratch save's own furniture (the 测试存档 badge, the dev 游戏厅 link): never on a player's page.
   const DEV_ONLY = '.scratch-badge, .dev-arcade';
@@ -212,8 +212,8 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120
   // 杀招 banner up: the field gave the ranks ~30 px, 土墙's name was gone, 「护主 · 不出手」 sat under its cost gem, 「已出手」 read
   // 「手」 — and nothing above saw it: a card is a tap spot, so its words are never measured, and one card's parts lie over each
   // other inside its own box). Two hard findings, both only on `.brank > .bminion` — never the hand's cards, which overlap by
-  // design (the fan): `rank-too-short`, a body shorter than `bodyFloor` px (56: the rank floor --mmin 60 less the row's 4 px of padding — the
-  // name's row, the status label above it and both gems each have a line of their own at that height; the phone's is 70); and `field-card-overlap`, any two of its parts — the name's words, the
+  // design (the fan): `rank-too-short`, a body shorter than `bodyFloor` px (66: the rank floor --mmin 70 less the row's 4 px of padding — the
+  // name's row, the status label above it and both gems each have a line of their own at that height, a 护主's double frame too); and `field-card-overlap`, any two of its parts — the name's words, the
   // status label, the 攻 and 血 gems — whose boxes cross. An empty slot's circle cut at its top or bottom by a rank row lower
   // than it is `rank-too-short` as well (el_kind slot).
   for (const rank of root.querySelectorAll('.battle .brank')) {

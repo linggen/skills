@@ -1,0 +1,13 @@
+diff --git a/lingjing/scripts/battle.css b/lingjing/scripts/battle.css
+index b9e8b5367..baeca77b9 100644
+--- a/lingjing/scripts/battle.css
++++ b/lingjing/scripts/battle.css
+@@ -174,6 +174,8 @@
+ 
+ /* ── 望气 and 杀招, under the beast ── */
+ .bomen { display: grid; justify-items: center; gap: 4px; }
++/* SEEDED (playbot selftest): the beast's two-line banner always up — 62 px more under the beast, as the gate's 犰狳 had it. */
++.bomen::after { content: ''; display: block; height: 62px; }
+ /* never display:none — the room's rows are fixed, and an empty omen keeps its row at no height */
+ .bintent, .bcharge { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; justify-content: center; max-width: min(640px, 100%); padding: 3px 14px; font-family: var(--ui); font-size: 12.5px; color: var(--ink-2); border-radius: 99px; background: rgba(255, 255, 255, 0.45); border: 1px dashed var(--ink-line); }
+ .bintent b, .bcharge b { font-family: var(--serif); font-size: 13.5px; letter-spacing: .12em; color: var(--ink); }
