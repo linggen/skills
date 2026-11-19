@@ -26,10 +26,15 @@
 //   resume-mismatch  a fight reloaded and taken up again shows another state than it was left in
 //   console-error    a console error or an uncaught exception
 //   layout           the lint (lint.mjs): covered / clipped / outside the viewport, a fight's hand card under its floor
-//                    (hand-too-small, 120 px) — and a baseline that drifted
+//                    (hand-too-small, 120 px), words cut by an ellipsis or a line clamp (ellipsis-cut; Hanli 11-08: wrap is
+//                    fine, never cut) — and a baseline that drifted
 //   art-missing      a picture the page asked for and did not get (an HTTP error or a failed request for an image, a CSS
 //                    background or a texture; an <img> broken with no reason on the network) — one per picture a run,
 //                    with its pack (tools/art-packs.mjs). A request the page cancels itself is not one (art.mjs).
+// Soft (listed, not hard): summary-clamp (a `layout-warn` with `why: 'summary-clamp'`) — words cut by a line clamp the
+// lint's SUMMARY_CLAMPS list declares on purpose (today the tray's agenda card, whose whole line is one tap away in the 事
+// book). The reviewer raises each as an unsure item with one question for the owner on 试玩台, unless rulings.jsonl already
+// answers it; it never fails a run by itself and is never silenced.
 // Soft (listed, not hard): story-win-empty — a story fight won from 入门 on whose settle and story step gave nothing at
 // all; every story fight there is meant to pay something (design.md § 所得), so each one stands in the report until its
 // content does. The prologue (its lock in force: Look `locked` names cultivation) owes nothing and is never listed.

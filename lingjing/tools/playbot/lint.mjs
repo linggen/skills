@@ -163,6 +163,13 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120
     if (shown < minShown) fails.push({ el_kind: kind, why: 'covered', shown: Math.round(shown * 100) / 100, el: label(e), by: by ? label(by) : null, rect: [r.left, r.top, r.width, r.height].map(Math.round) });
   }
   } finally { for (const [x, was] of solid) x.style.pointerEvents = was; }
+  // DECLARED summary clamps: a line clamp that was chosen on purpose, whose whole line is one tap away. A cut by one is a
+  // SOFT `summary-clamp` finding (the reviewer puts one question to the owner on 试玩台 unless rulings.jsonl already
+  // answers it), never a hard `ellipsis-cut`. Keep this list short: each entry a selector and its one-line reason; anything
+  // not on it that an ellipsis or a clamp cuts is hard.
+  const SUMMARY_CLAMPS = [
+    { sel: '#tray .card.task.agenda .tsteps, #tray .card.task.agenda .tpay', reason: 'the tray card is the head of the 事 list (lingjing.css, 1df2ced41, 2026-11-04); the whole line is one tap away in the book' },
+  ];
   // Words cut by an ellipsis (the gate's playbot, 2026-11-19 at 375: the footer's 「还有：…」 — the name of what waits cut
   // away whole, and nothing above saw it: the 「…」 sat inside the chip's own box, so no box lay over anything). Hanli's
   // ruling for this game (2026-11-08): 「折行可以，不截断就好」 — text may wrap, it is never cut. A shown element whose
@@ -175,8 +182,12 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120
     const tall = cs.webkitLineClamp && cs.webkitLineClamp !== 'none' && e.scrollHeight - e.clientHeight > 1;
     if (!wide && !tall) continue;
     const r = e.getBoundingClientRect();
-    fails.push({ el_kind: 'text', why: 'ellipsis-cut', el: label(e), by: wide ? 'text-overflow' : 'line-clamp',
-      text: (e.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 60), rect: [r.left, r.top, r.width, r.height].map(Math.round) });
+    const found = { el_kind: 'text', el: label(e), by: wide ? 'text-overflow' : 'line-clamp',
+      text: (e.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 60), rect: [r.left, r.top, r.width, r.height].map(Math.round) };
+    // A declared summary clamp (SUMMARY_CLAMPS) is the owner's to rule on: a soft finding, never silenced, never hard.
+    const declared = tall && !wide ? SUMMARY_CLAMPS.find((c) => e.matches(c.sel)) : null;
+    if (declared) warns.push({ ...found, why: 'summary-clamp', reason: declared.reason });
+    else fails.push({ ...found, why: 'ellipsis-cut' });
   }
   // The hand's card big enough to read (the gate's playbot, 11-07 at 375: the 杀招 line, both ranks full and the 丹 row at
   // once squeezed the wheel's centre card to 65×90 — its name cut, its words under its 「气血已满」, and nothing above saw it,

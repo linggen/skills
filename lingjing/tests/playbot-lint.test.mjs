@@ -11,7 +11,7 @@ const defaults = {
   backgroundColor: 'rgba(0, 0, 0, 0)', backgroundImage: 'none',
   borderTopWidth: '0px', borderTopStyle: 'none', borderTopColor: 'rgb(0, 0, 0)',
 };
-function lint(paint = [], backdrop = false) {
+function lint(paint = [], backdrop = false, extra = []) {
   const html = {};
   const element = (rect, style, textContent = '', children = []) => ({
     rect, style: {}, computed: { ...defaults, ...style }, textContent, children, childNodes: children,
@@ -22,12 +22,13 @@ function lint(paint = [], backdrop = false) {
   const marks = paint.map((style, i) => element(box(40 + i * 50, 178, 44, 44), style));
   const rank = element(box(0, 120, 430, 160), {}, '', marks);
   const paper = element(box(0, 0, 430, 932), { backgroundColor: 'rgb(240, 230, 220)' });
-  const all = [rank, ...marks, ...controls, ...(backdrop ? [paper] : [])];
+  const all = [rank, ...marks, ...controls, ...(backdrop ? [paper] : []), ...extra];
   const body = {
     parentElement: html,
     querySelectorAll: (sel) => sel === '*' || sel === 'body *' ? all : sel.startsWith('button,') ? controls : [],
   };
   for (const e of all) e.parentElement = marks.includes(e) ? rank : body;
+  for (const e of extra) e.matches = (sel) => e.selectors?.some((x) => sel.split(',').map((y) => y.trim()).includes(x)) ?? false;
   return JSON.parse(runInNewContext(`JSON.stringify((${LINT})())`, {
     innerWidth: 430, innerHeight: 932, NodeFilter: { SHOW_TEXT: 4 },
     getComputedStyle: (e) => e.computed ?? defaults,
@@ -55,4 +56,38 @@ test('a textless border, solid fill, or gradient can each break a blank band', (
 test('a truly empty stretch still warns, even on painted paper', () => {
   assert.deepEqual(lint().warns, gap);
   assert.deepEqual(lint([{}, { ...frame, borderTopColor: 'rgba(0, 0, 0, 0)' }, { ...frame, visibility: 'hidden' }], true).warns, gap);
+});
+
+// Words cut by an ellipsis or a line clamp (the gate, 2026-11-19: 「还有：…」 at 375): hard, except a clamp on the declared
+// summary list, which is a soft `summary-clamp` — the owner's to rule on, never silenced, never hard.
+const cut = (style, selectors, scroll = { scrollWidth: 100, clientWidth: 100, scrollHeight: 40, clientHeight: 20 }) => {
+  const e = {
+    rect: box(10, 400, 100, 20), style: {}, computed: { ...defaults, overflowX: 'hidden', overflowY: 'hidden', ...style }, textContent: '那里灵机正盛，赶到便可收下，过时不候。',
+    children: [], childNodes: [], selectors, ...scroll, tagName: 'DIV', dataset: {}, getAttribute: () => 'small tpay', innerText: '那里灵机正盛，赶到便可收下，过时不候。',
+    getClientRects() { return [this.rect]; }, getBoundingClientRect() { return this.rect; }, closest: () => null, contains(x) { return x === this; },
+  };
+  return e;
+};
+test('words cut by text-overflow ellipsis are a hard ellipsis-cut', () => {
+  const r = lint([], false, [cut({ textOverflow: 'ellipsis' }, [], { scrollWidth: 140, clientWidth: 100, scrollHeight: 20, clientHeight: 20 })]);
+  assert.equal(r.fails.filter((f) => f.why === 'ellipsis-cut').length, 1);
+  assert.equal(r.fails.find((f) => f.why === 'ellipsis-cut').by, 'text-overflow');
+});
+test('words an ellipsis box holds whole are no finding', () => {
+  const r = lint([], false, [cut({ textOverflow: 'ellipsis' }, [], { scrollWidth: 100, clientWidth: 100, scrollHeight: 20, clientHeight: 20 })]);
+  assert.deepEqual(r.fails, []);
+});
+test('a line clamp that hides lines is hard unless it is on the declared summary list', () => {
+  const clamp = { webkitLineClamp: '2' };
+  const hard = lint([], false, [cut(clamp, [])]);
+  assert.equal(hard.fails.filter((f) => f.why === 'ellipsis-cut').length, 1);
+  assert.deepEqual(hard.warns.filter((w) => w.why === 'summary-clamp'), []);
+  const soft = lint([], false, [cut(clamp, ['#tray .card.task.agenda .tpay'])]);
+  assert.deepEqual(soft.fails, []);
+  const w = soft.warns.find((x) => x.why === 'summary-clamp');
+  assert.ok(w && /事 list/.test(w.reason) && /灵机正盛/.test(w.text), 'a soft summary-clamp with its reason and the text');
+});
+test('a declared summary clamp that cuts by text-overflow is still hard', () => {
+  const r = lint([], false, [cut({ textOverflow: 'ellipsis' }, ['#tray .card.task.agenda .tpay'], { scrollWidth: 140, clientWidth: 100, scrollHeight: 20, clientHeight: 20 })]);
+  assert.equal(r.fails.filter((f) => f.why === 'ellipsis-cut').length, 1);
 });
