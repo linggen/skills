@@ -1,0 +1,77 @@
+diff --git a/lingjing/scripts/battle.js b/lingjing/scripts/battle.js
+index e2b8d797d..8a5307cf1 100644
+--- a/lingjing/scripts/battle.js
++++ b/lingjing/scripts/battle.js
+@@ -37,7 +37,8 @@ export const clash = (element, root) => (!element || !root ? 1 : BEATS[element]
+    one formula: the fight settles with it and the page prints it, so the
+    number on the screen is the number that lands (his, 2026-09-22: 五行 is
+    too much to reckon with four roots — 让页面算). `who` is the striker. */
+-export const dealt = (st, who, n, element, target) => n === 0 ? 0 : Math.max(1, Math.round(n * clash(element, target) * (st.scale?.[who] ?? 1)));
++// SEEDED (playbot selftest): every blow of his lands for 999 — the fight is won at his first hit, so the 所得 is due.
++export const dealt = (st, who, n, element, target) => n === 0 ? 0 : who === 'you' ? 999 : Math.max(1, Math.round(n * clash(element, target) * (st.scale?.[who] ?? 1)));
+ /* Levels (batch 3, rules/power.mjs). A fight is reckoned in HIS units: his 气血 at full is P₁'s (练气一层's, 21), and every
+    number in the fight is a card number as at 练气一层 — so a fight of two sides at one level is the fight at 练气一层, turn for
+    turn and number for number, rounding and all. A beast of another level stands P(its level) ÷ P(his) to him (`f`, its
+diff --git a/lingjing/scripts/lingjing.js b/lingjing/scripts/lingjing.js
+index 858f4c0b7..469de5b7f 100644
+--- a/lingjing/scripts/lingjing.js
++++ b/lingjing/scripts/lingjing.js
+@@ -1691,11 +1691,12 @@ function heldRoadsHtml(lock) {
+ /// waits (stage.mjs footer.next).
+ function moreHtml(slots) {
+   // While the box holds the choices, a pool's beast beside the scene is offered under them instead (besideHtml).
+-  const w = words(), next = !slots || choicesInBox() ? null : slots.footer.next;
++  // SEEDED (playbot selftest): something always waits, with a name longer than the chip's old 6.5 em.
++  const w = words(), next = !slots ? null : { cards: [{ card: 'seeded' }] };
+   if (!next) return '';
+   // …and never in the footer while the box is up: it is offered under the box (besideHtml).
+   if (next.cards?.some(besidePool) && playing(readingHere())) return '';
+-  const what = queueLabel(next.cards[0]);
++  const what = { name: '药园巡夜 · 开春', kind: '' };
+   return `<button class="act quiet more" data-qnext="${esc(slots.key)}" title="${esc(fill(w.queueNext, { what: [what.name, what.kind].filter(Boolean).join(' · ') }))}">${esc(waitingLine({ ...what, more: slots.footer.waiting - 1 }, w))} ›</button>`;
+ }
+ /* A pool's beast standing beside the scene (stage.mjs footer; 09-suifeng at 后山, 11-05): its card is a duel the place deals now. */
+diff --git a/lingjing/scripts/phone.css b/lingjing/scripts/phone.css
+index 2197845c9..96b69e024 100644
+--- a/lingjing/scripts/phone.css
++++ b/lingjing/scripts/phone.css
+@@ -102,11 +102,12 @@
+   .topbar .headcards { order: 6; }
+   body.fighting .topbar::before { display: none; }
+   /* The footer's chips fit 390px in English too (live, 2026-10-15: 「Tasks 3 · 1 due」 pushed 「Items」 off the
+-     edge): tighter chips; 还有's name is never clipped: its chip takes the line below, and wraps past a line's width (2026-11-19). */
++     edge): tighter chips, the sky's word and 还有's name clipped short — each still one tap, its title whole. */
+   .slotfoot { padding: 0 8px; gap: 6px; }
+   .slotfoot .footchips { gap: 5px; }
+   .slotfoot .bookchip, .slotfoot .luchip, .slotfoot .act { padding-left: 9px; padding-right: 9px; }
+   .slotfoot .wxchip { max-width: 4.6em; overflow: hidden; text-overflow: ellipsis; }
++  .slotfoot .more { max-width: 6.5em; overflow: hidden; text-overflow: ellipsis; }
+ }
+ 
+ /* A landscape phone (wide but short): the 亮相 keeps the stage's right, the words give it that side. */
+diff --git a/lingjing/scripts/story.css b/lingjing/scripts/story.css
+index e5ad1e041..d6bf8e1ec 100644
+--- a/lingjing/scripts/story.css
++++ b/lingjing/scripts/story.css
+@@ -56,11 +56,9 @@
+ .slotfoot .footrow { flex: 0 1 auto; min-width: 0; gap: 8px; }
+ .slotfoot .footrow:has(> span:only-child:empty), .slotfoot .footrow:empty { display: none; }
+ /* 事 and what waits, one joined chip: 「事 3 | 还有：差事 ›」. */
+-/* Never cut (Hanli 2026-11-08: 「折行可以，不截断就好」; the gate, 11-19 at 375: 「还有：…」 — the name of what waits cut away whole):
+-   the chip is as wide as its words; when the row has no room for it whole it takes the line below, and past a line's width its words wrap. */
+-.slotfoot .errands { flex: 0 1 auto; min-width: 0; max-width: 100%; display: inline-flex; align-items: center; }
++.slotfoot .errands { flex: none; display: inline-flex; align-items: center; }
+ .slotfoot .errands:empty { display: none; }
+-.slotfoot .errands .more { flex: 0 1 auto; min-width: 0; margin: 0; white-space: normal; overflow-wrap: anywhere; text-align: left; border-radius: 0 99px 99px 0; border-color: var(--ling); padding: 3px 10px 3px 8px; font-size: 12.5px; line-height: inherit; }
++.slotfoot .errands .more { flex: none; max-width: 12em; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border-radius: 0 99px 99px 0; border-color: var(--ling); padding: 3px 10px 3px 8px; font-size: 12.5px; line-height: inherit; }
+ .slotfoot .errands .bookwrap:has(+ .more) .bookchip { border-radius: 99px 0 0 99px; border-right-style: dashed; }
+ .slotfoot .errands .bookwrap + .more { border-left: 0; }
+ body.reading .slotfoot .errands .more { visibility: hidden; }
+@@ -406,6 +404,7 @@ body.fighting .sight { display: none; }
+   .topbar .peoplecard .person img, .topbar .peoplecard .person .namecard { width: 26px; height: 34px; }
+   .slotfoot { padding: 0 10px; gap: 6px; }
+   .slotfoot .footchips { gap: 6px; }
++  .slotfoot .errands .more { max-width: 6.5em; }
+   .yytoken:has(img) { padding: 2px; }
+   .yytoken:has(img) span { display: none; }
+   /* Two tidy rows: the name, the realm, the bar and 灵石 above; the 回 and the place, the people and 中/En below. */
