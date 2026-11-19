@@ -43,9 +43,12 @@
 /* A fixed width: the board never narrows as the hand runs down (his, 2026-09-29). */
 .battle {
   position: relative; isolation: isolate; width: 100%; height: 100%; box-sizing: border-box;
-  display: grid; grid-template-rows: auto auto auto minmax(0, 1fr) auto auto; gap: 6px;
-  padding: 10px 18px 8px; overflow: hidden;
+  display: grid; grid-template-rows: auto auto auto minmax(var(--tmin), var(--tmax)) auto minmax(var(--ymin), var(--ymax)) auto var(--dock-track); gap: 6px;
+  padding: 10px 18px 8px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; /* y: only when the rows' floors do not fit (the last give, below) */
   --ch: clamp(150px, 22vh, 200px); --cw: calc(var(--ch) * .71); --lift: 16px; --mh: clamp(112px, 18vh, 170px); --mw: calc(var(--mh) * .84); --plate: clamp(78px, 12vh, 120px);
+  /* the board's rows (§ The board never overlaps itself, at the foot of this file) */
+  --mmin: 70px; --rmax: 1fr; --rempty: 1fr; --dock-track: auto;
+  --tmin: var(--mmin); --tmax: var(--rmax); --ymin: var(--mmin); --ymax: var(--rmax);
   font-family: var(--serif); color: var(--ink);
   background:
     radial-gradient(120% 70% at 50% 0%, rgba(243, 238, 226, 0.58), rgba(243, 238, 226, 0.8) 60%),
@@ -192,7 +195,12 @@
 /* The two ranks share what the field has, never more (live, 2026-10-16: both ranks full under a 杀招
    line, the bodies' feet ran over 上一手 and their heads under the 杀招): a body is as tall as its
    row allows, up to --mh, and each rank leans toward the seam — the table's middle. */
-.bfield { display: grid; grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr); gap: 4px; min-height: 0; }
+/* The field has no box of its own: its two ranks and the seam are tracks of the board's grid (so sizing is one statement, below). */
+.bfield { display: contents; }
+/* a rank with nobody on it asks for its circle and a little, not a body's height */
+/* (the bodies stand from the left, so a rank whose first place is empty has nobody; no :has inside a :has) */
+.battle:has(.bfield > .brank.theirs > .bminion.empty:first-child) { --tmin: 48px; --tmax: var(--rempty); }
+.battle:has(.bfield > .brank.mine > .bminion.empty:first-child) { --ymin: 48px; --ymax: var(--rempty); }
 .brank { display: flex; justify-content: center; align-items: center; gap: 10px; height: 100%; min-height: 0; padding: 2px 0; box-sizing: border-box; }
 .brank.theirs { align-items: flex-end; }
 .brank.mine { align-items: flex-start; }
@@ -200,7 +208,10 @@
 .brank > .bminion.empty { align-self: center; }
 .brank.lost-one { animation: dust .5s ease-out; }
 @keyframes dust { 0% { background: rgba(31, 28, 24, 0.08); } 100% { background: transparent; } }
-.bseam { position: relative; display: flex; justify-content: center; min-height: 18px; }
+.bseam { position: relative; display: flex; justify-content: center; min-height: auto; }
+/* The seam is an `auto` track of the board, sized by its own minimum — its words as they stand once wrapped (an explicit min-height would switch
+   that off and the track would be one line high: the hint spilling onto our rank). Its 18 px floor is a 0-wide item in its first line. */
+.bseam::after { content: ''; flex: none; width: 0; height: 18px; margin-left: -10px; }
 .bseam::before { content: ''; position: absolute; left: 6%; right: 6%; top: 50%; height: 1px; background: linear-gradient(90deg, transparent, var(--ink-line) 18%, var(--ink-line) 82%, transparent); }
 /* 上一手: the last moves, faint, on the seam — a note, not a log. */
 .blast { position: relative; z-index: 1; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 2px 10px; max-width: min(720px, 100%); padding: 0 12px; font-family: var(--ui); font-size: 11.5px; color: var(--ink-3); background: linear-gradient(90deg, transparent, rgba(243, 238, 226, 0.95) 8%, rgba(243, 238, 226, 0.95) 92%, transparent); }
@@ -605,19 +616,16 @@
      「可以做成旋转木马样式的吗? 用户可以转着看」) ── One card at the centre, about 45% of the room's width with its
      cost, name and words large; two each side step back (.8, .65), tilted a little and dimmer, their cost on the outer
      corner where it shows; the rest wait behind, unseen. battle-wheel.js lays them out (--wx in centre widths, --ws,
-     --wl, --wt, --wz), turns it on a swipe or a tap, and puts a dot a card under it. The slack goes to the hand: the field
-     is as tall as its two ranks (an empty rank lower), the party a row of slim chips, the 丹囊 in the action row. */
+     --wl, --wt, --wz), turns it on a swipe or a tap, and puts a dot a card under it. The slack goes to the hand: the ranks
+     are as tall as --mh asks (an empty rank lower), the party a row of slim chips, the 丹囊 in the action row. */
   /* The hand's floor (the gate's playbot, 11-07 at 375: the 杀招 line, both ranks full and the 丹 row at once left the hand
      ~140 px, its centre card 65×90 — 青光's name cut, its words under 气血已满): a centre card never under 128 px tall (91 wide,
      ~6 字 a line): its cost, its name, three lines of its words and a why on its picture's row all read; the row adds its dots
-     (48 px) and the dock's foot (4 px). The lint's floor is 120 (tools/playbot/lint.mjs hand-too-small). When the room is short
-     the field gives way, never the hand: the ranks shrink (--mh down to --mmin, an empty rank's band with them); the log and
-     the hint stay. */
-  .battle { --handfloor: 180px; --mmin: 70px; grid-template-rows: auto auto auto minmax(0, auto) auto minmax(var(--handfloor), 1fr); }
-  .bfield { display: flex; flex-direction: column; justify-content: center; }
-  .bfield > .bseam { flex: none; }
-  .brank { flex: 0 1 var(--mh); height: auto; min-height: var(--mmin); }
-  .brank:not(:has(> .bminion:not(.empty))) { flex-basis: calc(var(--mh) * .62); min-height: calc(var(--mmin) * .62); }
+     (48 px) and the dock's foot (4 px). The lint's floor is 120 (tools/playbot/lint.mjs hand-too-small); the dock's track is
+     --handfloor, 180 (a centre card of 128). When the room is short the ranks shrink first (--mh down to --mmin, an empty rank's
+     band with them), the hand is that floor; the log and the hint stay; what is still short scrolls (§ The board never
+     overlaps itself, at the foot of this file). */
+  .battle { --handfloor: 180px; --dock-track: minmax(var(--handfloor), 1fr); --rmax: var(--mh); --rempty: calc(var(--mh) * .62); }
   .brank:not(:has(> .bminion:not(.empty))) > .bminion.empty { max-height: 100%; }
   .battle .bdock { min-height: 0; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 4px; padding-bottom: 4px; }
   .battle .bdock > .dn-tray { display: none; }
@@ -899,22 +907,26 @@ body.fighting .focus > .gshell > .gshell-bar { padding-bottom: 4px; background: 
 .bcard > .bfresh, .deckfaces .bcard .deckfresh { left: 50%; right: auto; top: -7px; transform: translateX(-50%); }
 .bcard.lent > .blent-mark { top: auto; right: auto; left: 50%; bottom: -.5em; transform: translateX(-50%); }
 
-/* ── The desk's ranks never lose their height (the gate's playbot, 2026-11-19 at 1280×820: the beast's two-line 杀招 banner, the
-   「上一手」 line and the hint up at once left the field ~86 px — both rank rows ~30 px: 土墙's name gone, its 「护主 · 不出手」
-   under its cost gem, 「已出手」 read 「手」, the empty slot circles cut). The phone has had its floor (--mmin, below) since 11-07; the
-   desk had none, so the field was whatever the rest left. A rank row is never lower than --mmin, 70 as on the phone (an empty one never lower than its
-   circle), and the field's track is never lower than its two rows: it is the hand's and the plates' room that gives — on a short
-   screen (under 900 px) the hand's cards, the plates, the dock's foot and the gaps are a little smaller, always, never only while
-   a banner is up (the hand would jump as the banner came and went). Text stays as the rest of the board has it. ── */
-@container scene (min-width: 641px) {
-  .battle { --mmin: 70px; grid-template-rows: auto auto auto minmax(min-content, 1fr) auto auto; }
-  .bfield { grid-template-rows: minmax(var(--mmin), 1fr) auto minmax(var(--mmin), 1fr); }
-  .brank { min-height: var(--mmin); }
-  .brank:not(:has(> .bminion:not(.empty))) { min-height: 48px; }
-}
+/* ── The board never overlaps itself (the gate's playbot: 2026-11-19 at 1280×820, then at 375×812 — the beast's 杀招 banner, the
+   「上一手」 line and the hint up at once; at 1280 both rank rows ~30 px with 土墙's name gone, at 375 our rank row of four cards
+   sliding over the player's own row, 山根桩's frame on 「沈小满」). The third fault of one kind — something extra appears on the
+   board and another part pays for it — so the rule stands once, for every width, in the board's own rows at the top of this
+   file (`.battle`'s grid-template-rows, with `.bfield` flattened into them); the lint's `board-overlap` holds it:
+     · a rank row is never lower than --mmin, 70 (an empty one never lower than its circle, 48): the floor of its track;
+     · the seam is an `auto` track, as tall as its words once wrapped, so the field is never lower than its two rows and the
+       seam between — they are tracks of the one grid, none can spill onto what lies beside it;
+     · what gives, in this order: (1) the ranks, from what they ask (--rmax: --mh on a phone, whatever is left on the desk) down
+       to --mmin; (2) the hand, down to its floor — the phone's dock to --handfloor, 180 (a centre card of 128, never under the
+       lint's 120), the desk's cards, plates, gaps and dock foot a little smaller on a short screen (below), always, never only
+       while a banner is up (the hand would jump as the banner came and went); a phone's plate and gaps are at those short-screen
+       values already; (3) if even that is not enough on the smallest screen, the board scrolls (`.battle`'s `overflow-y`) —
+       never an overlap.
+   The widths set only numbers (--rmax, --rempty, --dock-track, --handfloor: the top of this file and the phone's block). ── */
 @media (max-height: 900px) {
   @container scene (min-width: 641px) {
     .battle { gap: 4px; padding-top: 6px; --ch: clamp(136px, 18vh, 200px); --plate: clamp(66px, 9.5vh, 120px); }
     .bdock { padding-bottom: 36px; }
   }
 }
+/* A finished fight and the how-to sheet are laid over the board's own box (inset 0): they hold it still, so they never slide off a scroll. */
+.battle.over, .battle:has(> .bhelp) { overflow-y: hidden; }

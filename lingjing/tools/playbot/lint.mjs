@@ -245,6 +245,32 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120
       }
     }
   }
+  // THE BOARD'S PARTS never lie over each other (the gate's playbot, 2026-11-19 at 375×812, the beast's 杀招 banner and the hint
+  // up, four cards on our rank: the field's track was lower than its two rank rows, so our rank slid over the player's own row —
+  // 山根桩's frame on 「沈小满」, 「护体 5」 on 藤须 — and nothing above saw it: each card was whole in its own box). The third fault
+  // of one kind (something extra appears on the board and another part pays for it). The rule, for every size: the board's
+  // parts that are siblings in its layout — the head, the beast's side (its plate), the banner under it, the two rank rows, the
+  // seam (上一手 and the hint), the player's row, the dock — never cross by more than a hair (3 px each way). The rank rows are
+  // read, not the field that holds them: a field lower than its rows is exactly the fault, and its own box would not show it.
+  // The fanned hand overlaps itself by design; it is inside the dock, not a sibling of these, so it is not read here.
+  const BOARD_PARTS = [['head', ':scope > .btop'], ['beast', ':scope > .bside.foe'], ['banner', ':scope > .bomen'],
+    ['their-rank', ':scope > .bfield > .brank:first-child'], ['seam', ':scope > .bfield > .bseam'], ['our-rank', ':scope > .bfield > .brank:last-child'],
+    ['you', ':scope > .bside.you'], ['dock', ':scope > .bdock']];
+  // (the bot scopes a fight's shots to `.battle` itself, so the board may be the root, not a thing inside it)
+  for (const board of (root.matches?.('.battle') ? [root] : root.querySelectorAll('.battle'))) {
+    if (board.classList?.contains('over') || !vis(board)) continue;
+    const parts = [];
+    for (const [name, sel] of BOARD_PARTS) {
+      const p = board.querySelector(sel);
+      if (p && vis(p) && !moving(p)) parts.push({ name, q: p.getBoundingClientRect() });
+    }
+    for (let i = 0; i < parts.length; i += 1) for (let j = i + 1; j < parts.length; j += 1) {
+      const a = parts[i].q, c = parts[j].q;
+      const w = Math.min(a.right, c.right) - Math.max(a.left, c.left), h = Math.min(a.bottom, c.bottom) - Math.max(a.top, c.top);
+      if (w > 3 && h > 3) fails.push({ el_kind: 'board', why: 'board-overlap', parts: [parts[i].name, parts[j].name], overlap: [Math.round(w), Math.round(h)],
+        rects: [a, c].map((q) => [q.left, q.top, q.width, q.height].map(Math.round)) });
+    }
+  }
   // The hand's card big enough to read (the gate's playbot, 11-07 at 375: the 杀招 line, both ranks full and the 丹 row at
   // once squeezed the wheel's centre card to 65×90 — its name cut, its words under its 「气血已满」, and nothing above saw it,
   // for nothing lay over anything). In a fight, the card a thumb reads — the phone wheel's centre (battle-wheel.js: the one

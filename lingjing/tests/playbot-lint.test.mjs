@@ -11,7 +11,7 @@ const defaults = {
   backgroundColor: 'rgba(0, 0, 0, 0)', backgroundImage: 'none',
   borderTopWidth: '0px', borderTopStyle: 'none', borderTopColor: 'rgb(0, 0, 0)',
 };
-function lint(paint = [], backdrop = false, extra = []) {
+function lint(paint = [], backdrop = false, extra = [], opts = {}) {
   const html = {};
   const element = (rect, style, textContent = '', children = []) => ({
     rect, style: {}, computed: { ...defaults, ...style }, textContent, children, childNodes: children,
@@ -25,16 +25,16 @@ function lint(paint = [], backdrop = false, extra = []) {
   const all = [rank, ...marks, ...controls, ...(backdrop ? [paper] : []), ...extra];
   const body = {
     parentElement: html,
-    querySelectorAll: (sel) => sel === '*' || sel === 'body *' ? all : sel.startsWith('button,') ? controls : sel === '[role=tablist]' ? all.filter((e) => e.tablist) : sel === '.battle .brank' ? all.filter((e) => e.isRank) : [],
+    querySelectorAll: (sel) => sel === '*' || sel === 'body *' ? all : sel.startsWith('button,') ? controls : sel === '[role=tablist]' ? all.filter((e) => e.tablist) : sel === '.battle .brank' ? all.filter((e) => e.isRank) : sel === '.battle' ? all.filter((e) => e.isBoard) : [],
   };
   for (const e of all) e.parentElement = marks.includes(e) ? rank : body;
   for (const e of extra) e.matches = (sel) => e.selectors?.some((x) => sel.split(',').map((y) => y.trim()).includes(x)) ?? false;
-  return JSON.parse(runInNewContext(`JSON.stringify((${LINT})())`, {
+  return JSON.parse(runInNewContext(`JSON.stringify((${LINT})(${JSON.stringify(opts)}))`, {
     innerWidth: 430, innerHeight: 932, NodeFilter: { SHOW_TEXT: 4 },
     DOMRect: class { constructor(left, top, width, height) { Object.assign(this, box(left, top, width, height)); } },
     getComputedStyle: (e) => e.computed ?? defaults,
     document: {
-      body, documentElement: html, querySelectorAll: body.querySelectorAll,
+      body, documentElement: html, querySelectorAll: body.querySelectorAll, querySelector: (sel) => (sel === '.battle' ? all.find((e) => e.isBoard) ?? null : null),
       createTreeWalker: () => ({ nextNode: () => null }),
       createRange: () => { let node; return { selectNodeContents(n) { node = n; }, getClientRects: () => (node?.rect ? [node.rect] : []) }; },
       elementFromPoint: (_x, y) => controls.find(({ rect }) => y >= rect.top && y < rect.bottom),
@@ -134,4 +134,40 @@ test('a body on a rank under the floor is a hard rank-too-short; a whole one is 
 test('two parts of one field card crossing is a hard field-card-overlap (the status under the cost gem), not at a whole height', () => {
   assert.ok(lint([], false, [rankWith(30)]).fails.some((f) => f.why === 'field-card-overlap'));
   assert.deepEqual(lint([], false, [rankWith(90)]).fails.filter((f) => f.why === 'field-card-overlap'), []);
+});
+
+// The board's parts never lie over each other (the gate, 2026-11-19 at 375×812, the 杀招 banner and the hint up, four cards on our
+// rank: the field's track was lower than its two rank rows and our rank slid over the player's row): any two of the head, the
+// beast's side, the banner, the two rank rows, the seam, the player's row and the dock that cross by more than a hair are a hard
+// `board-overlap` — at any size. The fanned hand is inside the dock, never a part of its own.
+const boardWith = (tops, sels = {}) => {
+  const mk = (rect) => ({ rect, computed: { ...defaults }, textContent: '', tagName: 'DIV', dataset: {}, getAttribute: () => '', innerText: '', childNodes: [],
+    getClientRects() { return [this.rect]; }, getBoundingClientRect() { return this.rect; }, closest: () => null, contains: () => false });
+  const parts = Object.fromEntries(Object.entries(tops).map(([sel, [top, height]]) => [sel, mk(box(8, top, 359, height))]));
+  const board = mk(box(0, 100, 375, 640));
+  Object.assign(board, { isBoard: true, classList: { contains: () => false }, querySelector: (sel) => parts[sel.replace(':scope > ', '')] ?? null, querySelectorAll: () => [] });
+  return Object.assign(board, sels);
+};
+const PARTS = { '.btop': [100, 30], '.bside.foe': [134, 66], '.bomen': [204, 34], '.bfield > .brank:first-child': [242, 70], '.bfield > .bseam': [316, 40],
+  '.bfield > .brank:last-child': [360, 70], '.bside.you': [434, 110], '.bdock': [548, 190] };
+test('two board parts that cross are a hard board-overlap (our rank over the player\'s row), at any size', () => {
+  const r = lint([], false, [boardWith({ ...PARTS, '.bfield > .brank:last-child': [388, 70] })]);
+  const f = r.fails.filter((x) => x.why === 'board-overlap');
+  assert.equal(f.length, 1);
+  assert.deepEqual(f[0].parts, ['our-rank', 'you']);
+  assert.deepEqual(f[0].overlap, [359, 24]);
+});
+test('a banner over the beast\'s rank row, and a rank row over the seam, are board-overlaps too', () => {
+  const r = lint([], false, [boardWith({ ...PARTS, '.bomen': [204, 60], '.bfield > .brank:last-child': [330, 70] })]);
+  const pairs = r.fails.filter((x) => x.why === 'board-overlap').map((x) => x.parts.join('+')).sort();
+  assert.deepEqual(pairs, ['banner+their-rank', 'seam+our-rank']);
+});
+test('a board whose parts only touch or cross by a hair is quiet', () => {
+  assert.deepEqual(lint([], false, [boardWith(PARTS)]).fails.filter((x) => x.why === 'board-overlap'), []);
+  assert.deepEqual(lint([], false, [boardWith({ ...PARTS, '.bfield > .brank:last-child': [354, 70] })]).fails.filter((x) => x.why === 'board-overlap'), []);
+});
+test('the bot scopes a fight\'s shots to `.battle` itself: the board is then the root, and its overlap is still seen', () => {
+  const board = boardWith({ ...PARTS, '.bfield > .brank:last-child': [388, 70] }, { selectors: ['.battle'] });
+  const r = lint([], false, [board], { scope: '.battle' });
+  assert.deepEqual(r.fails.filter((x) => x.why === 'board-overlap').map((x) => x.parts), [['our-rank', 'you']]);
 });

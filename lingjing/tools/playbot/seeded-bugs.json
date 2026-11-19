@@ -310,6 +310,33 @@
         "why": "/^(rank-too-short|field-card-overlap)$/"
       },
       "note": "The control: the same banner-high gap on the page under test — the rank rows keep their floor, the hand and plates give, no rank-too-short or field-card-overlap"
+    },
+    {
+      "id": "board-overlap-phone",
+      "ref": "6d44324f5",
+      "patch": "seeded/board-banner.patch",
+      "sizes": "375x812",
+      "fights": 1,
+      "flags": "--only=haunt",
+      "expect": {
+        "kind": "layout",
+        "why": "board-overlap"
+      },
+      "note": "The gate 11-19 at 375x812 (降妖): the 杀招 banner and the hint up, our rank row of four cards slid over the player's own row — the phone had the rank floor but the field's track could still be lower than its two rows (fixed: one rule for every width, battle.css § The board never overlaps itself). Pinned at the commit before the fix; the patch holds a banner-and-hint-high gap under the beast, so the starved field is there on the first 降妖"
+    },
+    {
+      "id": "board-whole-control",
+      "ref": "HEAD",
+      "patch": "seeded/board-banner.patch",
+      "sizes": "375x812",
+      "fights": 1,
+      "flags": "--only=haunt",
+      "absent": true,
+      "expect": {
+        "kind": "layout",
+        "why": "board-overlap"
+      },
+      "note": "The control: the same banner-and-hint-high gap on the page under test — the ranks keep their floor and the field its two rows, no part of the board over another (the hand, plates or the scroll give)"
     }
   ]
 }
