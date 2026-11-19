@@ -6,7 +6,7 @@ index 72e44ea29..3b76a9b7c 100644
  
  /* ── 望气 and 杀招, under the beast ── */
  .bomen { display: grid; justify-items: center; gap: 4px; }
-+/* SEEDED (playbot selftest): the beast's banner and the hint always up — 130 px more under the beast, as the gate's 降妖 at 375 had them. */
++/* SEEDED (playbot selftest): the beast's banner and the hint always up, and some over (130 px under the beast; the gate's were ~70: the 杀招 line 33, the hint 30), so a starved field is there on the first 降妖 at 375 whatever the ranks hold. */
 +.bomen::after { content: ''; display: block; height: 130px; }
  /* never display:none — the room's rows are fixed, and an empty omen keeps its row at no height */
  .bintent, .bcharge { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; justify-content: center; max-width: min(640px, 100%); padding: 3px 14px; font-family: var(--ui); font-size: 12.5px; color: var(--ink-2); border-radius: 99px; background: rgba(255, 255, 255, 0.45); border: 1px dashed var(--ink-line); }

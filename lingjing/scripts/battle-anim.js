@@ -306,9 +306,10 @@ function foeCardSpot(root, plate) {
 /* The beast's 功法, face up beside its plate a moment, then gone to ink. */
 async function showFoeCard(root, html) {
   const plate = q(root, '.bside.foe .bplate');
-  const field = q(root, '.bfield');
-  if (!html || !plate || !field || still()) return;
-  const p = inRoom(root, plate), f = inRoom(root, field);
+  // the field is the two ranks and the seam between (`.bfield` has no box of its own: its parts are tracks of the board's grid)
+  const top = q(root, '.brank.theirs'), foot = q(root, '.brank.mine');
+  if (!html || !plate || !top || !foot || still()) return;
+  const p = inRoom(root, plate), t = inRoom(root, top), b = inRoom(root, foot), f = { h: b.y + b.h - t.y };
   const h = Math.min(f.h * 0.9, 190), w = h * 0.71;
   // Beside the plate where there is room, else on a spot that covers no words (foeCardSpot).
   const box = p.x - w - 28 > 8 ? { x: p.x - w - 28, y: p.y, w, h } : foeCardSpot(root, p);
