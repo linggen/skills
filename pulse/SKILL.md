@@ -22,11 +22,10 @@ allowed-tools:
   - WebSearch
   - WebFetch
   # Memory READS only — this skill looks the founder's own context up and
-  # never curates their biography. Named tool by tool rather than the whole
-  # `mcp__memory` server, which would hand it the writes too.
+  # never curates their biography. `memory_search` is every read (search,
+  # one row by id, a list); named alone rather than the whole `mcp__memory`
+  # server, which would hand it the writes too.
   - mcp__memory__memory_search
-  - mcp__memory__memory_list
-  - mcp__memory__memory_get
 user-invocable: true
 cwd: ~/.linggen/skills/pulse
 install: install.sh
