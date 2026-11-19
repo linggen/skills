@@ -214,7 +214,7 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120
   // other inside its own box). Two hard findings, both only on `.brank > .bminion` — never the hand's cards, which overlap by
   // design (the fan): `rank-too-short`, a body shorter than `bodyFloor` px (66: the rank floor --mmin 70 less the row's 4 px of padding — the
   // name's row, the status label above it and both gems each have a line of their own at that height, a 护主's double frame too); and `field-card-overlap`, any two of its parts — the name's words, the
-  // status label, the 攻 and 血 gems — whose boxes cross. An empty slot's circle cut at its top or bottom by a rank row lower
+  // status label, the 攻 and 血 gems — whose boxes cross by a fifth of the smaller one or more. An empty slot's circle cut at its top or bottom by a rank row lower
   // than it is `rank-too-short` as well (el_kind slot).
   for (const rank of root.querySelectorAll('.battle .brank')) {
     if (rank.closest('.battle.over') || !vis(rank) || moving(rank)) continue;
@@ -239,7 +239,9 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120
       for (let i = 0; i < parts.length; i += 1) for (let j = i + 1; j < parts.length; j += 1) {
         const a = parts[i].q, c = parts[j].q;
         const w = Math.min(a.right, c.right) - Math.max(a.left, c.left), h = Math.min(a.bottom, c.bottom) - Math.max(a.top, c.top);
-        if (w > 2 && h > 2) fails.push({ el_kind: 'card', why: 'field-card-overlap', el: label(b), parts: [parts[i].name, parts[j].name], overlap: [Math.round(w), Math.round(h)], rect: [r.left, r.top, r.width, r.height].map(Math.round) });
+        // Their boxes cross by more than a corner's worth: a long name's line box touching the gem under it (木草泥马 on the
+        // phone's 80 px card, 6×5 px of box, no ink) is the design; a part laid over another is a fifth of the smaller one or more.
+        if (w > 2 && h > 2 && w * h >= 0.2 * Math.min(a.width * a.height, c.width * c.height)) fails.push({ el_kind: 'card', why: 'field-card-overlap', el: label(b), parts: [parts[i].name, parts[j].name], overlap: [Math.round(w), Math.round(h)], rect: [r.left, r.top, r.width, r.height].map(Math.round) });
       }
     }
   }
