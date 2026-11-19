@@ -198,8 +198,9 @@
 /* The field has no box of its own: its two ranks and the seam are tracks of the board's grid (so sizing is one statement, below). */
 .bfield { display: contents; }
 /* a rank with nobody on it asks for its circle and a little, not a body's height */
-.battle:has(.bfield > .brank.theirs:not(:has(> .bminion:not(.empty)))) { --tmin: 48px; --tmax: var(--rempty); }
-.battle:has(.bfield > .brank.mine:not(:has(> .bminion:not(.empty)))) { --ymin: 48px; --ymax: var(--rempty); }
+/* (the bodies stand from the left, so a rank whose first place is empty has nobody; no :has inside a :has) */
+.battle:has(.bfield > .brank.theirs > .bminion.empty:first-child) { --tmin: 48px; --tmax: var(--rempty); }
+.battle:has(.bfield > .brank.mine > .bminion.empty:first-child) { --ymin: 48px; --ymax: var(--rempty); }
 .brank { display: flex; justify-content: center; align-items: center; gap: 10px; height: 100%; min-height: 0; padding: 2px 0; box-sizing: border-box; }
 .brank.theirs { align-items: flex-end; }
 .brank.mine { align-items: flex-start; }
