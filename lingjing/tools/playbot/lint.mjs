@@ -12,7 +12,7 @@
 // what it lies over reads as covered; and a cut sideways is excused only by a scroller that scrolls sideways (切磋's 重腿).
 
 /** The lint, as a function the page runs (page.evaluate(LINT, opts)). Returns { fails: [...], warns: [...] }. */
-export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120 } = {}) => {
+export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120, bodyFloor = 66 } = {}) => {
   const W = innerWidth, H = innerHeight;
   // A scratch save's own furniture (the 测试存档 badge, the dev 游戏厅 link): never on a player's page.
   const DEV_ONLY = '.scratch-badge, .dev-arcade';
@@ -163,6 +163,88 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120
     if (shown < minShown) fails.push({ el_kind: kind, why: 'covered', shown: Math.round(shown * 100) / 100, el: label(e), by: by ? label(by) : null, rect: [r.left, r.top, r.width, r.height].map(Math.round) });
   }
   } finally { for (const [x, was] of solid) x.style.pointerEvents = was; }
+  // DECLARED summary clamps: a line clamp that was chosen on purpose, whose whole line is one tap away. A cut by one is a
+  // SOFT `summary-clamp` finding (the reviewer puts one question to the owner on 试玩台 unless rulings.jsonl already
+  // answers it), never a hard `ellipsis-cut`. Keep this list short: each entry a selector and its one-line reason; anything
+  // not on it that an ellipsis or a clamp cuts is hard.
+  const SUMMARY_CLAMPS = [
+    { sel: '#tray .card.task.agenda .tsteps, #tray .card.task.agenda .tpay', reason: 'the tray card is the head of the 事 list (lingjing.css, 1df2ced41, 2026-11-04); the whole line is one tap away in the book' },
+  ];
+  // Words cut by an ellipsis (the gate's playbot, 2026-11-19 at 375: the footer's 「还有：…」 — the name of what waits cut
+  // away whole, and nothing above saw it: the 「…」 sat inside the chip's own box, so no box lay over anything). Hanli's
+  // ruling for this game (2026-11-08): 「折行可以，不截断就好」 — text may wrap, it is never cut. A shown element whose
+  // `text-overflow: ellipsis` box holds more than it shows (scrollWidth > clientWidth), or whose line clamp hides lines
+  // (scrollHeight > clientHeight), is a FAIL; the dev-only furniture is excused, as everywhere above.
+  for (const e of root.querySelectorAll('*')) {
+    if (e.closest(DEV_ONLY) || !vis(e) || moving(e)) continue;
+    const cs = getComputedStyle(e);
+    const wide = cs.textOverflow === 'ellipsis' && cs.overflowX !== 'visible' && e.scrollWidth - e.clientWidth > 1;
+    const tall = cs.webkitLineClamp && cs.webkitLineClamp !== 'none' && e.scrollHeight - e.clientHeight > 1;
+    if (!wide && !tall) continue;
+    const r = e.getBoundingClientRect();
+    const found = { el_kind: 'text', el: label(e), by: wide ? 'text-overflow' : 'line-clamp',
+      text: (e.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 60), rect: [r.left, r.top, r.width, r.height].map(Math.round) };
+    // A declared summary clamp (SUMMARY_CLAMPS) is the owner's to rule on: a soft finding, never silenced, never hard.
+    const declared = tall && !wide ? SUMMARY_CLAMPS.find((c) => e.matches(c.sel)) : null;
+    if (declared) warns.push({ ...found, why: 'summary-clamp', reason: declared.reason });
+    else fails.push({ ...found, why: 'ellipsis-cut' });
+  }
+  // A TAB ROW read whole (the gate's playbot, 2026-11-19 at 375: the bag's 「剧情 13」 read 「剧情 1」 — a wrong count, in a
+  // sideways scroller with its scrollbar hidden, so nothing said more was there; the scroller's excuse above let it by). The
+  // rule is for a `role=tablist` that clips (overflow-x not visible): any tab of it that lies past the row's box, cut at an
+  // edge or hidden whole, is a FAIL. A tab row is a choice among labels, read whole and never swiped. It does not fire on the
+  // rows meant to be swiped — the tray of cards, the hand, the roads row, the footer chips — for none is a tablist, and the
+  // cut child there is itself the sign that more is to come.
+  for (const row of root.querySelectorAll('[role=tablist]')) {
+    if (row.closest(DEV_ONLY) || !vis(row) || /^(visible)$/.test(getComputedStyle(row).overflowX)) continue;
+    const q = row.getBoundingClientRect();
+    for (const tab of row.children) {
+      if (!vis(tab) || moving(tab)) continue;
+      const r = tab.getBoundingClientRect();
+      if (r.right > q.right + 1 || r.left < q.left - 1) {
+        fails.push({ el_kind: 'tab', why: 'tab-cut', el: label(tab), text: (tab.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 40),
+          shown: Math.round(Math.max(0, Math.min(r.right, q.right) - Math.max(r.left, q.left)) / (r.width || 1) * 100) / 100,
+          rect: [r.left, r.top, r.width, r.height].map(Math.round), row: [q.left, q.top, q.width, q.height].map(Math.round) });
+      }
+    }
+  }
+  // A FIELD CARD (a body on a rank: `.brank > .bminion`) whole (the gate's playbot, 2026-11-19 at 1280×820, the beast's two-line
+  // 杀招 banner up: the field gave the ranks ~30 px, 土墙's name was gone, 「护主 · 不出手」 sat under its cost gem, 「已出手」 read
+  // 「手」 — and nothing above saw it: a card is a tap spot, so its words are never measured, and one card's parts lie over each
+  // other inside its own box). Two hard findings, both only on `.brank > .bminion` — never the hand's cards, which overlap by
+  // design (the fan): `rank-too-short`, a body shorter than `bodyFloor` px (66: the rank floor --mmin 70 less the row's 4 px of padding — the
+  // name's row, the status label above it and both gems each have a line of their own at that height, a 护主's double frame too); and `field-card-overlap`, any two of its parts — the name's words, the
+  // status label, the 攻 and 血 gems — whose boxes cross by a fifth of the smaller one or more. An empty slot's circle cut at its top or bottom by a rank row lower
+  // than it is `rank-too-short` as well (el_kind slot).
+  for (const rank of root.querySelectorAll('.battle .brank')) {
+    if (rank.closest('.battle.over') || !vis(rank) || moving(rank)) continue;
+    for (const slot of rank.querySelectorAll(':scope > .bminion.empty')) {
+      const dot = slot.querySelector('i');
+      if (!dot || !vis(slot) || !vis(dot)) continue;
+      const sr = slot.getBoundingClientRect(), dr = dot.getBoundingClientRect();
+      if (dr.top < sr.top - 1 || dr.bottom > sr.bottom + 1) fails.push({ el_kind: 'slot', why: 'rank-too-short', el: label(slot), size: [sr.width, sr.height].map(Math.round), circle: Math.round(dr.height), rect: [sr.left, sr.top, sr.width, sr.height].map(Math.round) });
+    }
+    const bodies = [...rank.querySelectorAll(':scope > .bminion:not(.empty)')].filter(vis);
+    for (const b of bodies) {
+      const r = b.getBoundingClientRect();
+      if (r.height < bodyFloor - 0.5) fails.push({ el_kind: 'card', why: 'rank-too-short', el: label(b), floor: bodyFloor, size: [r.width, r.height].map(Math.round), rect: [r.left, r.top, r.width, r.height].map(Math.round) });
+      const parts = [];
+      for (const [name, sel] of [['name', '.bname'], ['status', 'small'], ['atk', '.batk'], ['hp', '.bhp']]) {
+        const part = b.querySelector(sel);
+        if (!part || !vis(part)) continue;
+        let q = part.getBoundingClientRect();
+        if (name === 'name') { const range = document.createRange(); range.selectNodeContents(part); const rs = [...range.getClientRects()].filter((x) => x.width > 2 && x.height > 2); if (!rs.length) continue; q = rs.reduce((a, x) => new DOMRect(Math.min(a.left, x.left), Math.min(a.top, x.top), Math.max(a.right, x.right) - Math.min(a.left, x.left), Math.max(a.bottom, x.bottom) - Math.min(a.top, x.top)), rs[0]); }
+        parts.push({ name, q });
+      }
+      for (let i = 0; i < parts.length; i += 1) for (let j = i + 1; j < parts.length; j += 1) {
+        const a = parts[i].q, c = parts[j].q;
+        const w = Math.min(a.right, c.right) - Math.max(a.left, c.left), h = Math.min(a.bottom, c.bottom) - Math.max(a.top, c.top);
+        // Their boxes cross by more than a corner's worth: a long name's line box touching the gem under it (木草泥马 on the
+        // phone's 80 px card, 6×5 px of box, no ink) is the design; a part laid over another is a fifth of the smaller one or more.
+        if (w > 2 && h > 2 && w * h >= 0.2 * Math.min(a.width * a.height, c.width * c.height)) fails.push({ el_kind: 'card', why: 'field-card-overlap', el: label(b), parts: [parts[i].name, parts[j].name], overlap: [Math.round(w), Math.round(h)], rect: [r.left, r.top, r.width, r.height].map(Math.round) });
+      }
+    }
+  }
   // The hand's card big enough to read (the gate's playbot, 11-07 at 375: the 杀招 line, both ranks full and the 丹 row at
   // once squeezed the wheel's centre card to 65×90 — its name cut, its words under its 「气血已满」, and nothing above saw it,
   // for nothing lay over anything). In a fight, the card a thumb reads — the phone wheel's centre (battle-wheel.js: the one
