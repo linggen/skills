@@ -33,6 +33,7 @@ app:
   title: Pulse
   launcher: web
   entry: scripts/pulse.html
+  settings: scripts/settings.html
   width: 1200
   height: 900
   # Not finished — stay out of the launcher's tab bar until it is. Still runs
