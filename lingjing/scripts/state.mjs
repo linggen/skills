@@ -3,7 +3,6 @@
 import { afterParts, parseAfter, readThrough, sceneBoards } from './rules/parts.mjs';
 import { herSlotsCarry, slotsCarry } from './rules/wear.mjs';
 
-export const STATE_VERSION = 19;
 export const FIRST_WORLD = 'jiuding'; // the world every save before worlds was playing
 
 export function firstChapter(content) {
@@ -598,7 +597,7 @@ export function addProgress(content, state, amount, mayStep = null) {
    ifs): each step takes the save as the version before left it. Given the
    world, the save is also fitted to it (fitWorld). */
 const move = (m, from, to) => { if (from in m) { m[to] = m[from]; delete m[from]; } };
-const MIGRATIONS = [
+export const MIGRATIONS = Object.freeze([
   // v1–v4: version 1 used the world's words as keys; version 2 had no
   // `world` — it was always 《九鼎》; v4: 'quests' was the record of the apps'
   // 功课 being paid, and the word now belongs to 差事 (design.md § 差事).
@@ -683,7 +682,11 @@ const MIGRATIONS = [
   // world's): the 秘境令 held goes, with the day's count of keys dropped; the 阵 stands at its first level with today's draw
   // unused. Everything else is kept; 修为 past the bar is the cap's on load (rules/cap.mjs settleCap), never done by hand.
   [19, m => { m.econ_carry = true; }],
-];
+]);
+
+/* The newest version these rules play is the last step's number — derived, never typed, so a step added to the table is
+   the bump (tests/state-version.test.mjs: no gap, frozen). SKILL.md `cloud.further.newest` must equal it. */
+export const STATE_VERSION = MIGRATIONS.at(-1)[0];
 
 /* v19's carry (econ_carry): the 秘境令 (mijing.json `key`) out of the bag and the 秘境's key counter (`mijing.drops`) gone; the
    聚灵阵 at its first level, nothing drawn today; a thing the world holds once (items.json `one`) down to one. A run or a 闭关 under way stays as it is (neither carries the door's or the
