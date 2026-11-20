@@ -43,11 +43,11 @@
 /* A fixed width: the board never narrows as the hand runs down (his, 2026-09-29). */
 .battle {
   position: relative; isolation: isolate; width: 100%; height: 100%; box-sizing: border-box;
-  display: grid; grid-template-rows: auto auto auto minmax(var(--tmin), var(--tmax)) auto minmax(var(--ymin), var(--ymax)) auto var(--dock-track); gap: 6px;
+  display: grid; grid-template-rows: var(--fit) var(--fit) var(--fit) minmax(var(--tmin), var(--tmax)) var(--fit) minmax(var(--ymin), var(--ymax)) var(--fit) var(--dock-track); gap: 6px;
   padding: 10px 18px 8px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; /* y: only when the rows' floors do not fit (the last give, below) */
   --ch: clamp(150px, 22vh, 200px); --cw: calc(var(--ch) * .71); --lift: 16px; --mh: clamp(112px, 18vh, 170px); --mw: calc(var(--mh) * .84); --plate: clamp(78px, 12vh, 120px);
   /* the board's rows (§ The board never overlaps itself, at the foot of this file) */
-  --mmin: 70px; --rmax: 1fr; --rempty: 1fr; --dock-track: auto;
+  --fit: minmax(min-content, auto); --mmin: 70px; --rmax: 1fr; --rempty: 1fr; --dock-track: auto;
   --tmin: var(--mmin); --tmax: var(--rmax); --ymin: var(--mmin); --ymax: var(--rmax);
   font-family: var(--serif); color: var(--ink);
   background:
@@ -209,8 +209,8 @@
 .brank.lost-one { animation: dust .5s ease-out; }
 @keyframes dust { 0% { background: rgba(31, 28, 24, 0.08); } 100% { background: transparent; } }
 .bseam { position: relative; display: flex; justify-content: center; min-height: auto; }
-/* The seam is an `auto` track of the board, sized by its own minimum — its words as they stand once wrapped (an explicit min-height would switch
-   that off and the track would be one line high: the hint spilling onto our rank). Its 18 px floor is a 0-wide item in its first line. */
+/* The seam is a --fit track of the board (§ The board never overlaps itself), never lower than its words as they stand once wrapped.
+   Its 18 px floor is a 0-wide item in its first line. */
 .bseam::after { content: ''; flex: none; width: 0; height: 18px; margin-left: -10px; }
 .bseam::before { content: ''; position: absolute; left: 6%; right: 6%; top: 50%; height: 1px; background: linear-gradient(90deg, transparent, var(--ink-line) 18%, var(--ink-line) 82%, transparent); }
 /* 上一手: the last moves, faint, on the seam — a note, not a log. */
@@ -913,8 +913,13 @@ body.fighting .focus > .gshell > .gshell-bar { padding-bottom: 4px; background: 
    board and another part pays for it — so the rule stands once, for every width, in the board's own rows at the top of this
    file (`.battle`'s grid-template-rows, with `.bfield` flattened into them); the lint's `board-overlap` holds it:
      · a rank row is never lower than --mmin, 70 (an empty one never lower than its circle, 48): the floor of its track;
-     · the seam is an `auto` track, as tall as its words once wrapped, so the field is never lower than its two rows and the
+     · the seam is a track, as tall as its words once wrapped, so the field is never lower than its two rows and the
        seam between — they are tracks of the one grid, none can spill onto what lies beside it;
+     · every row that is not a rank or the dock — the head, the beast's side, the banner, the seam, the player's row — is a
+       --fit track, minmax(min-content, auto): never lower than what it holds. A plain `auto` track's floor is its part's own
+       min-height when one is set (.btop's 26, the beast's plate), so on a short board the head sank to 26 px and its third line
+       (「银月借力 · …」) ran onto the beast's name (the gate 2026-11-20 at 375×812). A part's min-height is a floor inside its
+       row, never the row's;
      · what gives, in this order: (1) the ranks, from what they ask (--rmax: --mh on a phone, whatever is left on the desk) down
        to --mmin; (2) the hand, down to its floor — the phone's dock to --handfloor, 180 (a centre card of 128, never under the
        lint's 120), the desk's cards, plates, gaps and dock foot a little smaller on a short screen (below), always, never only
