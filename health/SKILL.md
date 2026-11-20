@@ -27,6 +27,7 @@ app:
   title: Health
   launcher: web
   entry: scripts/index.html
+  settings: scripts/settings.html
   width: 1200
   height: 880
 quests:

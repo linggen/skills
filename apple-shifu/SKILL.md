@@ -22,6 +22,7 @@ app:
   title: Apple Shifu
   launcher: web
   entry: scripts/index.html
+  settings: scripts/settings.html
   width: 1100
   height: 800
 quests:

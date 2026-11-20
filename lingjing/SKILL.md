@@ -25,6 +25,7 @@ app:
   title: Lingjing
   launcher: web
   entry: scripts/index.html
+  settings: scripts/settings.html
   width: 1280
   height: 820
   allow: [camera]

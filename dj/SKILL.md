@@ -45,6 +45,7 @@ app:
   title: DJ
   launcher: web
   entry: scripts/index.html
+  settings: scripts/settings.html
   width: 1100
   height: 820
   allow: [microphone]

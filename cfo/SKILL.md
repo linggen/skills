@@ -35,6 +35,7 @@ app:
   title: CFO
   launcher: web
   entry: scripts/index.html
+  settings: scripts/settings.html
   width: 1200
   height: 860
 quests:
