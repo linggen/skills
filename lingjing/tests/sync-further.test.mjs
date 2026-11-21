@@ -3,9 +3,10 @@
 // The phone's save (v18: 116 scenes, 筑基 · 383) lost to the Mac's (105 scenes, 筑基 · 56) because the Mac's had been
 // migrated to v19 seconds before the phone read it, and the rule put the version first. Now scenes done come first
 // (a migration carries them whole), the version second, and `newest` (STATE_VERSION) lets a save from a newer build
-// win outright. `verdict` below reads the rule exactly as the engine (src/account/cloud_save/further.rs) and the phone
-// (lingjing_further.dart) do — each repo replays the same cases against its own reader. Fixtures hold only the keys the
-// rule reads, never the player's save.
+// win outright. `verdict` below reads the rule as the engine (src/account/cloud_save/further.rs) and the phone
+// (lingjing_further.dart) do, for these cases only; the cases BOTH of them run, byte for byte one file, are
+// tests/further-cases.json (owner: tests/further-cases.test.mjs). Fixtures hold only the keys the rule reads, never
+// the player's save.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
