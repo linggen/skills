@@ -50,8 +50,9 @@ cloud:
   # Scenes done decide first, then the save's version (2026-11-12): the count of scenes done means the same at every
   # version — a migration carries `done_scenes` forward whole — so a save further on in play never loses to one that
   # only migrated first (11-12: the phone's v18 save at 116 scenes lost to the Mac's 105, migrated to v19 seconds
-  # before). The phone brings both saves to its own rules' version before it compares; the engine cannot migrate, so
-  # there the version still decides the 层 and 修为 (read on another ladder at another version) at equal scenes.
+  # before). No side brings a save to another version before it compares (the engine cannot; the phone stopped on
+  # 2026-11-21, so both name the same winner): at equal scenes the version decides before the 层 and 修为, which
+  # read on another ladder at another version. The winner is migrated when it is played.
   # `newest` is the newest version these rules play (state.mjs STATE_VERSION; tools/further.mjs refuses a mismatch):
   # a save past it is from a newer build and wins outright, so an older build never writes over it.
   further:
