@@ -95,12 +95,22 @@ else
   echo "Skill files already in place at $SKILL_DIR/ (skipping copy)."
 fi
 
-# Seed config.json only on first install; existing settings are never changed.
+# Seed config.json from the example on first install. On upgrades,
+# merge in any new top-level keys without overwriting existing values.
 if [ ! -f "$SKILL_DIR/config.json" ]; then
   cp "$SOURCE_DIR/config.example.json" "$SKILL_DIR/config.json"
   echo "  Seeded $SKILL_DIR/config.json from example. Edit in Settings to configure."
 else
-  echo "  Existing $SKILL_DIR/config.json left alone."
+  # Forward-compat merge: example provides defaults for any top-level
+  # keys the user's config is missing. User's values win where both
+  # have a key.
+  if command -v jq >/dev/null 2>&1; then
+    merged="$(jq -s '.[0] * .[1]' "$SOURCE_DIR/config.example.json" "$SKILL_DIR/config.json")"
+    if [ -n "$merged" ]; then
+      printf '%s\n' "$merged" > "$SKILL_DIR/config.json"
+      echo "  Merged new top-level keys into $SKILL_DIR/config.json (existing values preserved)."
+    fi
+  fi
 fi
 
 # Seed brief.md from the example on first install. Brief is the user's
