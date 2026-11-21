@@ -29,6 +29,8 @@ allowed-tools:
 user-invocable: true
 cwd: ~/.linggen/skills/pulse
 install: install.sh
+# The brief is the founder's own file: an update never replaces it.
+keep: [references/brief.md]
 app:
   title: Pulse
   launcher: web

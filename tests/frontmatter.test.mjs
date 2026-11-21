@@ -21,7 +21,7 @@ const ENGINE_KEYS = [
   'allowed-tools', 'allow-skills', 'renamed-from', 'model', 'context', 'memory-context',
   'memory-recall-min-score', 'memory-recall-count', 'agent', 'trigger', 'app', 'permission', 'cwd',
   'install', 'sync', 'cloud', 'product', 'suggestions', 'closing-ask', 'queue', 'quests', 'notices', 'place', 'members', 'senses', 'session-params',
-  'world-line', 'activity-verbs', 'private-talk', 'offers',
+  'world-line', 'activity-verbs', 'private-talk', 'offers', 'keep',
 ];
 const STANDARD_KEYS = ['license', 'homepage', 'metadata', 'compatibility'];
 const KNOWN = new Set([...ENGINE_KEYS, ...STANDARD_KEYS]);
@@ -109,12 +109,24 @@ export function problemsOf(dir, md) {
     if (!entry) problems.push('app.entry is required');
     else if (launcher === 'web' && !fs.existsSync(path.join(ROOT, dir, entry))) problems.push(`app.entry \`${entry}\` does not exist`);
   }
+  if (fm.has('keep')) problems.push(...keepProblems(scalar(fm.get('keep'))));
   if (fm.has('tools')) problems.push(...toolProblems(fm.get('tools')));
   if (fm.has('quests')) problems.push(...questProblems(fm.get('quests')));
   if (fm.has('world-line')) problems.push(...worldLineProblems(fm.get('world-line')));
   if (fm.has('activity-verbs')) problems.push(...verbProblems(fm.get('activity-verbs')));
   if (fm.has('offers')) problems.push(...offerProblems(fm.get('offers'), fm.get('tools'), fm.has('app')));
   return problems;
+}
+
+/* `keep:` — the skill's own files the person edits, kept on update. The engine reads any YAML list;
+   scripts/install-skill.mjs, pulse/install.sh and the app shell read one line, so a skill writes
+   it as an inline list (a block list would be kept by the engine and replaced by the others). */
+function keepProblems(value) {
+  const paths = /^\[(.*)\]$/.exec(value.trim());
+  if (!paths) return ['keep must be an inline list on one line, like `keep: [references/brief.md]`'];
+  return paths[1].split(',').map(x => unquote(x.trim())).filter(Boolean)
+    .filter(p => p.startsWith('/') || p.split('/').includes('..'))
+    .map(p => `keep: \`${p}\` is outside the skill folder`);
 }
 
 /* `offers:` — problem key → up to three `{ tool: <one of its tools> }` or
@@ -213,6 +225,13 @@ test('the checks catch what they are for', () => {
     '`Nope` is not one of its tools', 'is not `- { tool: X }`']) {
     assert.ok(got.some(p => p.includes(want)), `expected a problem mentioning "${want}" in ${JSON.stringify(got)}`);
   }
+});
+
+test('keep is an inline list inside the skill folder', () => {
+  const md = keep => `---\nname: demo\ndescription: d\n${keep}\n---\n`;
+  assert.deepEqual(problemsOf('demo', md('keep: [references/brief.md, notes]')), []);
+  assert.ok(problemsOf('demo', md('keep:\n  - references/brief.md')).some(p => p.includes('inline list')));
+  assert.ok(problemsOf('demo', md('keep: [../x, /abs]')).filter(p => p.includes('outside the skill folder')).length === 2);
 });
 
 /* Duplicate keys in one mapping. serde refuses them and the whole skill

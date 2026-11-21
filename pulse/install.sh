@@ -63,8 +63,8 @@ if [ "$SOURCE_REAL" != "$SKILL_REAL" ]; then
   # list: rsync's own --exclude is not used, because macOS's openrsync ignores
   # excludes next to --files-from and would write over config.json and data/.
   # What counts as the person's is written like install-skill.mjs: roots data,
-  # state, config.json, sessions, .installed; cloud.save/skip; `*.local.*`
-  # anywhere. tests/user-state-cases.json holds the two together.
+  # state, config.json, sessions, .installed; cloud.save/skip and `keep` in
+  # SKILL.md; `*.local.*` anywhere. tests/user-state-cases.json holds the two together.
   # A checkout copies only its tracked files (it may hold private untracked
   # ones); an archive holds only the shipped tree.
   FILE_LIST="$(mktemp -t pulse-files-XXXXXX)"
@@ -76,21 +76,28 @@ import sys
 
 src = sys.argv[1]
 
-# Pulse's editable brief is not declared in SKILL.md (it has no cloud save).
-keep = ['data', 'state', 'config.json', 'sessions', '.installed', 'references/brief.md']
+keep = ['data', 'state', 'config.json', 'sessions', '.installed']
+# What SKILL.md declares as the person's own: cloud.save / cloud.skip and the top-level `keep`,
+# each an inline list on one line. A path outside the skill folder is ignored.
+def items(text):
+    for item in text.split(','):
+        item = item.strip().strip("'\"").removeprefix('./').rstrip('/')
+        if item and not item.startswith('/') and '..' not in item.split('/'):
+            keep.append(item)
+
 in_cloud = False
 for line in open(os.path.join(src, 'SKILL.md'), encoding='utf-8').read().splitlines()[1:]:
     if line == '---':
         break
     if re.match(r'^\S', line):
         in_cloud = bool(re.match(r'^cloud:\s*$', line))
+        top = re.match(r'^keep:\s*\[(.*)\]\s*(?:#.*)?$', line)
+        if top:
+            items(top.group(1))
         continue
     match = re.match(r'^\s+(?:save|skip):\s*\[(.*)\]\s*(?:#.*)?$', line) if in_cloud else None
     if match:
-        for item in match.group(1).split(','):
-            item = item.strip().strip("'\"").removeprefix('./').rstrip('/')
-            if item:
-                keep.append(item)
+        items(match.group(1))
 
 def is_state(rel):
     under = any(rel == k or rel.startswith(k + '/') for k in keep)

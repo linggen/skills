@@ -6,7 +6,7 @@
 // tree ship. Here the source is always a git ref, the staged tree must pass a
 // syntax + import/export link check against what the install WILL be, each
 // file lands by tmp-write + rename, and user state (data/, state/,
-// config.json, sessions/, cloud.save/skip, *.local.*) is never touched.
+// config.json, sessions/, cloud.save/skip, the SKILL.md's `keep`, *.local.*) is never touched.
 //
 // Prune: the one delete. An install file goes only when it is not in the ref,
 // its path was once tracked under <skill>/ in git history, it is not user
@@ -74,20 +74,28 @@ function stage(repo, commit, skill) {
   return path.join(dir, skill);
 }
 
-// ── skill frontmatter: cloud.save / cloud.skip are user state too ───────────
-function cloudPaths(skillMd) {
+// ── skill frontmatter: what the skill declares as the person's own ──────────
+// `cloud.save`, `cloud.skip` and the top-level `keep` — each an inline list on one line. A path
+// outside the skill folder (absolute, or climbing with `..`) is ignored, as the engine's does.
+function declaredPaths(skillMd) {
   const lines = skillMd.split('\n');
   if (lines[0] !== '---') return [];
   const end = lines.indexOf('---', 1);
   const out = [];
+  const items = list => list.split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean);
   let inCloud = false;
   for (const line of lines.slice(1, end < 0 ? lines.length : end)) {
-    if (/^\S/.test(line)) { inCloud = /^cloud:\s*$/.test(line); continue; }
+    if (/^\S/.test(line)) {
+      inCloud = /^cloud:\s*$/.test(line);
+      const top = /^keep:\s*\[(.*)\]\s*(#.*)?$/.exec(line);
+      if (top) out.push(...items(top[1]));
+      continue;
+    }
     if (!inCloud) continue;
     const m = /^\s+(save|skip):\s*\[(.*)\]\s*(#.*)?$/.exec(line);
-    if (m) out.push(...m[2].split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean));
+    if (m) out.push(...items(m[2]));
   }
-  return out.map(p => p.replace(/^\.\//, '').replace(/\/+$/, ''));
+  return out.map(p => p.replace(/^\.\//, '').replace(/\/+$/, '')).filter(p => p && !p.startsWith('/') && !p.split('/').includes('..'));
 }
 
 const underAny = (rel, roots) => roots.some(r => rel === r || rel.startsWith(r + '/'));
@@ -376,7 +384,7 @@ async function main() {
 
   const staged = stage(repo, commit, o.skill);
   try {
-    const keep = [...USER_STATE, ...cloudPaths(fs.readFileSync(path.join(staged, 'SKILL.md'), 'utf8'))];
+    const keep = [...USER_STATE, ...declaredPaths(fs.readFileSync(path.join(staged, 'SKILL.md'), 'utf8'))];
     const files = walk(staged).filter(r => !isUserState(r, keep)).sort();
     const installed = new Set(walk(installDir));
     const extras = [...installed].filter(r => !underAny(r, keep) && !files.includes(r) && !/\.tmp\.\d+$/.test(r)).sort();
