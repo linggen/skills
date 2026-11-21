@@ -58,25 +58,28 @@ SKILL_REAL="$(cd "$SKILL_DIR" 2>/dev/null && pwd -P)" || SKILL_REAL="$SKILL_DIR"
 
 if [ "$SOURCE_REAL" != "$SKILL_REAL" ]; then
   echo "Installing pulse skill to $SKILL_DIR/"
-  # Copy the skill tree, not an asset list. Match install-skill.mjs's state
-  # exclusions, including cloud.save/skip; the editable brief is Pulse state too.
-  # A checkout may contain private, untracked files; archives contain only the
-  # shipped tree. Do not copy untracked checkout files.
-  FILE_LIST=""
-  if git -C "$SOURCE_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    FILE_LIST="$(mktemp -t pulse-files-XXXXXX)"
-    git -C "$SOURCE_DIR" ls-files -z -- . > "$FILE_LIST"
-  fi
-  rsync -rltp ${FILE_LIST:+--from0} ${FILE_LIST:+--files-from="$FILE_LIST"} --exclude-from=<(
-    printf '%s\n' '/data' '/state' '/config.json' '/sessions' '/.installed' \
-      '*.local.*' '/references/brief.md'
-    python3 - "$SOURCE_DIR/SKILL.md" <<'PY'
+  # Copy the skill tree, not an asset list — minus the person's own files. The
+  # list of files to copy is worked out here, once, and handed to rsync as a
+  # list: rsync's own --exclude is not used, because macOS's openrsync ignores
+  # excludes next to --files-from and would write over config.json and data/.
+  # What counts as the person's is written like install-skill.mjs: roots data,
+  # state, config.json, sessions, .installed; cloud.save/skip; `*.local.*`
+  # anywhere. tests/user-state-cases.json holds the two together.
+  # A checkout copies only its tracked files (it may hold private untracked
+  # ones); an archive holds only the shipped tree.
+  FILE_LIST="$(mktemp -t pulse-files-XXXXXX)"
+  python3 - "$SOURCE_DIR" > "$FILE_LIST" <<'PY'
+import os
 import re
+import subprocess
 import sys
 
-lines = open(sys.argv[1], encoding='utf-8').read().splitlines()
+src = sys.argv[1]
+
+# Pulse's editable brief is not declared in SKILL.md (it has no cloud save).
+keep = ['data', 'state', 'config.json', 'sessions', '.installed', 'references/brief.md']
 in_cloud = False
-for line in lines[1:]:
+for line in open(os.path.join(src, 'SKILL.md'), encoding='utf-8').read().splitlines()[1:]:
     if line == '---':
         break
     if re.match(r'^\S', line):
@@ -87,10 +90,21 @@ for line in lines[1:]:
         for item in match.group(1).split(','):
             item = item.strip().strip("'\"").removeprefix('./').rstrip('/')
             if item:
-                print('/' + item)
+                keep.append(item)
+
+def is_state(rel):
+    under = any(rel == k or rel.startswith(k + '/') for k in keep)
+    return under or '.local.' in os.path.basename(rel)
+
+tracked = subprocess.run(['git', '-C', src, 'ls-files', '-z', '--', '.'], capture_output=True)
+if tracked.returncode == 0:
+    files = [f for f in tracked.stdout.decode().split('\0') if f]
+else:
+    files = [os.path.relpath(os.path.join(d, f), src) for d, _, names in os.walk(src) for f in names]
+sys.stdout.write(''.join(f + '\0' for f in sorted(files) if not is_state(f)))
 PY
-  ) "$SOURCE_DIR/" "$SKILL_DIR/"
-  if [ -n "$FILE_LIST" ]; then rm -f "$FILE_LIST"; fi
+  rsync -rltp --from0 --files-from="$FILE_LIST" "$SOURCE_DIR/" "$SKILL_DIR/"
+  rm -f "$FILE_LIST"
 else
   echo "Skill files already in place at $SKILL_DIR/ (skipping copy)."
 fi
