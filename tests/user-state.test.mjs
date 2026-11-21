@@ -1,8 +1,9 @@
 // What is a person's own file inside an installed skill is decided in ONE place
 // per repo, and the repos are held together by one file of cases:
 // tests/user-state-cases.json — byte-identical to the engine's
-// crates/linggen-engine/src/extensions/user_state_cases.json (the engine's
-// marketplace update runs the same cases in its own test).
+// crates/linggen-engine/src/extensions/user_state_cases.json and to
+// linggen-app/shell/src/skill_sync/user_state_cases.json (the engine's marketplace
+// update and the Mac app's bundled-skill sync run the same cases in their own tests).
 //
 // Here every installer in THIS repo runs the cases against a scratch HOME:
 // scripts/install-skill.mjs and pulse/install.sh. The same installed folder,
@@ -24,9 +25,9 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CASES_FILE = path.join(ROOT, 'tests', 'user-state-cases.json');
-// The engine's test pins the same value (user_state_cases.json). Change the cases
-// in BOTH repos, then both pins.
-const CASES_SHA256 = '49fd47c8e18f5cc06313b101a719dee704a05801d7647cbe880d7af548d4c1fa';
+// The engine's and the app shell's tests pin the same value. Change the cases
+// in all three repos, then all three pins.
+const CASES_SHA256 = 'a2f1b710490015124510fa5679b8e0a8b6f384e42e6e57b71f6f17f5a5b8049a';
 const cases = JSON.parse(fs.readFileSync(CASES_FILE, 'utf8'));
 
 const BASES = [];
@@ -165,10 +166,31 @@ test('pulse/install.sh: an update keeps every file of the person\'s', () => {
   assertRows('pulse/install.sh', outcomes(installDir), { removesDropped: false });
 });
 
+// ── pulse declares its brief itself ─────────────────────────────────────────
+// The brief is a file the person edits. No installer names it: pulse/SKILL.md declares it with
+// `keep`, so an update by pulse/install.sh (and the engine's, the app's) leaves it as written.
+test('pulse/install.sh: the brief pulse/SKILL.md declares comes through an update', () => {
+  const s = scratch();
+  const installDir = path.join(s.home, '.linggen', 'skills', 'pulse');
+  const real = f => fs.readFileSync(path.join(ROOT, 'pulse', f), 'utf8');
+  const tree = new Map([['SKILL.md', real('SKILL.md')]]);
+  const extra = { 'install.sh': real('install.sh'), 'config.example.json': '{}\n', 'references/brief.example.md': 'seed brief\n', 'references/brief.md': 'shipped brief\n' };
+  const run = () => spawnSync('bash', [path.join(s.repo, 'pulse', 'install.sh')], { env: s.env, encoding: 'utf8' });
+
+  s.commitTree('pulse', tree, extra);
+  assert.equal(run().status, 0);
+  write(installDir, 'references/brief.md', 'the founder wrote this\n');
+  s.commitTree('pulse', new Map([['SKILL.md', real('SKILL.md') + '\nmore\n']]), extra);
+  const update = run();
+  assert.equal(update.status, 0, update.stdout + update.stderr);
+  assert.equal(readOrNull(installDir, 'references/brief.md'), 'the founder wrote this\n');
+  assert.doesNotMatch(real('install.sh'), /brief\.md'\]/, 'install.sh names no file of the skill as state: SKILL.md declares it');
+});
+
 // ── the contract is the same file in both repos ─────────────────────────────
 test('the cases file is the one the engine runs', () => {
   const sha = crypto.createHash('sha256').update(fs.readFileSync(CASES_FILE)).digest('hex');
-  assert.equal(sha, CASES_SHA256, 'tests/user-state-cases.json changed: copy it to linggen/crates/linggen-engine/src/extensions/user_state_cases.json and set the sha256 in both tests');
+  assert.equal(sha, CASES_SHA256, 'tests/user-state-cases.json changed: copy it to linggen/crates/linggen-engine/src/extensions/user_state_cases.json and linggen-app/shell/src/skill_sync/user_state_cases.json, and set the sha256 in all three tests');
   // With an engine checkout at hand, compare the bytes themselves.
   const engine = process.env.LINGGEN_ENGINE_DIR;
   if (!engine) return;
