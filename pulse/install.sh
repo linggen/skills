@@ -58,54 +58,49 @@ SKILL_REAL="$(cd "$SKILL_DIR" 2>/dev/null && pwd -P)" || SKILL_REAL="$SKILL_DIR"
 
 if [ "$SOURCE_REAL" != "$SKILL_REAL" ]; then
   echo "Installing pulse skill to $SKILL_DIR/"
-  install -m 0644 "$SOURCE_DIR/SKILL.md"    "$SKILL_DIR/SKILL.md"
-  install -m 0644 "$SOURCE_DIR/index.html"  "$SKILL_DIR/index.html"
-  install -m 0644 "$SOURCE_DIR/product-spec.md" "$SKILL_DIR/product-spec.md"
-  for f in pulse.html pulse-app.js pulse-api.js page-render.js \
-           pulse.css style.css \
-           settings.html settings.js settings.css list-text.js mention-policy.js product-digest.js; do
-    install -m 0644 "$SOURCE_DIR/scripts/$f" "$SKILL_DIR/scripts/$f"
-  done
-  install -m 0755 "$SOURCE_DIR/scripts/gather-local.sh" "$SKILL_DIR/scripts/gather-local.sh"
-  install -m 0755 "$SOURCE_DIR/scripts/collect.sh" "$SKILL_DIR/scripts/collect.sh"
+  # Copy the skill tree, not an asset list. Match install-skill.mjs's state
+  # exclusions, including cloud.save/skip; the editable brief is Pulse state too.
+  # A checkout may contain private, untracked files; archives contain only the
+  # shipped tree. Do not copy untracked checkout files.
+  FILE_LIST=""
+  if git -C "$SOURCE_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    FILE_LIST="$(mktemp -t pulse-files-XXXXXX)"
+    git -C "$SOURCE_DIR" ls-files -z -- . > "$FILE_LIST"
+  fi
+  rsync -rltp ${FILE_LIST:+--from0} ${FILE_LIST:+--files-from="$FILE_LIST"} --exclude-from=<(
+    printf '%s\n' '/data' '/state' '/config.json' '/sessions' '/.installed' \
+      '*.local.*' '/references/brief.md'
+    python3 - "$SOURCE_DIR/SKILL.md" <<'PY'
+import re
+import sys
 
-  # Site adapters — registered as skill tools (FetchHackerNews, FetchReddit,
-  # FetchX, FetchHNSearch, ...). Copy the whole sites/ dir so newly-added
-  # adapters ship automatically instead of being forgotten in an enumerated
-  # list (which had silently dropped the X / Bluesky / thread scripts).
-  for f in "$SOURCE_DIR"/scripts/sites/*.sh "$SOURCE_DIR"/scripts/sites/*.py; do
-    [ -e "$f" ] || continue
-    install -m 0755 "$f" "$SKILL_DIR/scripts/sites/$(basename "$f")"
-  done
-
-  for f in style-guide.md lane-templates.md source-blogs.md brief.example.md x-setup-guide.md; do
-    install -m 0644 "$SOURCE_DIR/references/$f" "$SKILL_DIR/references/$f"
-  done
+lines = open(sys.argv[1], encoding='utf-8').read().splitlines()
+in_cloud = False
+for line in lines[1:]:
+    if line == '---':
+        break
+    if re.match(r'^\S', line):
+        in_cloud = bool(re.match(r'^cloud:\s*$', line))
+        continue
+    match = re.match(r'^\s+(?:save|skip):\s*\[(.*)\]\s*(?:#.*)?$', line) if in_cloud else None
+    if match:
+        for item in match.group(1).split(','):
+            item = item.strip().strip("'\"").removeprefix('./').rstrip('/')
+            if item:
+                print('/' + item)
+PY
+  ) "$SOURCE_DIR/" "$SKILL_DIR/"
+  if [ -n "$FILE_LIST" ]; then rm -f "$FILE_LIST"; fi
 else
   echo "Skill files already in place at $SKILL_DIR/ (skipping copy)."
 fi
 
-# Seed config.json from the example on first install. On upgrades,
-# merge in any new top-level keys (e.g. new sites added) without
-# overwriting the user's existing values.
-if [ "$SOURCE_REAL" != "$SKILL_REAL" ]; then
-  install -m 0644 "$SOURCE_DIR/config.example.json" "$SKILL_DIR/config.example.json"
-fi
+# Seed config.json only on first install; existing settings are never changed.
 if [ ! -f "$SKILL_DIR/config.json" ]; then
   cp "$SOURCE_DIR/config.example.json" "$SKILL_DIR/config.json"
   echo "  Seeded $SKILL_DIR/config.json from example. Edit in Settings to configure."
 else
-  # Forward-compat merge: example provides defaults for any top-level
-  # keys the user's config is missing. User's values win where both
-  # have a key. Top-level only — nested merging would surprise users
-  # whose intentional removals would be undone.
-  if command -v jq >/dev/null 2>&1; then
-    merged="$(jq -s '.[0] * .[1]' "$SOURCE_DIR/config.example.json" "$SKILL_DIR/config.json")"
-    if [ -n "$merged" ]; then
-      printf '%s\n' "$merged" > "$SKILL_DIR/config.json"
-      echo "  Merged new top-level keys into $SKILL_DIR/config.json (existing values preserved)."
-    fi
-  fi
+  echo "  Existing $SKILL_DIR/config.json left alone."
 fi
 
 # Seed brief.md from the example on first install. Brief is the user's
