@@ -150,6 +150,10 @@ test('prune: a file the repo deleted goes; untracked, edited, data/ and config.j
   t.write('demo/scripts/main.mjs', "import { gone } from './old/gone.js';\nconsole.log(gone);\n");
   t.commit('v2: gone.js, edited.js');
   assert.equal(t.run('demo', '--ref', 'HEAD').status, 0);
+  // A `*.local.*` file is the person's: the install never places it, even a tracked one (tests/user-state.test.mjs).
+  assert.ok(!fs.existsSync(t.installed('doc/notes.local.md')));
+  fs.mkdirSync(t.installed('doc'), { recursive: true });
+  fs.writeFileSync(t.installed('doc/notes.local.md'), 'tracked once, but *.local.*\n');
   fs.writeFileSync(t.installed('scripts/edited.js'), 'export const e = 2; // edited in the install\n');
   fs.writeFileSync(t.installed('scripts/mine.js'), '// never tracked\n');
   fs.writeFileSync(t.installed('config.json'), '{"key":"secret"}\n');

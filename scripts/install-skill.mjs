@@ -92,6 +92,11 @@ function cloudPaths(skillMd) {
 
 const underAny = (rel, roots) => roots.some(r => rel === r || rel.startsWith(r + '/'));
 const isLocal = rel => /\.local\./.test(path.posix.basename(rel));
+// THE rule for a person's own file: under a kept root, or named `*.local.*` anywhere. Every
+// filter below asks this; tests/user-state-cases.json holds it against the engine's marketplace
+// update (extensions/marketplace.rs `state_paths`) and pulse/install.sh.
+const isUserState = (rel, keep) => underAny(rel, keep) || isLocal(rel);
+// (A `*.local.*` file the install holds but the ref lacks is still listed as an untracked extra, never pruned.)
 
 // ── prune: sort the install's extras by what git knows of them ──────────────
 // Every blob each path under <skill>/ ever held, from one -z log (no quoting
@@ -372,7 +377,7 @@ async function main() {
   const staged = stage(repo, commit, o.skill);
   try {
     const keep = [...USER_STATE, ...cloudPaths(fs.readFileSync(path.join(staged, 'SKILL.md'), 'utf8'))];
-    const files = walk(staged).filter(r => !underAny(r, keep)).sort();
+    const files = walk(staged).filter(r => !isUserState(r, keep)).sort();
     const installed = new Set(walk(installDir));
     const extras = [...installed].filter(r => !underAny(r, keep) && !files.includes(r) && !/\.tmp\.\d+$/.test(r)).sort();
     const { prunable: once, modified, untracked: never } = sortExtras(repo, o.skill, installDir, extras);
