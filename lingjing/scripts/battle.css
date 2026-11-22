@@ -312,6 +312,10 @@
 .bacts > .bpouch { display: none; }
 .bdock > .bhand { flex: 1 1 0; min-width: 0; padding: 0 calc(var(--cw) * .3); }
 .bhand > .bcard:last-child:not(:first-child) .bleaf { left: auto; right: 0; }
+/* A spent hand (battle-card.js noHandHtml): two quiet lines in the dock's own room, on the phone's wheel as on the desk's fan. */
+.bhandnone { align-self: center; margin: 0 auto; display: grid; gap: 4px; justify-items: center; text-align: center; font-family: var(--ui); color: var(--ink-3); }
+.bhandnone b { font-family: var(--serif); font-size: 15px; font-weight: 500; letter-spacing: .12em; }
+.bhandnone small { font-size: 12px; }
 .bcard {
   position: relative; flex: 0 1 var(--cw); min-width: 0; height: var(--ch); padding: 0; border: 0; background: none; cursor: pointer;
   transform: translateY(var(--y, 0)) rotate(var(--r, 0deg)); transform-origin: 50% 120%; z-index: var(--z, 1);
@@ -645,6 +649,7 @@
   }
   .battle .bhand.turning > .bcard { transition: none; }
   .battle .bhand > .bcard.far { opacity: 0; pointer-events: none; }
+  .battle .bhand > .bhandnone { position: absolute; inset: 0; align-content: center; }
   .battle .bhand > .bcard:hover { transform: translateX(calc(var(--wx, 0) * var(--wcw))) rotateY(var(--wt, 0deg)) scale(var(--ws, 1)); }
   .battle .bhand > .bcard.held { transform: translateX(calc(var(--wx, 0) * var(--wcw))) translateY(-8px) scale(calc(var(--ws, 1) * 1.03)); z-index: 41; }
   .battle .bhand > .bcard .bleaf, .battle .bhand > .bcard:last-child:not(:first-child) .bleaf { inset: 0; width: 100%; height: 100%; padding: 7px 7px 16px; }

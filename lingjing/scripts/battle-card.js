@@ -120,7 +120,7 @@ function personWords(words, creature, lang) {
 
 export const WORDS = {
   zh: {
-    hp: '气血', mana: '灵力', deck: '牌库', hand: '手牌', power: '主灵根一击', end: '结束回合', theirTurn: '它的回合',
+    hp: '气血', mana: '灵力', deck: '牌库', hand: '手牌', handNone: '手牌已出完', handDraw: '结束回合，下回合再抽 1 张', power: '主灵根一击', end: '结束回合', theirTurn: '它的回合',
     it: '它', its: '它', itObj: '它',
     yours: '你的阵前', theirs: '它的阵前', empty: '空', taunt: '护主', arriving: '刚到',
     struck: '已出手', spoils: '所得', spoilsCard: '新得一张牌，往后可带进斗法：', spoilsBag: '收进储物袋：', spoilsClose: '收起', spoilsIn: '已入账', spoilsSpent: '用去：', spentTitle: '用去', xw: '修为', ls: '灵石', quit: '认输', won: '胜', passed: '试过了', lost: '败', withdrew: '它力竭遁走',
@@ -172,7 +172,7 @@ export const WORDS = {
   },
   en: {
     it: 'it', its: 'its', itObj: 'it',
-    hp: 'Life', mana: 'Force', deck: 'Deck', hand: 'Hand', power: 'Root Strike', end: 'End turn', theirTurn: 'Its turn',
+    hp: 'Life', mana: 'Force', deck: 'Deck', hand: 'Hand', handNone: 'Hand spent', handDraw: 'End the turn; you draw 1 next turn', power: 'Root Strike', end: 'End turn', theirTurn: 'Its turn',
     yours: 'Your rank', theirs: 'Its rank', empty: 'empty', taunt: 'Guard', arriving: 'just arrived',
     struck: 'has struck', spoils: 'Spoils', spoilsCard: 'A new card, yours to take into a fight:', spoilsBag: 'Into the pouch: ', spoilsClose: 'Put away', spoilsIn: 'already yours', spoilsSpent: 'Used up: ', spentTitle: 'Used up', xw: 'Cultivation', ls: 'Stones', quit: 'Yield', won: 'Won', passed: 'Passed', lost: 'Lost', withdrew: 'It withdrew',
     wonSays: ['It drops low and backs into the grass.', 'It lowers its head and walks slowly off.', 'It blows a few hard breaths and turns away.', 'It gives in, backs three steps, and comes no closer.', 'It gives you one look and slips into the trees.',
@@ -488,8 +488,16 @@ function pouchRowHtml(st, ctx, picked) {
   return `<div class="bpouch"><button type="button" class="dn-fold" aria-label="${esc(ctx.lang === 'en' ? 'Pills' : '丹囊')}"><span class="dn-seal">丹</span><b>×${(st.you.pouch ?? []).length}</b></button>${tray}</div>`;
 }
 
+/* A spent hand keeps the dock's room (the board never jumps as the hand empties and fills) and says so, with what comes
+   next (Hanli, 2026-11-21: the 430 phone's empty band under the board — 「写几个字」). */
+function noHandHtml(st, w) {
+  const next = st.outcome === 'open' && st.whose === 'you' && st.you.deck > 0 ? `<small>${esc(w.handDraw)}</small>` : '';
+  return `<div class="bhandnone"><b>${esc(w.handNone)}</b>${next}</div>`;
+}
+
 function handHtml(st, ctx, picked) {
   const w = ctx.words, n = st.you.hand.length;
+  if (!n) return noHandHtml(st, w);
   return st.you.hand.map((id, index) => {
     const c = ctx.catalog[id];
     if (!c) return '';
