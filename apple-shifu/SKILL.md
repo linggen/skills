@@ -256,6 +256,7 @@ tools:
       SystemReadout. Returns JSON; empty object if no scan has completed yet.
     cmd: "cat $SKILL_DIR/data/latest.json 2>/dev/null || echo '{}'"
     tier: read
+    reach: anywhere
     timeout_ms: 5000
   - name: SystemReadout
     description: >-
@@ -273,6 +274,7 @@ tools:
       first full scan — say so rather than answering from nothing.
     cmd: "cat $SKILL_DIR/data/readout.json 2>/dev/null || echo '{}'"
     tier: read
+    reach: anywhere
     timeout_ms: 5000
   - name: LiveReadings
     description: >-
@@ -281,6 +283,7 @@ tools:
       now" numbers; everything else comes from SystemReadout.
     cmd: "$SKILL_DIR/scripts/live.sh"
     tier: read
+    reach: anywhere
     timeout_ms: 10000
 ---
 

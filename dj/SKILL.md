@@ -105,6 +105,7 @@ tools:
         description: '"mac" (default) or "phone" — with no playlist, phone limits rows to what the phone carries.'
     cmd: "bash $SKILL_DIR/scripts/library.sh {{query}} {{limit}} {{offset}} {{playlist}} {{view}}"
     tier: read
+    reach: anywhere
     timeout_ms: 6000
   # The download, from a door with no page. The model calls it when the user
   # asked to download; the phone's dj_get_songs knocks on it too. The page
@@ -152,6 +153,7 @@ tools:
     # it substitutes; quoting again lands the JSON unquoted.
     cmd: "bash $SKILL_DIR/scripts/get.sh {{tracks}} {{for_phone}}"
     tier: edit
+    reach: anywhere
     timeout_ms: 60000
   # The phone app's own sync door, never offered to the model.
   - name: ApplyPhoneOps
@@ -297,7 +299,7 @@ tools:
     remote: true
     description: >-
       Delete a playlist; the songs stay. Returns { ok, deleted, songs_kept }.
-      Destroys curation — confirm first (Hard rails).
+      Destroys the playlist and its order.
     args:
       name:
         type: string
@@ -308,7 +310,7 @@ tools:
         default: mac
         description: '"mac" (default) or "phone" — which set of playlists.'
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs playlist-delete {{name}} {{view}}"
-    tier: edit
+    tier: destructive
     timeout_ms: 15000
   - name: AddToPhone
     description: >-
@@ -340,7 +342,7 @@ tools:
     description: >-
       Delete songs: the files, their lyrics and karaoke, and their place in
       every playlist, Mac and phone. Returns { ok, deleted, files }.
-      DESTRUCTIVE — confirm first (Hard rails).
+      Destroys the song files for good.
     args:
       files:
         type: array
@@ -348,7 +350,7 @@ tools:
         description: Songs by ListLibrary `file`.
         items: { type: string }
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/actions.mjs tracks-delete {{files}}"
-    tier: edit
+    tier: destructive
     timeout_ms: 20000
   - name: RenameTrack
     description: >-
@@ -396,6 +398,7 @@ tools:
             file:   { type: string }
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/mac-play.mjs play {{tracks}}"
     tier: edit
+    reach: anywhere
     timeout_ms: 30000
   - name: StopInApp
     remote: true
@@ -404,6 +407,7 @@ tools:
       Returns { ok, stopped, was_playing, error? }.
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/mac-play.mjs stop"
     tier: edit
+    reach: anywhere
     timeout_ms: 20000
 ---
 

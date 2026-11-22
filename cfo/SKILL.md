@@ -117,6 +117,7 @@ tools:
       been imported yet (tell the user to import a statement).
     cmd: "bash $SKILL_DIR/scripts/latest.sh"
     tier: read
+    reach: anywhere
     timeout_ms: 8000
   # Investments. Every tool is tier: read so the nightly Watch (a
   # non-interactive run) can call them; SaveReport only writes this skill's
@@ -132,6 +133,7 @@ tools:
       stocks, ETFs or portfolio. Numbers are as of the tab's last refresh.
     cmd: "perl $SKILL_DIR/scripts/market.pl portfolio"
     tier: read
+    reach: anywhere
     timeout_ms: 8000
   - name: Market
     description: >-
@@ -327,6 +329,7 @@ tools:
       first night. Read-only; it marks nothing.
     cmd: "node $SKILL_DIR/scripts/spend-watch.js last"
     tier: read
+    reach: anywhere
     timeout_ms: 8000
   # The weekly report (missions/weekly): code finds the figures and checks
   # every quote, you write the words.
@@ -385,6 +388,7 @@ tools:
       source}]}], ties, next_week}, or {} before the first one. Read-only.
     cmd: "perl $SKILL_DIR/scripts/weekly.pl last"
     tier: read
+    reach: anywhere
     timeout_ms: 8000
   - name: PhoneSnapshot
     # The paired phone's own doors (PhoneSnapshot … PhoneConfig), never
