@@ -827,6 +827,15 @@ body.fighting .footrow { display: none; }
   .pdetail.empty { position: static; box-shadow: none; }
   .pdetail > img, .pdetail > .noart { width: 84px; flex: none; align-self: flex-start; }
   .pwornrow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* The equipment cards, tight (the owner, 2026-11-22: 「每个卡片空白很大」): the label on its own line, the name with 卸下 beside it;
+     a slot with nothing on it is one line, its label and 「—」 side by side. The desk keeps its cards as they are. */
+  .pworn { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0 8px; padding: 4px 10px; }
+  .pworn > .lbl, .pworn > .small { grid-column: 1 / -1; }
+  .pworn > b, .pworn > .dim:nth-child(2) { grid-column: 1; grid-row: 2; }
+  .pworn .act { grid-column: 2; grid-row: 2; margin-top: 0; }
+  .pworn:not(:has(> b)) { grid-template-columns: auto minmax(0, 1fr); column-gap: 10px; }
+  .pworn:not(:has(> b)) > .lbl { grid-column: 1; }
+  .pworn:not(:has(> b)) > .dim:nth-child(2) { grid-column: 2; grid-row: 1; }
 }
 @media (prefers-reduced-motion: reduce) { .ptile { transition: none; } .ptile.sel { transform: none; } }
 
