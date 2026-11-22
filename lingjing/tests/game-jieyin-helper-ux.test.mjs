@@ -339,3 +339,114 @@ test('the ready card with the camera switched off: its button switches it on now
   assert.equal(on.hidden, true);
   h.close();
 }));
+
+// 2026-11-21, Hanli playing on his iPhone: 「目前我玩到的塔防里的结印都是剑印, 我们当时定的是, 剧情里没学结印前用简单的剑印.
+// 老师教过其他手印后, 就换着用, 每个手印都在游戏里用到」 — the seal the dock asks for takes turns among what he has learned and the
+// board offers (helper.js `askRing`, ONE place); each cast moves it on; before a second seal is his, the sword seal as ever.
+const sealIcon = (id) => iconSvg(kit.seals[id], 30, { lang: 'zh' });
+const READY = { on: true, ready: true, cool: 0, coolOf: 0 };
+/** A dock on the dev feed: `cast(id)` is the console's cast; `asked()` reads what the dock asks for now. */
+async function asking({ moves, learned, state = () => READY, onCast = () => true }) {
+  const { host, frame } = page(), casts = [];
+  const h = await offerSeals({ host, moves, learned, feed: true, available: async () => true, state, cast: (e) => { casts.push(e.move); return onCast(e); } });
+  const win = host.ownerDocument.defaultView, [btn, dock, soon] = host.appended;
+  const fire = async (id) => { const ok = win.jieyinFeed.cast(id); await frame(1); return ok; };
+  return { h, host, frame, btn, dock, soon, casts, win, fire, asked: () => h.asked.move, seal: () => h.asked.seal, icon: () => btn.querySelector('.jyh-icon').innerHTML };
+}
+
+test('before a second seal is his (the sword seal alone, nothing learned, no save) the dock asks for the sword seal, as ever', async () => withFetch(async () => {
+  for (const learned of [undefined, [], ['feijian'], ['bingzhui']]) { // 'bingzhui': learned but not offered here
+    const d = await asking({ moves: ['feijian', 'huodan'], learned });
+    assert.deepEqual([d.asked(), d.seal()], ['feijian', 'jian'], `learned ${JSON.stringify(learned)}`);
+    assert.equal(d.icon(), sealIcon('jian'));
+    await d.fire('feijian');
+    assert.equal(d.asked(), 'feijian', 'a cast changes nothing: the set has one');
+    d.h.close();
+  }
+}));
+
+test('飞剑, 火弹, 冰锥 learned and offered: three casts ask three different seals in the kit\'s order, the fourth the first again — on the button, the bubble, the ready card', async () => withFetch(async () => {
+  const d = await asking({ moves: ['feijian', 'huodan', 'bingzhui'], learned: ['feijian', 'huodan', 'bingzhui'] });
+  const want = [['feijian', 'jian'], ['huodan', 'wu'], ['bingzhui', 'zi']];
+  const live = d.dock.kids.find((k) => k.className === 'jyh-callout');
+  const asked = [];
+  for (let n = 0; n < 4; n += 1) {
+    const [move, seal] = want[n % 3];
+    assert.deepEqual([d.asked(), d.seal()], [move, seal], `cast ${n}`);
+    assert.equal(d.icon(), sealIcon(seal), 'the button wears it');
+    assert.match(live.innerHTML, new RegExp(kit.seals[seal].name.zh), 'the live bubble names it');
+    assert.equal(d.soon.querySelector('.jyh-soon-name').textContent, kit.seals[seal].name.zh, 'the ready card names it');
+    assert.equal(d.soon.querySelector('.jyh-soon-icon').innerHTML, iconSvg(kit.seals[seal], 44, { lang: 'zh' }), 'and draws it');
+    asked.push(d.asked());
+    await d.fire(d.asked());
+  }
+  assert.deepEqual(asked, ['feijian', 'huodan', 'bingzhui', 'feijian']);
+  assert.deepEqual(d.casts, ['feijian', 'huodan', 'bingzhui', 'feijian']);
+  d.h.close();
+}));
+
+test('every learned seal is asked for once over as many casts as the set has members (a set of three, and of two)', async () => withFetch(async () => {
+  for (const set of [['feijian', 'huodan', 'bingzhui'], ['huodan', 'bingzhui']]) {
+    const d = await asking({ moves: ['feijian', 'huodan', 'bingzhui', 'jinren'], learned: set });
+    const seen = [];
+    for (let n = 0; n < set.length; n += 1) { seen.push(d.asked()); await d.fire(d.asked()); }
+    assert.deepEqual(seen, set, 'each member once, in the kit\'s order');
+    assert.equal(d.asked(), set[0], 'round and round');
+    d.h.close();
+  }
+}));
+
+test('a learned seal the board does not offer is never asked for; an offered one not learned is never asked for, yet it casts if made', async () => withFetch(async () => {
+  const d = await asking({ moves: ['feijian', 'huodan', 'bingzhui'], learned: ['feijian', 'bingzhui', 'jinren', 'tuqiang'] }); // 金刃, 土墙: learned, not offered here
+  const seen = [];
+  for (let n = 0; n < 4; n += 1) { seen.push(d.asked()); await d.fire(d.asked()); }
+  assert.deepEqual(seen, ['feijian', 'bingzhui', 'feijian', 'bingzhui'], '火弹 is offered, not learned: skipped');
+  const before = d.casts.length;
+  assert.equal(await d.fire('huodan'), true, 'made, offered: it flies');
+  assert.equal(d.casts.length, before + 1);
+  assert.equal(await d.fire('jinren'), false, 'not offered: dropped');
+  assert.ok(!['jinren', 'tuqiang', 'huodan'].includes(d.asked()));
+  d.h.close();
+}));
+
+test('the order is the host\'s (the kit\'s own), not the order he learned them; the 大招 is never one of the turns', async () => withFetch(async () => {
+  const d = await asking({ moves: ['feijian', 'bingzhui', 'huodan', 'huodan4'], learned: ['huodan', 'huodan4', 'bingzhui', 'feijian'] });
+  const seen = [];
+  for (let n = 0; n < 3; n += 1) { seen.push(d.asked()); await d.fire(d.asked()); }
+  assert.deepEqual(seen, ['feijian', 'bingzhui', 'huodan']);
+  d.h.close();
+}));
+
+test('the stall tracker and the hint follow the asked seal: a hand held 4 s on a hand-sized frame is reported against it', async () => withFetch(async () => {
+  const lines = [], real = console.info;
+  console.info = (tag, line) => { if (tag === '[seal-stall]') lines.push(JSON.parse(line)); };
+  try {
+    const d = await asking({ moves: ['feijian', 'huodan'], learned: ['feijian', 'huodan'] });
+    const hand = Array.from({ length: 21 }, (_, i) => ({ x: 0.4 + (i % 5) * 0.02, y: 0.4 + Math.floor(i / 5) * 0.03, z: 0 }));
+    const hold = async () => { for (let t = 0; t < 280; t += 1) { d.win.jieyinFeed([hand]); await d.frame(1); } };
+    await hold();
+    assert.equal(lines.at(-1)?.want, 'jian', 'the first turn: the sword seal');
+    await d.fire('feijian');
+    await d.frame(100); // past the hold
+    await hold();
+    assert.equal(lines.at(-1)?.want, 'wu', 'the next turn: 午文, the 火弹\'s');
+    d.h.close();
+  } finally { console.info = real; }
+}));
+
+test('the dock has ONE place that says which seal is asked for: only askRing, askBase (and progressOf, which reads the hands) touch a move\'s shape or 文', () => {
+  const src = readFileSync(new URL('../scripts/games/jieyin/helper.js', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+  const owner = (at) => [...src.slice(0, at).matchAll(/\nexport (?:async )?(?:function|const) (\w+)/g)].at(-1)?.[1];
+  const readers = new Set([...src.matchAll(/\.shape\b|\.wen\b/g)].map((m) => owner(m.index)));
+  assert.deepEqual([...readers].sort(), ['askBase', 'askRing', 'progressOf'], 'a second derivation of the asked seal crept in');
+  assert.ok(!/\bshape\b/.test(src.slice(src.indexOf('export async function offerSeals'))), 'offerSeals asks `asked()`, never a shape of its own');
+});
+
+test('a host may hand its rows whole (守山门): the book\'s ids are matched against the rows, then read as 手势斗法 ids', async () => withFetch(async () => {
+  const rows = [{ id: 'feijian' }, { id: 'huodan', jieyin: 'huodan' }, { id: 'bingzhui' }];
+  const d = await asking({ moves: rows, learned: ['bingzhui', 'huodan'] });
+  assert.equal(d.asked(), 'huodan');
+  await d.fire('huodan');
+  assert.equal(d.asked(), 'bingzhui');
+  d.h.close();
+}));
