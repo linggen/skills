@@ -97,13 +97,17 @@ button:disabled { cursor: default; }
 .xw .num, .ls b { font-family: var(--mono); font-size: 11.5px; font-variant-numeric: tabular-nums; }
 .xw .num { color: var(--dim); }
 .ls b { color: var(--ling); font-weight: 500; }
-/* A gain: the number glows while it counts up, and +N floats off it. */
-.xw .num, .ls { position: relative; }
+/* A gain: the number glows while it counts up, and +N stands beside it — in its own room after it, never on it (the gate
+   2026-11-21: floated over it, +N hid the 修为 figure at 375, 430 and 1280). It is the figure's last word, so the strip makes
+   room for it: 修为's bar gives a little (its row is a fixed width there), the stones and the 体力 count push on; it fades out. */
+.xw .num, .ls, .qi .cnt { white-space: nowrap; }
 [data-count] { display: inline-block; transition: transform .25s ease-out, color .25s; }
 [data-count].rising { color: var(--ling); font-weight: 600; transform: scale(1.22); }
-.gain { position: absolute; left: 0; top: -4px; font-family: var(--mono); font-size: 13.5px; font-weight: 600; color: var(--ling);
+/* …and 修为's bar, held at 36 px by story.css, lets go of that while the gain stands. */
+.topbar .xw:has(.gain) .bar { min-width: 0; }
+.gain { display: inline-block; margin-left: 4px; font-family: var(--mono); font-size: 12.5px; font-weight: 600; color: var(--ling);
         pointer-events: none; animation: gainFloat 2.2s ease-out forwards; }
-@keyframes gainFloat { 0% { opacity: 0; transform: translateY(4px); } 15% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(-22px); } }
+@keyframes gainFloat { 0% { opacity: 0; transform: translateY(4px); } 15% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(-4px); } }
 @media (prefers-reduced-motion: reduce) { .gain { animation-duration: 2.4s; transform: none; } }
 /* A sale's pay, large, where the item's card was (lingjing.js saleFloat). */
 .salefloat { position: fixed; z-index: 2147483000; transform: translate(-50%, -50%); font-family: var(--mono); font-size: 30px; font-weight: 700;

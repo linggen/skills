@@ -1389,14 +1389,14 @@ function paintRise() {
     const spill = key === 'progress' && r.next ? document.querySelector('.status .xw .bar.now .spill') : null;
     if (spill) { spill.style.width = `${spillPct(value, r.next)}%`; spill.parentElement.classList.toggle('over', value > r.next); }
     if (age > GAIN_MS) { rising.delete(key); continue; }
-    // The gain floats off the number; redrawn, it picks up where it was.
+    // The gain stands beside the figure (lingjing.css .gain); redrawn, it picks up where it was.
     if (!el.parentElement.querySelector(`.gain[data-for="${key}"]`)) {
       const gain = document.createElement('span');
       gain.className = 'gain';
       gain.dataset.for = key;
       gain.textContent = `+${r.to - r.from}`;
       gain.style.animationDelay = `-${Math.round(age)}ms`;
-      el.after(gain);
+      el.parentElement.append(gain); // at the end of the figure (修为's 「486/750」), never between its digits
     }
   }
   paintDrain(t);
