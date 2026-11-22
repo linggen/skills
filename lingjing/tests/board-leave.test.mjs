@@ -1,7 +1,9 @@
 // 收手 — a board he opened by choice is put down at any moment (Hanli, 2026-10-26, at 兽潮's 先选一门本事: 「兽潮开始了,
 // 不能退出来吗? 必须玩完才行?」). One rule, the board's origin (rules/skips.mjs leaveOf): on the story's own boards
-// ✕ goes on (gives only) and 留 keeps it; every other board may be left, costing nothing and paying nothing. 兽潮's night is
-// not counted and no cooldown starts; a kept board taken up and put down is over for good.
+// ✕ goes on (gives only) and 留 keeps it; every other board may be left, costing nothing and paying nothing. ✕ on a
+// cooldown event is 「跳过」 (Hanli 2026-11-21: 「所有小游戏关掉的处理应该统一吧, 就是"跳过"不玩这一局」): 兽潮's night is not
+// counted and nothing is paid, and its cooldown starts, as 切磋's and 妖兽出没's do; 留 starts none. A kept board taken up
+// and put down is over for good.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -11,7 +13,7 @@ import { look, playTo, task } from '../scripts/rules.mjs';
 import { toldUpTo } from '../scripts/rules/progress.mjs';
 import { leaveOf, storyBoard } from '../scripts/rules/skips.mjs';
 import { asideVerb } from '../scripts/rules/aside.mjs';
-import { shouchaoHere } from '../scripts/rules/shouchao.mjs';
+import { shouchaoFirst, shouchaoHere } from '../scripts/rules/shouchao.mjs';
 import { WORDS, cardHtml } from '../scripts/cards.js';
 
 const content = loadContent();
@@ -53,16 +55,106 @@ test('the rule is the board\'s origin: the scene\'s own board is the story\'s, �
   assert.equal(r.result.refused, 'story-board');
 });
 
-test('兽潮 put down: nothing written — no 灵气 spent, the night not counted, no cooldown, still offered', () => {
+const tideRow = (s, now = NOW) => look(s, content, ctx(now)).tasks.find((t) => t.id === 'shouchao');
+/* Every surface that offers the tide: Look's task row, the tray, the home screen's big button and its chips, 先放一放. */
+function offeredAnywhere(s, now = NOW) {
+  const l = look(s, content, ctx(now));
+  const home = l.home ?? {};
+  return {
+    row: tideRow(s, now)?.status === 'offered',
+    here: shouchaoHere(content, s, 'shouchao', now),
+    tray: (l.tray ?? []).some((r) => r.id === 'shouchao' && !r.wait_min),
+    next: home.next?.id === 'shouchao',
+    todo: (home.todo ?? []).some((r) => r.kind === 'tide'),
+    waits: (l.waits ?? []).some((w) => w.id === 'shouchao'),
+  };
+}
+const HELD = { n: 2, won: [], seen: [], kits: {}, told: true }; // two nights counted: a night just held (第2潮) in the cooldown row
+
+test('兽潮 put down (✕) is 「跳过」: nothing paid or counted, no 灵气 spent, and its cooldown starts — every surface waits it out', () => {
+  for (const shouchao of [undefined, HELD]) { // no night counted yet, and two
+    const s0 = yaoyuan();
+    const s = shouchao ? { ...s0, shouchao } : s0;
+    assert.equal(offeredAnywhere(s).here, true, 'up before');
+    const r = leave(s, 'shouchao');
+    assert.equal(r.result.ok, true);
+    assert.equal(r.result.left, 'shouchao');
+    assert.ok(r.result.wait_min > 0, 'the minutes left, as a bout\'s skip says');
+    const after = r.state;
+    assert.equal(after.stamina, s.stamina, 'no 灵气 spent');
+    assert.equal(after.wealth, s.wealth, 'nothing paid');
+    assert.deepEqual(after.shouchao, s.shouchao, 'the night not counted, not moved on: the same night comes again');
+    assert.equal(after.events.shouchao.n, 0, 'the day\'s count of nights paid does not move');
+    const l = look(after, content, ctx());
+    const off = offeredAnywhere(after);
+    assert.deepEqual({ ...off, next: undefined, waits: undefined }, { row: false, here: false, tray: false, next: undefined, todo: false, waits: undefined }, 'not offered anywhere');
+    assert.equal(off.waits, true, 'the cooldown row stands in Look\'s `waits`');
+    assert.ok(tideRow(after).wait_min > 0 && tideRow(after).status !== 'offered', 'Look\'s row: waiting');
+    assert.ok(l.waits.find((w) => w.id === 'shouchao').wait_min > 0);
+    // …until the cooldown is over (events.shouchao.every_h), then the same tide is offered again.
+    const hours = content.balance.events.shouchao.every_h;
+    const soon = new Date(NOW.getTime() + hours * 3600_000 - 60_000), later = new Date(NOW.getTime() + hours * 3600_000 + 60_000);
+    assert.equal(offeredAnywhere(after, soon).here, false, 'a minute short');
+    const back = { ...after, stamina_at: later.toISOString() };
+    const up = offeredAnywhere(back, later);
+    assert.deepEqual([up.row, up.here, up.tray, up.todo], [true, true, true, true], 'offered again once the cooldown is over');
+    assert.deepEqual(look(back, content, ctx(later)).tasks.find((t) => t.id === 'shouchao').deal.over?.title, look(s, content, ctx()).tasks.find((t) => t.id === 'shouchao').deal.over?.title, 'the same night (same deal)');
+  }
+});
+
+test('✕ again inside the cooldown writes nothing — the clock is not restarted', () => {
+  const r = leave(yaoyuan(), 'shouchao');
+  const soon = new Date(NOW.getTime() + 20 * 60_000);
+  const again = leave(r.state, 'shouchao', soon);
+  assert.equal(again.result.ok, true);
+  assert.equal(again.state, null);
+});
+
+test('兽潮 lost: it was played — its 体力 is taken, the night is not counted, and its cooldown starts as a put-down\'s does', () => {
   const s = yaoyuan();
+  const r = task(s, content, ctx(), { action: 'lost', id: 'shouchao' });
+  assert.equal(r.result.ok, true);
+  assert.ok(r.result.stamina > 0, 'its minutes taken');
+  assert.equal(r.state.stamina, s.stamina - r.result.stamina);
+  assert.deepEqual(r.state.shouchao, s.shouchao, 'not counted, not moved on');
+  const off = offeredAnywhere(r.state);
+  assert.deepEqual([off.row, off.here, off.tray, off.todo, off.waits], [false, false, false, false, true]);
+  // lost, then ✕ on its result card (the phone sends both): the second changes nothing.
+  const both = leave(r.state, 'shouchao');
+  assert.equal(both.state, null);
+});
+
+test('兽潮\'s hourly night is dealt `once` (as 切磋\'s bout is): lost, it ends and cools down — never dealt again in place into a refusal', () => {
+  const s = yaoyuan();
+  assert.equal(tideRow(s).deal.once, true);
+  // the errand\'s first night keeps its retries: no clock starts for it
+  const first = { ...s, place: 'houshan', quests: { 'guan-shouchao': { taken_at: START.toISOString() } } };
+  const row = tideRow(first);
+  assert.ok(row?.deal && row.deal.once === undefined, 'the errand\'s night: dealt again in place as before');
+});
+
+test('留 keeps the tide up: it starts no cooldown and says it is put away', () => {
+  const s = yaoyuan();
+  const r = task(s, content, ctx(), { action: 'keep', id: 'shouchao' });
+  assert.equal(r.result.ok, true);
+  assert.equal(r.state, null, 'nothing written');
+  assert.equal(r.result.kept, null);
+  assert.match(r.result.say, /这一局留不住/);
+  assert.equal(offeredAnywhere(s).here, true);
+  assert.equal(tideRow(s).wait_min, undefined);
+});
+
+test('the errand\'s first night (`guan-shouchao`): ✕ puts the board down as ever — nothing written, no cooldown, the errand stays in the book', () => {
+  const s = { ...yaoyuan(), place: 'houshan', quests: { 'guan-shouchao': { taken_at: START.toISOString() } } };
+  assert.equal(shouchaoFirst(content, s, 'shouchao'), true);
+  assert.equal(shouchaoHere(content, s, 'shouchao', NOW), false, 'not the hourly tide');
   const r = leave(s, 'shouchao');
   assert.equal(r.result.ok, true);
   assert.equal(r.state, null, 'the save untouched');
-  assert.equal(shouchaoHere(content, s, 'shouchao', NOW), true);
-  const row = look(s, content, ctx()).tasks.find((t) => t.id === 'shouchao');
-  assert.equal(row.status, 'offered');
-  assert.equal(row.wait_min, undefined, 'no cooldown');
-  assert.equal(s.stamina, 100);
+  assert.ok(look(s, content, ctx()).tasks.find((t) => t.id === 'shouchao'), 'still there to play');
+  // a night lost on it starts no clock either
+  const lost = task(s, content, ctx(), { action: 'lost', id: 'shouchao' });
+  assert.equal(lost.state?.events?.shouchao, undefined);
 });
 
 test('a kept board taken up again, put down: over for the story for good, nothing handed twice — never back by itself (Hanli 11-03)', () => {

@@ -9,8 +9,8 @@
 // (tasks/world.json `shouchao`): the scene that opens it (古四's 小周天, the first night he has 灵力),
 // the places of 沉鼎观 where it is joined, the 灵气 it costs, the pay by stars, 银月's one telling, the
 // words of a tide not yet back (`shut`). Its board is offered at any hour while he stands at 沉鼎观, out of
-// any instance, run or fight, unless a night was counted less than `every_h` hours ago — one
-// night a cooldown. A night missed costs nothing: the senior disciples hold the wall, and only that night's
+// any instance, run or fight, unless a night was over (won, lost or put down with ✕) less than `every_h` hours ago — one
+// night a cooldown (tideLetGo: lost or ✕ starts the clock, counts nothing). A night missed costs nothing: the senior disciples hold the wall, and only that night's
 // pay is missed.
 //
 // THE NIGHTS: first the hand-made rows of 守墙关's level table (levels/shouqiang.json) that carry a `tide` number, in that
@@ -20,7 +20,7 @@
 // engine, games/tide.js), never the kit of the night before when another can come, from the save's seed and the
 // night's number; a layout the save has held (`seen`, by its `sig`) is never dealt again. Each kit climbs over its own
 // first `climb` nights; a 大妖 of his 回 comes on the `boss` nights, in a kit with 结印. A won night moves him on;
-// a lost one comes again exactly (nothing it is made from has moved). The day's first nights pay in full, the rest
+// a lost or put-down one comes again exactly, when the cooldown is over (nothing it is made from has moved). The day's first nights pay in full, the rest
 // a replay's falling share (tideShare).
 import { boardCost, dayKey, lockedOf, pick, seedOf } from '../state.mjs';
 import { clone, pay, refuse, spendStamina } from './core.mjs';
@@ -84,7 +84,7 @@ export function shouchaoHosted(content, state, now) {
   if (!t || !tideUp(content, state, t) || cooling(content, state, now)) return {};
   return { [t.id]: { status: 'offered' } };
 }
-/* Its win may be played and counted: out of the cooldown. */
+/* Its night may be played (and its win counted): out of the cooldown. */
 export function shouchaoHere(content, state, id, now) {
   const t = tideTask(content);
   return Boolean(t) && t.id === id && tideUp(content, state, t) && !cooling(content, state, now);
@@ -114,7 +114,7 @@ export function shouchaoTray(content, state, now) {
   if (!tideUp(content, at && !at.includes(state.place) ? { ...state, place: at[0] } : state, t)) return [];
   const wait = tideWait(content, state, now), held = heldN(state.shouchao ?? {});
   const row = { id: t.id, task: t.id, title: pick(t.shouchao.title, state.lang), places: at, opens: 'play', arg: t.id, stage: `board:${t.id}` };
-  if (wait > 0) return held > 0 ? [{ ...row, left: { unit: 'night', n: held }, wait_min: Math.ceil(wait / 60_000), shut: pick(t.shouchao.shut, state.lang) ?? null }] : [];
+  if (wait > 0) return [{ ...row, ...(held > 0 ? { left: { unit: 'night', n: held } } : {}), wait_min: Math.ceil(wait / 60_000), shut: pick(t.shouchao.shut, state.lang) ?? null }];
   return [{ ...row, left: { unit: 'night', n: held + 1 } }];
 }
 /* The tide's task (tasks.mjs taskOpen asks it alone, never the generic period). */
@@ -223,24 +223,51 @@ export function shouchaoRow(content, state, now) {
   const nameOf = n => ({ zh: `${pick(c.title, 'zh')} · 第${n}潮`, en: `${pick(c.title, 'en')} · tide ${n}` });
   // Inside the cooldown: the row names the night just held, says when the next comes, and deals nothing more (nor makes it).
   const wait = tideWait(content, state, now), held = heldN(state.shouchao ?? {});
-  if (wait > 0 && held > 0) return { tide: true, night: held, title: pick(nameOf(held), lang), wait_min: Math.ceil(wait / 60_000), shut: pick(c.shut, lang) ?? null };
+  // (a night put down or lost before any was counted: the tide as such, no night number)
+  if (wait > 0) return { tide: true, night: held, title: held > 0 ? pick(nameOf(held), lang) : pick(c.title, lang), wait_min: Math.ceil(wait / 60_000), shut: pick(c.shut, lang) ?? null };
   // Made only where it may be played (the tide up, or its errand's night): Look asks of every save every turn.
   if (!shouchaoFirst(content, state, t.id) && !tideUp(content, state, t)) return {};
   const night = tonight(content, state);
   if (!night) return {};
   const title = nameOf(night.n);
   const head = { tide: true, night: night.n, game: night.game, ...(night.boss ? { boss: true } : {}), title: pick(title, lang) };
+  // The hourly tide's night is played once, as 切磋's bout is (`once`, as qiecuoRow): lost, it ends and its cooldown starts (tideLetGo),
+  // never dealt again in place — a replay won inside the cooldown would be refused. The errand's first night keeps its retries.
+  const once = shouchaoFirst(content, state, t.id) ? {} : { once: true };
   // A made night: its kit's whole deal, the night's title laid on its `over` where it has one (守墙关's top bar reads it).
-  if (!night.row) return { ...head, deal: { ...night.deal, ...(night.deal.over ? { over: { ...night.deal.over, title } } : {}), tide: true, title } };
+  if (!night.row) return { ...head, deal: { ...night.deal, ...(night.deal.over ? { over: { ...night.deal.over, title } } : {}), tide: true, title, ...once } };
   // 银月's telling, the first night only (until a night is won): the shell's lead card reads it.
   const told = Boolean(state.shouchao?.told);
   const lead = [...(told ? [] : c.tell ?? []), ...(night.row.lead ?? [])];
-  return { ...head, deal: { lv: night.row.id, over: { title, lead, story: t.id } } };
+  return { ...head, deal: { lv: night.row.id, over: { title, lead, story: t.id }, ...once } };
 }
 
 /* The share a night pays (rules/events.mjs: `events.shouchao.full` nights in full, then play_pay.replay's falling share) —
    the tide every hour is no farm. */
 export const tideShare = (content, state, now) => eventShare(content, withClock(state, tideTask(content)), EVENT, now);
+
+/* ── Over without a win ── */
+/* The hourly tide's night lost or put down (✕): over as 切磋's bout is (rules/qiecuo.mjs overOn, rules/events.mjs: "the cooldown runs
+   from completion — won, lost or skipped", Hanli 2026-11-21: ✕ on any small game is 「跳过」, the round not played). Nothing is
+   counted — no pay, the night not moved on (the same night comes again when the tide does; design.md § 兽潮) — and the
+   cooldown starts. Only where the hourly tide is up: the errand's first night starts no clock (the errand stays in the book),
+   and one already cooling has none to start. Mutates `s`, the caller's clone; false when nothing was started. */
+export function tideLetGo(s, content, now, id, outcome) {
+  if (!shouchaoHere(content, s, id, now)) return false;
+  const held = withClock(s, tideTask(content));
+  if (held !== s) s.events = held.events; // a save that kept its own clock: moved onto the event's record first
+  delete s.wins?.[id];
+  eventDone(s, EVENT, now, { counted: false }); // the clock starts; the day's count of nights paid does not move
+  s.tasks[id] = { status: 'done', period: dayKey(now), done_at: now.toISOString(), outcome };
+  return true;
+}
+/* `task --action=leave` on the tide: ✕ is 「跳过」 — see tideLetGo. Where it starts nothing (the errand's night, one cooling)
+   the board is put down as any he chose (rules/skips.mjs leaveBoard: nothing written). */
+export function shouchaoPutDown(state, content, ctx, id, putDown) {
+  const s = clone(state);
+  if (!tideLetGo(s, content, ctx.now, id, 'skipped')) return putDown(state, content, ctx, id);
+  return { state: s, result: { ok: true, left: id, wait_min: Math.ceil(tideWait(content, s, ctx.now) / 60_000) } };
+}
 
 /* ── Counted ── */
 /* Its win handed in (tasks.mjs taskDone): the night's 灵气, the pay by stars (by the day's share), the next night moved on. */
