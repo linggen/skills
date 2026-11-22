@@ -43,11 +43,11 @@
 /* A fixed width: the board never narrows as the hand runs down (his, 2026-09-29). */
 .battle {
   position: relative; isolation: isolate; width: 100%; height: 100%; box-sizing: border-box;
-  display: grid; grid-template-rows: var(--fit) var(--fit) var(--fit) minmax(var(--tmin), var(--tmax)) var(--fit) minmax(var(--ymin), var(--ymax)) var(--fit) var(--dock-track); gap: 6px;
+  display: grid; grid-template-rows: var(--fit) var(--fit) var(--fit) minmax(var(--tmin), var(--tmax)) var(--fit) minmax(var(--ymin), var(--ymax)) var(--fit) var(--dock-track); gap: var(--bgap);
   padding: 10px 18px 8px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; /* y: only when the rows' floors do not fit (the last give, below) */
   --ch: clamp(150px, 22vh, 200px); --cw: calc(var(--ch) * .71); --lift: 16px; --mh: clamp(112px, 18vh, 170px); --mw: calc(var(--mh) * .84); --plate: clamp(78px, 12vh, 120px);
   /* the board's rows (§ The board never overlaps itself, at the foot of this file) */
-  --fit: minmax(min-content, auto); --mmin: 70px; --rmax: 1fr; --rempty: 1fr; --dock-track: auto;
+  --bgap: 6px; --fit: minmax(min-content, auto); --mmin: 70px; --rmax: 1fr; --rempty: 1fr; --dock-track: auto;
   --tmin: var(--mmin); --tmax: var(--rmax); --ymin: var(--mmin); --ymax: var(--rmax);
   font-family: var(--serif); color: var(--ink);
   background:
@@ -312,6 +312,10 @@
 .bacts > .bpouch { display: none; }
 .bdock > .bhand { flex: 1 1 0; min-width: 0; padding: 0 calc(var(--cw) * .3); }
 .bhand > .bcard:last-child:not(:first-child) .bleaf { left: auto; right: 0; }
+/* A spent hand (battle-card.js noHandHtml): two quiet lines in the dock's own room, on the phone's wheel as on the desk's fan. */
+.bhandnone { align-self: center; margin: 0 auto; display: grid; gap: 4px; justify-items: center; text-align: center; font-family: var(--ui); color: var(--ink-3); }
+.bhandnone b { font-family: var(--serif); font-size: 15px; font-weight: 500; letter-spacing: .12em; }
+.bhandnone small { font-size: 12px; }
 .bcard {
   position: relative; flex: 0 1 var(--cw); min-width: 0; height: var(--ch); padding: 0; border: 0; background: none; cursor: pointer;
   transform: translateY(var(--y, 0)) rotate(var(--r, 0deg)); transform-origin: 50% 120%; z-index: var(--z, 1);
@@ -459,13 +463,14 @@
 .bhint.bno { background: var(--cinnabar); animation: shake .3s ease-in-out; }
 .bhint.burge { background: rgba(31, 28, 24, 0.88); }
 /* Only 结束回合 left: on the seam's row beside 上一手 (wrapping under it where the room is narrow), never over it. */
-.bseam { flex-wrap: wrap; align-items: center; gap: 3px 10px; }
+.bseam { flex-wrap: wrap; align-items: center; gap: var(--bgap) 10px; }
 .bhint.bstuck { position: relative; z-index: 1; max-width: 92%; }
 /* …and clear of a framed card's top diamond (宝石 / 钻石: it stands ~8 px over the card) on the rank under the seam
    (11-14: at 375 and 1280 the diamonds' tips ran under the word): the word a little high on the seam, the room under it
-   kept — the held word by its margins, the flashed one set up a touch and slimmer. The rank over the seam has no diamond
-   at its foot. */
-.bhint.bstuck { margin: -3px 0 6px; }
+   kept — the held word by its margin, the flashed one set up a touch and slimmer. The rank over the seam has no diamond
+   at its foot. Over it, the word keeps the board's own gap from 上一手 (--bgap, the seam's row gap): a pulled-up margin
+   had it lying flush under that line (the gate 2026-11-21, 375 and 430). */
+.bhint.bstuck { margin: 0 0 6px; }
 .bhints { transform: translate(-50%, calc(-50% - 4px)); }
 .bhints > .bhint { padding: 1px 14px; line-height: 16px; }
 
@@ -552,7 +557,7 @@
 
 /* ── The phone: the same room, smaller leaves; the hand overlaps itself ── */
 @container scene (max-width: 640px) {
-  .battle { padding: 6px 8px 4px; gap: 4px; --cw: 86px; --ch: 124px; --mw: 80px; --mh: 98px; --plate: 60px; --lift: 0px; }
+  .battle { padding: 6px 8px 4px; --bgap: 4px; --cw: 86px; --ch: 124px; --mw: 80px; --mh: 98px; --plate: 60px; --lift: 0px; }
   /* The head on one line (live, 2026-10-16: 认/输, 你的回/合, 问银/月 broke in two at 390px). */
   .btop { gap: 6px; }
   .bquit, .bhelpbtn, .bturn, .bask { flex: none; white-space: nowrap; }
@@ -645,6 +650,7 @@
   }
   .battle .bhand.turning > .bcard { transition: none; }
   .battle .bhand > .bcard.far { opacity: 0; pointer-events: none; }
+  .battle .bhand > .bhandnone { position: absolute; inset: 0; align-content: center; }
   .battle .bhand > .bcard:hover { transform: translateX(calc(var(--wx, 0) * var(--wcw))) rotateY(var(--wt, 0deg)) scale(var(--ws, 1)); }
   .battle .bhand > .bcard.held { transform: translateX(calc(var(--wx, 0) * var(--wcw))) translateY(-8px) scale(calc(var(--ws, 1) * 1.03)); z-index: 41; }
   .battle .bhand > .bcard .bleaf, .battle .bhand > .bcard:last-child:not(:first-child) .bleaf { inset: 0; width: 100%; height: 100%; padding: 7px 7px 16px; }
@@ -929,7 +935,7 @@ body.fighting .focus > .gshell > .gshell-bar { padding-bottom: 4px; background: 
    The widths set only numbers (--rmax, --rempty, --dock-track, --handfloor: the top of this file and the phone's block). ── */
 @media (max-height: 900px) {
   @container scene (min-width: 641px) {
-    .battle { gap: 4px; padding-top: 6px; --ch: clamp(136px, 18vh, 200px); --plate: clamp(66px, 9.5vh, 120px); }
+    .battle { --bgap: 4px; padding-top: 6px; --ch: clamp(136px, 18vh, 200px); --plate: clamp(66px, 9.5vh, 120px); }
     .bdock { padding-bottom: 36px; }
   }
 }
