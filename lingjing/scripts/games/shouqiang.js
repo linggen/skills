@@ -81,7 +81,7 @@ export function offerJieyin(kit, box, { lang, game, shell, marks, feed = false, 
   if (!moves.length) return Promise.resolve(null);
   const say = (text) => (shell?.say ? shell.say(lang === 'en' ? 'Xiaoman' : '小满', text, 2200) : game.say('xiaoman', text));
   return load().then(({ offerSeals }) => offerSeals({
-    host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis, moves: moves.map((m) => m.id), idle: c.idle, fastFps: c.armedFps,
+    host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis, moves: moves.map((m) => m.id), learned: mastery.learned, idle: c.idle, fastFps: c.armedFps, // learned: the 印谱's seals — the dock turns its prompt among them (helper.js askRing)
     state: () => game.jieyinState(), cast: (e) => { const ok = game.jieyin(e.move); if (ok) mastery.report(e.move); return ok; }, say,
     call: () => callLine(c, game.jieyinState().boss, moves, lang),
     first: moves.some((m) => m.id === 'feijian') ? c.first : null,

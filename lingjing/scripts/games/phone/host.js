@@ -111,10 +111,21 @@ const rules = (verb, args = {}) => new Promise((resolve, reject) => {
   post({ t: 'rules', id, verb, args });
 });
 
+/* The 印谱 as the rules answer it, waited for at most BOOK_MS (a board's start never hangs on the app: mastery.js's 1.5 s): null if none. */
+const BOOK_MS = 1500;
+async function bookRead() {
+  let timer = 0;
+  try {
+    const late = new Promise((done) => { timer = setTimeout(() => done(null), BOOK_MS); });
+    const r = await Promise.race([rules('seals', { action: 'book' }), late]);
+    return r?.ok ? r : null;
+  } catch { return null; } finally { clearTimeout(timer); }
+}
+
 /* What a board is dealt beyond its data: the seams to this host (the Mac's lingjing.js mountData does the same with its
    own chat and verbs). A deal that names a rules verb (`begin`: 本王考考你) gets its call; a board that needs 银月
    (`her`) wakes her for the round and puts her back; a chat or a 画猜 asks the app's model; 开炉 feeds through the rules. */
-function dealOf(game, data, task) {
+async function dealOf(game, data, task) {
   const d = { ...data };
   if (game === 'jinchat' || game === 'drawguess') d.ask = ask(game);
   if (game === 'kailu') d.roll = (ids, fuel, press) => rules('fantong', { action: 'feed', ids: ids.join(','), fuel: fuel || 0, press: press ? 1 : 0 });
@@ -127,7 +138,18 @@ function dealOf(game, data, task) {
   }
   // 师父传印 (rules/seals.mjs; games/jieyin/mastery.js · lesson.js): the book read and the page's writes through the app's own rules;
   // the lesson's card goes out through the app (its share sheet, then the day's 传音 by ShareReward), and its 「印谱」 opens the app's sheet.
-  d.sealBook = (args) => rules('seals', args);
+  // What the save has learned, for a board whose moves are gated by it (the Mac's lingjing.js mountData: `deal.marks ??= look.marks`;
+  // 守墙关 · 守炉 · 守山门 `moves[].from`): a STORY board (`task`) — the 游戏厅 has no save to gate by — gets the story's marks, always
+  // an array (none yet → [], the gate shut). The rules answer them with the 印谱 (rules/seals.mjs bookView `marks`: one read, the
+  // very `state.marks` Look hands the Mac), so that read also serves the board's first `book` ask (games/jieyin/mastery.js) — never
+  // two. One that does not answer in time leaves marks unset: every move open, as this host always dealt.
+  const book = task?.id ? await bookRead() : null;
+  if (Array.isArray(book?.marks)) d.marks ??= [...book.marks];
+  let first = book; // the read just made, kept for the board's own first look at the book
+  d.sealBook = (args) => {
+    if (first && (args?.action ?? 'book') === 'book') { const b = first; first = null; return Promise.resolve(b); }
+    return rules('seals', args);
+  };
   d.sealed = (args) => rules('seals', args);
   d.shareImage = (blob) => new Promise((resolve, reject) => {
     const r = new FileReader();
@@ -217,7 +239,7 @@ async function mountBoard(spec) {
   const picks = game === 'kapai' && Array.isArray(data?.brief?.picks) ? [...data.brief.picks] : [];
   const mark = () => { if (fightId) rules('duel', { id: fightId, action: 'mark', picks: picks.join(',') }).catch(() => null); };
   const story = game === 'kapai' ? { onMove: (token) => { picks.push(token); mark(); } } : undefined;
-  const dealt = dealOf(game, data, task);
+  const dealt = await dealOf(game, data, task);
   // The phone's first tap is often native (the lead card's 开始, the app's own buttons), never a touch in this page, so
   // the context is woken here: the app's webview plays audio with no gesture asked (mediaTypesRequiringUserAction: none).
   sound.wake();

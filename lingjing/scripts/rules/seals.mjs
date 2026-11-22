@@ -128,10 +128,11 @@ function rowView(content, state, row, held, now) {
   };
 }
 /** The 印谱: every seal of the book (an unlearned one as an outline), what each lends a kit (`bonus`: move id → 1 + power),
-    the figures' geometry (`figures`: seal id → hands in a 100-box), the words. */
+    the figures' geometry (`figures`: seal id → hands in a 100-box), the story's `marks` (the very ones Look hands the Mac: the phone's
+    page hands them to a board whose moves are gated by them, games/phone/host.js dealOf), the words. */
 export function bookView(content, state, now = new Date()) {
   const cfg = cfgOf(content);
-  if (!cfg) return { ok: true, rows: [], bonus: {}, words: {}, figures: {} };
+  if (!cfg) return { ok: true, rows: [], bonus: {}, words: {}, figures: {}, marks: [...marksOf(state)] };
   const held = heldOf(content, state), bonus = {}, figures = {};
   const rows = rowsOf(content).map(r => {
     const v = rowView(content, state, r, held, now);
@@ -140,7 +141,7 @@ export function bookView(content, state, now = new Date()) {
     return v;
   });
   const due = lessonRow(content, state, now);
-  return { ok: true, rows, bonus, figures, words: wordsOf(content, state), master: cfg.master, due: due?.id ?? null,
+  return { ok: true, rows, bonus, figures, marks: [...marksOf(state)], words: wordsOf(content, state), master: cfg.master, due: due?.id ?? null,
     names: Object.fromEntries(Object.entries(content.handkit?.seals ?? {}).filter(([id]) => rows.some(r => r.figures.includes(id))).map(([id, s]) => [id, { name: pick(s.name, lang(state)), glyph: s.glyph, hint: pick(s.hint, lang(state)), how: pick(s.how, lang(state)) }])) };
 }
 

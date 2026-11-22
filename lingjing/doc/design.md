@@ -2264,7 +2264,7 @@ card `scripts/mijing.js` · numbers `balance.json master.mijing`.
   — his sheet washed dark, his own moves turned on him), 守关 (a 塔防 wave; names the 重's 妖兽 it meets), 机关 (华容道 ·
   拼图 of the 重's painting), 阵 (五子 · 残局), 古乐 (太鼓 · 抚琴), 险道 (几何冲刺, a 古 run's level with the story's lines
   off). The 大妖 stays the 重's card duel, outside the pool. Out: 洛书 (one square turned), 药园捉虫 (its lines are the herb
-  garden's), 结印 alone (needs a camera; it is the 塔防 boards' dock). A run begun on the phone draws no `phone: false`
+  garden's), 结印 alone (needs a camera; it is the 塔防 boards' dock — the seal it asks for takes turns among the seals he has learned, each cast moving it on, the sword seal alone before a second is his: Hanli 2026-11-21, games.md § 手势斗法). A run begun on the phone draws no `phone: false`
   deal (rules/chores.mjs hostOf). A lost board is played again in place or left by 撤 (a quarter of 气血), as 守关's
   always was; only a lost card duel ends the run. tests/mijing-deals.test.mjs.
 - **The run:** 气血 carries (a fight's door takes it as `wounds`, a board costs it by its stars, never below 1; 撤 off a
