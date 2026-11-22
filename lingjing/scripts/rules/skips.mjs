@@ -79,9 +79,12 @@ export const storyBoard = (content, state, id) => {
 const replayHeld = (state, id) => Boolean(state.tasks?.[id]?.replay && state.tasks[id].status === 'offered');
 export const leaveOf = (content, state, id) => Boolean(taskOf(content, id)) && (replayHeld(state, id) || !storyBoard(content, state, id));
 
-/* `task --action=leave`: nothing is written for a board offered as it was (兽潮's night is not counted, no cooldown
-   starts, no 灵气 is spent: those come with the win, tasks.mjs). A kept story board taken up again (playKept) and put
-   down is over for the story, unpaid, for good — nothing handed over again (its `gives` went with the first). */
+/* `task --action=leave`: nothing is written for a board offered as it was — no pay, no 灵气 spent (those come with the win,
+   tasks.mjs). The cooldown events are the one exception, and they are not decided here: ✕ on 切磋's bout, 妖兽出没's wave and 兽潮's
+   hourly night is 「跳过」 — the round is over, unpaid, and its cooldown starts (tasks.mjs `task`: qiecuoOver · yaoshouWaveOver ·
+   putDown → rules/shouchao.mjs; Hanli 2026-11-21: 「所有小游戏关掉的处理应该统一吧, 就是"跳过"不玩这一局」). 留 on 兽潮 comes
+   here instead (keepOrPut) and writes nothing: the tide stays up. A kept story board taken up again (playKept) and put down
+   is over for the story, unpaid, for good — nothing handed over again (its `gives` went with the first). */
 export function leaveBoard(state, content, ctx, id) {
   if (!taskOf(content, id)) return refuse('unknown-task', null);
   if (!leaveOf(content, state, id)) return refuse('story-board', null);
