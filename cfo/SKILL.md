@@ -1,6 +1,5 @@
 ---
 name: cfo
-model: deepseek-flash
 product: cfo
 description: >-
   Personal CFO — a private, on-device finance analyst. Import bank/credit
