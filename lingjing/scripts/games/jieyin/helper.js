@@ -4,7 +4,7 @@
 // there — opening BY ITSELF at the offer (Hanli 10-22: 「小游戏里结印那里, 可以省掉用户点击动作. 默认开摄像头开始结印」). The hands are read by 手势斗法 (duel.js: 小招 shape + thrust, 法术 文 → 扣 → 推, the
 // 大招's seals, 灵力 — doc/games.md § 手势斗法); its cast events go to the host, which decides what they do.
 //
-//   offerSeals({ host, lang, moves, state, cast, say, call, first, idle, fastFps, paused, aside, env, feed, level, dock, onProgress, permission, store }) → Promise<{ close(), lead(pace), camera, wanted, auto } | null>
+//   offerSeals({ host, lang, moves, learned, state, cast, say, call, first, idle, fastFps, paused, aside, env, feed, level, dock, onProgress, permission, store }) → Promise<{ close(), lead(pace), camera, wanted, auto, asked } | null>
 //     level() → a key for the level up now: the first time the dock opens for a key, a bubble on it says sealing is live
 //             and where to switch it off (jieyin.json `helper.live`)
 //   Consent (the camera opens by itself; the browser's own prompt the first time is unavoidable):
@@ -21,6 +21,10 @@
 //   The button wears the next move's gesture; tapped, the dock's frame shows the gesture to make (as the right hand,
 //   its facing words) beside the player's own ink hand (Hanli 10-21: 「有结印要告诉玩家啊」「结印要有个框提示手势的」).
 //     moves   the move ids the host offers here (already past their `from` gate); a cast of any other is dropped
+//     learned the move ids his 印谱 holds as learned (jieyin/mastery.js `masteryFor(...).learned`; none → []). The seal the
+//             button, the bubble, the ready card and the frame ask for takes turns among learned ∩ moves, one step on at each
+//             cast that flies (askRing; Hanli 11-21); fewer than one learned seal here → the 小招's shape as ever. A seal made
+//             that is offered still casts, asked for or not. `asked` on the handle: { move, seal } asked for now.
 //     state() → { on, ready, cool, coolOf }   on: spells offered now · ready: one may fly now · cool: s of rest left
 //     cast(event) → true when it flew        say(text): one short line in the host (the cues)
 //     call() → the line when spells are first offered (a 大妖 out; 灵力 filled then)   first: the 小招's first-time line
@@ -89,6 +93,23 @@ export { cameraHere as available };
 export const duelId = (m) => m?.jieyin ?? m?.id ?? m;
 const tr = (o, lang) => o?.[lang] ?? o?.zh ?? '';
 const plain = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+
+/** The seals the dock asks for in turn (Hanli 2026-11-21: 「老师教过其他手印后, 就换着用, 每个手印都在游戏里用到」) — the ONE place
+    that decides it. A ring of `{ move, seal }`: the moves this board offers (`moves`, the host's own order — the kit's) that
+    are also learned (`learned`: the 印谱's, handed in through jieyin/mastery.js), a 小招 asked by its shape, a 法术 by its 文
+    (the 大招 has its own sequence: never a turn). Empty — the sword seal alone is no rotation — the dock asks as it always has
+    (offerSeals' `base`). Every reader of "the seal asked for now" (the button, the bubble, the ready card, the hint frame, the
+    stall tracker) reads offerSeals' `asked()`, which turns this ring one step on each cast that flies. */
+export function askRing(kit, moves, learned = []) {
+  const D = kit.doufa ?? {}, mine = new Set(learned);
+  const sealOf = (id) => (D.xiao?.[id] ? D.xiao[id].shape : D.fa?.includes(id) ? kit.spells?.[id]?.wen : null);
+  return moves.filter((id) => mine.has(id)).map((id) => ({ move: id, seal: sealOf(id) })).filter((a) => kit.seals?.[a.seal]);
+}
+
+/** The prompt where no second seal is his — as it always was: the first 小招's shape, else the first 法术's 文, else `bigFirst`
+    (the 大招's first seal). `{ move, seal }`. */
+export const askBase = (kit, tiers, bigFirst = null) => ({ move: tiers.xiao[0] ?? tiers.fa[0] ?? tiers.da[0],
+  seal: tiers.xiao.map((id) => kit.doufa.xiao[id].shape)[0] ?? tiers.fa.map((id) => kit.spells?.[id]?.wen)[0] ?? bigFirst });
 
 /** The offered ids by 手势斗法's tier (xiao · fa · da); an id it does not know is left out. */
 export function tiersOf(kit, ids) {
@@ -182,6 +203,14 @@ function soonEl(doc, w, kit, seal, move, lang) {
   return c;
 }
 
+/** The ready card's seal drawn again when the asked seal turns (its switch and its listener stay). */
+function soonPaint(c, w, kit, seal, move, lang) {
+  c.querySelector('.jyh-soon-icon').innerHTML = kit.seals?.[seal] ? iconSvg(kit.seals[seal], 44, { lang }) : '';
+  c.querySelector('.jyh-soon-line').textContent = soonLine(kit, seal, lang);
+  c.querySelector('.jyh-soon-name').textContent = tr(kit.seals?.[seal]?.name, lang);
+  c.querySelector('.jyh-soon-how').textContent = howOf(kit, move, lang);
+}
+
 /** The button: the next move's gesture drawn on it (Hanli 10-21: 「结印要有个框提示手势的」), the word under it. */
 function buttonEl(doc, w, icon = '') {
   const b = doc.createElement('button');
@@ -190,7 +219,7 @@ function buttonEl(doc, w, icon = '') {
   b.hidden = true;
   b.title = w.label;
   b.setAttribute('aria-label', w.label);
-  b.innerHTML = `${icon ? `<span class="jyh-icon">${icon}</span>` : ''}<b class="jyh-word">${plain(w.btn)}</b><i class="jyh-cam" title="${plain(w.camOn)}"></i>`;
+  b.innerHTML = `<span class="jyh-icon">${icon}</span><b class="jyh-word">${plain(w.btn)}</b><i class="jyh-cam" title="${plain(w.camOn)}"></i>`;
   return b;
 }
 
@@ -200,9 +229,10 @@ function calloutEl(doc, w, text) {
   const c = doc.createElement('div');
   c.className = 'jyh-callout';
   c.hidden = true;
-  c.innerHTML = `<b>${plain(w.who)}</b>${plain(text)}`;
+  c.innerHTML = calloutHtml(w, text);
   return c;
 }
+const calloutHtml = (w, text) => `<b>${plain(w.who)}</b>${plain(text)}`;
 
 function dockEl(doc, w) {
   const d = doc.createElement('div');
@@ -217,9 +247,10 @@ function dockEl(doc, w) {
 const firstTime = (win) => { try { if (win.localStorage?.getItem(SEEN)) return false; win.localStorage?.setItem(SEEN, '1'); return true; } catch { return false; } };
 
 export async function offerSeals({ host, lang = 'zh', moves = [], state = () => ({ on: true, ready: true, cool: 0, coolOf: 0 }),
-  cast = () => false, say = () => {}, call = () => null, first = null, idle = 60, fastFps = 30, paused = () => false, aside = () => false,
+  learned = [], cast = () => false, say = () => {}, call = () => null, first = null, idle = 60, fastFps = 30, paused = () => false, aside = () => false,
   env = globalThis, feed = false, available = cameraHere, eyeOf = openEye, level = null, dock: place = null, onProgress = null,
   permission = permissionOf, store = null } = {}) {
+  const known = new Set(learned), mine = moves.filter((m) => known.has(m?.id ?? m)).map(duelId); // the 印谱 names a host's row ids: matched there, then read as 手势斗法 ids
   moves = moves.map(duelId); // a host may hand its rows: each is its 手势斗法 id
   if (!moves.length || (!feed && !(await available(env)))) return null;
   const perm = feed ? 'granted' : await permission(host.ownerDocument?.defaultView ?? env);
@@ -232,14 +263,23 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
   const w = WORDS[lang], set = setOf(kit, { matchMedia: win.matchMedia?.bind(win), search: win.location?.search ?? '' });
   loadCss(doc);
 
-  // The gesture the button wears: the 小招's shape, else the 法术's 文, else the 大招's first seal — as the right hand.
-  const D0 = kit.doufa, lead = tiers.xiao.map((id) => D0.xiao[id].shape)[0] ?? tiers.fa.map((id) => kit.spells?.[id]?.wen)[0]
-    ?? (tiers.da[0] ? sequenceFor(kit, D0.da[tiers.da[0]].move, set)[0] : null);
-  const btn = buttonEl(doc, w, kit.seals[lead] ? iconSvg(kit.seals[lead], 30, { lang }) : ''), dock = dockEl(doc, w);
-  const callout = calloutEl(doc, w, w.tapHere), live = calloutEl(doc, w, liveLine(kit, lead, lang));
-  const leadMove = tiers.xiao[0] ?? tiers.fa[0] ?? tiers.da[0];
-  const soon = soonEl(doc, w, kit, lead, leadMove, lang);
+  // The seal asked for now (askRing: the learned seals this board offers, in turn; else, as ever: the 小招's shape, else the
+  // 法术's 文, else the 大招's first seal). The ONE read of it — every part below asks `asked()`, a cast flown turns it on (`flown`).
+  const ring = askRing(kit, moves, mine), base = askBase(kit, tiers, tiers.da[0] ? sequenceFor(kit, kit.doufa.da[tiers.da[0]].move, set)[0] : null);
+  let turn = 0;
+  const asked = () => (ring.length ? ring[turn % ring.length] : base);
+  const btn = buttonEl(doc, w, kit.seals[asked().seal] ? iconSvg(kit.seals[asked().seal], 30, { lang }) : ''), dock = dockEl(doc, w);
+  const callout = calloutEl(doc, w, w.tapHere), live = calloutEl(doc, w, liveLine(kit, asked().seal, lang));
+  const soon = soonEl(doc, w, kit, asked().seal, asked().move, lang);
+  // The parts that name the asked seal, drawn again when it turns on (their first drawing is their own build above).
+  const paintAsked = () => {
+    const { seal, move } = asked();
+    btn.querySelector('.jyh-icon').innerHTML = kit.seals[seal] ? iconSvg(kit.seals[seal], 30, { lang }) : '';
+    live.innerHTML = calloutHtml(w, liveLine(kit, seal, lang));
+    soonPaint(soon, w, kit, seal, move, lang);
+  };
   dock.append(live);
+  paintAsked(); // once at the start too: one way of drawing it
   for (const el of [btn, dock]) el.dataset.at = place?.at === 'top' ? 'top' : 'bottom'; // the host's data, where no side is: its corner
   if (place?.w) { dock.dataset.narrow = ''; dock.style.setProperty('--jyh-w', `${Math.round(place.w * 1000) / 10}%`); } // a narrow frame
   // In the shell's side (sideOf), every Look: the story lays its frame again and the side comes back empty, so each
@@ -303,7 +343,6 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
 
   const offered = new Set(moves), D = kit.doufa;
   const bigId = tiers.da[0] ?? null, bigSeq = bigId ? sequenceFor(kit, D.da[bigId].move, set) : [];
-  const shape = tiers.xiao.map((id) => D.xiao[id].shape).find((s) => kit.seals[s]) ?? null; // the hint's rest target: the 小招's shape
   const need = eyeFor(kit, set, bigSeq);
   let duel = duelStart(kit, { set }), held = [], hands = [], image = [], handed = [], aspect = 4 / 3;
   let wanted = false, cam = 'off', gen = 0, closed = false, loop = 0, last = 0, tried = 0, wasOn = false, wasReady = false, fps = null, firstSaid = false, wasSoon = false;
@@ -318,9 +357,10 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
   const video = $('video');
   const see = (r) => { hands = r.world ?? []; image = r.image ?? []; handed = r.handed ?? []; aspect = (video.videoWidth / video.videoHeight) || aspect;
     const st = state(), at = bigId ? duel.big.find((b) => b.id === bigId)?.s.at ?? 0 : 0;
-    const target = at >= 2 ? bigSeq[at] : shape ?? (tiers.fa[0] ? kit.spells?.[tiers.fa[0]]?.wen : bigSeq[0]);
+    const target = at >= 2 ? bigSeq[at] : asked().seal;
     const active = wanted && st.on && st.ready && !paused() && !aside() && !doc.hidden;
-    emitStall(trace.feed({ now: win.performance.now(), want: active ? target : null, judged: sealOf(hands, traceSeals, kit.judge, null, { image, aspect }), tracked: !!hands.length, landmarks: hands[0] }), win);
+    const fisted = Object.values(duel.spells?.hands ?? {}).some((h) => h.phase === 'kou'); // a 法术's 文 made and held in the fist: the 文 is not asked again, no stall
+    emitStall(trace.feed({ now: win.performance.now(), want: active && !fisted ? target : null, judged: sealOf(hands, traceSeals, kit.judge, null, { image, aspect }), tracked: !!hands.length, landmarks: hands[0] }), win);
   };
   const eye = feed ? null : eyeOf({ video, onHands: see, env: win, ...need, handedSwap: kit.orient?.handedSwap ?? true });
 
@@ -387,7 +427,7 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
     btn.querySelector('.jyh-word').textContent = rest > 0 ? w.rest : w.btn;
     $('.jyh-state').textContent = cam === 'asking' ? w.asking : '';
     if (dock.hidden || holding) return; // holding: the gesture made stays as it was, in its light
-    const at = bigAt(), next = at >= 2 ? bigSeq[at] : shape;
+    const at = bigAt(), next = at >= 2 ? bigSeq[at] : asked().seal;
     chips(at);
     hint.update({ image, aspect, target: next, progress: prog?.k ?? 0, right: false, now: win.performance.now(), world: held.length || !next ? null : hands, handed, held: heldAt(held, handed, hands.length) });
   };
@@ -404,7 +444,7 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
     if (!st.on || wanted) btn.classList.remove('is-call');
     if (st.on && ready && !wasReady && wasOn && wanted) say(w.ready);
     // the 小招's how, once on this device: after the live bubble has had its say, the dock still open
-    if (!firstSaid && wanted && cam === 'on' && ready && shape && first && liveFor != null && live.hidden && !dock.hidden) { firstSaid = true; if (firstTime(win)) say(tr(first, lang)); }
+    if (!firstSaid && wanted && cam === 'on' && ready && tiers.xiao.length && first && liveFor != null && live.hidden && !dock.hidden) { firstSaid = true; if (firstTime(win)) say(tr(first, lang)); }
     if (!st.on && wasOn) wanted = false;
     // The ready card is up: a camera that opens by itself opens now, warm for the 大妖 (its red light on the card).
     if (st.soon && !st.on && !wasSoon && auto && told) { wanted = true; tried = win.performance.now(); }
@@ -450,6 +490,8 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
   function flown(move, p, now) {
     const of = p?.move === move ? p.of : tiers.xiao.includes(move) ? 2 : tiers.fa.includes(move) ? 3 : bigSeq.length || 1;
     tell({ move, step: of, of, k: 1, cast: true });
+    turn += 1; // the next seal is asked for (askRing)
+    paintAsked();
     mem.since = null;
     holdTill = now + HOLD;
     dock.style.setProperty('--jyh-glow', glowOf(kit, move));
@@ -495,5 +537,5 @@ export async function offerSeals({ host, lang = 'zh', moves = [], state = () => 
   }
   // lead(pace): the line a host puts on its lead card — said, it is the player's warning that the camera will open
   return { close, lead: (pace) => { if (!auto) return leadLine(kit, 'off', lang); told = true; return leadLine(kit, pace, lang); },
-    get camera() { return cam; }, get wanted() { return wanted; }, get auto() { return auto; } };
+    get camera() { return cam; }, get wanted() { return wanted; }, get auto() { return auto; }, get asked() { return asked(); } };
 }

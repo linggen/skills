@@ -50,7 +50,7 @@ export function offerJieyin(level, box, { lang, game, shell, marks, feed = false
   const t = (o) => o?.[lang] ?? o?.zh ?? '';
   const say = (text) => (shell?.say ? shell.say(lang === 'en' ? 'Xiaoman' : '小满', text, 2200) : game.say('xiaoman', text));
   return load().then(({ offerSeals }) => offerSeals({
-    host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis, moves, idle: c.idle, fastFps: c.armedFps,
+    host: box, lang, feed, env: box.ownerDocument.defaultView ?? globalThis, moves, learned: mastery.learned, idle: c.idle, fastFps: c.armedFps, // learned: the 印谱's seals — the dock turns its prompt among them (helper.js askRing)
     // the dock casts back an event (its move, the hand's lane): the row ids here are the 手势斗法 ids
     state: () => game.jieyinState(), cast: (e, lane) => { const ok = game.jieyin(e?.move ?? e, e?.lane ?? lane?.lane ?? lane); if (ok) mastery.report(e?.move ?? e); return ok; }, fizzle: () => game.fizzle(), say,
     call: () => t(c.say), first: moves.some((m) => m.id === 'feijian' && !m.from) ? c.first : null,

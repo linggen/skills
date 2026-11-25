@@ -254,7 +254,12 @@ overflow pays more.
   games land — then re-fit, Hanli's call.
 - **冷却事件 — three cooldown events** (Hanli 2026-10-28: 「按你说的来」) 【在建】: 兽潮 (塔防, 1 h), 比武切磋 (格斗, 3 h, after
   宗门大比) and 妖兽出没 (斗法 at 后山 · 上山路, 1.5 h), each on a 主力 game. One mechanism, rules/events.mjs (balance.json
-  `events.<id>`): the cooldown runs from completion (won, lost or skipped); a waiting event waits and never stacks; announced
+  `events.<id>`): the cooldown runs from completion (won, lost or skipped); **✕ on any of the three is 「跳过」 — the round is
+  over, unpaid, uncounted, and its cooldown starts; no exception for 兽潮** (Hanli 2026-11-21, on his iPhone: 「兽潮的小游戏, 我开始后
+  点右上角的叉icon, 关了后, 小游戏并没有取消或者跳过, 首页上还可以开始相同的小游戏. 这样玩家就非玩不可, 无法跳过一个可能不喜欢的
+  小游戏」 · 「所有小游戏关掉的处理应该统一吧, 就是"跳过"不玩这一局. 对吧?」; before it 兽潮's put-down wrote nothing, the 10-26 收手
+  ruling); 留 starts none — the board stays up (兽潮) or waits in 收着的棋局 (the story's own); a lost night costs its 体力 and starts
+  the cooldown (the first night's errand, `guan-shouchao`, is no cooldown event: ✕ puts it down, the errand stays); a waiting event waits and never stacks; announced
   once (the tray or the 主页), never nudged; the day's first `full` (2) pay in full, then play_pay.replay's 50 · 10%.
   **妖兽出没** 【已建】 (rules/yaoshou.mjs): the two pools hold a batch of `batch` fights (1 since 2026-11-02, Hanli: 「降妖等也是, 都一局就可以了」; was 3); each settle takes one (won, lost or run dry),
   the last completes it, `yaoshou skip` lets it go; the pool waits between batches (world.mjs poolRestLeft, so the encounter,
@@ -342,19 +347,19 @@ rerun has): a plot the game alone has, never the book's. 银月 tells it once, o
 often the 九鼎 veins swell and draw the beasts down; the outer disciples man the wall). Rules: rules/shouchao.mjs;
 the knobs: tasks/world.json `shouchao`, its cooldown balance.json `events.shouchao` (§ 冷却事件, rules/events.mjs, since
 2026-10-31; a save counted before keeps its clock).
-- **When**: at any hour, once a cooldown — offered again `events.shouchao.every_h` (1 h since 10-28) after the last night counted (it was 20 h, so
+- **When**: at any hour, once a cooldown — offered again `events.shouchao.every_h` (1 h since 10-28) after the last night over — won, lost or put down with ✕ (2026-11-21; it was 20 h, so
   the same time tomorrow is open; inside it `win`/`task done` are refused `shut` in the world's words with
   `left_min`; Look keeps the row through the whole cooldown, past midnight, with `wait_min` and `shut`, and carries it in
   `waits` — § Pacing's one waiting row), from 古四's 小周天 (wm-zhoutian, his first 灵力); only at
   沉鼎观, never inside a beat's lock, the 秘境, a rerun or a fight.
-- **Cost and pay**: its minutes in 体力 (5, `tide`; § 体力), taken as the night is counted — a lost night costs nothing, an empty pool
+- **Cost and pay**: its minutes in 体力 (5, `tide`; § 体力), taken as the night is counted — a lost night costs it too (`task lost`, § 体力), ✕ and 留 cost nothing, an empty pool
   shuts the board. By stars: 1★ 修为 10 + 灵石 5 · 2★ 20 + 10 + an herb · 3★ 30 + 15 + an herb (修为 on the
   `haunt` table, layer-scaled, past the 回's mark as 灵石; 灵石 the small-game ranks). A night missed is never
   punished: the seniors hold, only its pay is gone.
 - **Words**: no time of day (2026-10-26, the coordinator for Hanli): titled 「兽潮 · 第N潮」 / "tide N", done line
   「兽潮退回了山里，墙下只剩爪印。」, the rows' leads time-free.
 - **Levels**: each night the next row of 守墙关's table (levels/shouqiang.json) with a `tide` number and no `story`,
-  whose beasts are all of his 回 (creatures.json `hui`, book order); a won night moves on, a lost one comes again.
+  whose beasts are all of his 回 (creatures.json `hui`, book order); a won night moves on; a lost or put-down one (✕) comes again when the cooldown is over — it is not counted, the night is dealt `once` (a loss ends it, as 切磋's bout does) so no replay in place is refused.
   Past the rows: the rise on the last that fits (+1.5% `difficulty`, +0.002 `growth`, gaps −1% a night; a boss of his
   回 in the row's boss's place). A row added later is played first. Rows now: 兽潮 1–3 (野猪 · 狰, 古四), 4 (犰狳,
   古五), the 山门 (鬿雀 · 合窳, 古八).
@@ -1440,7 +1445,9 @@ pages, never linked in the game and blank without `?dev=1`: the 游戏厅 `scrip
   A story fight's card, a scene's riddle and a 传闻 step board carry the same pair; on a fight or a riddle both pass it.
 - **✕ puts it away, and never pays** (2026-11-04, Hanli at 执事堂's 象棋残局: 「点关闭, 结果给奖励了」): a story board goes on
   as after a win and never comes back; a board he chose, an errand's too, is put down (收手) — no pay, no 体力, the errand
-  still open to play later; a 游戏厅 board is dealt again.
+  still open to play later; a 游戏厅 board is dealt again. **A cooldown event's ✕ is 「跳过」 — its cooldown starts** (2026-11-21,
+  one rule with § 冷却事件: 切磋, 妖兽出没 and 兽潮 alike; 留 starts none). A 秘境 room is the run's own (撤); the errand's
+  first 兽潮 night starts no clock.
 - **No paid skip anywhere** (2026-11-04, under the 11-03 rule): the 10-27 跳过 · 酬减半 for an errand's board is gone
   (rules/tasks.mjs; `play_pay.skip` dropped). `skip` or `leave` on an errand's board puts it down, unpaid; he may drop
   the errand on the wall as ever. A lost board costs its 体力 in full, practice included (`task lost`, which the page now
@@ -2264,7 +2271,7 @@ card `scripts/mijing.js` · numbers `balance.json master.mijing`.
   — his sheet washed dark, his own moves turned on him), 守关 (a 塔防 wave; names the 重's 妖兽 it meets), 机关 (华容道 ·
   拼图 of the 重's painting), 阵 (五子 · 残局), 古乐 (太鼓 · 抚琴), 险道 (几何冲刺, a 古 run's level with the story's lines
   off). The 大妖 stays the 重's card duel, outside the pool. Out: 洛书 (one square turned), 药园捉虫 (its lines are the herb
-  garden's), 结印 alone (needs a camera; it is the 塔防 boards' dock). A run begun on the phone draws no `phone: false`
+  garden's), 结印 alone (needs a camera; it is the 塔防 boards' dock — the seal it asks for takes turns among the seals he has learned, each cast moving it on, the sword seal alone before a second is his: Hanli 2026-11-21, games.md § 手势斗法). A run begun on the phone draws no `phone: false`
   deal (rules/chores.mjs hostOf). A lost board is played again in place or left by 撤 (a quarter of 气血), as 守关's
   always was; only a lost card duel ends the run. tests/mijing-deals.test.mjs.
 - **The run:** 气血 carries (a fight's door takes it as `wounds`, a board costs it by its stars, never below 1; 撤 off a

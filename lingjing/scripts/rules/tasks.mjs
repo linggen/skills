@@ -26,7 +26,7 @@ import { writeLedger } from './ledger.mjs';
 import { creatureOf, encounterOf, foeOf, huntKey, meetBeast, placeOf, poolOf, poolTally, rememberAt, restAfter, sceneOf } from './world.mjs';
 import { strengthen } from './strengthen.mjs';
 import { kaoDone, kaoHere } from './kao.mjs';
-import { isTide, shouchaoDone, shouchaoFirst, shouchaoHere, shouchaoShut, tonight } from './shouchao.mjs';
+import { isTide, shouchaoDone, shouchaoFirst, shouchaoHere, shouchaoPutDown, shouchaoShut, tideLetGo, tonight } from './shouchao.mjs';
 import { isMijingFight, keyDrop, mijingBoardDone, mijingBoardFree, mijingBoardHere, mijingDuel } from './mijing.mjs';
 import { isBout, qiecuoDone, qiecuoHere, qiecuoOver, qiecuoShut } from './qiecuo.mjs';
 import { yaoshouFought, yaoshouShare } from './yaoshou.mjs';
@@ -53,6 +53,7 @@ function boardLost(state, content, ctx, id) {
   let cost = 0;
   if (bout) cost = staminaCost(content, t.qiecuo?.cost ?? 'game');
   else if (shouchaoHere(content, state, id, ctx.now)) {
+    tideLetGo(s, content, ctx.now, id, 'lost'); // over, unpaid, the night not moved on — its cooldown starts (rules/shouchao.mjs)
     const night = tonight(content, state);
     cost = boardCost(content, t.shouchao?.cost ?? 'game', (content.games?.games ?? []).find(g => g.id === night?.game && !g.cut && !g.replaced) ?? { id: night?.game });
   } else if (mijingBoardFree(content, state, id)) cost = 0; // a 秘境 run paid at the door: nothing inside costs 体力
@@ -91,7 +92,7 @@ export function task(state, content, ctx, args) {
   if (args.action === 'leave' && isBout(content, String(args.id ?? ''))) return qiecuoOver(state, content, ctx, String(args.id), 'skipped');
   // …妖兽出没's wave lost or put down: the batch's fight is over, unpaid (a duel lost or run dry takes its slot alike).
   if (['lost', 'leave', 'skip'].includes(args.action) && waveTask(content)?.id === String(args.id ?? '')) return yaoshouWaveOver(state, content, ctx, String(args.id), args.action);
-  if (args.action === 'leave') return leaveBoard(state, content, ctx, String(args.id ?? ''));
+  if (args.action === 'leave') return putDown(state, content, ctx, String(args.id ?? ''));
   // A board lost (the page, as it ends unwon): it was played, so it costs its 体力 in full (boardLost) — 切磋's bout is
   // over too, unpaid, its cooldown started.
   if (args.action === 'lost') return boardLost(state, content, ctx, String(args.id ?? ''));
@@ -416,7 +417,8 @@ export function win(state, content, ctx, args) {
 }
 
 /* 留 on a board that cannot wait on a list — a 切磋 bout (its cooldown), a 秘境 room's (only inside its run), 兽潮's night, 本王考考你
-   — does what ✕ does, and says so: never refused (a user's action is never gated), never kept where it could not be played. */
+   — is put away and says so: never refused (a user's action is never gated), never kept where it could not be played. A 切磋 bout
+   is over (skipped, its cooldown started); 兽潮's night is only put away, nothing written — it stays up (Hanli 2026-11-21: 留 keeps). */
 const UNKEPT = { zh: '这一局留不住，收起来了。', en: 'This one cannot be kept; it is put away.' };
 function keepOrPut(state, content, ctx, id) {
   const t = taskOf(content, id);
@@ -426,10 +428,16 @@ function keepOrPut(state, content, ctx, id) {
   return keepBoard(state, content, ctx, id);
 }
 
-/* `skip`: the story's board set aside (skipBoard), any board he may put down put down (leaveBoard). */
+/* A board he may put down, put down (✕, `leave`): 兽潮's night is 「跳过」 — nothing counted, its cooldown starts, as 切磋's bout
+   (above) and 妖兽出没's wave are; any other board is left as it was (rules/skips.mjs leaveBoard). 留 never comes here: it
+   keeps the tide up (keepOrPut). */
+const putDown = (state, content, ctx, id) =>
+  isTide(content, id) ? shouchaoPutDown(state, content, ctx, id, leaveBoard) : leaveBoard(state, content, ctx, id);
+
+/* `skip`: the story's board set aside (skipBoard), any board he may put down put down (putDown). */
 function skipOrLeave(state, content, ctx, id) {
   const story = skipBoard(state, content, ctx, id);
-  return story.result.ok || !leaveOf(content, state, id) ? story : leaveBoard(state, content, ctx, id);
+  return story.result.ok || !leaveOf(content, state, id) ? story : putDown(state, content, ctx, id);
 }
 /* A board won for its errand: off 收着 if he kept it (rules/skips.mjs). */
 function boardSettled(s, id) {

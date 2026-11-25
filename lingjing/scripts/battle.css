@@ -312,8 +312,7 @@
 .bacts > .bpouch { display: none; }
 .bdock > .bhand { flex: 1 1 0; min-width: 0; padding: 0 calc(var(--cw) * .3); }
 .bhand > .bcard:last-child:not(:first-child) .bleaf { left: auto; right: 0; }
-/* A hand played out (battle-card.js emptyHandHtml): one card-shaped empty seat — an ink wash, a faint 牌, the hand's words and
-   the deck's count — the size of a card of the hand, so the dock keeps its height and is never a blank band (Hanli 11-22). */
+/* A hand played out (battle-card.js emptyHandHtml): a card-shaped seat holding the hand's words, deck count and next draw. */
 .bhandempty { position: relative; flex: none; width: var(--cw); height: var(--ch); box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 8px; text-align: center; overflow: hidden;
   font-family: var(--serif); color: var(--ink-2); border: 1.5px dashed var(--ink-line); border-radius: 10px;
   background: radial-gradient(ellipse at 50% 85%, rgba(31, 28, 24, .10), transparent 70%), rgba(243, 238, 226, .35); }
@@ -656,7 +655,7 @@
   .battle .bhand > .bcard.far { opacity: 0; pointer-events: none; }
   /* The phone's empty seat: the size the wheel's centre card would be, where it would stand. */
   .battle .bhand > .bhandempty { position: absolute; left: 50%; top: var(--wtop); width: var(--wcw); height: calc(var(--wcw) / .71); margin-left: calc(var(--wcw) / -2); }
-  /* The seat is as wide as the room leaves (94 px when the ranks are full): its two lines scale with it and wrap balanced, never one word alone on a line. */
+  /* The seat's words scale with its width and wrap balanced. */
   .battle .bhand > .bhandempty { padding: 4px; }
   .battle .bhand > .bhandempty > b { font-size: clamp(12px, calc(var(--wcw) * .12), 19px); letter-spacing: 0; }
   .battle .bhand > .bhandempty > small { font-size: clamp(11px, calc(var(--wcw) * .09), 14.5px); }

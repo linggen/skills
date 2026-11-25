@@ -61,7 +61,7 @@ export function offerJieyin(host, box, { lang, now, marks, toast, paused, aside,
   const cfg = () => { const n = now(); return n.g ? { ...jieyinCfg(host, n.level), mastery: mastery().bonus } : null; };
   return load().then(({ offerSeals }) => offerSeals({
     // the dock knows the 手势斗法 ids (a row's `jieyin`, else its own id) and casts back an event naming one
-    host: box, lang, feed, env: env ?? box.ownerDocument.defaultView ?? globalThis, moves: moves.map(duelId), idle: host.idle,
+    host: box, lang, feed, env: env ?? box.ownerDocument.defaultView ?? globalThis, moves: moves.map(duelId), learned: mastery().learned, idle: host.idle, // learned: the 印谱's seals — the dock turns its prompt among them (helper.js askRing)
     state: () => { const c = cfg(); return c ? jieyinState(now().g, c) : OFF; },
     cast: (e) => { const c = cfg(), row = moves.find((m) => duelId(m) === (e?.move ?? e)); const ok = c && row ? jieyinCast(now().g, row.id, c) : false; if (ok) mastery().report(row.id); return ok; },
     fizzle: () => toast(lang === 'en' ? 'Pfft — it fizzled.' : '噗——走火了。'), say: toast,
