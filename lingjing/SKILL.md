@@ -616,7 +616,7 @@ tools:
     description: >-
       Let a named save go, after one AskUser (guide `steer`).
     cmd: "bash $SKILL_DIR/scripts/run-js.sh $SKILL_DIR/scripts/rules.mjs forget --id={{id}} --save={{session.save}} --for=ling"
-    tier: edit
+    tier: destructive
     timeout_ms: 8000
     args:
       id:
