@@ -61,8 +61,8 @@
     max-height: min(72dvh, calc(100dvh - var(--chatbar-h) - 46px - 48px)); overflow-y: auto; overscroll-behavior: contain;
     border-radius: 14px 14px 0 0; border-bottom: 0; box-shadow: 0 -10px 32px rgba(20, 14, 6, .22); }
   .slotfoot .shelfpop { flex-wrap: wrap; }
-  /* 手边的棋局 under the footer: shorter on a phone, and away while a game, the map or a fight has the stage. */
-  .tray { max-height: 132px; }
+  /* 手边的棋局 under the footer: away while a game, the map or a fight has the stage. Its height cap is lingjing.css's one `.tray`
+     rule — a phone cap of 132 px cut the 阶段 card's button in half (11-25). */
   .shell.autofold .tray { display: none; }
   /* The boards fit the screen's height as well as its width: the header, footer, bar and the card's own
      title and controls are ~320–400px of a phone, the board gets the rest — no scrolling inside a game. */

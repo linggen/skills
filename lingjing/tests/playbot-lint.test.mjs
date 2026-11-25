@@ -25,7 +25,7 @@ function lint(paint = [], backdrop = false, extra = [], opts = {}) {
   const all = [rank, ...marks, ...controls, ...(backdrop ? [paper] : []), ...extra];
   const body = {
     parentElement: html,
-    querySelectorAll: (sel) => sel === '*' || sel === 'body *' ? all : sel.startsWith('button,') ? controls : sel === '[role=tablist]' ? all.filter((e) => e.tablist) : sel === '.battle .brank' ? all.filter((e) => e.isRank) : sel === '.battle' ? all.filter((e) => e.isBoard) : [],
+    querySelectorAll: (sel) => sel === '*' || sel === 'body *' ? all : sel.startsWith('button,') ? controls : sel === '[role=tablist]' ? all.filter((e) => e.tablist) : sel === '.battle .brank' ? all.filter((e) => e.isRank) : sel === '.tray' ? all.filter((e) => e.isTray) : sel === '.battle' ? all.filter((e) => e.isBoard) : [],
   };
   for (const e of all) e.parentElement = marks.includes(e) ? rank : body;
   for (const e of extra) e.matches = (sel) => e.selectors?.some((x) => sel.split(',').map((y) => y.trim()).includes(x)) ?? false;
@@ -170,4 +170,32 @@ test('the bot scopes a fight\'s shots to `.battle` itself: the board is then the
   const board = boardWith({ ...PARTS, '.bfield > .brank:last-child': [388, 70] }, { selectors: ['.battle'] });
   const r = lint([], false, [board], { scope: '.battle' });
   assert.deepEqual(r.fails.filter((x) => x.why === 'board-overlap').map((x) => x.parts), [['our-rank', 'you']]);
+});
+
+// The tray whole (the gate, 2026-11-25 at 375: 「去沉鼎观 · 药园」 cut by the tray's height cap): a tray card's button past the tray's
+// bottom edge is a hard tray-cut; one inside it is quiet.
+const trayWith = (buttonTop) => {
+  const mk = (rect, extra = {}) => ({ rect, computed: { ...defaults }, textContent: '去沉鼎观 · 药园', tagName: 'BUTTON', dataset: {}, getAttribute: () => 'act', innerText: '去沉鼎观 · 药园', childNodes: [],
+    getClientRects() { return [this.rect]; }, getBoundingClientRect() { return this.rect; }, closest: () => null, contains: () => false, ...extra });
+  const button = mk(box(180, buttonTop, 120, 27));
+  const tray = mk(box(0, 646, 375, 132), { isTray: true, tagName: 'DIV', textContent: '', querySelectorAll: (sel) => (sel === 'button, .act' ? [button] : []) });
+  button.parentElement = tray; tray.parentElement = null;
+  return [tray, button];
+};
+test('a tray card button past the tray\'s bottom edge is a hard tray-cut', () => {
+  const cut = lint([], false, trayWith(758)).fails.filter((f) => f.why === 'tray-cut');
+  assert.equal(cut.length, 1);
+  assert.equal(cut[0].shown, 0.74);
+});
+test('a tray card button inside the tray is quiet', () => {
+  assert.deepEqual(lint([], false, trayWith(700)).fails.filter((f) => f.why === 'tray-cut'), []);
+});
+
+// The played-out hand's empty seat is a painted card with words in it, drawn whole (Hanli 11-22): it breaks a blank band; a box
+// of words and paint that is not on the declared list does not.
+const seat = (selectors) => ({ rect: box(10, 120, 100, 160), style: {}, computed: { ...defaults, ...frame }, textContent: '手牌已出完', children: [], childNodes: [], selectors, tagName: 'DIV', dataset: {}, getAttribute: () => 'bhandempty', innerText: '手牌已出完',
+  getClientRects() { return [this.rect]; }, getBoundingClientRect() { return this.rect; }, closest: () => null, contains(x) { return x === this; } });
+test('the empty hand seat, painted with words, breaks a blank band', () => {
+  assert.deepEqual(lint([], false, [seat(['.battle .bhandempty'])]).warns, []);
+  assert.deepEqual(lint([], false, [seat([])]).warns, gap);
 });

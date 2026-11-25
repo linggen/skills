@@ -208,6 +208,19 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120
       }
     }
   }
+  // The TRAY whole (the gate's playbot, 2026-11-25 at 375: the 阶段 card's 「去沉鼎观 · 药园」 cut in half at the tray's foot — the
+  // tray has a height cap and scrolls, the cards under it were 26 px taller than the cap left). A button or tap of a tray card
+  // that lies past the tray's bottom edge is cut by it (a card scrolled out sideways is the row's way and is not this). FAIL.
+  for (const tray of root.querySelectorAll('.tray')) {
+    if (tray.closest(DEV_ONLY) || !vis(tray) || moving(tray)) continue;
+    const q = tray.getBoundingClientRect();
+    for (const c of tray.querySelectorAll('button, .act')) {
+      const r = c.getBoundingClientRect();
+      if (!r.width || !r.height || r.bottom <= q.bottom + 1) continue;
+      fails.push({ el_kind: 'tray', why: 'tray-cut', el: label(c), text: (c.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 40),
+        shown: Math.round(Math.max(0, Math.min(r.bottom, q.bottom) - r.top) / r.height * 100) / 100, rect: [r.left, r.top, r.width, r.height].map(Math.round), tray: [q.left, q.top, q.width, q.height].map(Math.round) });
+    }
+  }
   // A FIELD CARD (a body on a rank: `.brank > .bminion`) whole (the gate's playbot, 2026-11-19 at 1280×820, the beast's two-line
   // 杀招 banner up: the field gave the ranks ~30 px, 土墙's name was gone, 「护主 · 不出手」 sat under its cost gem, 「已出手」 read
   // 「手」 — and nothing above saw it: a card is a tap spot, so its words are never measured, and one card's parts lie over each
@@ -297,8 +310,11 @@ export const LINT = ({ minShown = 0.9, band = 100, scope = null, cardFloor = 120
   // CSS can draw content without words or an image node (empty slot circles, frames, and meter bars).
   // Count the painted box, not its layout wrapper; a broad wash behind the page is not content.
   const hasInk = (color) => color && color !== 'transparent' && !/(?:^rgba\([^)]*,|\/)\s*0(?:\.0+)?%?\s*\)$/.test(color);
+  // A painted box that holds words but is drawn whole on purpose: the played-out hand's empty seat (a card-shaped frame and wash
+  // with two lines in it; Hanli 11-22: 「好歹加个背景图片, 或者写几个字」) — its box is drawn, not blank around its words.
+  const PAINTED_WITH_WORDS = '.battle .bhandempty';
   for (const e of root.querySelectorAll('*')) {
-    if (seen.has(e) || e.textContent.trim() || e.closest(DEV_ONLY) || !vis(e)) continue;
+    if (seen.has(e) || (e.textContent.trim() && !e.matches?.(PAINTED_WITH_WORDS)) || e.closest(DEV_ONLY) || !vis(e)) continue;
     const cs = getComputedStyle(e);
     const paints = cs.backgroundImage !== 'none' || hasInk(cs.backgroundColor)
       || ['Top', 'Right', 'Bottom', 'Left'].some((side) => parseFloat(cs[`border${side}Width`]) > 0

@@ -312,6 +312,14 @@
 .bacts > .bpouch { display: none; }
 .bdock > .bhand { flex: 1 1 0; min-width: 0; padding: 0 calc(var(--cw) * .3); }
 .bhand > .bcard:last-child:not(:first-child) .bleaf { left: auto; right: 0; }
+/* A hand played out (battle-card.js emptyHandHtml): one card-shaped empty seat — an ink wash, a faint 牌, the hand's words and
+   the deck's count — the size of a card of the hand, so the dock keeps its height and is never a blank band (Hanli 11-22). */
+.bhandempty { position: relative; flex: none; width: var(--cw); height: var(--ch); box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 8px; text-align: center; overflow: hidden;
+  font-family: var(--serif); color: var(--ink-2); border: 1.5px dashed var(--ink-line); border-radius: 10px;
+  background: radial-gradient(ellipse at 50% 85%, rgba(31, 28, 24, .10), transparent 70%), rgba(243, 238, 226, .35); }
+.bhandempty > i { position: absolute; inset: 0; display: grid; place-items: center; font-style: normal; font-size: calc(var(--ch) * .5); line-height: 1; color: rgba(31, 28, 24, .10); pointer-events: none; }
+.bhandempty > b { position: relative; font-size: 14px; font-weight: 600; letter-spacing: .08em; }
+.bhandempty > small { position: relative; font-size: 12px; color: var(--ink-2); opacity: .85; }
 .bcard {
   position: relative; flex: 0 1 var(--cw); min-width: 0; height: var(--ch); padding: 0; border: 0; background: none; cursor: pointer;
   transform: translateY(var(--y, 0)) rotate(var(--r, 0deg)); transform-origin: 50% 120%; z-index: var(--z, 1);
@@ -645,6 +653,10 @@
   }
   .battle .bhand.turning > .bcard { transition: none; }
   .battle .bhand > .bcard.far { opacity: 0; pointer-events: none; }
+  /* The phone's empty seat: the size the wheel's centre card would be, where it would stand. */
+  .battle .bhand > .bhandempty { position: absolute; left: 50%; top: var(--wtop); width: var(--wcw); height: calc(var(--wcw) / .71); margin-left: calc(var(--wcw) / -2); }
+  .battle .bhand > .bhandempty > b { font-size: clamp(15px, calc(var(--wcw) * .09), 19px); }
+  .battle .bhand > .bhandempty > small { font-size: clamp(12.5px, calc(var(--wcw) * .07), 14.5px); }
   .battle .bhand > .bcard:hover { transform: translateX(calc(var(--wx, 0) * var(--wcw))) rotateY(var(--wt, 0deg)) scale(var(--ws, 1)); }
   .battle .bhand > .bcard.held { transform: translateX(calc(var(--wx, 0) * var(--wcw))) translateY(-8px) scale(calc(var(--ws, 1) * 1.03)); z-index: 41; }
   .battle .bhand > .bcard .bleaf, .battle .bhand > .bcard:last-child:not(:first-child) .bleaf { inset: 0; width: 100%; height: 100%; padding: 7px 7px 16px; }

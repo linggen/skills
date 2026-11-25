@@ -120,7 +120,7 @@ function personWords(words, creature, lang) {
 
 export const WORDS = {
   zh: {
-    hp: '气血', mana: '灵力', deck: '牌库', hand: '手牌', power: '主灵根一击', end: '结束回合', theirTurn: '它的回合',
+    hp: '气血', mana: '灵力', deck: '牌库', hand: '手牌', handSpent: '手牌已出完', deckLeft: '牌库还剩 {n} 张', deckDry: '牌库已空', power: '主灵根一击', end: '结束回合', theirTurn: '它的回合',
     it: '它', its: '它', itObj: '它',
     yours: '你的阵前', theirs: '它的阵前', empty: '空', taunt: '护主', arriving: '刚到',
     struck: '已出手', spoils: '所得', spoilsCard: '新得一张牌，往后可带进斗法：', spoilsBag: '收进储物袋：', spoilsClose: '收起', spoilsIn: '已入账', spoilsSpent: '用去：', spentTitle: '用去', xw: '修为', ls: '灵石', quit: '认输', won: '胜', passed: '试过了', lost: '败', withdrew: '它力竭遁走',
@@ -172,7 +172,7 @@ export const WORDS = {
   },
   en: {
     it: 'it', its: 'its', itObj: 'it',
-    hp: 'Life', mana: 'Force', deck: 'Deck', hand: 'Hand', power: 'Root Strike', end: 'End turn', theirTurn: 'Its turn',
+    hp: 'Life', mana: 'Force', deck: 'Deck', hand: 'Hand', handSpent: 'Hand played out', deckLeft: 'Deck: {n} left', deckDry: 'Deck is dry', power: 'Root Strike', end: 'End turn', theirTurn: 'Its turn',
     yours: 'Your rank', theirs: 'Its rank', empty: 'empty', taunt: 'Guard', arriving: 'just arrived',
     struck: 'has struck', spoils: 'Spoils', spoilsCard: 'A new card, yours to take into a fight:', spoilsBag: 'Into the pouch: ', spoilsClose: 'Put away', spoilsIn: 'already yours', spoilsSpent: 'Used up: ', spentTitle: 'Used up', xw: 'Cultivation', ls: 'Stones', quit: 'Yield', won: 'Won', passed: 'Passed', lost: 'Lost', withdrew: 'It withdrew',
     wonSays: ['It drops low and backs into the grass.', 'It lowers its head and walks slowly off.', 'It blows a few hard breaths and turns away.', 'It gives in, backs three steps, and comes no closer.', 'It gives you one look and slips into the trees.',
@@ -488,8 +488,18 @@ function pouchRowHtml(st, ctx, picked) {
   return `<div class="bpouch"><button type="button" class="dn-fold" aria-label="${esc(ctx.lang === 'en' ? 'Pills' : '丹囊')}"><span class="dn-seal">丹</span><b>×${(st.you.pouch ?? []).length}</b></button>${tray}</div>`;
 }
 
+/* A hand played out is a card-shaped empty seat with the facts in it — what the hand is, what the deck still holds —
+   not a blank band (Hanli 11-22, 「好歹加个背景图片, 或者写几个字」). Both the desk's fan and the phone's wheel lay it out
+   (battle.css .bhandempty); it is no .bcard, so the wheel and the lint count no card in it. */
+function emptyHandHtml(st, w) {
+  const n = st.you.deck;
+  const deck = n ? w.deckLeft.replace('{n}', n) : w.deckDry;
+  return `<div class="bhandempty" aria-label="${esc(w.handSpent)}"><i aria-hidden="true">牌</i><b>${esc(w.handSpent)}</b><small>${esc(deck)}</small></div>`;
+}
+
 function handHtml(st, ctx, picked) {
   const w = ctx.words, n = st.you.hand.length;
+  if (!n) return emptyHandHtml(st, w);
   return st.you.hand.map((id, index) => {
     const c = ctx.catalog[id];
     if (!c) return '';

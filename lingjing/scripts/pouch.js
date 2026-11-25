@@ -47,15 +47,17 @@ export const tabOf = (i) => (i.free ? 'story' : KIND_TAB[i.kind] ?? 'material');
    one compact row, each with 卸下 as the popover had it. */
 function wornHtml(g, ctx) {
   const w = ctx.words, t = ctx.look?.treasure;
-  const cell = (label, body, off = '') => `<div class="pworn"><span class="lbl">${esc(label)}</span>${body}${off}</div>`;
+  // An empty slot is one line (label · —), a worn one the name with its 卸下 beside it (lingjing.css .pworn; Hanli 11-22:
+  // 「每个卡片空白很大」) — the card is as tall as what it says.
+  const cell = (label, body, off = '', empty = false) => `<div class="pworn${empty ? ' empty' : ''}"><span class="lbl">${esc(label)}</span>${body}${off}</div>`;
   const name = (it) => (it ? `<b data-pouch-item="${esc(it.id)}" role="button" tabindex="0">${esc(it.name)}</b>` : `<span class="dim">${esc(w.gearEmpty)}</span>`);
-  const slots = g.slots.map((s) => cell(s.name ?? w.gearSlots[s.slot] ?? s.slot, name(s.item), s.item ? `<button class="act quiet" data-remove="${esc(s.item.id)}">${esc(w.gearOff)}</button>` : '')).join('');
+  const slots = g.slots.map((s) => cell(s.name ?? w.gearSlots[s.slot] ?? s.slot, name(s.item), s.item ? `<button class="act quiet" data-remove="${esc(s.item.id)}">${esc(w.gearOff)}</button>` : '', !s.item)).join('');
   const treasure = t ? cell(w.gearSlots.treasure, `<b>${esc(t.name)}</b><span class="small dim">${esc(t.step)} · ${esc(t.element_name)}</span>`) : '';
   // Hers: the same three (Hanli 11-03 — rules/wear.mjs), each with its own 卸下.
   const herCell = (s) => {
     const lift = s.item ? liftSaid(s.item.effect, w) : '';
     const off = s.item ? `<button class="act quiet" data-remove="${esc(s.item.id)}" data-on="her" data-slot="${esc(s.slot)}">${esc(w.gearOff)}</button>` : '';
-    return cell(s.name ?? w.gearSlots[s.slot] ?? s.slot, `${name(s.item)}${lift ? `<span class="small dim">${esc(lift)}</span>` : ''}`, off);
+    return cell(s.name ?? w.gearSlots[s.slot] ?? s.slot, `${name(s.item)}${lift ? `<span class="small dim">${esc(lift)}</span>` : ''}`, off, !s.item);
   };
   // One row a person, named (Hanli 11-03: 「每个角色装备栏占1行, 写清楚角色名」): his slots, pouch and treasure,
   // his fight line under them; then hers, her card under hers.
