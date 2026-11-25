@@ -25,7 +25,7 @@ const room = (hand, deck, lang = 'zh') => {
 
 test('a hand played out is an empty seat with words and the deck count, never a blank band', () => {
   const spent = room([], 5);
-  assert.match(spent, /<div class="bhand"><div class="bhandempty"[^>]*><i[^>]*>牌<\/i><b>手牌已出完<\/b><small>牌库还剩 5 张<\/small><\/div><\/div>/);
+  assert.match(spent, /<div class="bhand"><div class="bhandempty"[^>]*><i[^>]*>牌<\/i><b>手牌已出完<\/b><small>牌库 5 张<\/small><\/div><\/div>/);
   assert.match(room([], 0), /<small>牌库已空<\/small>/);
   assert.match(room([], 3, 'en'), /<b>Hand played out<\/b><small>Deck: 3 left<\/small>/);
   // It is no card: the wheel and the lint count .bcard, so a seat is not a hand of one.

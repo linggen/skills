@@ -318,6 +318,7 @@
   font-family: var(--serif); color: var(--ink-2); border: 1.5px dashed var(--ink-line); border-radius: 10px;
   background: radial-gradient(ellipse at 50% 85%, rgba(31, 28, 24, .10), transparent 70%), rgba(243, 238, 226, .35); }
 .bhandempty > i { position: absolute; inset: 0; display: grid; place-items: center; font-style: normal; font-size: calc(var(--ch) * .5); line-height: 1; color: rgba(31, 28, 24, .10); pointer-events: none; }
+.bhandempty > b, .bhandempty > small { text-wrap: balance; }
 .bhandempty > b { position: relative; font-size: 14px; font-weight: 600; letter-spacing: .08em; }
 .bhandempty > small { position: relative; font-size: 12px; color: var(--ink-2); opacity: .85; }
 .bcard {
@@ -655,8 +656,10 @@
   .battle .bhand > .bcard.far { opacity: 0; pointer-events: none; }
   /* The phone's empty seat: the size the wheel's centre card would be, where it would stand. */
   .battle .bhand > .bhandempty { position: absolute; left: 50%; top: var(--wtop); width: var(--wcw); height: calc(var(--wcw) / .71); margin-left: calc(var(--wcw) / -2); }
-  .battle .bhand > .bhandempty > b { font-size: clamp(15px, calc(var(--wcw) * .09), 19px); }
-  .battle .bhand > .bhandempty > small { font-size: clamp(12.5px, calc(var(--wcw) * .07), 14.5px); }
+  /* The seat is as wide as the room leaves (94 px when the ranks are full): its two lines scale with it and wrap balanced, never one word alone on a line. */
+  .battle .bhand > .bhandempty { padding: 4px; }
+  .battle .bhand > .bhandempty > b { font-size: clamp(12px, calc(var(--wcw) * .12), 19px); letter-spacing: 0; }
+  .battle .bhand > .bhandempty > small { font-size: clamp(11px, calc(var(--wcw) * .09), 14.5px); }
   .battle .bhand > .bcard:hover { transform: translateX(calc(var(--wx, 0) * var(--wcw))) rotateY(var(--wt, 0deg)) scale(var(--ws, 1)); }
   .battle .bhand > .bcard.held { transform: translateX(calc(var(--wx, 0) * var(--wcw))) translateY(-8px) scale(calc(var(--ws, 1) * 1.03)); z-index: 41; }
   .battle .bhand > .bcard .bleaf, .battle .bhand > .bcard:last-child:not(:first-child) .bleaf { inset: 0; width: 100%; height: 100%; padding: 7px 7px 16px; }

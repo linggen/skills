@@ -120,7 +120,7 @@ function personWords(words, creature, lang) {
 
 export const WORDS = {
   zh: {
-    hp: '气血', mana: '灵力', deck: '牌库', hand: '手牌', handSpent: '手牌已出完', deckLeft: '牌库还剩 {n} 张', deckDry: '牌库已空', power: '主灵根一击', end: '结束回合', theirTurn: '它的回合',
+    hp: '气血', mana: '灵力', deck: '牌库', hand: '手牌', handSpent: '手牌已出完', deckLeft: '牌库 {n} 张', deckDry: '牌库已空', power: '主灵根一击', end: '结束回合', theirTurn: '它的回合',
     it: '它', its: '它', itObj: '它',
     yours: '你的阵前', theirs: '它的阵前', empty: '空', taunt: '护主', arriving: '刚到',
     struck: '已出手', spoils: '所得', spoilsCard: '新得一张牌，往后可带进斗法：', spoilsBag: '收进储物袋：', spoilsClose: '收起', spoilsIn: '已入账', spoilsSpent: '用去：', spentTitle: '用去', xw: '修为', ls: '灵石', quit: '认输', won: '胜', passed: '试过了', lost: '败', withdrew: '它力竭遁走',
