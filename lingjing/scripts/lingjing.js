@@ -31,7 +31,7 @@ import { newBoard, tapHeard } from './board.js';
 import { sounded } from './games/kit/heard.js';
 import { REALMS, begin, missingCards, replayInto, shown as shownOf, view as boutView } from './battle.js';
 import { fightOdds, oddsKey } from './fightodds.js';
-import { withNext, FOOTER, barHeld, barOf, duanOf, duanSegments, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, slotKey, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
+import { withNext, FOOTER, barHeld, barOf, capLineOf, duanOf, duanSegments, boardDoneToday, cardHoldsWay, companionShown, petStageUrl, sceneGame, slotKey, stageCards, stageSlots, stands, wonWayOn } from './stage.mjs';
 import { WORDS as BATTLE_WORDS, boutSays, boutWords, fightKind, spoilsHtml, winSpoils } from './battle-card.js';
 import { since } from './battle-anim.js';
 import { travelHtml, wayOf, wayPoints } from './travel.js';
@@ -1031,7 +1031,8 @@ const spillPct = (progress, next) => (next && progress > next ? Math.min(100, Ma
 /// the rise paints (paintRise).
 function xwHtml(bar, pct, over, w) {
   const d = duanOf(bar.tier);
-  const num = (!bar.line && capGo(bar, w)) || `<span class="num"><span data-count="progress">${esc(bar.progress)}</span>/${esc(bar.next)}</span>`;
+  const capLine = capLineOf(look, w.capLine);
+  const num = ((!bar.line && capGo(bar, w)) || `<span class="num"><span data-count="progress">${esc(bar.progress)}</span>/${esc(bar.next)}</span>`) + (capLine ? `<span class="capline small dim">${esc(capLine)}</span>` : '');
   const fillBar = (cls, p, spill) => `<div class="bar ${cls}${spill ? ' over' : ''}"><i style="width:${p || 0}%"></i>${cls === 'now' ? `<em class="spill" style="width:${spill}%"></em>` : ''}</div>`;
   if (!d) return `<span class="realm">${esc(bar.tier.name)}</span>
     <div class="xw"><span class="lbl">${esc(w.xw)}</span>${fillBar('now', pct, over)}${num}</div>`;

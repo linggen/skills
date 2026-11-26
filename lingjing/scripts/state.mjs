@@ -481,6 +481,18 @@ export function stageOf(content, tierId, step, lang = 'zh') {
   const per = Math.ceil(tier.thresholds.length / n), index = Math.min(n - 1, Math.floor(step / per));
   return { index, id: content.ladder.stage_ids?.[index] ?? String(index), name: names[index], at: step - index * per + 1, per, first: index * per, last: index === n - 1 };
 }
+/* The 修为 bar of a realm shown in 段 spans the whole 段 (Hanli 2026-11-25: 「筑基修为满了又从头开始了」 · 「按段吧」): the
+   段's lower 层 thresholds plus the progress in this 层, over the three 层 thresholds together; it starts over only when
+   a new 段 begins. ONE helper: Look carries it (`tier.duan.bar`), no page works it out. Null for a realm that names its 层. */
+export function stageBar(content, state) {
+  const g = stageOf(content, state.tier, state.step);
+  if (!g) return null;
+  const need = step => tierOf(content, state.tier).thresholds[step] + (state.stretch?.[stretchKey(state.tier, step)] ?? 0);
+  let before = 0, total = 0;
+  for (let k = g.first; k < g.first + g.per; k++) { total += need(k); if (k < state.step) before += need(k); }
+  const now = before + (state.progress ?? 0);
+  return { now, total, share: total > 0 ? Math.min(1, now / total) : 0 };
+}
 /* The step as the fight's 气血 counts it (half a point a step, battle.js): in 段, a 层 is a third of the step it was part of
    (the coordinator's call, Hanli delegated 2026-11-02: a realm's 气血 grows as it did on three steps, no hidden buff). */
 export function hpStep(content, tierId, step = 0) {

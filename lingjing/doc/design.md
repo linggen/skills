@@ -540,7 +540,7 @@ need no migration. 地仙 · 天仙 after 渡劫 is content for after the finale
   thresholds), trial?} and `tier.layer` (「第四层」, the tooltip's): the strip's three-segment bar
   (stage.mjs duanOf, 47879a65) — 练气's Look, bar and names are unchanged (「练气四层」). A 层 inside a
   段 is the bar's: a pay's `levels` drops a step whose name does not move, and the rise seal fires on
-  a 段 change only. **The 段 trial**: the step into 四层 and into 七层 is a light throw, no pill
+  a 段 change only. **The bar spans the 段** (Hanli 2026-11-25: 「按段吧」): fill and number are the 段's 修为 so far over its three 层 together (state.mjs `stageBar`, Look's `tier.duan.bar`), reset only at the next 段; held at the cap it adds one line, 「卷一至此·余修为化灵石」. **The 段 trial**: the step into 四层 and into 七层 is a light throw, no pill
   (ladder.json `breakthrough.duan`: base 75 + the realm throw's 体力 · 闭关 · 银月 · 五行 rows,
   floor/cap shared), thrown by the pay that carries him over the 段's last 层 (core.mjs pay's door,
   rules/breakthrough.mjs `duanPass`/`duanTried`, seeded as the realm throw); a failure costs only

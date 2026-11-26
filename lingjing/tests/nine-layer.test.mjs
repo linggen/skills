@@ -77,7 +77,7 @@ test('Look: tier.realm, tier.duan {id, name, at, marks} and tier.layer on 筑基
   const l = lookOf(gujiu({ step: 1, progress: 100 }));
   // `hp`: his 气血 at full there (batch 3, cards.mjs hpMaxOf: P(筑基二层 = L11) = 21 × 1.05^10 × 1.2).
   assert.deepEqual(l.tier, { id: 'foundation', step: 2, name: '筑基 · 小成', phase: '筑基 · 小成', bar: true, hp: 41, realm: '筑基', layer: '第二层',
-    duan: { id: 'xiao', name: '小成', at: 2, marks: FD.thresholds.slice(0, 3) } });
+    duan: { id: 'xiao', name: '小成', at: 2, bar: { now: FD.thresholds[0] + 100, total: FD.thresholds.slice(0, 3).reduce((a, b) => a + b, 0), share: (FD.thresholds[0] + 100) / FD.thresholds.slice(0, 3).reduce((a, b) => a + b, 0) }, marks: FD.thresholds.slice(0, 3) } });
   assert.deepEqual(duanOf(l.tier), { label: '筑基 · 小成', at: 2, layer: '第二层', full: '筑基 · 小成' });
   const en = lookOf(gujiu({ lang: 'en', step: 4, progress: 0 }));
   assert.deepEqual([en.tier.realm, en.tier.duan.name, en.tier.duan.at, en.tier.layer], ['Foundation Establishment', 'Middle Attainment', 2, 'Layer 5']);

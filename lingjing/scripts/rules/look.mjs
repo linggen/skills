@@ -10,7 +10,7 @@ import { askMinusStage, stageCards, stageOwns } from '../stage.mjs';
 import { poolDeal } from './pool.mjs';
 import { happeningHosted } from './happenings.mjs';
 import { waveHosted, waveRow, waveTask } from './forms.mjs';
-import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, phaseName, realmName, threshold, seedOf, cultivating, layerNo, layerName, stageOf } from '../state.mjs';
+import { dayKey, fill, genderOf, itemName, lockedOf, periodKey, personOf, pick, rollDay, settleStamina, speedOf, phaseName, realmName, threshold, seedOf, cultivating, layerNo, layerName, stageOf, stageBar } from '../state.mjs';
 import { duanCooling, duanOdds } from './breakthrough.mjs';
 import { artsBrief, canRefine, refineWith, treasureBrief } from './arms.mjs';
 import { askOf, THEN_BORN, THEN_ROAD_RIDDLE, THEN_SECLUSION, THEN_THROW, THEN_VALUE, thenFor } from './ask.mjs';
@@ -670,7 +670,7 @@ function tierStages(content, state, lang, now) {
   const trial = odds ? { to: odds.to.name, chance: odds.chance, ...(cooling ? { again_at: cooling } : {}) } : null;
   return {
     realm: pick(tier.name, lang), layer: layerName(content, state.tier, state.step, lang),
-    duan: { id: g.id, name: g.name, at: g.at, marks: tier.thresholds.slice(g.first, g.first + g.per), ...(trial ? { trial } : {}) },
+    duan: { id: g.id, name: g.name, at: g.at, bar: stageBar(content, state), marks: tier.thresholds.slice(g.first, g.first + g.per), ...(trial ? { trial } : {}) },
   };
 }
 

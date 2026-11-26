@@ -80,8 +80,17 @@ export const stands = (look, part) => !sideLineOf(look) || FURNITURE.every.inclu
    beside it with its own 修为, that line's (Look's `lines.<line>`: its hero, its realm, its bar). `line`: null on the 古. */
 export function barOf(look) {
   const line = sideLineOf(look), own = line ? look?.lines?.[line] : null;
-  return own ? { line, name: own.hero, tier: own.tier, progress: own.progress, next: own.next }
-    : { line: null, name: look?.name, tier: look?.tier, progress: look?.progress, next: look?.next };
+  if (own) return { line, name: own.hero, tier: own.tier, progress: own.progress, next: own.next };
+  // A realm in 段: the bar spans the 段 (state.mjs stageBar, carried in Look's tier.duan.bar), not the 层.
+  const sb = look?.tier?.duan?.bar;
+  return { line: null, name: look?.name, tier: look?.tier, progress: sb ? sb.now : look?.progress, next: sb ? sb.total : look?.next };
+}
+/* The one short line on a bar held at the cap (rules/cap.mjs: the bar stops, the rest comes as 灵石), in the world's voice
+   (the words' `capLine`). Only while Look says `capped` AND the bar stands full — never on a bar still filling. */
+export function capLineOf(look, line) {
+  const bar = barOf(look);
+  const full = bar.next > 0 && bar.progress >= bar.next;
+  return !bar.line && look?.capped && full ? line : '';
 }
 /* A realm risen is told after its passage (Hanli, 2026-11-12: the top bar read 「筑基 · 小成」 and its 修为 while the
    passage of the breakthrough was on page 2 of 22). While the seal is owed the header reads the 古's bar as it stood
